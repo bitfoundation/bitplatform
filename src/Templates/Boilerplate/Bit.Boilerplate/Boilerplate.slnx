@@ -10,10 +10,10 @@
     <File Path=".vsconfig" />
     <File Path="Clean.bat" />
     <File Path="global.json" />
-	<File Path="vs-spell.dic" />
-	<File Path=".vscode/mcp.json" />
+    <File Path="vs-spell.dic" />
+    <File Path=".vscode/mcp.json" />
     <File Path="README.md" />
-	<File Path="settings.VisualStudio.json" />
+    <File Path="settings.VisualStudio.json" />
     <File Path="Bit.ResxTranslator.json" />
     <File Path="src/Directory.Build.props" />
     <File Path="src/Directory.Packages.props" />
@@ -26,12 +26,12 @@
   </Folder>
 <!--#endif-->
   <Folder Name="/.SolutionItems/.github/">
-	<File Path=".github/copilot-instructions.md" />
+    <File Path=".github/copilot-instructions.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.github/prompts/">
     <File Path=".github/prompts/resx.prompt.md" />
     <File Path=".github/prompts/bitify.prompt.md" />
-	<File Path=".github/prompts/getting-started.prompt.md" />
+    <File Path=".github/prompts/getting-started.prompt.md" />
     <File Path=".github/prompts/scaffold.prompt.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.docs/">
@@ -45,7 +45,7 @@
     <File Path=".docs/07- ASP.NET Core Identity - Authentication &amp; Authorization.md" />
     <File Path=".docs/08- Blazor Pages, Components, Styling &amp; Navigation.md" />
     <File Path=".docs/09- Dependency Injection &amp; Service Registration.md" />
-	<File Path=".docs/10- Configuration (appsettings.json).md" />
+    <File Path=".docs/10- Configuration (appsettings.json).md" />
     <File Path=".docs/11- TypeScript, Build Process &amp; JavaScript Interop.md" />
     <File Path=".docs/12- Blazor Modes, PreRendering &amp; PWA.md" />
     <File Path=".docs/13- Force Update System.md" />
@@ -60,9 +60,9 @@
     <File Path=".docs/22- Messaging.md" />
     <File Path=".docs/23- Diagnostic Modal.md" />
     <File Path=".docs/24- WebAuthn and Passwordless Authentication (Advanced).md" />
-	<!--#if (database == "PostgreSQL" || database == "SqlServer")-->
+    <!--#if (database == "PostgreSQL" || database == "SqlServer")-->
     <File Path=".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md" />
-	<!--#endif-->	
+    <!--#endif-->    
   </Folder>
 <!--#if (pipeline == "GitHub")-->
   <Folder Name="/.SolutionItems/.github/workflows/">
@@ -73,11 +73,11 @@
   </Folder>
 <!--#endif-->
   <Folder Name="/Server/">
-	<Project Path="src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
+    <Project Path="src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
     <Project Path="src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj" />
-	<Project Path="src/Server/Boilerplate.Server.Shared/Boilerplate.Server.Shared.csproj" />
+    <Project Path="src/Server/Boilerplate.Server.Shared/Boilerplate.Server.Shared.csproj" />
 <!--#if (aspire == true)-->
-	<Project Path="src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj" />
+    <Project Path="src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj" />
 <!--#endif-->
   </Folder>
   <Folder Name="/Client/">
@@ -91,8 +91,8 @@
       <Build Solution="DebugBlazorServer|*" Project="false" />
     </Project>
     <Project Path="src/Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj">
-		<Build Solution="DebugBlazorServer|*" Project="false" />
-	</Project>
+        <Build Solution="DebugBlazorServer|*" Project="false" />
+    </Project>
   </Folder>
   <Folder Name="/Shared/">
     <Project Path="src/Shared/Boilerplate.Shared.csproj" />

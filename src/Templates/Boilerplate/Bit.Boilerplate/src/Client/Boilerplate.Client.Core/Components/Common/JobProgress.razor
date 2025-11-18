@@ -4,16 +4,16 @@
 
 @if (isVisible)
 {
-	<BitButton Float
-			   Draggable
-			   Title="@currentJobTitle"
-			   FloatOffset="2rem"
-			   Variant="BitVariant.Text"
-			   Color="BitColor.TertiaryBackground"
-			   FloatPosition="BitPosition.BottomLeft"
-			   OnClick="WrapHandled(Ignore)">
-		<BitProgress Circular
-					 Percent="@currentJobProgressPercentage"
-					 ShowPercentNumber />
-	</BitButton>
+    <BitButton Float
+               Draggable
+               Title="@currentJobTitle"
+               FloatOffset="2rem"
+               Variant="BitVariant.Text"
+               Color="BitColor.TertiaryBackground"
+               FloatPosition="BitPosition.BottomLeft"
+               OnClick="WrapHandled(Ignore)">
+        <BitProgress Circular
+                     Percent="@currentJobProgressPercentage"
+                     ShowPercentNumber />
+    </BitButton>
 }

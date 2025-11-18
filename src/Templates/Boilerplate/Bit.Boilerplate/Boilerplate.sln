@@ -11,20 +11,20 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Boilerplate.Server.Shared", "src\Server\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj", "{AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-		.gitignore = .gitignore
-		.vsconfig = .vsconfig
-		Bit.ResxTranslator.json = Bit.ResxTranslator.json
-		settings.VisualStudio.json = settings.VisualStudio.json
-		Clean.bat = Clean.bat
-		src\Directory.Build.props = src\Directory.Build.props
-		src\Directory.Packages.props = src\Directory.Packages.props
-		global.json = global.json
-		vs-spell.dic = vs-spell.dic
-		.vscode\mcp.json=.vscode\mcp.json
-		README.md = README.md
-	EndProjectSection
+    ProjectSection(SolutionItems) = preProject
+        .editorconfig = .editorconfig
+        .gitignore = .gitignore
+        .vsconfig = .vsconfig
+        Bit.ResxTranslator.json = Bit.ResxTranslator.json
+        settings.VisualStudio.json = settings.VisualStudio.json
+        Clean.bat = Clean.bat
+        src\Directory.Build.props = src\Directory.Build.props
+        src\Directory.Packages.props = src\Directory.Packages.props
+        global.json = global.json
+        vs-spell.dic = vs-spell.dic
+        .vscode\mcp.json=.vscode\mcp.json
+        README.md = README.md
+    EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{248D8229-BABD-4F0A-A9C6-0417B464507B}"
 EndProject
@@ -40,33 +40,33 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{AEE266C3-9E0B-4C41-A491-54D339708C06}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{28C56D1E-528C-4C7F-8A14-A540B6FCB20F}"
-	ProjectSection(SolutionItems) = preProject
-		.azure-devops\workflows\cd.yml = .azure-devops\workflows\cd.yml
-		.azure-devops\workflows\ci.yml = .azure-devops\workflows\ci.yml
-	EndProjectSection
+    ProjectSection(SolutionItems) = preProject
+        .azure-devops\workflows\cd.yml = .azure-devops\workflows\cd.yml
+        .azure-devops\workflows\ci.yml = .azure-devops\workflows\ci.yml
+    EndProjectSection
 EndProject
 #endif
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{3E577755-186F-4E63-8153-B8DE890015C9}"
-	ProjectSection(SolutionItems) = preProject
-		.github\copilot-instructions.md = .github\copilot-instructions.md
-	EndProjectSection
+    ProjectSection(SolutionItems) = preProject
+        .github\copilot-instructions.md = .github\copilot-instructions.md
+    EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prompts", "prompts", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D}"
-	ProjectSection(SolutionItems) = preProject
-		.github\prompts\resx.prompt.md = .github\prompts\resx.prompt.md
-		.github\prompts\bitify.prompt.md = .github\prompts\bitify.prompt.md
-		.github\prompts\getting-started.prompt.md = .github\prompts\getting-started.prompt.md
-		.github\prompts\scaffold.prompt.md = .github\prompts\scaffold.prompt.md
-	EndProjectSection
+    ProjectSection(SolutionItems) = preProject
+        .github\prompts\resx.prompt.md = .github\prompts\resx.prompt.md
+        .github\prompts\bitify.prompt.md = .github\prompts\bitify.prompt.md
+        .github\prompts\getting-started.prompt.md = .github\prompts\getting-started.prompt.md
+        .github\prompts\scaffold.prompt.md = .github\prompts\scaffold.prompt.md
+    EndProjectSection
 EndProject
 #if (pipeline == "GitHub")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{2347E3B2-FDDE-427E-A0AE-E4DCD47C2989}"
-	ProjectSection(SolutionItems) = preProject
-		.github\workflows\cd-production.yml = .github\workflows\cd-production.yml
-		.github\workflows\cd-test.yml = .github\workflows\cd-test.yml
-		.github\workflows\cd-template.yml = .github\workflows\cd-template.yml
-		.github\workflows\ci.yml = .github\workflows\ci.yml
-	EndProjectSection
+    ProjectSection(SolutionItems) = preProject
+        .github\workflows\cd-production.yml = .github\workflows\cd-production.yml
+        .github\workflows\cd-test.yml = .github\workflows\cd-test.yml
+        .github\workflows\cd-template.yml = .github\workflows\cd-template.yml
+        .github\workflows\ci.yml = .github\workflows\ci.yml
+    EndProjectSection
 EndProject
 #endif
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Windows", "src\Client\Boilerplate.Client.Windows\Boilerplate.Client.Windows.csproj", "{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}"
@@ -82,110 +82,110 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Tests", "src\Tests\Boilerplate.Tests.csproj", "{47F82CD8-D6DA-4F03-9DD6-F67AF3621C93}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docs", ".docs", "{8A72BF22-F6D3-C5D9-4099-AB471879EBC8}"
-	ProjectSection(SolutionItems) = preProject
-		.docs\00- Wiki.md = .docs\00- Wiki.md
-		.docs\01- Entity Framework Core.md = .docs\01- Entity Framework Core.md
-		.docs\02- DTOs, Mappers, and Mapperly.md = .docs\02- DTOs, Mappers, and Mapperly.md
-		.docs\03- API Controllers and OData.md = .docs\03- API Controllers and OData.md
-		.docs\04- Background Jobs and CancellationToken Management.md = .docs\04- Background Jobs and CancellationToken Management.md
-		.docs\05- Localization and Multi-language Support.md = .docs\05- Localization and Multi-language Support.md
-		.docs\06- Exception Handling and Error Management.md = .docs\06- Exception Handling and Error Management.md
-		.docs\07- ASP.NET Core Identity - Authentication & Authorization.md = .docs\07- ASP.NET Core Identity - Authentication & Authorization.md
-		.docs\08- Blazor Pages, Components, Styling & Navigation.md = .docs\08- Blazor Pages, Components, Styling & Navigation.md
-		.docs\09- Dependency Injection & Service Registration.md = .docs\09- Dependency Injection & Service Registration.md
-		.docs\10- Configuration (appsettings.json).md = .docs\10- Configuration (appsettings.json).md
-		.docs\11- TypeScript, Build Process & JavaScript Interop.md = .docs\11- TypeScript, Build Process & JavaScript Interop.md
-		.docs\12- Blazor Modes, PreRendering & PWA.md = .docs\12- Blazor Modes, PreRendering & PWA.md
-		.docs\13- Force Update System.md = .docs\13- Force Update System.md
-		.docs\14- Response Caching System.md = .docs\14- Response Caching System.md
-		.docs\15- Logging, OpenTelemetry and Health Checks.md = .docs\15- Logging, OpenTelemetry and Health Checks.md
-		.docs\16- CI-CD Pipeline and Environments.md = .docs\16- CI-CD Pipeline and Environments.md
-		.docs\17- Automated Testing (Unitigration Tests).md = .docs\17- Automated Testing (Unitigration Tests).md
-		.docs\18- Other Available Prompt Templates.md = .docs\18- Other Available Prompt Templates.md
-		.docs\19- Project Miscellaneous Files.md = .docs\19- Project Miscellaneous Files.md
-		.docs\20- .NET Aspire.md = .docs\20- .NET Aspire.md
-		.docs\21- .NET MAUI - Blazor Hybrid.md = .docs\21- .NET MAUI - Blazor Hybrid.md
-		.docs\22- Messaging.md = .docs\22- Messaging.md
-		.docs\23- Diagnostic Modal.md = .docs\23- Diagnostic Modal.md
-		.docs\24- WebAuthn and Passwordless Authentication (Advanced).md = .docs\24- WebAuthn and Passwordless Authentication (Advanced).md
-		.docs\25- RAG - Semantic Search with Vector Embeddings (Advanced).md = .docs\25- RAG - Semantic Search with Vector Embeddings (Advanced).md
-	EndProjectSection
+    ProjectSection(SolutionItems) = preProject
+        .docs\00- Wiki.md = .docs\00- Wiki.md
+        .docs\01- Entity Framework Core.md = .docs\01- Entity Framework Core.md
+        .docs\02- DTOs, Mappers, and Mapperly.md = .docs\02- DTOs, Mappers, and Mapperly.md
+        .docs\03- API Controllers and OData.md = .docs\03- API Controllers and OData.md
+        .docs\04- Background Jobs and CancellationToken Management.md = .docs\04- Background Jobs and CancellationToken Management.md
+        .docs\05- Localization and Multi-language Support.md = .docs\05- Localization and Multi-language Support.md
+        .docs\06- Exception Handling and Error Management.md = .docs\06- Exception Handling and Error Management.md
+        .docs\07- ASP.NET Core Identity - Authentication & Authorization.md = .docs\07- ASP.NET Core Identity - Authentication & Authorization.md
+        .docs\08- Blazor Pages, Components, Styling & Navigation.md = .docs\08- Blazor Pages, Components, Styling & Navigation.md
+        .docs\09- Dependency Injection & Service Registration.md = .docs\09- Dependency Injection & Service Registration.md
+        .docs\10- Configuration (appsettings.json).md = .docs\10- Configuration (appsettings.json).md
+        .docs\11- TypeScript, Build Process & JavaScript Interop.md = .docs\11- TypeScript, Build Process & JavaScript Interop.md
+        .docs\12- Blazor Modes, PreRendering & PWA.md = .docs\12- Blazor Modes, PreRendering & PWA.md
+        .docs\13- Force Update System.md = .docs\13- Force Update System.md
+        .docs\14- Response Caching System.md = .docs\14- Response Caching System.md
+        .docs\15- Logging, OpenTelemetry and Health Checks.md = .docs\15- Logging, OpenTelemetry and Health Checks.md
+        .docs\16- CI-CD Pipeline and Environments.md = .docs\16- CI-CD Pipeline and Environments.md
+        .docs\17- Automated Testing (Unitigration Tests).md = .docs\17- Automated Testing (Unitigration Tests).md
+        .docs\18- Other Available Prompt Templates.md = .docs\18- Other Available Prompt Templates.md
+        .docs\19- Project Miscellaneous Files.md = .docs\19- Project Miscellaneous Files.md
+        .docs\20- .NET Aspire.md = .docs\20- .NET Aspire.md
+        .docs\21- .NET MAUI - Blazor Hybrid.md = .docs\21- .NET MAUI - Blazor Hybrid.md
+        .docs\22- Messaging.md = .docs\22- Messaging.md
+        .docs\23- Diagnostic Modal.md = .docs\23- Diagnostic Modal.md
+        .docs\24- WebAuthn and Passwordless Authentication (Advanced).md = .docs\24- WebAuthn and Passwordless Authentication (Advanced).md
+        .docs\25- RAG - Semantic Search with Vector Embeddings (Advanced).md = .docs\25- RAG - Semantic Search with Vector Embeddings (Advanced).md
+    EndProjectSection
 EndProject
 Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{26430D8C-32CB-4142-AC1A-33486A58DA01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{26430D8C-32CB-4142-AC1A-33486A58DA01}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{26430D8C-32CB-4142-AC1A-33486A58DA01}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{26430D8C-32CB-4142-AC1A-33486A58DA01}.Release|Any CPU.Build.0 = Release|Any CPU
-		{47F82CD8-D6DA-4F03-9DD6-F67AF3621C93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{47F82CD8-D6DA-4F03-9DD6-F67AF3621C93}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{47F82CD8-D6DA-4F03-9DD6-F67AF3621C93}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{47F82CD8-D6DA-4F03-9DD6-F67AF3621C93}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8CC3E410-B716-4F4D-89C7-3392CA624439}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8CC3E410-B716-4F4D-89C7-3392CA624439}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8CC3E410-B716-4F4D-89C7-3392CA624439}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8CC3E410-B716-4F4D-89C7-3392CA624439}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FC60C68D-8E8D-494B-8D60-0C8D83A472E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FC60C68D-8E8D-494B-8D60-0C8D83A472E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FC60C68D-8E8D-494B-8D60-0C8D83A472E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FC60C68D-8E8D-494B-8D60-0C8D83A472E7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{22816913-64D5-4AE8-9B34-6F188B71FAD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{22816913-64D5-4AE8-9B34-6F188B71FAD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{22816913-64D5-4AE8-9B34-6F188B71FAD1}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{22816913-64D5-4AE8-9B34-6F188B71FAD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{22816913-64D5-4AE8-9B34-6F188B71FAD1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{22816913-64D5-4AE8-9B34-6F188B71FAD1}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2}.Release|Any CPU.Build.0 = Release|Any CPU
+    GlobalSection(SolutionConfigurationPlatforms) = preSolution
+        Debug|Any CPU = Debug|Any CPU
+        Release|Any CPU = Release|Any CPU
+    EndGlobalSection
+    GlobalSection(ProjectConfigurationPlatforms) = postSolution
+        {26430D8C-32CB-4142-AC1A-33486A58DA01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {26430D8C-32CB-4142-AC1A-33486A58DA01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {26430D8C-32CB-4142-AC1A-33486A58DA01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {26430D8C-32CB-4142-AC1A-33486A58DA01}.Release|Any CPU.Build.0 = Release|Any CPU
+        {47F82CD8-D6DA-4F03-9DD6-F67AF3621C93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {47F82CD8-D6DA-4F03-9DD6-F67AF3621C93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {47F82CD8-D6DA-4F03-9DD6-F67AF3621C93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {47F82CD8-D6DA-4F03-9DD6-F67AF3621C93}.Release|Any CPU.Build.0 = Release|Any CPU
+        {8CC3E410-B716-4F4D-89C7-3392CA624439}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {8CC3E410-B716-4F4D-89C7-3392CA624439}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {8CC3E410-B716-4F4D-89C7-3392CA624439}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {8CC3E410-B716-4F4D-89C7-3392CA624439}.Release|Any CPU.Build.0 = Release|Any CPU
+        {FC60C68D-8E8D-494B-8D60-0C8D83A472E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {FC60C68D-8E8D-494B-8D60-0C8D83A472E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {FC60C68D-8E8D-494B-8D60-0C8D83A472E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {FC60C68D-8E8D-494B-8D60-0C8D83A472E7}.Release|Any CPU.Build.0 = Release|Any CPU
+        {13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}.Release|Any CPU.Build.0 = Release|Any CPU
+        {22816913-64D5-4AE8-9B34-6F188B71FAD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {22816913-64D5-4AE8-9B34-6F188B71FAD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {22816913-64D5-4AE8-9B34-6F188B71FAD1}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+        {22816913-64D5-4AE8-9B34-6F188B71FAD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {22816913-64D5-4AE8-9B34-6F188B71FAD1}.Release|Any CPU.Build.0 = Release|Any CPU
+        {22816913-64D5-4AE8-9B34-6F188B71FAD1}.Release|Any CPU.Deploy.0 = Release|Any CPU
+        {E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}.Release|Any CPU.Build.0 = Release|Any CPU
+        {3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Release|Any CPU.Build.0 = Release|Any CPU
+        {AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2}.Release|Any CPU.Build.0 = Release|Any CPU
 #if (aspire == true)
-		{C1CACA9D-8E95-5A02-3E37-37CE607581A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C1CACA9D-8E95-5A02-3E37-37CE607581A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C1CACA9D-8E95-5A02-3E37-37CE607581A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C1CACA9D-8E95-5A02-3E37-37CE607581A3}.Release|Any CPU.Build.0 = Release|Any CPU
+        {C1CACA9D-8E95-5A02-3E37-37CE607581A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {C1CACA9D-8E95-5A02-3E37-37CE607581A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {C1CACA9D-8E95-5A02-3E37-37CE607581A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {C1CACA9D-8E95-5A02-3E37-37CE607581A3}.Release|Any CPU.Build.0 = Release|Any CPU
 //#endif
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{26430D8C-32CB-4142-AC1A-33486A58DA01} = {EAB56593-7B10-4CC4-A3B8-E62ACDD1E6DD}
-		{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A} = {723683EA-193C-45FD-A64D-7830A2867E4F}
-		{47F82CD8-D6DA-4F03-9DD6-F67AF3621C93} = {B38FF18E-11BC-4AF6-8FA3-648B3952DCAF}
-		{8CC3E410-B716-4F4D-89C7-3392CA624439} = {723683EA-193C-45FD-A64D-7830A2867E4F}
-		{FC60C68D-8E8D-494B-8D60-0C8D83A472E7} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
-		{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
-		{22816913-64D5-4AE8-9B34-6F188B71FAD1} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
+    EndGlobalSection
+    GlobalSection(SolutionProperties) = preSolution
+        HideSolutionNode = FALSE
+    EndGlobalSection
+    GlobalSection(NestedProjects) = preSolution
+        {26430D8C-32CB-4142-AC1A-33486A58DA01} = {EAB56593-7B10-4CC4-A3B8-E62ACDD1E6DD}
+        {3D93B170-BDCD-4890-92B3-F5ABE48F3D3A} = {723683EA-193C-45FD-A64D-7830A2867E4F}
+        {47F82CD8-D6DA-4F03-9DD6-F67AF3621C93} = {B38FF18E-11BC-4AF6-8FA3-648B3952DCAF}
+        {8CC3E410-B716-4F4D-89C7-3392CA624439} = {723683EA-193C-45FD-A64D-7830A2867E4F}
+        {FC60C68D-8E8D-494B-8D60-0C8D83A472E7} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
+        {13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
+        {22816913-64D5-4AE8-9B34-6F188B71FAD1} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
 #if (pipeline == "Azure")
-		{AEE266C3-9E0B-4C41-A491-54D339708C06} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
-		{28C56D1E-528C-4C7F-8A14-A540B6FCB20F} = {AEE266C3-9E0B-4C41-A491-54D339708C06}
+        {AEE266C3-9E0B-4C41-A491-54D339708C06} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
+        {28C56D1E-528C-4C7F-8A14-A540B6FCB20F} = {AEE266C3-9E0B-4C41-A491-54D339708C06}
 #elif (pipeline == "GitHub")
-		{3E577755-186F-4E63-8153-B8DE890015C9} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
-		{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D} = {3E577755-186F-4E63-8153-B8DE890015C9}
-		{2347E3B2-FDDE-427E-A0AE-E4DCD47C2989} = {3E577755-186F-4E63-8153-B8DE890015C9}
+        {3E577755-186F-4E63-8153-B8DE890015C9} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
+        {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D} = {3E577755-186F-4E63-8153-B8DE890015C9}
+        {2347E3B2-FDDE-427E-A0AE-E4DCD47C2989} = {3E577755-186F-4E63-8153-B8DE890015C9}
 #endif
-		{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
-		{AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2} = {723683EA-193C-45FD-A64D-7830A2867E4F}
+        {E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
+        {AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2} = {723683EA-193C-45FD-A64D-7830A2867E4F}
 #if (aspire == true)
-		{C1CACA9D-8E95-5A02-3E37-37CE607581A3} = {723683EA-193C-45FD-A64D-7830A2867E4F}
+        {C1CACA9D-8E95-5A02-3E37-37CE607581A3} = {723683EA-193C-45FD-A64D-7830A2867E4F}
 #endif
-		{8A72BF22-F6D3-C5D9-4099-AB471879EBC8} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
-	EndGlobalSection
+        {8A72BF22-F6D3-C5D9-4099-AB471879EBC8} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
+    EndGlobalSection
 EndGlobal
