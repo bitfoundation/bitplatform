@@ -4,75 +4,76 @@
 <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="isMatched => _isSmallScreen = isMatched" />
 
 <section>
-    <BitButton Float
-               Draggable
-               FloatOffset="1rem"
-               Class="open-panel-button"
-               Variant="BitVariant.Text"
-               OnClick="() => _isOpen = true"
-               Color="BitColor.PrimaryBackground"
-               IconUrl="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/ai-chat-icon-64.webp"
-               FloatPosition="BitPosition.BottomRight" />
+	<BitButton Float
+			   Draggable
+			   FloatOffset="1rem"
+			   Class="open-panel-button"
+			   Variant="BitVariant.Text"
+			   OnClick="() => _isOpen = true"
+			   Color="BitColor.PrimaryBackground"
+			   FloatPosition="BitPosition.BottomRight"
+			   IconUrl="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/ai-chat-icon-64.webp" />
 
-    <BitProPanel ShowCloseButton
-                 @bind-IsOpen="_isOpen"
-                 ModeFull="_isSmallScreen is true"
-                 Modeless="_isSmallScreen is false"
-                 OnDismiss="WrapHandled(HandleOnDismissPanel)">
-        <Header>
-            <BitStack Horizontal Alignment="BitAlignment.Center">
-                <BitText Typography="BitTypography.H5">AI chat panel</BitText>
-                @if (_isLoading)
-                {
-                    <BitRollingSquareLoading Size="BitSize.Small" />
-                }
-                <BitSpacer />
-                <BitButton IconOnly
-                           FixedColor
-                           Title="Clear"
-                           IconName="Delete"
-                           Style="padding:10px"
-                           Variant="BitVariant.Text"
-                           OnClick="WrapHandled(ClearChat)"
-                           Color="BitColor.SecondaryBackground" />
-            </BitStack>
-        </Header>
-        <Body>
-            <BitStack Class="body">
-                <BitScrollablePane FullSize
-                                   AutoScroll
-                                   Class="scr-container"
-                                   ScrollbarWidth="BitScrollbarWidth.Thin">
-                    <BitStack Id="chat-messages-stack">
-                        @foreach (var message in _chatMessages)
-                        {
-                            if (message.Role is AiChatMessageRole.User)
-                            {
-                                <BitCard Background="BitColorKind.Tertiary" Class="user-message">
-                                    <BitText Element="pre">@message.Content</BitText>
-                                </BitCard>
-                            }
-                            else
-                            {
-                                <BitMarkdownViewer Markdown="@message.Content" />
-                                @if (message.Successful is false)
-                                {
-                                    <BitTag Color="BitColor.Error" Size="BitSize.Small" Style="min-height:18px">Canceled</BitTag>
-                                }
-                            }
-                        }
+	<BitProPanel @bind-IsOpen="_isOpen"
+				 ShowCloseButton
+				 ModeFull="_isSmallScreen is true"
+				 Modeless="_isSmallScreen is false"
+				 OnDismiss="WrapHandled(HandleOnDismissPanel)"
+				 Classes="@(new() { Container = "panel-cnt" })">
+		<Header>
+			<BitStack Horizontal Alignment="BitAlignment.Center">
+				<BitText Typography="BitTypography.H5">AI chat panel</BitText>
+				@if (_isLoading)
+				{
+					<BitRollingSquareLoading Size="BitSize.Small" />
+				}
+				<BitSpacer />
+				<BitButton IconOnly
+						   FixedColor
+						   Title="Clear"
+						   IconName="Delete"
+						   Style="padding:10px"
+						   Variant="BitVariant.Text"
+						   OnClick="WrapHandled(ClearChat)"
+						   Color="BitColor.SecondaryBackground" />
+			</BitStack>
+		</Header>
+		<Body>
+			<BitStack Class="body" onpointerdown="event.stopPropagation()">
+				<BitScrollablePane FullSize
+								   AutoScroll
+								   Class="scr-container"
+								   ScrollbarWidth="BitScrollbarWidth.Thin">
+					<BitStack Id="chat-messages-stack">
+						@foreach (var message in _chatMessages)
+						{
+							if (message.Role is AiChatMessageRole.User)
+							{
+								<BitCard Background="BitColorKind.Tertiary" Class="user-message">
+									<BitText Element="pre">@message.Content</BitText>
+								</BitCard>
+							}
+							else
+							{
+								<BitMarkdownViewer Markdown="@message.Content" />
+								@if (message.Successful is false)
+								{
+									<BitTag Color="BitColor.Error" Size="BitSize.Small" Style="min-height:18px">Canceled</BitTag>
+								}
+							}
+						}
 
-                        @if (_isLoading && string.IsNullOrWhiteSpace(_lastAssistantMessage?.Content))
-                        {
-                            <BitEllipsisLoading Size="BitSize.Small" />
-                        }
-                    </BitStack>
-                </BitScrollablePane>
+						@if (_isLoading && string.IsNullOrWhiteSpace(_lastAssistantMessage?.Content))
+						{
+							<BitEllipsisLoading Size="BitSize.Small" />
+						}
+					</BitStack>
+				</BitScrollablePane>
 
-                @if (_chatMessages.Count == 1)
-                {
-                    <BitStack Alignment=" BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
-                        @* <BitButton FixedColor
+				@if (_chatMessages.Count == 1)
+				{
+					<BitStack Alignment=" BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
+						@* <BitButton FixedColor
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
                                    Color="BitColor.SecondaryBackground"
@@ -80,48 +81,48 @@
                             @AiChatPanelPrompt1
                         </BitButton> *@
 
-                        <BitButton FixedColor
-                                   Variant="BitVariant.Outline"
-                                   Class="default-prompt-button"
-                                   Color="BitColor.SecondaryBackground"
-                                   OnClick="() => SendPromptMessage(AiChatPanelPrompt2)">
-                            @AiChatPanelPrompt2
-                        </BitButton>
+						<BitButton FixedColor
+								   Variant="BitVariant.Outline"
+								   Class="default-prompt-button"
+								   Color="BitColor.SecondaryBackground"
+								   OnClick="() => SendPromptMessage(AiChatPanelPrompt2)">
+							@AiChatPanelPrompt2
+						</BitButton>
 
-                        <BitButton FixedColor
-                                   Variant="BitVariant.Outline"
-                                   Class="default-prompt-button"
-                                   Color="BitColor.SecondaryBackground"
-                                   OnClick="() => SendPromptMessage(AiChatPanelPrompt3)">
-                            @AiChatPanelPrompt3
-                        </BitButton>
-                    </BitStack>
-                }
+						<BitButton FixedColor
+								   Variant="BitVariant.Outline"
+								   Class="default-prompt-button"
+								   Color="BitColor.SecondaryBackground"
+								   OnClick="() => SendPromptMessage(AiChatPanelPrompt3)">
+							@AiChatPanelPrompt3
+						</BitButton>
+					</BitStack>
+				}
 
-                <BitStack FitHeight Style="position:relative">
-                    <BitTextField Rows="1"
-                                  Immediate
-                                  Multiline
-                                  AutoHeight
-                                  PreventEnter
-                                  MaxLength="1024"
-                                  Style="width:100%"
-                                  @bind-Value="@_userInput"
-                                  Placeholder="Write a message...."
-                                  OnEnter="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputEnter(e))"
-                                  Styles="@(new() { FieldGroup = "padding:0.5rem; padding-inline-end:2.5rem", Input = "min-height:unset" })" />
+				<BitStack FitHeight Style="position:relative">
+					<BitTextField Rows="1"
+								  Immediate
+								  Multiline
+								  AutoHeight
+								  PreventEnter
+								  MaxLength="1024"
+								  Style="width:100%"
+								  @bind-Value="@_userInput"
+								  Placeholder="Write a message...."
+								  OnEnter="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputEnter(e))"
+								  Styles="@(new() { FieldGroup = "padding:0.5rem; padding-inline-end:2.5rem", Input = "min-height:unset" })" />
 
-                    <BitButton Float
-                               AutoLoading
-                               FloatAbsolute
-                               Title="Send"
-                               IconName="Up"
-                               FloatOffset="0.5rem"
-                               Class="send-message-button"
-                               OnClick="WrapHandled(SendMessage)"
-                               IsEnabled=@(string.IsNullOrEmpty(_userInput) is false) />
-                </BitStack>
-            </BitStack>
-        </Body>
-    </BitProPanel>
+					<BitButton Float
+							   AutoLoading
+							   FloatAbsolute
+							   Title="Send"
+							   IconName="Up"
+							   FloatOffset="0.5rem"
+							   Class="send-message-button"
+							   OnClick="WrapHandled(SendMessage)"
+							   IsEnabled=@(string.IsNullOrEmpty(_userInput) is false) />
+				</BitStack>
+			</BitStack>
+		</Body>
+	</BitProPanel>
 </section>

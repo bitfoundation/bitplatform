@@ -25,6 +25,12 @@
         }
     }
 
+    .panel-cnt {
+        top: $bit-env-inset-top;
+        bottom: $bit-env-inset-bottom;
+        height: $bit-env-height-available;
+    }
+
     .open-panel-button {
         padding: 0;
         inset-inline-end: 1rem;
