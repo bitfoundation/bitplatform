@@ -251,29 +251,12 @@ The project is **pre-configured** for easy integration with popular logging prov
 
 ### How It Works
 
-The OpenTelemetry configuration automatically exports to Application Insights if a connection string is provided:
+1- The OpenTelemetry configuration automatically exports to Application Insights if a connection string is provided:
 
-From [`src/Server/Boilerplate.Server.Shared/Extensions/WebApplicationBuilderExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Extensions/WebApplicationBuilderExtensions.cs):
+From [`src/Server/Boilerplate.Server.Shared/Extensions/IOpenTelemetryExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Extensions/IOpenTelemetryExtensions.cs):
 
-```csharp
-private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder)
-    where TBuilder : IHostApplicationBuilder
-{
-    var appInsightsConnectionString = string.IsNullOrWhiteSpace(builder.Configuration["ApplicationInsights:ConnectionString"]) is false 
-        ? builder.Configuration["ApplicationInsights:ConnectionString"] 
-        : null;
-
-    if (appInsightsConnectionString is not null)
-    {
-        builder.Services.AddOpenTelemetry().UseAzureMonitor(options =>
-        {
-            builder.Configuration.Bind("ApplicationInsights", options);
-        }).AddAzureMonitorProfiler();
-    }
-
-    return builder;
-}
-```
+2- The Azure Application Insights JavaScript SDK added by `BlazorApplicationInsights` nuget in Client.Core project would collect JavaScript erros and more from
+Browser and Blazor Hybrid's WebView
 
 ### OpenTelemetry Configuration
 

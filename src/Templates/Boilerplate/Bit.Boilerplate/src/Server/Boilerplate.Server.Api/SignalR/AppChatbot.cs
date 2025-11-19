@@ -27,7 +27,7 @@ public partial class AppChatbot
     [AutoInject] private ILogger<AppChatbot> logger = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
 
-    private string? variables;
+    private string? variablesPrompt;
     private string? supportSystemPrompt;
     private List<ChatMessage> chatMessages = [];
 
@@ -66,7 +66,7 @@ public partial class AppChatbot
             },
             token: cancellationToken);
 
-        variables = @$"
+        variablesPrompt = @$"
 ### Variables:
 {{{{UserCulture}}}}: ""{culture?.NativeName ?? "English"}""
 {{{{DeviceInfo}}}}: ""{request.DeviceInfo ?? "Generic Device"}""
@@ -107,7 +107,7 @@ public partial class AppChatbot
             var chatOptions = CreateChatOptions(serverApiAddress, cancellationToken);
 
             await foreach (var response in chatClient.GetStreamingResponseAsync([
-                new (ChatRole.System, variables),
+                new (ChatRole.System, variablesPrompt),
                 new (ChatRole.System, supportSystemPrompt),
                     .. chatMessages,
                     new (ChatRole.User, incomingMessage)
