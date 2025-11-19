@@ -424,17 +424,12 @@ jobs:
       with:
         sarif_file: 'trivy-results.sarif'
 
-    - name: Check Docker security
-      run: |
-        if [ -f ".devcontainer/devcontainer.json" ]; then
-          echo "Checking devcontainer configuration..."
-          # Check for latest base images
-          grep -q "mcr.microsoft.com/dotnet/nightly/sdk:10.0.100" .devcontainer/devcontainer.json && echo "✓ Using specific .NET SDK version"
-          # Check for security features
-          grep -q "docker-in-docker" .devcontainer/devcontainer.json && echo "⚠ Docker-in-Docker detected - ensure proper isolation"
-          # Verify minimal forwarded ports
-          echo "✓ Port forwarding configuration validated"
-        fi
+    - name: OWASP Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      with:
+        project: 'bitplatform'
+        path: '.'
+        format: 'SARIF'    
 
     - name: Check dependency configurations
       run: |
