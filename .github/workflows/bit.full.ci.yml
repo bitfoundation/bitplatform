@@ -41,7 +41,7 @@ jobs:
         pwsh bin/Release/net10.0/playwright.ps1 install --with-deps
 
     - name: Test Boilerplate
-      run: cd src/Templates/Boilerplate/Bit.Boilerplate/src/Tests && dotnet test --no-build -c Release
+      run: cd src/Templates/Boilerplate/Bit.Boilerplate/src/Tests && dotnet test
 
     - name: Upload Test Results on Failure
       uses: actions/upload-artifact@v5
