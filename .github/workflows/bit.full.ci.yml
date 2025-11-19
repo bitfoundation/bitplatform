@@ -9,7 +9,7 @@ env:
 jobs:
 
   build-boilerplate:
-    name: Build Boilerplate itself and run tests
+    name: Build Boilerplate itself
     runs-on: ubuntu-24.04
 
     steps:
@@ -33,23 +33,6 @@ jobs:
 
     - name: Build Boilerplate solution in Release mode
       run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -c Release
-
-    - name: Install Playwright dependencies
-      run: |
-        cd src/Templates/Boilerplate/Bit.Boilerplate/src/Tests
-        dotnet build -c Release
-        pwsh bin/Release/net10.0/playwright.ps1 install --with-deps
-
-    - name: Test Boilerplate
-      run: cd src/Templates/Boilerplate/Bit.Boilerplate/src/Tests && dotnet test
-
-    - name: Upload Test Results on Failure
-      uses: actions/upload-artifact@v5
-      if: failure()
-      with:
-        name: boilerplate-tests-artifact
-        path: src/Templates/Boilerplate/Bit.Boilerplate/src/Tests/TestResults
-        retention-days: 14
 
   test-boilerplate-postgres:
     name: Create project from template with PostgreSQL and test it
