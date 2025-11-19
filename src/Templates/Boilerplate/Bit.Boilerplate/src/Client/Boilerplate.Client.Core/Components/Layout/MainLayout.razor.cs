@@ -78,6 +78,8 @@ public partial class MainLayout : IAsyncDisposable
 
             unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.IS_ONLINE_CHANGED, async payload =>
             {
+                if (IsOnline == (bool?)payload)
+                    return;
                 telemetryContext.IsOnline = IsOnline = (bool?)payload;
                 await InvokeAsync(StateHasChanged);
             }));

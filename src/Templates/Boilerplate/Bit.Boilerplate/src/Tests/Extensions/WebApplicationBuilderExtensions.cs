@@ -1,8 +1,6 @@
 ﻿//+:cnd:noEmit
-using Hangfire;
-using Boilerplate.Server.Web;
 using Boilerplate.Tests.Services;
-using Boilerplate.Server.Api.Services;
+using Boilerplate.Client.Core.Services.Contracts;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -16,6 +14,9 @@ public static partial class WebApplicationBuilderExtensions
         builder.AddServerWebProjectServices();
 
         // Register test-specific services for all tests here
+
+        services.AddScoped<IStorageService, TestStorageService>();
+        services.AddTransient<IAuthTokenProvider, TestAuthTokenProvider>();
 
         services.AddTransient<HttpClient>(sp =>
         {
