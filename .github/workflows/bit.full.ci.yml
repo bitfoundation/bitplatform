@@ -114,11 +114,14 @@ jobs:
       with:
         node-version: 24
 
-    - name: Install wasm
-      run: cd src && dotnet workload install wasm-tools
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
     - name: Build Boilerplate solution in Release mode
-      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/src/Boilerplate.sln -c Release
+      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.sln -c Release
 
     - name: Install Playwright dependencies
       run: |
@@ -484,12 +487,6 @@ jobs:
     - uses: actions/setup-node@v6
       with:
         node-version: 24
-
-    - name: Delete AssemblyOriginatorKeyFile.snk
-      run: rm src/AssemblyOriginatorKeyFile.snk
-
-    - name: Create placeholder strong sign certificate
-      run: echo "placeholder" > src/AssemblyOriginatorKeyFile.snk
 
     - name: Generate CSS/JS files BlazorUI
       run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
