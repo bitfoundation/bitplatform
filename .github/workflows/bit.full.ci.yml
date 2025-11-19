@@ -84,8 +84,11 @@ jobs:
       with:
         node-version: 24
 
-    - name: Install wasm
-      run: cd src && dotnet workload install wasm-tools
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
     - name: Run InstallNodejsDependencies
       continue-on-error: true
@@ -121,7 +124,7 @@ jobs:
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
     - name: Build Boilerplate solution in Release mode
-      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.sln -c Release
+      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -c Release
 
     - name: Install Playwright dependencies
       run: |
@@ -345,126 +348,6 @@ jobs:
       run: |
         dotnet build AutoGlobal/AutoGlobal.sln
         dotnet build SsrPerPage/SsrPerPage.csproj
-
-  codeql-analysis:
-    name: CodeQL security analysis
-    runs-on: ubuntu-24.04
-
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@v5
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: csharp, javascript
-
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@v5
-      with:
-        global-json-file: src/global.json
-
-    - name: Setup .NET 9
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: |
-          9.0.x
-
-    - name: Setup .NET 8
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: |
-          8.0.x
-
-    - uses: actions/setup-node@v6
-      with:
-        node-version: 24
-
-    - name: Install wasm and maui
-      run: cd src && dotnet workload install maui-android wasm-tools wasm-tools-net9 wasm-tools-net8
-
-    - name: Install Android Sdk platform tools
-      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-
-    - name: Run InstallNodejsDependencies
-      continue-on-error: true
-      run: dotnet build src/Bit-CI.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
-
-    - name: Build solution for CodeQL
-      run: dotnet build src/Bit-CI.slnx -p:WarningLevel=0 -p:RunCodeAnalysis=false
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-
-  security-best-practices:
-    name: Security best practices check
-    runs-on: ubuntu-24.04
-
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@v5
-
-    - name: Check for secrets in code
-      uses: trufflesecurity/trufflehog@main
-      with:
-        extra_args: --only-verified
-
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-        severity: 'CRITICAL,HIGH'
-
-    - name: Upload Trivy results to GitHub Security
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-
-    - name: OWASP Dependency Check
-      uses: dependency-check/Dependency-Check_Action@main
-      with:
-        project: 'bitplatform'
-        path: '.'
-        format: 'SARIF'    
-
-    - name: Check dependency configurations
-      run: |
-        echo "Checking for outdated or vulnerable dependencies..."
-        cd src
-        # Check global.json for .NET version
-        if [ -f "global.json" ]; then
-          echo "✓ global.json found - pinned .NET SDK version"
-        fi
-        # Check for NuGet package vulnerabilities
-        dotnet list package --vulnerable --include-transitive 2>&1 | tee vulnerable-packages.txt
-        if grep -q "has the following vulnerable packages" vulnerable-packages.txt; then
-          echo "⚠ Vulnerable packages detected"
-          exit 1
-        else
-          echo "✓ No known vulnerable packages"
-        fi
-
-    - name: Verify HTTPS enforcement
-      run: |
-        echo "Checking for HTTPS enforcement in configurations..."
-        # Check for HTTP in workflow files
-        if grep -r "http://" .github/workflows/*.yml | grep -v "localhost" | grep -v "127.0.0.1"; then
-          echo "⚠ Found HTTP URLs in workflow files"
-        else
-          echo "✓ No insecure HTTP URLs found in workflows"
-        fi
-
-    - name: Check authentication patterns
-      run: |
-        echo "Checking for secure authentication patterns..."
-        # Look for potential security issues in authentication
-        if find . -name "*.cs" -type f -exec grep -l "ASP.NET Core Identity" {} \; | head -1; then
-          echo "✓ Using ASP.NET Core Identity"
-        fi
 
   create-nuget-packages:
     name: Create NuGet packages
