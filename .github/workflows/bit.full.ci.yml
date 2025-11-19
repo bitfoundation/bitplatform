@@ -6,15 +6,10 @@ on:
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
 
-permissions:
-  contents: read
-  security-events: write
-  actions: read
-
 jobs:
 
-  build-boilerplate-and-test:
-    name: Build Boilerplate and run tests
+  build-boilerplate:
+    name: Build Boilerplate itself and run tests
     runs-on: ubuntu-24.04
 
     steps:
@@ -57,7 +52,7 @@ jobs:
         retention-days: 14
 
   test-boilerplate-postgres:
-    name: Test Boilerplate with PostgreSQL
+    name: Create project from template with PostgreSQL and test it
     runs-on: ubuntu-24.04
 
     steps:
@@ -113,7 +108,7 @@ jobs:
         retention-days: 14
 
   build-boilerplate-configurations:
-    name: Build Boilerplate configurations
+    name: Create several projects from template and build them
     runs-on: ubuntu-24.04
 
     steps:
@@ -177,7 +172,7 @@ jobs:
         rm -r "TestProject2"
 
   build-blazorempty-configurations:
-    name: Build BlazorEmpty configurations
+    name: Build BlazorEmpty based projects
     runs-on: ubuntu-24.04
 
     steps:
