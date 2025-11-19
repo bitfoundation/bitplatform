@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using OpenTelemetry;
+using Microsoft.Extensions.Logging;
 using Boilerplate.Client.Maui.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -57,18 +58,7 @@ public static partial class MauiProgram
             builder.Logging.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
         }
 
-        //+:cnd:noEmit
-        //#if (appInsights == true)
-        if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
-        {
-            builder.Logging.AddApplicationInsights(config =>
-            {
-                config.TelemetryInitializers.Add(new MauiAppInsightsTelemetryInitializer());
-                configuration.GetRequiredSection("ApplicationInsights").Bind(config);
-            }, options => configuration.GetRequiredSection("Logging:ApplicationInsights").Bind(options));
-        }
-        //#endif
-        //-:cnd:noEmit
+        services.AddOpenTelemetry<MauiTelemetryEnrichmentProcessor>(configuration, builder.Environment.ApplicationName);
 
         services.AddOptions<ClientMauiSettings>()
             .Bind(configuration)

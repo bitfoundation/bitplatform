@@ -1,7 +1,8 @@
 ﻿//+:cnd:noEmit
-using Microsoft.Extensions.Logging;
-using Boilerplate.Client.Windows.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+using Boilerplate.Client.Windows.Services;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry;
 
 namespace Boilerplate.Client.Windows;
 
@@ -55,17 +56,9 @@ public static partial class Program
             loggingBuilder.AddEventSourceLogger();
 
             loggingBuilder.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
-            //#if (appInsights == true)
-            if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
-            {
-                loggingBuilder.AddApplicationInsights(config =>
-                {
-                    config.TelemetryInitializers.Add(new WindowsAppInsightsTelemetryInitializer());
-                    configuration.GetRequiredSection("ApplicationInsights").Bind(config);
-                }, options => configuration.GetRequiredSection("Logging:ApplicationInsights").Bind(options));
-            }
-            //#endif
         });
+
+        services.AddOpenTelemetry<WindowsTelemetryEnrichmentProcessor>(configuration, "Boilerplate-Windows");
 
         services.AddOptions<ClientWindowsSettings>()
             .Bind(configuration)

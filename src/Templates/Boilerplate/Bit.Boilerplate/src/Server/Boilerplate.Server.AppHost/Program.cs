@@ -111,10 +111,6 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     serverWebProject.WithReference(mailpit);
     //#endif
 
-    // Blazor Hybrid Windows project.
-    builder.AddProject("clientwindows", "../../Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj")
-        .WithExplicitStart();
-
     //#if (api == "Standalone")
     builder.AddDevTunnel("api-dev-tunnel")
         .WithAnonymousAccess()
@@ -124,6 +120,55 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     var tunnel = builder.AddDevTunnel("web-dev-tunnel")
         .WithAnonymousAccess()
         .WithReference(serverWebProject.WithHttpEndpoint(name: "devTunnel").GetEndpoint("devTunnel"));
+
+    if (OperatingSystem.IsWindows())
+    {
+        // Blazor Hybrid Windows project.
+        builder.AddProject("clientwindows", "../../Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj")
+            .WithExplicitStart();
+    }
+
+    // Blazor Hybrid MAUI project.
+    var mauiapp = builder.AddMauiProject("mauiapp", @"../../Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj");
+
+    if (OperatingSystem.IsWindows())
+    {
+        mauiapp.AddWindowsDevice()
+            .WithExplicitStart()
+            .WithReference(serverWebProject);
+    }
+
+    if (OperatingSystem.IsMacOS())
+    {
+        mauiapp.AddMacCatalystDevice()
+            .WithExplicitStart()
+            .WithReference(serverWebProject);
+    }
+
+    if (OperatingSystem.IsMacOS())
+    {
+        // Windows supports iOS Simulator and Physical devices if there's a mac connected to network, but the following runners only work on macOS for now.
+
+        mauiapp.AddiOSDevice()
+            .WithExplicitStart()
+            .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
+            .WithReference(serverWebProject, tunnel);
+
+        mauiapp.AddiOSSimulator()
+            .WithExplicitStart()
+            .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
+            .WithReference(serverWebProject, tunnel);
+    }
+
+    mauiapp.AddAndroidDevice()
+        .WithExplicitStart()
+        .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
+        .WithReference(serverWebProject, tunnel);
+
+    mauiapp.AddAndroidEmulator()
+        .WithExplicitStart()
+        .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
+        .WithReference(serverWebProject, tunnel);
 }
 
 await builder
