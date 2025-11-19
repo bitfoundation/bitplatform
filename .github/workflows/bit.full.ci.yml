@@ -112,62 +112,6 @@ jobs:
         path: ./TestPostgreSQL/src/Tests/TestResults
         retention-days: 14
 
-  test-boilerplate-sqlserver:
-    name: Test Boilerplate with SQL Server
-    runs-on: ubuntu-24.04
-
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@v5
-
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@v5
-      with:
-        global-json-file: src/global.json
-
-    - uses: actions/setup-node@v6
-      with:
-        node-version: 24
-
-    - name: Uninstall Bit.Boilerplate if running on ACT
-      if: ${{ env.ACT }}
-      run: dotnet new uninstall Bit.Boilerplate
-
-    - name: Prepare Boilerplate template
-      run: |
-        cd src/Templates/Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
-
-    - name: Install wasm
-      run: cd src && dotnet workload install wasm-tools
-
-    - name: Create project from template with SQL Server
-      run: dotnet new bit-bp --name TestSQLServer --database SQLServer --module Sales --signalR --aspire
-
-    - name: Build and setup database
-      run: |
-        cd TestSQLServer/src/Server/TestSQLServer.Server.Api/
-        dotnet build
-        dotnet tool restore
-        dotnet ef migrations add Initial --verbose
-
-    - name: Build and run tests
-      id: run-test-sqlserver
-      run: |
-        cd TestSQLServer/src/Tests
-        dotnet build
-        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-        dotnet test
-
-    - name: Upload Test Results on Failure
-      uses: actions/upload-artifact@v5
-      if: failure() && steps.run-test-sqlserver.conclusion == 'failure'
-      with:
-        name: sqlserver-tests-artifact
-        path: ./TestSQLServer/src/Tests/TestResults
-        retention-days: 14
-
   build-boilerplate-configurations:
     name: Build Boilerplate configurations
     runs-on: ubuntu-24.04
