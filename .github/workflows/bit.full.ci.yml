@@ -154,7 +154,7 @@ jobs:
 
     - name: Upload Test Results on Failure
       uses: actions/upload-artifact@v5
-      if: failure() && steps.run-test-sqlserver.conclusion == 'failure'
+      if: failure() && steps.run-test-mssql.conclusion == 'failure'
       with:
         name: sqlserver-tests-artifact
         path: ./TestSqlServer/src/Tests/TestResults
