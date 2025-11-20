@@ -190,8 +190,8 @@ jobs:
         dotnet build AutoGlobal/AutoGlobal.sln
         dotnet build SsrPerPage/SsrPerPage.csproj
 
-  create-nuget-packages:
-    name: Create NuGet packages
+  build-nuget-packages:
+    name: Build NuGet packages locally
     runs-on: ubuntu-24.04
 
     steps:
