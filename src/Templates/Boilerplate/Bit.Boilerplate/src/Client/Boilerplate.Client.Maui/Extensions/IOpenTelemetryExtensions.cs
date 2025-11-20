@@ -19,7 +19,7 @@ public static class IOpenTelemetryExtensions
     {
         var useOtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false;
 
-        bool useOpenTelemetry = useOtlpExporter == true;
+        bool useOpenTelemetry = useOtlpExporter;
 
         //#if (appInsights == true)
         var appInsightsConnectionString = string.IsNullOrWhiteSpace(configuration["ApplicationInsights:ConnectionString"]) is false ? configuration["ApplicationInsights:ConnectionString"] : null;
