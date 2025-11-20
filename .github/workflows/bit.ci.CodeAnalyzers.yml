@@ -19,10 +19,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v5
 
-    - name: Setup .NET 10
+    - name: Setup .NET 10.0
       uses: actions/setup-dotnet@v5
       with:
         global-json-file: src/global.json
 
     - name: dotnet build
-      run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers.slnx -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers.slnx

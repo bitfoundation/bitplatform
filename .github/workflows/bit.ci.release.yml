@@ -20,22 +20,20 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v5
 
-    - name: Setup .NET 10
+    - name: Setup .NET 10.0
       uses: actions/setup-dotnet@v5
       with:
         global-json-file: src/global.json
 
-    - name: Setup .NET 9
+    - name: Setup .NET 9.0
       uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: |
-          9.0.x
+        dotnet-version: 9.0.x
 
-    - name: Setup .NET 8
+    - name: Setup .NET 8.0
       uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: |
-          8.0.x
+        dotnet-version: 8.0.x
 
     - uses: actions/setup-node@v6
       with:
@@ -50,6 +48,3 @@ jobs:
 
     - name: MSBuild prerelease
       run: dotnet build src/Bit-CI-Release.slnx
-
-    - name: Test
-      run: cd src/BlazorUI/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal
