@@ -97,7 +97,7 @@ public partial class RolesPage
                 using var currentCts = loadRoleDataCts;
                 loadRoleDataCts = new();
 
-                await currentCts.CancelAsync();
+                await currentCts.TryCancel();
             }
 
             loadRoleDataCts = new();
@@ -398,7 +398,7 @@ public partial class RolesPage
     {
         if (loadRoleDataCts is not null)
         {
-            await loadRoleDataCts.CancelAsync();
+            await loadRoleDataCts.TryCancel();
             loadRoleDataCts.Dispose();
         }
 

@@ -110,7 +110,7 @@ public partial class UsersPage
                 using var currentCts = loadRoleDataCts;
                 loadRoleDataCts = new();
 
-                await currentCts.CancelAsync();
+                await currentCts.TryCancel();
             }
 
             loadRoleDataCts = new();
