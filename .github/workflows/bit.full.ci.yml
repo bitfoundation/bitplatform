@@ -8,6 +8,8 @@ env:
 
 jobs:
 
+# Bit.BlazorUI solution is being built in bit.ci.yml
+
   build-boilerplate:
     name: Build Boilerplate itself
     runs-on: ubuntu-24.04
