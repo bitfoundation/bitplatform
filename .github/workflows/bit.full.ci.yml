@@ -207,6 +207,45 @@ jobs:
       with:
         node-version: 24
 
+    - name: Generate ES2019 based blazor.*.js files for .NET 9
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/9.0
+        git submodule update --init --recursive
+        sed -i 's/"target": "ES2022"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+        npm install
+        npm run-script build
+        cd src/Components/Web.JS
+        npm install
+        npm run-script build:production
+        cd ../../../../
+        mkdir -p src/BlazorES2019/wwwroot.net9/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net9/
+        rm -rf aspnetcore
+
+    - name: Generate ES2019 based blazor.*.js files for .NET 10
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/10.0
+        git submodule update --init --recursive
+        sed -i 's/"target": "ES2024"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+        npm install
+        npm run-script build
+        cd src/Components/Web.JS
+        npm install
+        npm run-script build:production
+        cd ../../../../
+        mkdir -p src/BlazorES2019/wwwroot.net10/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net10/
+        rm -rf aspnetcore
+
+    - name: Build and pack BlazorES2019
+      run: |
+        dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output ./packages --configuration Release
+
     - name: Generate CSS/JS files BlazorUI
       run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
 
@@ -285,3 +324,106 @@ jobs:
         name: nuget-packages
         path: ./packages/*.nupkg
         retention-days: 30
+
+  build-bswup-solution:
+    name: Build Bswup solution
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v5
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Build Bswup solution in Release mode
+      run: dotnet build src/Bswup/Bit.Bswup.slnx -c Release
+
+  build-butil-solution:
+    name: Build Butil solution
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v5
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Build Butil solution in Release mode
+      run: dotnet build src/Butil/Bit.Butil.slnx -c Release
+
+  build-tooling-solutions:
+    name: Build tooling solutions
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v5
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: src/global.json
+
+    - name: Build CodeAnalyzers solution in Release mode
+      run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers.slnx -c Release
+
+    - name: Build ResxTranslator solution in Release mode
+      run: dotnet build src/ResxTranslator/Bit.ResxTranslator.slnx -c Release
+
+    - name: Build SourceGenerators solution in Release mode
+      run: dotnet build src/SourceGenerators/Bit.SourceGenerators.slnx -c Release
+
+  build-websites:
+    name: Build website solutions
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v5
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: Install wasm
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Build Careers website in Release mode
+      run: dotnet build src/Websites/Careers/Bit.Websites.Careers.slnx -c Release
+
+    - name: Build Platform website in Release mode
+      run: dotnet build src/Websites/Platform/Bit.Websites.Platform.slnx -c Release
+
+    - name: Build Sales website in Release mode
+      run: dotnet build src/Websites/Sales/Bit.Websites.Sales.slnx -c Release
