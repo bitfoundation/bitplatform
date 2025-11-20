@@ -1,6 +1,9 @@
-﻿using OpenTelemetry;
+﻿using OpenTelemetry.Logs;
 using Microsoft.Extensions.Logging;
 using Boilerplate.Client.Maui.Services;
+//#if (appInsights == true)
+using Azure.Monitor.OpenTelemetry.Exporter;
+//#endif
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Maui;
@@ -53,12 +56,32 @@ public static partial class MauiProgram
 
         builder.Logging.AddEventSourceLogger();
 
+        builder.Logging.AddOpenTelemetry(options =>
+        {
+            options.IncludeFormattedMessage = true;
+            options.IncludeScopes = true;
+
+            //#if (appInsights == true)
+            if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
+            {
+                options.AddAzureMonitorLogExporter(o =>
+                {
+                    o.ConnectionString = settings.ApplicationInsights.ConnectionString;
+                });
+            }
+            //#endif
+
+            var useOtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false;
+            if (useOtlpExporter)
+            {
+                options.AddOtlpExporter();
+            }
+        });
+
         if (AppPlatform.IsWindows)
         {
             builder.Logging.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
         }
-
-        services.AddOpenTelemetry<MauiTelemetryEnrichmentProcessor>(configuration, builder.Environment.ApplicationName);
 
         services.AddOptions<ClientMauiSettings>()
             .Bind(configuration)
