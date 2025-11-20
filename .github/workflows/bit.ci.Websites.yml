@@ -1,0 +1,53 @@
+name: bit platform CI - Websites
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+    - 'src/Websites/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+jobs:
+  build-release:
+    name: build Bit.Websites
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@v5
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+      
+    - name: Install wasm
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: InstallNodejsDependencies for Careers
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build src/Websites/Careers/Bit.Websites.Careers.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+
+    - name: InstallNodejsDependencies for Platform
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build src/Websites/Platform/Bit.Websites.Platform.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+
+    - name: InstallNodejsDependencies for Sales
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build src/Websites/Sales/Bit.Websites.Sales.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+
+    - name: Build Careers
+      run: dotnet build src/Websites/Careers/Bit.Websites.Careers.slnx
+
+    - name: Build Platform
+      run: dotnet build src/Websites/Platform/Bit.Websites.Platform.slnx
+
+    - name: Build Sales
+      run: dotnet build src/Websites/Sales/Bit.Websites.Sales.slnx

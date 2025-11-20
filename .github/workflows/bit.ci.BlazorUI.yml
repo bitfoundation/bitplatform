@@ -1,17 +1,17 @@
-name: bit platform CI
+name: bit platform CI - BlazorUI
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
-    - 'src/**'
+    - 'src/BlazorUI/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
 
 jobs:
-  build:
-    name: build and test
+  build-release:
+    name: build Bit.BlazorUI
     runs-on: ubuntu-24.04
 
     steps:
@@ -37,19 +37,16 @@ jobs:
     - uses: actions/setup-node@v6
       with:
         node-version: 24
+      
+    - name: dotnet workload restore
+      run:  cd src/BlazorUI && dotnet workload restore
 
-    - name: Install wasm and maui
-      run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net9 wasm-tools-net8
-
-    - name: Install Android Sdk platform tools
-      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-
-    - name: Run InstallNodejsDependencies
+    - name: InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
       run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
 
-    - name: Build
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx -p:WarningLevel=0 -p:RunCodeAnalysis=false
-      
+    - name: dotnet build
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx
+
     - name: Test
-      run: cd src/BlazorUI/Bit.BlazorUI.Tests/ && dotnet test --no-build
+      run: cd src/BlazorUI/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal
