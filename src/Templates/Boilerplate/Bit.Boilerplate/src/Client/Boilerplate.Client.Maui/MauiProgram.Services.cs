@@ -82,6 +82,7 @@ public static partial class MauiProgram
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        //-:cnd:noEmit
 #if Android
         services.AddClientMauiProjectAndroidServices(builder.Configuration);
 #elif iOS
@@ -91,5 +92,6 @@ public static partial class MauiProgram
 #elif Windows
         services.AddClientMauiProjectWindowsServices(builder.Configuration);
 #endif
+        //+:cnd:noEmit
     }
 }

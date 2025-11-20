@@ -5,6 +5,7 @@ on:
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+  ConnectionStrings__mssqldb: 'Data Source=localhost; Initial Catalog=BoilerplateTestDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
 
 jobs:
 
@@ -16,7 +17,7 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -36,13 +37,15 @@ jobs:
     - name: Build Boilerplate solution in Release mode
       run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -c Release
 
+
+
   test-boilerplate-postgres:
     name: Create project from template with PostgreSQL and test it
     runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -92,13 +95,80 @@ jobs:
         path: ./TestPostgreSQL/src/Tests/TestResults
         retention-days: 14
 
+
+
+  test-boilerplate-mssql:
+    name: Create project from template with SQL Server and test it
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v6
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: Uninstall Bit.Boilerplate if running on ACT
+      if: ${{ env.ACT }}
+      run: dotnet new uninstall Bit.Boilerplate
+
+    - name: Prepare Boilerplate template
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
+
+    - name: Install wasm
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Create project from template with SQL Server
+      run: dotnet new bit-bp --name TestSqlServer --database SqlServer --module Admin --signalR --aspire false
+
+    - name: Build and setup database
+      run: |
+        cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
+        dotnet build
+        dotnet tool restore
+        dotnet ef migrations add Initial --verbose
+
+    - name: Install sql server
+      uses: potatoqualitee/mssqlsuite@v1.11
+      with:
+        install: sqlengine
+        sa-password: P@ssw0rdP@ssw0rd
+        show-log: true
+
+    - name: Build and run tests
+      id: run-test-mssql
+      run: |
+        cd TestSqlServer/src/Tests
+        dotnet build
+        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
+        dotnet test
+
+    - name: Upload Test Results on Failure
+      uses: actions/upload-artifact@v5
+      if: failure() && steps.run-test-mssql.conclusion == 'failure'
+      with:
+        name: sqlserver-tests-artifact
+        path: ./TestSqlServer/src/Tests/TestResults
+        retention-days: 14
+
+
+
   build-boilerplate-configurations:
     name: Create several projects from template and build them
     runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -156,13 +226,15 @@ jobs:
         dotnet build TestProject2/TestProject2.slnx -p:InvariantGlobalization=true -p:Environment=Development
         rm -r "TestProject2"
 
+
+
   build-blazorempty-configurations:
     name: Build BlazorEmpty based projects
     runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -192,13 +264,15 @@ jobs:
         dotnet build AutoGlobal/AutoGlobal.sln
         dotnet build SsrPerPage/SsrPerPage.csproj
 
+
+
   build-nuget-packages:
     name: Build NuGet packages locally
     runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -327,13 +401,15 @@ jobs:
         path: ./packages/*.nupkg
         retention-days: 30
 
+
+
   build-bswup-solution:
     name: Build Bswup solution
     runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -353,13 +429,15 @@ jobs:
     - name: Build Bswup solution in Release mode
       run: dotnet build src/Bswup/Bit.Bswup.slnx -c Release
 
+
+
   build-butil-solution:
     name: Build Butil solution
     runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -379,13 +457,15 @@ jobs:
     - name: Build Butil solution in Release mode
       run: dotnet build src/Butil/Bit.Butil.slnx -c Release
 
+
+
   build-tooling-solutions:
     name: Build tooling solutions
     runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -401,13 +481,15 @@ jobs:
     - name: Build SourceGenerators solution in Release mode
       run: dotnet build src/SourceGenerators/Bit.SourceGenerators.slnx -c Release
 
+
+
   build-websites:
     name: Build website solutions
     runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
