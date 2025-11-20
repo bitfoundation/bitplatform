@@ -1,10 +1,10 @@
-using Boilerplate.Client.Core.Styles;
+﻿using Boilerplate.Client.Core.Styles;
 
 namespace Boilerplate.Client.Maui.Services;
 
 public partial class MauiExternalNavigationService : IExternalNavigationService
 {
-    public async Task NavigateToAsync(string url)
+    public async Task NavigateTo(string url)
     {
         var isDark = Application.Current!.UserAppTheme == AppTheme.Dark;
 

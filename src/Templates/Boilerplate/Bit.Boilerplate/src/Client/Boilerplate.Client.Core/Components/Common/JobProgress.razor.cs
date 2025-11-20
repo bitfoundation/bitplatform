@@ -51,10 +51,10 @@ public partial class JobProgress
     private async Task RestartHideTimer()
     {
         await Abort();
-        _ = HideAfterDelayAsync();
+        _ = HideAfterDelay();
     }
 
-    private async Task HideAfterDelayAsync()
+    private async Task HideAfterDelay()
     {
         try
         {
