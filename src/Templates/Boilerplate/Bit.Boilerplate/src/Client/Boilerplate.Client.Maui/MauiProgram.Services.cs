@@ -1,4 +1,4 @@
-﻿using OpenTelemetry.Logs;
+﻿//+:cnd:noEmit
 using Microsoft.Extensions.Logging;
 using Boilerplate.Client.Maui.Services;
 //#if (appInsights == true)
@@ -56,12 +56,12 @@ public static partial class MauiProgram
 
         builder.Logging.AddEventSourceLogger();
 
+        //#if (appInsights == true)
         builder.Logging.AddOpenTelemetry(options =>
         {
             options.IncludeFormattedMessage = true;
             options.IncludeScopes = true;
 
-            //#if (appInsights == true)
             if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
             {
                 options.AddAzureMonitorLogExporter(o =>
@@ -69,14 +69,8 @@ public static partial class MauiProgram
                     o.ConnectionString = settings.ApplicationInsights.ConnectionString;
                 });
             }
-            //#endif
-
-            var useOtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false;
-            if (useOtlpExporter)
-            {
-                options.AddOtlpExporter();
-            }
         });
+        //#endif
 
         if (AppPlatform.IsWindows)
         {
