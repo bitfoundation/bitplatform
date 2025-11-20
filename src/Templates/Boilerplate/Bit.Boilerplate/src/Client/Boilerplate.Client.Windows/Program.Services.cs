@@ -1,8 +1,10 @@
 ﻿//+:cnd:noEmit
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 using Boilerplate.Client.Windows.Services;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
+using OpenTelemetry.Logs;
 
 namespace Boilerplate.Client.Windows;
 
@@ -55,10 +57,30 @@ public static partial class Program
             loggingBuilder.ConfigureLoggers(configuration);
             loggingBuilder.AddEventSourceLogger();
 
+            loggingBuilder.AddOpenTelemetry(options =>
+            {
+                options.IncludeFormattedMessage = true;
+                options.IncludeScopes = true;
+
+                //#if (appInsights == true)
+                if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
+                {
+                    options.AddAzureMonitorLogExporter(o =>
+                    {
+                        o.ConnectionString = settings.ApplicationInsights.ConnectionString;
+                    });
+                }
+                //#endif
+
+                var useOtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false;
+                if (useOtlpExporter)
+                {
+                    options.AddOtlpExporter();
+                }
+            });
+
             loggingBuilder.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
         });
-
-        services.AddOpenTelemetry<WindowsTelemetryEnrichmentProcessor>(configuration, "Boilerplate-Windows");
 
         services.AddOptions<ClientWindowsSettings>()
             .Bind(configuration)

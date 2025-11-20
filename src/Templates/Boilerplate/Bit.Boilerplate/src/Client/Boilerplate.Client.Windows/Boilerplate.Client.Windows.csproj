@@ -43,7 +43,6 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" />
         <PackageReference Include="Microsoft.Web.WebView2" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
         <PackageReference Include="Velopack" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" />
@@ -66,10 +65,6 @@
         <Resource Include="Resources\**\*.*" />
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Include="..\Boilerplate.Client.Maui\Extensions\IOpenTelemetryExtensions.cs" Link="Extensions\IOpenTelemetryExtensions.cs" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
