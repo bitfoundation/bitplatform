@@ -126,7 +126,7 @@ public partial class AppChatbot
             if (generateFollowUpSuggestions)
             {
                 // Generate follow-up suggestions
-                var followUpSuggestions = await GenerateFollowUpSuggestionsAsync(
+                var followUpSuggestions = await GenerateFollowUpSuggestions(
                     incomingMessage,
                     assistantResponse.ToString(),
                     chatOptions,
@@ -396,7 +396,7 @@ public partial class AppChatbot
     /// <summary>
     /// Generate follow-up suggestions based on the conversation
     /// </summary>
-    private async Task<AiChatFollowUpList> GenerateFollowUpSuggestionsAsync(
+    private async Task<AiChatFollowUpList> GenerateFollowUpSuggestions(
         string incomingMessage,
         string assistantResponse,
         ChatOptions chatOptions,

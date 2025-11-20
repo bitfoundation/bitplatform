@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Identity;
 public static partial class SignInManagerExtensions
 {
     /// <summary>
-    /// The app invokes <see cref="OtpSignInAsync"/> in the following scenarios:
+    /// The app invokes <see cref="OtpSignIn"/> in the following scenarios:
     /// 
     /// 1. When the user opts to sign in using a 6-digit code received via SMS.
     /// 2. When the user chooses to sign in using a 6-digit code sent via email, typically within a magic link.
@@ -22,7 +22,7 @@ public static partial class SignInManagerExtensions
     /// to avoid sending a second step to the same communication channel: For successful two-step authentication, the user must use a different method for the second step.
     /// </summary>
 
-    public static async Task<(SignInResult signInResult, string? authenticationMethod)> OtpSignInAsync(this SignInManager<User> signInManager, User user, string otp)
+    public static async Task<(SignInResult signInResult, string? authenticationMethod)> OtpSignIn(this SignInManager<User> signInManager, User user, string otp)
     {
         var appSettings = signInManager.Context.RequestServices.GetRequiredService<ServerApiSettings>();
 

@@ -247,7 +247,7 @@ public partial class SignInPanel
 
             var redirectUrl = await identityController.GetSocialSignInUri(provider, GetReturnUrl(), port is -1 ? null : port, CurrentCancellationToken);
 
-            await externalNavigationService.NavigateToAsync(redirectUrl);
+            await externalNavigationService.NavigateTo(redirectUrl);
         }
         catch (KnownException e)
         {

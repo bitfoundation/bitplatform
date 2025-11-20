@@ -36,7 +36,7 @@ public partial class NotAuthorizedPage
 
             var user = (await AuthenticationStateTask).User;
 
-            lacksValidPrivilege = (await AuthorizationService.IsAuthorizedAsync(user, AuthPolicies.PRIVILEGED_ACCESS)) is false;
+            lacksValidPrivilege = (await AuthorizationService.IsAuthorized(user, AuthPolicies.PRIVILEGED_ACCESS)) is false;
         }
         finally
         {

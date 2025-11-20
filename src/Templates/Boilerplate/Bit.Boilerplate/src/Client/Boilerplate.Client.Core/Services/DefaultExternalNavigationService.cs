@@ -13,7 +13,7 @@ public partial class DefaultExternalNavigationService : IExternalNavigationServi
     private string? lastOpenedWindowId = null;
     private Action? pubSubUnsubscribe;
 
-    public async Task NavigateToAsync(string url)
+    public async Task NavigateTo(string url)
     {
         if (AppPlatform.IsBlazorHybrid)
         {

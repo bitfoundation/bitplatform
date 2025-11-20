@@ -175,7 +175,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     public async Task<bool> TryEnterElevatedAccessMode(CancellationToken cancellationToken)
     {
         var user = IAuthTokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken(), validateExpiry: true);
-        var hasElevatedAccess = await authorizationService.IsAuthorizedAsync(user, AuthPolicies.ELEVATED_ACCESS);
+        var hasElevatedAccess = await authorizationService.IsAuthorized(user, AuthPolicies.ELEVATED_ACCESS);
         if (hasElevatedAccess)
             return true;
 

@@ -52,7 +52,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#endif
 
         // Attempt to locate an existing user using either their email address or phone number. The enforcement of a unique username policy is integral to the aspnetcore identity framework.
-        var existingUser = await userManager.FindUserAsync(new() { Email = request.Email, PhoneNumber = request.PhoneNumber });
+        var existingUser = await userManager.FindUser(new() { Email = request.Email, PhoneNumber = request.PhoneNumber });
         if (existingUser is not null)
         {
 
@@ -91,7 +91,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
 
-        var user = await userManager.FindUserAsync(request)
+        var user = await userManager.FindUser(request)
                     ?? await userManager.CreateUserWithDemoRole(request, request.Password); // Check out SignInModalService for more details
 
         await SignIn(request, user, cancellationToken);
@@ -114,7 +114,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
 
         var (signInResult, firstStepAuthenticationMethod) = isOtpSignIn
-            ? await signInManager.OtpSignInAsync(user, request.Otp!)
+            ? await signInManager.OtpSignIn(user, request.Otp!)
             : (await signInManager.PasswordSignInAsync(user, request.Password!, isPersistent: false, lockoutOnFailure: true), authenticationMethod: "Password");
 
         if (signInResult.IsNotAllowed && await userConfirmation.IsConfirmedAsync(userManager, user) is false)
@@ -302,7 +302,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     public async Task SendOtp(IdentityRequestDto request, string? returnUrl = null, CancellationToken cancellationToken = default)
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-        var user = await userManager.FindUserAsync(request)
+        var user = await userManager.FindUser(request)
                     ?? await userManager.CreateUserWithDemoRole(request); // Check out SignInModalService for more details
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
@@ -363,7 +363,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
 
-        var user = await userManager.FindUserAsync(request)
+        var user = await userManager.FindUser(request)
                     ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]).WithData("Identifier", request);
 
         await SendTwoFactorToken(request, user, cancellationToken);
@@ -377,7 +377,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
 
         var (signInResult, firstStepAuthenticationMethod) = isOtpSignIn
-            ? await signInManager.OtpSignInAsync(user, request.Otp!)
+            ? await signInManager.OtpSignIn(user, request.Otp!)
             : (await signInManager.PasswordSignInAsync(user!, request.Password!, isPersistent: false, lockoutOnFailure: true), authenticationMethod: "Password");
 
         if (signInResult.RequiresTwoFactor is false)
