@@ -43,7 +43,7 @@ public partial class AppHub
                 await foreach (var incomingMessage in incomingMessages)
                 {
                     if (messageSpecificCancellationTokenSrc is not null)
-                        await messageSpecificCancellationTokenSrc.CancelAsync();
+                        await messageSpecificCancellationTokenSrc.TryCancel();
 
                     messageSpecificCancellationTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     _ = chatbotService.ProcessNewMessage(

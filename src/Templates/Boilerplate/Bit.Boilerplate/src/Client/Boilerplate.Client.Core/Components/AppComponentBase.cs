@@ -255,7 +255,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         using var currentCts = cts;
         cts = new();
 
-        await currentCts.CancelAsync();
+        await currentCts.TryCancel();
     }
 
     public async ValueTask DisposeAsync()
@@ -264,7 +264,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         {
             using var currentCts = cts;
             cts = null;
-            await currentCts.CancelAsync();
+            await currentCts.TryCancel();
         }
 
         await DisposeAsync(true);

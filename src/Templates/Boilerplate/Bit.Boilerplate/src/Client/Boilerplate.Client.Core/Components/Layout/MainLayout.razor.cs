@@ -143,7 +143,7 @@ public partial class MainLayout : IAsyncDisposable
 
         using var currentCts = getCurrentUserCts;
         getCurrentUserCts = new();
-        await currentCts.CancelAsync();
+        await currentCts.TryCancel();
 
         if (authUser.IsAuthenticated() is false)
         {
@@ -196,7 +196,7 @@ public partial class MainLayout : IAsyncDisposable
     {
         if (getCurrentUserCts is not null)
         {
-            await getCurrentUserCts.CancelAsync();
+            await getCurrentUserCts.TryCancel();
             getCurrentUserCts.Dispose();
         }
 
