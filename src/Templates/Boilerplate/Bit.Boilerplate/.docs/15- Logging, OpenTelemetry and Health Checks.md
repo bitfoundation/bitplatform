@@ -255,7 +255,7 @@ The project is **pre-configured** for easy integration with popular logging prov
 
 From [`src/Server/Boilerplate.Server.Shared/Extensions/IOpenTelemetryExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Extensions/IOpenTelemetryExtensions.cs):
 
-2- The Azure Application Insights JavaScript SDK added by `BlazorApplicationInsights` nuget in Client.Core project would collect JavaScript erros and more from
+2- The Azure Application Insights JavaScript SDK added by `BlazorApplicationInsights` nuget in Client.Core project would collect JavaScript errors and more from
 Browser and Blazor Hybrid's WebView
 
 ### OpenTelemetry Configuration
