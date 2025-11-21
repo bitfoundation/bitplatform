@@ -43,7 +43,7 @@ jobs:
 
     - name: InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Bit.ci.release.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+      run: dotnet build src/bit.ci.release.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
 
     - name: dotnet build
-      run: dotnet build src/Bit.ci.release.slnx -c Release
+      run: dotnet build src/bit.ci.release.slnx -c Release
