@@ -73,7 +73,7 @@ public partial class SharedAppMessages
     public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
 
     /// <summary>
-    /// A publisher that sends this message announces that specific background job has made some progress.
+    /// A publisher that sends this message announces that a specific background job has made some progress.
     /// This would let the client know about the progress of a job (Typically a long-running hangfire background job).
     /// </summary>
     public const string BACKGROUND_JOB_PROGRESS = nameof(BACKGROUND_JOB_PROGRESS);
