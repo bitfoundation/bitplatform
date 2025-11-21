@@ -12,12 +12,12 @@
     <ItemGroup>
         <ProjectReference Include="..\Bit.Websites.Platform.Shared\Bit.Websites.Platform.Shared.csproj" />
         <ProjectReference Include="..\Bit.Websites.Platform.Client\Bit.Websites.Platform.Client.csproj" />
-        <PackageReference Include="Bit.BlazorES2019" Version="10.1.1-pre-01" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.1.1-pre-01">
+        <PackageReference Include="Bit.BlazorES2019" Version="10.1.1" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.1.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.1.1-pre-01">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.1.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
