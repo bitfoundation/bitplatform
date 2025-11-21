@@ -13,8 +13,6 @@ env:
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -28,7 +26,7 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -126,7 +124,7 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -156,10 +154,10 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools
 
     - name: Generate CSS/JS files
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmEnableSIMD=true
 
     - name: Upload to asw
       run: |
@@ -173,7 +171,7 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -207,10 +205,10 @@ jobs:
           sed -i "s/\/\/ self.mode = 'AlwaysPrerender'/self.mode = 'FullOffline'/g" TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
 
     - name: Generate CSS/JS files
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true --no-restore -c Release
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
@@ -224,7 +222,7 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -254,10 +252,10 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools
 
     - name: Generate CSS/JS files
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
@@ -271,7 +269,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -329,7 +327,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -424,7 +422,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v5

@@ -1,5 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿//+:cnd:noEmit
+using Microsoft.Extensions.Logging;
 using Boilerplate.Client.Maui.Services;
+//#if (appInsights == true)
+using Azure.Monitor.OpenTelemetry.Exporter;
+//#endif
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Maui;
@@ -52,29 +56,33 @@ public static partial class MauiProgram
 
         builder.Logging.AddEventSourceLogger();
 
+        //#if (appInsights == true)
+        builder.Logging.AddOpenTelemetry(options =>
+        {
+            options.IncludeFormattedMessage = true;
+            options.IncludeScopes = true;
+
+            if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
+            {
+                options.AddAzureMonitorLogExporter(o =>
+                {
+                    o.ConnectionString = settings.ApplicationInsights.ConnectionString;
+                });
+            }
+        });
+        //#endif
+
         if (AppPlatform.IsWindows)
         {
             builder.Logging.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
         }
-
-        //+:cnd:noEmit
-        //#if (appInsights == true)
-        if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
-        {
-            builder.Logging.AddApplicationInsights(config =>
-            {
-                config.TelemetryInitializers.Add(new MauiAppInsightsTelemetryInitializer());
-                configuration.GetRequiredSection("ApplicationInsights").Bind(config);
-            }, options => configuration.GetRequiredSection("Logging:ApplicationInsights").Bind(options));
-        }
-        //#endif
-        //-:cnd:noEmit
 
         services.AddOptions<ClientMauiSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        //-:cnd:noEmit
 #if Android
         services.AddClientMauiProjectAndroidServices(builder.Configuration);
 #elif iOS
@@ -84,5 +92,6 @@ public static partial class MauiProgram
 #elif Windows
         services.AddClientMauiProjectWindowsServices(builder.Configuration);
 #endif
+        //+:cnd:noEmit
     }
 }

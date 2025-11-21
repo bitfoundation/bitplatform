@@ -25,7 +25,11 @@ public partial class Program
 
         Application.SetColorMode(SystemColorMode.System);
 
-        var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows").Build();
+        var configuration = new ConfigurationBuilder()
+            .AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows")
+            .AddEnvironmentVariables()
+            .Build();
+
         var services = new ServiceCollection();
         services.AddClientWindowsProjectServices(configuration);
         Services = services.BuildServiceProvider();

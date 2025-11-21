@@ -78,6 +78,8 @@ public partial class MainLayout : IAsyncDisposable
 
             unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.IS_ONLINE_CHANGED, async payload =>
             {
+                if (IsOnline == (bool?)payload)
+                    return;
                 telemetryContext.IsOnline = IsOnline = (bool?)payload;
                 await InvokeAsync(StateHasChanged);
             }));
@@ -141,7 +143,7 @@ public partial class MainLayout : IAsyncDisposable
 
         using var currentCts = getCurrentUserCts;
         getCurrentUserCts = new();
-        await currentCts.CancelAsync();
+        await currentCts.TryCancel();
 
         if (authUser.IsAuthenticated() is false)
         {
@@ -194,7 +196,7 @@ public partial class MainLayout : IAsyncDisposable
     {
         if (getCurrentUserCts is not null)
         {
-            await getCurrentUserCts.CancelAsync();
+            await getCurrentUserCts.TryCancel();
             getCurrentUserCts.Dispose();
         }
 

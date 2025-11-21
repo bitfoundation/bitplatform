@@ -1,6 +1,10 @@
 ﻿//+:cnd:noEmit
+using OpenTelemetry.Logs;
 using Microsoft.Extensions.Logging;
 using Boilerplate.Client.Windows.Services;
+//#if (appInsights == true)
+using Azure.Monitor.OpenTelemetry.Exporter;
+//#endif
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Windows;
@@ -54,17 +58,29 @@ public static partial class Program
             loggingBuilder.ConfigureLoggers(configuration);
             loggingBuilder.AddEventSourceLogger();
 
-            loggingBuilder.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
-            //#if (appInsights == true)
-            if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
+            loggingBuilder.AddOpenTelemetry(options =>
             {
-                loggingBuilder.AddApplicationInsights(config =>
+                options.IncludeFormattedMessage = true;
+                options.IncludeScopes = true;
+
+                //#if (appInsights == true)
+                if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
                 {
-                    config.TelemetryInitializers.Add(new WindowsAppInsightsTelemetryInitializer());
-                    configuration.GetRequiredSection("ApplicationInsights").Bind(config);
-                }, options => configuration.GetRequiredSection("Logging:ApplicationInsights").Bind(options));
-            }
-            //#endif
+                    options.AddAzureMonitorLogExporter(o =>
+                    {
+                        o.ConnectionString = settings.ApplicationInsights.ConnectionString;
+                    });
+                }
+                //#endif
+
+                var useOtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false;
+                if (useOtlpExporter)
+                {
+                    options.AddOtlpExporter();
+                }
+            });
+
+            loggingBuilder.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
         });
 
         services.AddOptions<ClientWindowsSettings>()

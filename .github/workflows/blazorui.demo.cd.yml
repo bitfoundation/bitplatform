@@ -6,8 +6,6 @@ env:
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -21,7 +19,7 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -95,7 +93,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -137,7 +135,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -187,7 +185,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v5

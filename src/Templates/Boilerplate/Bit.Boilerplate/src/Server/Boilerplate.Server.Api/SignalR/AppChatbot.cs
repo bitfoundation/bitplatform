@@ -27,7 +27,7 @@ public partial class AppChatbot
     [AutoInject] private ILogger<AppChatbot> logger = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
 
-    private string? variables;
+    private string? variablesPrompt;
     private string? supportSystemPrompt;
     private List<ChatMessage> chatMessages = [];
 
@@ -66,7 +66,7 @@ public partial class AppChatbot
             },
             token: cancellationToken);
 
-        variables = @$"
+        variablesPrompt = @$"
 ### Variables:
 {{{{UserCulture}}}}: ""{culture?.NativeName ?? "English"}""
 {{{{DeviceInfo}}}}: ""{request.DeviceInfo ?? "Generic Device"}""
@@ -107,7 +107,7 @@ public partial class AppChatbot
             var chatOptions = CreateChatOptions(serverApiAddress, cancellationToken);
 
             await foreach (var response in chatClient.GetStreamingResponseAsync([
-                new (ChatRole.System, variables),
+                new (ChatRole.System, variablesPrompt),
                 new (ChatRole.System, supportSystemPrompt),
                     .. chatMessages,
                     new (ChatRole.User, incomingMessage)
@@ -121,12 +121,12 @@ public partial class AppChatbot
                 await responseChannel.Writer.WriteAsync(result, cancellationToken);
             }
 
-            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_RPOCESS_SUCCESS, cancellationToken);
+            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_PROCESS_SUCCESS, cancellationToken);
 
             if (generateFollowUpSuggestions)
             {
                 // Generate follow-up suggestions
-                var followUpSuggestions = await GenerateFollowUpSuggestionsAsync(
+                var followUpSuggestions = await GenerateFollowUpSuggestions(
                     incomingMessage,
                     assistantResponse.ToString(),
                     chatOptions,
@@ -138,7 +138,7 @@ public partial class AppChatbot
         catch (Exception exp)
         {
             logger.LogError(exp, "Error processing message in chatbot service");
-            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_RPOCESS_ERROR, cancellationToken);
+            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_PROCESS_ERROR, cancellationToken);
         }
         finally
         {
@@ -396,7 +396,7 @@ public partial class AppChatbot
     /// <summary>
     /// Generate follow-up suggestions based on the conversation
     /// </summary>
-    private async Task<AiChatFollowUpList> GenerateFollowUpSuggestionsAsync(
+    private async Task<AiChatFollowUpList> GenerateFollowUpSuggestions(
         string incomingMessage,
         string assistantResponse,
         ChatOptions chatOptions,

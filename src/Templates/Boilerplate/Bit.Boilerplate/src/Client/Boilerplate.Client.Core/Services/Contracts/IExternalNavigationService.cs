@@ -3,5 +3,5 @@
 // Check out Client.web/wwwroot/web-interop-app.html's comments.
 public interface IExternalNavigationService
 {
-    Task NavigateToAsync(string url);
+    Task NavigateTo(string url);
 }

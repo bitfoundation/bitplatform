@@ -160,7 +160,7 @@ public partial class AppAiChatPanel
 
         // The following code streams user's input messages to the server and processes the streamed responses.
         // It keeps the chat ongoing until CurrentCancellationToken is cancelled.
-        await foreach (var response in hubConnection.StreamAsync<string>("StartChat",
+        await foreach (var response in hubConnection.StreamAsync<string>(SharedAppMessages.StartChat,
                                                                          new StartChatRequest()
                                                                          {
                                                                              CultureId = CultureInfo.CurrentCulture.LCID,
@@ -180,12 +180,12 @@ public partial class AppAiChatPanel
             }
             else
             {
-                if (response is SharedAppMessages.MESSAGE_RPOCESS_SUCCESS)
+                if (response is SharedAppMessages.MESSAGE_PROCESS_SUCCESS)
                 {
                     responseCounter++;
                     isLoading = false;
                 }
-                else if (response is SharedAppMessages.MESSAGE_RPOCESS_ERROR)
+                else if (response is SharedAppMessages.MESSAGE_PROCESS_ERROR)
                 {
                     responseCounter++;
                     if (responseCounter == expectedResponsesCount)

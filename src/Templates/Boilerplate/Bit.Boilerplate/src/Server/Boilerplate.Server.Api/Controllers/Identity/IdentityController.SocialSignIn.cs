@@ -44,7 +44,7 @@ public partial class IdentityController
 
             if (user is null && (string.IsNullOrEmpty(email) is false || string.IsNullOrEmpty(phoneNumber) is false))
             {
-                user = await userManager.FindUserAsync(new() { Email = email, PhoneNumber = phoneNumber });
+                user = await userManager.FindUser(new() { Email = email, PhoneNumber = phoneNumber });
             }
 
             if (user is null)

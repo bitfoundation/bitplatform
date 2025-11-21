@@ -13,11 +13,13 @@ public partial class IdentityApiTests
     {
         await using var server = new AppTestServer();
 
+        /* var fakeAuthTokenProvider = A.Fake<IAuthTokenProvider>();
+        A.CallTo(() => fakeAuthTokenProvider.GetAccessToken()).ReturnsLazily(() => (string?)null); */
+
         await server.Build(services =>
         {
-            // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
-            services.Replace(ServiceDescriptor.Scoped<IStorageService, TestStorageService>());
-            services.Replace(ServiceDescriptor.Transient<IAuthTokenProvider, TestAuthTokenProvider>());
+            // You can override services here for this specific test if needed:
+            // services.Replace(ServiceDescriptor.Scoped(sp => fakeAuthTokenProvider));
         }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -42,11 +44,7 @@ public partial class IdentityApiTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
-        {
-            services.Replace(ServiceDescriptor.Scoped<IStorageService, TestStorageService>());
-            services.Replace(ServiceDescriptor.Transient<IAuthTokenProvider, TestAuthTokenProvider>());
-        }).Start(TestContext.CancellationToken);
+        await server.Build().Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 

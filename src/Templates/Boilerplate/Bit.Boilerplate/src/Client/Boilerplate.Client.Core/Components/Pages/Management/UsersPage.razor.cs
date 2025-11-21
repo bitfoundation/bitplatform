@@ -110,7 +110,7 @@ public partial class UsersPage
                 using var currentCts = loadRoleDataCts;
                 loadRoleDataCts = new();
 
-                await currentCts.CancelAsync();
+                await currentCts.TryCancel();
             }
 
             loadRoleDataCts = new();
@@ -191,7 +191,7 @@ public partial class UsersPage
     /// </summary>
     private async Task ReadUserSessionLogs(Guid userSessionId)
     {
-        var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>("GetUserSessionLogs", userSessionId);
+        var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>(SharedAppMessages.GetUserSessionLogs, userSessionId);
 
         DiagnosticLogger.Store.Clear();
         foreach (var log in logs)

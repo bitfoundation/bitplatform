@@ -26,12 +26,17 @@ public partial class TodoPage
     {
         await base.OnInitAsync();
 
-        _ = keyboard.Add(ButilKeyCodes.KeyF, () => searchBox.FocusAsync(), ButilModifiers.Ctrl);
-
         selectedFilter = nameof(AppStrings.All);
         selectedSort = nameof(AppStrings.Alphabetical);
 
         await LoadTodoItems();
+    }
+
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        await keyboard.Add(ButilKeyCodes.KeyF, () => searchBox.FocusAsync(), ButilModifiers.Ctrl);
+
+        await base.OnAfterFirstRenderAsync();
     }
 
     private async Task LoadTodoItems(bool showLoading = true)
