@@ -47,6 +47,7 @@ public partial class AppHub : Hub
     /// In this case, we need to update the authentication state of the SignalR connection.
     /// This method is called by AppClientCoordinator.cs
     /// </summary>
+    [HubMethodName(SharedAppMessages.ChangeAuthenticationState)]
     public Task ChangeAuthenticationState(string? accessToken)
     {
         ClaimsPrincipal? user = null;
@@ -65,6 +66,7 @@ public partial class AppHub : Hub
     /// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
     /// </summary>
     [Authorize(Policy = AppFeatures.System.ManageLogs)]
+    [HubMethodName(SharedAppMessages.GetUserSessionLogs)]
     public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext)
     {
         var userSessionSignalRConnectionId = await dbContext.UserSessions

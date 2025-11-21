@@ -15,6 +15,7 @@ public partial class AppHub
     /// <summary>
     /// Checkout <see cref="AppChatbot"/> for more details.
     /// </summary>
+    [HubMethodName(SharedAppMessages.StartChat)]
     public async IAsyncEnumerable<string> StartChat(
         StartChatRequest request,
         IAsyncEnumerable<string> incomingMessages,

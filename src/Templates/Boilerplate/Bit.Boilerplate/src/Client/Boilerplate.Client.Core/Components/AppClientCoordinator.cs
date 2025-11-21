@@ -296,14 +296,14 @@ public partial class AppClientCoordinator : AppComponentBase
     {
         try
         {
-            if (hubConnection.State is not (HubConnectionState.Connected or HubConnectionState.Connecting))
+            if (hubConnection.State is not HubConnectionState.Connected)
             {
                 await hubConnection.StartAsync(CurrentCancellationToken);
                 await HubConnectionConnected(null);
             }
             else
             {
-                await hubConnection.InvokeAsync("ChangeAuthenticationState", await AuthTokenProvider.GetAccessToken(), CurrentCancellationToken);
+                await hubConnection.InvokeAsync(SharedAppMessages.ChangeAuthenticationState, await AuthTokenProvider.GetAccessToken(), CurrentCancellationToken);
             }
         }
         catch (Exception exp)
