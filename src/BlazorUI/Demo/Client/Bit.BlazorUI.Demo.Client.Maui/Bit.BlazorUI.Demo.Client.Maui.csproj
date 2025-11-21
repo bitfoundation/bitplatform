@@ -98,13 +98,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorES2019" Version="10.1.1-pre-01" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.1.1-pre-01">
+        <PackageReference Include="Bit.BlazorES2019" Version="10.1.1" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.1.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.7" />
-        <PackageReference Include="Bit.SourceGenerators" Version="10.1.1-pre-01">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.1.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
