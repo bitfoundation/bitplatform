@@ -85,12 +85,12 @@ public partial class SharedAppMessages
     /// <summary>
     /// This would let the client know that a chat bot encountered an error while processing the user's message.
     /// </summary>
-    public const string MESSAGE_RPOCESS_ERROR = nameof(MESSAGE_RPOCESS_ERROR);
+    public const string MESSAGE_PROCESS_ERROR = nameof(MESSAGE_PROCESS_ERROR);
 
     /// <summary>
     /// This would let the client know that a chat bot successfully processed the user's message.
     /// </summary>
-    public const string MESSAGE_RPOCESS_SUCCESS = nameof(MESSAGE_RPOCESS_SUCCESS);
+    public const string MESSAGE_PROCESS_SUCCESS = nameof(MESSAGE_PROCESS_SUCCESS);
 
     #endregion
 

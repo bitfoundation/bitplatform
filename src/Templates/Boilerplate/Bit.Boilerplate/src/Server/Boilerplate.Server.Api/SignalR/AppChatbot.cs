@@ -121,7 +121,7 @@ public partial class AppChatbot
                 await responseChannel.Writer.WriteAsync(result, cancellationToken);
             }
 
-            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_RPOCESS_SUCCESS, cancellationToken);
+            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_PROCESS_SUCCESS, cancellationToken);
 
             if (generateFollowUpSuggestions)
             {
@@ -138,7 +138,7 @@ public partial class AppChatbot
         catch (Exception exp)
         {
             logger.LogError(exp, "Error processing message in chatbot service");
-            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_RPOCESS_ERROR, cancellationToken);
+            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_PROCESS_ERROR, cancellationToken);
         }
         finally
         {
