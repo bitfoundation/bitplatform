@@ -1,0 +1,39 @@
+name: bit platform CI - Templates
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+    - 'src/Templates/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+jobs:
+  build-release:
+    name: build Bit.Templates
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@v6
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+      
+    - name: dotnet workload restore Boilerplate
+      run:  cd src/Templates/Boilerplate/Bit.Boilerplate && dotnet workload restore
+
+    - name: InstallNodejsDependencies
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+
+    - name: dotnet build Boilerplate
+      run: dotnet build src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx 

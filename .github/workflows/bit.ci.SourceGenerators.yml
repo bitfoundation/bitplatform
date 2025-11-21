@@ -1,0 +1,28 @@
+name: bit platform CI - SourceGenerators
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+    - 'src/SourceGenerators/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+jobs:
+  build:
+    name: build Bit.SourceGenerators
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@v6
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: src/global.json
+
+    - name: dotnet build
+      run: dotnet build src/SourceGenerators/Bit.SourceGenerators.slnx

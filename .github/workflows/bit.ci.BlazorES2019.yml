@@ -1,0 +1,79 @@
+name: bit platform CI - BlazorES2019
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+    - 'src/BlazorES2019/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+jobs:
+  build-release:
+    name: build Bit.BlazorES2019
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@v6
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 9.0
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 8.0.x
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: Generate .NET 9.0 blazor.*.js files
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/9.0
+        git submodule update --init --recursive
+        sed -i 's/"target": "ES2022"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+        npm install
+        npm run-script build
+        cd src/Components/Web.JS
+        npm install
+        npm run-script build:production
+        cd ../../../../
+        mkdir -p src/BlazorES2019/wwwroot.net9/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net9/
+        rm -rf aspnetcore
+
+    - name: Generate .NET 10.0 blazor.*.js files
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/10.0
+        git submodule update --init --recursive
+        sed -i 's/"target": "ES2024"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+        npm install
+        npm run-script build
+        cd src/Components/Web.JS
+        npm install
+        npm run-script build:production
+        cd ../../../../
+        mkdir -p src/BlazorES2019/wwwroot.net10/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/BlazorES2019/wwwroot.net10/
+        rm -rf aspnetcore
+
+    - name: dotnet workload restore
+      run:  cd src/BlazorES2019/Bit.BlazorES2019 && dotnet workload restore
+
+    - name: dotnet build
+      run: dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj
