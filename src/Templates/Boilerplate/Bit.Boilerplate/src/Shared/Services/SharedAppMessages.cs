@@ -53,7 +53,7 @@ public partial class SharedAppMessages
 
     #endregion
 
-    #region Server annoucements to client
+    #region Server announcements to client
 
     //#if (module == "Admin")
     /// <summary>
