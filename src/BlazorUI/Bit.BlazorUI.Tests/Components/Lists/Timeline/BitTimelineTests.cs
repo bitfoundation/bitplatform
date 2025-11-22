@@ -133,9 +133,6 @@ public class BitTimelineTests : BunitTestContext
     {
         var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
         {
-            parameters.AddChildContent(@"
-<BitTimelineOption PrimaryText=""ShowDot"" />
-<BitTimelineOption PrimaryText=""HideDot"" HideDot=""true"" />");
             parameters.AddChildContent(builder =>
             {
                 builder.OpenComponent<BitTimelineOption>(0);
