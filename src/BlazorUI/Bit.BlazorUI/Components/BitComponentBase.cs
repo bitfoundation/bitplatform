@@ -49,7 +49,8 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Capture and render additional attributes in addition to the component's parameters.
+    /// Captures and renders additional attributes in addition to the component's parameters.
+    /// This parameter should not be assigned directly.
     /// </summary>
     [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = [];
 
