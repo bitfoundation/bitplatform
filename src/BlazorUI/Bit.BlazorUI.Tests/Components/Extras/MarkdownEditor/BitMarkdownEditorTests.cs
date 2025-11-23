@@ -41,6 +41,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
+            parameters.Add(p => p.Id, "id");
             parameters.Add(p => p.DefaultValue, "hello");
         });
 
@@ -81,12 +82,14 @@ public class BitMarkdownEditorTests : BunitTestContext
             parameters.Add(p => p.Value, "initial");
         });
 
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownEditor.setValue", 1);
+
+        Assert.AreEqual("initial", component.Instance.Value);
+
         component.SetParametersAndRender(parameters =>
         {
             parameters.Add(p => p.Value, "updated");
         });
-
-        await component.InvokeAsync(() => component.Instance._OnChange("updated"));
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownEditor.setValue", 2);
 
