@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Client.Core.Components;
 
-public partial class AppComponentBase : ComponentBase, IAsyncDisposable
+public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
 {
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
@@ -260,16 +260,21 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (cts != null)
+        try
         {
-            using var currentCts = cts;
-            cts = null;
-            await currentCts.TryCancel();
+            if (cts != null)
+            {
+                using var currentCts = cts;
+                cts = null;
+                await currentCts.TryCancel();
+            }
+
+            await DisposeAsync(true);
         }
-
-        await DisposeAsync(true);
-
-        GC.SuppressFinalize(this);
+        finally
+        {
+            await DisposeAsyncCore(); // Would dispose OwiningComponentBase's ScopedServices
+        }
     }
 
     protected virtual ValueTask DisposeAsync(bool disposing)
