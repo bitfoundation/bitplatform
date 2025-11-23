@@ -1,27 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <RunSettings>
-    <Playwright>
-        <LaunchOptions>
-            <!--<Headless>true</Headless>-->
-            <!--<SlowMo>1000</SlowMo>-->
-        </LaunchOptions>
-        <!--<BrowserName>chromium</BrowserName>-->
-    </Playwright>
-
-    <MSTest>
-        <Parallelize>
-            <Workers>3</Workers>
-            <Scope>MethodLevel</Scope>
-        </Parallelize>
-    </MSTest>
 
     <RunConfiguration>
         <CollectSourceInformation>true</CollectSourceInformation>
         <EnvironmentVariables>
+            
             <!-- https://playwright.dev/docs/debug -->
             <!--<HEADED>1</HEADED>-->
             <!--<PWDEBUG>1</PWDEBUG>-->
+            <!--<BROWSER>firefox</BROWSER>-->
 
             <!-- You can override the configuration from appsettings.json for tests here. -->
             <ConnectionStrings__sqlite>Data Source=BoilerplateDb.db;Mode=Memory;Cache=Shared;</ConnectionStrings__sqlite>
