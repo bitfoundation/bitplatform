@@ -42,11 +42,11 @@ public partial class DashboardPage
     }
 
     //#if (signalR == true)
-    protected override async ValueTask DisposeAsync(bool disposing)
+    protected override async ValueTask DisposeAsyncCore()
     {
-        await base.DisposeAsync(disposing);
-
         unsubscribe?.Invoke();
+
+        await base.DisposeAsyncCore();
     }
     //#endif
 }

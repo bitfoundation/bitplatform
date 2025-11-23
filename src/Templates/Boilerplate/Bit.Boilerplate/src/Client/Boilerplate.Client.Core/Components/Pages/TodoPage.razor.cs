@@ -194,13 +194,10 @@ public partial class TodoPage
         }
     }
 
-    protected override async ValueTask DisposeAsync(bool disposing)
+    protected override async ValueTask DisposeAsyncCore()
     {
-        await base.DisposeAsync(true);
+        await keyboard.DisposeAsync();
 
-        if (disposing)
-        {
-            await keyboard.DisposeAsync();
-        }
+        await base.DisposeAsyncCore();
     }
 }

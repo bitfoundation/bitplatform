@@ -49,11 +49,11 @@ public partial class Header : AppComponentBase
     }
 
 
-    protected override async ValueTask DisposeAsync(bool disposing)
+    protected override async ValueTask DisposeAsyncCore()
     {
-        await base.DisposeAsync(disposing);
-
         unsubscribePageTitleChanged?.Invoke();
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
+
+        await base.DisposeAsyncCore();
     }
 }

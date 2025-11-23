@@ -32,10 +32,10 @@ public partial class ForceUpdateSnackBar
     }
 
 
-    protected override async ValueTask DisposeAsync(bool disposing)
+    protected override async ValueTask DisposeAsyncCore()
     {
         unsubscribe?.Invoke();
 
-        await base.DisposeAsync(disposing);
+        await base.DisposeAsyncCore();
     }
 }

@@ -195,9 +195,9 @@ public partial class AppDiagnosticModal
         await OpenLog(filteredLogs[selectedLogIndex], selectedLogIndex);
     }
 
-    protected override async ValueTask DisposeAsync(bool disposing)
+    protected override async ValueTask DisposeAsyncCore()
     {
-        await base.DisposeAsync(disposing);
         unsubscribe?.Invoke();
+        await base.DisposeAsyncCore();
     }
 }

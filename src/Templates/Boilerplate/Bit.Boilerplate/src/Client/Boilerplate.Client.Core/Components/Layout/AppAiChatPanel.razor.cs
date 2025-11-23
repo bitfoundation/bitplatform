@@ -222,7 +222,7 @@ public partial class AppAiChatPanel
     }
 
 
-    protected override async ValueTask DisposeAsync(bool disposing)
+    protected override async ValueTask DisposeAsyncCore()
     {
         //#if(module == "Sales")
         unsubSearchProducts();
@@ -236,6 +236,6 @@ public partial class AppAiChatPanel
 
         await StopChannel();
 
-        await base.DisposeAsync(disposing);
+        await base.DisposeAsyncCore();
     }
 }
