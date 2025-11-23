@@ -8,6 +8,7 @@
         <LangVersion>14.0</LangVersion>
         <Nullable>enable</Nullable>
         <RollForward>Major</RollForward>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
     </PropertyGroup>
 
     <ItemGroup>
