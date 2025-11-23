@@ -6,18 +6,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Folder Name="/.github/" />
-  <Folder Name="/.github/workflows/">
-    <File Path="../.github/workflows/admin-sample.cd.yml" />
-    <File Path="../.github/workflows/bit.ci.yml" />
-    <File Path="../.github/workflows/bit.full.ci.yml" />
-    <File Path="../.github/workflows/blazorui.demo.cd.yml" />
-    <File Path="../.github/workflows/nuget.org.yml" />
-    <File Path="../.github/workflows/platform.website.cd.yml" />
-    <File Path="../.github/workflows/prerelease.nuget.org.yml" />
-    <File Path="../.github/workflows/sales.website.cd.yml" />
-    <File Path="../.github/workflows/todo-sample.cd.yml" />
-  </Folder>
   <Folder Name="/.Solution Items/">
     <File Path="../.gitignore" />
     <File Path="../CODE_OF_CONDUCT.md" />
@@ -29,6 +17,18 @@
     <File Path="Bit.Build.props" />
     <File Path="Clean.bat" />
     <File Path="global.json" />
+  </Folder>
+  <Folder Name="/.Solution Items/.github/" />
+  <Folder Name="/.Solution Items/.github/workflows/">
+    <File Path="../.github/workflows/admin-sample.cd.yml" />
+    <File Path="../.github/workflows/bit.ci.yml" />
+    <File Path="../.github/workflows/bit.full.ci.yml" />
+    <File Path="../.github/workflows/blazorui.demo.cd.yml" />
+    <File Path="../.github/workflows/nuget.org.yml" />
+    <File Path="../.github/workflows/platform.website.cd.yml" />
+    <File Path="../.github/workflows/prerelease.nuget.org.yml" />
+    <File Path="../.github/workflows/sales.website.cd.yml" />
+    <File Path="../.github/workflows/todo-sample.cd.yml" />
   </Folder>
   <Folder Name="/Besql/">
     <File Path="Besql/README.md" />
