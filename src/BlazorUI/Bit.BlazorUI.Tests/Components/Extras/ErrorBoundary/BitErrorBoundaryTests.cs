@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Components.Extras.ErrorBoundary;
 
 [TestClass]
-public class BitErrorBoundaryTests : BunitTestContext
+public partial class BitErrorBoundaryTests : BunitTestContext
 {
     [TestMethod]
     public void BitErrorBoundaryShouldRenderChildContentWhenNoError()
@@ -137,35 +137,4 @@ public class BitErrorBoundaryTests : BunitTestContext
         b.AddAttribute(1, "Message", message);
         b.CloseComponent();
     };
-
-    private class ThrowingComponent : ComponentBase
-    {
-        [Parameter] public string Message { get; set; } = string.Empty;
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            throw new InvalidOperationException(Message);
-        }
-    }
-
-    private class ThrowOnceComponent : ComponentBase
-    {
-        private static int _counter;
-
-        public static void Reset() => _counter = 0;
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            if (_counter == 0)
-            {
-                _counter++;
-                throw new InvalidOperationException("once");
-            }
-
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "class", "throw-once-safe");
-            builder.AddContent(2, "Recovered");
-            builder.CloseElement();
-        }
-    }
 }
