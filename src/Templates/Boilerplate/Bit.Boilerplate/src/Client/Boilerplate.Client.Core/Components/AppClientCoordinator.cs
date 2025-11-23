@@ -368,7 +368,7 @@ public partial class AppClientCoordinator : AppComponentBase
     }
 
     private List<IDisposable> signalROnDisposables = [];
-    protected override async ValueTask DisposeAsyncCore()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         unsubscribes.ForEach(unsubscribe => unsubscribe());
         unsubscribes = [];
@@ -384,6 +384,6 @@ public partial class AppClientCoordinator : AppComponentBase
         signalROnDisposables = [];
         //#endif
 
-        await base.DisposeAsyncCore();
+        await base.DisposeAsync(disposing);
     }
 }

@@ -78,10 +78,10 @@ public partial class JobProgress
         isVisible = false;
     }
 
-    protected override async ValueTask DisposeAsyncCore()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         disposable?.Invoke();
 
-        await base.DisposeAsyncCore();
+        await base.DisposeAsync(disposing);
     }
 }

@@ -394,7 +394,7 @@ public partial class RolesPage
     }
 
 
-    protected override async ValueTask DisposeAsyncCore()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (loadRoleDataCts is not null)
         {
@@ -402,6 +402,6 @@ public partial class RolesPage
             loadRoleDataCts.Dispose();
         }
 
-        await base.DisposeAsyncCore();
+        await base.DisposeAsync(disposing);
     }
 }

@@ -18,6 +18,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_OtherPropertyDisplayName")]
     static extern void SetOtherPropertyDisplayName(CompareAttribute valAttribute, string name);
 
+    private bool disposed;
     private ValidationMessageStore validationMessageStore = default!;
 
     [AutoInject] private SnackBarService snackbarService = default!;
@@ -224,11 +225,15 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
         EditContext.NotifyValidationStateChanged();
     }
 
-    protected override async ValueTask DisposeAsyncCore()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
+        await base.DisposeAsync(disposing);
+
+        if (disposed || disposing is false) return;
+
         EditContext?.OnFieldChanged -= OnFieldChanged;
         EditContext?.OnValidationRequested -= OnValidationRequested;
 
-        await base.DisposeAsyncCore();
+        disposed = true;
     }
 }

@@ -67,11 +67,11 @@ public partial class AppMenu
     }
 
 
-    protected override async ValueTask DisposeAsyncCore()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
+        await base.DisposeAsync(disposing);
 
-        await base.DisposeAsyncCore();
+        NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
     }
 
     private async Task ModalSignIn()

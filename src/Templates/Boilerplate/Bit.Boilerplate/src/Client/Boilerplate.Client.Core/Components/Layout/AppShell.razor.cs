@@ -66,12 +66,14 @@ public partial class AppShell
     }
 
 
-    protected override async ValueTask DisposeAsyncCore()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
+        if (disposing is false) return;
+
         unsubscribers.ForEach(us => us.Invoke());
 
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
 
-        await base.DisposeAsyncCore();
+        await base.DisposeAsync(disposing);
     }
 }

@@ -408,11 +408,11 @@ public partial class SignInPanel
         isOtpSent = true;
     }
 
-    protected override async ValueTask DisposeAsyncCore()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         pubSubUnsubscribe?.Invoke();
 
-        await base.DisposeAsyncCore();
+        await base.DisposeAsync(disposing);
     }
 
     protected override async Task OnAfterFirstRenderAsync()

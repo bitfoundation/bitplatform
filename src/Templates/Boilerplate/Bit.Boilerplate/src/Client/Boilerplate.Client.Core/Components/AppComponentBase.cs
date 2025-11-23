@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Client.Core.Components;
 
-public partial class AppComponentBase : OwningComponentBase
+public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
@@ -258,7 +258,7 @@ public partial class AppComponentBase : OwningComponentBase
         await currentCts.TryCancel();
     }
 
-    protected override async ValueTask DisposeAsyncCore()
+    public async ValueTask DisposeAsync()
     {
         if (cts != null)
         {
@@ -267,7 +267,14 @@ public partial class AppComponentBase : OwningComponentBase
             await currentCts.TryCancel();
         }
 
-        await base.DisposeAsyncCore();
+        await DisposeAsync(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual ValueTask DisposeAsync(bool disposing)
+    {
+        return ValueTask.CompletedTask;
     }
 
     private void HandleException(Exception exp,

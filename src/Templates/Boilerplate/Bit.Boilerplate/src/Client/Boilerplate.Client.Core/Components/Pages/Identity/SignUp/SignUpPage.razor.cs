@@ -108,10 +108,10 @@ public partial class SignUpPage
         }
     }
 
-    protected override async ValueTask DisposeAsyncCore()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         pubSubUnsubscribe?.Invoke();
 
-        await base.DisposeAsyncCore();
+        await base.DisposeAsync(disposing);
     }
 }

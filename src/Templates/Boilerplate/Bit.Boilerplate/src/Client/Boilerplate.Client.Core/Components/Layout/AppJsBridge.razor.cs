@@ -33,9 +33,9 @@ public partial class AppJsBridge
         PubSubService.Publish(message, payload);
     }
 
-    protected override async ValueTask DisposeAsyncCore()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
+        await base.DisposeAsync(disposing);
         dotnetObj?.Dispose();
-        await base.DisposeAsyncCore();
     }
 }
