@@ -9,37 +9,39 @@ namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownViewer;
 [TestClass]
 public class BitMarkdownViewerTests : BunitTestContext
 {
-    private void ConfigureMarkdownInterop(string parsedHtml = "<p>parsed</p>")
+    private void ConfigureMarkdownInterop()
     {
         Services.AddSingleton<BitMarkdownService>();
 
         Context.JSInterop.Setup<bool>("BitBlazorUI.MarkdownViewer.checkScriptLoaded").SetResult(true);
         Context.JSInterop.SetupVoid("BitBlazorUI.Extras.initScripts");
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync").SetResult(parsedHtml);
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parse").SetResult(parsedHtml);
+        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync");
+        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parse");
     }
 
     [TestMethod]
     public void BitMarkdownViewerShouldRenderParsedHtml()
     {
-        ConfigureMarkdownInterop("<p>hello</p>");
+        var markdown = "hello";
+
+        ConfigureMarkdownInterop();
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
-            parameters.Add(p => p.Markdown, "hello");
+            parameters.Add(p => p.Markdown, markdown);
         });
 
         component.WaitForAssertion(() =>
         {
-            var root = component.Find(".bit-mdv");
-            Assert.IsTrue(root.InnerHtml.Contains("<p>hello</p>"));
+            Context.JSInterop.VerifyInvoke("BitBlazorUI.Extras.initScripts");
+            Assert.AreEqual(Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownViewer.parseAsync").Arguments[0], markdown);
         });
     }
 
     [TestMethod]
     public void BitMarkdownViewerShouldInvokeCallbacks()
     {
-        ConfigureMarkdownInterop("<p>cb</p>");
+        ConfigureMarkdownInterop();
 
         bool parsingCalled = false, parsedCalled = false, renderedCalled = false;
         string? parsedValue = null;
@@ -79,7 +81,7 @@ public class BitMarkdownViewerTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownViewerShouldReparseWhenMarkdownChanges()
     {
-        ConfigureMarkdownInterop("<p>first</p>");
+        ConfigureMarkdownInterop();
 
         var parseCount = 0;
 
@@ -118,7 +120,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         DataRow(false)]
     public void BitMarkdownViewerShouldRespectIsEnabled(bool isEnabled)
     {
-        ConfigureMarkdownInterop("<p>text</p>");
+        ConfigureMarkdownInterop();
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
