@@ -9,31 +9,40 @@ namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownViewer;
 [TestClass]
 public class BitMarkdownViewerTests : BunitTestContext
 {
-    private void ConfigureMarkdownInterop()
+    private const string MARKED_FILE = "_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js";
+
+    [TestInitialize]
+    public void RegisterService()
     {
         Services.AddSingleton<BitMarkdownService>();
+    }
 
-        Context.JSInterop.Setup<bool>("BitBlazorUI.MarkdownViewer.checkScriptLoaded").SetResult(true);
+    private void SetupMarkdownInterop(string markdown, string html)
+    {
         Context.JSInterop.SetupVoid("BitBlazorUI.Extras.initScripts");
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync");
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parse");
+        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parse", markdown).SetResult(html);
+        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown).SetResult(html);
+        Context.JSInterop.Setup<bool>("BitBlazorUI.MarkdownViewer.checkScriptLoaded", MARKED_FILE).SetResult(true);
     }
 
     [TestMethod]
     public void BitMarkdownViewerShouldRenderParsedHtml()
     {
         var markdown = "hello";
+        var html = "<p>hello</p>";
 
-        ConfigureMarkdownInterop();
+        SetupMarkdownInterop(markdown, html);
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
         });
 
+        var root = component.Find(".bit-mdv");
+
         component.WaitForAssertion(() =>
         {
-            Context.JSInterop.VerifyInvoke("BitBlazorUI.Extras.initScripts");
+            Assert.IsTrue(root.InnerHtml.Contains(html));
             Assert.AreEqual(Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownViewer.parseAsync").Arguments[0], markdown);
         });
     }
@@ -41,31 +50,34 @@ public class BitMarkdownViewerTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownViewerShouldInvokeCallbacks()
     {
-        ConfigureMarkdownInterop();
+        var markdown = "callbacks";
+        var html = "<p>callbacks</p>";
+
+        SetupMarkdownInterop(markdown, html);
 
         bool parsingCalled = false, parsedCalled = false, renderedCalled = false;
         string? parsedValue = null;
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
-            parameters.Add(p => p.Markdown, "callbacks");
+            parameters.Add(p => p.Markdown, markdown);
 
             parameters.Add(p => p.OnParsing, EventCallback.Factory.Create(this, (string? value) =>
             {
-                parsingCalled = value == "callbacks";
+                parsingCalled = value == markdown;
                 return Task.CompletedTask;
             }));
 
-            parameters.Add(p => p.OnParsed, EventCallback.Factory.Create(this, (string? html) =>
+            parameters.Add(p => p.OnParsed, EventCallback.Factory.Create(this, (string? parsed) =>
             {
-                parsedCalled = html == "<p>cb</p>";
-                parsedValue = html;
+                parsedCalled = parsed == html;
+                parsedValue = parsed;
                 return Task.CompletedTask;
             }));
 
-            parameters.Add(p => p.OnRendered, EventCallback.Factory.Create(this, (string? html) =>
+            parameters.Add(p => p.OnRendered, EventCallback.Factory.Create(this, (string? parsed) =>
             {
-                renderedCalled = html == parsedValue;
+                renderedCalled = parsed == parsedValue;
                 return Task.CompletedTask;
             }));
         });
@@ -81,37 +93,34 @@ public class BitMarkdownViewerTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownViewerShouldReparseWhenMarkdownChanges()
     {
-        ConfigureMarkdownInterop();
+        var markdown = "one";
+        var html = "<p>one</p>";
 
-        var parseCount = 0;
-
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync").SetResult("<p>first</p>");
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parse").SetResult("<p>first</p>");
+        SetupMarkdownInterop(markdown, html);
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
-            parameters.Add(p => p.Markdown, "one");
+            parameters.Add(p => p.Markdown, markdown);
         });
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, parseCount);
-            Assert.IsTrue(component.Markup.Contains("<p>first</p>"));
+            Assert.IsTrue(component.Markup.Contains(html));
         });
 
-        // update markdown and parsed html result
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync").SetResult("<p>second</p>");
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parse").SetResult("<p>second</p>");
+        markdown = "two";
+        html = "<p>two</p>";
+
+        SetupMarkdownInterop(markdown, html);
 
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.Markdown, "two");
+            parameters.Add(p => p.Markdown, markdown);
         });
 
         component.WaitForAssertion(() =>
         {
-            //Assert.AreEqual(2, parseCount);
-            Assert.IsTrue(component.Markup.Contains("<p>second</p>"));
+            Assert.IsTrue(component.Markup.Contains(html));
         });
     }
 
@@ -120,7 +129,10 @@ public class BitMarkdownViewerTests : BunitTestContext
         DataRow(false)]
     public void BitMarkdownViewerShouldRespectIsEnabled(bool isEnabled)
     {
-        ConfigureMarkdownInterop();
+        var markdown = "enable";
+        var html = "<p>enable</p>";
+
+        SetupMarkdownInterop(markdown, html);
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
