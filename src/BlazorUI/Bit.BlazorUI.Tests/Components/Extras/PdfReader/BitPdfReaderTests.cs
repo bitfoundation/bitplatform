@@ -19,7 +19,7 @@ public class BitPdfReaderTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.PdfReader.refreshPage");
         Context.JSInterop.SetupVoid("BitBlazorUI.PdfReader.dispose");
 
-        Context.JSInterop.Setup<int>("BitBlazorUI.PdfReader.setup", inv => true).SetResult(pagesCount);
+        Context.JSInterop.Setup<int>("BitBlazorUI.PdfReader.setup", inv => inv.Identifier == "BitBlazorUI.PdfReader.setup").SetResult(pagesCount);
     }
 
     [TestMethod]
