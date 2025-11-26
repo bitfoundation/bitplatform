@@ -29,8 +29,9 @@
         <PackageReference Include="OpenTelemetry.Resources.OperatingSystem" />
         <PackageReference Include="OpenTelemetry.Resources.Process" />
         <PackageReference Include="OpenTelemetry.Resources.ProcessRuntime" />
-        <PackageReference Include="ZiggyCreatures.FusionCache.AspNetCore.OutputCaching" />
         <PackageReference Include="ZiggyCreatures.FusionCache.OpenTelemetry" />
+        <PackageReference Include="ZiggyCreatures.FusionCache.AspNetCore.OutputCaching" />
+        <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" />
     </ItemGroup>
 
     <ItemGroup>

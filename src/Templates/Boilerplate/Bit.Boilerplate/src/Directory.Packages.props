@@ -134,5 +134,6 @@
         <PackageVersion Include="Microsoft.Playwright.MSTest.v4" Version="1.56.0" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.AspNetCore.OutputCaching" Version="2.4.0" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.OpenTelemetry" Version="2.4.0" />
+        <PackageVersion Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.4.0" />
     </ItemGroup>
 </Project>
