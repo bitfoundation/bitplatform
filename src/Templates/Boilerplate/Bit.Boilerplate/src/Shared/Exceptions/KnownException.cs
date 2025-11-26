@@ -1,6 +1,6 @@
-namespace Boilerplate.Shared.Exceptions;
+﻿namespace Boilerplate.Shared.Exceptions;
 
-public abstract partial class KnownException : Exception
+public abstract partial class KnownException : ApplicationException
 {
     public KnownException(string message)
         : base(message)

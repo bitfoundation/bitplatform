@@ -14,6 +14,8 @@ using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using ZiggyCreatures.Caching.Fusion;
+using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -44,7 +46,10 @@ public static class WebApplicationBuilderExtensions
             }, excludeDefaultPolicy: true);
         });
 
-        services.AddFusionCache();
+        services.AddFusionCache()
+            // Auto-clone cached objects to avoid further issues after scaling out and switching to distributed caching.
+            .WithOptions(opt => opt.DefaultEntryOptions.EnableAutoClone = true)
+            .WithSerializer(new FusionCacheSystemTextJsonSerializer());
         services.AddFusionOutputCache(); // For ASP.NET Core Output Caching with FusionCache
 
         services.AddHttpContextAccessor();
