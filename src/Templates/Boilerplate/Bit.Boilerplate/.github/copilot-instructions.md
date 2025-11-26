@@ -60,6 +60,7 @@ The solution is organized into the following projects. Understand their roles to
 
 -   **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` and `riok/mapperly` repositories.
 -   **Website Fetcher**: Gathers information from URLs provided by the user, using `fetch` or `get_web_pages` tools.
+-   **Microsoft Learn**: Provides access to official Microsoft documentation and code samples for Azure, .NET Aspire, .NET MAUI, Entity Framework Core, SignalR, Microsoft.Extensions.AI, SQL Server, and other Microsoft technologies. Use `microsoft_docs_search` to find relevant documentation and `microsoft_code_sample_search` to find official code examples.
 
 ## 5. Mandatory Workflow
 
