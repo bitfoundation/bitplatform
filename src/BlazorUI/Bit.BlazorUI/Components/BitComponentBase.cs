@@ -70,7 +70,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
-    /// The value of the tabindex html attribute of the input element.
+    /// The value of the tabindex html attribute of the element.
     /// </summary>
     [Parameter] public string? TabIndex { get; set; }
 
