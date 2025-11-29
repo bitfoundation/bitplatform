@@ -268,13 +268,27 @@ To achieve automatic disposal when the component is disposed, inject the service
 **Example:**
 
 ```csharp
-Keyboard keyboard => field ??= ScopedServices.GetRequiredService<Keyboard>();
+Keyboard keyboard => field ??= ScopedServices.GetRequiredService<Keyboard>(); // ??= Lazy initialization. It means the service gets resolved when accessed.
+
+protected override async Task OnAfterFirstRenderAsync()
+{
+    await keyboard.Add(ButilKeyCodes.KeyF, () => searchBox.FocusAsync(), ButilModifiers.Ctrl); // Handles keyboard shortcuts
+
+    await base.OnAfterFirstRenderAsync();
+}
 ```
 
 Instead of 
 
 ```csharp
 [AutoInject] private Keyboard keyboard = default!;
+
+protected override async Task OnAfterFirstRenderAsync()
+{
+    await keyboard.Add(ButilKeyCodes.KeyF, () => searchBox.FocusAsync(), ButilModifiers.Ctrl); // Handles keyboard shortcuts
+
+    await base.OnAfterFirstRenderAsync();
+}
 
 protected override async ValueTask DisposeAsync(bool disposing)
 {
