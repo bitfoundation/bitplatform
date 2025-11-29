@@ -22,7 +22,7 @@ public static class AutoInjectNormalClassHandler
         string classNamespace = classSymbol.ContainingNamespace.ToDisplayString();
 
         IReadOnlyCollection<ISymbol> baseEligibleMembers = AutoInjectHelper.GetBaseClassEligibleMembers(classSymbol, attributeSymbol);
-        IReadOnlyCollection<ISymbol> sortedMembers = [.. eligibleMembers.OrderBy(o => o.Name)];
+        IReadOnlyCollection<ISymbol> sortedMembers = eligibleMembers.OrderBy(o => o.Name).ToList();
 
         string source = $@"
 namespace {classNamespace}

@@ -14,7 +14,7 @@ namespace Bit.SourceGenerators;
 public class AutoInjectSourceGenerator : ISourceGenerator
 {
     private static int counter;
-    private static readonly DiagnosticDescriptor NonPartialClassError = new(id: "BITGEN001",
+    private static readonly DiagnosticDescriptor NonPartialClassError = new DiagnosticDescriptor(id: "BITGEN001",
                                                                                               title: "The class needs to be partial",
                                                                                               messageFormat: "{0} is not partial. The AutoInject attribute needs to be used only in partial classes.",
                                                                                               category: "Bit.SourceGenerators",
@@ -38,7 +38,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
             if (IsClassIsPartial(context, group.Key) is false)
                 return;
 
-            string? partialClassSource = GenerateSource(attributeSymbol, group.Key, [.. group]);
+            string? partialClassSource = GenerateSource(attributeSymbol, group.Key, group.ToList());
 
             if (string.IsNullOrEmpty(partialClassSource) is false)
             {
@@ -54,7 +54,7 @@ public class AutoInjectSourceGenerator : ISourceGenerator
             if (IsClassIsPartial(context, @class.BaseType!) is false)
                 return;
 
-            string? partialClassSource = GenerateSource(attributeSymbol, @class, []);
+            string? partialClassSource = GenerateSource(attributeSymbol, @class, new List<ISymbol>());
 
             if (string.IsNullOrEmpty(partialClassSource) is false)
             {
@@ -82,6 +82,48 @@ public class AutoInjectSourceGenerator : ISourceGenerator
 
     private static string? GenerateSource(INamedTypeSymbol? attributeSymbol, INamedTypeSymbol? classSymbol, IReadOnlyCollection<ISymbol> eligibleMembers)
     {
-        return AutoInjectNormalClassHandler.Generate(attributeSymbol, classSymbol, eligibleMembers);
+        AutoInjectClassType env = FigureOutTypeOfEnvironment(classSymbol);
+        return env switch
+        {
+            AutoInjectClassType.NormalClass => AutoInjectNormalClassHandler.Generate(attributeSymbol, classSymbol, eligibleMembers),
+            AutoInjectClassType.RazorComponent => AutoInjectRazorComponentHandler.Generate(classSymbol, eligibleMembers),
+            _ => string.Empty
+        };
+    }
+
+    private static AutoInjectClassType FigureOutTypeOfEnvironment(INamedTypeSymbol? @class)
+    {
+        if (@class is null)
+            throw new ArgumentNullException(nameof(@class));
+
+        if (IsClassIsRazorComponent(@class))
+            return AutoInjectClassType.RazorComponent;
+        else
+            return AutoInjectClassType.NormalClass;
+    }
+
+    private static bool IsClassIsRazorComponent(INamedTypeSymbol @class)
+    {
+        bool isInheritIComponent = @class.AllInterfaces.Any(o => o.ToDisplayString() == "Microsoft.AspNetCore.Components.IComponent");
+
+        if (isInheritIComponent)
+            return true;
+
+        var classFilePaths = @class.Locations
+            .Where(o => o.SourceTree is not null)
+            .Select(o => o.SourceTree?.FilePath)
+            .ToList();
+
+        string razorFileName = $"{@class.Name}.razor";
+
+        foreach (var path in classFilePaths)
+        {
+            string directoryPath = Path.GetDirectoryName(path) ?? string.Empty;
+            string filePath = Path.Combine(directoryPath, razorFileName);
+            if (File.Exists(filePath))
+                return true;
+        }
+
+        return false;
     }
 }
