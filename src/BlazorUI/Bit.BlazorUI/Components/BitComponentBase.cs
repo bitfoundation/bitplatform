@@ -136,7 +136,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
                 case nameof(TabIndex):
                     var tabindex = (string?)parameter.Value;
-                    if (TabIndex != tabindex) StyleBuilder.Reset();
                     TabIndex = tabindex;
                     parametersDictionary.Remove(parameter.Key);
                     break;
