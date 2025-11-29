@@ -5,8 +5,18 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class TodoPage
 {
-    [AutoInject] Keyboard keyboard = default!;
     [AutoInject] ITodoItemController todoItemController = default!;
+
+    /// <summary>
+    /// By default, services remain in Blazor's scope for the lifetime of the app:
+    /// 1- Blazor Server: When the user closes the browser tab or gets disconnected.
+    /// 2- Blazor WebAssembly and Hybrid: When the app is closed.
+    /// This raises no issue with most services, specially those that are registered as singletons,
+    /// but if you prefer the service to be disposed when the component is disposed, use `ScopedServices` instead of AutoInject.
+    /// The following code demonstrates this by injecting the `Keyboard` service using `ScopedServices`,
+    /// this means there's no need to manually dispose it in the `DisposeAsync` method.
+    /// </summary>
+    Keyboard keyboard => field ??= ScopedServices.GetRequiredService<Keyboard>();
 
     private bool isLoading;
     private string? searchText;
@@ -191,16 +201,6 @@ public partial class TodoPage
         if (TodoItemIsVisible(todoItem) is false)
         {
             viewTodoItems.Remove(todoItem);
-        }
-    }
-
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        await base.DisposeAsync(true);
-
-        if (disposing)
-        {
-            await keyboard.DisposeAsync();
         }
     }
 }
