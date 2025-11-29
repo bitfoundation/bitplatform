@@ -250,6 +250,52 @@ public partial class FeedbackPage : AppPageBase
 }
 ```
 
+## Owned services
+
+### Default Service Lifetime in Blazor Components
+
+By default, services injected in Blazor components remain tied to the application scope for the entire lifetime:
+
+- **Blazor Server**: Until the user closes the browser tab or the browser gets disconnected.
+- **Blazor WebAssembly / Blazor Hybrid**: Until the browser tab or app is closed.
+
+This is perfectly fine for most services (especially singletons or stateless ones), but services that hold resources (timers, event subscriptions, native handlers, etc.) may need to be disposed when their associated component is destroyed.
+
+### Using ScopedServices for Automatic Disposal
+
+To achieve automatic disposal when the component is disposed, inject the service via `ScopedServices` instead of using `[AutoInject]`. This creates a scoped service instance that gets disposed along with the component.
+
+**Example:**
+
+```csharp
+Keyboard keyboard => field ??= ScopedServices.GetRequiredService<Keyboard>(); // ??= means the service gets resolved when accessed, results into better performance.
+
+protected override async Task OnAfterFirstRenderAsync()
+{
+    await keyboard.Add(ButilKeyCodes.KeyF, () => searchBox.FocusAsync(), ButilModifiers.Ctrl); // Handles keyboard shortcuts
+
+    await base.OnAfterFirstRenderAsync();
+}
+```
+
+Instead of 
+
+```csharp
+[AutoInject] private Keyboard keyboard = default!;
+
+protected override async Task OnAfterFirstRenderAsync()
+{
+    await keyboard.Add(ButilKeyCodes.KeyF, () => searchBox.FocusAsync(), ButilModifiers.Ctrl); // Handles keyboard shortcuts
+
+    await base.OnAfterFirstRenderAsync();
+}
+
+protected override async ValueTask DisposeAsync(bool disposing)
+{
+    await keyboard.DisposeAsync();
+    await base.DisposeAsync(disposing);
+}
+```
 ---
 
 ### AI Wiki: Answered Questions

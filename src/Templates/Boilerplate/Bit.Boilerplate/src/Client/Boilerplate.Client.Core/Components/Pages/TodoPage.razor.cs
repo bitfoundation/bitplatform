@@ -5,8 +5,10 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class TodoPage
 {
-    [AutoInject] Keyboard keyboard = default!;
     [AutoInject] ITodoItemController todoItemController = default!;
+
+    // Refer to .docs/09- Dependency Injection & Service Registration.md 's Owned services section for more information about ScopedServices
+    Keyboard keyboard => field ??= ScopedServices.GetRequiredService<Keyboard>();
 
     private bool isLoading;
     private string? searchText;
@@ -191,16 +193,6 @@ public partial class TodoPage
         if (TodoItemIsVisible(todoItem) is false)
         {
             viewTodoItems.Remove(todoItem);
-        }
-    }
-
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        await base.DisposeAsync(true);
-
-        if (disposing)
-        {
-            await keyboard.DisposeAsync();
         }
     }
 }
