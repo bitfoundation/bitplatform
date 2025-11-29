@@ -42,16 +42,16 @@ namespace Boilerplate.Shared.Dtos;
 //#endif
 //#if (sample == true)
 [JsonSerializable(typeof(TodoItemDto))]
-[JsonSerializable(typeof(PagedResult<TodoItemDto>))]
+[JsonSerializable(typeof(PagedResponse<TodoItemDto>))]
 [JsonSerializable(typeof(List<TodoItemDto>))]
 //#endif
 //#if (module == "Admin" || module == "Sales")
 [JsonSerializable(typeof(CategoryDto))]
 [JsonSerializable(typeof(List<CategoryDto>))]
-[JsonSerializable(typeof(PagedResult<CategoryDto>))]
+[JsonSerializable(typeof(PagedResponse<CategoryDto>))]
 [JsonSerializable(typeof(ProductDto))]
 [JsonSerializable(typeof(List<ProductDto>))]
-[JsonSerializable(typeof(PagedResult<ProductDto>))]
+[JsonSerializable(typeof(PagedResponse<ProductDto>))]
 //#endif
 //#if (module == "Admin")
 [JsonSerializable(typeof(List<ProductsCountPerCategoryResponseDto>))]

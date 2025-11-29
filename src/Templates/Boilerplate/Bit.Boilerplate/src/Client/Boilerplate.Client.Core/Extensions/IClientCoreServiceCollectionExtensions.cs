@@ -108,7 +108,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         });
 
         //#if (offlineDb == true)
-        services.AddBesqlDbContextFactory<OfflineDbContext>((sp, optionsBuilder) =>
+        services.AddBesqlDbContextFactory<AppOfflineDbContext>((sp, optionsBuilder) =>
         {
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
             var dirPath = isRunningInsideDocker ? "/container_volume"
@@ -119,7 +119,7 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             Directory.CreateDirectory(dirPath);
 
-            var dbPath = Path.Combine(dirPath, "Offline.db");
+            var dbPath = Path.Combine(dirPath, "AppOffline.db");
 
             optionsBuilder.UseSqlite($"Data Source={dbPath}", dbOptions =>
             {
@@ -128,7 +128,7 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             if (AppEnvironment.IsDevelopment() is false)
             {
-                optionsBuilder.UseModel(OfflineDbContextModel.Instance);
+                optionsBuilder.UseModel(AppOfflineDbContextModel.Instance);
             }
 
             optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())

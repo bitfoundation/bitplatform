@@ -137,7 +137,7 @@ public partial class CategoryDto
 
     public int ProductsCount { get; set; }
 
-    public byte[] ConcurrencyStamp { get; set; } = [];
+    public byte[] Version { get; set; } = [];
 }
 ```
 
@@ -382,8 +382,8 @@ public async Task<CategoryDto> Get(Guid id, CancellationToken cancellationToken)
     return dto;
 }
 
-[HttpDelete("{id}/{concurrencyStamp}")]
-public async Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken)
+[HttpDelete("{id}/{version}")]
+public async Task Delete(Guid id, string version, CancellationToken cancellationToken)
 {
     if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))
     {

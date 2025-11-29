@@ -33,7 +33,7 @@ public partial class UserDto : IValidatableObject
 
     public bool HasProfilePicture { get; set; }
 
-    public string? ConcurrencyStamp { get; set; }
+    public string? Version { get; set; }
 
     public string? DisplayName => FullName ?? DisplayUserName;
     public string? DisplayUserName => Email ?? PhoneNumber ?? UserName;
@@ -42,7 +42,7 @@ public partial class UserDto : IValidatableObject
     {
         return HasProfilePicture is false
             ? null
-            : new Uri(absoluteServerAddress, $"/api/Attachment/GetAttachment/{Id}/{AttachmentKind.UserProfileImageSmall}?v={ConcurrencyStamp}").ToString();
+            : new Uri(absoluteServerAddress, $"/api/Attachment/GetAttachment/{Id}/{AttachmentKind.UserProfileImageSmall}?v={Version}").ToString();
     }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

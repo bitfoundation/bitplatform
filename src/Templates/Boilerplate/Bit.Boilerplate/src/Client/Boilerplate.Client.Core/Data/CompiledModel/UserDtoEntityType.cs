@@ -10,109 +10,108 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 #pragma warning disable 219, 612, 618
 #nullable disable
 
-namespace Boilerplate.Client.Core.Data
+namespace Boilerplate.Client.Core.Data;
+
+[EntityFrameworkInternal]
+public partial class UserDtoEntityType
 {
-    [EntityFrameworkInternal]
-    public partial class UserDtoEntityType
+    public static RuntimeEntityType Create(RuntimeModel model, RuntimeEntityType baseEntityType = null)
     {
-        public static RuntimeEntityType Create(RuntimeModel model, RuntimeEntityType baseEntityType = null)
-        {
-            var runtimeEntityType = model.AddEntityType(
-                "Boilerplate.Shared.Dtos.Identity.UserDto",
-                typeof(UserDto),
-                baseEntityType,
-                propertyCount: 10,
-                keyCount: 1);
+        var runtimeEntityType = model.AddEntityType(
+            "Boilerplate.Shared.Dtos.Identity.UserDto",
+            typeof(UserDto),
+            baseEntityType,
+            propertyCount: 10,
+            keyCount: 1);
 
-            var id = runtimeEntityType.AddProperty(
-                "Id",
-                typeof(Guid),
-                propertyInfo: typeof(UserDto).GetProperty("Id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(UserDto).GetField("<Id>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                valueGenerated: ValueGenerated.OnAdd,
-                afterSaveBehavior: PropertySaveBehavior.Throw,
-                sentinel: new Guid("00000000-0000-0000-0000-000000000000"));
+        var id = runtimeEntityType.AddProperty(
+            "Id",
+            typeof(Guid),
+            propertyInfo: typeof(UserDto).GetProperty("Id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            fieldInfo: typeof(UserDto).GetField("<Id>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            valueGenerated: ValueGenerated.OnAdd,
+            afterSaveBehavior: PropertySaveBehavior.Throw,
+            sentinel: new Guid("00000000-0000-0000-0000-000000000000"));
 
-            var birthDate = runtimeEntityType.AddProperty(
-                "BirthDate",
-                typeof(DateTimeOffset?),
-                propertyInfo: typeof(UserDto).GetProperty("BirthDate", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(UserDto).GetField("<BirthDate>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                nullable: true,
-                valueConverter: new DateTimeOffsetToBinaryConverter());
+        var birthDate = runtimeEntityType.AddProperty(
+            "BirthDate",
+            typeof(DateTimeOffset?),
+            propertyInfo: typeof(UserDto).GetProperty("BirthDate", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            fieldInfo: typeof(UserDto).GetField("<BirthDate>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            nullable: true,
+            valueConverter: new DateTimeOffsetToBinaryConverter());
 
-            var concurrencyStamp = runtimeEntityType.AddProperty(
-                "ConcurrencyStamp",
-                typeof(string),
-                propertyInfo: typeof(UserDto).GetProperty("ConcurrencyStamp", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(UserDto).GetField("<ConcurrencyStamp>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                nullable: true);
+        var email = runtimeEntityType.AddProperty(
+            "Email",
+            typeof(string),
+            propertyInfo: typeof(UserDto).GetProperty("Email", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            fieldInfo: typeof(UserDto).GetField("<Email>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            nullable: true);
 
-            var email = runtimeEntityType.AddProperty(
-                "Email",
-                typeof(string),
-                propertyInfo: typeof(UserDto).GetProperty("Email", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(UserDto).GetField("<Email>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                nullable: true);
+        var fullName = runtimeEntityType.AddProperty(
+            "FullName",
+            typeof(string),
+            propertyInfo: typeof(UserDto).GetProperty("FullName", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            fieldInfo: typeof(UserDto).GetField("<FullName>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly));
 
-            var fullName = runtimeEntityType.AddProperty(
-                "FullName",
-                typeof(string),
-                propertyInfo: typeof(UserDto).GetProperty("FullName", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(UserDto).GetField("<FullName>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly));
+        var gender = runtimeEntityType.AddProperty(
+            "Gender",
+            typeof(Gender?),
+            propertyInfo: typeof(UserDto).GetProperty("Gender", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            fieldInfo: typeof(UserDto).GetField("<Gender>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            nullable: true);
 
-            var gender = runtimeEntityType.AddProperty(
-                "Gender",
-                typeof(Gender?),
-                propertyInfo: typeof(UserDto).GetProperty("Gender", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(UserDto).GetField("<Gender>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                nullable: true);
+        var hasProfilePicture = runtimeEntityType.AddProperty(
+            "HasProfilePicture",
+            typeof(bool),
+            propertyInfo: typeof(UserDto).GetProperty("HasProfilePicture", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            fieldInfo: typeof(UserDto).GetField("<HasProfilePicture>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            sentinel: false);
 
-            var hasProfilePicture = runtimeEntityType.AddProperty(
-                "HasProfilePicture",
-                typeof(bool),
-                propertyInfo: typeof(UserDto).GetProperty("HasProfilePicture", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(UserDto).GetField("<HasProfilePicture>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                sentinel: false);
+        var password = runtimeEntityType.AddProperty(
+            "Password",
+            typeof(string),
+            propertyInfo: typeof(UserDto).GetProperty("Password", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            fieldInfo: typeof(UserDto).GetField("<Password>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly));
 
-            var password = runtimeEntityType.AddProperty(
-                "Password",
-                typeof(string),
-                propertyInfo: typeof(UserDto).GetProperty("Password", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(UserDto).GetField("<Password>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly));
+        var phoneNumber = runtimeEntityType.AddProperty(
+            "PhoneNumber",
+            typeof(string),
+            propertyInfo: typeof(UserDto).GetProperty("PhoneNumber", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            fieldInfo: typeof(UserDto).GetField("<PhoneNumber>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            nullable: true);
 
-            var phoneNumber = runtimeEntityType.AddProperty(
-                "PhoneNumber",
-                typeof(string),
-                propertyInfo: typeof(UserDto).GetProperty("PhoneNumber", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(UserDto).GetField("<PhoneNumber>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                nullable: true);
+        var userName = runtimeEntityType.AddProperty(
+            "UserName",
+            typeof(string),
+            propertyInfo: typeof(UserDto).GetProperty("UserName", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            fieldInfo: typeof(UserDto).GetField("<UserName>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly));
 
-            var userName = runtimeEntityType.AddProperty(
-                "UserName",
-                typeof(string),
-                propertyInfo: typeof(UserDto).GetProperty("UserName", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
-                fieldInfo: typeof(UserDto).GetField("<UserName>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly));
+        var version = runtimeEntityType.AddProperty(
+            "Version",
+            typeof(string),
+            propertyInfo: typeof(UserDto).GetProperty("Version", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            fieldInfo: typeof(UserDto).GetField("<Version>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+            nullable: true);
 
-            var key = runtimeEntityType.AddKey(
-                new[] { id });
-            runtimeEntityType.SetPrimaryKey(key);
+        var key = runtimeEntityType.AddKey(
+            new[] { id });
+        runtimeEntityType.SetPrimaryKey(key);
 
-            return runtimeEntityType;
-        }
-
-        public static void CreateAnnotations(RuntimeEntityType runtimeEntityType)
-        {
-            runtimeEntityType.AddAnnotation("Relational:FunctionName", null);
-            runtimeEntityType.AddAnnotation("Relational:Schema", null);
-            runtimeEntityType.AddAnnotation("Relational:SqlQuery", null);
-            runtimeEntityType.AddAnnotation("Relational:TableName", "Users");
-            runtimeEntityType.AddAnnotation("Relational:ViewName", null);
-            runtimeEntityType.AddAnnotation("Relational:ViewSchema", null);
-
-            Customize(runtimeEntityType);
-        }
-
-        static partial void Customize(RuntimeEntityType runtimeEntityType);
+        return runtimeEntityType;
     }
+
+    public static void CreateAnnotations(RuntimeEntityType runtimeEntityType)
+    {
+        runtimeEntityType.AddAnnotation("Relational:FunctionName", null);
+        runtimeEntityType.AddAnnotation("Relational:Schema", null);
+        runtimeEntityType.AddAnnotation("Relational:SqlQuery", null);
+        runtimeEntityType.AddAnnotation("Relational:TableName", "Users");
+        runtimeEntityType.AddAnnotation("Relational:ViewName", null);
+        runtimeEntityType.AddAnnotation("Relational:ViewSchema", null);
+
+        Customize(runtimeEntityType);
+    }
+
+    static partial void Customize(RuntimeEntityType runtimeEntityType);
 }

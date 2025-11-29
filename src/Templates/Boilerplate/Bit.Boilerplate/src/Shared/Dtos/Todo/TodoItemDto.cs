@@ -1,4 +1,4 @@
-namespace Boilerplate.Shared.Dtos.Todo;
+﻿namespace Boilerplate.Shared.Dtos.Todo;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class TodoItemDto
@@ -9,7 +9,7 @@ public partial class TodoItemDto
     [Display(Name = nameof(AppStrings.Title))]
     public string? Title { get; set; }
 
-    public DateTimeOffset Date { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
     public bool IsDone { get; set; }
 

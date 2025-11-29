@@ -188,31 +188,26 @@ This allows each platform to provide its own native implementation while sharing
 
 ## Example: Adding a New Service
 
-Let's say you want to add a `ProductSyncService` that works on all client platforms:
+Let's say you want to add a `FeedbackService` that works on all client platforms:
 
 ### Step 1: Create the Service
 
 ```csharp
-// src/Client/Boilerplate.Client.Core/Services/ProductSyncService.cs
+// src/Client/Boilerplate.Client.Core/Services/FeedbackService.cs
 namespace Boilerplate.Client.Core.Services;
 
-public partial class ProductSyncService
+public partial class FeedbackService
 {
-    [AutoInject] private IProductController productController = default!;
-    [AutoInject] private OfflineDbContext offlineDb = default!;
-    [AutoInject] private ILogger<ProductSyncService> logger = default!;
+    [AutoInject] private IFeedbackController feedbackController = default!;
+    [AutoInject] private ILogger<FeedbackService> logger = default!;
 
-    public async Task SyncProductsAsync()
+    public async Task SendFeedbackAsync(string message, CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Starting product sync...");
+        logger.LogInformation("Sending user feedback...");
         
-        var products = await productController.GetProducts();
+        await feedbackController.SendFeedback(new FeedbackDto { Message = message }, cancellationToken);
         
-        // Save to offline database
-        await offlineDb.Products.AddRangeAsync(products);
-        await offlineDb.SaveChangesAsync();
-        
-        logger.LogInformation("Product sync completed. Synced {Count} products.", products.Count);
+        logger.LogInformation("Feedback sent successfully.");
     }
 }
 ```
@@ -225,8 +220,8 @@ public static IServiceCollection AddClientCoreProjectServices(this IServiceColle
 {
     // ... existing services ...
     
-    // Register as Sessioned because sync state should be per-user
-    services.AddSessioned<ProductSyncService>();
+    // Register as Sessioned because feedback state should be per-user
+    services.AddSessioned<FeedbackService>();
     
     return services;
 }
@@ -236,16 +231,16 @@ public static IServiceCollection AddClientCoreProjectServices(this IServiceColle
 
 ```csharp
 // In any component or page
-public partial class ProductPage : AppPageBase
+public partial class FeedbackPage : AppPageBase
 {
-    [AutoInject] private ProductSyncService productSyncService = default!;
+    [AutoInject] private FeedbackService feedbackService = default!;
 
-    protected override async Task OnInitAsync()
+    private async Task OnSubmitFeedback(string message)
     {
         try
         {
-            await productSyncService.SyncProductsAsync();
-            SnackBarService.Success(Localizer[nameof(AppStrings.ProductsSyncedSuccessfully)]);
+            await feedbackService.SendFeedbackAsync(message);
+            SnackBarService.Success(Localizer[nameof(AppStrings.FeedbackSentSuccessfully)]);
         }
         catch (Exception ex)
         {

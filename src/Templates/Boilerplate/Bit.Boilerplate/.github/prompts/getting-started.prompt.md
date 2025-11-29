@@ -187,11 +187,11 @@ In this stage, you will explain the following topics:
 - **OData Query Options Support**: Explain that the project supports most OData query options:
   - ✅ **Supported**: `$filter`, `$top`, `$skip`, `$orderby`, `$select`
   - ❌ **Not Supported yet**: `$count`
-- **PagedResult for Total Count**: When the client (e.g., a data grid) needs to know both the page data AND the total count of records, use `PagedResult<T>` instead of returning `IQueryable<T>`:
+- **PagedResponse for Total Count**: When the client (e.g., a data grid) needs to know both the page data AND the total count of records, use `PagedResponse<T>` instead of returning `IQueryable<T>`:
   - **Example**: The `GetCategories` method in `CategoryController.cs`:
     ```csharp
     [HttpGet]
-    public async Task<PagedResult<CategoryDto>> GetCategories(ODataQueryOptions<CategoryDto> odataQuery, CancellationToken cancellationToken)
+    public async Task<PagedResponse<CategoryDto>> GetCategories(ODataQueryOptions<CategoryDto> odataQuery, CancellationToken cancellationToken)
     {
         var query = (IQueryable<CategoryDto>)odataQuery.ApplyTo(Get(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
         
@@ -200,7 +200,7 @@ In this stage, you will explain the following topics:
         query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
                      .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
         
-        return new PagedResult<CategoryDto>(await query.ToArrayAsync(cancellationToken), totalCount);
+        return new PagedResponse<CategoryDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
     ```
   - This allows the client to display pagination info like "Showing 10 of 250 items"

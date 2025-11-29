@@ -11,10 +11,10 @@ public interface IProductController : IAppController
     Task<List<ProductDto>> Get(CancellationToken cancellationToken) => default!;
 
     [HttpGet]
-    Task<PagedResult<ProductDto>> GetProducts(CancellationToken cancellationToken) => default!;
+    Task<PagedResponse<ProductDto>> GetProducts(CancellationToken cancellationToken) => default!;
 
     [HttpGet("{searchQuery}")]
-    Task<PagedResult<ProductDto>> SearchProducts(string searchQuery, CancellationToken cancellationToken) => default!;
+    Task<PagedResponse<ProductDto>> SearchProducts(string searchQuery, CancellationToken cancellationToken) => default!;
 
     [HttpGet("{id}")]
     Task<ProductDto> Get(Guid id, CancellationToken cancellationToken);
@@ -25,6 +25,6 @@ public interface IProductController : IAppController
     [HttpPut]
     Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken);
 
-    [HttpDelete("{id}/{concurrencyStamp}")]
-    Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken);
+    [HttpDelete("{id}/{version}")]
+    Task Delete(Guid id, string version, CancellationToken cancellationToken);
 }

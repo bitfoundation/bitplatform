@@ -133,8 +133,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
         foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified or EntityState.Deleted))
         {
-            if (entityEntry.CurrentValues.TryGetValue<object>("ConcurrencyStamp", out var currentConcurrencyStamp) is false
-                || currentConcurrencyStamp is not byte[])
+            if (entityEntry.CurrentValues.TryGetValue<object>("Version", out var currentVersion) is false
+                || currentVersion is not byte[])
                 continue;
 
             //#if (database != "Sqlite")
@@ -143,7 +143,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
             {
                 //#endif
                 // https://github.com/dotnet/efcore/issues/35443
-                entityEntry.OriginalValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", currentConcurrencyStamp } });
+                entityEntry.OriginalValues.SetValues(new Dictionary<string, object> { { "Version", currentVersion } });
                 //#if (IsInsideProjectTemplate == true)
             }
             //#endif
@@ -152,7 +152,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
             if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
             {
                 //#endif
-                entityEntry.CurrentValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", RandomNumberGenerator.GetBytes(8) } });
+                entityEntry.CurrentValues.SetValues(new Dictionary<string, object> { { "Version", RandomNumberGenerator.GetBytes(8) } });
                 //#if (IsInsideProjectTemplate == true)
             }
             //#endif
@@ -231,7 +231,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties()
-                .Where(p => p.Name is "ConcurrencyStamp" && p.PropertyInfo?.PropertyType == typeof(byte[])))
+                .Where(p => p.Name is "Version" && p.PropertyInfo?.PropertyType == typeof(byte[])))
             {
                 var builder = new PropertyBuilder(property);
 

@@ -3,19 +3,22 @@ using System;
 using Boilerplate.Client.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
 namespace Boilerplate.Client.Core.Data.Migrations;
 
-[DbContext(typeof(OfflineDbContext))]
-partial class OfflineDbContextModelSnapshot : ModelSnapshot
+[DbContext(typeof(AppOfflineDbContext))]
+[Migration("20251128225322_Initial")]
+partial class Initial
 {
-    protected override void BuildModel(ModelBuilder modelBuilder)
+    /// <inheritdoc />
+    protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
-        modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
+        modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
 
         modelBuilder.Entity("Boilerplate.Shared.Dtos.Identity.UserDto", b =>
             {
@@ -25,9 +28,6 @@ partial class OfflineDbContextModelSnapshot : ModelSnapshot
 
                 b.Property<long?>("BirthDate")
                     .HasColumnType("INTEGER");
-
-                b.Property<string>("ConcurrencyStamp")
-                    .HasColumnType("TEXT");
 
                 b.Property<string>("Email")
                     .HasColumnType("TEXT");
@@ -51,6 +51,9 @@ partial class OfflineDbContextModelSnapshot : ModelSnapshot
 
                 b.Property<string>("UserName")
                     .IsRequired()
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Version")
                     .HasColumnType("TEXT");
 
                 b.HasKey("Id");
