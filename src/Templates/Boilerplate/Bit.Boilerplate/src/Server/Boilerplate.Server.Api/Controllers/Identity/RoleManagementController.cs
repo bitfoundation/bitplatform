@@ -62,7 +62,6 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     {
         var role = roleDto.Map();
 
-        role.ConcurrencyStamp = Guid.NewGuid().ToString();
         var result = await roleManager.CreateAsync(role);
 
         if (result.Succeeded is false)
@@ -80,9 +79,6 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         if (AppRoles.IsBuiltInRole(role.Name!))
             throw new BadRequestException(Localizer[nameof(AppStrings.CanNotChangeBuiltInRole), role.Name!]);
 
-        if (role.ConcurrencyStamp != roleDto.ConcurrencyStamp)
-            throw new ConflictException();
-
         roleDto.Patch(role);
 
         var result = await roleManager.UpdateAsync(role);
@@ -93,17 +89,14 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         return role.Map();
     }
 
-    [HttpDelete("{roleId}/{concurrencyStamp}")]
+    [HttpDelete("{roleId}")]
     [Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
-    public async Task Delete(Guid roleId, string concurrencyStamp, CancellationToken cancellationToken)
+    public async Task Delete(Guid roleId, CancellationToken cancellationToken)
     {
         var role = await GetRoleById(roleId, cancellationToken);
 
         if (AppRoles.IsBuiltInRole(role.Name!))
             throw new BadRequestException(Localizer[nameof(AppStrings.CanNotChangeBuiltInRole), role.Name!]);
-
-        if (role.ConcurrencyStamp != concurrencyStamp)
-            throw new ConflictException();
 
         await roleManager.DeleteAsync(role);
     }

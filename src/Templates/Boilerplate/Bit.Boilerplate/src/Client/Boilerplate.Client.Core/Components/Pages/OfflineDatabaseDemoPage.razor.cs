@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class OfflineDatabaseDemoPage
 {
-    [AutoInject] IDbContextFactory<OfflineDbContext> dbContextFactory = default!;
+    [AutoInject] IDbContextFactory<AppOfflineDbContext> dbContextFactory = default!;
 
     private bool isSaving;
     private bool isLoading = true;

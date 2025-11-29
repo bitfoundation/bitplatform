@@ -1,10 +1,10 @@
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Boilerplate.Client.Core.Data;
 
-public partial class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbContext(options)
+public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> options) : DbContext(options)
 {
     public virtual DbSet<UserDto> Users { get; set; }
 

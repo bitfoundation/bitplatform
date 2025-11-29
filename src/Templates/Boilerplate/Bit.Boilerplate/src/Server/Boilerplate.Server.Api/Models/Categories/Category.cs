@@ -1,4 +1,4 @@
-using Boilerplate.Server.Api.Models.Products;
+﻿using Boilerplate.Server.Api.Models.Products;
 
 namespace Boilerplate.Server.Api.Models.Categories;
 
@@ -11,7 +11,7 @@ public partial class Category
 
     public string? Color { get; set; }
 
-    public byte[] ConcurrencyStamp { get; set; } = [];
+    public byte[] Version { get; set; } = [];
 
     public IList<Product> Products { get; set; } = [];
 }

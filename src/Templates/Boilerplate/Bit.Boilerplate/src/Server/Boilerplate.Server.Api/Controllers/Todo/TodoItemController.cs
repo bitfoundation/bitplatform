@@ -19,7 +19,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     }
 
     [HttpGet]
-    public async Task<PagedResult<TodoItemDto>> GetTodoItems(ODataQueryOptions<TodoItemDto> odataQuery, CancellationToken cancellationToken)
+    public async Task<PagedResponse<TodoItemDto>> GetTodoItems(ODataQueryOptions<TodoItemDto> odataQuery, CancellationToken cancellationToken)
     {
         var query = (IQueryable<TodoItemDto>)odataQuery.ApplyTo(Get(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
 
@@ -28,7 +28,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
         query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
                      .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
-        return new PagedResult<TodoItemDto>(await query.ToArrayAsync(cancellationToken), totalCount);
+        return new PagedResponse<TodoItemDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
 
     [HttpGet("{id}")]
@@ -47,7 +47,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
 
         entityToAdd.UserId = User.GetUserId();
 
-        entityToAdd.Date = DateTimeOffset.UtcNow;
+        entityToAdd.UpdatedAt = DateTimeOffset.UtcNow;
 
         await DbContext.TodoItems.AddAsync(entityToAdd, cancellationToken);
 

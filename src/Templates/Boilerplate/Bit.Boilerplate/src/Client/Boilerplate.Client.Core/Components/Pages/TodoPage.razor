@@ -87,7 +87,7 @@
                                                          Styles="@(new() { Label = todo.IsDone ? "text-decoration:line-through" : "" })"
                                                          DefaultValue="todo.IsDone"
                                                          OnChange="() => ToggleIsDone(todo)" />
-                                            <BitText Typography="BitTypography.Body2">@todo.Date.ToLocalTime().ToString("F")</BitText>
+                                            <BitText Typography="BitTypography.Body2">@todo.UpdatedAt.ToLocalTime().ToString("F")</BitText>
                                         </BitStack>
 
                                         <BitStack Horizontal AutoWidth Gap="0.5rem">

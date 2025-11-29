@@ -67,12 +67,12 @@ public partial class TodoPage
         if (isDescendingSort)
         {
             items = items.OrderByDescendingIf(selectedSort == nameof(AppStrings.Alphabetical), t => t.Title!)
-                         .OrderByDescendingIf(selectedSort == nameof(AppStrings.Date), t => t.Date!);
+                         .OrderByDescendingIf(selectedSort == nameof(AppStrings.Date), t => t.UpdatedAt!);
         }
         else
         {
             items = items.OrderByIf(selectedSort == nameof(AppStrings.Alphabetical), t => t.Title!)
-                         .OrderByIf(selectedSort == nameof(AppStrings.Date), t => t.Date!);
+                         .OrderByIf(selectedSort == nameof(AppStrings.Date), t => t.UpdatedAt!);
         }
         viewTodoItems = items.ToList();
     }

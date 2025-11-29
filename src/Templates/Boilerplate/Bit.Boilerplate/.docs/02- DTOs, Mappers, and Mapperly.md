@@ -40,7 +40,7 @@ public partial class CategoryDto
 
     public int ProductsCount { get; set; }
 
-    public byte[] ConcurrencyStamp { get; set; } = [];
+    public byte[] Version { get; set; } = [];
 }
 ```
 
@@ -55,7 +55,7 @@ public partial class CategoryDto
 
 3. **Calculated Properties**: `ProductsCount` is a computed property that shows the count of products in a category (not stored in the database)
 
-4. **ConcurrencyStamp**: Used for optimistic concurrency control to prevent conflicting updates
+4. **Version**: Used for optimistic concurrency control to prevent conflicting updates
 
 ### Example: UserDto
 
@@ -117,7 +117,7 @@ public partial class AppJsonContext : JsonSerializerContext
 
 **You must add a `[JsonSerializable]` attribute whenever you:**
 - Create a new DTO
-- Return a `List<T>` or `PagedResult<T>` of a DTO from an API
+- Return a `List<T>` or `PagedResponse<T>` of a DTO from an API
 - Use a DTO in SignalR communication
 
 ---
@@ -166,7 +166,7 @@ public partial class Category
 
     public string? Color { get; set; }
 
-    public byte[] ConcurrencyStamp { get; set; } = [];
+    public byte[] Version { get; set; } = [];
 
     public IList<Product> Products { get; set; } = [];
 }
@@ -220,7 +220,7 @@ SELECT
     c.Name, 
     c.Color, 
     (SELECT COUNT(*) FROM Products WHERE CategoryId = c.Id) AS ProductsCount,
-    c.ConcurrencyStamp
+    c.Version
 FROM Categories c
 ```
 
@@ -261,7 +261,7 @@ return DbContext.Categories.Select(c => new CategoryDto
     Name = c.Name,
     Color = c.Color,
     ProductsCount = c.Products.Count,
-    ConcurrencyStamp = c.ConcurrencyStamp
+    Version = c.Version
 });
 ```
 

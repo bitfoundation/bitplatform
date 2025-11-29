@@ -1,4 +1,4 @@
-using Boilerplate.Server.Api.Models.Identity;
+﻿using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Models.Todo;
 
@@ -8,7 +8,7 @@ public partial class TodoItem
 
     [Required]
     public string? Title { get; set; }
-    public DateTimeOffset Date { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
     public bool IsDone { get; set; }
 
     [ForeignKey(nameof(UserId))]
