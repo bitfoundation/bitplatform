@@ -166,11 +166,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public bool Standalone { get; set; }
 
     /// <summary>
-    /// The tabIndex of the TextField.
-    /// </summary>
-    [Parameter] public int TabIndex { get; set; }
-
-    /// <summary>
     /// The time format of the time-picker, 24H or 12H.
     /// </summary>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }

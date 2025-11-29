@@ -363,11 +363,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public BitDatePickerClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The tabIndex of the DatePicker's input.
-    /// </summary>
-    [Parameter] public int TabIndex { get; set; }
-
-    /// <summary>
     /// The time format of the time-picker, 24H or 12H.
     /// </summary>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }

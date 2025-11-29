@@ -415,11 +415,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public BitDateRangePickerClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The tabIndex of the DateRangePicker's input.
-    /// </summary>
-    [Parameter] public int TabIndex { get; set; }
-
-    /// <summary>
     /// Time format of the time-pickers, 24H or 12H.
     /// </summary>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }

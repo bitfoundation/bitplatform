@@ -3,7 +3,7 @@
 public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 {
     private BitDir? _dir;
-    private string _uniqueId = BitShortId.NewId();
+    private readonly string _uniqueId = BitShortId.NewId();
 
     protected bool IsRendered;
     protected bool IsDisposed;
@@ -70,6 +70,11 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
+    /// The value of the tabindex html attribute of the input element.
+    /// </summary>
+    [Parameter] public string? TabIndex { get; set; }
+
+    /// <summary>
     /// Whether the component is visible, hidden or collapsed.
     /// </summary>
     [Parameter] public BitVisibility Visibility { get; set; }
@@ -126,6 +131,13 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     var style = (string?)parameter.Value;
                     if (Style != style) StyleBuilder.Reset();
                     Style = style;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(TabIndex):
+                    var tabindex = (string?)parameter.Value;
+                    if (TabIndex != tabindex) StyleBuilder.Reset();
+                    TabIndex = tabindex;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 

@@ -330,13 +330,6 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "TabIndex",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The tabIndex of the DatePicker's input."
-        },
-        new()
-        {
             Name = "TimeFormat",
             Type = "BitTimeFormat",
             DefaultValue = "BitTimeFormat.TwentyFourHours",

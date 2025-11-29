@@ -191,13 +191,6 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "TabIndex",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The tabIndex of the TextField.",
-        },
-        new()
-        {
             Name = "TimeFormat",
             Type = "BitTimeFormat",
             DefaultValue = "BitTimeFormat.TwentyFourHours",
