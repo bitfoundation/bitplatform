@@ -268,7 +268,7 @@ To achieve automatic disposal when the component is disposed, inject the service
 **Example:**
 
 ```csharp
-Keyboard keyboard => field ??= ScopedServices.GetRequiredService<Keyboard>(); // ??= Lazy initialization. It means the service gets resolved when accessed.
+Keyboard keyboard => field ??= ScopedServices.GetRequiredService<Keyboard>(); // ??= means the service gets resolved when accessed, results into better performance.
 
 protected override async Task OnAfterFirstRenderAsync()
 {
