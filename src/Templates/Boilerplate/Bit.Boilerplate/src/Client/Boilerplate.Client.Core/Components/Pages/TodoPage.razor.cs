@@ -7,15 +7,7 @@ public partial class TodoPage
 {
     [AutoInject] ITodoItemController todoItemController = default!;
 
-    /// <summary>
-    /// By default, services remain in Blazor's scope for the lifetime of the app:
-    /// 1- Blazor Server: When the user closes the browser tab or gets disconnected.
-    /// 2- Blazor WebAssembly and Hybrid: When the app is closed.
-    /// This raises no issue with most services, specially those that are registered as singletons,
-    /// but if you prefer the service to be disposed when the component is disposed, use `ScopedServices` instead of AutoInject.
-    /// The following code demonstrates this by injecting the `Keyboard` service using `ScopedServices`,
-    /// this means there's no need to manually dispose it in the `DisposeAsync` method.
-    /// </summary>
+    // Refer to .docs/09- Dependency Injection & Service Registration.md 's Owned services section for more information about ScopedServices
     Keyboard keyboard => field ??= ScopedServices.GetRequiredService<Keyboard>();
 
     private bool isLoading;
