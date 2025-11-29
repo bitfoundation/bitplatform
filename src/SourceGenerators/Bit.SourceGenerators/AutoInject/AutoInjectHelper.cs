@@ -20,7 +20,7 @@ public static class AutoInjectHelper
 
 
         bool hasBase = false;
-        List<ISymbol> result = new List<ISymbol>();
+        List<ISymbol> result = [];
         INamedTypeSymbol? currentClass = classSymbol;
 
         do
@@ -28,8 +28,7 @@ public static class AutoInjectHelper
             if (currentClass.BaseType is not null)
             {
                 INamedTypeSymbol baseType = currentClass.BaseType;
-                string baseMetadataName = baseType.ToDisplayString();
-                if (baseMetadataName != "System.Object")
+                if (baseType.SpecialType != SpecialType.System_Object)
                 {
                     var baseEligibleFields = baseType
                         .GetMembers()
@@ -65,7 +64,7 @@ public static class AutoInjectHelper
             }
         } while (hasBase);
 
-        return result.OrderBy(o => o.Name).ToList();
+        return [.. result.OrderBy(o => o.Name)];
     }
 
     public static string FormatMemberName(string? memberName)
@@ -80,7 +79,7 @@ public static class AutoInjectHelper
         if (memberName.Length == 1)
             return memberName.ToUpper(CultureInfo.InvariantCulture);
 
-        return memberName.Substring(0, 1).ToUpper(CultureInfo.InvariantCulture) + memberName.Substring(1);
+        return memberName[..1].ToUpper(CultureInfo.InvariantCulture) + memberName[1..];
     }
 
     public static bool IsContainingSymbolEqualToContainingNamespace(INamedTypeSymbol? @class)

@@ -33,11 +33,9 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private UserAgent userAgent = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IUserController userController = default!;
-    [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
     [AutoInject] private ILogger<AppClientCoordinator> logger = default!;
-    [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
@@ -362,7 +360,7 @@ public partial class AppClientCoordinator : AppComponentBase
         if (CultureInfoManager.InvariantGlobalization is false)
         {
             CultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
-                                                 await storageService.GetItem("Culture") ?? // 2- User settings
+                                                 await StorageService.GetItem("Culture") ?? // 2- User settings
                                                  CultureInfo.CurrentUICulture.Name); // 3- OS settings
         }
     }

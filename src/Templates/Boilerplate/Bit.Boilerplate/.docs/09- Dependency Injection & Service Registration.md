@@ -271,7 +271,7 @@ To achieve automatic disposal when the component is disposed, inject the service
 Keyboard keyboard => field ??= ScopedServices.GetRequiredService<Keyboard>();
 ```
 
-Insetad of 
+Instead of 
 
 ```csharp
 [AutoInject] private Keyboard keyboard = default!;
