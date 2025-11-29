@@ -48,4 +48,9 @@ internal static class BitRichTextEditorJsRuntimeExtensions
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.setContent", id, content);
     }
+
+    public static ValueTask BitRichTextEditorDispose(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.dispose", id);
+    }
 }
