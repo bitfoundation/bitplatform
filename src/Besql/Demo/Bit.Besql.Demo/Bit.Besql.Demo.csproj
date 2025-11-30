@@ -17,10 +17,6 @@
              and open Nuget Package Manager Console, and select `Bit.Besql.Demo.Client` project as default project
              Then run either Add-Migration MigrationName -OutputDir Data\Migrations or
              Optimize-DbContext -OutputDir Data\CompiledModel commands. -->
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tasks" Version="10.0.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

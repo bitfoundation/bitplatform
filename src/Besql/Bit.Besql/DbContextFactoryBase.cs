@@ -1,17 +1,20 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Bit.Besql;
 
-public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext> options,
-        Func<IServiceProvider, TDbContext, Task> dbContextInitializer) : PooledDbContextFactory<TDbContext>(options)
+public class DbContextFactoryBase<TDbContext>(IServiceProvider serviceProvider,
+        DbContextOptions<TDbContext> options,
+        IDbContextFactorySource<TDbContext> factorySource,
+        Func<IServiceProvider, TDbContext, Task> dbContextInitializer) : IDbContextFactory<TDbContext>
     where TDbContext : DbContext
 {
     private TaskCompletionSource? dbContextInitializerTcs;
 
     [RequiresUnreferencedCode("Calls StartRunningDbContextInitializer()")]
-    public override async Task<TDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<TDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
     {
         if (dbContextInitializerTcs is null)
         {
@@ -20,12 +23,14 @@ public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext>
 
         await dbContextInitializerTcs!.Task.ConfigureAwait(false);
 
-        return await base.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var dbContext = factorySource.Factory(serviceProvider, options);
+
+        return dbContext;
     }
 
-    public override TDbContext CreateDbContext()
+    public virtual TDbContext CreateDbContext()
     {
-        return CreateDbContextAsync().GetAwaiter().GetResult();
+        return factorySource.Factory(serviceProvider, options);
     }
 
     [RequiresUnreferencedCode("Calls Bit.Besql.PooledDbContextFactoryBase<TDbContext>.InitializeDbContext()")]
@@ -52,7 +57,7 @@ public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext>
     {
         if (dbContextInitializer is not null)
         {
-            await using var dbContext = await base.CreateDbContextAsync().ConfigureAwait(false);
+            await using var dbContext = factorySource.Factory(serviceProvider, options);
             await dbContextInitializer(dbContext.GetService<IServiceProvider>(), dbContext).ConfigureAwait(false);
         }
     }

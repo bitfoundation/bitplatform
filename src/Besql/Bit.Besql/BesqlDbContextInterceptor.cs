@@ -7,7 +7,7 @@ namespace Bit.Besql;
 
 public class BesqlDbContextInterceptor(IBitBesqlStorage storage) : IDbCommandInterceptor, ISingletonInterceptor
 {
-    private readonly string[] keywords = ["INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP"];
+    private readonly string[] keywords = ["INSERT INTO ", "UPDATE ", "DELETE FROM ", "CREATE ", "ALTER ", "DROP "];
 
     public DbDataReader ReaderExecuted(
         DbCommand command,

@@ -1,13 +1,14 @@
 ﻿using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Bit.Besql;
 
-public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBase<TDbContext>
+public class BesqlDbContextFactory<TDbContext> : DbContextFactoryBase<TDbContext>
     where TDbContext : DbContext
 {
     private readonly string _fileName;
@@ -15,12 +16,12 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
     private readonly IBitBesqlStorage _storage;
     private readonly IServiceProvider _serviceProvider;
 
-    public BesqlPooledDbContextFactory(
-        IBitBesqlStorage storage,
+    public BesqlDbContextFactory(
+        IServiceProvider serviceProvider,
         DbContextOptions<TDbContext> options,
+        IDbContextFactorySource<TDbContext> factorySource,
         Func<IServiceProvider, TDbContext, Task> dbContextInitializer,
-        IServiceProvider serviceProvider)
-        : base(options, dbContextInitializer)
+        IBitBesqlStorage storage) : base(serviceProvider, options, factorySource, dbContextInitializer)
     {
         _connectionString = options.Extensions
                 .OfType<RelationalOptionsExtension>()
