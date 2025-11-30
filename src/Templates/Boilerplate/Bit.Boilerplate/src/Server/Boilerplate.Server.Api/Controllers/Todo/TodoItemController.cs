@@ -32,7 +32,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     }
 
     [HttpGet("{id}")]
-    public async Task<TodoItemDto> Get(Guid id, CancellationToken cancellationToken)
+    public async Task<TodoItemDto> Get(string id, CancellationToken cancellationToken)
     {
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
@@ -70,7 +70,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     }
 
     [HttpDelete("{id}")]
-    public async Task Delete(Guid id, CancellationToken cancellationToken)
+    public async Task Delete(string id, CancellationToken cancellationToken)
     {
         DbContext.TodoItems.Remove(new() { Id = id });
 

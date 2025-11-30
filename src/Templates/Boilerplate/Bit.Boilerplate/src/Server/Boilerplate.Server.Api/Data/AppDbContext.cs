@@ -3,7 +3,7 @@
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Server.Api.Models.Categories;
 //#endif
-//#if (sample == true)
+//#if (sample == true || offlineDb == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
 using Boilerplate.Server.Api.Models.Identity;
@@ -11,9 +11,6 @@ using Boilerplate.Server.Api.Data.Configurations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 //#if (notification == true)
 using Boilerplate.Server.Api.Models.PushNotification;
-//#endif
-//#if (database == "Sqlite")
-using System.Security.Cryptography;
 //#endif
 using Hangfire.EntityFrameworkCore;
 using Boilerplate.Server.Api.Models.Attachments;
@@ -26,7 +23,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
-    //#if (sample == true)
+    //#if (sample == true || offlineDb == true)
     public DbSet<TodoItem> TodoItems { get; set; } = default!;
     //#endif
     //#if (module == "Admin" || module == "Sales")
@@ -101,7 +98,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         try
         {
-            SetConcurrencyStamp();
+            OnSavingChanges();
 
 #pragma warning disable NonAsyncEFCoreMethodsUsageAnalyzer
             return base.SaveChanges(acceptAllChangesOnSuccess);
@@ -117,7 +114,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         try
         {
-            SetConcurrencyStamp();
+            OnSavingChanges();
 
             return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
@@ -127,9 +124,15 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         }
     }
 
-    private void SetConcurrencyStamp()
+    private void OnSavingChanges()
     {
         ChangeTracker.DetectChanges();
+
+        foreach (var entry in ChangeTracker.Entries().Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
+        {
+            if (entry.Properties.Any(p => p.Metadata.Name == "UpdatedAt"))
+                entry.CurrentValues["UpdatedAt"] = DateTimeOffset.UtcNow;
+        }
 
         foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified or EntityState.Deleted))
         {
@@ -137,26 +140,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
                 || currentVersion is not byte[])
                 continue;
 
-            //#if (database != "Sqlite")
-            //#if (IsInsideProjectTemplate == true)
-            if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture) is false)
-            {
-                //#endif
-                // https://github.com/dotnet/efcore/issues/35443
-                entityEntry.OriginalValues.SetValues(new Dictionary<string, object> { { "Version", currentVersion } });
-                //#if (IsInsideProjectTemplate == true)
-            }
-            //#endif
-            //#else
-            //#if (IsInsideProjectTemplate == true)
-            if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
-            {
-                //#endif
-                entityEntry.CurrentValues.SetValues(new Dictionary<string, object> { { "Version", RandomNumberGenerator.GetBytes(8) } });
-                //#if (IsInsideProjectTemplate == true)
-            }
-            //#endif
-            //#endif
+            // https://github.com/dotnet/efcore/issues/35443
+            entityEntry.OriginalValues["Version"] = currentVersion;
         }
     }
 

@@ -476,7 +476,7 @@
                     ]
                 },
                 {
-                    "condition": "(sample != true)",
+                    "condition": "(sample != true && offlineDb != true)",
                     "exclude": [
                         "src/Shared/Dtos/Todo/**",
                         "src/Server/Boilerplate.Server.Api/Controllers/Todo/**",
@@ -492,7 +492,12 @@
                     "condition": "(offlineDb != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Data/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/OfflineDatabaseDemoPage*"
+                        "src/Client/Boilerplate.Client.Core/Services/SyncService.cs",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/OfflineTodoPage*",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemController.cs",
+                        "src/Server/Boilerplate.Server.Api/Mappers/TodoMapper.cs",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*",
+                        "src/Shared/Controllers/Todo/**"
                     ]
                 },
                 {

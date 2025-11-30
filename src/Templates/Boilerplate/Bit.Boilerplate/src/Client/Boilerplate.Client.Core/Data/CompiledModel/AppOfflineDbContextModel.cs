@@ -5,42 +5,43 @@ using Microsoft.EntityFrameworkCore.Metadata;
 #pragma warning disable 219, 612, 618
 #nullable disable
 
-namespace Boilerplate.Client.Core.Data;
-
-[DbContext(typeof(AppOfflineDbContext))]
-public partial class AppOfflineDbContextModel : RuntimeModel
+namespace Boilerplate.Client.Core.Data
 {
-    private static readonly bool _useOldBehavior31751 =
-        System.AppContext.TryGetSwitch("Microsoft.EntityFrameworkCore.Issue31751", out var enabled31751) && enabled31751;
-
-    static AppOfflineDbContextModel()
+    [DbContext(typeof(AppOfflineDbContext))]
+    public partial class AppOfflineDbContextModel : RuntimeModel
     {
-        var model = new AppOfflineDbContextModel();
+        private static readonly bool _useOldBehavior31751 =
+            System.AppContext.TryGetSwitch("Microsoft.EntityFrameworkCore.Issue31751", out var enabled31751) && enabled31751;
 
-        if (_useOldBehavior31751)
+        static AppOfflineDbContextModel()
         {
-            model.Initialize();
-        }
-        else
-        {
-            var thread = new System.Threading.Thread(RunInitialization, 10 * 1024 * 1024);
-            thread.Start();
-            thread.Join();
+            var model = new AppOfflineDbContextModel();
 
-            void RunInitialization()
+            if (_useOldBehavior31751)
             {
                 model.Initialize();
             }
+            else
+            {
+                var thread = new System.Threading.Thread(RunInitialization, 10 * 1024 * 1024);
+                thread.Start();
+                thread.Join();
+
+                void RunInitialization()
+                {
+                    model.Initialize();
+                }
+            }
+
+            model.Customize();
+            _instance = (AppOfflineDbContextModel)model.FinalizeModel();
         }
 
-        model.Customize();
-        _instance = (AppOfflineDbContextModel)model.FinalizeModel();
+        private static AppOfflineDbContextModel _instance;
+        public static IModel Instance => _instance;
+
+        partial void Initialize();
+
+        partial void Customize();
     }
-
-    private static AppOfflineDbContextModel _instance;
-    public static IModel Instance => _instance;
-
-    partial void Initialize();
-
-    partial void Customize();
 }

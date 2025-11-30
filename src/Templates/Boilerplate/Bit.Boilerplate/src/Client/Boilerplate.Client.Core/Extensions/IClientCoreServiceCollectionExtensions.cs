@@ -134,7 +134,10 @@ public static partial class IClientCoreServiceCollectionExtensions
             optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
                     .EnableDetailedErrors(AppEnvironment.IsDevelopment());
 
-        }, dbContextInitializer: async (sp, dbContext) => await Task.Run(async () => await dbContext.Database.MigrateAsync()));
+        }
+        , dbContextInitializer: async (sp, dbContext) => await Task.Run(async () => await dbContext.Database.MigrateAsync())
+        , lifetime: ServiceLifetime.Scoped);
+        services.AddScoped<SyncService>();
         //#endif
 
         //#if (appInsights == true)

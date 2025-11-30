@@ -99,7 +99,7 @@ After applying changes, you **MUST** verify the integrity of the application.
 
 *   **Be Decisive**: Do not ask for permission to proceed or for a review of your plan. Directly state your plan and proceed with the implementation.
 *   **Execute Commands Individually**: **Never** chain CLI commands with `&&`. Execute each command in a separate step.
-*   **Getting started**: When a developer first interacts with you with a message like `Run getting started`, you **MUST** proactively follow `.github/prompts/getting-started.prompt.md`.
+*   **Important**: If the user's prompt language is a Right-to-Left (RTL) language (e.g., فارسی, العربية, עברית), you **MUST** prepend the Unicode character U+202B (‫) at the beginning of **text, bullet points, and paragraphs**, except inside code blocks, code examples, file paths, or any technical content that should remain in LTR format.
 
 ## 7. Critical Command Reference
 

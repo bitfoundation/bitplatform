@@ -6,21 +6,26 @@ using Microsoft.EntityFrameworkCore.Metadata;
 #pragma warning disable 219, 612, 618
 #nullable disable
 
-namespace Boilerplate.Client.Core.Data;
-
-public partial class AppOfflineDbContextModel
+namespace Boilerplate.Client.Core.Data
 {
-    private AppOfflineDbContextModel()
-        : base(skipDetectChanges: false, modelId: new Guid("0687ec37-33db-4238-976d-993653e85faf"), entityTypeCount: 1)
+    public partial class AppOfflineDbContextModel
     {
-    }
+        private AppOfflineDbContextModel()
+            : base(skipDetectChanges: false, modelId: new Guid("bbbbaa7a-81ce-4f4a-8374-cdc16b6868d5"), entityTypeCount: 3)
+        {
+        }
 
-    partial void Initialize()
-    {
-        var userDto = UserDtoEntityType.Create(this);
+        partial void Initialize()
+        {
+            var todoItemDto = TodoItemDtoEntityType.Create(this);
+            var datasyncDeltaToken = DatasyncDeltaTokenEntityType.Create(this);
+            var datasyncOperation = DatasyncOperationEntityType.Create(this);
 
-        UserDtoEntityType.CreateAnnotations(userDto);
+            TodoItemDtoEntityType.CreateAnnotations(todoItemDto);
+            DatasyncDeltaTokenEntityType.CreateAnnotations(datasyncDeltaToken);
+            DatasyncOperationEntityType.CreateAnnotations(datasyncOperation);
 
-        AddAnnotation("ProductVersion", "10.0.0");
+            AddAnnotation("ProductVersion", "10.0.0");
+        }
     }
 }

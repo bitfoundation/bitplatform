@@ -448,6 +448,22 @@ dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --outpu
 - Do **NOT** run `Update-Database` for client-side migrations
 - The migration is automatically applied via `MigrateAsync()` when the app starts using AppOfflineDbContext
 
+### Data Synchronization
+
+`SyncService` uses `CommunityToolkit.DataSync` to synchronize data between the client-side offline database and the server database.
+Conventions:
+
+- Entity must inhert from `BaseEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs)
+- DTO must have the following properties: Example: [`/src/Shared/Dtos/Todo/TodoItemDto.cs`](/src/Shared/Dtos/Todo/TodoItemDto.cs)
+```csharp
+public bool Deleted { get; set; }
+public byte[] Version { get; set; } = [];
+public string Id { get; set; } = Guid.NewGuid().ToString("N");
+public DateTimeOffset? UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+```
+- TableController: A controller inheriting from `TableController<TEntity>` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs)
+- Repository: A repository inheriting from `EntityTableRepository<TEntity>` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs)
+
 ### Additional Resources
 
 For comprehensive information about the client-side offline database, including:
@@ -460,9 +476,6 @@ For comprehensive information about the client-side offline database, including:
 
 ---
 
-### AI Wiki: Answered Questions
-* [Why do the delete actions in the built-in boilerplate controllers check the concurrency stamp? Describe the problem they aim to solve, and then outline the solution.](https://deepwiki.com/search/why-do-the-delete-actions-in-t_d89c90a5-8854-4b9c-a555-b160327ae9b7)
-
-Ask your own question [here](https://wiki.bitplatform.dev)
+Ask your question [here](https://wiki.bitplatform.dev)
 
 ---

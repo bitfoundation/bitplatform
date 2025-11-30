@@ -24,7 +24,9 @@ public static partial class PageUrls
     public const string AddOrEditProduct = "/add-edit-product";
 
     //#endif
-    //#if (sample == true)
+    //#if (offlineDb == true)
+    public const string OfflineTodo = "/offline-todo";
+    //#elseif (sample == true)
     public const string Todo = "/todo";
     //#endif
     //#if (module == "Sales")
@@ -40,10 +42,6 @@ public static partial class PageUrls
     public const string Roles = "/user-groups";
 
     public const string Users = "/users";
-
-    //#if (offlineDb == true)
-    public const string OfflineDatabaseDemo = "/offline-database-demo";
-    //#endif
 
     public const string WebInteropApp = "/web-interop-app.html";
 }

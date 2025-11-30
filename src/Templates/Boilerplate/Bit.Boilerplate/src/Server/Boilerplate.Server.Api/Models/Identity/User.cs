@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (sample == true)
+//#if (sample == true || offlineDb == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
 using Boilerplate.Server.Api.Models.Attachments;
@@ -40,7 +40,7 @@ public partial class User : IdentityUser<Guid>
 
     public List<UserSession> Sessions { get; set; } = [];
 
-    //#if (sample == true)
+    //#if (sample == true || offlineDb == true)
     public List<TodoItem> TodoItems { get; set; } = [];
     //#endif
 

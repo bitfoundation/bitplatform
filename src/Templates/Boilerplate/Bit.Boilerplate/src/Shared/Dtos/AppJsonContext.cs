@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (sample == true)
+//#if (sample == true || offlineDb == true)
 using Boilerplate.Shared.Dtos.Todo;
 //#endif
 //#if (module == "Admin")
@@ -40,7 +40,7 @@ namespace Boilerplate.Shared.Dtos;
 //#if (notification == true)
 [JsonSerializable(typeof(PushNotificationSubscriptionDto))]
 //#endif
-//#if (sample == true)
+//#if (sample == true || offlineDb == true)
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(PagedResponse<TodoItemDto>))]
 [JsonSerializable(typeof(List<TodoItemDto>))]

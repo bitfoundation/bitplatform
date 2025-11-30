@@ -1,4 +1,4 @@
-using Boilerplate.Shared.Dtos.Todo;
+﻿using Boilerplate.Shared.Dtos.Todo;
 
 namespace Boilerplate.Shared.Controllers.Todo;
 
@@ -6,7 +6,7 @@ namespace Boilerplate.Shared.Controllers.Todo;
 public interface ITodoItemController : IAppController
 {
     [HttpGet("{id}")]
-    Task<TodoItemDto> Get(Guid id, CancellationToken cancellationToken);
+    Task<TodoItemDto> Get(string id, CancellationToken cancellationToken);
 
     [HttpPost]
     Task<TodoItemDto> Create(TodoItemDto dto, CancellationToken cancellationToken);
@@ -15,7 +15,7 @@ public interface ITodoItemController : IAppController
     Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancellationToken);
 
     [HttpDelete("{id}")]
-    Task Delete(Guid id, CancellationToken cancellationToken);
+    Task Delete(string id, CancellationToken cancellationToken);
 
     [HttpGet]
     Task<List<TodoItemDto>> Get(CancellationToken cancellationToken) => default!;

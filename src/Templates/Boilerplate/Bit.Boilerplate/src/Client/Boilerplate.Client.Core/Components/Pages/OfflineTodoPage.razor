@@ -1,11 +1,11 @@
-@attribute [Route(PageUrls.Todo)]
-@attribute [Route("{culture?}" + PageUrls.Todo)]
+@attribute [Route(PageUrls.OfflineTodo)]
+@attribute [Route("{culture?}" + PageUrls.OfflineTodo)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 @attribute [Authorize(Policy = AppFeatures.Todo.ManageTodo)]
 @inherits AppPageBase
 
-<AppPageData Title="@Localizer[nameof(AppStrings.Todo)]"
-             PageTitle="@Localizer[nameof(AppStrings.TodoPageTitle)]" />
+<AppPageData Title="@Localizer[nameof(AppStrings.OfflineTodoTitle)]"
+             PageTitle="@Localizer[nameof(AppStrings.OfflineTodoTitle)]" />
 
 <section>
     <BitStack Class="stack">

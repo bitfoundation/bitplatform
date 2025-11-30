@@ -272,11 +272,17 @@
   </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->
-    <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
-    <value>ویرایش پروفایل آفلاین</value>
+    <data name="OfflineTodoTitle" xml:space="preserve">
+    <value>کارها (آفلاین)</value>
   </data>
-    <data name="OfflineDatabaseDemoMessage" xml:space="preserve">
-    <value>فرم ویرایش آفلاین مبتنی‌بر EF Core / Sqlite قابل‌ استفاده در برنامه های وب / موبایل / دسکتاپ شما!</value>
+    <data name="SyncPushFailed" xml:space="preserve">
+    <value>ارسال تغییرات به سرور به خطا خورد</value>
+  </data>
+    <data name="SyncPullFailed" xml:space="preserve">
+    <value>دریافت تغییرات از سرور به خطا خورد</value>
+  </data>
+    <data name="SyncPushSuccess" xml:space="preserve">
+    <value>ارسال {0} تغییر به سرور</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
@@ -939,7 +945,7 @@
     <data name="AboutPageTitle" xml:space="preserve">
     <value>درباره</value>
   </data>
-    <!--#if (sample == true) -->
+    <!--#if (sample == true || offlineDb == true) -->
     <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>افزودن یک کار</value>
   </data>
