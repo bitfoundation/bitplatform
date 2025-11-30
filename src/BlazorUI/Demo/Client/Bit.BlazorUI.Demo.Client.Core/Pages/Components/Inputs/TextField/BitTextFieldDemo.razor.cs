@@ -248,13 +248,6 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "TabIndex",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The value of the tabindex html attribute of the input element.",
-        },
-        new()
-        {
             Name = "Trim",
             Type = "bool",
             DefaultValue = "false",
