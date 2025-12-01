@@ -49,9 +49,9 @@ public partial class Initial : Migration
             {
                 Id = table.Column<string>(type: "TEXT", nullable: false),
                 Title = table.Column<string>(type: "TEXT", nullable: false),
+                IsDone = table.Column<bool>(type: "INTEGER", nullable: false),
                 Deleted = table.Column<bool>(type: "INTEGER", nullable: false),
                 UpdatedAt = table.Column<long>(type: "INTEGER", nullable: true),
-                IsDone = table.Column<bool>(type: "INTEGER", nullable: false),
                 Version = table.Column<byte[]>(type: "BLOB", nullable: false)
             },
             constraints: table =>

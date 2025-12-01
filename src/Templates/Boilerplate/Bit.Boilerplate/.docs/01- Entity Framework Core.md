@@ -454,15 +454,10 @@ dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --outpu
 Conventions:
 
 - Entity must inherit from `BaseEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs)
+- DTO must inherit from `BaseDtoTableData` Example: [`/src/Shared/Dtos/Todo/TodoItemDto.cs`](/src/Shared/Dtos/Todo/TodoItemDto.cs)
 - DTO must have the following properties: Example: [`/src/Shared/Dtos/Todo/TodoItemDto.cs`](/src/Shared/Dtos/Todo/TodoItemDto.cs)
-```csharp
-public string Id { get; set; } = default!;
-public byte[] Version { get; set; } = [];
-public bool Deleted { get; set; }
-public DateTimeOffset? UpdatedAt { get; set; }
-```
-- TableController: A controller inheriting from `TableController<TEntity>` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs)
-- Repository: A repository inheriting from `EntityTableRepository<TEntity>` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs)
+- TableController: A controller inheriting from `TableController` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs)
+- Repository: A repository inheriting from `EntityTableRepository` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs)
 
 ### Additional Resources
 

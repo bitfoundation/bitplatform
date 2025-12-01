@@ -11,7 +11,7 @@ namespace Boilerplate.Client.Core.Data
     public partial class AppOfflineDbContextModel
     {
         private AppOfflineDbContextModel()
-            : base(skipDetectChanges: false, modelId: new Guid("bbbbaa7a-81ce-4f4a-8374-cdc16b6868d5"), entityTypeCount: 3)
+            : base(skipDetectChanges: false, modelId: new Guid("40922f74-71b1-40d3-8faf-03b6a182a1bf"), entityTypeCount: 3)
         {
         }
 

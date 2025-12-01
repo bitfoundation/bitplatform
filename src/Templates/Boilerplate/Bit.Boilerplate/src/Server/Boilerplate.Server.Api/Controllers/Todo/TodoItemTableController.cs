@@ -1,6 +1,6 @@
-﻿using Boilerplate.Server.Api.Models.Todo;
-using Boilerplate.Shared.Dtos.Todo;
+﻿using Boilerplate.Shared.Dtos.Todo;
 using CommunityToolkit.Datasync.Server;
+using Boilerplate.Server.Api.Models.Todo;
 using CommunityToolkit.Datasync.Server.EntityFrameworkCore;
 
 namespace Boilerplate.Server.Api.Controllers.Todo;
@@ -24,9 +24,11 @@ public class TodoItemTableController : TableController<TodoItemDto>
     }
 }
 
-public class TodoItemTableRepository(IHttpContextAccessor httpContextAccessor, AppDbContext dbContext)
-    : IRepository<TodoItemDto>
+public partial class TodoItemTableRepository : IRepository<TodoItemDto>
 {
+    [AutoInject] private AppDbContext dbContext = default!;
+    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
+
     private EntityTableRepository<TodoItem> Repository => field ??= new(dbContext);
 
     public async ValueTask<IQueryable<TodoItemDto>> AsQueryableAsync(CancellationToken cancellationToken = default)
