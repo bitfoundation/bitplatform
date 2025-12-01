@@ -93,7 +93,7 @@ public partial class BitActionButtonDemo
         {
             Name = "IconOnly",
             Type = "bool",
-            DefaultValue = "null",
+            DefaultValue = "false",
             Description = "Removes the container of the text and only renders the icon.",
         },
         new()
