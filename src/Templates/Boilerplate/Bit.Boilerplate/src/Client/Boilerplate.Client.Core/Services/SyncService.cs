@@ -75,6 +75,10 @@ public partial class SyncService : IAsyncDisposable
             if (pushResult.CompletedOperations > 0)
                 snackBarService.Success(localizer[nameof(AppStrings.SyncPushSuccess), pushResult.CompletedOperations]);
         }
+        catch (ServerConnectionException)
+        {
+            // Simply ignore connection exceptions during sync
+        }
         catch (Exception exp)
         {
             exceptionHandler.Handle(exp, displayKind: telemetryContext.IsOnline is true ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
