@@ -96,13 +96,6 @@ public partial class OfflineTodoPage
         return condition1 && condition2;
     }
 
-    private async Task ToggleIsDone(TodoItemDto todoItem)
-    {
-        todoItem.IsDone = !todoItem.IsDone;
-
-        await UpdateTodoItem(todoItem);
-    }
-
     private void SearchTodoItems(string text)
     {
         searchText = text;
