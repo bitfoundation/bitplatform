@@ -15,6 +15,9 @@ using Boilerplate.Server.Api.Models.PushNotification;
 using Hangfire.EntityFrameworkCore;
 using Boilerplate.Server.Api.Models.Attachments;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+//#if (offlineDb == true)
+using CommunityToolkit.Datasync.Server.EntityFrameworkCore;
+//#endif
 
 namespace Boilerplate.Server.Api.Data;
 
@@ -215,6 +218,11 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
+            //#if (offlineDb == true)
+            if (typeof(BaseEntityTableData).IsAssignableFrom(entityType.ClrType) is false)
+                continue; // No concurrency check for client side offline database sync entities
+            //#endif
+
             foreach (var property in entityType.GetProperties()
                 .Where(p => p.Name is "Version" && p.PropertyInfo?.PropertyType == typeof(byte[])))
             {
