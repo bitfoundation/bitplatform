@@ -22,6 +22,7 @@
     "AzureOpenAI": {
         "Model": "gpt-4.1-mini",
         "Endpoint": "https://yourResourceName.openai.azure.com/openai/deployments/yourDeployment",
+        "Endpoint__Comment": "Another URL format: https://your-azure-ai-foundry-resource-name.services.ai.azure.com/models",
         "ApiKey": null
     }
 }
