@@ -74,7 +74,6 @@ jobs:
   build_blazor:
     name: build blazor web
     runs-on: windows-2025
-    needs: build_api # Prevents parallel run to avoid resource exhaustion
 
     steps:
     
@@ -285,7 +284,6 @@ jobs:
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
     runs-on: windows-2025
-    needs: build_blazor # Prevents parallel run to avoid resource exhaustion
   
     steps:
      
@@ -344,7 +342,6 @@ jobs:
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
     runs-on: ubuntu-24.04
-    needs: build_blazor_hybrid_windows # Prevents parallel run to avoid resource exhaustion
   
     steps:
      
@@ -440,7 +437,6 @@ jobs:
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
     runs-on: macOS-26
-    needs: build_blazor_hybrid_android # Prevents parallel run to avoid resource exhaustion
   
     steps:
      
