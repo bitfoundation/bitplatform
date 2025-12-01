@@ -219,7 +219,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             //#if (offlineDb == true)
-            if (typeof(BaseEntityTableData).IsAssignableFrom(entityType.ClrType) is false)
+            if (typeof(BaseEntityTableData).IsAssignableFrom(entityType.ClrType))
                 continue; // No concurrency check for client side offline database sync entities
             //#endif
 
