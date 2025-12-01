@@ -453,7 +453,7 @@ dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --outpu
 `SyncService` uses `CommunityToolkit.DataSync` to synchronize data between the client-side offline database and the server database.
 Conventions:
 
-- Entity must inhert from `BaseEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs)
+- Entity must inherit from `BaseEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs)
 - DTO must have the following properties: Example: [`/src/Shared/Dtos/Todo/TodoItemDto.cs`](/src/Shared/Dtos/Todo/TodoItemDto.cs)
 ```csharp
 public bool Deleted { get; set; }

@@ -5,7 +5,7 @@ using CommunityToolkit.Datasync.Client.Offline;
 namespace Boilerplate.Client.Core.Services;
 
 /// <summary>
-/// Syncronize client offline database changes with the server,
+/// Synchronize client offline database changes with the server,
 /// and pull server changes to the client offline database.
 /// </summary>
 public partial class SyncService : IAsyncDisposable
@@ -82,6 +82,7 @@ public partial class SyncService : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await cts.TryCancel();
+        using var currentCts = cts;
+        await currentCts.TryCancel();
     }
 }
