@@ -1,4 +1,4 @@
-@page "/components/actionbutton"
+﻿@page "/components/actionbutton"
 @page "/components/action-button"
 
 <PageOutlet Url="components/actionbutton"
@@ -13,6 +13,8 @@
           GitHubUrl="Buttons/ActionButton/BitActionButton.razor"
           GitHubDemoUrl="Buttons/ActionButton/BitActionButtonDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <div>Explore the core features of the BitActionButton to get a feel for its baseline behavior.</div>
+        <br />
         <BitActionButton IconName="@BitIconName.AddFriend">
             Create account
         </BitActionButton>
@@ -38,7 +40,8 @@
     </DemoExample>
 
     <DemoExample Title="Href" RazorCode="@example2RazorCode" Id="example2">
-        <div>Use BitActionButton as a hyperlink to external URLs, opening either in a new tab or the same tab.</div><br />
+        <div>Turn ActionButton into a link and choose whether it opens in the current tab or a new one.</div>
+        <br />
         <div class="example-content">
             <BitActionButton IconName="@BitIconName.Globe" Href="https://bitplatform.dev" Target="_blank">
                 Open bitplatform.dev in a new tab
@@ -51,7 +54,8 @@
     </DemoExample>
 
     <DemoExample Title="Rel" RazorCode="@example3RazorCode" Id="example3">
-        <div>Use BitActionButton as a hyperlink to external URLs, with a rel attribute.</div><br />
+        <div>Attach rel attribute values (e.g., nofollow, noreferrer) when using ActionButton as an external link.</div>
+        <br />
         <div class="example-content">
             <BitActionButton Rel="BitLinkRel.NoFollow" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe">
                 Open bitplatform.dev with a rel attribute (nofollow)
@@ -64,7 +68,7 @@
     </DemoExample>
 
     <DemoExample Title="Template" RazorCode="@example4RazorCode" Id="example4">
-        <div>Add custom template within BitActionButton.</div><br />
+        <div>Drop richer content inside ActionButton with a custom template (text plus spinner in this example).</div><br />
         <div class="example-content">
             <BitActionButton IconName="@BitIconName.AddFriend">
                 <div style="display:flex;gap:0.5rem;">
@@ -75,8 +79,9 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Button Type" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div>Use BitActionButton within a form and validate its state.</div><br />
+    <DemoExample Title="ButtonType" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>See submit/reset/button types in action inside a validated form.</div>
+        <br />
         <div class="form-container">
             @if (formIsValidSubmit is false)
             {
@@ -111,7 +116,8 @@
     </DemoExample>
 
     <DemoExample Title="FullWidth" RazorCode="@example6RazorCode" Id="example6">
-        <div>Stretch buttons or align content by combining FullWidth and ReversedIcon.</div><br />
+        <div>Stretch buttons or align content by combining FullWidth and ReversedIcon.</div>
+        <br />
         <BitActionButton FullWidth IconName="@BitIconName.NavigationFlipper">
             FullWidth
         </BitActionButton>
@@ -122,7 +128,8 @@
     </DemoExample>
 
     <DemoExample Title="Color" RazorCode="@example7RazorCode" Id="example7">
-        <div>Demonstrates BitActionButton with various predefined colors: Primary, Secondary, Tertiary, Info, Success, Warning, SevereWarning, and Error.</div><br />
+        <div>Preview the predefined colors of the BitActionButton for icon and text, from primary through warning/error, and the background/foreground/border sets.</div>
+        <br />
         <div>
             <div class="example-content">
                 <BitActionButton Color="BitColor.Primary" IconName="@BitIconName.ColorSolid">
@@ -282,7 +289,8 @@
     </DemoExample>
 
     <DemoExample Title="Size" RazorCode="@example8RazorCode" Id="example8">
-        <div>Show BitActionButton in different sizes: Small, Medium, and Large.</div><br />
+        <div>Compare the Small, Medium, and Large presets to gauge typography and padding differences.</div>
+        <br />
         <div class="example-content">
             <BitActionButton Size="BitSize.Small" IconName="@BitIconName.FontSize">
                 Small
@@ -297,7 +305,8 @@
     </DemoExample>
 
     <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
-        <div>Customize the appearance of BitActionButton using styles and CSS classes.</div><br />
+        <div>Override look-and-feel with inline styles or custom CSS classes applied to the root, icon, and content.</div>
+        <br />
         <div class="example-content column">
             <BitActionButton IconName="@BitIconName.Brush"
                              Styles="@(new() { Root = "font-size: 1.5rem;",
@@ -316,7 +325,8 @@
     </DemoExample>
 
     <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
-        <div>Use BitActionButton in right-to-left (RTL).</div><br />
+        <div>View ActionButton inside a right-to-left layout, respecting RTL direction and icon/text ordering.</div>
+        <br />
         <div dir="rtl">
             <BitActionButton Dir="BitDir.Rtl" IconName="@BitIconName.AddFriend">
                 ساخت حساب
@@ -324,3 +334,4 @@
         </div>
     </DemoExample>
 </DemoPage>
+
