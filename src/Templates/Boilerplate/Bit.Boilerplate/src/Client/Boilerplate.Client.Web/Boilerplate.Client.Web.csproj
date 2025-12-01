@@ -60,7 +60,7 @@
     <ItemGroup Condition="'$(module)' == 'Admin' OR '$(module)' == ''">
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
     </ItemGroup>
-    <ItemGroup Condition="('$(offlineDb)' == 'false')">
+    <ItemGroup Condition="('$(offlineDb)' == 'true')">
         <BlazorWebAssemblyLazyLoad Include="Microsoft.Spatial.wasm" />
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->
