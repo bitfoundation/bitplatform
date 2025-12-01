@@ -68,7 +68,8 @@ public partial class SyncService : IAsyncDisposable
 
                 if (pullResult.IsSuccessful is false)
                     throw new BadRequestException(localizer[nameof(AppStrings.SyncPullFailed)])
-                        .WithData(pullResult.FailedRequests.ToDictionary(fr => fr.Key.ToString(), fr => (object?)fr.Value.ReasonPhrase));
+                        .WithData(pullResult.FailedRequests.ToDictionary(fr => fr.Key.ToString(), fr => (object?)fr.Value.ReasonPhrase))
+                        .WithData(pullResult.LocalExceptions.ToDictionary(le => le.Key.ToString(), le => (object?)le.Value.Message));
             }
 
             if (pushResult.CompletedOperations > 0)
