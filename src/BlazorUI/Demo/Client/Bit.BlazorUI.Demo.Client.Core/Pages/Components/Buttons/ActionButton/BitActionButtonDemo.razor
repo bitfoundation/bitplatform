@@ -19,8 +19,8 @@
             Create account
         </BitActionButton>
         <br />
-        <BitActionButton ReversedIcon IconName="@BitIconName.AddFriend">
-            Reversed Icon
+        <BitActionButton IconPosition="BitIconPosition.End" IconName="@BitIconName.AddFriend">
+            End Icon
         </BitActionButton>
         <br />
         <BitActionButton IconName="@BitIconName.AddFriend" IsEnabled="false">
@@ -39,7 +39,21 @@
         </BitActionButton>
     </DemoExample>
 
-    <DemoExample Title="Href" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="IconPosition" RazorCode="@example2RazorCode" Id="example2">
+        <div>Pick where the icon sits relative to the content: leave it at the start (default) or move it to the end without changing your content order.</div>
+        <br />
+        <div class="example-content">
+            <BitActionButton IconPosition="BitIconPosition.Start" IconName="@BitIconName.AddFriend">
+                Start (default)
+            </BitActionButton>
+
+            <BitActionButton IconPosition="BitIconPosition.End" IconName="@BitIconName.AddFriend">
+                End
+            </BitActionButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Href" RazorCode="@example3RazorCode" Id="example3">
         <div>Turn ActionButton into a link and choose whether it opens in the current tab or a new one.</div>
         <br />
         <div class="example-content">
@@ -53,7 +67,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Rel" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Rel" RazorCode="@example4RazorCode" Id="example4">
         <div>Attach rel attribute values (e.g., nofollow, noreferrer) when using ActionButton as an external link.</div>
         <br />
         <div class="example-content">
@@ -67,7 +81,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Template" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Template" RazorCode="@example5RazorCode" Id="example5">
         <div>Drop richer content inside ActionButton with a custom template (text plus spinner in this example).</div><br />
         <div class="example-content">
             <BitActionButton IconName="@BitIconName.AddFriend">
@@ -79,7 +93,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="ButtonType" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="ButtonType" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>See submit/reset/button types in action inside a validated form.</div>
         <br />
         <div class="form-container">
@@ -115,19 +129,19 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="FullWidth" RazorCode="@example6RazorCode" Id="example6">
-        <div>Stretch buttons or align content by combining FullWidth and ReversedIcon.</div>
+    <DemoExample Title="FullWidth" RazorCode="@example7RazorCode" Id="example7">
+        <div>Stretch buttons or align content by combining FullWidth and an end-positioned icon.</div>
         <br />
         <BitActionButton FullWidth IconName="@BitIconName.NavigationFlipper">
             FullWidth
         </BitActionButton>
         <br />
-        <BitActionButton FullWidth ReversedIcon IconName="@BitIconName.Forward">
-            FullWidth with reversed icon
+        <BitActionButton FullWidth IconPosition="BitIconPosition.End" IconName="@BitIconName.Forward">
+            FullWidth with end icon
         </BitActionButton>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Color" RazorCode="@example8RazorCode" Id="example8">
         <div>Preview the predefined colors of the BitActionButton for icon and text, from primary through warning/error, and the background/foreground/border sets.</div>
         <br />
         <div>
@@ -288,7 +302,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Size" RazorCode="@example9RazorCode" Id="example9">
         <div>Compare the Small, Medium, and Large presets to gauge typography and padding differences.</div>
         <br />
         <div class="example-content">
@@ -304,7 +318,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
         <div>Override look-and-feel with inline styles or custom CSS classes applied to the root, icon, and content.</div>
         <br />
         <div class="example-content column">
@@ -324,7 +338,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
         <div>View ActionButton inside a right-to-left layout, respecting RTL direction and icon/text ordering.</div>
         <br />
         <div dir="rtl">

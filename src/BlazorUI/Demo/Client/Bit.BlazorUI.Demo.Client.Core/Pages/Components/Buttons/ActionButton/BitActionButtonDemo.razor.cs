@@ -98,6 +98,15 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "IconPosition",
+            Type = "BitIconPosition?",
+            DefaultValue = "null",
+            Description = "Sets whether the icon renders before or after the content.",
+            LinkType = LinkType.Link,
+            Href = "#icon-position-enum",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Raised when the action button is clicked (only when IsEnabled is true); receives MouseEventArgs.",
@@ -110,13 +119,6 @@ public partial class BitActionButtonDemo
             Description = "Custom inline styles for the root, icon, and content sections of the action button.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
-        },
-        new()
-        {
-            Name = "ReversedIcon",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Swaps the order of the icon and content so the icon appears after the text.",
         },
         new()
         {
@@ -350,6 +352,27 @@ public partial class BitActionButtonDemo
                     Name= "Large",
                     Description="The large size button.",
                     Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "icon-position-enum",
+            Name = "BitIconPosition",
+            Description = "Describes the placement of an icon relative to other content.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Start",
+                    Description = "Icon renders before the content (default).",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "End",
+                    Description = "Icon renders after the content.",
+                    Value = "1",
                 }
             ]
         },

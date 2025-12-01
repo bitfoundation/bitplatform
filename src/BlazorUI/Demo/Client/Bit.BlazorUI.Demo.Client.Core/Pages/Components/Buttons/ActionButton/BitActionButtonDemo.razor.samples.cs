@@ -7,8 +7,8 @@ public partial class BitActionButtonDemo
     Create account
 </BitActionButton>
 
-<BitActionButton ReversedIcon IconName=""@BitIconName.AddFriend"">
-    Reversed Icon
+<BitActionButton IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.AddFriend"">
+    End Icon
 </BitActionButton>
 
 <BitActionButton IconName=""@BitIconName.AddFriend"" IsEnabled=""false"">
@@ -27,6 +27,15 @@ public partial class BitActionButtonDemo
 </BitActionButton>";
 
     private readonly string example2RazorCode = @"
+<BitActionButton IconPosition=""BitIconPosition.Start"" IconName=""@BitIconName.AddFriend"">
+    Start (default)
+</BitActionButton>
+
+<BitActionButton IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.AddFriend"">
+    End
+</BitActionButton>";
+
+    private readonly string example3RazorCode = @"
 <BitActionButton IconName=""@BitIconName.Globe"" Href=""https://bitplatform.dev"" Target=""_blank"">
     Open bitplatform.dev in a new tab
 </BitActionButton>
@@ -35,7 +44,7 @@ public partial class BitActionButtonDemo
     Go to bitplatform GitHub
 </BitActionButton>";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitActionButton Rel=""BitLinkRel.NoFollow"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"">
     Open bitplatform.dev with a rel attribute (nofollow)
 </BitActionButton>
@@ -44,7 +53,7 @@ public partial class BitActionButtonDemo
     Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
 </BitActionButton>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitActionButton IconName=""@BitIconName.AddFriend"">
     <div style=""display:flex;gap:0.5rem;"">
         <b>This is a custom template</b>
@@ -52,7 +61,7 @@ public partial class BitActionButtonDemo
     </div>
 </BitActionButton>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
 
@@ -75,7 +84,7 @@ public partial class BitActionButtonDemo
         </BitActionButton>
     </div>
 </EditForm>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
@@ -95,16 +104,16 @@ private async Task HandleValidSubmit()
     StateHasChanged();
 }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitActionButton FullWidth IconName=""@BitIconName.NavigationFlipper"">
     FullWidth
 </BitActionButton>
 
-<BitActionButton FullWidth ReversedIcon IconName=""@BitIconName.Forward"">
-    FullWidth with reversed icon
+<BitActionButton FullWidth IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.Forward"">
+    FullWidth with end icon
 </BitActionButton>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitActionButton Color=""BitColor.Primary"" IconName=""@BitIconName.ColorSolid"">
     Primary
 </BitActionButton>
@@ -224,7 +233,7 @@ private async Task HandleValidSubmit()
     TertiaryBorder
 </BitActionButton>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitActionButton Size=""BitSize.Small"" IconName=""@BitIconName.FontSize"">
     Small
 </BitActionButton>
@@ -237,7 +246,7 @@ private async Task HandleValidSubmit()
     Large
 </BitActionButton>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .custom-icon {
         color: hotpink;
@@ -282,7 +291,7 @@ private async Task HandleValidSubmit()
     Action Button Classes (Hover me)
 </BitActionButton>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitActionButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.AddFriend"">
     ساخت حساب
 </BitActionButton>";
