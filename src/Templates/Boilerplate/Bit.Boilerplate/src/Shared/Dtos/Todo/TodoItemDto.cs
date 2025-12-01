@@ -7,6 +7,16 @@ public partial class TodoItemDto
     : BaseDtoTableData
 //#endif
 {
+    //#if (offlineDb != true)
+    //#if (IsInsideProjectTemplate == true)
+    /*
+    //#endif
+    public new string Id { get; set; }
+    public new DateTimeOffset? UpdatedAt { get; set; }
+    //#if (IsInsideProjectTemplate == true)
+    */
+    //#endif
+    //#endif
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Title))]
