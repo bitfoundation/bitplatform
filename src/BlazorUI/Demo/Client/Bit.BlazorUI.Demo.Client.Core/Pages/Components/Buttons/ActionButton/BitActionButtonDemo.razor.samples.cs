@@ -7,8 +7,8 @@ public partial class BitActionButtonDemo
     Create account
 </BitActionButton>
 
-<BitActionButton ReversedIcon IconName=""@BitIconName.AddFriend"">
-    Reversed Icon
+<BitActionButton IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.AddFriend"">
+    End Icon
 </BitActionButton>
 
 <BitActionButton IconName=""@BitIconName.AddFriend"" IsEnabled=""false"">
@@ -100,8 +100,8 @@ private async Task HandleValidSubmit()
     FullWidth
 </BitActionButton>
 
-<BitActionButton FullWidth ReversedIcon IconName=""@BitIconName.Forward"">
-    FullWidth with reversed icon
+<BitActionButton FullWidth IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.Forward"">
+    FullWidth with end icon
 </BitActionButton>";
 
     private readonly string example7RazorCode = @"

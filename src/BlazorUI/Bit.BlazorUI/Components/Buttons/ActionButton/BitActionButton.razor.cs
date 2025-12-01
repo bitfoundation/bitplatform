@@ -83,6 +83,12 @@ public partial class BitActionButton : BitComponentBase
     [Parameter] public bool IconOnly { get; set; }
 
     /// <summary>
+    /// Determines where the icon is rendered relative to the content.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitIconPosition? IconPosition { get; set; }
+
+    /// <summary>
     /// Raised when the action button is clicked (only when <see cref="BitComponentBase.IsEnabled"/> is true); receives <see cref="MouseEventArgs"/>.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -91,12 +97,6 @@ public partial class BitActionButton : BitComponentBase
     /// Custom inline styles for the root, icon, and content sections of the action button.
     /// </summary>
     [Parameter] public BitActionButtonClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// Swaps the order of the icon and content so the icon appears after the text.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool ReversedIcon { get; set; }
 
     /// <summary>
     /// Sets the <c>rel</c> attribute for link-rendered buttons when <see cref="Href"/> is a non-anchor URL; ignored for empty or hash-only hrefs.
@@ -162,7 +162,7 @@ public partial class BitActionButton : BitComponentBase
             _ => "bit-acb-md"
         });
 
-        ClassBuilder.Register(() => ReversedIcon ? "bit-acb-rvi" : string.Empty);
+        ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-acb-eni" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
