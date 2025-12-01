@@ -8,7 +8,7 @@ namespace Bit.BlazorUI;
 public partial class BitActionButton : BitComponentBase
 {
     private string? _rel;
-    private int? _tabIndex;
+    private string? _tabIndex;
     private BitButtonType _buttonType;
 
 
@@ -170,7 +170,11 @@ public partial class BitActionButton : BitComponentBase
     {
         if (IsEnabled is false)
         {
-            _tabIndex = AllowDisabledFocus ? null : -1;
+            _tabIndex = AllowDisabledFocus ? null : "-1";
+        }
+        else
+        {
+            _tabIndex = TabIndex ?? _tabIndex;
         }
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
