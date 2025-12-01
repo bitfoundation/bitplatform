@@ -455,7 +455,6 @@ Conventions:
 
 - Entity must inherit from `BaseEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs)
 - DTO must inherit from `BaseDtoTableData` Example: [`/src/Shared/Dtos/Todo/TodoItemDto.cs`](/src/Shared/Dtos/Todo/TodoItemDto.cs)
-- DTO must have the following properties: Example: [`/src/Shared/Dtos/Todo/TodoItemDto.cs`](/src/Shared/Dtos/Todo/TodoItemDto.cs)
 - TableController: A controller inheriting from `TableController` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs)
 - Repository: A repository inheriting from `EntityTableRepository` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs)
 
