@@ -3,7 +3,8 @@ name: Todo Sample CD
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
 env:
-  SERVER_ADDRESS: 'https://todo.bitplatform.dev'
+  SERVER_WEB_ADDRESS: 'https://todo.bitplatform.dev'
+  SERVER_API_ADDRESS: 'https://todo-api.bitplatform.dev'
   AzureOpenAI__ApiKey: ${{ secrets.AzureOpenAI__ApiKey }}
   AzureOpenAI__Endpoint: ${{ secrets.AzureOpenAI__Endpoint }}
   AZUREOPENAI__MODEL: ${{ secrets.AZUREOPENAI__MODEL }}
@@ -19,15 +20,15 @@ permissions:
 
 jobs:
 
-  build_api_blazor:
-    name: build api + blazor web
+  build_api:
+    name: build api
     runs-on: windows-2025
 
     steps:
     
     - name: Checkout source code
       uses: actions/checkout@v6
-
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
@@ -39,11 +40,62 @@ jobs:
 
     - name: Create project from Boilerplate
       run: |
-        cd src/Templates/Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
+       cd src/Templates/Boilerplate && dotnet build -c Release
+       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+       dotnet new install Bit.Boilerplate.0.0.0.nupkg
+       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb --signalR --ads --api Standalone
+       
+    - name: Use Bit.ResxTranslator
+      run: |
+            cd TodoSample
+            dotnet tool install --global Bit.ResxTranslator --prerelease
+            bit-resx-translate
 
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'TodoSample/**/appsettings*json'
+      env:
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
+        AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+
+    - name: Publish Server API
+      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Api/TodoSample.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}"
+
+    - name: Upload server api artifact
+      uses: actions/upload-artifact@v5
+      with:
+        name: server-api-bundle
+        path: server-api
+        include-hidden-files: true # Required for wwwroot/.well-known folder
+
+  build_blazor:
+    name: build blazor web
+    runs-on: windows-2025
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v6
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: Create project from Boilerplate
+      run: |
+       cd src/Templates/Boilerplate && dotnet build -c Release
+       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+       dotnet new install Bit.Boilerplate.0.0.0.nupkg
+       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads --api Standalone
+       
     - name: Use Bit.ResxTranslator
       run: |
             cd TodoSample
@@ -56,66 +108,33 @@ jobs:
         files: 'TodoSample/**/appsettings*json'
       env:
         WebAppRender.PrerenderEnabled: true
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         WebAppRender.BlazorMode: 'BlazorWebAssembly'
         AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-
+        
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
 
     - name: Configure bswup # Always AlwaysPrerender is the last item, so overriding it has the desired effect
       run: |
           sed -i "s/\/\/ self.mode = 'AlwaysPrerender'/self.mode = 'InitialPrerender'/g" TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
-
+      
     - name: Generate CSS/JS files
       run: |
           dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
           dotnet build TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
+      
+    - name: Publish Server Web
+      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}"
 
-    - name: Publish
-      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"
-
-    - name: Upload server artifact
+    - name: Upload server web artifact
       uses: actions/upload-artifact@v5
       with:
-        name: server-bundle
-        path: server
+        name: server-web-bundle
+        path: server-web
         include-hidden-files: true # Required for wwwroot/.well-known folder
-
-  deploy_api_blazor:
-    name: deploy api + blazor
-    needs: build_api_blazor
-    runs-on: ubuntu-24.04
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:
-
-      - name: Retrieve server bundle
-        uses: actions/download-artifact@v6
-        with:
-          name: server-bundle
-
-      - name: Retrieve AppleAuthKey.p8
-        run: echo "${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY_TODO }}" > AppleAuthKey.p8
-
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'bit-todo'
-          slot-name: 'production'
-          publish-profile: ${{ secrets.TODO_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
-          package: .
-
-      - name: Purge cache
-        uses: jakejarvis/cloudflare-purge-action@v0.3.0
-        env:
-          CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
-          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 
   deploy_blazor_wasm_standalone_aot:
     name: build blazor wasm standalone (AOT)

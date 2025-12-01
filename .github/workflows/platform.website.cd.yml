@@ -40,33 +40,3 @@ jobs:
         name: server-bundle
         path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
-
-  deploy_api_blazor:
-    name: deploy api + blazor
-    needs: build_api_blazor
-    runs-on: ubuntu-24.04
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:
-
-      - name: Retrieve server bundle
-        uses: actions/download-artifact@v6
-        with:
-          name: server-bundle
-
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.APP_SERVICE_NAME }}
-          slot-name: 'production'
-          publish-profile: ${{ secrets.BITPLATFORM_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
-          package: .
-
-      - name: Purge cache
-        uses: jakejarvis/cloudflare-purge-action@v0.3.0
-        env:
-          CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
-          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}

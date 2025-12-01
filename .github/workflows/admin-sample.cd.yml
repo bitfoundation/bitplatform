@@ -144,39 +144,6 @@ jobs:
           npm install -g @azure/static-web-apps-cli
           swa deploy --deployment-token ${{ secrets.ADMINPANEL_ASW_TOKEN }} --env production --app-location client/wwwroot
 
-  deploy_api_blazor:
-    name: deploy api + blazor
-    needs: build_api_blazor
-    runs-on: ubuntu-24.04
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:
-
-      - name: Retrieve server bundle
-        uses: actions/download-artifact@v6
-        with:
-          name: server-web-bundle
-
-      - name: Retrieve AppleAuthKey.p8
-        run: echo "${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY_ADMIN }}" > AppleAuthKey.p8
-
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.APP_SERVICE_NAME }}
-          slot-name: 'production'
-          publish-profile: ${{ secrets.ADMINPANEL_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
-          package: .
-
-      - name: Purge cache
-        uses: jakejarvis/cloudflare-purge-action@v0.3.0
-        env:
-          CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
-          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
-
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
     runs-on: windows-2025
