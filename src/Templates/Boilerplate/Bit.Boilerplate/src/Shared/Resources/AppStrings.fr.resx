@@ -120,1248 +120,1248 @@
   </resheader>
   <!-- .NET Validation messages -->
   <data name="CompareAttribute_ValidationError" xml:space="preserve">
-    <value>'{0}' och '{1}' matchar inte.</value>
+    <value>'{0}' et '{1}' ne correspondent pas.</value>
   </data>
   <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} är inte en giltig e-postadress.</value>
+    <value>Le champ {0} n'est pas une adresse e-mail valide.</value>
   </data>
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>MaxLengthAttribute måste ha ett längdvärde som är större än noll. Använd MaxLength() utan parametrar för att ange att strängen eller arrayen kan ha den maximalt tillåtna längden.</value>
+    <value>MaxLengthAttribute doit avoir une valeur Length supérieure à zéro. Utilisez MaxLength() sans paramètres pour indiquer que la chaîne ou le tableau peut avoir la longueur maximale autorisée.</value>
   </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} måste vara en sträng- eller arraytyp med en minsta längd på '{1}'.</value>
+    <value>Le champ {0} doit être de type chaîne ou tableau avec une longueur minimale de '{1}'.</value>
   </data>
   <data name="RangeAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} måste vara mellan {1} och {2}.</value>
+    <value>Le champ {0} doit être compris entre {1} et {2}.</value>
   </data>
   <data name="RequiredAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} är obligatoriskt.</value>
+    <value>Le champ {0} est requis.</value>
   </data>
   <data name="PhoneAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} är inte ett giltigt telefonnummer.</value>
+    <value>Le champ {0} n'est pas un numéro de téléphone valide.</value>
   </data>
   <!-- Exceptions -->
   <data name="BadRequestException" xml:space="preserve">
-    <value>Ogiltig förfrågan</value>
+    <value>Requête invalide</value>
   </data>
   <data name="ConflictException" xml:space="preserve">
-    <value>Begäran kunde inte behandlas på grund av en konflikt</value>
+    <value>La requête n'a pas pu être traitée en raison d'un conflit dans la requête</value>
   </data>
   <data name="NotAuthorizedPageTitle" xml:space="preserve">
-    <value>Inte auktoriserad</value>
+    <value>Non autorisé</value>
   </data>
   <data name="ForbiddenException" xml:space="preserve">
-    <value>Åtkomst till den begärda resursen är förbjuden</value>
+    <value>L'accès à la ressource demandée est interdit</value>
   </data>
   <data name="ResourceValidationException" xml:space="preserve">
-    <value>Ogiltig data i begäran</value>
+    <value>Les données de la requête ne sont pas valides</value>
   </data>
   <data name="RestException" xml:space="preserve">
-    <value>Ett fel uppstod vid kommunikation med servern</value>
+    <value>Une erreur s'est produite lors de la communication avec le serveur</value>
   </data>
   <data name="UnauthorizedException" xml:space="preserve">
-    <value>Din förfrågan saknar giltiga autentiseringsuppgifter</value>
+    <value>Votre requête manque de credentials d'authentification valides</value>
   </data>
   <data name="UnknownException" xml:space="preserve">
-    <value>Okänt fel har uppstått</value>
+    <value>Une erreur inconnue s'est produite</value>
   </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
-    <value>Posten ändrades av en annan användare efter att du hämtade den ursprungliga informationen. Åtgärden avbröts.</value>
+    <value>L'enregistrement a été modifié par un autre utilisateur après que vous ayez obtenu les données originales. L'opération a été annulée.</value>
   </data>
   <data name="ResourceNotFoundException" xml:space="preserve">
-    <value>Resursen hittades inte</value>
+    <value>Ressource non trouvée</value>
   </data>
   <data name="TooManyRequestExceptions" xml:space="preserve">
-    <value>För många förfrågningar</value>
+    <value>Trop de requêtes</value>
   </data>
   <data name="ServerConnectionException" xml:space="preserve">
-    <value>Kan inte ansluta till servern.</value>
+    <value>Impossible de se connecter au serveur.</value>
   </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
-    <value>Aktiv</value>
+    <value>Actif</value>
   </data>
   <data name="All" xml:space="preserve">
-    <value>Alla</value>
+    <value>Tous</value>
   </data>
   <data name="Alphabetical" xml:space="preserve">
-    <value>A-Ö</value>
+    <value>A-Z</value>
   </data>
   <data name="Completed" xml:space="preserve">
-    <value>Slutförd</value>
+    <value>Terminé</value>
   </data>
   <data name="Date" xml:space="preserve">
-    <value>Datum</value>
+    <value>Date</value>
   </data>
   <data name="SettingsPageTitle" xml:space="preserve">
-    <value>Inställningar</value>
+    <value>Paramètres</value>
   </data>
   <data name="Settings" xml:space="preserve">
-    <value>Inställningar</value>
+    <value>Paramètres</value>
   </data>
   <data name="Dark" xml:space="preserve">
-    <value>Mörk</value>
+    <value>Sombre</value>
   </data>
   <data name="Light" xml:space="preserve">
-    <value>Ljus</value>
+    <value>Clair</value>
   </data>
   <data name="Language" xml:space="preserve">
-    <value>Språk</value>
+    <value>Langue</value>
   </data>
   <data name="SelectLanguage" xml:space="preserve">
-    <value>Välj språk</value>
+    <value>Sélectionner la langue</value>
   </data>
   <data name="ProfileTitle" xml:space="preserve">
     <value>Profil</value>
   </data>
   <data name="ProfileSubtitle" xml:space="preserve">
-    <value>Redigera din profildata</value>
+    <value>Modifier vos données de profil</value>
   </data>
   <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
-    <value>Koden för att byta e-post har skickats till dig</value>
+    <value>Un jeton de changement d'e-mail vous a été envoyé</value>
   </data>
   <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
-    <value>Koden för att byta telefonnummer har skickats till dig</value>
+    <value>Un jeton de changement de numéro de téléphone vous a été envoyé</value>
   </data>
   <data name="SuccessfulSendTokenMessage" xml:space="preserve">
-    <value>Koden har skickats till dig</value>
+    <value>Le jeton vous a été envoyé</value>
   </data>
   <data name="SessionsTitle" xml:space="preserve">
-    <value>Sessioner</value>
+    <value>Sessions</value>
   </data>
   <data name="SessionsSubtitle" xml:space="preserve">
-    <value>Dina aktiva sessioner på flera enheter</value>
+    <value>Vos sessions actives sur plusieurs appareils</value>
   </data>
   <data name="CurrentSession" xml:space="preserve">
-    <value>Nuvarande session</value>
+    <value>Session actuelle</value>
   </data>
   <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
-    <value>Av {0} tillåtna enheter för fulla funktioner har du använt {1}.
-Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</value>
+    <value>Sur {0} appareils autorisés pour les fonctionnalités complètes, vous en avez utilisé {1}.
+Après avoir atteint {0}, les connexions supplémentaires auront des fonctions réduites.</value>
   </data>
   <data name="OtherSessions" xml:space="preserve">
-    <value>Andra sessioner</value>
+    <value>Autres sessions</value>
   </data>
   <data name="TryRemovingOtherSessions" xml:space="preserve">
-    <value>Försök ta bort andra sessioner</value>
+    <value>Essayez de supprimer d'autres sessions</value>
   </data>
   <data name="RemoveSessionSuccessMessage" xml:space="preserve">
-    <value>Sessionen har tagits bort.</value>
+    <value>Session supprimée avec succès</value>
   </data>
   <data name="NotFoundPageTitle" xml:space="preserve">
     <value>404</value>
   </data>
   <data name="NotFoundText" xml:space="preserve">
-    <value>Det finns inget här.</value>
+    <value>Il n'y a rien ici.</value>
   </data>
   <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
-    <value>Uppdatera webview via Google Play.</value>
+    <value>Veuillez mettre à jour le webview via Google Play.</value>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>Ok</value>
+    <value>OK</value>
   </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
-    <value>Systemprompts</value>
+    <value>Invites système</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
-    <value>Visa systemprompts för chattbotten här.</value>
+    <value>Voir les invites système pour le chatbot ici.</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
-    <value>Push-notifikationsjobb</value>
+    <value>Tâche de notification push</value>
   </data>
   <!--#endif-->
   <!--#if (offlineDb == true) -->
   <data name="OfflineTodoTitle" xml:space="preserve">
-    <value>Att göra (Offline)</value>
+    <value>À faire (Hors ligne)</value>
   </data>
   <data name="SyncPushFailed" xml:space="preserve">
-    <value>Misslyckades med att skicka ändringar till servern</value>
+    <value>L'envoi des modifications au serveur a échoué</value>
   </data>
   <data name="SyncPullFailed" xml:space="preserve">
-    <value>Misslyckades med att hämta ändringar från servern</value>
+    <value>La récupération des modifications depuis le serveur a échoué</value>
   </data>
   <data name="SyncPushSuccess" xml:space="preserve">
-    <value>Skickade {0} ändringar till servern</value>
+    <value>{0} modifications envoyées au serveur</value>
   </data>
   <!--#endif-->
   <data name="FullName" xml:space="preserve">
-    <value>Fullt namn</value>
+    <value>Nom complet</value>
   </data>
   <data name="TermsPageTitle" xml:space="preserve">
-    <value>Villkor</value>
+    <value>Conditions</value>
   </data>
   <data name="Terms" xml:space="preserve">
-    <value>Villkor</value>
+    <value>Conditions</value>
   </data>
   <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
-    <value>Profilen har uppdaterats.</value>
+    <value>Profil mis à jour avec succès.</value>
   </data>
   <data name="ConfirmPassword" xml:space="preserve">
-    <value>Bekräfta lösenord</value>
+    <value>Confirmer le mot de passe</value>
   </data>
   <data name="ConfirmNewPassword" xml:space="preserve">
-    <value>Bekräfta nytt lösenord</value>
+    <value>Confirmer le nouveau mot de passe</value>
   </data>
   <data name="Email" xml:space="preserve">
-    <value>E-post</value>
+    <value>E-mail</value>
   </data>
   <data name="NewEmail" xml:space="preserve">
-    <value>Ny e-post</value>
+    <value>Nouvel e-mail</value>
   </data>
   <data name="NewEmailPlaceholder" xml:space="preserve">
-    <value>Ange ny e-post</value>
+    <value>Saisir un nouvel e-mail</value>
   </data>
   <data name="Phone" xml:space="preserve">
-    <value>Telefon</value>
+    <value>Téléphone</value>
   </data>
   <data name="PhoneNumber" xml:space="preserve">
-    <value>Telefonnummer</value>
+    <value>Numéro de téléphone</value>
   </data>
   <data name="NewPhoneNumber" xml:space="preserve">
-    <value>Nytt telefonnummer</value>
+    <value>Nouveau numéro de téléphone</value>
   </data>
   <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
-    <value>Ange nytt telefonnummer</value>
+    <value>Saisir un nouveau numéro de téléphone</value>
   </data>
   <data name="GoBack" xml:space="preserve">
-    <value>Tillbaka</value>
+    <value>Retour</value>
   </data>
   <data name="Password" xml:space="preserve">
-    <value>Lösenord</value>
+    <value>Mot de passe</value>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
-    <value>Ange lösenord</value>
+    <value>Saisir le mot de passe</value>
   </data>
   <data name="ImageCouldNotBeFound" xml:space="preserve">
-    <value>Bilden kunde inte hittas</value>
+    <value>Image introuvable</value>
   </data>
   <data name="Error" xml:space="preserve">
-    <value>Fel</value>
+    <value>Erreur</value>
   </data>
   <data name="Gender" xml:space="preserve">
-    <value>Kön</value>
+    <value>Genre</value>
   </data>
   <data name="BirthDate" xml:space="preserve">
-    <value>Födelsedatum</value>
+    <value>Date de naissance</value>
   </data>
   <data name="UserName" xml:space="preserve">
-    <value>Användarnamn</value>
+    <value>Nom d'utilisateur</value>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>Namn</value>
+    <value>Nom</value>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Beskrivning</value>
+    <value>Description</value>
   </data>
   <data name="Price" xml:space="preserve">
-    <value>Pris</value>
+    <value>Prix</value>
   </data>
   <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
-    <value>Ange antingen e-post eller telefonnummer.</value>
+    <value>Fournir soit un e-mail, soit un numéro de téléphone.</value>
   </data>
   <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
-    <value>Ange antingen användarnamn, e-post eller telefonnummer.</value>
+    <value>Fournir soit un nom d'utilisateur, un e-mail ou un numéro de téléphone.</value>
   </data>
   <data name="YouNeedToSignIn" xml:space="preserve">
-    <value>Du måste vara inloggad för att fortsätta.</value>
+    <value>Vous devez être connecté pour continuer.</value>
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
-    <value>Ogiltiga användaruppgifter</value>
+    <value>Identifiants utilisateur invalides</value>
   </data>
   <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Din e-post är redan bekräftad.</value>
+    <value>Votre e-mail est déjà confirmé.</value>
   </data>
   <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>Ditt telefonnummer är redan bekräftat.</value>
+    <value>Votre numéro de téléphone est déjà confirmé.</value>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Titel</value>
+    <value>Titre</value>
   </data>
   <data name="AreYouSureWannaDelete" xml:space="preserve">
-    <value>Är du säker på att du vill radera {0}?</value>
+    <value>Êtes-vous sûr de vouloir supprimer {0} ?</value>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Hem</value>
+    <value>Accueil</value>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Uppdatera</value>
+    <value>Actualiser</value>
   </data>
   <data name="Recover" xml:space="preserve">
-    <value>Återställ</value>
+    <value>Récupérer</value>
   </data>
   <data name="SomethingWentWrong" xml:space="preserve">
-    <value>Oj, något gick fel...</value>
+    <value>Oups, quelque chose s'est mal passé...</value>
   </data>
   <data name="BackToHome" xml:space="preserve">
-    <value>Tillbaka till hem</value>
+    <value>Retour à l'accueil</value>
   </data>
   <data name="UserLockedOut" xml:space="preserve">
-    <value>Användaren är utestängd. Försök igen om {0}</value>
+    <value>Utilisateur verrouillé. Réessayez dans {0}</value>
   </data>
   <data name="UserIsNotConfirmed" xml:space="preserve">
-    <value>Användaren är inte bekräftad.</value>
+    <value>Utilisateur non confirmé.</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
-    <value>Användaren existerar inte.</value>
+    <value>Utilisateur n'existe pas.</value>
   </data>
   <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
-    <value>Denna e-post eller detta telefonnummer är redan upptaget.</value>
+    <value>Cet e-mail ou numéro de téléphone est déjà pris.</value>
   </data>
   <data name="Add" xml:space="preserve">
-    <value>Lägg till</value>
+    <value>Ajouter</value>
   </data>
   <data name="Token" xml:space="preserve">
-    <value>Token</value>
+    <value>Jeton</value>
   </data>
   <data name="InvalidToken" xml:space="preserve">
-    <value>Ogiltig token.</value>
+    <value>Jeton invalide.</value>
   </data>
   <data name="ExpiredToken" xml:space="preserve">
-    <value>Utgånget token.</value>
+    <value>Jeton expiré.</value>
   </data>
   <data name="SignInMessageInSignUp" xml:space="preserve">
-    <value>Har du redan ett konto?</value>
+    <value>Vous avez déjà un compte ?</value>
   </data>
   <data name="ConfirmMessageInProfile" xml:space="preserve">
-    <value>Har du redan en token?</value>
+    <value>Vous avez déjà un jeton ?</value>
   </data>
   <data name="ConfirmEmailHeaderText" xml:space="preserve">
-    <value>E-postadress</value>
+    <value>Adresse e-mail</value>
   </data>
   <data name="ConfirmEmailSubtitle" xml:space="preserve">
-    <value>Vi har skickat en bekräftelsetoken till din e-postadress.</value>
+    <value>Nous avons envoyé un jeton de confirmation à votre adresse e-mail.</value>
   </data>
   <data name="ConfirmPageTitle" xml:space="preserve">
-    <value>Bekräfta</value>
+    <value>Confirmer</value>
   </data>
   <data name="ConfirmTitle" xml:space="preserve">
-    <value>Bekräfta ditt konto</value>
+    <value>Confirmer votre compte</value>
   </data>
   <data name="ConfirmEmailMessage" xml:space="preserve">
-    <value>Vänligen bekräfta din e-post genom att skriva in koden här.</value>
+    <value>Veuillez confirmer votre e-mail en saisissant le jeton ici.</value>
   </data>
   <data name="EmailPlaceholder" xml:space="preserve">
-    <value>Ange e-postadress</value>
+    <value>Saisir l'adresse e-mail</value>
   </data>
   <data name="EmailToken" xml:space="preserve">
-    <value>Kod</value>
+    <value>Code</value>
   </data>
   <data name="EmailTokenConfirmButtonText" xml:space="preserve">
-    <value>Bekräfta e-postadress</value>
+    <value>Confirmer l'adresse e-mail</value>
   </data>
   <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
-    <value>Din e-postadress ({0}) har bekräftats.</value>
+    <value>Votre adresse e-mail ({0}) a été confirmée.</value>
   </data>
   <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
-    <value>Du kan nu logga in med ditt konto.</value>
+    <value>Vous pouvez maintenant vous connecter à votre compte.</value>
   </data>
   <data name="ConfirmPhoneHeaderText" xml:space="preserve">
-    <value>Telefonnummer</value>
+    <value>Numéro de téléphone</value>
   </data>
   <data name="ConfirmPhoneSubtitle" xml:space="preserve">
-    <value>Vi har skickat en bekräftelsekod till din telefon.</value>
+    <value>Nous avons envoyé un jeton de confirmation à votre téléphone.</value>
   </data>
   <data name="ConfirmPhoneMessage" xml:space="preserve">
-    <value>Vänligen bekräfta ditt telefonnummer genom att skriva in koden här.</value>
+    <value>Veuillez confirmer votre numéro de téléphone en saisissant le jeton ici.</value>
   </data>
   <data name="PhoneNumberPlaceholder" xml:space="preserve">
-    <value>Ange telefonnummer</value>
+    <value>Saisir le numéro de téléphone</value>
   </data>
   <data name="PhoneToken" xml:space="preserve">
-    <value>Kod</value>
+    <value>Code</value>
   </data>
   <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
-    <value>Bekräfta telefonnummer</value>
+    <value>Confirmer le numéro de téléphone</value>
   </data>
   <data name="NotReceivedPhoneMessage" xml:space="preserve">
-    <value>Har du inte fått koden på din telefon?</value>
+    <value>Vous n'avez pas reçu le jeton sur votre téléphone ?</value>
   </data>
   <data name="ResendPhoneTokenButtonText" xml:space="preserve">
-    <value>Skicka kod igen</value>
+    <value>Renvoyer le code</value>
   </data>
   <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
-    <value>Ditt telefonnummer ({0}) har bekräftats.</value>
+    <value>Votre numéro de téléphone ({0}) a été confirmé.</value>
   </data>
   <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
-    <value>Du kan nu logga in med ditt konto.</value>
+    <value>Vous pouvez maintenant vous connecter à votre compte.</value>
   </data>
   <data name="AccountTitle" xml:space="preserve">
-    <value>Konto</value>
+    <value>Compte</value>
   </data>
   <data name="AccountSubtitle" xml:space="preserve">
-    <value>Byt e-postadress för kontot, telefonnummer eller inställningar för lösenordslös inloggning.</value>
+    <value>Changer l'e-mail, le numéro de téléphone ou les paramètres sans mot de passe de votre compte</value>
   </data>
   <data name="DeleteAccount" xml:space="preserve">
-    <value>Radera konto</value>
+    <value>Supprimer le compte</value>
   </data>
   <data name="DeleteAccountPrompt" xml:space="preserve">
-    <value>Är du säker på att du vill radera ditt konto?</value>
+    <value>Êtes-vous sûr de vouloir supprimer votre compte ?</value>
   </data>
   <data name="DontHaveAccountMessage" xml:space="preserve">
-    <value>Har du inget konto?</value>
+    <value>Pas de compte ?</value>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>Redigera</value>
+    <value>Modifier</value>
   </data>
   <data name="FileUploadFailed" xml:space="preserve">
-    <value>Ett fel uppstod vid uppladdning av filen</value>
+    <value>Une erreur s'est produite lors du téléchargement du fichier</value>
   </data>
   <data name="ForgotPasswordPageTitle" xml:space="preserve">
-    <value>Glömt lösenord</value>
+    <value>Mot de passe oublié</value>
   </data>
   <data name="ForgotPasswordTitle" xml:space="preserve">
-    <value>Glömt lösenord</value>
+    <value>Mot de passe oublié</value>
   </data>
   <data name="ForgotPasswordMessage" xml:space="preserve">
-    <value>Ange din e-postadress eller telefonnummer så att vi kan skicka en kod för återställning av lösenord till dig.</value>
+    <value>Veuillez saisir votre adresse e-mail ou numéro de téléphone afin que nous puissions vous envoyer un jeton de réinitialisation de mot de passe.</value>
   </data>
   <data name="GenderMale" xml:space="preserve">
-    <value>Man</value>
+    <value>Homme</value>
   </data>
   <data name="GenderOther" xml:space="preserve">
-    <value>Annat</value>
+    <value>Autre</value>
   </data>
   <data name="GoToToday" xml:space="preserve">
-    <value>Gå till idag</value>
+    <value>Aller à aujourd'hui</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Skapa din multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor-app på enklaste sättet på kortast möjliga tid!</value>
+    <value>Créez facilement votre application Blazor multi-mode (WASM, Server, Hybrid, pré-rendu) en un temps record !</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
-    <value>Hem</value>
+    <value>Accueil</value>
   </data>
   <data name="HomePanelTitle" xml:space="preserve">
-    <value>Bygg alla dina appar</value>
+    <value>Construisez toutes vos applications</value>
   </data>
   <data name="HomePanelSubtitle" xml:space="preserve">
-    <value>med det du redan kan och älskar</value>
+    <value>avec ce que vous connaissez et aimez déjà</value>
   </data>
   <data name="WatchVideo" xml:space="preserve">
-    <value>Titta på video</value>
+    <value>Regarder la vidéo</value>
   </data>
   <data name="LearnMore" xml:space="preserve">
-    <value>Läs mer</value>
+    <value>En savoir plus</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>Ett set verktyg för .NET-utvecklare på flera plattformar</value>
+    <value>Un ensemble d'outils pour les développeurs .NET sur plusieurs plateformes</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
-    <value>Ett set presterande, lättanpassade och vackra Blazor-komponenter</value>
+    <value>Un ensemble de composants Blazor performants, faciles à personnaliser et beaux</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>En funktionsrik .NET-projektmall som fungerar sömlöst överallt</value>
+    <value>Un modèle de projet .NET riche en fonctionnalités qui fonctionne partout de manière fluide</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
-    <value>Boilerplate är byggd med ASP.NET Core, Identity, Web API, EF Core och Blazor.</value>
+    <value>Le Boilerplate est construit avec ASP.NET Core, Identity, Web API, EF Core et Blazor.</value>
   </data>
   <data name="NewPassword" xml:space="preserve">
-    <value>Nytt lösenord</value>
+    <value>Nouveau mot de passe</value>
   </data>
   <data name="OldPassword" xml:space="preserve">
-    <value>Gammalt lösenord</value>
+    <value>Ancien mot de passe</value>
   </data>
   <data name="No" xml:space="preserve">
-    <value>Nej</value>
+    <value>Non</value>
   </data>
   <data name="NotReceivedEmailMessage" xml:space="preserve">
-    <value>Har du inte fått e-posten?</value>
+    <value>Vous n'avez pas reçu l'e-mail ?</value>
   </data>
   <data name="Or" xml:space="preserve">
-    <value>eller</value>
+    <value>ou</value>
   </data>
   <data name="Remove" xml:space="preserve">
-    <value>Ta bort</value>
+    <value>Supprimer</value>
   </data>
   <data name="ResendEmailTokenButtonText" xml:space="preserve">
-    <value>Skicka kod igen</value>
+    <value>Renvoyer le code</value>
   </data>
   <data name="ResetPasswordPageTitle" xml:space="preserve">
-    <value>Återställ lösenord</value>
+    <value>Réinitialiser le mot de passe</value>
   </data>
   <data name="ResetPassword" xml:space="preserve">
-    <value>Återställ lösenord</value>
+    <value>Réinitialiser le mot de passe</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
-    <value>Återställ lösenord</value>
+    <value>Réinitialiser le mot de passe</value>
   </data>
   <data name="ResetPasswordSubtitle" xml:space="preserve">
-    <value>Vi har skickat en kod till din telefon eller e-post.</value>
+    <value>Nous avons envoyé un jeton à votre téléphone ou e-mail.</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>Vänligen skicka koden tillsammans med ditt nya lösenord här.</value>
+    <value>Veuillez soumettre le jeton avec votre nouveau mot de passe ici.</value>
   </data>
   <data name="ResetPasswordButtonText" xml:space="preserve">
-    <value>Sätt lösenord</value>
+    <value>Définir le mot de passe</value>
   </data>
   <data name="ResetPasswordSuccessTitle" xml:space="preserve">
-    <value>Ditt lösenord har återställts.</value>
+    <value>Votre mot de passe a été réinitialisé.</value>
   </data>
   <data name="ResetPasswordSuccessBody" xml:space="preserve">
-    <value>Du kan nu logga in med ditt nya lösenord.</value>
+    <value>Vous pouvez maintenant vous connecter avec votre mot de passe.</value>
   </data>
   <data name="ResetPasswordMessageInForgot" xml:space="preserve">
-    <value>Har du redan en kod för återställning av lösenord?</value>
+    <value>Vous avez déjà un jeton de réinitialisation de mot de passe ?</value>
   </data>
   <data name="Save" xml:space="preserve">
-    <value>Spara</value>
+    <value>Enregistrer</value>
   </data>
   <data name="SignInPageTitle" xml:space="preserve">
-    <value>Logga in</value>
+    <value>Se connecter</value>
   </data>
   <data name="SignInPanelTitle" xml:space="preserve">
-    <value>Välkommen</value>
+    <value>Bienvenue</value>
   </data>
   <data name="SignInPanelSubtitle" xml:space="preserve">
-    <value>Fortsätt med ditt</value>
+    <value>Continuer avec votre</value>
   </data>
   <data name="Continue" xml:space="preserve">
-    <value>Fortsätt</value>
+    <value>Continuer</value>
   </data>
   <data name="GoogleSignInButtonText" xml:space="preserve">
-    <value>Logga in med Google</value>
+    <value>Se connecter avec Google</value>
   </data>
   <data name="FacebookSignInButtonText" xml:space="preserve">
-    <value>Logga in med Facebook</value>
+    <value>Se connecter avec Facebook</value>
   </data>
   <data name="GitHubSignInButtonText" xml:space="preserve">
-    <value>Logga in med GitHub</value>
+    <value>Se connecter avec GitHub</value>
   </data>
   <data name="TwitterSignInButtonText" xml:space="preserve">
-    <value>Logga in med Twitter (X)</value>
+    <value>Se connecter avec Twitter (X)</value>
   </data>
   <data name="AppleSignInButtonText" xml:space="preserve">
-    <value>Logga in med Apple</value>
+    <value>Se connecter avec Apple</value>
   </data>
   <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
-    <value>Logga in med Testserver</value>
+    <value>Se connecter avec le serveur de test</value>
   </data>
   <data name="AzureEntraSignInButtonText" xml:space="preserve">
-    <value>Logga in med Azure Entra</value>
+    <value>Se connecter avec Azure Entra</value>
   </data>
   <data name="SignOut" xml:space="preserve">
-    <value>Logga ut</value>
+    <value>Se déconnecter</value>
   </data>
   <data name="SignOutPrompt" xml:space="preserve">
-    <value>Är du säker på att du vill logga ut?</value>
+    <value>Êtes-vous sûr de vouloir vous déconnecter ?</value>
   </data>
   <data name="SignUp" xml:space="preserve">
-    <value>Registrera dig</value>
+    <value>S'inscrire</value>
   </data>
   <data name="SignUpPageTitle" xml:space="preserve">
-    <value>Registrera dig</value>
+    <value>S'inscrire</value>
   </data>
   <data name="SignUpPanelTitle" xml:space="preserve">
-    <value>Kom igång idag</value>
+    <value>Commencez aujourd'hui</value>
   </data>
   <data name="SignUpPanelSubtitle" xml:space="preserve">
-    <value>Skapa nytt konto med</value>
+    <value>Créer un nouveau compte avec</value>
   </data>
   <data name="Submit" xml:space="preserve">
-    <value>Skicka</value>
+    <value>Soumettre</value>
   </data>
   <data name="UploadNewImage" xml:space="preserve">
-    <value>Dra eller välj en bild</value>
+    <value>Glisser ou sélectionner une image</value>
   </data>
   <data name="Yes" xml:space="preserve">
-    <value>Ja</value>
+    <value>Oui</value>
   </data>
   <data name="SelectBirthDate" xml:space="preserve">
-    <value>Välj ditt födelsedatum</value>
+    <value>Sélectionner votre date de naissance</value>
   </data>
   <data name="Action" xml:space="preserve">
-    <value>Åtgärd</value>
+    <value>Action</value>
   </data>
   <data name="Back" xml:space="preserve">
-    <value>Tillbaka</value>
+    <value>Retour</value>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Avbryt</value>
+    <value>Annuler</value>
   </data>
   <data name="CheckSpamMailMessage" xml:space="preserve">
-    <value>Kontrollera din Spam/Skrot om du inte hittar den i Inkorgen.</value>
+    <value>Vérifiez vos Spams/Pourriels si vous ne le trouvez pas dans la boîte de réception.</value>
   </data>
   <data name="Color" xml:space="preserve">
-    <value>Färg</value>
+    <value>Couleur</value>
   </data>
   <data name="CustomColor" xml:space="preserve">
-    <value>Anpassad färg</value>
+    <value>Couleur personnalisée</value>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Radera</value>
+    <value>Supprimer</value>
   </data>
   <data name="Id" xml:space="preserve">
     <value>Id</value>
   </data>
   <data name="SignIn" xml:space="preserve">
-    <value>Logga in</value>
+    <value>Se connecter</value>
   </data>
   <data name="SignInByModal" xml:space="preserve">
-    <value>Logga in (Popup)</value>
+    <value>Se connecter (Pop-up)</value>
   </data>
   <data name="Confirm" xml:space="preserve">
-    <value>Bekräfta</value>
+    <value>Confirmer</value>
   </data>
   <data name="SignInAsDifferentUser" xml:space="preserve">
-    <value>Logga in som annan användare</value>
+    <value>Se connecter en tant qu'utilisateur différent</value>
   </data>
   <data name="YouAreSignedInAs" xml:space="preserve">
-    <value>Du är inloggad som</value>
+    <value>Vous êtes connecté en tant que</value>
   </data>
   <data name="ForgotPasswordLink" xml:space="preserve">
-    <value>Glömt lösenord?</value>
+    <value>Mot de passe oublié ?</value>
   </data>
   <data name="GenderFemale" xml:space="preserve">
-    <value>Kvinna</value>
+    <value>Femme</value>
   </data>
   <data name="RememberMe" xml:space="preserve">
-    <value>Kom ihåg mig?</value>
+    <value>Se souvenir de moi ?</value>
   </data>
   <data name="Copy" xml:space="preserve">
-    <value>Kopiera</value>
+    <value>Copier</value>
   </data>
   <data name="Copied" xml:space="preserve">
-    <value>Kopierat</value>
+    <value>Copié</value>
   </data>
   <data name="TfaTitle" xml:space="preserve">
-    <value>Tvåfaktorsautentisering</value>
+    <value>Authentification à deux facteurs</value>
   </data>
   <data name="TfaSubtitle" xml:space="preserve">
-    <value>Hantera din kontos multifaktorautentisering</value>
+    <value>Gérer l'authentification multi-facteurs de votre compte</value>
   </data>
   <data name="TwoFactorCode" xml:space="preserve">
-    <value>2FA-kod</value>
+    <value>Code 2FA</value>
   </data>
   <data name="TwoFactorRecoveryCode" xml:space="preserve">
-    <value>Återställningskod</value>
+    <value>Code de récupération</value>
   </data>
   <data name="TfaPanelTitle" xml:space="preserve">
-    <value>Tvåfaktorsautentisering</value>
+    <value>Authentification à deux facteurs</value>
   </data>
   <data name="TfaPanelSubtitle" xml:space="preserve">
-    <value>Hämta en ny kod från din autentiseringsapp eller använd din återställningskod.</value>
+    <value>Obtenez un nouveau code depuis votre application d'authentification ou utilisez votre code de récupération.</value>
   </data>
   <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
-    <value>Försök ett annat sätt</value>
+    <value>Essayer une autre méthode</value>
   </data>
   <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
-    <value>Du kan hämta en ny kod till din e-post eller telefon.</value>
+    <value>Vous pouvez obtenir un nouveau code à votre e-mail ou téléphone.</value>
   </data>
   <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
-    <value>Hämta kod</value>
+    <value>Obtenir le code</value>
   </data>
   <data name="TfaResetSharedKeyError" xml:space="preserve">
-    <value>Återställning av 2FA-delad nyckel måste inaktivera 2FA tills en 2FA-token baserad på den nya delade nyckeln är validerad.</value>
+    <value>La réinitialisation de la clé partagée 2FA doit désactiver la 2FA jusqu'à ce qu'un jeton 2FA basé sur la nouvelle clé partagée soit validé.</value>
   </data>
   <data name="TfaEmptyCodeError" xml:space="preserve">
-    <value>Ingen 2FA-token tillhandahölls av förfrågan. En giltig 2FA-token krävs för att aktivera 2FA.</value>
+    <value>Aucun jeton 2FA n'a été fourni par la requête. Un jeton 2FA valide est requis pour activer la 2FA.</value>
   </data>
   <data name="TfaInvalidCodeError" xml:space="preserve">
-    <value>2FA-tokenen som tillhandahölls av förfrågan var ogiltig. En giltig 2FA-token krävs för att aktivera 2FA.</value>
+    <value>Le jeton 2FA fourni par la requête était invalide. Un jeton 2FA valide est requis pour activer la 2FA.</value>
   </data>
   <data name="TfaConfigureAutAppTitle" xml:space="preserve">
-    <value>Konfigurera autentiseringsapp</value>
+    <value>Configurer l'application d'authentification</value>
   </data>
   <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
-    <value>För att använda en autentiseringsapp, följ dessa steg:</value>
+    <value>Pour utiliser une application d'authentification, suivez ces étapes :</value>
   </data>
   <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>Ladda ner en tvåfaktorsautentiseringsapp som Google Authenticator för {0} och {1}.</value>
+    <value>Téléchargez une application d'authentification à deux facteurs comme Google Authenticator pour {0} et {1}.</value>
   </data>
   <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>Skanna/klicka på QR-koden eller ange följande nyckel i din tvåfaktorsautentiseringsapp (mellanslag och skiftläge spelar ingen roll):</value>
+    <value>Scannez/cliquez sur le code QR ou saisissez la clé suivante dans votre application d'authentification à deux facteurs (les espaces et la casse n'ont pas d'importance) :</value>
   </data>
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
-    <value>När du har skannat QR-koden eller matat in nyckeln ovan kommer din tvåfaktorsautentiseringsapp att ge dig en unik kod. Ange koden i bekräftelsefältet nedan.</value>
+    <value>Une fois que vous avez scanné le code QR ou saisi la clé ci-dessus, votre application d'authentification à deux facteurs vous fournira un code unique. Saisissez le code dans la boîte de confirmation ci-dessous.</value>
   </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
-    <value>Tvåfaktorsautentisering har aktiverats.</value>
+    <value>L'authentification à deux facteurs a été activée.</value>
   </data>
   <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
-    <value>Tvåfaktorsautentisering har inaktiverats.</value>
+    <value>L'authentification à deux facteurs a été désactivée.</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
-    <value>Verifieringskod:</value>
+    <value>Code de vérification :</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Ange verifieringskod.</value>
+    <value>Saisir le code de vérification.</value>
   </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
-    <value>Verifiera</value>
+    <value>Vérifier</value>
   </data>
   <data name="TfaRecoveryCodesHeader" xml:space="preserve">
-    <value>Återställning</value>
+    <value>Récupération</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
-    <value>Du har inga återställningskoder kvar.</value>
+    <value>Vous n'avez plus de codes de récupération.</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
-    <value>Du måste generera ett nytt set återställningskoder innan du kan logga in med en återställningskod.</value>
+    <value>Vous devez générer un nouveau jeu de codes de récupération avant de pouvoir vous connecter avec un code de récupération.</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
-    <value>Du har 1 återställningskod kvar.</value>
+    <value>Il vous reste 1 code de récupération.</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
-    <value>Du kan generera ett nytt set återställningskoder.</value>
+    <value>Vous pouvez générer un nouveau jeu de codes de récupération.</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
-    <value>Du har {0} återställningskoder kvar.</value>
+    <value>Il vous reste {0} codes de récupération.</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
-    <value>Du bör generera ett nytt set återställningskoder.</value>
+    <value>Vous devriez générer un nouveau jeu de codes de récupération.</value>
   </data>
   <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
-    <value>Generering av nya återställningskoder ändrar inte nycklarna som används i autentiseringsappar. Om du vill ändra nyckeln som används i en autentiseringsapp bör du återställa dina autentiseringsnycklar på nästa flik.</value>
+    <value>La génération de nouveaux codes de récupération ne change pas les clés utilisées dans les applications d'authentification. Si vous souhaitez changer la clé utilisée dans une application d'authentification, vous devez réinitialiser vos clés d'authentification dans l'onglet suivant.</value>
   </data>
   <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
-    <value>Generera återställningskoder</value>
+    <value>Générer des codes de récupération</value>
   </data>
   <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
-    <value>Lägg dessa koder på en säker plats.</value>
+    <value>Mettez ces codes en lieu sûr.</value>
   </data>
   <data name="TfaRecoveryCodesWarning" xml:space="preserve">
-    <value>Om du förlorar din autentiseringsenhet och inte har återställningskoderna förlorar du åtkomst till ditt konto.</value>
+    <value>Si vous perdez votre appareil d'authentification et que vous n'avez pas les codes de récupération, vous perdrez l'accès à votre compte.</value>
   </data>
   <data name="TfaRecoveryCodesTitle" xml:space="preserve">
-    <value>Återställningskoder:</value>
+    <value>Codes de récupération :</value>
   </data>
   <data name="TfaAuthAppHeader" xml:space="preserve">
-    <value>Autentisering</value>
+    <value>Authentificateur</value>
   </data>
   <data name="TfaAuthAppWarningTitle" xml:space="preserve">
-    <value>Om du återställer din autentiseringsnyckel kommer din autentiseringsapp inte att fungera förrän du konfigurerar om den.</value>
+    <value>Si vous réinitialisez votre clé d'authentificateur, votre application d'authentification ne fonctionnera plus jusqu'à ce que vous la reconfiguriez.</value>
   </data>
   <data name="TfaAuthAppWarning" xml:space="preserve">
-    <value>Denna process inaktiverar 2FA tills du verifierar din autentiseringsapp. Om du inte slutför konfigurationen av din autentiseringsapp kan du förlora åtkomst till ditt konto.</value>
+    <value>Ce processus désactive la 2FA jusqu'à ce que vous vérifiiez votre application d'authentification. Si vous ne terminez pas la configuration de votre application d'authentification, vous risquez de perdre l'accès à votre compte.</value>
   </data>
   <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
-    <value>Återställ autentiseringsnyckel</value>
+    <value>Réinitialiser la clé d'authentificateur</value>
   </data>
   <data name="TfaDisable2faHeader" xml:space="preserve">
-    <value>Inaktivera</value>
+    <value>Désactiver</value>
   </data>
   <data name="TfaDisable2faWarningTitle" xml:space="preserve">
-    <value>Denna åtgärd inaktiverar endast 2FA.</value>
+    <value>Cette action désactive uniquement la 2FA.</value>
   </data>
   <data name="TfaDisable2faWarning" xml:space="preserve">
-    <value>Inaktivering av 2FA ändrar inte nycklarna som används i autentiseringsappar. Om du vill ändra nyckeln som används i en autentiseringsapp bör du återställa dina autentiseringsnycklar på föregående flik.</value>
+    <value>La désactivation de la 2FA ne change pas les clés utilisées dans les applications d'authentification. Si vous souhaitez changer la clé utilisée dans une application d'authentification, vous devez réinitialiser vos clés d'authentification dans l'onglet précédent.</value>
   </data>
   <data name="TfaDisable2faButtonText" xml:space="preserve">
-    <value>Inaktivera 2FA</value>
+    <value>Désactiver la 2FA</value>
   </data>
   <data name="TfaTokenSentMessage" xml:space="preserve">
-    <value>2FA-tokenen har genererats och skickats till dig.</value>
+    <value>Le jeton 2FA a été généré et envoyé.</value>
   </data>
   <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Ange den förhöjda åtkomsttokenen vi just skickade till dig eller din autentiseringsappkod för att fortsätta.</value>
+    <value>Veuillez saisir le jeton d'accès élevé que nous venons de vous envoyer ou le code de votre application d'authentification pour continuer.</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} est votre code dans Boilerplate.</value>
   </data>
   <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt bekräftelsee-posten. Försök igen om {0}</value>
+    <value>Vous avez déjà demandé l'e-mail de confirmation. Réessayez dans {0}</value>
   </data>
   <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt bekräftelse-SMS:et. Försök igen om {0}</value>
+    <value>Vous avez déjà demandé le SMS de confirmation. Réessayez dans {0}</value>
   </data>
   <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt kod för återställning av lösenord. Försök igen om {0}</value>
+    <value>Vous avez déjà demandé le jeton de réinitialisation de mot de passe. Réessayez dans {0}</value>
   </data>
   <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt en OTP. Försök igen om {0}</value>
+    <value>Vous avez déjà demandé un OTP. Réessayez dans {0}</value>
   </data>
   <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt en höjd åtkomstkod. Försök igen om {0}</value>
+    <value>Vous avez déjà demandé un jeton d'accès élevé. Réessayez dans {0}</value>
   </data>
   <data name="Otp" xml:space="preserve">
     <value>OTP</value>
   </data>
   <data name="OtpPanelTitle" xml:space="preserve">
-    <value>Kontrollera din {0}</value>
+    <value>Vérifiez votre {0}</value>
   </data>
   <data name="OtpPanelSubtitle" xml:space="preserve">
-    <value>Bekräfta din {0} genom att ange koden som skickats till {1}</value>
+    <value>Confirmez votre {0} en saisissant le code envoyé à {1}</value>
   </data>
   <data name="Code" xml:space="preserve">
-    <value>Kod</value>
+    <value>Code</value>
   </data>
   <data name="OtpResendMessage" xml:space="preserve">
-    <value>Fick du inte koden?</value>
+    <value>Pas reçu le code ?</value>
   </data>
   <data name="Resend" xml:space="preserve">
-    <value>Skicka igen</value>
+    <value>Renvoyer</value>
   </data>
   <data name="SendOtpButtonText" xml:space="preserve">
-    <value>Skicka OTP</value>
+    <value>Envoyer OTP</value>
   </data>
   <data name="SendMagicLinkButtonText" xml:space="preserve">
-    <value>Skicka magisk länk och OTP</value>
+    <value>Envoyer lien magique et OTP</value>
   </data>
   <data name="SignInByPassword" xml:space="preserve">
-    <value>Använd lösenord</value>
+    <value>Utiliser mot de passe</value>
   </data>
   <data name="SignInByOtp" xml:space="preserve">
-    <value>Använd OTP</value>
+    <value>Utiliser OTP</value>
   </data>
   <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>Ange antingen lösenord eller OTP</value>
+    <value>Fournir soit un mot de passe, soit un OTP</value>
   </data>
   <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt 2FA-token-e-posten. Försök igen om {0}.</value>
+    <value>Vous avez déjà demandé l'e-mail du jeton 2FA. Réessayez dans {0}.</value>
   </data>
   <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} est votre code dans Boilerplate.</value>
   </data>
   <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} est votre code dans Boilerplate.</value>
   </data>
   <data name="TwoFactorTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} est votre code dans Boilerplate.</value>
   </data>
   <data name="OtpShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} est votre code dans Boilerplate.</value>
   </data>
   <data name="ResetPasswordTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} est votre code dans Boilerplate.</value>
   </data>
   <data name="Online" xml:space="preserve">
-    <value>Online</value>
+    <value>En ligne</value>
   </data>
   <data name="Recently" xml:space="preserve">
-    <value>Nyligen</value>
+    <value>Récemment</value>
   </data>
   <data name="Update" xml:space="preserve">
-    <value>Uppdatera</value>
+    <value>Mettre à jour</value>
   </data>
   <data name="ForceUpdateTitle" xml:space="preserve">
-    <value>Tid för en uppdatering</value>
+    <value>Temps de mise à jour</value>
   </data>
   <data name="ForceUpdateBody" xml:space="preserve">
-    <value>Denna uppdatering krävs för att hålla din app igång smidigt</value>
+    <value>Cette mise à jour est requise pour que votre application fonctionne correctement</value>
   </data>
   <data name="About" xml:space="preserve">
-    <value>Om</value>
+    <value>À propos</value>
   </data>
   <data name="AboutPageTitle" xml:space="preserve">
-    <value>Om</value>
+    <value>À propos</value>
   </data>
   <!--#if (sample == true || offlineDb == true) -->
   <data name="TodoAddPlaceholder" xml:space="preserve">
-    <value>Lägg till en att göra</value>
+    <value>Ajouter une todo</value>
   </data>
   <data name="NoTodos" xml:space="preserve">
-    <value>Inga att göra än</value>
+    <value>Aucune todo pour l'instant</value>
   </data>
   <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>Sök att göra...</value>
+    <value>Rechercher une todo...</value>
   </data>
   <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
-    <value>Att göra-posten kunde inte hittas</value>
+    <value>Élément todo introuvable</value>
   </data>
   <data name="TodoPageTitle" xml:space="preserve">
-    <value>Att göra</value>
+    <value>Todo</value>
   </data>
   <data name="Todo" xml:space="preserve">
-    <value>Att göra</value>
+    <value>Todo</value>
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
-    <value>Radera att göra-post</value>
+    <value>Supprimer l'élément todo</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
-    <value>Kategorientiteten kunde inte hittas</value>
+    <value>Entité catégorie introuvable</value>
   </data>
   <data name="ProductCouldNotBeFound" xml:space="preserve">
-    <value>Produktentiteten kunde inte hittas</value>
+    <value>Entité produit introuvable</value>
   </data>
   <data name="Category" xml:space="preserve">
-    <value>Kategori</value>
+    <value>Catégorie</value>
   </data>
   <data name="AltText" xml:space="preserve">
-    <value>Alt-text</value>
+    <value>Texte alternatif</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
-    <value>Adminpanel</value>
+    <value>Panneau d'administration</value>
   </data>
   <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} objekt</value>
+    <value>{0} éléments</value>
   </data>
   <data name="Page" xml:space="preserve">
-    <value>Sida</value>
+    <value>Page</value>
   </data>
   <data name="Of" xml:space="preserve">
-    <value>av</value>
+    <value>sur</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
-    <value>Produktantal senaste 30 dagarna</value>
+    <value>Nombre de produits des 30 derniers jours</value>
   </data>
   <data name="AddProduct" xml:space="preserve">
-    <value>Lägg till produkt</value>
+    <value>Ajouter un produit</value>
   </data>
   <data name="SearchProductsPlaceholder" xml:space="preserve">
-    <value>Sök genom produktens namn, kategori och beskrivning här...</value>
+    <value>Rechercher par nom, catégorie et description du produit ici...</value>
   </data>
   <data name="SelectCategory" xml:space="preserve">
-    <value>Välj kategori</value>
+    <value>Sélectionner la catégorie</value>
   </data>
   <data name="TotalCategories" xml:space="preserve">
-    <value>Totala kategorier</value>
+    <value>Total des catégories</value>
   </data>
   <data name="TotalProducts" xml:space="preserve">
-    <value>Totala produkter</value>
+    <value>Total des produits</value>
   </data>
   <data name="EditCategory" xml:space="preserve">
-    <value>Redigera kategori</value>
+    <value>Modifier la catégorie</value>
   </data>
   <data name="AddCategory" xml:space="preserve">
-    <value>Ny kategori</value>
+    <value>Nouvelle catégorie</value>
   </data>
   <data name="CategoriesPageTitle" xml:space="preserve">
-    <value>Kategorier</value>
+    <value>Catégories</value>
   </data>
   <data name="EnterCategoryName" xml:space="preserve">
-    <value>Ange kategorinamn</value>
+    <value>Saisir le nom de la catégorie</value>
   </data>
   <data name="EnterProductName" xml:space="preserve">
-    <value>Ange produktnamn</value>
+    <value>Saisir le nom du produit</value>
   </data>
   <data name="CategoriesWithProductCount" xml:space="preserve">
-    <value>Kategorier med produktantal</value>
+    <value>Catégories avec nombre de produits</value>
   </data>
   <data name="SearchOnName" xml:space="preserve">
-    <value>Sök på namn</value>
+    <value>Rechercher par nom</value>
   </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
-    <value>Produktantal per kategori-diagram</value>
+    <value>Graphique du nombre de produits par catégorie</value>
   </data>
   <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
-    <value>Detta diagram visar antalet produkter i varje kategori.</value>
+    <value>Ce graphique montre le nombre de produits dans chaque catégorie.</value>
   </data>
   <data name="ProductsPageTitle" xml:space="preserve">
-    <value>Produkter</value>
+    <value>Produits</value>
   </data>
   <data name="ProductsPercentagePerCategory" xml:space="preserve">
-    <value>Produktprocent per kategori</value>
+    <value>Pourcentage de produits par catégorie</value>
   </data>
   <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
-    <value>Detta diagram visar procentandelen produkter i varje kategori.</value>
+    <value>Ce graphique montre le pourcentage de produits dans chaque catégorie.</value>
   </data>
   <data name="Categories" xml:space="preserve">
-    <value>Kategorier</value>
+    <value>Catégories</value>
   </data>
   <data name="Products" xml:space="preserve">
-    <value>Produkter</value>
+    <value>Produits</value>
   </data>
   <data name="CategoryNotEmpty" xml:space="preserve">
-    <value>Kategorin innehåller produkter och kan därför inte tas bort</value>
+    <value>Cette catégorie contient des produits, vous ne pouvez pas la supprimer</value>
   </data>
   <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
-    <value>Är du säker på att du vill radera produkt {0}</value>
+    <value>Êtes-vous sûr de vouloir supprimer le produit {0}</value>
   </data>
   <data name="DeleteProduct" xml:space="preserve">
-    <value>Radera produkt</value>
+    <value>Supprimer le produit</value>
   </data>
   <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Standardfärgval</value>
+    <value>Sélecteur de couleur par défaut</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
-    <value>Redigera produkt {0}</value>
+    <value>Modifier le produit {0}</value>
   </data>
   <data name="DuplicateProductName" xml:space="preserve">
-    <value>Dubblerat produktnamn</value>
+    <value>Nom de produit dupliqué</value>
   </data>
   <data name="DuplicateCategoryName" xml:space="preserve">
-    <value>Dubblerad kategori {0}</value>
+    <value>Catégorie dupliquée {0}</value>
   </data>
   <data name="DashboardPageTitle" xml:space="preserve">
-    <value>Instrumentpanel</value>
+    <value>Tableau de bord</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
-    <value>Instrumentpanel</value>
+    <value>Tableau de bord</value>
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
-    <value>Här är dina analysdata</value>
+    <value>Voici vos données analytiques</value>
   </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
-    <value>Ogiltigt Google reCAPTCHA-svar.</value>
+    <value>Réponse reCAPTCHA Google invalide.</value>
   </data>
   <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
-    <value>Du måste klara Google reCAPTCHA-utmaningen.</value>
+    <value>Vous devez passer le défi reCAPTCHA Google.</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Sales") -->
   <data name="SimilarProducts" xml:space="preserve">
-    <value>Liknande produkter</value>
+    <value>Produits similaires</value>
   </data>
   <data name="SiblingProducts" xml:space="preserve">
-    <value>Produkter i samma kategori</value>
+    <value>Produits de la même catégorie</value>
   </data>
   <data name="Buy" xml:space="preserve">
-    <value>Köp</value>
+    <value>Acheter</value>
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
-    <value>Köp lyckades!</value>
+    <value>Achat réussi !</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">
-    <value>Lösenordslöst</value>
+    <value>Sans mot de passe</value>
   </data>
   <data name="PasswordlessTitle" xml:space="preserve">
-    <value>Lösenordslös inloggning</value>
+    <value>Connexion sans mot de passe</value>
   </data>
   <data name="EnablePasswordless" xml:space="preserve">
-    <value>Aktivera lösenordslös inloggning</value>
+    <value>Activer la connexion sans mot de passe</value>
   </data>
   <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>Lösenordslös inloggning har aktiverats</value>
+    <value>Connexion sans mot de passe activée avec succès</value>
   </data>
   <data name="DisablePasswordless" xml:space="preserve">
-    <value>Inaktivera lösenordslös inloggning</value>
+    <value>Désactiver la connexion sans mot de passe</value>
   </data>
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>Lösenordslös inloggning har inaktiverats</value>
+    <value>Connexion sans mot de passe désactivée avec succès</value>
   </data>
   <data name="Clear" xml:space="preserve">
-    <value>Rensa</value>
+    <value>Effacer</value>
   </data>
   <data name="Send" xml:space="preserve">
-    <value>Skicka</value>
+    <value>Envoyer</value>
   </data>
   <data name="Canceled" xml:space="preserve">
-    <value>Avbruten</value>
+    <value>Annulé</value>
   </data>
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
-    <value>AI-chattpanel</value>
+    <value>Panneau de chat IA</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>Hej! Jag är här för att göra din appupplevelse fantastisk! Har du en fråga eller behöver hjälp?</value>
+    <value>Salutations ! Je suis là pour rendre votre expérience d'application géniale ! Une question ou besoin d'aide ?</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
-    <value>Öppna återställ lösenord-sidan och berätta hur den fungerar</value>
+    <value>Ouvrir la page de réinitialisation de mot de passe et me dire comment ça marche</value>
   </data>
   <data name="AiChatPanelPrompt2" xml:space="preserve">
-    <value>Hur kan jag installera PWA-versionen av appen?</value>
+    <value>Comment installer la version PWA de l'application ?</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela!</value>
+    <value>J'ai des retours à partager !</value>
   </data>
   <!--#elif (module == "Sales") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela!</value>
+    <value>J'ai des retours à partager !</value>
   </data>
   <!--#else -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela!</value>
+    <value>J'ai des retours à partager !</value>
   </data>
   <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
-    <value>Skriv ett meddelande...</value>
+    <value>Écrire un message...</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
-    <value>Uppgradera</value>
+    <value>Améliorer</value>
   </data>
   <data name="UpgradeTitle" xml:space="preserve">
-    <value>Uppgradera konto</value>
+    <value>Améliorer le compte</value>
   </data>
   <data name="UpgradeSubtitle" xml:space="preserve">
-    <value>Det finns ingen konto-uppgradering här. Detta är bara en demo för belönande annonser.</value>
+    <value>Il n'y a pas d'amélioration de compte ici. Ceci est juste une démo pour les publicités de récompense.</value>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
-    <value>Uppgradering av konto slutförd.</value>
+    <value>Amélioration de compte effectuée avec succès.</value>
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
-    <value>Uppgradering av konto misslyckades.</value>
+    <value>Échec de l'amélioration de compte.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
-    <value>Problem med att titta på annons?</value>
+    <value>Problème pour regarder la pub ?</value>
   </data>
   <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
-    <value>Jag har problem med att titta på annonser i appen.</value>
+    <value>J'ai des problèmes pour regarder les pubs dans l'application.</value>
   </data>
   <!--#endif -->
   <data name="PleaseWait" xml:space="preserve">
-    <value>Vänligen vänta</value>
+    <value>Veuillez patienter</value>
   </data>
   <data name="Management" xml:space="preserve">
-    <value>Hantering</value>
+    <value>Gestion</value>
   </data>
   <data name="UserGroups" xml:space="preserve">
-    <value>Användargrupper</value>
+    <value>Groupes d'utilisateurs</value>
   </data>
   <data name="RolesPageTitle" xml:space="preserve">
-    <value>Hantera användargrupper</value>
+    <value>Gérer les groupes d'utilisateurs</value>
   </data>
   <data name="NoRoleMessage" xml:space="preserve">
-    <value>Inga användargrupper</value>
+    <value>Aucun groupe d'utilisateurs</value>
   </data>
   <data name="AddRole" xml:space="preserve">
-    <value>Lägg till användargrupp</value>
+    <value>Ajouter un groupe d'utilisateurs</value>
   </data>
   <data name="EditRole" xml:space="preserve">
-    <value>Redigera användargrupp</value>
+    <value>Modifier le groupe d'utilisateurs</value>
   </data>
   <data name="NewRoleName" xml:space="preserve">
-    <value>Nytt användargruppsnamn</value>
+    <value>Nouveau nom de groupe d'utilisateurs</value>
   </data>
   <data name="Users" xml:space="preserve">
-    <value>Användare</value>
+    <value>Utilisateurs</value>
   </data>
   <data name="UsersWithCount" xml:space="preserve">
-    <value>Användare {0}</value>
+    <value>Utilisateurs {0}</value>
   </data>
   <data name="Features" xml:space="preserve">
-    <value>Funktioner</value>
+    <value>Fonctionnalités</value>
   </data>
   <data name="Quota" xml:space="preserve">
-    <value>Kvot</value>
+    <value>Quota</value>
   </data>
   <data name="QuotaDescription" xml:space="preserve">
-    <value>För att begränsa användningen av funktioner kan du definiera kvoter på denna flik, som kan variera för varje roll. Till exempel antalet enheter en användare kan logga in på eller antalet gånger de kan använda en specifik appfunktion.</value>
+    <value>Pour restreindre l'utilisation des fonctionnalités, vous pouvez définir des quotas sur cet onglet, qui peuvent varier pour chaque rôle. Par exemple, le nombre d'appareils sur lesquels un utilisateur peut se connecter ou le nombre de fois qu'il peut utiliser une fonctionnalité spécifique de l'application.</value>
   </data>
   <data name="MaxPrevilegedSessions" xml:space="preserve">
-    <value>Max privilegierade sessioner</value>
+    <value>Max sessions privilégiées</value>
   </data>
   <data name="General" xml:space="preserve">
-    <value>Allmänt</value>
+    <value>Général</value>
   </data>
   <data name="RoleName" xml:space="preserve">
-    <value>Användargruppsnamn</value>
+    <value>Nom du groupe d'utilisateurs</value>
   </data>
   <!--#if (notification == true || signalR == true) -->
   <data name="RoleNotificationLabel" xml:space="preserve">
-    <value>Notifikationsmeddelande</value>
+    <value>Message de notification</value>
   </data>
   <data name="SendRoleNotification" xml:space="preserve">
-    <value>Skicka notifikation</value>
+    <value>Envoyer une notification</value>
   </data>
   <data name="EnableNotifications" xml:space="preserve">
-    <value>Aktivera notifikationer</value>
+    <value>Activer les notifications</value>
   </data>
   <data name="DisableNotifications" xml:space="preserve">
-    <value>Inaktivera notifikationer</value>
+    <value>Désactiver les notifications</value>
   </data>
   <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Testnotifikation 1</value>
+    <value>Notification de test 1</value>
   </data>
   <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Testnotifikation 2</value>
+    <value>Notification de test 2</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
-    <value>Hantera användare</value>
+    <value>Gérer les utilisateurs</value>
   </data>
   <data name="DeleteRole" xml:space="preserve">
-    <value>Radera användargrupp</value>
+    <value>Supprimer le groupe d'utilisateurs</value>
   </data>
   <data name="Sessions" xml:space="preserve">
-    <value>Sessioner {0}</value>
+    <value>Sessions {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
-    <value>Radera användare</value>
+    <value>Supprimer l'utilisateur</value>
   </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>Appversion</value>
+    <value>Version de l'application</value>
   </data>
   <data name="IP" xml:space="preserve">
     <value>IP</value>
   </data>
   <data name="Address" xml:space="preserve">
-    <value>Adress</value>
+    <value>Adresse</value>
   </data>
   <data name="DeviceInfo" xml:space="preserve">
-    <value>Enhetsinfo</value>
+    <value>Infos appareil</value>
   </data>
   <data name="Privileged" xml:space="preserve">
-    <value>Privilegierad</value>
+    <value>Privilégié</value>
   </data>
   <data name="RenewedOn" xml:space="preserve">
-    <value>Förnyad</value>
+    <value>Renouvelé le</value>
   </data>
   <data name="OnlineUsers" xml:space="preserve">
-    <value>Online-användare: {0}</value>
+    <value>Utilisateurs en ligne : {0}</value>
   </data>
   <data name="DeleteSession" xml:space="preserve">
-    <value>Radera session</value>
+    <value>Supprimer la session</value>
   </data>
   <data name="NoUserMessage" xml:space="preserve">
-    <value>Inga användare</value>
+    <value>Aucun utilisateur</value>
   </data>
   <data name="NoUserSessionMessage" xml:space="preserve">
-    <value>Ingen användarsession</value>
+    <value>Aucune session utilisateur</value>
   </data>
   <data name="NoUserSelectedMessage" xml:space="preserve">
-    <value>Välj en användare först</value>
+    <value>Veuillez sélectionner un utilisateur d'abord</value>
   </data>
   <data name="RevokeAllSessions" xml:space="preserve">
-    <value>Återkalla alla sessioner</value>
+    <value>Révoquer toutes les sessions</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>Är du säker på att du vill återkalla alla sessioner för {0}?</value>
+    <value>Êtes-vous sûr de vouloir révoquer toutes les sessions de {0} ?</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort denna användare från SuperAdmin-användargruppen.</value>
+    <value>Vous ne pouvez pas supprimer cet utilisateur du groupe d'utilisateurs SuperAdmin.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
-    <value>Superadmin-behörigheter får inte ändras.</value>
+    <value>Les permissions SuperAdmin ne peuvent pas être modifiées.</value>
   </data>
   <data name="CanNotChangeBuiltInRole" xml:space="preserve">
-    <value>Användargrupp {0} får inte ändras.</value>
+    <value>Le groupe d'utilisateurs {0} ne peut pas être modifié.</value>
   </data>
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort din egen användare</value>
+    <value>Vous ne pouvez pas supprimer votre propre utilisateur</value>
   </data>
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort denna SuperAdmin-användare</value>
+    <value>Vous ne pouvez pas supprimer cet utilisateur SuperAdmin</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort din nuvarande session</value>
+    <value>Vous ne pouvez pas supprimer votre session actuelle</value>
   </data>
   <data name="SearchRolesPlaceholder" xml:space="preserve">
-    <value>Sök användargrupper</value>
+    <value>Rechercher des groupes d'utilisateurs</value>
   </data>
   <data name="SearchUsersPlaceholder" xml:space="preserve">
-    <value>Sök användare</value>
+    <value>Rechercher des utilisateurs</value>
   </data>
   <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
-    <value>Sök användare</value>
+    <value>Rechercher des utilisateurs</value>
   </data>
   <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
-    <value>Sök användarsessioner</value>
+    <value>Rechercher des sessions utilisateur</value>
   </data>
   <data name="RemoveRoleFromAllUsers" xml:space="preserve">
-    <value>Ta bort alla användare från användargrupp</value>
+    <value>Supprimer tous les utilisateurs du groupe d'utilisateurs</value>
   </data>
   <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
-    <value>Är du säker på att du vill ta bort alla användare från {0}?</value>
+    <value>Êtes-vous sûr de vouloir supprimer tous les utilisateurs de {0} ?</value>
   </data>
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
-    <value>Sidans URL</value>
+    <value>URL de la page</value>
   </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
-    <value>Du är inte auktoriserad</value>
+    <value>Vous n'êtes pas autorisé</value>
   </data>
   <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
-    <value>Du har inte behörighet att komma åt denna sida.</value>
+    <value>Vous n'avez pas la permission d'accéder à cette page.</value>
   </data>
   <data name="SignInPasswordMessage1" xml:space="preserve">
-    <value>Första gången här?</value>
+    <value>Première fois ici ?</value>
   </data>
   <data name="SignInPasswordMessage2" xml:space="preserve">
-    <value>Vi skapar automatiskt ett konto åt dig.</value>
+    <value>Nous créerons automatiquement un compte pour vous.</value>
   </data>
   <data name="ImageTooSmall" xml:space="preserve">
-    <value>Bilden är för liten. Minsta tillåtna dimensioner är {0}x{1}, men nuvarande dimensioner är {2}x{3}.</value>
+    <value>L'image est trop petite. Dimensions minimales requises : {0}x{1}, mais dimensions actuelles : {2}x{3}.</value>
   </data>
   <data name="ImageNotCarError" xml:space="preserve">
-    <value>Den angivna bilden innehåller inte en bil.</value>
+    <value>L'image fournie ne contient pas de voiture.</value>
   </data>
 </root>

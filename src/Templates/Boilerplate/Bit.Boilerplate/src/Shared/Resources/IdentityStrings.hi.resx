@@ -119,91 +119,91 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConcurrencyFailure" xml:space="preserve">
-    <value>Optimistisk parallellkörningsfel, objektet har modifierats.</value>
+    <value>आशावादी समवर्तीता विफलता, ऑब्जेक्ट को संशोधित किया गया है।</value>
     <comment>Error when optimistic concurrency fails</comment>
   </data>
   <data name="DefaultError" xml:space="preserve">
-    <value>Ett okänt fel har inträffat.</value>
+    <value>एक अज्ञात विफलता हुई है।</value>
     <comment>Default identity result error message</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
-    <value>E-post '{0}' är redan upptagen.</value>
+    <value>ईमेल '{0}' पहले से ही लिया गया है।</value>
     <comment>Error for duplicate emails</comment>
   </data>
   <data name="DuplicateRoleName" xml:space="preserve">
-    <value>Rollnamn '{0}' är redan upptaget.</value>
+    <value>भूमिका का नाम '{0}' पहले से ही लिया गया है।</value>
     <comment>Error for duplicate roles</comment>
   </data>
   <data name="DuplicateUserName" xml:space="preserve">
-    <value>Användarnamn '{0}' är redan upptaget.</value>
+    <value>उपयोगकर्ता नाम '{0}' पहले से ही लिया गया है।</value>
     <comment>Error for duplicate user names</comment>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
-    <value>E-post '{0}' är ogiltig.</value>
+    <value>ईमेल '{0}' अमान्य है।</value>
     <comment>Invalid email</comment>
   </data>
   <data name="InvalidRoleName" xml:space="preserve">
-    <value>Rollnamn '{0}' är ogiltigt.</value>
+    <value>भूमिका का नाम '{0}' अमान्य है।</value>
     <comment>Error for invalid role names</comment>
   </data>
   <data name="InvalidToken" xml:space="preserve">
-    <value>Ogiltigt token.</value>
+    <value>अमान्य टोकन।</value>
     <comment>Error when a token is not recognized</comment>
   </data>
   <data name="InvalidUserName" xml:space="preserve">
-    <value>Användarnamn '{0}' är ogiltigt, får endast innehålla bokstäver eller siffror.</value>
+    <value>उपयोगकर्ता नाम '{0}' अमान्य है, केवल अक्षर या अंक हो सकते हैं।</value>
     <comment>User names can only contain letters or digits</comment>
   </data>
   <data name="LoginAlreadyAssociated" xml:space="preserve">
-    <value>En användare med denna inloggning finns redan.</value>
+    <value>इस लॉगिन वाला उपयोगकर्ता पहले से मौजूद है।</value>
     <comment>Error when a login already linked</comment>
   </data>
   <data name="PasswordMismatch" xml:space="preserve">
-    <value>Felaktigt lösenord.</value>
+    <value>गलत पासवर्ड।</value>
     <comment>Error when a password doesn't match</comment>
   </data>
   <data name="PasswordRequiresDigit" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en siffra ('0'-'9').</value>
+    <value>पासवर्ड में कम से कम एक अंक ('0'-'9') होना चाहिए।</value>
     <comment>Error when passwords do not have a digit</comment>
   </data>
   <data name="PasswordRequiresLower" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en gemen ('a'-'z').</value>
+    <value>पासवर्ड में कम से कम एक लघु अक्षर ('a'-'z') होना चाहिए।</value>
     <comment>Error when passwords do not have a lowercase letter</comment>
   </data>
   <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en icke alfanumerisk tecken.</value>
+    <value>पासवर्ड में कम से कम एक गैर-अक्षर-संख्या वर्ण होना चाहिए।</value>
     <comment>Error when password does not have enough non alphanumeric characters</comment>
   </data>
   <data name="PasswordRequiresUpper" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en versal ('A'-'Z').</value>
+    <value>पासवर्ड में कम से कम एक महत्तम अक्षर ('A'-'Z') होना चाहिए।</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
-    <value>Lösenord måste vara minst {0} tecken.</value>
+    <value>पासवर्ड कम से कम {0} वर्णों का होना चाहिए।</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
   <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">
-    <value>Återställning av återställningskod misslyckades.</value>
+    <value>पुनर्प्राप्ति कोड प्रतिस्थापन विफल रहा।</value>
     <comment>Error when a recovery code is not redeemed.</comment>
   </data>
   <data name="UserAlreadyHasPassword" xml:space="preserve">
-    <value>Användaren har redan ett lösenord inställt.</value>
+    <value>उपयोगकर्ता के पास पहले से पासवर्ड सेट है।</value>
     <comment>Error when AddPasswordAsync called when a user already has a password</comment>
   </data>
   <data name="UserAlreadyInRole" xml:space="preserve">
-    <value>Användaren är redan i rollen '{0}'.</value>
+    <value>उपयोगकर्ता पहले से भूमिका '{0}' में है।</value>
     <comment>Error when a user is already in a role</comment>
   </data>
   <data name="UserLockoutNotEnabled" xml:space="preserve">
-    <value>Låsning är inte aktiverat för denna användare.</value>
+    <value>इस उपयोगकर्ता के लिए लॉकआउट सक्षम नहीं है।</value>
     <comment>Error when lockout is not enabled</comment>
   </data>
   <data name="UserNotInRole" xml:space="preserve">
-    <value>Användaren är inte i rollen '{0}'.</value>
+    <value>उपयोगकर्ता भूमिका '{0}' में नहीं है।</value>
     <comment>Error when a user is not in the role</comment>
   </data>
   <data name="PasswordRequiresUniqueChars" xml:space="preserve">
-    <value>Lösenord måste innehålla minst {0} olika tecken.</value>
+    <value>पासवर्ड में कम से कम {0} विभिन्न वर्णों का उपयोग करना चाहिए।</value>
     <comment>Error message for passwords that are based on similar characters</comment>
   </data>
 </root>

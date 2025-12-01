@@ -120,1248 +120,1248 @@
   </resheader>
   <!-- .NET Validation messages -->
   <data name="CompareAttribute_ValidationError" xml:space="preserve">
-    <value>'{0}' och '{1}' matchar inte.</value>
+    <value>'{0}' 和 '{1}' 不匹配。</value>
   </data>
   <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} är inte en giltig e-postadress.</value>
+    <value>{0} 字段不是有效的电子邮件地址。</value>
   </data>
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>MaxLengthAttribute måste ha ett längdvärde som är större än noll. Använd MaxLength() utan parametrar för att ange att strängen eller arrayen kan ha den maximalt tillåtna längden.</value>
+    <value>MaxLengthAttribute 必须具有大于零的 Length 值。使用无参数的 MaxLength() 来表示字符串或数组可以具有最大允许长度。</value>
   </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} måste vara en sträng- eller arraytyp med en minsta längd på '{1}'.</value>
+    <value>字段 {0} 必须是具有最小长度 '{1}' 的字符串或数组类型。</value>
   </data>
   <data name="RangeAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} måste vara mellan {1} och {2}.</value>
+    <value>字段 {0} 必须在 {1} 和 {2} 之间。</value>
   </data>
   <data name="RequiredAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} är obligatoriskt.</value>
+    <value>{0} 字段是必需的。</value>
   </data>
   <data name="PhoneAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} är inte ett giltigt telefonnummer.</value>
+    <value>{0} 字段不是有效的电话号码。</value>
   </data>
   <!-- Exceptions -->
   <data name="BadRequestException" xml:space="preserve">
-    <value>Ogiltig förfrågan</value>
+    <value>无效请求</value>
   </data>
   <data name="ConflictException" xml:space="preserve">
-    <value>Begäran kunde inte behandlas på grund av en konflikt</value>
+    <value>由于请求冲突，无法处理请求</value>
   </data>
   <data name="NotAuthorizedPageTitle" xml:space="preserve">
-    <value>Inte auktoriserad</value>
+    <value>未授权</value>
   </data>
   <data name="ForbiddenException" xml:space="preserve">
-    <value>Åtkomst till den begärda resursen är förbjuden</value>
+    <value>禁止访问请求的资源</value>
   </data>
   <data name="ResourceValidationException" xml:space="preserve">
-    <value>Ogiltig data i begäran</value>
+    <value>请求数据无效</value>
   </data>
   <data name="RestException" xml:space="preserve">
-    <value>Ett fel uppstod vid kommunikation med servern</value>
+    <value>与服务器通信时发生错误</value>
   </data>
   <data name="UnauthorizedException" xml:space="preserve">
-    <value>Din förfrågan saknar giltiga autentiseringsuppgifter</value>
+    <value>您的请求缺少有效的身份验证凭据</value>
   </data>
   <data name="UnknownException" xml:space="preserve">
-    <value>Okänt fel har uppstått</value>
+    <value>发生未知错误</value>
   </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
-    <value>Posten ändrades av en annan användare efter att du hämtade den ursprungliga informationen. Åtgärden avbröts.</value>
+    <value>记录在您获取原始数据后已被其他用户修改。操作已取消。</value>
   </data>
   <data name="ResourceNotFoundException" xml:space="preserve">
-    <value>Resursen hittades inte</value>
+    <value>资源未找到</value>
   </data>
   <data name="TooManyRequestExceptions" xml:space="preserve">
-    <value>För många förfrågningar</value>
+    <value>请求过多</value>
   </data>
   <data name="ServerConnectionException" xml:space="preserve">
-    <value>Kan inte ansluta till servern.</value>
+    <value>无法连接到服务器。</value>
   </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
-    <value>Aktiv</value>
+    <value>活动</value>
   </data>
   <data name="All" xml:space="preserve">
-    <value>Alla</value>
+    <value>全部</value>
   </data>
   <data name="Alphabetical" xml:space="preserve">
-    <value>A-Ö</value>
+    <value>A-Z</value>
   </data>
   <data name="Completed" xml:space="preserve">
-    <value>Slutförd</value>
+    <value>已完成</value>
   </data>
   <data name="Date" xml:space="preserve">
-    <value>Datum</value>
+    <value>日期</value>
   </data>
   <data name="SettingsPageTitle" xml:space="preserve">
-    <value>Inställningar</value>
+    <value>设置</value>
   </data>
   <data name="Settings" xml:space="preserve">
-    <value>Inställningar</value>
+    <value>设置</value>
   </data>
   <data name="Dark" xml:space="preserve">
-    <value>Mörk</value>
+    <value>深色</value>
   </data>
   <data name="Light" xml:space="preserve">
-    <value>Ljus</value>
+    <value>浅色</value>
   </data>
   <data name="Language" xml:space="preserve">
-    <value>Språk</value>
+    <value>语言</value>
   </data>
   <data name="SelectLanguage" xml:space="preserve">
-    <value>Välj språk</value>
+    <value>选择语言</value>
   </data>
   <data name="ProfileTitle" xml:space="preserve">
-    <value>Profil</value>
+    <value>个人资料</value>
   </data>
   <data name="ProfileSubtitle" xml:space="preserve">
-    <value>Redigera din profildata</value>
+    <value>编辑您的个人资料数据</value>
   </data>
   <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
-    <value>Koden för att byta e-post har skickats till dig</value>
+    <value>更改电子邮件令牌已发送给您</value>
   </data>
   <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
-    <value>Koden för att byta telefonnummer har skickats till dig</value>
+    <value>更改电话号码令牌已发送给您</value>
   </data>
   <data name="SuccessfulSendTokenMessage" xml:space="preserve">
-    <value>Koden har skickats till dig</value>
+    <value>令牌已发送给您</value>
   </data>
   <data name="SessionsTitle" xml:space="preserve">
-    <value>Sessioner</value>
+    <value>会话</value>
   </data>
   <data name="SessionsSubtitle" xml:space="preserve">
-    <value>Dina aktiva sessioner på flera enheter</value>
+    <value>您在多个设备上的活动会话</value>
   </data>
   <data name="CurrentSession" xml:space="preserve">
-    <value>Nuvarande session</value>
+    <value>当前会话</value>
   </data>
   <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
-    <value>Av {0} tillåtna enheter för fulla funktioner har du använt {1}.
-Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</value>
+    <value>从 {0} 个允许全功能的设备中，您已使用 {1} 个。
+达到 {0} 后，额外的登录将具有减少的功能。</value>
   </data>
   <data name="OtherSessions" xml:space="preserve">
-    <value>Andra sessioner</value>
+    <value>其他会话</value>
   </data>
   <data name="TryRemovingOtherSessions" xml:space="preserve">
-    <value>Försök ta bort andra sessioner</value>
+    <value>尝试移除其他会话</value>
   </data>
   <data name="RemoveSessionSuccessMessage" xml:space="preserve">
-    <value>Sessionen har tagits bort.</value>
+    <value>会话已成功移除</value>
   </data>
   <data name="NotFoundPageTitle" xml:space="preserve">
     <value>404</value>
   </data>
   <data name="NotFoundText" xml:space="preserve">
-    <value>Det finns inget här.</value>
+    <value>这里什么都没有。</value>
   </data>
   <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
-    <value>Uppdatera webview via Google Play.</value>
+    <value>请通过 Google Play 更新 webview。</value>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>Ok</value>
+    <value>确定</value>
   </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
-    <value>Systemprompts</value>
+    <value>系统提示</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
-    <value>Visa systemprompts för chattbotten här.</value>
+    <value>在此查看聊天机器人的系统提示。</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
-    <value>Push-notifikationsjobb</value>
+    <value>推送通知任务</value>
   </data>
   <!--#endif-->
   <!--#if (offlineDb == true) -->
   <data name="OfflineTodoTitle" xml:space="preserve">
-    <value>Att göra (Offline)</value>
+    <value>待办事项 (离线)</value>
   </data>
   <data name="SyncPushFailed" xml:space="preserve">
-    <value>Misslyckades med att skicka ändringar till servern</value>
+    <value>推送更改到服务器失败</value>
   </data>
   <data name="SyncPullFailed" xml:space="preserve">
-    <value>Misslyckades med att hämta ändringar från servern</value>
+    <value>从服务器拉取更改失败</value>
   </data>
   <data name="SyncPushSuccess" xml:space="preserve">
-    <value>Skickade {0} ändringar till servern</value>
+    <value>已向服务器推送 {0} 个更改</value>
   </data>
   <!--#endif-->
   <data name="FullName" xml:space="preserve">
-    <value>Fullt namn</value>
+    <value>全名</value>
   </data>
   <data name="TermsPageTitle" xml:space="preserve">
-    <value>Villkor</value>
+    <value>条款</value>
   </data>
   <data name="Terms" xml:space="preserve">
-    <value>Villkor</value>
+    <value>条款</value>
   </data>
   <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
-    <value>Profilen har uppdaterats.</value>
+    <value>个人资料更新成功。</value>
   </data>
   <data name="ConfirmPassword" xml:space="preserve">
-    <value>Bekräfta lösenord</value>
+    <value>确认密码</value>
   </data>
   <data name="ConfirmNewPassword" xml:space="preserve">
-    <value>Bekräfta nytt lösenord</value>
+    <value>确认新密码</value>
   </data>
   <data name="Email" xml:space="preserve">
-    <value>E-post</value>
+    <value>电子邮件</value>
   </data>
   <data name="NewEmail" xml:space="preserve">
-    <value>Ny e-post</value>
+    <value>新电子邮件</value>
   </data>
   <data name="NewEmailPlaceholder" xml:space="preserve">
-    <value>Ange ny e-post</value>
+    <value>输入新电子邮件</value>
   </data>
   <data name="Phone" xml:space="preserve">
-    <value>Telefon</value>
+    <value>电话</value>
   </data>
   <data name="PhoneNumber" xml:space="preserve">
-    <value>Telefonnummer</value>
+    <value>电话号码</value>
   </data>
   <data name="NewPhoneNumber" xml:space="preserve">
-    <value>Nytt telefonnummer</value>
+    <value>新电话号码</value>
   </data>
   <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
-    <value>Ange nytt telefonnummer</value>
+    <value>输入新电话号码</value>
   </data>
   <data name="GoBack" xml:space="preserve">
-    <value>Tillbaka</value>
+    <value>返回</value>
   </data>
   <data name="Password" xml:space="preserve">
-    <value>Lösenord</value>
+    <value>密码</value>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
-    <value>Ange lösenord</value>
+    <value>输入密码</value>
   </data>
   <data name="ImageCouldNotBeFound" xml:space="preserve">
-    <value>Bilden kunde inte hittas</value>
+    <value>找不到图像</value>
   </data>
   <data name="Error" xml:space="preserve">
-    <value>Fel</value>
+    <value>错误</value>
   </data>
   <data name="Gender" xml:space="preserve">
-    <value>Kön</value>
+    <value>性别</value>
   </data>
   <data name="BirthDate" xml:space="preserve">
-    <value>Födelsedatum</value>
+    <value>出生日期</value>
   </data>
   <data name="UserName" xml:space="preserve">
-    <value>Användarnamn</value>
+    <value>用户名</value>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>Namn</value>
+    <value>姓名</value>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Beskrivning</value>
+    <value>描述</value>
   </data>
   <data name="Price" xml:space="preserve">
-    <value>Pris</value>
+    <value>价格</value>
   </data>
   <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
-    <value>Ange antingen e-post eller telefonnummer.</value>
+    <value>请提供电子邮件或电话号码。</value>
   </data>
   <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
-    <value>Ange antingen användarnamn, e-post eller telefonnummer.</value>
+    <value>请提供用户名、电子邮件或电话号码。</value>
   </data>
   <data name="YouNeedToSignIn" xml:space="preserve">
-    <value>Du måste vara inloggad för att fortsätta.</value>
+    <value>您必须登录才能继续。</value>
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
-    <value>Ogiltiga användaruppgifter</value>
+    <value>无效的用户凭据</value>
   </data>
   <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Din e-post är redan bekräftad.</value>
+    <value>您的电子邮件已确认。</value>
   </data>
   <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>Ditt telefonnummer är redan bekräftat.</value>
+    <value>您的电话号码已确认。</value>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Titel</value>
+    <value>标题</value>
   </data>
   <data name="AreYouSureWannaDelete" xml:space="preserve">
-    <value>Är du säker på att du vill radera {0}?</value>
+    <value>您确定要删除 {0} 吗？</value>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Hem</value>
+    <value>首页</value>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Uppdatera</value>
+    <value>刷新</value>
   </data>
   <data name="Recover" xml:space="preserve">
-    <value>Återställ</value>
+    <value>恢复</value>
   </data>
   <data name="SomethingWentWrong" xml:space="preserve">
-    <value>Oj, något gick fel...</value>
+    <value>哎呀，出错了...</value>
   </data>
   <data name="BackToHome" xml:space="preserve">
-    <value>Tillbaka till hem</value>
+    <value>返回首页</value>
   </data>
   <data name="UserLockedOut" xml:space="preserve">
-    <value>Användaren är utestängd. Försök igen om {0}</value>
+    <value>用户已被锁定。请在 {0} 后重试</value>
   </data>
   <data name="UserIsNotConfirmed" xml:space="preserve">
-    <value>Användaren är inte bekräftad.</value>
+    <value>用户未确认。</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
-    <value>Användaren existerar inte.</value>
+    <value>用户不存在。</value>
   </data>
   <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
-    <value>Denna e-post eller detta telefonnummer är redan upptaget.</value>
+    <value>此电子邮件或电话号码已被使用。</value>
   </data>
   <data name="Add" xml:space="preserve">
-    <value>Lägg till</value>
+    <value>添加</value>
   </data>
   <data name="Token" xml:space="preserve">
-    <value>Token</value>
+    <value>令牌</value>
   </data>
   <data name="InvalidToken" xml:space="preserve">
-    <value>Ogiltig token.</value>
+    <value>无效令牌。</value>
   </data>
   <data name="ExpiredToken" xml:space="preserve">
-    <value>Utgånget token.</value>
+    <value>令牌已过期。</value>
   </data>
   <data name="SignInMessageInSignUp" xml:space="preserve">
-    <value>Har du redan ett konto?</value>
+    <value>已有账户？</value>
   </data>
   <data name="ConfirmMessageInProfile" xml:space="preserve">
-    <value>Har du redan en token?</value>
+    <value>已有令牌？</value>
   </data>
   <data name="ConfirmEmailHeaderText" xml:space="preserve">
-    <value>E-postadress</value>
+    <value>电子邮件地址</value>
   </data>
   <data name="ConfirmEmailSubtitle" xml:space="preserve">
-    <value>Vi har skickat en bekräftelsetoken till din e-postadress.</value>
+    <value>我们已向您的电子邮件地址发送确认令牌。</value>
   </data>
   <data name="ConfirmPageTitle" xml:space="preserve">
-    <value>Bekräfta</value>
+    <value>确认</value>
   </data>
   <data name="ConfirmTitle" xml:space="preserve">
-    <value>Bekräfta ditt konto</value>
+    <value>确认您的账户</value>
   </data>
   <data name="ConfirmEmailMessage" xml:space="preserve">
-    <value>Vänligen bekräfta din e-post genom att skriva in koden här.</value>
+    <value>请输入发送到您的电子邮件的令牌来确认您的电子邮件。</value>
   </data>
   <data name="EmailPlaceholder" xml:space="preserve">
-    <value>Ange e-postadress</value>
+    <value>输入电子邮件地址</value>
   </data>
   <data name="EmailToken" xml:space="preserve">
-    <value>Kod</value>
+    <value>代码</value>
   </data>
   <data name="EmailTokenConfirmButtonText" xml:space="preserve">
-    <value>Bekräfta e-postadress</value>
+    <value>确认电子邮件地址</value>
   </data>
   <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
-    <value>Din e-postadress ({0}) har bekräftats.</value>
+    <value>您的电子邮件地址 ({0}) 已确认。</value>
   </data>
   <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
-    <value>Du kan nu logga in med ditt konto.</value>
+    <value>您现在可以使用您的账户登录。</value>
   </data>
   <data name="ConfirmPhoneHeaderText" xml:space="preserve">
-    <value>Telefonnummer</value>
+    <value>电话号码</value>
   </data>
   <data name="ConfirmPhoneSubtitle" xml:space="preserve">
-    <value>Vi har skickat en bekräftelsekod till din telefon.</value>
+    <value>我们已向您的电话发送确认令牌。</value>
   </data>
   <data name="ConfirmPhoneMessage" xml:space="preserve">
-    <value>Vänligen bekräfta ditt telefonnummer genom att skriva in koden här.</value>
+    <value>请输入发送到您的电话的令牌来确认您的电话号码。</value>
   </data>
   <data name="PhoneNumberPlaceholder" xml:space="preserve">
-    <value>Ange telefonnummer</value>
+    <value>输入电话号码</value>
   </data>
   <data name="PhoneToken" xml:space="preserve">
-    <value>Kod</value>
+    <value>代码</value>
   </data>
   <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
-    <value>Bekräfta telefonnummer</value>
+    <value>确认电话号码</value>
   </data>
   <data name="NotReceivedPhoneMessage" xml:space="preserve">
-    <value>Har du inte fått koden på din telefon?</value>
+    <value>您没有在电话上收到令牌吗？</value>
   </data>
   <data name="ResendPhoneTokenButtonText" xml:space="preserve">
-    <value>Skicka kod igen</value>
+    <value>重新发送代码</value>
   </data>
   <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
-    <value>Ditt telefonnummer ({0}) har bekräftats.</value>
+    <value>您的电话号码 ({0}) 已确认。</value>
   </data>
   <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
-    <value>Du kan nu logga in med ditt konto.</value>
+    <value>您现在可以使用您的账户登录。</value>
   </data>
   <data name="AccountTitle" xml:space="preserve">
-    <value>Konto</value>
+    <value>账户</value>
   </data>
   <data name="AccountSubtitle" xml:space="preserve">
-    <value>Byt e-postadress för kontot, telefonnummer eller inställningar för lösenordslös inloggning.</value>
+    <value>更改您的账户电子邮件、电话号码或无密码设置</value>
   </data>
   <data name="DeleteAccount" xml:space="preserve">
-    <value>Radera konto</value>
+    <value>删除账户</value>
   </data>
   <data name="DeleteAccountPrompt" xml:space="preserve">
-    <value>Är du säker på att du vill radera ditt konto?</value>
+    <value>您确定要删除您的账户吗？</value>
   </data>
   <data name="DontHaveAccountMessage" xml:space="preserve">
-    <value>Har du inget konto?</value>
+    <value>没有账户？</value>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>Redigera</value>
+    <value>编辑</value>
   </data>
   <data name="FileUploadFailed" xml:space="preserve">
-    <value>Ett fel uppstod vid uppladdning av filen</value>
+    <value>上传文件时发生错误</value>
   </data>
   <data name="ForgotPasswordPageTitle" xml:space="preserve">
-    <value>Glömt lösenord</value>
+    <value>忘记密码</value>
   </data>
   <data name="ForgotPasswordTitle" xml:space="preserve">
-    <value>Glömt lösenord</value>
+    <value>忘记密码</value>
   </data>
   <data name="ForgotPasswordMessage" xml:space="preserve">
-    <value>Ange din e-postadress eller telefonnummer så att vi kan skicka en kod för återställning av lösenord till dig.</value>
+    <value>请输入您的电子邮件地址或电话号码，以便我们向您发送重置密码令牌。</value>
   </data>
   <data name="GenderMale" xml:space="preserve">
-    <value>Man</value>
+    <value>男</value>
   </data>
   <data name="GenderOther" xml:space="preserve">
-    <value>Annat</value>
+    <value>其他</value>
   </data>
   <data name="GoToToday" xml:space="preserve">
-    <value>Gå till idag</value>
+    <value>转到今天</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Skapa din multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor-app på enklaste sättet på kortast möjliga tid!</value>
+    <value>使用最短时间轻松创建您的多模式 (WASM、Server、Hybrid、预渲染) Blazor 应用！</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
-    <value>Hem</value>
+    <value>首页</value>
   </data>
   <data name="HomePanelTitle" xml:space="preserve">
-    <value>Bygg alla dina appar</value>
+    <value>构建所有您的应用</value>
   </data>
   <data name="HomePanelSubtitle" xml:space="preserve">
-    <value>med det du redan kan och älskar</value>
+    <value>使用您已经知道和喜爱的技术</value>
   </data>
   <data name="WatchVideo" xml:space="preserve">
-    <value>Titta på video</value>
+    <value>观看视频</value>
   </data>
   <data name="LearnMore" xml:space="preserve">
-    <value>Läs mer</value>
+    <value>了解更多</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>Ett set verktyg för .NET-utvecklare på flera plattformar</value>
+    <value>一套适用于多平台的 .NET 开发者的工具</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
-    <value>Ett set presterande, lättanpassade och vackra Blazor-komponenter</value>
+    <value>一套高性能、易自定义且美观的 Blazor 组件</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>En funktionsrik .NET-projektmall som fungerar sömlöst överallt</value>
+    <value>一套功能丰富的 .NET 项目模板，无缝适用于所有环境</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
-    <value>Boilerplate är byggd med ASP.NET Core, Identity, Web API, EF Core och Blazor.</value>
+    <value>Boilerplate 使用 ASP.NET Core、Identity、Web API、EF Core 和 Blazor 构建。</value>
   </data>
   <data name="NewPassword" xml:space="preserve">
-    <value>Nytt lösenord</value>
+    <value>新密码</value>
   </data>
   <data name="OldPassword" xml:space="preserve">
-    <value>Gammalt lösenord</value>
+    <value>旧密码</value>
   </data>
   <data name="No" xml:space="preserve">
-    <value>Nej</value>
+    <value>否</value>
   </data>
   <data name="NotReceivedEmailMessage" xml:space="preserve">
-    <value>Har du inte fått e-posten?</value>
+    <value>您没有收到电子邮件吗？</value>
   </data>
   <data name="Or" xml:space="preserve">
-    <value>eller</value>
+    <value>或</value>
   </data>
   <data name="Remove" xml:space="preserve">
-    <value>Ta bort</value>
+    <value>移除</value>
   </data>
   <data name="ResendEmailTokenButtonText" xml:space="preserve">
-    <value>Skicka kod igen</value>
+    <value>重新发送代码</value>
   </data>
   <data name="ResetPasswordPageTitle" xml:space="preserve">
-    <value>Återställ lösenord</value>
+    <value>重置密码</value>
   </data>
   <data name="ResetPassword" xml:space="preserve">
-    <value>Återställ lösenord</value>
+    <value>重置密码</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
-    <value>Återställ lösenord</value>
+    <value>重置密码</value>
   </data>
   <data name="ResetPasswordSubtitle" xml:space="preserve">
-    <value>Vi har skickat en kod till din telefon eller e-post.</value>
+    <value>我们已向您的电话或电子邮件发送令牌。</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>Vänligen skicka koden tillsammans med ditt nya lösenord här.</value>
+    <value>请在此提交令牌和新密码。</value>
   </data>
   <data name="ResetPasswordButtonText" xml:space="preserve">
-    <value>Sätt lösenord</value>
+    <value>设置密码</value>
   </data>
   <data name="ResetPasswordSuccessTitle" xml:space="preserve">
-    <value>Ditt lösenord har återställts.</value>
+    <value>您的密码已重置。</value>
   </data>
   <data name="ResetPasswordSuccessBody" xml:space="preserve">
-    <value>Du kan nu logga in med ditt nya lösenord.</value>
+    <value>您现在可以使用密码登录。</value>
   </data>
   <data name="ResetPasswordMessageInForgot" xml:space="preserve">
-    <value>Har du redan en kod för återställning av lösenord?</value>
+    <value>已有重置密码令牌？</value>
   </data>
   <data name="Save" xml:space="preserve">
-    <value>Spara</value>
+    <value>保存</value>
   </data>
   <data name="SignInPageTitle" xml:space="preserve">
-    <value>Logga in</value>
+    <value>登录</value>
   </data>
   <data name="SignInPanelTitle" xml:space="preserve">
-    <value>Välkommen</value>
+    <value>欢迎</value>
   </data>
   <data name="SignInPanelSubtitle" xml:space="preserve">
-    <value>Fortsätt med ditt</value>
+    <value>继续您的</value>
   </data>
   <data name="Continue" xml:space="preserve">
-    <value>Fortsätt</value>
+    <value>继续</value>
   </data>
   <data name="GoogleSignInButtonText" xml:space="preserve">
-    <value>Logga in med Google</value>
+    <value>使用 Google 登录</value>
   </data>
   <data name="FacebookSignInButtonText" xml:space="preserve">
-    <value>Logga in med Facebook</value>
+    <value>使用 Facebook 登录</value>
   </data>
   <data name="GitHubSignInButtonText" xml:space="preserve">
-    <value>Logga in med GitHub</value>
+    <value>使用 GitHub 登录</value>
   </data>
   <data name="TwitterSignInButtonText" xml:space="preserve">
-    <value>Logga in med Twitter (X)</value>
+    <value>使用 Twitter (X) 登录</value>
   </data>
   <data name="AppleSignInButtonText" xml:space="preserve">
-    <value>Logga in med Apple</value>
+    <value>使用 Apple 登录</value>
   </data>
   <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
-    <value>Logga in med Testserver</value>
+    <value>使用测试服务器登录</value>
   </data>
   <data name="AzureEntraSignInButtonText" xml:space="preserve">
-    <value>Logga in med Azure Entra</value>
+    <value>使用 Azure Entra 登录</value>
   </data>
   <data name="SignOut" xml:space="preserve">
-    <value>Logga ut</value>
+    <value>退出登录</value>
   </data>
   <data name="SignOutPrompt" xml:space="preserve">
-    <value>Är du säker på att du vill logga ut?</value>
+    <value>您确定要退出登录吗？</value>
   </data>
   <data name="SignUp" xml:space="preserve">
-    <value>Registrera dig</value>
+    <value>注册</value>
   </data>
   <data name="SignUpPageTitle" xml:space="preserve">
-    <value>Registrera dig</value>
+    <value>注册</value>
   </data>
   <data name="SignUpPanelTitle" xml:space="preserve">
-    <value>Kom igång idag</value>
+    <value>立即开始</value>
   </data>
   <data name="SignUpPanelSubtitle" xml:space="preserve">
-    <value>Skapa nytt konto med</value>
+    <value>使用创建新账户</value>
   </data>
   <data name="Submit" xml:space="preserve">
-    <value>Skicka</value>
+    <value>提交</value>
   </data>
   <data name="UploadNewImage" xml:space="preserve">
-    <value>Dra eller välj en bild</value>
+    <value>拖放或选择图像</value>
   </data>
   <data name="Yes" xml:space="preserve">
-    <value>Ja</value>
+    <value>是</value>
   </data>
   <data name="SelectBirthDate" xml:space="preserve">
-    <value>Välj ditt födelsedatum</value>
+    <value>选择您的出生日期</value>
   </data>
   <data name="Action" xml:space="preserve">
-    <value>Åtgärd</value>
+    <value>操作</value>
   </data>
   <data name="Back" xml:space="preserve">
-    <value>Tillbaka</value>
+    <value>返回</value>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Avbryt</value>
+    <value>取消</value>
   </data>
   <data name="CheckSpamMailMessage" xml:space="preserve">
-    <value>Kontrollera din Spam/Skrot om du inte hittar den i Inkorgen.</value>
+    <value>如果在收件箱中找不到，请检查您的垃圾邮件/垃圾箱。</value>
   </data>
   <data name="Color" xml:space="preserve">
-    <value>Färg</value>
+    <value>颜色</value>
   </data>
   <data name="CustomColor" xml:space="preserve">
-    <value>Anpassad färg</value>
+    <value>自定义颜色</value>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Radera</value>
+    <value>删除</value>
   </data>
   <data name="Id" xml:space="preserve">
-    <value>Id</value>
+    <value>ID</value>
   </data>
   <data name="SignIn" xml:space="preserve">
-    <value>Logga in</value>
+    <value>登录</value>
   </data>
   <data name="SignInByModal" xml:space="preserve">
-    <value>Logga in (Popup)</value>
+    <value>登录 (弹出窗口)</value>
   </data>
   <data name="Confirm" xml:space="preserve">
-    <value>Bekräfta</value>
+    <value>确认</value>
   </data>
   <data name="SignInAsDifferentUser" xml:space="preserve">
-    <value>Logga in som annan användare</value>
+    <value>以不同用户登录</value>
   </data>
   <data name="YouAreSignedInAs" xml:space="preserve">
-    <value>Du är inloggad som</value>
+    <value>您已作为登录</value>
   </data>
   <data name="ForgotPasswordLink" xml:space="preserve">
-    <value>Glömt lösenord?</value>
+    <value>忘记密码？</value>
   </data>
   <data name="GenderFemale" xml:space="preserve">
-    <value>Kvinna</value>
+    <value>女</value>
   </data>
   <data name="RememberMe" xml:space="preserve">
-    <value>Kom ihåg mig?</value>
+    <value>记住我？</value>
   </data>
   <data name="Copy" xml:space="preserve">
-    <value>Kopiera</value>
+    <value>复制</value>
   </data>
   <data name="Copied" xml:space="preserve">
-    <value>Kopierat</value>
+    <value>已复制</value>
   </data>
   <data name="TfaTitle" xml:space="preserve">
-    <value>Tvåfaktorsautentisering</value>
+    <value>两因素认证</value>
   </data>
   <data name="TfaSubtitle" xml:space="preserve">
-    <value>Hantera din kontos multifaktorautentisering</value>
+    <value>管理您的账户多因素认证</value>
   </data>
   <data name="TwoFactorCode" xml:space="preserve">
-    <value>2FA-kod</value>
+    <value>2FA 代码</value>
   </data>
   <data name="TwoFactorRecoveryCode" xml:space="preserve">
-    <value>Återställningskod</value>
+    <value>恢复代码</value>
   </data>
   <data name="TfaPanelTitle" xml:space="preserve">
-    <value>Tvåfaktorsautentisering</value>
+    <value>两因素认证</value>
   </data>
   <data name="TfaPanelSubtitle" xml:space="preserve">
-    <value>Hämta en ny kod från din autentiseringsapp eller använd din återställningskod.</value>
+    <value>从您的认证器应用获取新代码，或使用您的恢复代码。</value>
   </data>
   <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
-    <value>Försök ett annat sätt</value>
+    <value>尝试其他方式</value>
   </data>
   <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
-    <value>Du kan hämta en ny kod till din e-post eller telefon.</value>
+    <value>您可以从电子邮件或电话获取新代码。</value>
   </data>
   <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
-    <value>Hämta kod</value>
+    <value>获取代码</value>
   </data>
   <data name="TfaResetSharedKeyError" xml:space="preserve">
-    <value>Återställning av 2FA-delad nyckel måste inaktivera 2FA tills en 2FA-token baserad på den nya delade nyckeln är validerad.</value>
+    <value>重置 2FA 共享密钥必须禁用 2FA，直到基于新共享密钥的 2FA 令牌得到验证。</value>
   </data>
   <data name="TfaEmptyCodeError" xml:space="preserve">
-    <value>Ingen 2FA-token tillhandahölls av förfrågan. En giltig 2FA-token krävs för att aktivera 2FA.</value>
+    <value>请求未提供 2FA 令牌。要启用 2FA，需要有效的 2FA 令牌。</value>
   </data>
   <data name="TfaInvalidCodeError" xml:space="preserve">
-    <value>2FA-tokenen som tillhandahölls av förfrågan var ogiltig. En giltig 2FA-token krävs för att aktivera 2FA.</value>
+    <value>请求提供的 2FA 令牌无效。要启用 2FA，需要有效的 2FA 令牌。</value>
   </data>
   <data name="TfaConfigureAutAppTitle" xml:space="preserve">
-    <value>Konfigurera autentiseringsapp</value>
+    <value>配置认证器应用</value>
   </data>
   <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
-    <value>För att använda en autentiseringsapp, följ dessa steg:</value>
+    <value>要使用认证器应用，请按照以下步骤操作：</value>
   </data>
   <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>Ladda ner en tvåfaktorsautentiseringsapp som Google Authenticator för {0} och {1}.</value>
+    <value>下载适用于 {0} 和 {1} 的两因素认证器应用，如 Google Authenticator。</value>
   </data>
   <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>Skanna/klicka på QR-koden eller ange följande nyckel i din tvåfaktorsautentiseringsapp (mellanslag och skiftläge spelar ingen roll):</value>
+    <value>扫描/点击二维码，或将以下密钥输入您的两因素认证器应用（空格和大小写无关）：</value>
   </data>
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
-    <value>När du har skannat QR-koden eller matat in nyckeln ovan kommer din tvåfaktorsautentiseringsapp att ge dig en unik kod. Ange koden i bekräftelsefältet nedan.</value>
+    <value>扫描二维码或输入上述密钥后，您的两因素认证应用将为您提供唯一代码。在下面的确认框中输入代码。</value>
   </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
-    <value>Tvåfaktorsautentisering har aktiverats.</value>
+    <value>两因素认证已启用。</value>
   </data>
   <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
-    <value>Tvåfaktorsautentisering har inaktiverats.</value>
+    <value>两因素认证已禁用。</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
-    <value>Verifieringskod:</value>
+    <value>验证码：</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Ange verifieringskod.</value>
+    <value>输入验证码。</value>
   </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
-    <value>Verifiera</value>
+    <value>验证</value>
   </data>
   <data name="TfaRecoveryCodesHeader" xml:space="preserve">
-    <value>Återställning</value>
+    <value>恢复</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
-    <value>Du har inga återställningskoder kvar.</value>
+    <value>您没有剩余恢复代码。</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
-    <value>Du måste generera ett nytt set återställningskoder innan du kan logga in med en återställningskod.</value>
+    <value>您必须生成一组新的恢复代码才能使用恢复代码登录。</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
-    <value>Du har 1 återställningskod kvar.</value>
+    <value>您还剩 1 个恢复代码。</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
-    <value>Du kan generera ett nytt set återställningskoder.</value>
+    <value>您可以生成一组新的恢复代码。</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
-    <value>Du har {0} återställningskoder kvar.</value>
+    <value>您还剩 {0} 个恢复代码。</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
-    <value>Du bör generera ett nytt set återställningskoder.</value>
+    <value>您应该生成一组新的恢复代码。</value>
   </data>
   <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
-    <value>Generering av nya återställningskoder ändrar inte nycklarna som används i autentiseringsappar. Om du vill ändra nyckeln som används i en autentiseringsapp bör du återställa dina autentiseringsnycklar på nästa flik.</value>
+    <value>生成新的恢复代码不会更改认证器应用中使用的密钥。如果您希望更改认证器应用中使用的密钥，请在下一个选项卡中重置您的认证器密钥。</value>
   </data>
   <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
-    <value>Generera återställningskoder</value>
+    <value>生成恢复代码</value>
   </data>
   <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
-    <value>Lägg dessa koder på en säker plats.</value>
+    <value>将这些代码放在安全的地方。</value>
   </data>
   <data name="TfaRecoveryCodesWarning" xml:space="preserve">
-    <value>Om du förlorar din autentiseringsenhet och inte har återställningskoderna förlorar du åtkomst till ditt konto.</value>
+    <value>如果您丢失认证器设备且没有恢复代码，您将失去对账户的访问权限。</value>
   </data>
   <data name="TfaRecoveryCodesTitle" xml:space="preserve">
-    <value>Återställningskoder:</value>
+    <value>恢复代码：</value>
   </data>
   <data name="TfaAuthAppHeader" xml:space="preserve">
-    <value>Autentisering</value>
+    <value>认证器</value>
   </data>
   <data name="TfaAuthAppWarningTitle" xml:space="preserve">
-    <value>Om du återställer din autentiseringsnyckel kommer din autentiseringsapp inte att fungera förrän du konfigurerar om den.</value>
+    <value>如果您重置认证器密钥，您的认证器应用将无法工作，直到您重新配置它。</value>
   </data>
   <data name="TfaAuthAppWarning" xml:space="preserve">
-    <value>Denna process inaktiverar 2FA tills du verifierar din autentiseringsapp. Om du inte slutför konfigurationen av din autentiseringsapp kan du förlora åtkomst till ditt konto.</value>
+    <value>此过程会禁用 2FA，直到您验证您的认证器应用。如果您未完成认证器应用配置，您可能会失去对账户的访问权限。</value>
   </data>
   <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
-    <value>Återställ autentiseringsnyckel</value>
+    <value>重置认证器密钥</value>
   </data>
   <data name="TfaDisable2faHeader" xml:space="preserve">
-    <value>Inaktivera</value>
+    <value>禁用</value>
   </data>
   <data name="TfaDisable2faWarningTitle" xml:space="preserve">
-    <value>Denna åtgärd inaktiverar endast 2FA.</value>
+    <value>此操作仅禁用 2FA。</value>
   </data>
   <data name="TfaDisable2faWarning" xml:space="preserve">
-    <value>Inaktivering av 2FA ändrar inte nycklarna som används i autentiseringsappar. Om du vill ändra nyckeln som används i en autentiseringsapp bör du återställa dina autentiseringsnycklar på föregående flik.</value>
+    <value>禁用 2FA 不会更改认证器应用中使用的密钥。如果您希望更改认证器应用中使用的密钥，请在之前的选项卡中重置您的认证器密钥。</value>
   </data>
   <data name="TfaDisable2faButtonText" xml:space="preserve">
-    <value>Inaktivera 2FA</value>
+    <value>禁用 2FA</value>
   </data>
   <data name="TfaTokenSentMessage" xml:space="preserve">
-    <value>2FA-tokenen har genererats och skickats till dig.</value>
+    <value>2FA 令牌已生成并发送给您。</value>
   </data>
   <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Ange den förhöjda åtkomsttokenen vi just skickade till dig eller din autentiseringsappkod för att fortsätta.</value>
+    <value>请输入我们刚刚发送给您的提升访问令牌或您的认证器应用代码以继续。</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} 是 Boilerplate 中的您的代码。</value>
   </data>
   <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt bekräftelsee-posten. Försök igen om {0}</value>
+    <value>您已经请求了确认电子邮件。请在 {0} 后重试</value>
   </data>
   <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt bekräftelse-SMS:et. Försök igen om {0}</value>
+    <value>您已经请求了确认短信。请在 {0} 后重试</value>
   </data>
   <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt kod för återställning av lösenord. Försök igen om {0}</value>
+    <value>您已经请求了重置密码令牌。请在 {0} 后重试</value>
   </data>
   <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt en OTP. Försök igen om {0}</value>
+    <value>您已经请求了 OTP。请在 {0} 后重试</value>
   </data>
   <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt en höjd åtkomstkod. Försök igen om {0}</value>
+    <value>您已经请求了提升访问令牌。请在 {0} 后重试</value>
   </data>
   <data name="Otp" xml:space="preserve">
     <value>OTP</value>
   </data>
   <data name="OtpPanelTitle" xml:space="preserve">
-    <value>Kontrollera din {0}</value>
+    <value>检查您的 {0}</value>
   </data>
   <data name="OtpPanelSubtitle" xml:space="preserve">
-    <value>Bekräfta din {0} genom att ange koden som skickats till {1}</value>
+    <value>通过输入发送到 {1} 的代码来确认您的 {0}</value>
   </data>
   <data name="Code" xml:space="preserve">
-    <value>Kod</value>
+    <value>代码</value>
   </data>
   <data name="OtpResendMessage" xml:space="preserve">
-    <value>Fick du inte koden?</value>
+    <value>没有收到代码？</value>
   </data>
   <data name="Resend" xml:space="preserve">
-    <value>Skicka igen</value>
+    <value>重新发送</value>
   </data>
   <data name="SendOtpButtonText" xml:space="preserve">
-    <value>Skicka OTP</value>
+    <value>发送 OTP</value>
   </data>
   <data name="SendMagicLinkButtonText" xml:space="preserve">
-    <value>Skicka magisk länk och OTP</value>
+    <value>发送魔法链接和 OTP</value>
   </data>
   <data name="SignInByPassword" xml:space="preserve">
-    <value>Använd lösenord</value>
+    <value>使用密码</value>
   </data>
   <data name="SignInByOtp" xml:space="preserve">
-    <value>Använd OTP</value>
+    <value>使用 OTP</value>
   </data>
   <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>Ange antingen lösenord eller OTP</value>
+    <value>请提供密码或 OTP</value>
   </data>
   <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt 2FA-token-e-posten. Försök igen om {0}.</value>
+    <value>您已经请求了 2FA 令牌电子邮件。请在 {0} 后重试。</value>
   </data>
   <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} 是 Boilerplate 中的您的代码。</value>
   </data>
   <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} 是 Boilerplate 中的您的代码。</value>
   </data>
   <data name="TwoFactorTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} 是 Boilerplate 中的您的代码。</value>
   </data>
   <data name="OtpShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} 是 Boilerplate 中的您的代码。</value>
   </data>
   <data name="ResetPasswordTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} 是 Boilerplate 中的您的代码。</value>
   </data>
   <data name="Online" xml:space="preserve">
-    <value>Online</value>
+    <value>在线</value>
   </data>
   <data name="Recently" xml:space="preserve">
-    <value>Nyligen</value>
+    <value>最近</value>
   </data>
   <data name="Update" xml:space="preserve">
-    <value>Uppdatera</value>
+    <value>更新</value>
   </data>
   <data name="ForceUpdateTitle" xml:space="preserve">
-    <value>Tid för en uppdatering</value>
+    <value>是时候更新了</value>
   </data>
   <data name="ForceUpdateBody" xml:space="preserve">
-    <value>Denna uppdatering krävs för att hålla din app igång smidigt</value>
+    <value>此更新是保持应用平稳运行所必需的</value>
   </data>
   <data name="About" xml:space="preserve">
-    <value>Om</value>
+    <value>关于</value>
   </data>
   <data name="AboutPageTitle" xml:space="preserve">
-    <value>Om</value>
+    <value>关于</value>
   </data>
   <!--#if (sample == true || offlineDb == true) -->
   <data name="TodoAddPlaceholder" xml:space="preserve">
-    <value>Lägg till en att göra</value>
+    <value>添加待办事项</value>
   </data>
   <data name="NoTodos" xml:space="preserve">
-    <value>Inga att göra än</value>
+    <value>还没有待办事项</value>
   </data>
   <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>Sök att göra...</value>
+    <value>搜索待办事项...</value>
   </data>
   <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
-    <value>Att göra-posten kunde inte hittas</value>
+    <value>找不到待办事项</value>
   </data>
   <data name="TodoPageTitle" xml:space="preserve">
-    <value>Att göra</value>
+    <value>待办事项</value>
   </data>
   <data name="Todo" xml:space="preserve">
-    <value>Att göra</value>
+    <value>待办事项</value>
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
-    <value>Radera att göra-post</value>
+    <value>删除待办事项</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
-    <value>Kategorientiteten kunde inte hittas</value>
+    <value>找不到类别实体</value>
   </data>
   <data name="ProductCouldNotBeFound" xml:space="preserve">
-    <value>Produktentiteten kunde inte hittas</value>
+    <value>找不到产品实体</value>
   </data>
   <data name="Category" xml:space="preserve">
-    <value>Kategori</value>
+    <value>类别</value>
   </data>
   <data name="AltText" xml:space="preserve">
-    <value>Alt-text</value>
+    <value>替代文本</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
-    <value>Adminpanel</value>
+    <value>管理面板</value>
   </data>
   <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} objekt</value>
+    <value>{0} 项</value>
   </data>
   <data name="Page" xml:space="preserve">
-    <value>Sida</value>
+    <value>页</value>
   </data>
   <data name="Of" xml:space="preserve">
-    <value>av</value>
+    <value>共</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
-    <value>Produktantal senaste 30 dagarna</value>
+    <value>过去 30 天产品数量</value>
   </data>
   <data name="AddProduct" xml:space="preserve">
-    <value>Lägg till produkt</value>
+    <value>添加产品</value>
   </data>
   <data name="SearchProductsPlaceholder" xml:space="preserve">
-    <value>Sök genom produktens namn, kategori och beskrivning här...</value>
+    <value>在此搜索产品的名称、类别和描述...</value>
   </data>
   <data name="SelectCategory" xml:space="preserve">
-    <value>Välj kategori</value>
+    <value>选择类别</value>
   </data>
   <data name="TotalCategories" xml:space="preserve">
-    <value>Totala kategorier</value>
+    <value>总类别数</value>
   </data>
   <data name="TotalProducts" xml:space="preserve">
-    <value>Totala produkter</value>
+    <value>总产品数</value>
   </data>
   <data name="EditCategory" xml:space="preserve">
-    <value>Redigera kategori</value>
+    <value>编辑类别</value>
   </data>
   <data name="AddCategory" xml:space="preserve">
-    <value>Ny kategori</value>
+    <value>新类别</value>
   </data>
   <data name="CategoriesPageTitle" xml:space="preserve">
-    <value>Kategorier</value>
+    <value>类别</value>
   </data>
   <data name="EnterCategoryName" xml:space="preserve">
-    <value>Ange kategorinamn</value>
+    <value>输入类别名称</value>
   </data>
   <data name="EnterProductName" xml:space="preserve">
-    <value>Ange produktnamn</value>
+    <value>输入产品名称</value>
   </data>
   <data name="CategoriesWithProductCount" xml:space="preserve">
-    <value>Kategorier med produktantal</value>
+    <value>带产品数量的类别</value>
   </data>
   <data name="SearchOnName" xml:space="preserve">
-    <value>Sök på namn</value>
+    <value>按名称搜索</value>
   </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
-    <value>Produktantal per kategori-diagram</value>
+    <value>每个类别的产品数量图表</value>
   </data>
   <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
-    <value>Detta diagram visar antalet produkter i varje kategori.</value>
+    <value>此图表显示每个类别的产品数量。</value>
   </data>
   <data name="ProductsPageTitle" xml:space="preserve">
-    <value>Produkter</value>
+    <value>产品</value>
   </data>
   <data name="ProductsPercentagePerCategory" xml:space="preserve">
-    <value>Produktprocent per kategori</value>
+    <value>每个类别的产品百分比</value>
   </data>
   <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
-    <value>Detta diagram visar procentandelen produkter i varje kategori.</value>
+    <value>此图表显示每个类别的产品百分比。</value>
   </data>
   <data name="Categories" xml:space="preserve">
-    <value>Kategorier</value>
+    <value>类别</value>
   </data>
   <data name="Products" xml:space="preserve">
-    <value>Produkter</value>
+    <value>产品</value>
   </data>
   <data name="CategoryNotEmpty" xml:space="preserve">
-    <value>Kategorin innehåller produkter och kan därför inte tas bort</value>
+    <value>此类别包含一些产品，因此您无法删除它</value>
   </data>
   <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
-    <value>Är du säker på att du vill radera produkt {0}</value>
+    <value>您确定要删除产品 {0} 吗</value>
   </data>
   <data name="DeleteProduct" xml:space="preserve">
-    <value>Radera produkt</value>
+    <value>删除产品</value>
   </data>
   <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Standardfärgval</value>
+    <value>默认颜色选择器</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
-    <value>Redigera produkt {0}</value>
+    <value>编辑产品 {0}</value>
   </data>
   <data name="DuplicateProductName" xml:space="preserve">
-    <value>Dubblerat produktnamn</value>
+    <value>产品名称重复</value>
   </data>
   <data name="DuplicateCategoryName" xml:space="preserve">
-    <value>Dubblerad kategori {0}</value>
+    <value>类别 {0} 重复</value>
   </data>
   <data name="DashboardPageTitle" xml:space="preserve">
-    <value>Instrumentpanel</value>
+    <value>仪表板</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
-    <value>Instrumentpanel</value>
+    <value>仪表板</value>
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
-    <value>Här är dina analysdata</value>
+    <value>这是您的分析数据</value>
   </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
-    <value>Ogiltigt Google reCAPTCHA-svar.</value>
+    <value>无效的 Google reCAPTCHA 响应。</value>
   </data>
   <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
-    <value>Du måste klara Google reCAPTCHA-utmaningen.</value>
+    <value>您需要通过 Google reCAPTCHA 挑战。</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Sales") -->
   <data name="SimilarProducts" xml:space="preserve">
-    <value>Liknande produkter</value>
+    <value>类似产品</value>
   </data>
   <data name="SiblingProducts" xml:space="preserve">
-    <value>Produkter i samma kategori</value>
+    <value>同一类别的产品</value>
   </data>
   <data name="Buy" xml:space="preserve">
-    <value>Köp</value>
+    <value>购买</value>
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
-    <value>Köp lyckades!</value>
+    <value>购买成功！</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">
-    <value>Lösenordslöst</value>
+    <value>无密码</value>
   </data>
   <data name="PasswordlessTitle" xml:space="preserve">
-    <value>Lösenordslös inloggning</value>
+    <value>无密码登录</value>
   </data>
   <data name="EnablePasswordless" xml:space="preserve">
-    <value>Aktivera lösenordslös inloggning</value>
+    <value>启用无密码登录</value>
   </data>
   <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>Lösenordslös inloggning har aktiverats</value>
+    <value>无密码登录已成功启用</value>
   </data>
   <data name="DisablePasswordless" xml:space="preserve">
-    <value>Inaktivera lösenordslös inloggning</value>
+    <value>禁用无密码登录</value>
   </data>
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>Lösenordslös inloggning har inaktiverats</value>
+    <value>无密码登录已成功禁用</value>
   </data>
   <data name="Clear" xml:space="preserve">
-    <value>Rensa</value>
+    <value>清除</value>
   </data>
   <data name="Send" xml:space="preserve">
-    <value>Skicka</value>
+    <value>发送</value>
   </data>
   <data name="Canceled" xml:space="preserve">
-    <value>Avbruten</value>
+    <value>已取消</value>
   </data>
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
-    <value>AI-chattpanel</value>
+    <value>AI 聊天面板</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>Hej! Jag är här för att göra din appupplevelse fantastisk! Har du en fråga eller behöver hjälp?</value>
+    <value>问候！我是来让您的应用体验超棒的！有问题或需要帮助吗？</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
-    <value>Öppna återställ lösenord-sidan och berätta hur den fungerar</value>
+    <value>打开重置密码页面并告诉我它是如何工作的</value>
   </data>
   <data name="AiChatPanelPrompt2" xml:space="preserve">
-    <value>Hur kan jag installera PWA-versionen av appen?</value>
+    <value>我如何安装应用的 PWA 版本？</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela!</value>
+    <value>我有一些反馈想分享！</value>
   </data>
   <!--#elif (module == "Sales") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela!</value>
+    <value>我有一些反馈想分享！</value>
   </data>
   <!--#else -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela!</value>
+    <value>我有一些反馈想分享！</value>
   </data>
   <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
-    <value>Skriv ett meddelande...</value>
+    <value>写消息...</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
-    <value>Uppgradera</value>
+    <value>升级</value>
   </data>
   <data name="UpgradeTitle" xml:space="preserve">
-    <value>Uppgradera konto</value>
+    <value>升级账户</value>
   </data>
   <data name="UpgradeSubtitle" xml:space="preserve">
-    <value>Det finns ingen konto-uppgradering här. Detta är bara en demo för belönande annonser.</value>
+    <value>这里没有账户升级。这只是奖励广告的演示。</value>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
-    <value>Uppgradering av konto slutförd.</value>
+    <value>账户升级成功。</value>
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
-    <value>Uppgradering av konto misslyckades.</value>
+    <value>账户升级失败。</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
-    <value>Problem med att titta på annons?</value>
+    <value>观看广告有问题？</value>
   </data>
   <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
-    <value>Jag har problem med att titta på annonser i appen.</value>
+    <value>我在应用内观看广告有问题。</value>
   </data>
   <!--#endif -->
   <data name="PleaseWait" xml:space="preserve">
-    <value>Vänligen vänta</value>
+    <value>请等待</value>
   </data>
   <data name="Management" xml:space="preserve">
-    <value>Hantering</value>
+    <value>管理</value>
   </data>
   <data name="UserGroups" xml:space="preserve">
-    <value>Användargrupper</value>
+    <value>用户组</value>
   </data>
   <data name="RolesPageTitle" xml:space="preserve">
-    <value>Hantera användargrupper</value>
+    <value>管理用户组</value>
   </data>
   <data name="NoRoleMessage" xml:space="preserve">
-    <value>Inga användargrupper</value>
+    <value>没有用户组</value>
   </data>
   <data name="AddRole" xml:space="preserve">
-    <value>Lägg till användargrupp</value>
+    <value>添加用户组</value>
   </data>
   <data name="EditRole" xml:space="preserve">
-    <value>Redigera användargrupp</value>
+    <value>编辑用户组</value>
   </data>
   <data name="NewRoleName" xml:space="preserve">
-    <value>Nytt användargruppsnamn</value>
+    <value>新用户组名称</value>
   </data>
   <data name="Users" xml:space="preserve">
-    <value>Användare</value>
+    <value>用户</value>
   </data>
   <data name="UsersWithCount" xml:space="preserve">
-    <value>Användare {0}</value>
+    <value>用户 {0}</value>
   </data>
   <data name="Features" xml:space="preserve">
-    <value>Funktioner</value>
+    <value>功能</value>
   </data>
   <data name="Quota" xml:space="preserve">
-    <value>Kvot</value>
+    <value>配额</value>
   </data>
   <data name="QuotaDescription" xml:space="preserve">
-    <value>För att begränsa användningen av funktioner kan du definiera kvoter på denna flik, som kan variera för varje roll. Till exempel antalet enheter en användare kan logga in på eller antalet gånger de kan använda en specifik appfunktion.</value>
+    <value>要限制功能的使用，您可以在此选项卡上为每个角色定义配额。例如，用户可以登录的设备数量或使用特定应用功能的次数。</value>
   </data>
   <data name="MaxPrevilegedSessions" xml:space="preserve">
-    <value>Max privilegierade sessioner</value>
+    <value>最大特权会话数</value>
   </data>
   <data name="General" xml:space="preserve">
-    <value>Allmänt</value>
+    <value>常规</value>
   </data>
   <data name="RoleName" xml:space="preserve">
-    <value>Användargruppsnamn</value>
+    <value>用户组名称</value>
   </data>
   <!--#if (notification == true || signalR == true) -->
   <data name="RoleNotificationLabel" xml:space="preserve">
-    <value>Notifikationsmeddelande</value>
+    <value>通知消息</value>
   </data>
   <data name="SendRoleNotification" xml:space="preserve">
-    <value>Skicka notifikation</value>
+    <value>发送通知</value>
   </data>
   <data name="EnableNotifications" xml:space="preserve">
-    <value>Aktivera notifikationer</value>
+    <value>启用通知</value>
   </data>
   <data name="DisableNotifications" xml:space="preserve">
-    <value>Inaktivera notifikationer</value>
+    <value>禁用通知</value>
   </data>
   <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Testnotifikation 1</value>
+    <value>测试通知 1</value>
   </data>
   <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Testnotifikation 2</value>
+    <value>测试通知 2</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
-    <value>Hantera användare</value>
+    <value>管理用户</value>
   </data>
   <data name="DeleteRole" xml:space="preserve">
-    <value>Radera användargrupp</value>
+    <value>删除用户组</value>
   </data>
   <data name="Sessions" xml:space="preserve">
-    <value>Sessioner {0}</value>
+    <value>会话 {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
-    <value>Radera användare</value>
+    <value>删除用户</value>
   </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>Appversion</value>
+    <value>应用版本</value>
   </data>
   <data name="IP" xml:space="preserve">
     <value>IP</value>
   </data>
   <data name="Address" xml:space="preserve">
-    <value>Adress</value>
+    <value>地址</value>
   </data>
   <data name="DeviceInfo" xml:space="preserve">
-    <value>Enhetsinfo</value>
+    <value>设备信息</value>
   </data>
   <data name="Privileged" xml:space="preserve">
-    <value>Privilegierad</value>
+    <value>特权</value>
   </data>
   <data name="RenewedOn" xml:space="preserve">
-    <value>Förnyad</value>
+    <value>续订于</value>
   </data>
   <data name="OnlineUsers" xml:space="preserve">
-    <value>Online-användare: {0}</value>
+    <value>在线用户：{0}</value>
   </data>
   <data name="DeleteSession" xml:space="preserve">
-    <value>Radera session</value>
+    <value>删除会话</value>
   </data>
   <data name="NoUserMessage" xml:space="preserve">
-    <value>Inga användare</value>
+    <value>没有用户</value>
   </data>
   <data name="NoUserSessionMessage" xml:space="preserve">
-    <value>Ingen användarsession</value>
+    <value>没有用户会话</value>
   </data>
   <data name="NoUserSelectedMessage" xml:space="preserve">
-    <value>Välj en användare först</value>
+    <value>请先选择一个用户</value>
   </data>
   <data name="RevokeAllSessions" xml:space="preserve">
-    <value>Återkalla alla sessioner</value>
+    <value>撤销所有会话</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>Är du säker på att du vill återkalla alla sessioner för {0}?</value>
+    <value>您确定要撤销 {0} 的所有会话吗？</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort denna användare från SuperAdmin-användargruppen.</value>
+    <value>您不能从 SuperAdmin 用户组中移除此用户。</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
-    <value>Superadmin-behörigheter får inte ändras.</value>
+    <value>不能修改超级管理员权限。</value>
   </data>
   <data name="CanNotChangeBuiltInRole" xml:space="preserve">
-    <value>Användargrupp {0} får inte ändras.</value>
+    <value>不能修改用户组 {0}。</value>
   </data>
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort din egen användare</value>
+    <value>您不能移除自己的用户</value>
   </data>
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort denna SuperAdmin-användare</value>
+    <value>您不能移除此 SuperAdmin 用户</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort din nuvarande session</value>
+    <value>您不能移除当前会话</value>
   </data>
   <data name="SearchRolesPlaceholder" xml:space="preserve">
-    <value>Sök användargrupper</value>
+    <value>搜索用户组</value>
   </data>
   <data name="SearchUsersPlaceholder" xml:space="preserve">
-    <value>Sök användare</value>
+    <value>搜索用户</value>
   </data>
   <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
-    <value>Sök användare</value>
+    <value>搜索用户</value>
   </data>
   <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
-    <value>Sök användarsessioner</value>
+    <value>搜索用户会话</value>
   </data>
   <data name="RemoveRoleFromAllUsers" xml:space="preserve">
-    <value>Ta bort alla användare från användargrupp</value>
+    <value>从用户组中移除所有用户</value>
   </data>
   <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
-    <value>Är du säker på att du vill ta bort alla användare från {0}?</value>
+    <value>您确定要从 {0} 中移除所有用户吗？</value>
   </data>
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
-    <value>Sidans URL</value>
+    <value>页面 URL</value>
   </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
-    <value>Du är inte auktoriserad</value>
+    <value>您未被授权</value>
   </data>
   <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
-    <value>Du har inte behörighet att komma åt denna sida.</value>
+    <value>您没有权限访问此页面。</value>
   </data>
   <data name="SignInPasswordMessage1" xml:space="preserve">
-    <value>Första gången här?</value>
+    <value>第一次来？</value>
   </data>
   <data name="SignInPasswordMessage2" xml:space="preserve">
-    <value>Vi skapar automatiskt ett konto åt dig.</value>
+    <value>我们将自动为您创建账户。</value>
   </data>
   <data name="ImageTooSmall" xml:space="preserve">
-    <value>Bilden är för liten. Minsta tillåtna dimensioner är {0}x{1}, men nuvarande dimensioner är {2}x{3}.</value>
+    <value>图像太小。最小要求尺寸为 {0}x{1}，但当前尺寸为 {2}x{3}。</value>
   </data>
   <data name="ImageNotCarError" xml:space="preserve">
-    <value>Den angivna bilden innehåller inte en bil.</value>
+    <value>提供的图像不包含汽车。</value>
   </data>
 </root>

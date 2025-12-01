@@ -118,92 +118,82 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ConcurrencyFailure" xml:space="preserve">
-    <value>Optimistisk parallellkörningsfel, objektet har modifierats.</value>
-    <comment>Error when optimistic concurrency fails</comment>
+  <data name="ConfirmationEmailSubject" xml:space="preserve">
+    <value>बॉयलरप्लेट {0} - अपनी ईमेल पता की पुष्टि करें</value>
   </data>
-  <data name="DefaultError" xml:space="preserve">
-    <value>Ett okänt fel har inträffat.</value>
-    <comment>Default identity result error message</comment>
+  <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
+    <value>आपको यह ईमेल प्राप्त हो रहा है क्योंकि हाल ही में आपने अपने बॉयलरप्लेट खाते में {0} दर्ज किया है।</value>
   </data>
-  <data name="DuplicateEmail" xml:space="preserve">
-    <value>E-post '{0}' är redan upptagen.</value>
-    <comment>Error for duplicate emails</comment>
+  <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
+    <value>ऐप में नीचे दिए गए नंबर को दर्ज करके अपनी ईमेल पता की पुष्टि करें।</value>
   </data>
-  <data name="DuplicateRoleName" xml:space="preserve">
-    <value>Rollnamn '{0}' är redan upptaget.</value>
-    <comment>Error for duplicate roles</comment>
+  <data name="EmailConfirmationMessageBodyLink" xml:space="preserve">
+    <value>या इस ईमेल पता की पुष्टि करने के लिए नीचे दिए गए लिंक पर क्लिक करें।</value>
   </data>
-  <data name="DuplicateUserName" xml:space="preserve">
-    <value>Användarnamn '{0}' är redan upptaget.</value>
-    <comment>Error for duplicate user names</comment>
+  <data name="ResetPasswordEmailSubject" xml:space="preserve">
+    <value>बॉयलरप्लेट {0} - अपना पासवर्ड रीसेट करें</value>
   </data>
-  <data name="InvalidEmail" xml:space="preserve">
-    <value>E-post '{0}' är ogiltig.</value>
-    <comment>Invalid email</comment>
+  <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>नमस्ते {0}</value>
   </data>
-  <data name="InvalidRoleName" xml:space="preserve">
-    <value>Rollnamn '{0}' är ogiltigt.</value>
-    <comment>Error for invalid role names</comment>
+  <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>किसी ने आपके पासवर्ड को बदलने के लिए एक टोकन का अनुरोध किया है।</value>
   </data>
-  <data name="InvalidToken" xml:space="preserve">
-    <value>Ogiltigt token.</value>
-    <comment>Error when a token is not recognized</comment>
+  <data name="ResetPasswordBody" xml:space="preserve">
+    <value>यदि आपने पासवर्ड रीसेट का अनुरोध नहीं किया है, तो आप इस ईमेल को नजरअंदाज कर सकते हैं।</value>
   </data>
-  <data name="InvalidUserName" xml:space="preserve">
-    <value>Användarnamn '{0}' är ogiltigt, får endast innehålla bokstäver eller siffror.</value>
-    <comment>User names can only contain letters or digits</comment>
+  <data name="ResetPasswordTokenMessage" xml:space="preserve">
+    <value>आप नीचे दिए गए टोकन को कॉपी कर सकते हैं और पासवर्ड रीसेट पेज में दर्ज कर सकते हैं।</value>
   </data>
-  <data name="LoginAlreadyAssociated" xml:space="preserve">
-    <value>En användare med denna inloggning finns redan.</value>
-    <comment>Error when a login already linked</comment>
+  <data name="ResetPasswordLinkMessage" xml:space="preserve">
+    <value>या आप पासवर्ड रीसेट करने के लिए नीचे दिए गए लिंक पर क्लिक कर सकते हैं।</value>
   </data>
-  <data name="PasswordMismatch" xml:space="preserve">
-    <value>Felaktigt lösenord.</value>
-    <comment>Error when a password doesn't match</comment>
+  <data name="OtpEmailSubject" xml:space="preserve">
+    <value>बॉयलरप्लेट {0} - ओटीपी</value>
   </data>
-  <data name="PasswordRequiresDigit" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en siffra ('0'-'9').</value>
-    <comment>Error when passwords do not have a digit</comment>
+  <data name="OtpTitle" xml:space="preserve">
+    <value>नमस्ते {0}</value>
   </data>
-  <data name="PasswordRequiresLower" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en gemen ('a'-'z').</value>
-    <comment>Error when passwords do not have a lowercase letter</comment>
+  <data name="OtpSubtitle" xml:space="preserve">
+    <value>किसी ने ऐप में साइन इन करने के लिए ओटीपी का अनुरोध किया है।</value>
   </data>
-  <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en icke alfanumerisk tecken.</value>
-    <comment>Error when password does not have enough non alphanumeric characters</comment>
+  <data name="OtpBody" xml:space="preserve">
+    <value>यदि आपने ओटीपी का अनुरोध नहीं किया है, तो आप इस ईमेल को नजरअंदाज कर सकते हैं।</value>
   </data>
-  <data name="PasswordRequiresUpper" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en versal ('A'-'Z').</value>
-    <comment>Error when passwords do not have an uppercase letter</comment>
+  <data name="OtpMessage" xml:space="preserve">
+    <value>आप नीचे दिए गए ओटीपी को कॉपी कर सकते हैं और साइन इन पेज में दर्ज कर सकते हैं।</value>
   </data>
-  <data name="PasswordTooShort" xml:space="preserve">
-    <value>Lösenord måste vara minst {0} tecken.</value>
-    <comment>Error message for passwords that are too short</comment>
+  <data name="OtpLinkMessage" xml:space="preserve">
+    <value>या साइन इन करने के लिए नीचे दिए गए लिंक पर क्लिक कर सकते हैं।</value>
   </data>
-  <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">
-    <value>Återställning av återställningskod misslyckades.</value>
-    <comment>Error when a recovery code is not redeemed.</comment>
+  <data name="AppName" xml:space="preserve">
+    <value>बॉयलरप्लेट</value>
   </data>
-  <data name="UserAlreadyHasPassword" xml:space="preserve">
-    <value>Användaren har redan ett lösenord inställt.</value>
-    <comment>Error when AddPasswordAsync called when a user already has a password</comment>
+  <data name="WelcomeToApp" xml:space="preserve">
+    <value>बॉयलरप्लेट में आपका स्वागत है!</value>
   </data>
-  <data name="UserAlreadyInRole" xml:space="preserve">
-    <value>Användaren är redan i rollen '{0}'.</value>
-    <comment>Error when a user is already in a role</comment>
+  <data name="TfaTokenEmailSubject" xml:space="preserve">
+    <value>बॉयलरप्लेट {0} - 2FA टोकन</value>
   </data>
-  <data name="UserLockoutNotEnabled" xml:space="preserve">
-    <value>Låsning är inte aktiverat för denna användare.</value>
-    <comment>Error when lockout is not enabled</comment>
+  <data name="TfaTokenHello" xml:space="preserve">
+    <value>प्रिय {0} नमस्ते</value>
   </data>
-  <data name="UserNotInRole" xml:space="preserve">
-    <value>Användaren är inte i rollen '{0}'.</value>
-    <comment>Error when a user is not in the role</comment>
+  <data name="TfaTokenMessage" xml:space="preserve">
+    <value>यहाँ आपका नया 2FA साइन इन टोकन है:</value>
   </data>
-  <data name="PasswordRequiresUniqueChars" xml:space="preserve">
-    <value>Lösenord måste innehålla minst {0} olika tecken.</value>
-    <comment>Error message for passwords that are based on similar characters</comment>
+  <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
+    <value>बॉयलरप्लेट {0} - उन्नत पहुँच टोकन</value>
+  </data>
+  <data name="ElevatedAccessTokenHello" xml:space="preserve">
+    <value>प्रिय {0} नमस्ते</value>
+  </data>
+  <data name="ElevatedAccessTokenMessage" xml:space="preserve">
+    <value>यहाँ आपका नया उन्नत पहुँच टोकन है:</value>
+  </data>
+  <data name="CopyTokenNote" xml:space="preserve">
+    <value>इस कोड को कॉपी करें और ऐप में उपयोग करें।</value>
+  </data>
+  <data name="DefaultFromName" xml:space="preserve">
+    <value>बॉयलरप्लेट ऐप</value>
   </data>
 </root>

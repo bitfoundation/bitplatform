@@ -120,1248 +120,1248 @@
   </resheader>
   <!-- .NET Validation messages -->
   <data name="CompareAttribute_ValidationError" xml:space="preserve">
-    <value>'{0}' och '{1}' matchar inte.</value>
+    <value>'{0}' و '{1}' لا يتطابقان.</value>
   </data>
   <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} är inte en giltig e-postadress.</value>
+    <value>حقل {0} ليس عنوان بريد إلكتروني صالحًا.</value>
   </data>
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>MaxLengthAttribute måste ha ett längdvärde som är större än noll. Använd MaxLength() utan parametrar för att ange att strängen eller arrayen kan ha den maximalt tillåtna längden.</value>
+    <value>يجب أن يكون لـ MaxLengthAttribute قيمة طول أكبر من صفر. استخدم MaxLength() بدون معاملات للإشارة إلى أن السلسلة أو المصفوفة يمكن أن يكون لها الطول الأقصى المسموح به.</value>
   </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} måste vara en sträng- eller arraytyp med en minsta längd på '{1}'.</value>
+    <value>يجب أن يكون حقل {0} من نوع سلسلة أو مصفوفة بطول أدنى '{1}'.</value>
   </data>
   <data name="RangeAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} måste vara mellan {1} och {2}.</value>
+    <value>يجب أن يكون حقل {0} بين {1} و {2}.</value>
   </data>
   <data name="RequiredAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} är obligatoriskt.</value>
+    <value>حقل {0} مطلوب.</value>
   </data>
   <data name="PhoneAttribute_ValidationError" xml:space="preserve">
-    <value>Fältet {0} är inte ett giltigt telefonnummer.</value>
+    <value>حقل {0} ليس رقم هاتف صالحًا.</value>
   </data>
   <!-- Exceptions -->
   <data name="BadRequestException" xml:space="preserve">
-    <value>Ogiltig förfrågan</value>
+    <value>طلب غير صالح</value>
   </data>
   <data name="ConflictException" xml:space="preserve">
-    <value>Begäran kunde inte behandlas på grund av en konflikt</value>
+    <value>تعذر معالجة الطلب بسبب تضارب في الطلب</value>
   </data>
   <data name="NotAuthorizedPageTitle" xml:space="preserve">
-    <value>Inte auktoriserad</value>
+    <value>غير مصرح</value>
   </data>
   <data name="ForbiddenException" xml:space="preserve">
-    <value>Åtkomst till den begärda resursen är förbjuden</value>
+    <value>الوصول إلى المورد المطلوب محظور</value>
   </data>
   <data name="ResourceValidationException" xml:space="preserve">
-    <value>Ogiltig data i begäran</value>
+    <value>بيانات الطلب غير صالحة</value>
   </data>
   <data name="RestException" xml:space="preserve">
-    <value>Ett fel uppstod vid kommunikation med servern</value>
+    <value>حدث خطأ أثناء التواصل مع الخادم</value>
   </data>
   <data name="UnauthorizedException" xml:space="preserve">
-    <value>Din förfrågan saknar giltiga autentiseringsuppgifter</value>
+    <value>طلبك يفتقر إلى بيانات اعتماد مصادقة صالحة</value>
   </data>
   <data name="UnknownException" xml:space="preserve">
-    <value>Okänt fel har uppstått</value>
+    <value>حدث خطأ غير معروف</value>
   </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
-    <value>Posten ändrades av en annan användare efter att du hämtade den ursprungliga informationen. Åtgärden avbröts.</value>
+    <value>تم تعديل السجل بواسطة مستخدم آخر بعد الحصول على البيانات الأصلية. تم إلغاء العملية.</value>
   </data>
   <data name="ResourceNotFoundException" xml:space="preserve">
-    <value>Resursen hittades inte</value>
+    <value>المورد غير موجود</value>
   </data>
   <data name="TooManyRequestExceptions" xml:space="preserve">
-    <value>För många förfrågningar</value>
+    <value>طلبات كثيرة جدًا</value>
   </data>
   <data name="ServerConnectionException" xml:space="preserve">
-    <value>Kan inte ansluta till servern.</value>
+    <value>تعذر الاتصال بالخادم.</value>
   </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
-    <value>Aktiv</value>
+    <value>نشط</value>
   </data>
   <data name="All" xml:space="preserve">
-    <value>Alla</value>
+    <value>الكل</value>
   </data>
   <data name="Alphabetical" xml:space="preserve">
-    <value>A-Ö</value>
+    <value>من أ إلى ي</value>
   </data>
   <data name="Completed" xml:space="preserve">
-    <value>Slutförd</value>
+    <value>مكتمل</value>
   </data>
   <data name="Date" xml:space="preserve">
-    <value>Datum</value>
+    <value>التاريخ</value>
   </data>
   <data name="SettingsPageTitle" xml:space="preserve">
-    <value>Inställningar</value>
+    <value>الإعدادات</value>
   </data>
   <data name="Settings" xml:space="preserve">
-    <value>Inställningar</value>
+    <value>الإعدادات</value>
   </data>
   <data name="Dark" xml:space="preserve">
-    <value>Mörk</value>
+    <value>داكن</value>
   </data>
   <data name="Light" xml:space="preserve">
-    <value>Ljus</value>
+    <value>فاتح</value>
   </data>
   <data name="Language" xml:space="preserve">
-    <value>Språk</value>
+    <value>اللغة</value>
   </data>
   <data name="SelectLanguage" xml:space="preserve">
-    <value>Välj språk</value>
+    <value>اختر اللغة</value>
   </data>
   <data name="ProfileTitle" xml:space="preserve">
-    <value>Profil</value>
+    <value>الملف الشخصي</value>
   </data>
   <data name="ProfileSubtitle" xml:space="preserve">
-    <value>Redigera din profildata</value>
+    <value>عدّل بيانات ملفك الشخصي</value>
   </data>
   <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
-    <value>Koden för att byta e-post har skickats till dig</value>
+    <value>تم إرسال رمز تغيير البريد الإلكتروني إليك</value>
   </data>
   <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
-    <value>Koden för att byta telefonnummer har skickats till dig</value>
+    <value>تم إرسال رمز تغيير رقم الهاتف إليك</value>
   </data>
   <data name="SuccessfulSendTokenMessage" xml:space="preserve">
-    <value>Koden har skickats till dig</value>
+    <value>تم إرسال الرمز إليك</value>
   </data>
   <data name="SessionsTitle" xml:space="preserve">
-    <value>Sessioner</value>
+    <value>الجلسات</value>
   </data>
   <data name="SessionsSubtitle" xml:space="preserve">
-    <value>Dina aktiva sessioner på flera enheter</value>
+    <value>جلساتك النشطة عبر أجهزة متعددة</value>
   </data>
   <data name="CurrentSession" xml:space="preserve">
-    <value>Nuvarande session</value>
+    <value>الجلسة الحالية</value>
   </data>
   <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
-    <value>Av {0} tillåtna enheter för fulla funktioner har du använt {1}.
-Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</value>
+    <value>من {0} أجهزة مسموح بها للميزات الكاملة، لقد استخدمت {1}.
+بعد الوصول إلى {0}، ستكون لتسجيلات الدخول الإضافية وظائف مخفضة.</value>
   </data>
   <data name="OtherSessions" xml:space="preserve">
-    <value>Andra sessioner</value>
+    <value>جلسات أخرى</value>
   </data>
   <data name="TryRemovingOtherSessions" xml:space="preserve">
-    <value>Försök ta bort andra sessioner</value>
+    <value>جرب إزالة جلسات أخرى</value>
   </data>
   <data name="RemoveSessionSuccessMessage" xml:space="preserve">
-    <value>Sessionen har tagits bort.</value>
+    <value>تم إزالة الجلسة بنجاح</value>
   </data>
   <data name="NotFoundPageTitle" xml:space="preserve">
     <value>404</value>
   </data>
   <data name="NotFoundText" xml:space="preserve">
-    <value>Det finns inget här.</value>
+    <value>لا يوجد شيء هنا.</value>
   </data>
   <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
-    <value>Uppdatera webview via Google Play.</value>
+    <value>يرجى تحديث webview عبر google play.</value>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>Ok</value>
+    <value>موافق</value>
   </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
-    <value>Systemprompts</value>
+    <value>تلقينات النظام</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
-    <value>Visa systemprompts för chattbotten här.</value>
+    <value>عرض تلقينات النظام للدردشة الآلية هنا.</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
-    <value>Push-notifikationsjobb</value>
+    <value>وظيفة إشعارات الدفع</value>
   </data>
   <!--#endif-->
   <!--#if (offlineDb == true) -->
   <data name="OfflineTodoTitle" xml:space="preserve">
-    <value>Att göra (Offline)</value>
+    <value>قائمة أمور (غير متصل)</value>
   </data>
   <data name="SyncPushFailed" xml:space="preserve">
-    <value>Misslyckades med att skicka ändringar till servern</value>
+    <value>فشل في دفع التغييرات إلى الخادم</value>
   </data>
   <data name="SyncPullFailed" xml:space="preserve">
-    <value>Misslyckades med att hämta ändringar från servern</value>
+    <value>فشل في سحب التغييرات من الخادم</value>
   </data>
   <data name="SyncPushSuccess" xml:space="preserve">
-    <value>Skickade {0} ändringar till servern</value>
+    <value>تم دفع {0} تغييرات إلى الخادم</value>
   </data>
   <!--#endif-->
   <data name="FullName" xml:space="preserve">
-    <value>Fullt namn</value>
+    <value>الاسم الكامل</value>
   </data>
   <data name="TermsPageTitle" xml:space="preserve">
-    <value>Villkor</value>
+    <value>الشروط</value>
   </data>
   <data name="Terms" xml:space="preserve">
-    <value>Villkor</value>
+    <value>الشروط</value>
   </data>
   <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
-    <value>Profilen har uppdaterats.</value>
+    <value>تم تحديث الملف الشخصي بنجاح.</value>
   </data>
   <data name="ConfirmPassword" xml:space="preserve">
-    <value>Bekräfta lösenord</value>
+    <value>تأكيد كلمة المرور</value>
   </data>
   <data name="ConfirmNewPassword" xml:space="preserve">
-    <value>Bekräfta nytt lösenord</value>
+    <value>تأكيد كلمة المرور الجديدة</value>
   </data>
   <data name="Email" xml:space="preserve">
-    <value>E-post</value>
+    <value>البريد الإلكتروني</value>
   </data>
   <data name="NewEmail" xml:space="preserve">
-    <value>Ny e-post</value>
+    <value>بريد إلكتروني جديد</value>
   </data>
   <data name="NewEmailPlaceholder" xml:space="preserve">
-    <value>Ange ny e-post</value>
+    <value>أدخل البريد الإلكتروني الجديد</value>
   </data>
   <data name="Phone" xml:space="preserve">
-    <value>Telefon</value>
+    <value>الهاتف</value>
   </data>
   <data name="PhoneNumber" xml:space="preserve">
-    <value>Telefonnummer</value>
+    <value>رقم الهاتف</value>
   </data>
   <data name="NewPhoneNumber" xml:space="preserve">
-    <value>Nytt telefonnummer</value>
+    <value>رقم هاتف جديد</value>
   </data>
   <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
-    <value>Ange nytt telefonnummer</value>
+    <value>أدخل رقم الهاتف الجديد</value>
   </data>
   <data name="GoBack" xml:space="preserve">
-    <value>Tillbaka</value>
+    <value>رجوع</value>
   </data>
   <data name="Password" xml:space="preserve">
-    <value>Lösenord</value>
+    <value>كلمة المرور</value>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
-    <value>Ange lösenord</value>
+    <value>أدخل كلمة المرور</value>
   </data>
   <data name="ImageCouldNotBeFound" xml:space="preserve">
-    <value>Bilden kunde inte hittas</value>
+    <value>تعذر العثور على الصورة</value>
   </data>
   <data name="Error" xml:space="preserve">
-    <value>Fel</value>
+    <value>خطأ</value>
   </data>
   <data name="Gender" xml:space="preserve">
-    <value>Kön</value>
+    <value>الجنس</value>
   </data>
   <data name="BirthDate" xml:space="preserve">
-    <value>Födelsedatum</value>
+    <value>تاريخ الميلاد</value>
   </data>
   <data name="UserName" xml:space="preserve">
-    <value>Användarnamn</value>
+    <value>اسم المستخدم</value>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>Namn</value>
+    <value>الاسم</value>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Beskrivning</value>
+    <value>الوصف</value>
   </data>
   <data name="Price" xml:space="preserve">
-    <value>Pris</value>
+    <value>السعر</value>
   </data>
   <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
-    <value>Ange antingen e-post eller telefonnummer.</value>
+    <value>يجب تقديم بريد إلكتروني أو رقم هاتف.</value>
   </data>
   <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
-    <value>Ange antingen användarnamn, e-post eller telefonnummer.</value>
+    <value>يجب تقديم اسم مستخدم أو بريد إلكتروني أو رقم هاتف.</value>
   </data>
   <data name="YouNeedToSignIn" xml:space="preserve">
-    <value>Du måste vara inloggad för att fortsätta.</value>
+    <value>يجب أن تكون مسجل الدخول للمتابعة.</value>
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
-    <value>Ogiltiga användaruppgifter</value>
+    <value>بيانات اعتماد المستخدم غير صالحة</value>
   </data>
   <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Din e-post är redan bekräftad.</value>
+    <value>بريدك الإلكتروني مؤكد بالفعل.</value>
   </data>
   <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>Ditt telefonnummer är redan bekräftat.</value>
+    <value>رقم هاتفك مؤكد بالفعل.</value>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Titel</value>
+    <value>العنوان</value>
   </data>
   <data name="AreYouSureWannaDelete" xml:space="preserve">
-    <value>Är du säker på att du vill radera {0}?</value>
+    <value>هل أنت متأكد من رغبتك في حذف {0}؟</value>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Hem</value>
+    <value>الرئيسية</value>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Uppdatera</value>
+    <value>تحديث</value>
   </data>
   <data name="Recover" xml:space="preserve">
-    <value>Återställ</value>
+    <value>استعادة</value>
   </data>
   <data name="SomethingWentWrong" xml:space="preserve">
-    <value>Oj, något gick fel...</value>
+    <value>عفوًا، حدث خطأ ما...</value>
   </data>
   <data name="BackToHome" xml:space="preserve">
-    <value>Tillbaka till hem</value>
+    <value>العودة إلى الرئيسية</value>
   </data>
   <data name="UserLockedOut" xml:space="preserve">
-    <value>Användaren är utestängd. Försök igen om {0}</value>
+    <value>المستخدم محظور. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="UserIsNotConfirmed" xml:space="preserve">
-    <value>Användaren är inte bekräftad.</value>
+    <value>المستخدم غير مؤكد.</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
-    <value>Användaren existerar inte.</value>
+    <value>المستخدم غير موجود.</value>
   </data>
   <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
-    <value>Denna e-post eller detta telefonnummer är redan upptaget.</value>
+    <value>هذا البريد الإلكتروني أو رقم الهاتف مستخدم بالفعل.</value>
   </data>
   <data name="Add" xml:space="preserve">
-    <value>Lägg till</value>
+    <value>إضافة</value>
   </data>
   <data name="Token" xml:space="preserve">
-    <value>Token</value>
+    <value>الرمز</value>
   </data>
   <data name="InvalidToken" xml:space="preserve">
-    <value>Ogiltig token.</value>
+    <value>رمز غير صالح.</value>
   </data>
   <data name="ExpiredToken" xml:space="preserve">
-    <value>Utgånget token.</value>
+    <value>رمز منتهي الصلاحية.</value>
   </data>
   <data name="SignInMessageInSignUp" xml:space="preserve">
-    <value>Har du redan ett konto?</value>
+    <value>هل لديك حساب بالفعل؟</value>
   </data>
   <data name="ConfirmMessageInProfile" xml:space="preserve">
-    <value>Har du redan en token?</value>
+    <value>هل لديك رمز بالفعل؟</value>
   </data>
   <data name="ConfirmEmailHeaderText" xml:space="preserve">
-    <value>E-postadress</value>
+    <value>عنوان البريد الإلكتروني</value>
   </data>
   <data name="ConfirmEmailSubtitle" xml:space="preserve">
-    <value>Vi har skickat en bekräftelsetoken till din e-postadress.</value>
+    <value>لقد أرسلنا رمز التأكيد إلى عنوان بريدك الإلكتروني.</value>
   </data>
   <data name="ConfirmPageTitle" xml:space="preserve">
-    <value>Bekräfta</value>
+    <value>تأكيد</value>
   </data>
   <data name="ConfirmTitle" xml:space="preserve">
-    <value>Bekräfta ditt konto</value>
+    <value>تأكيد حسابك</value>
   </data>
   <data name="ConfirmEmailMessage" xml:space="preserve">
-    <value>Vänligen bekräfta din e-post genom att skriva in koden här.</value>
+    <value>يرجى تأكيد بريدك الإلكتروني بكتابة الرمز هنا.</value>
   </data>
   <data name="EmailPlaceholder" xml:space="preserve">
-    <value>Ange e-postadress</value>
+    <value>أدخل عنوان البريد الإلكتروني</value>
   </data>
   <data name="EmailToken" xml:space="preserve">
-    <value>Kod</value>
+    <value>الكود</value>
   </data>
   <data name="EmailTokenConfirmButtonText" xml:space="preserve">
-    <value>Bekräfta e-postadress</value>
+    <value>تأكيد عنوان البريد الإلكتروني</value>
   </data>
   <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
-    <value>Din e-postadress ({0}) har bekräftats.</value>
+    <value>تم تأكيد عنوان بريدك الإلكتروني ({0}).</value>
   </data>
   <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
-    <value>Du kan nu logga in med ditt konto.</value>
+    <value>يمكنك الآن تسجيل الدخول بحسابك.</value>
   </data>
   <data name="ConfirmPhoneHeaderText" xml:space="preserve">
-    <value>Telefonnummer</value>
+    <value>رقم الهاتف</value>
   </data>
   <data name="ConfirmPhoneSubtitle" xml:space="preserve">
-    <value>Vi har skickat en bekräftelsekod till din telefon.</value>
+    <value>لقد أرسلنا رمز التأكيد إلى هاتفك.</value>
   </data>
   <data name="ConfirmPhoneMessage" xml:space="preserve">
-    <value>Vänligen bekräfta ditt telefonnummer genom att skriva in koden här.</value>
+    <value>يرجى تأكيد رقم هاتفك بكتابة الرمز هنا.</value>
   </data>
   <data name="PhoneNumberPlaceholder" xml:space="preserve">
-    <value>Ange telefonnummer</value>
+    <value>أدخل رقم الهاتف</value>
   </data>
   <data name="PhoneToken" xml:space="preserve">
-    <value>Kod</value>
+    <value>الكود</value>
   </data>
   <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
-    <value>Bekräfta telefonnummer</value>
+    <value>تأكيد رقم الهاتف</value>
   </data>
   <data name="NotReceivedPhoneMessage" xml:space="preserve">
-    <value>Har du inte fått koden på din telefon?</value>
+    <value>ألم تتلق الرمز على هاتفك؟</value>
   </data>
   <data name="ResendPhoneTokenButtonText" xml:space="preserve">
-    <value>Skicka kod igen</value>
+    <value>إعادة إرسال الكود</value>
   </data>
   <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
-    <value>Ditt telefonnummer ({0}) har bekräftats.</value>
+    <value>تم تأكيد رقم هاتفك ({0}).</value>
   </data>
   <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
-    <value>Du kan nu logga in med ditt konto.</value>
+    <value>يمكنك الآن تسجيل الدخول بحسابك.</value>
   </data>
   <data name="AccountTitle" xml:space="preserve">
-    <value>Konto</value>
+    <value>الحساب</value>
   </data>
   <data name="AccountSubtitle" xml:space="preserve">
-    <value>Byt e-postadress för kontot, telefonnummer eller inställningar för lösenordslös inloggning.</value>
+    <value>غيّر بريد حسابك الإلكتروني أو رقم الهاتف أو إعدادات تسجيل الدخول بدون كلمة مرور</value>
   </data>
   <data name="DeleteAccount" xml:space="preserve">
-    <value>Radera konto</value>
+    <value>حذف الحساب</value>
   </data>
   <data name="DeleteAccountPrompt" xml:space="preserve">
-    <value>Är du säker på att du vill radera ditt konto?</value>
+    <value>هل أنت متأكد من رغبتك في حذف حسابك؟</value>
   </data>
   <data name="DontHaveAccountMessage" xml:space="preserve">
-    <value>Har du inget konto?</value>
+    <value>ليس لديك حساب؟</value>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>Redigera</value>
+    <value>تعديل</value>
   </data>
   <data name="FileUploadFailed" xml:space="preserve">
-    <value>Ett fel uppstod vid uppladdning av filen</value>
+    <value>حدث خطأ أثناء رفع الملف</value>
   </data>
   <data name="ForgotPasswordPageTitle" xml:space="preserve">
-    <value>Glömt lösenord</value>
+    <value>نسيت كلمة المرور</value>
   </data>
   <data name="ForgotPasswordTitle" xml:space="preserve">
-    <value>Glömt lösenord</value>
+    <value>نسيت كلمة المرور</value>
   </data>
   <data name="ForgotPasswordMessage" xml:space="preserve">
-    <value>Ange din e-postadress eller telefonnummer så att vi kan skicka en kod för återställning av lösenord till dig.</value>
+    <value>يرجى إدخال عنوان بريدك الإلكتروني أو رقم هاتفك حتى نرسل لك رمز إعادة تعيين كلمة المرور.</value>
   </data>
   <data name="GenderMale" xml:space="preserve">
-    <value>Man</value>
+    <value>ذكر</value>
   </data>
   <data name="GenderOther" xml:space="preserve">
-    <value>Annat</value>
+    <value>آخر</value>
   </data>
   <data name="GoToToday" xml:space="preserve">
-    <value>Gå till idag</value>
+    <value>اذهب إلى اليوم</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Skapa din multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor-app på enklaste sättet på kortast möjliga tid!</value>
+    <value>أنشئ تطبيق Blazor متعدد الوضعيات (WASM، الخادم، الهجين، التحضير المسبق) بسهولة في أقصر وقت ممكن!</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
-    <value>Hem</value>
+    <value>الرئيسية</value>
   </data>
   <data name="HomePanelTitle" xml:space="preserve">
-    <value>Bygg alla dina appar</value>
+    <value>بناء جميع تطبيقاتك</value>
   </data>
   <data name="HomePanelSubtitle" xml:space="preserve">
-    <value>med det du redan kan och älskar</value>
+    <value>باستخدام ما تعرفه وتحبه بالفعل</value>
   </data>
   <data name="WatchVideo" xml:space="preserve">
-    <value>Titta på video</value>
+    <value>شاهد الفيديو</value>
   </data>
   <data name="LearnMore" xml:space="preserve">
-    <value>Läs mer</value>
+    <value>تعلم المزيد</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>Ett set verktyg för .NET-utvecklare på flera plattformar</value>
+    <value>مجموعة أدوات لمطوري .NET عبر منصات متعددة</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
-    <value>Ett set presterande, lättanpassade och vackra Blazor-komponenter</value>
+    <value>مجموعة مكونات Blazor أدائية، سهلة التخصيص وجميلة</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>En funktionsrik .NET-projektmall som fungerar sömlöst överallt</value>
+    <value>قالب مشروع .NET غني بالميزات يعمل في كل مكان بسلاسة</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
-    <value>Boilerplate är byggd med ASP.NET Core, Identity, Web API, EF Core och Blazor.</value>
+    <value>تم بناء الـ Boilerplate باستخدام ASP.NET Core، Identity، Web API، EF Core و Blazor.</value>
   </data>
   <data name="NewPassword" xml:space="preserve">
-    <value>Nytt lösenord</value>
+    <value>كلمة مرور جديدة</value>
   </data>
   <data name="OldPassword" xml:space="preserve">
-    <value>Gammalt lösenord</value>
+    <value>كلمة المرور القديمة</value>
   </data>
   <data name="No" xml:space="preserve">
-    <value>Nej</value>
+    <value>لا</value>
   </data>
   <data name="NotReceivedEmailMessage" xml:space="preserve">
-    <value>Har du inte fått e-posten?</value>
+    <value>ألم تتلق البريد الإلكتروني؟</value>
   </data>
   <data name="Or" xml:space="preserve">
-    <value>eller</value>
+    <value>أو</value>
   </data>
   <data name="Remove" xml:space="preserve">
-    <value>Ta bort</value>
+    <value>إزالة</value>
   </data>
   <data name="ResendEmailTokenButtonText" xml:space="preserve">
-    <value>Skicka kod igen</value>
+    <value>إعادة إرسال الكود</value>
   </data>
   <data name="ResetPasswordPageTitle" xml:space="preserve">
-    <value>Återställ lösenord</value>
+    <value>إعادة تعيين كلمة المرور</value>
   </data>
   <data name="ResetPassword" xml:space="preserve">
-    <value>Återställ lösenord</value>
+    <value>إعادة تعيين كلمة المرور</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
-    <value>Återställ lösenord</value>
+    <value>إعادة تعيين كلمة المرور</value>
   </data>
   <data name="ResetPasswordSubtitle" xml:space="preserve">
-    <value>Vi har skickat en kod till din telefon eller e-post.</value>
+    <value>لقد أرسلنا رمزًا إلى هاتفك أو بريدك الإلكتروني.</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>Vänligen skicka koden tillsammans med ditt nya lösenord här.</value>
+    <value>يرجى تقديم الرمز مع كلمة المرور الجديدة هنا.</value>
   </data>
   <data name="ResetPasswordButtonText" xml:space="preserve">
-    <value>Sätt lösenord</value>
+    <value>تعيين كلمة المرور</value>
   </data>
   <data name="ResetPasswordSuccessTitle" xml:space="preserve">
-    <value>Ditt lösenord har återställts.</value>
+    <value>تم إعادة تعيين كلمة المرور.</value>
   </data>
   <data name="ResetPasswordSuccessBody" xml:space="preserve">
-    <value>Du kan nu logga in med ditt nya lösenord.</value>
+    <value>يمكنك الآن تسجيل الدخول بكلمة المرور.</value>
   </data>
   <data name="ResetPasswordMessageInForgot" xml:space="preserve">
-    <value>Har du redan en kod för återställning av lösenord?</value>
+    <value>هل لديك رمز إعادة تعيين كلمة مرور بالفعل؟</value>
   </data>
   <data name="Save" xml:space="preserve">
-    <value>Spara</value>
+    <value>حفظ</value>
   </data>
   <data name="SignInPageTitle" xml:space="preserve">
-    <value>Logga in</value>
+    <value>تسجيل الدخول</value>
   </data>
   <data name="SignInPanelTitle" xml:space="preserve">
-    <value>Välkommen</value>
+    <value>مرحبًا</value>
   </data>
   <data name="SignInPanelSubtitle" xml:space="preserve">
-    <value>Fortsätt med ditt</value>
+    <value>تابع مع</value>
   </data>
   <data name="Continue" xml:space="preserve">
-    <value>Fortsätt</value>
+    <value>تابع</value>
   </data>
   <data name="GoogleSignInButtonText" xml:space="preserve">
-    <value>Logga in med Google</value>
+    <value>تسجيل الدخول بـ Google</value>
   </data>
   <data name="FacebookSignInButtonText" xml:space="preserve">
-    <value>Logga in med Facebook</value>
+    <value>تسجيل الدخول بـ Facebook</value>
   </data>
   <data name="GitHubSignInButtonText" xml:space="preserve">
-    <value>Logga in med GitHub</value>
+    <value>تسجيل الدخول بـ GitHub</value>
   </data>
   <data name="TwitterSignInButtonText" xml:space="preserve">
-    <value>Logga in med Twitter (X)</value>
+    <value>تسجيل الدخول بـ Twitter (X)</value>
   </data>
   <data name="AppleSignInButtonText" xml:space="preserve">
-    <value>Logga in med Apple</value>
+    <value>تسجيل الدخول بـ Apple</value>
   </data>
   <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
-    <value>Logga in med Testserver</value>
+    <value>تسجيل الدخول بخادم الاختبار</value>
   </data>
   <data name="AzureEntraSignInButtonText" xml:space="preserve">
-    <value>Logga in med Azure Entra</value>
+    <value>تسجيل الدخول بـ Azure Entra</value>
   </data>
   <data name="SignOut" xml:space="preserve">
-    <value>Logga ut</value>
+    <value>تسجيل الخروج</value>
   </data>
   <data name="SignOutPrompt" xml:space="preserve">
-    <value>Är du säker på att du vill logga ut?</value>
+    <value>هل أنت متأكد من رغبتك في تسجيل الخروج؟</value>
   </data>
   <data name="SignUp" xml:space="preserve">
-    <value>Registrera dig</value>
+    <value>إنشاء حساب</value>
   </data>
   <data name="SignUpPageTitle" xml:space="preserve">
-    <value>Registrera dig</value>
+    <value>إنشاء حساب جديد مع</value>
   </data>
   <data name="SignUpPanelTitle" xml:space="preserve">
-    <value>Kom igång idag</value>
+    <value>إرسال</value>
   </data>
   <data name="SignUpPanelSubtitle" xml:space="preserve">
-    <value>Skapa nytt konto med</value>
+    <value>اسحب أو اختر صورة</value>
   </data>
   <data name="Submit" xml:space="preserve">
-    <value>Skicka</value>
+    <value>نعم</value>
   </data>
   <data name="UploadNewImage" xml:space="preserve">
-    <value>Dra eller välj en bild</value>
+    <value>اختر تاريخ ميلادك</value>
   </data>
   <data name="Yes" xml:space="preserve">
-    <value>Ja</value>
+    <value>الإجراء</value>
   </data>
   <data name="SelectBirthDate" xml:space="preserve">
-    <value>Välj ditt födelsedatum</value>
+    <value>رجوع</value>
   </data>
   <data name="Action" xml:space="preserve">
-    <value>Åtgärd</value>
+    <value>إلغاء</value>
   </data>
   <data name="Back" xml:space="preserve">
-    <value>Tillbaka</value>
+    <value>تحقق من مجلد البريد غير المرغوب فيه/المهمل إذا لم تجده في البريد الوارد.</value>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Avbryt</value>
+    <value>اللون</value>
   </data>
   <data name="CheckSpamMailMessage" xml:space="preserve">
-    <value>Kontrollera din Spam/Skrot om du inte hittar den i Inkorgen.</value>
+    <value>لون مخصص</value>
   </data>
   <data name="Color" xml:space="preserve">
-    <value>Färg</value>
+    <value>حذف</value>
   </data>
   <data name="CustomColor" xml:space="preserve">
-    <value>Anpassad färg</value>
+    <value>المعرف</value>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Radera</value>
+    <value>تسجيل الدخول</value>
   </data>
   <data name="Id" xml:space="preserve">
-    <value>Id</value>
+    <value>تسجيل الدخول (نافذة منبثقة)</value>
   </data>
   <data name="SignIn" xml:space="preserve">
-    <value>Logga in</value>
+    <value>تأكيد</value>
   </data>
   <data name="SignInByModal" xml:space="preserve">
-    <value>Logga in (Popup)</value>
+    <value>تسجيل الدخول كمستخدم مختلف</value>
   </data>
   <data name="Confirm" xml:space="preserve">
-    <value>Bekräfta</value>
+    <value>أنت مسجل الدخول كـ</value>
   </data>
   <data name="SignInAsDifferentUser" xml:space="preserve">
-    <value>Logga in som annan användare</value>
+    <value>نسيت كلمة المرور؟</value>
   </data>
   <data name="YouAreSignedInAs" xml:space="preserve">
-    <value>Du är inloggad som</value>
+    <value>أنثى</value>
   </data>
   <data name="ForgotPasswordLink" xml:space="preserve">
-    <value>Glömt lösenord?</value>
+    <value>تذكرني؟</value>
   </data>
   <data name="GenderFemale" xml:space="preserve">
-    <value>Kvinna</value>
+    <value>نسخ</value>
   </data>
   <data name="RememberMe" xml:space="preserve">
-    <value>Kom ihåg mig?</value>
+    <value>تم النسخ</value>
   </data>
   <data name="Copy" xml:space="preserve">
-    <value>Kopiera</value>
+    <value>المصادقة الثنائية</value>
   </data>
   <data name="Copied" xml:space="preserve">
-    <value>Kopierat</value>
+    <value>إدارة المصادقة متعددة العوامل لحسابك</value>
   </data>
   <data name="TfaTitle" xml:space="preserve">
-    <value>Tvåfaktorsautentisering</value>
+    <value>كود 2FA</value>
   </data>
   <data name="TfaSubtitle" xml:space="preserve">
-    <value>Hantera din kontos multifaktorautentisering</value>
+    <value>كود الاسترداد</value>
   </data>
   <data name="TwoFactorCode" xml:space="preserve">
-    <value>2FA-kod</value>
+    <value>المصادقة الثنائية</value>
   </data>
   <data name="TwoFactorRecoveryCode" xml:space="preserve">
-    <value>Återställningskod</value>
+    <value>احصل على كود جديد من تطبيق المصادقة أو استخدم كود الاسترداد.</value>
   </data>
   <data name="TfaPanelTitle" xml:space="preserve">
-    <value>Tvåfaktorsautentisering</value>
+    <value>جرب طريقة أخرى</value>
   </data>
   <data name="TfaPanelSubtitle" xml:space="preserve">
-    <value>Hämta en ny kod från din autentiseringsapp eller använd din återställningskod.</value>
+    <value>يمكنك الحصول على كود جديد على بريدك الإلكتروني أو هاتفك.</value>
   </data>
   <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
-    <value>Försök ett annat sätt</value>
+    <value>الحصول على الكود</value>
   </data>
   <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
-    <value>Du kan hämta en ny kod till din e-post eller telefon.</value>
+    <value>يجب أن تعطل 2FA حتى يتم التحقق من رمز 2FA بناءً على المفتاح المشترك الجديد.</value>
   </data>
   <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
-    <value>Hämta kod</value>
+    <value>لم يتم تقديم رمز 2FA في الطلب. يلزم رمز 2FA صالح لتمكين 2FA.</value>
   </data>
   <data name="TfaResetSharedKeyError" xml:space="preserve">
-    <value>Återställning av 2FA-delad nyckel måste inaktivera 2FA tills en 2FA-token baserad på den nya delade nyckeln är validerad.</value>
+    <value>رمز 2FA المقدم في الطلب غير صالح. يلزم رمز 2FA صالح لتمكين 2FA.</value>
   </data>
   <data name="TfaEmptyCodeError" xml:space="preserve">
-    <value>Ingen 2FA-token tillhandahölls av förfrågan. En giltig 2FA-token krävs för att aktivera 2FA.</value>
+    <value>إعداد تطبيق المصادقة</value>
   </data>
   <data name="TfaInvalidCodeError" xml:space="preserve">
-    <value>2FA-tokenen som tillhandahölls av förfrågan var ogiltig. En giltig 2FA-token krävs för att aktivera 2FA.</value>
+    <value>لاستخدام تطبيق مصادقة، اتبع الخطوات التالية:</value>
   </data>
   <data name="TfaConfigureAutAppTitle" xml:space="preserve">
-    <value>Konfigurera autentiseringsapp</value>
+    <value>حمّل تطبيق مصادقة ثنائية مثل Google Authenticator لـ {0} و {1}.</value>
   </data>
   <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
-    <value>För att använda en autentiseringsapp, följ dessa steg:</value>
+    <value>امسح/انقر على رمز QR أو أدخل المفتاح التالي في تطبيق المصادقة الثنائية (المسافات وحساسية الأحرف غير مهمة):</value>
   </data>
   <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>Ladda ner en tvåfaktorsautentiseringsapp som Google Authenticator för {0} och {1}.</value>
+    <value>بعد مسح رمز QR أو إدخال المفتاح أعلاه، سيوفر تطبيق المصادقة الثنائية كودًا فريدًا. أدخل الكود في مربع التأكيد أدناه.</value>
   </data>
   <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>Skanna/klicka på QR-koden eller ange följande nyckel i din tvåfaktorsautentiseringsapp (mellanslag och skiftläge spelar ingen roll):</value>
+    <value>تم تمكين المصادقة الثنائية.</value>
   </data>
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
-    <value>När du har skannat QR-koden eller matat in nyckeln ovan kommer din tvåfaktorsautentiseringsapp att ge dig en unik kod. Ange koden i bekräftelsefältet nedan.</value>
+    <value>تم تعطيل المصادقة الثنائية.</value>
   </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
-    <value>Tvåfaktorsautentisering har aktiverats.</value>
+    <value>كود التحقق:</value>
   </data>
   <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
-    <value>Tvåfaktorsautentisering har inaktiverats.</value>
+    <value>أدخل كود التحقق.</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
-    <value>Verifieringskod:</value>
+    <value>التحقق</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Ange verifieringskod.</value>
+    <value>الاسترداد</value>
   </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
-    <value>Verifiera</value>
+    <value>لا توجد أكواد استرداد متبقية.</value>
   </data>
   <data name="TfaRecoveryCodesHeader" xml:space="preserve">
-    <value>Återställning</value>
+    <value>يجب إنشاء مجموعة جديدة من أكواد الاسترداد قبل تسجيل الدخول بكود استرداد.</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
-    <value>Du har inga återställningskoder kvar.</value>
+    <value>تبقى لديك كود استرداد واحد.</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
-    <value>Du måste generera ett nytt set återställningskoder innan du kan logga in med en återställningskod.</value>
+    <value>يمكنك إنشاء مجموعة جديدة من أكواد الاسترداد.</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
-    <value>Du har 1 återställningskod kvar.</value>
+    <value>تبقى لديك {0} أكواد استرداد.</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
-    <value>Du kan generera ett nytt set återställningskoder.</value>
+    <value>يجب أن تنشئ مجموعة جديدة من أكواد الاسترداد.</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
-    <value>Du har {0} återställningskoder kvar.</value>
+    <value>إنشاء أكواد استرداد جديدة لا يغير المفاتيح المستخدمة في تطبيقات المصادقة. إذا كنت ترغب في تغيير المفتاح المستخدم في تطبيق مصادقة، يجب إعادة تعيين مفاتيح المصادقة في علامة التبويب التالية.</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
-    <value>Du bör generera ett nytt set återställningskoder.</value>
+    <value>إنشاء أكواد استرداد</value>
   </data>
   <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
-    <value>Generering av nya återställningskoder ändrar inte nycklarna som används i autentiseringsappar. Om du vill ändra nyckeln som används i en autentiseringsapp bör du återställa dina autentiseringsnycklar på nästa flik.</value>
+    <value>ضع هذه الأكواد في مكان آمن.</value>
   </data>
   <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
-    <value>Generera återställningskoder</value>
+    <value>إذا فقدت جهاز المصادقة وليس لديك أكواد الاسترداد، ستفقد الوصول إلى حسابك.</value>
   </data>
   <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
-    <value>Lägg dessa koder på en säker plats.</value>
+    <value>أكواد الاسترداد:</value>
   </data>
   <data name="TfaRecoveryCodesWarning" xml:space="preserve">
-    <value>Om du förlorar din autentiseringsenhet och inte har återställningskoderna förlorar du åtkomst till ditt konto.</value>
+    <value>المصادقة</value>
   </data>
   <data name="TfaRecoveryCodesTitle" xml:space="preserve">
-    <value>Återställningskoder:</value>
+    <value>إذا أعدت تعيين مفتاح المصادقة، لن يعمل تطبيق المصادقة حتى تعيد تهيئته.</value>
   </data>
   <data name="TfaAuthAppHeader" xml:space="preserve">
-    <value>Autentisering</value>
+    <value>هذه العملية تعطل 2FA حتى تتحقق من تطبيق المصادقة. إذا لم تكمل تهيئة تطبيق المصادقة، قد تفقد الوصول إلى حسابك.</value>
   </data>
   <data name="TfaAuthAppWarningTitle" xml:space="preserve">
-    <value>Om du återställer din autentiseringsnyckel kommer din autentiseringsapp inte att fungera förrän du konfigurerar om den.</value>
+    <value>إعادة تعيين مفتاح المصادقة</value>
   </data>
   <data name="TfaAuthAppWarning" xml:space="preserve">
-    <value>Denna process inaktiverar 2FA tills du verifierar din autentiseringsapp. Om du inte slutför konfigurationen av din autentiseringsapp kan du förlora åtkomst till ditt konto.</value>
+    <value>تعطيل</value>
   </data>
   <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
-    <value>Återställ autentiseringsnyckel</value>
+    <value>هذا الإجراء يعطل 2FA فقط.</value>
   </data>
   <data name="TfaDisable2faHeader" xml:space="preserve">
-    <value>Inaktivera</value>
+    <value>تعطيل 2FA لا يغير المفاتيح المستخدمة في تطبيقات المصادقة. إذا كنت ترغب في تغيير المفتاح المستخدم في تطبيق مصادقة، يجب إعادة تعيين مفاتيح المصادقة في علامة التبويب السابقة.</value>
   </data>
   <data name="TfaDisable2faWarningTitle" xml:space="preserve">
-    <value>Denna åtgärd inaktiverar endast 2FA.</value>
+    <value>تعطيل 2FA</value>
   </data>
   <data name="TfaDisable2faWarning" xml:space="preserve">
-    <value>Inaktivering av 2FA ändrar inte nycklarna som används i autentiseringsappar. Om du vill ändra nyckeln som används i en autentiseringsapp bör du återställa dina autentiseringsnycklar på föregående flik.</value>
+    <value>تم إنشاء رمز 2FA وإرساله إليك.</value>
   </data>
   <data name="TfaDisable2faButtonText" xml:space="preserve">
-    <value>Inaktivera 2FA</value>
+    <value>يرجى إدخال رمز الوصول المرتفع الذي أرسلناه للتو أو كود تطبيق المصادقة للمتابعة.</value>
   </data>
   <data name="TfaTokenSentMessage" xml:space="preserve">
-    <value>2FA-tokenen har genererats och skickats till dig.</value>
+    <value>{0} هو كودك في Boilerplate.</value>
   </data>
   <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Ange den förhöjda åtkomsttokenen vi just skickade till dig eller din autentiseringsappkod för att fortsätta.</value>
+    <value>لقد طلبت بريد التأكيد بالفعل. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>لقد طلبت رسالة التأكيد النصية بالفعل. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt bekräftelsee-posten. Försök igen om {0}</value>
+    <value>لقد طلبت رمز إعادة تعيين كلمة المرور بالفعل. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt bekräftelse-SMS:et. Försök igen om {0}</value>
+    <value>لقد طلبت OTP بالفعل. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt kod för återställning av lösenord. Försök igen om {0}</value>
+    <value>لقد طلبت رمز وصول مرتفع بالفعل. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt en OTP. Försök igen om {0}</value>
-  </data>
-  <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt en höjd åtkomstkod. Försök igen om {0}</value>
-  </data>
-  <data name="Otp" xml:space="preserve">
     <value>OTP</value>
   </data>
+  <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>تحقق من {0}</value>
+  </data>
+  <data name="Otp" xml:space="preserve">
+    <value>تأكيد {0} بإدخال الكود المرسل إلى {1}</value>
+  </data>
   <data name="OtpPanelTitle" xml:space="preserve">
-    <value>Kontrollera din {0}</value>
+    <value>الكود</value>
   </data>
   <data name="OtpPanelSubtitle" xml:space="preserve">
-    <value>Bekräfta din {0} genom att ange koden som skickats till {1}</value>
+    <value>ألم تتلق الكود؟</value>
   </data>
   <data name="Code" xml:space="preserve">
-    <value>Kod</value>
+    <value>إعادة إرسال</value>
   </data>
   <data name="OtpResendMessage" xml:space="preserve">
-    <value>Fick du inte koden?</value>
+    <value>إرسال OTP</value>
   </data>
   <data name="Resend" xml:space="preserve">
-    <value>Skicka igen</value>
+    <value>إرسال رابط سحري و OTP</value>
   </data>
   <data name="SendOtpButtonText" xml:space="preserve">
-    <value>Skicka OTP</value>
+    <value>استخدم كلمة المرور</value>
   </data>
   <data name="SendMagicLinkButtonText" xml:space="preserve">
-    <value>Skicka magisk länk och OTP</value>
+    <value>استخدم OTP</value>
   </data>
   <data name="SignInByPassword" xml:space="preserve">
-    <value>Använd lösenord</value>
+    <value>يجب تقديم كلمة مرور أو OTP</value>
   </data>
   <data name="SignInByOtp" xml:space="preserve">
-    <value>Använd OTP</value>
+    <value>لقد طلبت بريد رمز 2FA بالفعل. جرب مرة أخرى بعد {0}.</value>
   </data>
   <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>Ange antingen lösenord eller OTP</value>
+    <value>{0} هو كودك في Boilerplate.</value>
   </data>
   <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
-    <value>Du har redan begärt 2FA-token-e-posten. Försök igen om {0}.</value>
+    <value>{0} هو كودك في Boilerplate.</value>
   </data>
   <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} هو كودك في Boilerplate.</value>
   </data>
   <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} هو كودك في Boilerplate.</value>
   </data>
   <data name="TwoFactorTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>{0} هو كودك في Boilerplate.</value>
   </data>
   <data name="OtpShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value>متصل</value>
   </data>
   <data name="ResetPasswordTokenShortText" xml:space="preserve">
-    <value>{0} är din kod i Boilerplate.</value>
+    <value> مؤخرًا</value>
   </data>
   <data name="Online" xml:space="preserve">
-    <value>Online</value>
+    <value>تحديث</value>
   </data>
   <data name="Recently" xml:space="preserve">
-    <value>Nyligen</value>
+    <value>حان وقت التحديث</value>
   </data>
   <data name="Update" xml:space="preserve">
-    <value>Uppdatera</value>
+    <value>هذا التحديث مطلوب للحفاظ على تشغيل التطبيق بسلاسة</value>
   </data>
   <data name="ForceUpdateTitle" xml:space="preserve">
-    <value>Tid för en uppdatering</value>
+    <value>حول</value>
   </data>
   <data name="ForceUpdateBody" xml:space="preserve">
-    <value>Denna uppdatering krävs för att hålla din app igång smidigt</value>
+    <value>حول</value>
   </data>
   <data name="About" xml:space="preserve">
-    <value>Om</value>
+    <value>أضف مهمة</value>
   </data>
   <data name="AboutPageTitle" xml:space="preserve">
-    <value>Om</value>
+    <value>لا توجد مهام بعد</value>
   </data>
   <!--#if (sample == true || offlineDb == true) -->
   <data name="TodoAddPlaceholder" xml:space="preserve">
-    <value>Lägg till en att göra</value>
+    <value>ابحث عن مهمة...</value>
   </data>
   <data name="NoTodos" xml:space="preserve">
-    <value>Inga att göra än</value>
+    <value>تعذر العثور على عنصر المهمة</value>
   </data>
   <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>Sök att göra...</value>
+    <value>مهمة</value>
   </data>
   <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
-    <value>Att göra-posten kunde inte hittas</value>
+    <value>مهمة</value>
   </data>
   <data name="TodoPageTitle" xml:space="preserve">
-    <value>Att göra</value>
+    <value>حذف عنصر المهمة</value>
   </data>
   <data name="Todo" xml:space="preserve">
-    <value>Att göra</value>
+    <value>تعذر العثور على كيان الفئة</value>
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
-    <value>Radera att göra-post</value>
+    <value>تعذر العثور على كيان المنتج</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
-    <value>Kategorientiteten kunde inte hittas</value>
+    <value>الفئة</value>
   </data>
   <data name="ProductCouldNotBeFound" xml:space="preserve">
-    <value>Produktentiteten kunde inte hittas</value>
+    <value>نص بديل</value>
   </data>
   <data name="Category" xml:space="preserve">
-    <value>Kategori</value>
+    <value>لوحة الإدارة</value>
   </data>
   <data name="AltText" xml:space="preserve">
-    <value>Alt-text</value>
+    <value>{0} عناصر</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
-    <value>Adminpanel</value>
+    <value>صفحة</value>
   </data>
   <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} objekt</value>
+    <value>من</value>
   </data>
   <data name="Page" xml:space="preserve">
-    <value>Sida</value>
+    <value>عدد المنتجات في آخر 30 يومًا</value>
   </data>
   <data name="Of" xml:space="preserve">
-    <value>av</value>
+    <value>إضافة منتج</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
-    <value>Produktantal senaste 30 dagarna</value>
+    <value>ابحث في اسم المنتج والفئة والوصف هنا...</value>
   </data>
   <data name="AddProduct" xml:space="preserve">
-    <value>Lägg till produkt</value>
+    <value>اختر الفئة</value>
   </data>
   <data name="SearchProductsPlaceholder" xml:space="preserve">
-    <value>Sök genom produktens namn, kategori och beskrivning här...</value>
+    <value>إجمالي الفئات</value>
   </data>
   <data name="SelectCategory" xml:space="preserve">
-    <value>Välj kategori</value>
+    <value>إجمالي المنتجات</value>
   </data>
   <data name="TotalCategories" xml:space="preserve">
-    <value>Totala kategorier</value>
+    <value>تعديل الفئة</value>
   </data>
   <data name="TotalProducts" xml:space="preserve">
-    <value>Totala produkter</value>
+    <value>فئة جديدة</value>
   </data>
   <data name="EditCategory" xml:space="preserve">
-    <value>Redigera kategori</value>
+    <value>الفئات</value>
   </data>
   <data name="AddCategory" xml:space="preserve">
-    <value>Ny kategori</value>
+    <value>أدخل اسم الفئة</value>
   </data>
   <data name="CategoriesPageTitle" xml:space="preserve">
-    <value>Kategorier</value>
+    <value>أدخل اسم المنتج</value>
   </data>
   <data name="EnterCategoryName" xml:space="preserve">
-    <value>Ange kategorinamn</value>
+    <value>الفئات مع عدد المنتجات</value>
   </data>
   <data name="EnterProductName" xml:space="preserve">
-    <value>Ange produktnamn</value>
+    <value>البحث بالاسم</value>
   </data>
   <data name="CategoriesWithProductCount" xml:space="preserve">
-    <value>Kategorier med produktantal</value>
+    <value>مخطط عدد المنتجات لكل فئة</value>
   </data>
   <data name="SearchOnName" xml:space="preserve">
-    <value>Sök på namn</value>
+    <value>يظهر هذا المخطط عدد المنتجات في كل فئة.</value>
   </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
-    <value>Produktantal per kategori-diagram</value>
+    <value>المنتجات</value>
   </data>
   <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
-    <value>Detta diagram visar antalet produkter i varje kategori.</value>
+    <value>نسبة المنتجات لكل فئة</value>
   </data>
   <data name="ProductsPageTitle" xml:space="preserve">
-    <value>Produkter</value>
+    <value>يظهر هذا المخطط نسبة المنتجات في كل فئة.</value>
   </data>
   <data name="ProductsPercentagePerCategory" xml:space="preserve">
-    <value>Produktprocent per kategori</value>
+    <value>الفئات</value>
   </data>
   <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
-    <value>Detta diagram visar procentandelen produkter i varje kategori.</value>
+    <value>المنتجات</value>
   </data>
   <data name="Categories" xml:space="preserve">
-    <value>Kategorier</value>
+    <value>تحتوي هذه الفئة على بعض المنتجات، لذا لا يمكن حذفها</value>
   </data>
   <data name="Products" xml:space="preserve">
-    <value>Produkter</value>
+    <value>هل أنت متأكد من رغبتك في حذف المنتج {0}</value>
   </data>
   <data name="CategoryNotEmpty" xml:space="preserve">
-    <value>Kategorin innehåller produkter och kan därför inte tas bort</value>
+    <value>حذف المنتج</value>
   </data>
   <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
-    <value>Är du säker på att du vill radera produkt {0}</value>
+    <value>مختار اللون الافتراضي</value>
   </data>
   <data name="DeleteProduct" xml:space="preserve">
-    <value>Radera produkt</value>
+    <value>تعديل المنتج {0}</value>
   </data>
   <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Standardfärgval</value>
+    <value>اسم منتج مكرر</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
-    <value>Redigera produkt {0}</value>
+    <value>فئة مكررة {0}</value>
   </data>
   <data name="DuplicateProductName" xml:space="preserve">
-    <value>Dubblerat produktnamn</value>
+    <value>لوحة التحكم</value>
   </data>
   <data name="DuplicateCategoryName" xml:space="preserve">
-    <value>Dubblerad kategori {0}</value>
+    <value>لوحة التحكم</value>
   </data>
   <data name="DashboardPageTitle" xml:space="preserve">
-    <value>Instrumentpanel</value>
+    <value>إليك بيانات التحليل الخاصة بك</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
-    <value>Instrumentpanel</value>
+    <value>استجابة Google reCAPTCHA غير صالحة.</value>
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
-    <value>Här är dina analysdata</value>
+    <value>يجب اجتياز تحدي Google reCAPTCHA.</value>
   </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
-    <value>Ogiltigt Google reCAPTCHA-svar.</value>
+    <value>منتجات مشابهة</value>
   </data>
   <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
-    <value>Du måste klara Google reCAPTCHA-utmaningen.</value>
+    <value>منتجات في نفس الفئة</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Sales") -->
   <data name="SimilarProducts" xml:space="preserve">
-    <value>Liknande produkter</value>
+    <value>شراء</value>
   </data>
   <data name="SiblingProducts" xml:space="preserve">
-    <value>Produkter i samma kategori</value>
+    <value>تم الشراء بنجاح!</value>
   </data>
   <data name="Buy" xml:space="preserve">
-    <value>Köp</value>
+    <value>تسجيل الدخول بدون كلمة مرور</value>
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
-    <value>Köp lyckades!</value>
+    <value>تسجيل الدخول بدون كلمة مرور</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">
-    <value>Lösenordslöst</value>
+    <value>تمكين تسجيل الدخول بدون كلمة مرور</value>
   </data>
   <data name="PasswordlessTitle" xml:space="preserve">
-    <value>Lösenordslös inloggning</value>
+    <value>تم تمكين تسجيل الدخول بدون كلمة مرور بنجاح</value>
   </data>
   <data name="EnablePasswordless" xml:space="preserve">
-    <value>Aktivera lösenordslös inloggning</value>
+    <value>تعطيل تسجيل الدخول بدون كلمة مرور</value>
   </data>
   <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>Lösenordslös inloggning har aktiverats</value>
+    <value>تم تعطيل تسجيل الدخول بدون كلمة مرور بنجاح</value>
   </data>
   <data name="DisablePasswordless" xml:space="preserve">
-    <value>Inaktivera lösenordslös inloggning</value>
+    <value>مسح</value>
   </data>
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>Lösenordslös inloggning har inaktiverats</value>
+    <value>إرسال</value>
   </data>
   <data name="Clear" xml:space="preserve">
-    <value>Rensa</value>
+    <value>ملغى</value>
   </data>
   <data name="Send" xml:space="preserve">
-    <value>Skicka</value>
+    <value>لوحة الدردشة الذكاء الاصطناعي</value>
   </data>
   <data name="Canceled" xml:space="preserve">
-    <value>Avbruten</value>
+    <value>مرحبا! أنا هنا لجعل تجربة التطبيق رائعة! هل لديك سؤال أو تحتاج مساعدة؟</value>
   </data>
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
-    <value>AI-chattpanel</value>
+    <value>افتح صفحة إعادة تعيين كلمة المرور وأخبرني كيف تعمل</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>Hej! Jag är här för att göra din appupplevelse fantastisk! Har du en fråga eller behöver hjälp?</value>
+    <value>كيف يمكنني تثبيت النسخة PWA من التطبيق؟</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
-    <value>Öppna återställ lösenord-sidan och berätta hur den fungerar</value>
+    <value>لدي بعض التعليقات التي أود مشاركتها!</value>
   </data>
   <data name="AiChatPanelPrompt2" xml:space="preserve">
-    <value>Hur kan jag installera PWA-versionen av appen?</value>
+    <value>اكتب رسالة...</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela!</value>
+    <value>ترقية</value>
   </data>
   <!--#elif (module == "Sales") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela!</value>
+    <value>ترقية</value>
   </data>
   <!--#else -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela!</value>
+    <value>ترقية</value>
   </data>
   <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
-    <value>Skriv ett meddelande...</value>
+    <value>ترقية الحساب</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
-    <value>Uppgradera</value>
+    <value>لا توجد ترقية حساب هنا. هذا مجرد عرض توضيحي لإعلانات المكافآت.</value>
   </data>
   <data name="UpgradeTitle" xml:space="preserve">
-    <value>Uppgradera konto</value>
+    <value>تمت ترقية الحساب بنجاح.</value>
   </data>
   <data name="UpgradeSubtitle" xml:space="preserve">
-    <value>Det finns ingen konto-uppgradering här. Detta är bara en demo för belönande annonser.</value>
+    <value>فشل في ترقية الحساب.</value>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
-    <value>Uppgradering av konto slutförd.</value>
+    <value>هل تواجه مشكلة في مشاهدة الإعلان؟</value>
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
-    <value>Uppgradering av konto misslyckades.</value>
+    <value>أواجه مشكلة في مشاهدة الإعلانات داخل التطبيق.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
-    <value>Problem med att titta på annons?</value>
+    <value>يرجى الانتظار</value>
   </data>
   <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
-    <value>Jag har problem med att titta på annonser i appen.</value>
+    <value>الإدارة</value>
   </data>
   <!--#endif -->
   <data name="PleaseWait" xml:space="preserve">
-    <value>Vänligen vänta</value>
+    <value>مجموعات المستخدمين</value>
   </data>
   <data name="Management" xml:space="preserve">
-    <value>Hantering</value>
+    <value>إدارة مجموعات المستخدمين</value>
   </data>
   <data name="UserGroups" xml:space="preserve">
-    <value>Användargrupper</value>
+    <value>لا توجد مجموعات مستخدمين</value>
   </data>
   <data name="RolesPageTitle" xml:space="preserve">
-    <value>Hantera användargrupper</value>
+    <value>إضافة مجموعة مستخدمين</value>
   </data>
   <data name="NoRoleMessage" xml:space="preserve">
-    <value>Inga användargrupper</value>
+    <value>تعديل مجموعة المستخدمين</value>
   </data>
   <data name="AddRole" xml:space="preserve">
-    <value>Lägg till användargrupp</value>
+    <value>اسم مجموعة مستخدمين جديدة</value>
   </data>
   <data name="EditRole" xml:space="preserve">
-    <value>Redigera användargrupp</value>
+    <value>المستخدمون</value>
   </data>
   <data name="NewRoleName" xml:space="preserve">
-    <value>Nytt användargruppsnamn</value>
+    <value>المستخدمون {0}</value>
   </data>
   <data name="Users" xml:space="preserve">
-    <value>Användare</value>
+    <value>الميزات</value>
   </data>
   <data name="UsersWithCount" xml:space="preserve">
-    <value>Användare {0}</value>
+    <value>الحصة</value>
   </data>
   <data name="Features" xml:space="preserve">
-    <value>Funktioner</value>
+    <value>لتقييد استخدام الميزات، يمكنك تحديد حصص في هذه التبويب، والتي يمكن أن تختلف لكل دور. على سبيل المثال، عدد الأجهزة التي يمكن للمستخدم تسجيل الدخول إليها أو عدد المرات التي يمكنه استخدام ميزة تطبيق معينة.</value>
   </data>
   <data name="Quota" xml:space="preserve">
-    <value>Kvot</value>
+    <value>أقصى جلسات مميزة</value>
   </data>
   <data name="QuotaDescription" xml:space="preserve">
-    <value>För att begränsa användningen av funktioner kan du definiera kvoter på denna flik, som kan variera för varje roll. Till exempel antalet enheter en användare kan logga in på eller antalet gånger de kan använda en specifik appfunktion.</value>
+    <value>عام</value>
   </data>
   <data name="MaxPrevilegedSessions" xml:space="preserve">
-    <value>Max privilegierade sessioner</value>
+    <value>اسم مجموعة المستخدمين</value>
   </data>
   <data name="General" xml:space="preserve">
-    <value>Allmänt</value>
+    <value>رسالة الإشعار</value>
   </data>
   <data name="RoleName" xml:space="preserve">
-    <value>Användargruppsnamn</value>
+    <value>إرسال إشعار</value>
   </data>
   <!--#if (notification == true || signalR == true) -->
   <data name="RoleNotificationLabel" xml:space="preserve">
-    <value>Notifikationsmeddelande</value>
+    <value>تمكين الإشعارات</value>
   </data>
   <data name="SendRoleNotification" xml:space="preserve">
-    <value>Skicka notifikation</value>
+    <value>تعطيل الإشعارات</value>
   </data>
   <data name="EnableNotifications" xml:space="preserve">
-    <value>Aktivera notifikationer</value>
+    <value>إشعار اختبار 1</value>
   </data>
   <data name="DisableNotifications" xml:space="preserve">
-    <value>Inaktivera notifikationer</value>
+    <value>إشعار اختبار 2</value>
   </data>
   <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Testnotifikation 1</value>
+    <value>إدارة المستخدمين</value>
   </data>
   <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Testnotifikation 2</value>
+    <value>حذف مجموعة المستخدمين</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
-    <value>Hantera användare</value>
+    <value>الجلسات {0}</value>
   </data>
   <data name="DeleteRole" xml:space="preserve">
-    <value>Radera användargrupp</value>
+    <value>حذف المستخدم</value>
   </data>
   <data name="Sessions" xml:space="preserve">
-    <value>Sessioner {0}</value>
+    <value>إصدار التطبيق</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
-    <value>Radera användare</value>
+    <value>عنوان IP</value>
   </data>
   <data name="AppVersion" xml:space="preserve">
-    <value>Appversion</value>
+    <value>العنوان</value>
   </data>
   <data name="IP" xml:space="preserve">
-    <value>IP</value>
+    <value>معلومات الجهاز</value>
   </data>
   <data name="Address" xml:space="preserve">
-    <value>Adress</value>
+    <value>مميز</value>
   </data>
   <data name="DeviceInfo" xml:space="preserve">
-    <value>Enhetsinfo</value>
+    <value>تم تجديده في</value>
   </data>
   <data name="Privileged" xml:space="preserve">
-    <value>Privilegierad</value>
+    <value>المستخدمون المتصلون: {0}</value>
   </data>
   <data name="RenewedOn" xml:space="preserve">
-    <value>Förnyad</value>
+    <value>حذف الجلسة</value>
   </data>
   <data name="OnlineUsers" xml:space="preserve">
-    <value>Online-användare: {0}</value>
+    <value>لا يوجد مستخدمون</value>
   </data>
   <data name="DeleteSession" xml:space="preserve">
-    <value>Radera session</value>
+    <value>لا توجد جلسة مستخدم</value>
   </data>
   <data name="NoUserMessage" xml:space="preserve">
-    <value>Inga användare</value>
+    <value>يرجى اختيار مستخدم أولاً</value>
   </data>
   <data name="NoUserSessionMessage" xml:space="preserve">
-    <value>Ingen användarsession</value>
+    <value>إلغاء جميع الجلسات</value>
   </data>
   <data name="NoUserSelectedMessage" xml:space="preserve">
-    <value>Välj en användare först</value>
+    <value>هل أنت متأكد من رغبتك في إلغاء جميع جلسات {0}؟</value>
   </data>
   <data name="RevokeAllSessions" xml:space="preserve">
-    <value>Återkalla alla sessioner</value>
+    <value>لا يمكن إزالة هذا المستخدم من مجموعة SuperAdmin.</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>Är du säker på att du vill återkalla alla sessioner för {0}?</value>
+    <value>لا يمكن تعديل صلاحيات Super admin.</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort denna användare från SuperAdmin-användargruppen.</value>
+    <value>لا يمكن تعديل مجموعة المستخدمين {0}.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
-    <value>Superadmin-behörigheter får inte ändras.</value>
+    <value>لا يمكنك إزالة مستخدمك الخاص</value>
   </data>
   <data name="CanNotChangeBuiltInRole" xml:space="preserve">
-    <value>Användargrupp {0} får inte ändras.</value>
+    <value>لا يمكنك إزالة هذا المستخدم SuperAdmin</value>
   </data>
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort din egen användare</value>
+    <value>لا يمكنك إزالة جلساتك الحالية</value>
   </data>
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort denna SuperAdmin-användare</value>
+    <value>البحث في مجموعات المستخدمين</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
-    <value>Du kan inte ta bort din nuvarande session</value>
+    <value>البحث عن مستخدمين</value>
   </data>
   <data name="SearchRolesPlaceholder" xml:space="preserve">
-    <value>Sök användargrupper</value>
+    <value>البحث عن مستخدمين</value>
   </data>
   <data name="SearchUsersPlaceholder" xml:space="preserve">
-    <value>Sök användare</value>
+    <value>البحث في جلسات المستخدم</value>
   </data>
   <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
-    <value>Sök användare</value>
+    <value>إزالة جميع المستخدمين من مجموعة المستخدمين</value>
   </data>
   <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
-    <value>Sök användarsessioner</value>
+    <value>هل أنت متأكد من رغبتك في إزالة جميع المستخدمين من {0}؟</value>
   </data>
   <data name="RemoveRoleFromAllUsers" xml:space="preserve">
-    <value>Ta bort alla användare från användargrupp</value>
+    <value>رابط الصفحة</value>
   </data>
   <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
-    <value>Är du säker på att du vill ta bort alla användare från {0}?</value>
+    <value>غير مصرح لك</value>
   </data>
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
-    <value>Sidans URL</value>
+    <value>ليس لديك إذن للوصول إلى هذه الصفحة.</value>
   </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
-    <value>Du är inte auktoriserad</value>
+    <value>هل هذه المرة الأولى؟</value>
   </data>
   <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
-    <value>Du har inte behörighet att komma åt denna sida.</value>
+    <value>سنقوم تلقائيًا بإنشاء حساب لك.</value>
   </data>
   <data name="SignInPasswordMessage1" xml:space="preserve">
-    <value>Första gången här?</value>
+    <value>الصورة صغيرة جدًا. الأبعاد المطلوبة هي {0}x{1}، لكن الأبعاد الحالية هي {2}x{3}.</value>
   </data>
   <data name="SignInPasswordMessage2" xml:space="preserve">
-    <value>Vi skapar automatiskt ett konto åt dig.</value>
+    <value>الصورة المقدمة لا تحتوي على سيارة.</value>
   </data>
   <data name="ImageTooSmall" xml:space="preserve">
-    <value>Bilden är för liten. Minsta tillåtna dimensioner är {0}x{1}, men nuvarande dimensioner är {2}x{3}.</value>
+    <value>Image's too small. Minimum required dimensions are {0}x{1}, but the current dimensions are {2}x{3}.</value>
   </data>
   <data name="ImageNotCarError" xml:space="preserve">
-    <value>Den angivna bilden innehåller inte en bil.</value>
+    <value>The provided image does not contain a car.</value>
   </data>
 </root>

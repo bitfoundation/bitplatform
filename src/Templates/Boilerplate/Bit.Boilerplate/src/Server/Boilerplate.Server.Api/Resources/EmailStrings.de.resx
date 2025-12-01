@@ -118,92 +118,82 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ConcurrencyFailure" xml:space="preserve">
-    <value>Optimistisk parallellkörningsfel, objektet har modifierats.</value>
-    <comment>Error when optimistic concurrency fails</comment>
+  <data name="ConfirmationEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - Bestätigen Sie Ihre E-Mail-Adresse</value>
   </data>
-  <data name="DefaultError" xml:space="preserve">
-    <value>Ett okänt fel har inträffat.</value>
-    <comment>Default identity result error message</comment>
+  <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
+    <value>Sie erhalten diese E-Mail, weil Sie kürzlich {0} zu Ihrem Boilerplate-Konto registriert haben.</value>
   </data>
-  <data name="DuplicateEmail" xml:space="preserve">
-    <value>E-post '{0}' är redan upptagen.</value>
-    <comment>Error for duplicate emails</comment>
+  <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
+    <value>Bestätigen Sie Ihre E-Mail-Adresse, indem Sie die unten stehende Nummer in der App eingeben.</value>
   </data>
-  <data name="DuplicateRoleName" xml:space="preserve">
-    <value>Rollnamn '{0}' är redan upptaget.</value>
-    <comment>Error for duplicate roles</comment>
+  <data name="EmailConfirmationMessageBodyLink" xml:space="preserve">
+    <value>Oder klicken Sie auf den folgenden Link, um diese E-Mail-Adresse zu bestätigen.</value>
   </data>
-  <data name="DuplicateUserName" xml:space="preserve">
-    <value>Användarnamn '{0}' är redan upptaget.</value>
-    <comment>Error for duplicate user names</comment>
+  <data name="ResetPasswordEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - Passwort zurücksetzen</value>
   </data>
-  <data name="InvalidEmail" xml:space="preserve">
-    <value>E-post '{0}' är ogiltig.</value>
-    <comment>Invalid email</comment>
+  <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>Hallo {0}</value>
   </data>
-  <data name="InvalidRoleName" xml:space="preserve">
-    <value>Rollnamn '{0}' är ogiltigt.</value>
-    <comment>Error for invalid role names</comment>
+  <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>Jemand hat ein Token angefordert, um Ihr Passwort zu ändern.</value>
   </data>
-  <data name="InvalidToken" xml:space="preserve">
-    <value>Ogiltigt token.</value>
-    <comment>Error when a token is not recognized</comment>
+  <data name="ResetPasswordBody" xml:space="preserve">
+    <value>Wenn Sie das Zurücksetzen des Passworts nicht angefordert haben, können Sie diese E-Mail ignorieren.</value>
   </data>
-  <data name="InvalidUserName" xml:space="preserve">
-    <value>Användarnamn '{0}' är ogiltigt, får endast innehålla bokstäver eller siffror.</value>
-    <comment>User names can only contain letters or digits</comment>
+  <data name="ResetPasswordTokenMessage" xml:space="preserve">
+    <value>Sie können das unten stehende Token kopieren und auf der Seite zum Zurücksetzen des Passworts eingeben.</value>
   </data>
-  <data name="LoginAlreadyAssociated" xml:space="preserve">
-    <value>En användare med denna inloggning finns redan.</value>
-    <comment>Error when a login already linked</comment>
+  <data name="ResetPasswordLinkMessage" xml:space="preserve">
+    <value>Oder Sie können auf den folgenden Link klicken, um Ihr Passwort zurückzusetzen.</value>
   </data>
-  <data name="PasswordMismatch" xml:space="preserve">
-    <value>Felaktigt lösenord.</value>
-    <comment>Error when a password doesn't match</comment>
+  <data name="OtpEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - OTP</value>
   </data>
-  <data name="PasswordRequiresDigit" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en siffra ('0'-'9').</value>
-    <comment>Error when passwords do not have a digit</comment>
+  <data name="OtpTitle" xml:space="preserve">
+    <value>Hallo {0}</value>
   </data>
-  <data name="PasswordRequiresLower" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en gemen ('a'-'z').</value>
-    <comment>Error when passwords do not have a lowercase letter</comment>
+  <data name="OtpSubtitle" xml:space="preserve">
+    <value>Jemand hat ein OTP zur Anmeldung in der App angefordert.</value>
   </data>
-  <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en icke alfanumerisk tecken.</value>
-    <comment>Error when password does not have enough non alphanumeric characters</comment>
+  <data name="OtpBody" xml:space="preserve">
+    <value>Wenn Sie das OTP nicht angefordert haben, können Sie diese E-Mail ignorieren.</value>
   </data>
-  <data name="PasswordRequiresUpper" xml:space="preserve">
-    <value>Lösenord måste innehålla minst en versal ('A'-'Z').</value>
-    <comment>Error when passwords do not have an uppercase letter</comment>
+  <data name="OtpMessage" xml:space="preserve">
+    <value>Sie können das unten stehende OTP kopieren und auf der Anmeldeseite eingeben.</value>
   </data>
-  <data name="PasswordTooShort" xml:space="preserve">
-    <value>Lösenord måste vara minst {0} tecken.</value>
-    <comment>Error message for passwords that are too short</comment>
+  <data name="OtpLinkMessage" xml:space="preserve">
+    <value>Oder Sie können auf den folgenden Link klicken, um sich anzumelden.</value>
   </data>
-  <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">
-    <value>Återställning av återställningskod misslyckades.</value>
-    <comment>Error when a recovery code is not redeemed.</comment>
+  <data name="AppName" xml:space="preserve">
+    <value>Boilerplate</value>
   </data>
-  <data name="UserAlreadyHasPassword" xml:space="preserve">
-    <value>Användaren har redan ett lösenord inställt.</value>
-    <comment>Error when AddPasswordAsync called when a user already has a password</comment>
+  <data name="WelcomeToApp" xml:space="preserve">
+    <value>Willkommen bei Boilerplate!</value>
   </data>
-  <data name="UserAlreadyInRole" xml:space="preserve">
-    <value>Användaren är redan i rollen '{0}'.</value>
-    <comment>Error when a user is already in a role</comment>
+  <data name="TfaTokenEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - 2FA-Token</value>
   </data>
-  <data name="UserLockoutNotEnabled" xml:space="preserve">
-    <value>Låsning är inte aktiverat för denna användare.</value>
-    <comment>Error when lockout is not enabled</comment>
+  <data name="TfaTokenHello" xml:space="preserve">
+    <value>Hallo {0}</value>
   </data>
-  <data name="UserNotInRole" xml:space="preserve">
-    <value>Användaren är inte i rollen '{0}'.</value>
-    <comment>Error when a user is not in the role</comment>
+  <data name="TfaTokenMessage" xml:space="preserve">
+    <value>Hier ist Ihr neues 2FA-Token zur Anmeldung:</value>
   </data>
-  <data name="PasswordRequiresUniqueChars" xml:space="preserve">
-    <value>Lösenord måste innehålla minst {0} olika tecken.</value>
-    <comment>Error message for passwords that are based on similar characters</comment>
+  <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - Erhöhtes Zugriffstoken</value>
+  </data>
+  <data name="ElevatedAccessTokenHello" xml:space="preserve">
+    <value>Hallo {0}</value>
+  </data>
+  <data name="ElevatedAccessTokenMessage" xml:space="preserve">
+    <value>Hier ist Ihr neues erhöhtes Zugriffstoken:</value>
+  </data>
+  <data name="CopyTokenNote" xml:space="preserve">
+    <value>Kopieren Sie diesen Code und verwenden Sie ihn in der App.</value>
+  </data>
+  <data name="DefaultFromName" xml:space="preserve">
+    <value>Boilerplate App</value>
   </data>
 </root>
