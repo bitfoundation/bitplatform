@@ -47,7 +47,6 @@ public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> o
 
         optionsBuilder
             .UseHttpClientOptions(clientOptions)
-            .UseDefaultConflictResolver(new ClientWinsConflictResolver())
             .Entity<TodoItemDto>(options =>
             {
                 options.Endpoint = new Uri("/api/TodoItemTable", UriKind.Relative);
