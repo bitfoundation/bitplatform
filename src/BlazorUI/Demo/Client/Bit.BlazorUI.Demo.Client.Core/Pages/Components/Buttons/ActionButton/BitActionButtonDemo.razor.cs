@@ -158,6 +158,7 @@ public partial class BitActionButtonDemo
         {
             Id = "class-styles",
             Title = "BitActionButtonClassStyles",
+            Description = "Defines per-part CSS class/style values for BitActionButton.",
             Parameters =
             [
                 new()
@@ -165,21 +166,21 @@ public partial class BitActionButtonDemo
                     Name = "Root",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the root element of the BitActionButton."
+                    Description = "Custom class or style applied to the root element of the BitActionButton."
                 },
                 new()
                 {
                     Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the Icon of the BitActionButton."
+                    Description = "Custom class or style applied to the icon element of the BitActionButton."
                 },
                 new()
                 {
                     Name = "Content",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the content of the BitActionButton."
+                    Description = "Custom class or style applied to the content container of the BitActionButton."
                 }
             ]
         }
