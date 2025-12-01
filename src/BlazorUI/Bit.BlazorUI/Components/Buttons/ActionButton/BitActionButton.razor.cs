@@ -3,7 +3,7 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// ActionButton is a special type of button with a specific set of visual styles and properties.
+/// A lightweight and special type of button/link with icon-first styling, sized presets, and colorized text/icon support.
 /// </summary>
 public partial class BitActionButton : BitComponentBase
 {
@@ -14,44 +14,45 @@ public partial class BitActionButton : BitComponentBase
 
 
     /// <summary>
-    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>.
+    /// The value is coming from the cascading value provided by the EditForm.
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
 
 
 
     /// <summary>
-    /// Whether the button can have focus in disabled mode.
+    /// Keeps the disabled action button focusable by not forcing a negative tabindex when <see cref="BitComponentBase.IsEnabled"/> is false.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; }
 
     /// <summary>
-    /// Detailed description of the button for the benefit of screen readers.
+    /// Detailed description of the button for the benefit of screen readers (rendered into <c>aria-describedby</c>).
     /// </summary>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// If true, add an aria-hidden attribute instructing screen readers to ignore the button.
+    /// If true, adds an <c>aria-hidden</c> attribute instructing screen readers to ignore the button.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The type html attribute of the button element.
+    /// The type of the button element; defaults to <c>submit</c> inside an <see cref="EditForm"/> otherwise <c>button</c>.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
-    /// The content of the button.
+    /// The custom body of the action button (text and/or any render fragment).
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the button.
+    /// Custom CSS classes for the root, icon, and content sections of the action button.
     /// </summary>
     [Parameter] public BitActionButtonClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The general color of the button.
+    /// The general color of the button that applies to the icon and text of the action button.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -71,40 +72,42 @@ public partial class BitActionButton : BitComponentBase
     public string? Href { get; set; }
 
     /// <summary>
-    /// The icon name of the icon to render inside the button.
+    /// The Fluent UI icon name to render inside the action button (e.g., <c>BitIconName.AddFriend</c>).
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery: <see href="https://blazorui.bitplatform.dev/iconography"/>.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Removes the container of the text and only renders the icon.
+    /// Removes the text container and renders only the icon.
     /// </summary>
     [Parameter] public bool IconOnly { get; set; }
 
     /// <summary>
-    /// The callback for the click event of the button.
+    /// Raised when the action button is clicked (only when <see cref="BitComponentBase.IsEnabled"/> is true); receives <see cref="MouseEventArgs"/>.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the button.
+    /// Custom inline styles for the root, icon, and content sections of the action button.
     /// </summary>
     [Parameter] public BitActionButtonClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// Reverses the positions of the icon and the content of the button.
+    /// Swaps the order of the icon and content so the icon appears after the text.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool ReversedIcon { get; set; }
 
     /// <summary>
-    /// If Href provided, specifies the relationship between the current document and the linked document.
+    /// Sets the <c>rel</c> attribute for link-rendered buttons when <see cref="Href"/> is a non-anchor URL; ignored for empty or hash-only hrefs.
+    /// The <c>rel</c> attribute specifies the relationship between the current document and the linked document.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
     public BitLinkRel? Rel { get; set; }
 
     /// <summary>
-    /// The size of the button.
+    /// Sets the preset size for typography and padding of the action button.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
@@ -118,6 +121,7 @@ public partial class BitActionButton : BitComponentBase
     /// The tooltip to show when the mouse is placed on the button.
     /// </summary>
     [Parameter] public string? Title { get; set; }
+
 
 
     protected override string RootElementClass => "bit-acb";
@@ -182,6 +186,8 @@ public partial class BitActionButton : BitComponentBase
         base.OnParametersSet();
     }
 
+
+
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled)
@@ -189,6 +195,8 @@ public partial class BitActionButton : BitComponentBase
             await OnClick.InvokeAsync(e);
         }
     }
+
+
 
     private void OnSetHrefAndRel()
     {
