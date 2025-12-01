@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-acb {
     border: none;
@@ -26,6 +26,12 @@
     &:active {
         color: var(--bit-acb-clr-active);
         --bit-acb-clr-ico: var(--bit-acb-clr-active);
+    }
+
+    &:focus-visible {
+        outline: none;
+        border-radius: $shp-border-radius;
+        box-shadow: 0 0 0 spacing(0.25) var(--bit-acb-clr-hover);
     }
 
     &.bit-dis {
@@ -95,12 +101,6 @@
     --bit-acb-clr-ico: #{$clr-swr};
     --bit-acb-clr-hover: #{$clr-swr-hover};
     --bit-acb-clr-active: #{$clr-swr-active};
-}
-
-.bit-acb-err {
-    --bit-acb-clr-ico: #{$clr-err};
-    --bit-acb-clr-hover: #{$clr-err-hover};
-    --bit-acb-clr-active: #{$clr-err-active};
 }
 
 .bit-acb-err {
