@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -17,12 +17,14 @@
         <PackageReference Include="Riok.Mapperly" PrivateAssets="all" ExcludeAssets="runtime">
           <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server.Abstractions" />
     </ItemGroup>
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
         <Using Include="Boilerplate.Shared.Attributes" />
         <Using Include="Boilerplate.Shared.Services.Contracts" />
+        <Using Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server" />
     </ItemGroup>
 
     <ItemGroup>

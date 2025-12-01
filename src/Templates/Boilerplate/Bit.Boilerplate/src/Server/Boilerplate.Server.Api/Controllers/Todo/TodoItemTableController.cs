@@ -1,5 +1,6 @@
-﻿using CommunityToolkit.Datasync.Server;
-using Boilerplate.Server.Api.Models.Todo;
+﻿using Boilerplate.Server.Api.Models.Todo;
+using Boilerplate.Shared.Dtos.Todo;
+using CommunityToolkit.Datasync.Server;
 using CommunityToolkit.Datasync.Server.EntityFrameworkCore;
 
 namespace Boilerplate.Server.Api.Controllers.Todo;
@@ -11,7 +12,7 @@ namespace Boilerplate.Server.Api.Controllers.Todo;
 [Route("api/[controller]/"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
     Authorize(Policy = AppFeatures.Todo.ManageTodo)]
-public class TodoItemTableController : TableController<TodoItem>
+public class TodoItemTableController : TableController<TodoItemDto>
 {
     public TodoItemTableController(TodoItemTableRepository repository, ILogger<TodoItemTableController> logger) : base(repository)
     {
@@ -23,29 +24,40 @@ public class TodoItemTableController : TableController<TodoItem>
     }
 }
 
-/// <summary>
-/// Hooks for overriding the default behavior of the EntityTableRepository for TodoItem entities,
-/// </summary>
-public class TodoItemTableRepository(IHttpContextAccessor httpContextAccessor, AppDbContext dbContext) : EntityTableRepository<TodoItem>(dbContext)
+public class TodoItemTableRepository(IHttpContextAccessor httpContextAccessor, AppDbContext dbContext)
+    : IRepository<TodoItemDto>
 {
-    public override async ValueTask<IQueryable<TodoItem>> AsQueryableAsync(CancellationToken cancellationToken)
-    {
-        var result = await base.AsQueryableAsync(cancellationToken);
+    private EntityTableRepository<TodoItem> Repository => field ??= new(dbContext);
 
-        return result.Where(item => item.UserId == httpContextAccessor.HttpContext!.User.GetUserId());
+    public async ValueTask<IQueryable<TodoItemDto>> AsQueryableAsync(CancellationToken cancellationToken = default)
+    {
+        return dbContext.TodoItems
+            .Where(i => i.UserId == httpContextAccessor.HttpContext!.User.GetUserId())
+            .Project();
     }
 
-    public override ValueTask CreateAsync(TodoItem entity, CancellationToken cancellationToken)
+    public async ValueTask CreateAsync(TodoItemDto dto, CancellationToken cancellationToken = default)
     {
+        var entity = dto.Map();
         entity.UserId = httpContextAccessor.HttpContext!.User.GetUserId();
-
-        return base.CreateAsync(entity, cancellationToken);
+        await Repository.CreateAsync(entity, cancellationToken).ConfigureAwait(false);
     }
 
-    public override ValueTask ReplaceAsync(TodoItem entity, byte[]? version = null, CancellationToken cancellationToken = default)
+    public async ValueTask DeleteAsync(string id, byte[]? version = null, CancellationToken cancellationToken = default)
     {
-        entity.UserId = httpContextAccessor.HttpContext!.User.GetUserId();
+        await Repository.DeleteAsync(id, version, cancellationToken).ConfigureAwait(false);
+    }
 
-        return base.ReplaceAsync(entity, version, cancellationToken);
+    public async ValueTask<TodoItemDto> ReadAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var entity = await Repository.ReadAsync(id, cancellationToken).ConfigureAwait(false);
+        return entity.Map();
+    }
+
+    public async ValueTask ReplaceAsync(TodoItemDto dto, byte[]? version = null, CancellationToken cancellationToken = default)
+    {
+        var entity = dto.Map();
+        entity.UserId = httpContextAccessor.HttpContext!.User.GetUserId();
+        await Repository.ReplaceAsync(entity, version, cancellationToken);
     }
 }

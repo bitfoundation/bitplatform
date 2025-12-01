@@ -3,6 +3,9 @@ namespace Boilerplate.Shared.Dtos.Todo;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class TodoItemDto
+//#if (offlineDb == true)
+    : ITableData
+//#endif
 {
     public string Id { get; set; } = default!;
 
@@ -22,4 +25,8 @@ public partial class TodoItemDto
 
     [JsonIgnore, NotMapped]
     public bool IsInEditMode { get; set; }
+
+    //#if (offlineDb == true)
+    public bool Equals(ITableData? other) => other is not null && Id == other.Id && other.Version.SequenceEqual(Version);
+    //#endif
 }
