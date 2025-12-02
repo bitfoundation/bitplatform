@@ -1,7 +1,6 @@
-﻿//+:cnd:noEmit
-using Boilerplate.Server.Api.Models.Todo;
+﻿using Riok.Mapperly.Abstractions;
 using Boilerplate.Shared.Dtos.Todo;
-using Riok.Mapperly.Abstractions;
+using Boilerplate.Server.Api.Models.Todo;
 
 namespace Boilerplate.Server.Api.Mappers;
 
@@ -14,7 +13,5 @@ public static partial class TodoMapper
     public static partial IQueryable<TodoItemDto> Project(this IQueryable<TodoItem> query);
     public static partial TodoItemDto Map(this TodoItem source);
     public static partial TodoItem Map(this TodoItemDto source);
-    //#if (offlineDb != true)
     public static partial void Patch(this TodoItemDto source, TodoItem destination);
-    //#endif
 }
