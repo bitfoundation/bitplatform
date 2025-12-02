@@ -35,6 +35,7 @@ services.AddSingleton(settings);
 
 services.AddLogging(loggingBuilder =>
 {
+    loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
     loggingBuilder.AddConsole();
 });
 
