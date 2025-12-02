@@ -162,7 +162,7 @@ jobs:
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
     - uses: actions/setup-node@v6
@@ -209,7 +209,7 @@ jobs:
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
     - uses: actions/setup-node@v6
@@ -260,7 +260,7 @@ jobs:
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
     - uses: actions/setup-node@v6
@@ -317,8 +317,8 @@ jobs:
       with:
         files: 'TodoSample\**\appsettings*json'
       env:
-        WebAppUrl: ${{ env.SERVER_ADDRESS }}
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         WindowsUpdate.FilesUrl: https://windows-todo.bitplatform.dev
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
@@ -389,8 +389,8 @@ jobs:
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
-        WebAppUrl: ${{ env.SERVER_ADDRESS }}
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
@@ -474,8 +474,8 @@ jobs:
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
-        WebAppUrl: ${{ env.SERVER_ADDRESS }}
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppUrl: ${{ env.SERVER_WEB_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_API_ADDRESS }}
         Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
