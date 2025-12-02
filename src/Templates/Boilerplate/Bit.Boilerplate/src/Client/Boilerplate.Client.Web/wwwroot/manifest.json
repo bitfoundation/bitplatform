@@ -42,7 +42,12 @@
             "name": "Terms",
             "url": "/terms"
         },
-        //#if (sample == true)
+        //#if (offlineDb == true)
+        {
+            "name": "Todo",
+            "url": "/offline-todo"
+        },
+        //#elseif (sample == true)
         {
             "name": "Todo",
             "url": "/todo"

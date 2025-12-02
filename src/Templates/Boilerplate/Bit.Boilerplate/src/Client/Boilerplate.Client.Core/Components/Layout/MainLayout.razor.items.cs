@@ -66,25 +66,25 @@ public partial class MainLayout
         }
         //#endif
 
-        //#if (sample == true)
+        //#if (sample == true || offlineDb == true)
         if (await authorizationService.IsAuthorized(authUser!, AppFeatures.Todo.ManageTodo))
         {
+            //#if (offlineDb == true)
+            navPanelItems.Add(new()
+            {
+                Text = localizer[nameof(AppStrings.OfflineTodoTitle)],
+                IconName = BitIconName.ToDoLogoOutline,
+                Url = PageUrls.OfflineTodo,
+            });
+            //#elseif (sample == true)
             navPanelItems.Add(new()
             {
                 Text = localizer[nameof(AppStrings.Todo)],
-                IconName = BitIconName.ToDoLogoOutline,
+                IconName = BitIconName.ToDoLogoInverse,
                 Url = PageUrls.Todo,
             });
+            //#endif
         }
-        //#endif
-
-        //#if (offlineDb == true)
-        navPanelItems.Add(new()
-        {
-            Text = localizer[nameof(AppStrings.OfflineDatabaseDemoTitle)],
-            IconName = BitIconName.EditContact,
-            Url = PageUrls.OfflineDatabaseDemo,
-        });
         //#endif
 
         navPanelItems.Add(new()

@@ -1,0 +1,1367 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- +:cnd:noEmit -->
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- .NET Validation messages -->
+  <data name="CompareAttribute_ValidationError" xml:space="preserve">
+    <value>' {0} ' और ' {1} ' मेल नहीं खाते।</value>
+  </data>
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
+    <value>{0} फ़ील्ड एक वैध ई-मेल पता नहीं है।</value>
+  </data>
+  <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
+    <value>MaxLengthAttribute को शून्य से अधिक लंबाई मान होना चाहिए। अधिकतम अनुमत लंबाई का संकेत देने के लिए बिना पैरामीटर के MaxLength() का उपयोग करें, ताकि स्ट्रिंग या ऐरे अधिकतम अनुमत लंबाई हो सके।</value>
+  </data>
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <value>{0} फ़ील्ड '{1}' की न्यूनतम लंबाई वाला स्ट्रिंग या ऐरे प्रकार का होना चाहिए।</value>
+  </data>
+  <data name="RangeAttribute_ValidationError" xml:space="preserve">
+    <value>{0} फ़ील्ड {1} और {2} के बीच होना चाहिए।</value>
+  </data>
+  <data name="RequiredAttribute_ValidationError" xml:space="preserve">
+    <value>{0} फ़ील्ड आवश्यक है।</value>
+  </data>
+  <data name="PhoneAttribute_ValidationError" xml:space="preserve">
+    <value>{0} फ़ील्ड एक वैध फोन नंबर नहीं है।</value>
+  </data>
+  <!-- Exceptions -->
+  <data name="BadRequestException" xml:space="preserve">
+    <value>अमान्य अनुरोध</value>
+  </data>
+  <data name="ConflictException" xml:space="preserve">
+    <value>अनुरोध में संघर्ष के कारण अनुरोध प्रोसेस नहीं किया जा सका</value>
+  </data>
+  <data name="NotAuthorizedPageTitle" xml:space="preserve">
+    <value>अधिकृत नहीं</value>
+  </data>
+  <data name="ForbiddenException" xml:space="preserve">
+    <value>अनुरोधित संसाधन तक पहुंच निषिद्ध है</value>
+  </data>
+  <data name="ResourceValidationException" xml:space="preserve">
+    <value>अनुरोध डेटा वैध नहीं है</value>
+  </data>
+  <data name="RestException" xml:space="preserve">
+    <value>सर्वर के साथ संचार करते समय एक त्रुटि हुई</value>
+  </data>
+  <data name="UnauthorizedException" xml:space="preserve">
+    <value>आपके अनुरोध में वैध प्रमाणीकरण क्रेडेंशियल्स की कमी है</value>
+  </data>
+  <data name="UnknownException" xml:space="preserve">
+    <value>अज्ञात त्रुटि हुई है</value>
+  </data>
+  <data name="UpdateConcurrencyException" xml:space="preserve">
+    <value>रिकॉर्ड को मूल डेटा प्राप्त करने के बाद किसी अन्य उपयोगकर्ता द्वारा संशोधित किया गया था। ऑपरेशन रद्द कर दिया गया।</value>
+  </data>
+  <data name="ResourceNotFoundException" xml:space="preserve">
+    <value>संसाधन नहीं मिला</value>
+  </data>
+  <data name="TooManyRequestExceptions" xml:space="preserve">
+    <value>बहुत अधिक अनुरोध</value>
+  </data>
+  <data name="ServerConnectionException" xml:space="preserve">
+    <value>सर्वर से कनेक्ट करने में असमर्थ।</value>
+  </data>
+  <!-- Boilerplate strings -->
+  <data name="Active" xml:space="preserve">
+    <value>सक्रिय</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>सभी</value>
+  </data>
+  <data name="Alphabetical" xml:space="preserve">
+    <value>A-Z</value>
+  </data>
+  <data name="Completed" xml:space="preserve">
+    <value>पूरा</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>तारीख</value>
+  </data>
+  <data name="SettingsPageTitle" xml:space="preserve">
+    <value>सेटिंग्स</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>सेटिंग्स</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>डार्क</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>लाइट</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>भाषा</value>
+  </data>
+  <data name="SelectLanguage" xml:space="preserve">
+    <value>भाषा चुनें</value>
+  </data>
+  <data name="ProfileTitle" xml:space="preserve">
+    <value>प्रोफ़ाइल</value>
+  </data>
+  <data name="ProfileSubtitle" xml:space="preserve">
+    <value>अपनी प्रोफ़ाइल डेटा संपादित करें</value>
+  </data>
+  <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
+    <value>ईमेल बदलने का टोकन आपको भेज दिया गया है</value>
+  </data>
+  <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
+    <value>फ़ोन नंबर बदलने का टोकन आपको भेज दिया गया है</value>
+  </data>
+  <data name="SuccessfulSendTokenMessage" xml:space="preserve">
+    <value>टोकन आपको भेज दिया गया है</value>
+  </data>
+  <data name="SessionsTitle" xml:space="preserve">
+    <value>सत्र</value>
+  </data>
+  <data name="SessionsSubtitle" xml:space="preserve">
+    <value>एकाधिक उपकरणों पर आपके सक्रिय सत्र</value>
+  </data>
+  <data name="CurrentSession" xml:space="preserve">
+    <value>वर्तमान सत्र</value>
+  </data>
+  <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
+    <value>पूर्ण सुविधाओं के लिए {0} उपकरणों की अनुमति है, आपने {1} का उपयोग किया है।
+{0} तक पहुंचने के बाद, अतिरिक्त साइन-इन में कम कार्य होंगे।</value>
+  </data>
+  <data name="OtherSessions" xml:space="preserve">
+    <value>अन्य सत्र</value>
+  </data>
+  <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <value>अन्य सत्र हटाने का प्रयास करें</value>
+  </data>
+  <data name="RemoveSessionSuccessMessage" xml:space="preserve">
+    <value>सत्र सफलतापूर्वक हटा दिया गया</value>
+  </data>
+  <data name="NotFoundPageTitle" xml:space="preserve">
+    <value>404</value>
+  </data>
+  <data name="NotFoundText" xml:space="preserve">
+    <value>यहाँ कुछ नहीं है।</value>
+  </data>
+  <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
+    <value>कृपया Google Play के माध्यम से वेबव्यू अपडेट करें।</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>ठीक है</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SystemPromptsTitle" xml:space="preserve">
+    <value>सिस्टम प्रॉम्प्ट्स</value>
+  </data>
+  <data name="SystemPromptsSubTitle" xml:space="preserve">
+    <value>यहाँ चैटबॉट के लिए सिस्टम प्रॉम्प्ट्स देखें।</value>
+  </data>
+  <data name="PushNotificationJob" xml:space="preserve">
+    <value>पुष नोटिफिकेशन जॉब</value>
+  </data>
+  <!--#endif-->
+  <!--#if (offlineDb == true) -->
+  <data name="OfflineTodoTitle" xml:space="preserve">
+    <value>टूडू (ऑफलाइन)</value>
+  </data>
+  <data name="SyncPushFailed" xml:space="preserve">
+    <value>सर्वर पर परिवर्तन पुश करने में विफल</value>
+  </data>
+  <data name="SyncPullFailed" xml:space="preserve">
+    <value>सर्वर से परिवर्तन खींचने में विफल</value>
+  </data>
+  <data name="SyncPushSuccess" xml:space="preserve">
+    <value>सर्वर पर {0} परिवर्तन पुश किए गए</value>
+  </data>
+  <!--#endif-->
+  <data name="FullName" xml:space="preserve">
+    <value>पूरा नाम</value>
+  </data>
+  <data name="TermsPageTitle" xml:space="preserve">
+    <value>शर्तें</value>
+  </data>
+  <data name="Terms" xml:space="preserve">
+    <value>शर्तें</value>
+  </data>
+  <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
+    <value>प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई।</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>पासवर्ड की पुष्टि करें</value>
+  </data>
+  <data name="ConfirmNewPassword" xml:space="preserve">
+    <value>नए पासवर्ड की पुष्टि करें</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>ईमेल</value>
+  </data>
+  <data name="NewEmail" xml:space="preserve">
+    <value>नया ईमेल</value>
+  </data>
+  <data name="NewEmailPlaceholder" xml:space="preserve">
+    <value>नया ईमेल दर्ज करें</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>फ़ोन</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>फ़ोन नंबर</value>
+  </data>
+  <data name="NewPhoneNumber" xml:space="preserve">
+    <value>नया फ़ोन नंबर</value>
+  </data>
+  <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
+    <value>नया फ़ोन नंबर दर्ज करें</value>
+  </data>
+  <data name="GoBack" xml:space="preserve">
+    <value>पीछे</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>पासवर्ड</value>
+  </data>
+  <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>पासवर्ड दर्ज करें</value>
+  </data>
+  <data name="ImageCouldNotBeFound" xml:space="preserve">
+    <value>इमेज नहीं मिली</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>त्रुटि</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>लिंग</value>
+  </data>
+  <data name="BirthDate" xml:space="preserve">
+    <value>जन्मतिथि</value>
+  </data>
+  <data name="UserName" xml:space="preserve">
+    <value>उपयोगकर्ता नाम</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>नाम</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>विवरण</value>
+  </data>
+  <data name="Price" xml:space="preserve">
+    <value>मूल्य</value>
+  </data>
+  <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
+    <value>ईमेल या फ़ोन नंबर प्रदान करें।</value>
+  </data>
+  <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
+    <value>उपयोगकर्ता नाम, ईमेल या फ़ोन नंबर प्रदान करें।</value>
+  </data>
+  <data name="YouNeedToSignIn" xml:space="preserve">
+    <value>जारी रखने के लिए आपको साइन इन होना चाहिए।</value>
+  </data>
+  <data name="InvalidUserCredentials" xml:space="preserve">
+    <value>अमान्य उपयोगकर्ता क्रेडेंशियल्स</value>
+  </data>
+  <data name="EmailAlreadyConfirmed" xml:space="preserve">
+    <value>आपका ईमेल पहले ही पुष्टि हो चुका है।</value>
+  </data>
+  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
+    <value>आपका फ़ोन नंबर पहले ही पुष्टि हो चुका है।</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>शीर्षक</value>
+  </data>
+  <data name="AreYouSureWannaDelete" xml:space="preserve">
+    <value>क्या आप वाकई {0} को हटाना चाहते हैं?</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>होम</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>रिफ्रेश</value>
+  </data>
+  <data name="Recover" xml:space="preserve">
+    <value>पुनर्प्राप्त करें</value>
+  </data>
+  <data name="SomethingWentWrong" xml:space="preserve">
+    <value>ओह, कुछ गलत हो गया...</value>
+  </data>
+  <data name="BackToHome" xml:space="preserve">
+    <value>होम पर वापस</value>
+  </data>
+  <data name="UserLockedOut" xml:space="preserve">
+    <value>उपयोगकर्ता लॉक आउट है। {0} में पुनः प्रयास करें</value>
+  </data>
+  <data name="UserIsNotConfirmed" xml:space="preserve">
+    <value>उपयोगकर्ता पुष्टि नहीं हुआ है।</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>उपयोगकर्ता मौजूद नहीं है।</value>
+  </data>
+  <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
+    <value>यह ईमेल या फ़ोन नंबर पहले से लिया गया है।</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>जोड़ें</value>
+  </data>
+  <data name="Token" xml:space="preserve">
+    <value>टोकन</value>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>अमान्य टोकन।</value>
+  </data>
+  <data name="ExpiredToken" xml:space="preserve">
+    <value>समाप्त टोकन।</value>
+  </data>
+  <data name="SignInMessageInSignUp" xml:space="preserve">
+    <value>पहले से खाता है?</value>
+  </data>
+  <data name="ConfirmMessageInProfile" xml:space="preserve">
+    <value>पहले से टोकन है?</value>
+  </data>
+  <data name="ConfirmEmailHeaderText" xml:space="preserve">
+    <value>ईमेल पता</value>
+  </data>
+  <data name="ConfirmEmailSubtitle" xml:space="preserve">
+    <value>हमने आपके ईमेल पते पर पुष्टि टोकन भेज दिया है।</value>
+  </data>
+  <data name="ConfirmPageTitle" xml:space="preserve">
+    <value>पुष्टि करें</value>
+  </data>
+  <data name="ConfirmTitle" xml:space="preserve">
+    <value>अपना खाता पुष्टि करें</value>
+  </data>
+  <data name="ConfirmEmailMessage" xml:space="preserve">
+    <value>कृपया टोकन टाइप करके अपना ईमेल पुष्टि करें।</value>
+  </data>
+  <data name="EmailPlaceholder" xml:space="preserve">
+    <value>ईमेल पता दर्ज करें</value>
+  </data>
+  <data name="EmailToken" xml:space="preserve">
+    <value>कोड</value>
+  </data>
+  <data name="EmailTokenConfirmButtonText" xml:space="preserve">
+    <value>ईमेल पता पुष्टि करें</value>
+  </data>
+  <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
+    <value>आपका ईमेल पता ({0}) पुष्टि हो गया है।</value>
+  </data>
+  <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
+    <value>आप अब अपने खाते से साइन इन कर सकते हैं।</value>
+  </data>
+  <data name="ConfirmPhoneHeaderText" xml:space="preserve">
+    <value>फ़ोन नंबर</value>
+  </data>
+  <data name="ConfirmPhoneSubtitle" xml:space="preserve">
+    <value>हमने आपके फ़ोन पर पुष्टि टोकन भेज दिया है।</value>
+  </data>
+  <data name="ConfirmPhoneMessage" xml:space="preserve">
+    <value>कृपया टोकन टाइप करके अपना फ़ोन नंबर पुष्टि करें।</value>
+  </data>
+  <data name="PhoneNumberPlaceholder" xml:space="preserve">
+    <value>फ़ोन नंबर दर्ज करें</value>
+  </data>
+  <data name="PhoneToken" xml:space="preserve">
+    <value>कोड</value>
+  </data>
+  <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
+    <value>फ़ोन नंबर पुष्टि करें</value>
+  </data>
+  <data name="NotReceivedPhoneMessage" xml:space="preserve">
+    <value>क्या आपको फ़ोन पर टोकन प्राप्त नहीं हुआ?</value>
+  </data>
+  <data name="ResendPhoneTokenButtonText" xml:space="preserve">
+    <value>कोड पुनः भेजें</value>
+  </data>
+  <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
+    <value>आपका फ़ोन नंबर ({0}) पुष्टि हो गया है।</value>
+  </data>
+  <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
+    <value>आप अब अपने खाते से साइन इन कर सकते हैं।</value>
+  </data>
+  <data name="AccountTitle" xml:space="preserve">
+    <value>खाता</value>
+  </data>
+  <data name="AccountSubtitle" xml:space="preserve">
+    <value>अपने खाते का ईमेल, फ़ोन नंबर, या पासवर्डलेस सेटिंग्स बदलें</value>
+  </data>
+  <data name="DeleteAccount" xml:space="preserve">
+    <value>खाता हटाएं</value>
+  </data>
+  <data name="DeleteAccountPrompt" xml:space="preserve">
+    <value>क्या आप वाकई अपना खाता हटाना चाहते हैं?</value>
+  </data>
+  <data name="DontHaveAccountMessage" xml:space="preserve">
+    <value>खाता नहीं है?</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>संपादित करें</value>
+  </data>
+  <data name="FileUploadFailed" xml:space="preserve">
+    <value>फ़ाइल अपलोड करते समय त्रुटि हुई</value>
+  </data>
+  <data name="ForgotPasswordPageTitle" xml:space="preserve">
+    <value>पासवर्ड भूल गए</value>
+  </data>
+  <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>पासवर्ड भूल गए</value>
+  </data>
+  <data name="ForgotPasswordMessage" xml:space="preserve">
+    <value>कृपया अपना ईमेल पता या फ़ोन नंबर दर्ज करें ताकि हम आपको रीसेट पासवर्ड टोकन भेज सकें।</value>
+  </data>
+  <data name="GenderMale" xml:space="preserve">
+    <value>पुरुष</value>
+  </data>
+  <data name="GenderOther" xml:space="preserve">
+    <value>अन्य</value>
+  </data>
+  <data name="GoToToday" xml:space="preserve">
+    <value>आज पर जाएं</value>
+  </data>
+  <data name="HomeMessage" xml:space="preserve">
+    <value>अपना मल्टी-मोड (WASM, सर्वर, हाइब्रिड, पूर्व-रेंडरिंग) Blazor ऐप सबसे कम समय में आसानी से बनाएं!</value>
+  </data>
+  <data name="HomePageTitle" xml:space="preserve">
+    <value>होम</value>
+  </data>
+  <data name="HomePanelTitle" xml:space="preserve">
+    <value>अपने सभी ऐप्स बनाएं</value>
+  </data>
+  <data name="HomePanelSubtitle" xml:space="preserve">
+    <value>उसका उपयोग करके जो आप पहले से जानते और पसंद करते हैं</value>
+  </data>
+  <data name="WatchVideo" xml:space="preserve">
+    <value>वीडियो देखें</value>
+  </data>
+  <data name="LearnMore" xml:space="preserve">
+    <value>और जानें</value>
+  </data>
+  <data name="BitPlatformMessage" xml:space="preserve">
+    <value>एकाधिक प्लेटफ़ॉर्म्स पर .NET डेवलपर्स के लिए टूल्स का सेट</value>
+  </data>
+  <data name="BitBlazorUIMessage" xml:space="preserve">
+    <value>प्रदर्शनकारी, आसानी से अनुकूलित करने योग्य और सुंदर Blazor घटकों का सेट</value>
+  </data>
+  <data name="BitProjectTemplateMessage" xml:space="preserve">
+    <value>एक फीचर-रिच .NET प्रोजेक्ट टेम्पलेट जो हर जगह सहजता से काम करता है</value>
+  </data>
+  <data name="DescriptionMetaTagValue" xml:space="preserve">
+    <value>बॉयलरप्लेट ASP.NET कोर, आइडेंटिटी, वेब API, EF कोर और Blazor के साथ बनाया गया है।</value>
+  </data>
+  <data name="NewPassword" xml:space="preserve">
+    <value>नया पासवर्ड</value>
+  </data>
+  <data name="OldPassword" xml:space="preserve">
+    <value>पुराना पासवर्ड</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>नहीं</value>
+  </data>
+  <data name="NotReceivedEmailMessage" xml:space="preserve">
+    <value>क्या आपको ईमेल प्राप्त नहीं हुआ?</value>
+  </data>
+  <data name="Or" xml:space="preserve">
+    <value>या</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>हटाएं</value>
+  </data>
+  <data name="ResendEmailTokenButtonText" xml:space="preserve">
+    <value>कोड पुनः भेजें</value>
+  </data>
+  <data name="ResetPasswordPageTitle" xml:space="preserve">
+    <value>पासवर्ड रीसेट करें</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>पासवर्ड रीसेट करें</value>
+  </data>
+  <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>पासवर्ड रीसेट करें</value>
+  </data>
+  <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>हमने आपके फ़ोन या ईमेल पर टोकन भेज दिया है।</value>
+  </data>
+  <data name="ResetPasswordMessage" xml:space="preserve">
+    <value>कृपया अपना नया पासवर्ड टोकन के साथ यहाँ सबमिट करें।</value>
+  </data>
+  <data name="ResetPasswordButtonText" xml:space="preserve">
+    <value>पासवर्ड सेट करें</value>
+  </data>
+  <data name="ResetPasswordSuccessTitle" xml:space="preserve">
+    <value>आपका पासवर्ड रीसेट हो गया है।</value>
+  </data>
+  <data name="ResetPasswordSuccessBody" xml:space="preserve">
+    <value>आप अब अपने पासवर्ड से साइन इन कर सकते हैं।</value>
+  </data>
+  <data name="ResetPasswordMessageInForgot" xml:space="preserve">
+    <value>पहले से रीसेट पासवर्ड टोकन है?</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>सहेजें</value>
+  </data>
+  <data name="SignInPageTitle" xml:space="preserve">
+    <value>साइन इन करें</value>
+  </data>
+  <data name="SignInPanelTitle" xml:space="preserve">
+    <value>स्वागत है</value>
+  </data>
+  <data name="SignInPanelSubtitle" xml:space="preserve">
+    <value>अपने</value>
+  </data>
+  <data name="Continue" xml:space="preserve">
+    <value>जारी रखें</value>
+  </data>
+  <data name="GoogleSignInButtonText" xml:space="preserve">
+    <value>Google से साइन इन करें</value>
+  </data>
+  <data name="FacebookSignInButtonText" xml:space="preserve">
+    <value>Facebook से साइन इन करें</value>
+  </data>
+  <data name="GitHubSignInButtonText" xml:space="preserve">
+    <value>GitHub से साइन इन करें</value>
+  </data>
+  <data name="TwitterSignInButtonText" xml:space="preserve">
+    <value>Twitter (X) से साइन इन करें</value>
+  </data>
+  <data name="AppleSignInButtonText" xml:space="preserve">
+    <value>Apple से साइन इन करें</value>
+  </data>
+  <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
+    <value>टेस्ट सर्वर से साइन इन करें</value>
+  </data>
+  <data name="AzureEntraSignInButtonText" xml:space="preserve">
+    <value>Azure Entra से साइन इन करें</value>
+  </data>
+  <data name="SignOut" xml:space="preserve">
+    <value>साइन आउट करें</value>
+  </data>
+  <data name="SignOutPrompt" xml:space="preserve">
+    <value>क्या आप वाकई साइन आउट करना चाहते हैं?</value>
+  </data>
+  <data name="SignUp" xml:space="preserve">
+    <value>साइन अप करें</value>
+  </data>
+  <data name="SignUpPageTitle" xml:space="preserve">
+    <value>साइन अप करें</value>
+  </data>
+  <data name="SignUpPanelTitle" xml:space="preserve">
+    <value>आज शुरू करें</value>
+  </data>
+  <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <value>के साथ नया खाता बनाएं</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>जमा करें</value>
+  </data>
+  <data name="UploadNewImage" xml:space="preserve">
+    <value>इमेज खींचें या चुनें</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>हाँ</value>
+  </data>
+  <data name="SelectBirthDate" xml:space="preserve">
+    <value>अपनी जन्म तिथि चुनें</value>
+  </data>
+  <data name="Action" xml:space="preserve">
+    <value>कार्रवाई</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>पीछे</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>रद्द करें</value>
+  </data>
+  <data name="CheckSpamMailMessage" xml:space="preserve">
+    <value>अगर इनबॉक्स में न मिले तो स्पैम/जंक चेक करें।</value>
+  </data>
+  <data name="Color" xml:space="preserve">
+    <value>रंग</value>
+  </data>
+  <data name="CustomColor" xml:space="preserve">
+    <value>कस्टम रंग</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>हटाएं</value>
+  </data>
+  <data name="Id" xml:space="preserve">
+    <value>आईडी</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>साइन इन करें</value>
+  </data>
+  <data name="SignInByModal" xml:space="preserve">
+    <value>साइन इन करें (पॉपअप)</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>पुष्टि करें</value>
+  </data>
+  <data name="SignInAsDifferentUser" xml:space="preserve">
+    <value>अलग उपयोगकर्ता के रूप में साइन इन करें</value>
+  </data>
+  <data name="YouAreSignedInAs" xml:space="preserve">
+    <value>आपके रूप में साइन इन हैं</value>
+  </data>
+  <data name="ForgotPasswordLink" xml:space="preserve">
+    <value>पासवर्ड भूल गए?</value>
+  </data>
+  <data name="GenderFemale" xml:space="preserve">
+    <value>महिला</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>मुझे याद रखें?</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>कॉपी करें</value>
+  </data>
+  <data name="Copied" xml:space="preserve">
+    <value>कॉपी हो गया</value>
+  </data>
+  <data name="TfaTitle" xml:space="preserve">
+    <value>दो-कारक प्रमाणीकरण</value>
+  </data>
+  <data name="TfaSubtitle" xml:space="preserve">
+    <value>अपने खाते का मल्टी-फैक्टर प्रमाणीकरण प्रबंधित करें</value>
+  </data>
+  <data name="TwoFactorCode" xml:space="preserve">
+    <value>2FA कोड</value>
+  </data>
+  <data name="TwoFactorRecoveryCode" xml:space="preserve">
+    <value>रिकवरी कोड</value>
+  </data>
+  <data name="TfaPanelTitle" xml:space="preserve">
+    <value>2-फैक्टर प्रमाणीकरण</value>
+  </data>
+  <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>अपने प्रमाणीकरण ऐप से नया कोड प्राप्त करें या अपनी रिकवरी कोड का उपयोग करें।</value>
+  </data>
+  <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>दूसरा तरीका आज़माएं</value>
+  </data>
+  <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>आप ईमेल या फ़ोन पर नया कोड प्राप्त कर सकते हैं।</value>
+  </data>
+  <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>कोड प्राप्त करें</value>
+  </data>
+  <data name="TfaResetSharedKeyError" xml:space="preserve">
+    <value>2fa साझा कुंजी रीसेट करने से 2fa अक्षम हो जाएगा जब तक कि नए साझा कुंजी पर आधारित 2fa टोकन सत्यापित न हो।</value>
+  </data>
+  <data name="TfaEmptyCodeError" xml:space="preserve">
+    <value>अनुरोध द्वारा कोई 2fa टोकन प्रदान नहीं किया गया। 2fa सक्षम करने के लिए वैध 2fa टोकन आवश्यक है।</value>
+  </data>
+  <data name="TfaInvalidCodeError" xml:space="preserve">
+    <value>अनुरोध द्वारा प्रदान किया गया 2fa टोकन अमान्य था। 2fa सक्षम करने के लिए वैध 2fa टोकन आवश्यक है।</value>
+  </data>
+  <data name="TfaConfigureAutAppTitle" xml:space="preserve">
+    <value>प्रमाणीकरण ऐप कॉन्फ़िगर करें</value>
+  </data>
+  <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
+    <value>प्रमाणीकरण ऐप का उपयोग करने के लिए निम्नलिखित चरणों का पालन करें:</value>
+  </data>
+  <data name="TfaConfigureAutAppStep1" xml:space="preserve">
+    <value>{0} और {1} के लिए Google Authenticator जैसा दो-कारक प्रमाणीकरण ऐप डाउनलोड करें।</value>
+  </data>
+  <data name="TfaConfigureAutAppStep2" xml:space="preserve">
+    <value>QR कोड स्कैन/क्लिक करें या निम्न कुंजी को अपने दो कारक प्रमाणीकरण ऐप में दर्ज करें (स्पेस और केसिंग मायने नहीं रखती):</value>
+  </data>
+  <data name="TfaConfigureAutAppStep3" xml:space="preserve">
+    <value>एक बार जब आप QR कोड स्कैन कर लें या ऊपर की कुंजी इनपुट कर लें, तो आपका दो कारक प्रमाणीकरण ऐप आपको एक अद्वितीय कोड प्रदान करेगा। नीचे पुष्टि बॉक्स में कोड दर्ज करें।</value>
+  </data>
+  <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <value>दो-कारक प्रमाणीकरण सक्षम हो गया है।</value>
+  </data>
+  <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <value>दो-कारक प्रमाणीकरण अक्षम हो गया है।</value>
+  </data>
+  <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
+    <value>सत्यापन कोड:</value>
+  </data>
+  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
+    <value>सत्यापन कोड दर्ज करें।</value>
+  </data>
+  <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
+    <value>सत्यापित करें</value>
+  </data>
+  <data name="TfaRecoveryCodesHeader" xml:space="preserve">
+    <value>रिकवरी</value>
+  </data>
+  <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
+    <value>आपके पास कोई रिकवरी कोड बाकी नहीं हैं।</value>
+  </data>
+  <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
+    <value>रिकवरी कोड से साइन इन करने से पहले आपको नई रिकवरी कोड सेट उत्पन्न करनी होगी।</value>
+  </data>
+  <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
+    <value>आपके पास 1 रिकवरी कोड बाकी है।</value>
+  </data>
+  <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
+    <value>आप नई रिकवरी कोड सेट उत्पन्न कर सकते हैं।</value>
+  </data>
+  <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
+    <value>आपके पास {0} रिकवरी कोड बाकी हैं।</value>
+  </data>
+  <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
+    <value>आपको नई रिकवरी कोड सेट उत्पन्न करनी चाहिए।</value>
+  </data>
+  <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
+    <value>नई रिकवरी कोड उत्पन्न करने से प्रमाणीकरण ऐप्स में उपयोग की जाने वाली कुंजियाँ नहीं बदलतीं। यदि आप प्रमाणीकरण ऐप में उपयोग की जाने वाली कुंजी बदलना चाहते हैं तो आपको अगले टैब में अपने प्रमाणीकरण कुंजियाँ रीसेट करनी चाहिए।</value>
+  </data>
+  <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
+    <value>रिकवरी कोड उत्पन्न करें</value>
+  </data>
+  <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
+    <value>इन कोड्स को सुरक्षित स्थान पर रखें।</value>
+  </data>
+  <data name="TfaRecoveryCodesWarning" xml:space="preserve">
+    <value>यदि आप अपना प्रमाणीकरण डिवाइस खो देते हैं और रिकवरी कोड नहीं हैं तो आप अपने खाते तक पहुँच खो देंगे।</value>
+  </data>
+  <data name="TfaRecoveryCodesTitle" xml:space="preserve">
+    <value>रिकवरी कोड:</value>
+  </data>
+  <data name="TfaAuthAppHeader" xml:space="preserve">
+    <value>प्रमाणीकरणकर्ता</value>
+  </data>
+  <data name="TfaAuthAppWarningTitle" xml:space="preserve">
+    <value>यदि आप अपनी प्रमाणीकरण कुंजी रीसेट करते हैं तो आपका प्रमाणीकरण ऐप पुन: कॉन्फ़िगर करने तक काम नहीं करेगा।</value>
+  </data>
+  <data name="TfaAuthAppWarning" xml:space="preserve">
+    <value>यह प्रक्रिया आपके प्रमाणीकरण ऐप को सत्यापित करने तक 2FA अक्षम कर देती है। यदि आप अपना प्रमाणीकरण ऐप कॉन्फ़िगरेशन पूरा नहीं करते हैं तो आप अपने खाते तक पहुँच खो सकते हैं।</value>
+  </data>
+  <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
+    <value>प्रमाणीकरण कुंजी रीसेट करें</value>
+  </data>
+  <data name="TfaDisable2faHeader" xml:space="preserve">
+    <value>अक्षम करें</value>
+  </data>
+  <data name="TfaDisable2faWarningTitle" xml:space="preserve">
+    <value>यह कार्रवाई केवल 2FA को अक्षम करती है।</value>
+  </data>
+  <data name="TfaDisable2faWarning" xml:space="preserve">
+    <value>2FA अक्षम करने से प्रमाणीकरण ऐप्स में उपयोग की जाने वाली कुंजियाँ नहीं बदलतीं। यदि आप प्रमाणीकरण ऐप में उपयोग की जाने वाली कुंजी बदलना चाहते हैं तो आपको पिछले टैब में अपनी प्रमाणीकरण कुंजियाँ रीसेट करनी चाहिए।</value>
+  </data>
+  <data name="TfaDisable2faButtonText" xml:space="preserve">
+    <value>2FA अक्षम करें</value>
+  </data>
+  <data name="TfaTokenSentMessage" xml:space="preserve">
+    <value>2FA टोकन उत्पन्न हो गया है और आपको भेज दिया गया है।</value>
+  </data>
+  <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <value>कृपया जारी रखने के लिए हमने अभी आपको भेजा गया उन्नत पहुँच टोकन या अपना प्रमाणीकरण ऐप कोड दर्ज करें।</value>
+  </data>
+  <data name="ElevatedAccessTokenShortText" xml:space="preserve">
+    <value>{0} Boilerplate में आपका कोड है।</value>
+  </data>
+  <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
+    <value>आपने पहले ही पुष्टि ईमेल का अनुरोध कर लिया है। {0} में पुनः प्रयास करें</value>
+  </data>
+  <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
+    <value>आपने पहले ही पुष्टि एसएमएस का अनुरोध कर लिया है। {0} में पुनः प्रयास करें</value>
+  </data>
+  <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
+    <value>आपने पहले ही रीसेट पासवर्ड टोकन का अनुरोध कर लिया है। {0} में पुनः प्रयास करें</value>
+  </data>
+  <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
+    <value>आपने पहले ही OTP का अनुरोध कर लिया है। {0} में पुनः प्रयास करें</value>
+  </data>
+  <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>आपने पहले ही उन्नत पहुँच टोकन का अनुरोध कर लिया है। {0} में पुनः प्रयास करें</value>
+  </data>
+  <data name="Otp" xml:space="preserve">
+    <value>OTP</value>
+  </data>
+  <data name="OtpPanelTitle" xml:space="preserve">
+    <value>अपना {0} चेक करें</value>
+  </data>
+  <data name="OtpPanelSubtitle" xml:space="preserve">
+    <value>{1} पर भेजे गए कोड को दर्ज करके अपना {0} पुष्टि करें</value>
+  </data>
+  <data name="Code" xml:space="preserve">
+    <value>कोड</value>
+  </data>
+  <data name="OtpResendMessage" xml:space="preserve">
+    <value>कोड प्राप्त नहीं हुआ?</value>
+  </data>
+  <data name="Resend" xml:space="preserve">
+    <value>पुनः भेजें</value>
+  </data>
+  <data name="SendOtpButtonText" xml:space="preserve">
+    <value>OTP भेजें</value>
+  </data>
+  <data name="SendMagicLinkButtonText" xml:space="preserve">
+    <value>मैजिक लिंक और OTP भेजें</value>
+  </data>
+  <data name="SignInByPassword" xml:space="preserve">
+    <value>पासवर्ड का उपयोग करें</value>
+  </data>
+  <data name="SignInByOtp" xml:space="preserve">
+    <value>OTP का उपयोग करें</value>
+  </data>
+  <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
+    <value>पासवर्ड या OTP प्रदान करें</value>
+  </data>
+  <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
+    <value>आपने पहले ही 2FA टोकन ईमेल का अनुरोध कर लिया है। {0} में पुनः प्रयास करें।</value>
+  </data>
+  <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
+    <value>{0} Boilerplate में आपका कोड है।</value>
+  </data>
+  <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
+    <value>{0} Boilerplate में आपका कोड है।</value>
+  </data>
+  <data name="TwoFactorTokenShortText" xml:space="preserve">
+    <value>{0} Boilerplate में आपका कोड है।</value>
+  </data>
+  <data name="OtpShortText" xml:space="preserve">
+    <value>{0} Boilerplate में आपका कोड है।</value>
+  </data>
+  <data name="ResetPasswordTokenShortText" xml:space="preserve">
+    <value>{0} Boilerplate में आपका कोड है।</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>ऑनलाइन</value>
+  </data>
+  <data name="Recently" xml:space="preserve">
+    <value>हाल ही में</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>अपडेट</value>
+  </data>
+  <data name="ForceUpdateTitle" xml:space="preserve">
+    <value>अपडेट का समय</value>
+  </data>
+  <data name="ForceUpdateBody" xml:space="preserve">
+    <value>आपके ऐप को सुचारू रूप से चलाने के लिए यह अपडेट आवश्यक है</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>के बारे में</value>
+  </data>
+  <data name="AboutPageTitle" xml:space="preserve">
+    <value>के बारे में</value>
+  </data>
+  <!--#if (sample == true || offlineDb == true) -->
+  <data name="TodoAddPlaceholder" xml:space="preserve">
+    <value>एक टूडू जोड़ें</value>
+  </data>
+  <data name="NoTodos" xml:space="preserve">
+    <value>अभी तक कोई टूडू नहीं</value>
+  </data>
+  <data name="TodoSearchPlaceholder" xml:space="preserve">
+    <value>टूडू खोजें...</value>
+  </data>
+  <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
+    <value>टूडू आइटम नहीं मिला</value>
+  </data>
+  <data name="TodoPageTitle" xml:space="preserve">
+    <value>टूडू</value>
+  </data>
+  <data name="Todo" xml:space="preserve">
+    <value>टूडू</value>
+  </data>
+  <data name="DeleteTodoItem" xml:space="preserve">
+    <value>टूडू आइटम हटाएं</value>
+  </data>
+  <!--#endif -->
+  <!--#if (module == "Admin" || module == "Sales") -->
+  <data name="CategoryCouldNotBeFound" xml:space="preserve">
+    <value>कैटेगरी इकाई नहीं मिली</value>
+  </data>
+  <data name="ProductCouldNotBeFound" xml:space="preserve">
+    <value>प्रोडक्ट इकाई नहीं मिली</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>कैटेगरी</value>
+  </data>
+  <data name="AltText" xml:space="preserve">
+    <value>ऑल्ट टेक्स्ट</value>
+  </data>
+  <!--#endif -->
+  <!--#if (module == "Admin") -->
+  <data name="AdminPanel" xml:space="preserve">
+    <value>एडमिन पैनल</value>
+  </data>
+  <data name="PaginatorSummary" xml:space="preserve">
+    <value>{0} आइटम</value>
+  </data>
+  <data name="Page" xml:space="preserve">
+    <value>पेज</value>
+  </data>
+  <data name="Of" xml:space="preserve">
+    <value>का</value>
+  </data>
+  <data name="Last30DaysProductCount" xml:space="preserve">
+    <value>पिछले 30 दिनों का उत्पाद गणना</value>
+  </data>
+  <data name="AddProduct" xml:space="preserve">
+    <value>उत्पाद जोड़ें</value>
+  </data>
+  <data name="SearchProductsPlaceholder" xml:space="preserve">
+    <value>यहाँ उत्पाद के नाम, कैटेगरी और विवरण के माध्यम से खोजें...</value>
+  </data>
+  <data name="SelectCategory" xml:space="preserve">
+    <value>कैटेगरी चुनें</value>
+  </data>
+  <data name="TotalCategories" xml:space="preserve">
+    <value>कुल कैटेगरी</value>
+  </data>
+  <data name="TotalProducts" xml:space="preserve">
+    <value>कुल उत्पाद</value>
+  </data>
+  <data name="EditCategory" xml:space="preserve">
+    <value>कैटेगरी संपादित करें</value>
+  </data>
+  <data name="AddCategory" xml:space="preserve">
+    <value>नई कैटेगरी</value>
+  </data>
+  <data name="CategoriesPageTitle" xml:space="preserve">
+    <value>कैटेगरी</value>
+  </data>
+  <data name="EnterCategoryName" xml:space="preserve">
+    <value>कैटेगरी नाम दर्ज करें</value>
+  </data>
+  <data name="EnterProductName" xml:space="preserve">
+    <value>उत्पाद नाम दर्ज करें</value>
+  </data>
+  <data name="CategoriesWithProductCount" xml:space="preserve">
+    <value>उत्पाद गणना के साथ कैटेगरी</value>
+  </data>
+  <data name="SearchOnName" xml:space="preserve">
+    <value>नाम पर खोजें</value>
+  </data>
+  <data name="ProductsCountPerCategoryChart" xml:space="preserve">
+    <value>कैटेगरी प्रति उत्पाद गणना चार्ट</value>
+  </data>
+  <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
+    <value>यह चार्ट प्रत्येक कैटेगरी में उत्पादों की संख्या दिखाता है।</value>
+  </data>
+  <data name="ProductsPageTitle" xml:space="preserve">
+    <value>उत्पाद</value>
+  </data>
+  <data name="ProductsPercentagePerCategory" xml:space="preserve">
+    <value>कैटेगरी प्रति उत्पाद प्रतिशत</value>
+  </data>
+  <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
+    <value>यह चार्ट प्रत्येक कैटेगरी में उत्पादों का प्रतिशत दिखाता है।</value>
+  </data>
+  <data name="Categories" xml:space="preserve">
+    <value>कैटेगरी</value>
+  </data>
+  <data name="Products" xml:space="preserve">
+    <value>उत्पाद</value>
+  </data>
+  <data name="CategoryNotEmpty" xml:space="preserve">
+    <value>इस कैटेगरी में कुछ उत्पाद हैं, इसलिए आप इसे हटा नहीं सकते</value>
+  </data>
+  <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
+    <value>क्या आप वाकई उत्पाद {0} को हटाना चाहते हैं</value>
+  </data>
+  <data name="DeleteProduct" xml:space="preserve">
+    <value>उत्पाद हटाएं</value>
+  </data>
+  <data name="DefaultColorPicker" xml:space="preserve">
+    <value>डिफ़ॉल्ट रंग पिकर</value>
+  </data>
+  <data name="EditProduct" xml:space="preserve">
+    <value>उत्पाद {0} संपादित करें</value>
+  </data>
+  <data name="DuplicateProductName" xml:space="preserve">
+    <value>डुप्लिकेट उत्पाद नाम</value>
+  </data>
+  <data name="DuplicateCategoryName" xml:space="preserve">
+    <value>डुप्लिकेट कैटेगरी {0}</value>
+  </data>
+  <data name="DashboardPageTitle" xml:space="preserve">
+    <value>डैशबोर्ड</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>डैशबोर्ड</value>
+  </data>
+  <data name="DashboardSubtitle" xml:space="preserve">
+    <value>यहाँ आपका विश्लेषणात्मक डेटा है</value>
+  </data>
+  <!--#endif -->
+  <!--#if (captcha == "reCaptcha") -->
+  <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
+    <value>अमान्य Google reCAPTCHA प्रतिक्रिया।</value>
+  </data>
+  <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
+    <value>आपको Google reCAPTCHA चुनौती पास करनी होगी।</value>
+  </data>
+  <!--#endif -->
+  <!--#if (module == "Sales") -->
+  <data name="SimilarProducts" xml:space="preserve">
+    <value>समान उत्पाद</value>
+  </data>
+  <data name="SiblingProducts" xml:space="preserve">
+    <value>समान कैटेगरी में उत्पाद</value>
+  </data>
+  <data name="Buy" xml:space="preserve">
+    <value>खरीदें</value>
+  </data>
+  <data name="PurchaseSuccessful" xml:space="preserve">
+    <value>खरीद सफल!</value>
+  </data>
+  <!--#endif -->
+  <data name="Passwordless" xml:space="preserve">
+    <value>पासवर्डलेस</value>
+  </data>
+  <data name="PasswordlessTitle" xml:space="preserve">
+    <value>पासवर्डलेस साइन-इन</value>
+  </data>
+  <data name="EnablePasswordless" xml:space="preserve">
+    <value>पासवर्डलेस साइन-इन सक्षम करें</value>
+  </data>
+  <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>पासवर्डलेस साइन-इन सफलतापूर्वक सक्षम हो गया</value>
+  </data>
+  <data name="DisablePasswordless" xml:space="preserve">
+    <value>पासवर्डलेस साइन-इन अक्षम करें</value>
+  </data>
+  <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>पासवर्डलेस साइन-इन सफलतापूर्वक अक्षम हो गया</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>साफ़ करें</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>भेजें</value>
+  </data>
+  <data name="Canceled" xml:space="preserve">
+    <value>रद्द</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="AiChatPanelTitle" xml:space="preserve">
+    <value>AI चैट पैनल</value>
+  </data>
+  <data name="AiChatPanelInitialResponse" xml:space="preserve">
+    <value>नमस्ते! मैं यहाँ आपके ऐप अनुभव को शानदार बनाने के लिए हूँ! कोई प्रश्न या मदद चाहिए?</value>
+  </data>
+  <data name="AiChatPanelPrompt1" xml:space="preserve">
+    <value>रीसेट पासवर्ड पेज खोलें और बताएं कि यह कैसे काम करता है</value>
+  </data>
+  <data name="AiChatPanelPrompt2" xml:space="preserve">
+    <value>मैं ऐप का PWA संस्करण कैसे इंस्टॉल कर सकता हूँ?</value>
+  </data>
+  <!--#if (module == "Admin") -->
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>मुझे कुछ फीडबैक साझा करना है!</value>
+  </data>
+  <!--#elif (module == "Sales") -->
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>मुझे कुछ फीडबैक साझा करना है!</value>
+  </data>
+  <!--#else -->
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>मुझे कुछ फीडबैक साझा करना है!</value>
+  </data>
+  <!--#endif -->
+  <data name="AiChatPanelPlaceholder" xml:space="preserve">
+    <value>संदेश लिखें...</value>
+  </data>
+  <!--#endif -->
+  <!--#if (ads == true) -->
+  <data name="Upgrade" xml:space="preserve">
+    <value>अपग्रेड</value>
+  </data>
+  <data name="UpgradeTitle" xml:space="preserve">
+    <value>खाता अपग्रेड</value>
+  </data>
+  <data name="UpgradeSubtitle" xml:space="preserve">
+    <value>यहाँ कोई खाता अपग्रेड नहीं है। यह रिवॉर्डिंग विज्ञापनों के लिए केवल एक डेमो है।</value>
+  </data>
+  <data name="UpgradeSuccessMessage" xml:space="preserve">
+    <value>खाता अपग्रेड सफलतापूर्वक हो गया।</value>
+  </data>
+  <data name="UpgradeFailMessage" xml:space="preserve">
+    <value>खाता अपग्रेड विफल।</value>
+  </data>
+  <data name="UpgradeAdHaveTrouble" xml:space="preserve">
+    <value>विज्ञापन देखने में समस्या?</value>
+  </data>
+  <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
+    <value>मुझे इन-ऐप विज्ञापनों को देखने में समस्या हो रही है।</value>
+  </data>
+  <!--#endif -->
+  <data name="PleaseWait" xml:space="preserve">
+    <value>कृपया प्रतीक्षा करें</value>
+  </data>
+  <data name="Management" xml:space="preserve">
+    <value>प्रबंधन</value>
+  </data>
+  <data name="UserGroups" xml:space="preserve">
+    <value>उपयोगकर्ता समूह</value>
+  </data>
+  <data name="RolesPageTitle" xml:space="preserve">
+    <value>उपयोगकर्ता समूह प्रबंधित करें</value>
+  </data>
+  <data name="NoRoleMessage" xml:space="preserve">
+    <value>कोई उपयोगकर्ता समूह नहीं</value>
+  </data>
+  <data name="AddRole" xml:space="preserve">
+    <value>उपयोगकर्ता समूह जोड़ें</value>
+  </data>
+  <data name="EditRole" xml:space="preserve">
+    <value>उपयोगकर्ता समूह संपादित करें</value>
+  </data>
+  <data name="NewRoleName" xml:space="preserve">
+    <value>नया उपयोगकर्ता समूह का नाम</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>उपयोगकर्ता</value>
+  </data>
+  <data name="UsersWithCount" xml:space="preserve">
+    <value>उपयोगकर्ता {0}</value>
+  </data>
+  <data name="Features" xml:space="preserve">
+    <value>फ़ीचर्स</value>
+  </data>
+  <data name="Quota" xml:space="preserve">
+    <value>कोटा</value>
+  </data>
+  <data name="QuotaDescription" xml:space="preserve">
+    <value>फ़ीचर्स के उपयोग को प्रतिबंधित करने के लिए, आप इस टैब पर कोटा परिभाषित कर सकते हैं, जो प्रत्येक भूमिका के लिए भिन्न हो सकता है। उदाहरण के लिए, एक उपयोगकर्ता कितने उपकरणों पर साइन इन कर सकता है या किसी विशिष्ट ऐप फ़ीचर का उपयोग कितनी बार कर सकता है।</value>
+  </data>
+  <data name="MaxPrevilegedSessions" xml:space="preserve">
+    <value>अधिकतम विशेषाधिकार सत्र</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>सामान्य</value>
+  </data>
+  <data name="RoleName" xml:space="preserve">
+    <value>उपयोगकर्ता समूह नाम</value>
+  </data>
+  <!--#if (notification == true || signalR == true) -->
+  <data name="RoleNotificationLabel" xml:space="preserve">
+    <value>नोटिफिकेशन संदेश</value>
+  </data>
+  <data name="SendRoleNotification" xml:space="preserve">
+    <value>नोटिफिकेशन भेजें</value>
+  </data>
+  <data name="EnableNotifications" xml:space="preserve">
+    <value>नोटिफिकेशन सक्षम करें</value>
+  </data>
+  <data name="DisableNotifications" xml:space="preserve">
+    <value>नोटिफिकेशन अक्षम करें</value>
+  </data>
+  <data name="TestNotificationMessage1" xml:space="preserve">
+    <value>टेस्ट नोटिफिकेशन 1</value>
+  </data>
+  <data name="TestNotificationMessage2" xml:space="preserve">
+    <value>टेस्ट नोटिफिकेशन 2</value>
+  </data>
+  <!--#endif -->
+  <data name="UsersPageTitle" xml:space="preserve">
+    <value>उपयोगकर्ता प्रबंधित करें</value>
+  </data>
+  <data name="DeleteRole" xml:space="preserve">
+    <value>उपयोगकर्ता समूह हटाएं</value>
+  </data>
+  <data name="Sessions" xml:space="preserve">
+    <value>सत्र {0}</value>
+  </data>
+  <data name="DeleteUser" xml:space="preserve">
+    <value>उपयोगकर्ता हटाएं</value>
+  </data>
+  <data name="AppVersion" xml:space="preserve">
+    <value>ऐप संस्करण</value>
+  </data>
+  <data name="IP" xml:space="preserve">
+    <value>IP</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>पता</value>
+  </data>
+  <data name="DeviceInfo" xml:space="preserve">
+    <value>डिवाइसइनफ़ो</value>
+  </data>
+  <data name="Privileged" xml:space="preserve">
+    <value>विशेषाधिकार</value>
+  </data>
+  <data name="RenewedOn" xml:space="preserve">
+    <value>नवीनीकृत पर</value>
+  </data>
+  <data name="OnlineUsers" xml:space="preserve">
+    <value>ऑनलाइन उपयोगकर्ता: {0}</value>
+  </data>
+  <data name="DeleteSession" xml:space="preserve">
+    <value>सत्र हटाएं</value>
+  </data>
+  <data name="NoUserMessage" xml:space="preserve">
+    <value>कोई उपयोगकर्ता नहीं</value>
+  </data>
+  <data name="NoUserSessionMessage" xml:space="preserve">
+    <value>कोई उपयोगकर्ता सत्र नहीं</value>
+  </data>
+  <data name="NoUserSelectedMessage" xml:space="preserve">
+    <value>कृपया पहले एक उपयोगकर्ता चुनें</value>
+  </data>
+  <data name="RevokeAllSessions" xml:space="preserve">
+    <value>सभी सत्र रद्द करें</value>
+  </data>
+  <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
+    <value>क्या आप वाकई {0} के सभी सत्र रद्द करना चाहते हैं?</value>
+  </data>
+  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
+    <value>आप इस उपयोगकर्ता को SuperAdmin उपयोगकर्ता समूह से हटा नहीं सकते।</value>
+  </data>
+  <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
+    <value>सुपर एडमिन अनुमतियाँ संशोधित नहीं की जा सकतीं।</value>
+  </data>
+  <data name="CanNotChangeBuiltInRole" xml:space="preserve">
+    <value>उपयोगकर्ता समूह {0} संशोधित नहीं किया जा सकता।</value>
+  </data>
+  <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <value>आप अपना खुद का उपयोगकर्ता हटा नहीं सकते</value>
+  </data>
+  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
+    <value>आप इस SuperAdmin उपयोगकर्ता को हटा नहीं सकते</value>
+  </data>
+  <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
+    <value>आप अपना वर्तमान सत्र हटा नहीं सकते</value>
+  </data>
+  <data name="SearchRolesPlaceholder" xml:space="preserve">
+    <value>उपयोगकर्ता समूह खोजें</value>
+  </data>
+  <data name="SearchUsersPlaceholder" xml:space="preserve">
+    <value>उपयोगकर्ता खोजें</value>
+  </data>
+  <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
+    <value>उपयोगकर्ता खोजें</value>
+  </data>
+  <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
+    <value>उपयोगकर्ता सत्र खोजें</value>
+  </data>
+  <data name="RemoveRoleFromAllUsers" xml:space="preserve">
+    <value>उपयोगकर्ता समूह से सभी उपयोगकर्ता हटाएं</value>
+  </data>
+  <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
+    <value>क्या आप वाकई {0} से सभी उपयोगकर्ता हटाना चाहते हैं?</value>
+  </data>
+  <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
+    <value>पेज URL</value>
+  </data>
+  <data name="YouAreNotAuthorized" xml:space="preserve">
+    <value>आप अधिकृत नहीं हैं</value>
+  </data>
+  <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
+    <value>आपके पास इस पेज तक पहुँचने की अनुमति नहीं है।</value>
+  </data>
+  <data name="SignInPasswordMessage1" xml:space="preserve">
+    <value>पहली बार यहाँ?</value>
+  </data>
+  <data name="SignInPasswordMessage2" xml:space="preserve">
+    <value>हम आपके लिए स्वचालित रूप से एक खाता बनाएंगे।</value>
+  </data>
+  <data name="ImageTooSmall" xml:space="preserve">
+    <value>इमेज बहुत छोटी है। न्यूनतम आवश्यक आयाम {0}x{1} हैं, लेकिन वर्तमान आयाम {2}x{3} हैं।</value>
+  </data>
+  <data name="ImageNotCarError" xml:space="preserve">
+    <value>प्रदान की गई इमेज में कार नहीं है।</value>
+  </data>
+</root>

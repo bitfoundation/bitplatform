@@ -6,9 +6,13 @@
 
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Home)]" IconName="@BitIconName.Home" Url="@PageUrls.Home" />
 
-        @*#if (sample == true)*@
+        @*#if (offlineDb == true)*@
         <AuthorizeView Policy="@AppFeatures.Todo.ManageTodo">
-            <BitNavBarOption Text="@Localizer[nameof(AppStrings.Todo)]" IconName="@BitIconName.ToDoLogoOutline" Url="@PageUrls.Todo" />
+            <BitNavBarOption Text="@Localizer[nameof(AppStrings.Todo)]" IconName="@BitIconName.ToDoLogoOutline" Url="@PageUrls.OfflineTodo" />
+        </AuthorizeView>
+        @*#elseif (sample == true)*@
+        <AuthorizeView Policy="@AppFeatures.Todo.ManageTodo">
+            <BitNavBarOption Text="@Localizer[nameof(AppStrings.Todo)]" IconName="@BitIconName.ToDoLogoInverse" Url="@PageUrls.Todo" />
         </AuthorizeView>
         @*#endif*@
 
@@ -24,7 +28,7 @@
 
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.Terms)]" IconName="@BitIconName.EntityExtraction" Url="@PageUrls.Terms" />
 
-        @*#if (module != "Admin" && sample != true)*@
+        @*#if (module != "Admin" && (sample != true && offlineDb != true))*@ 
         <BitNavBarOption Text="@Localizer[nameof(AppStrings.About)]" IconName="@BitIconName.Info" Url="@PageUrls.About" />
         @*#endif*@
 

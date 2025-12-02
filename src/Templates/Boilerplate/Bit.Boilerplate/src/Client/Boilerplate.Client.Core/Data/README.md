@@ -28,7 +28,7 @@ Add-Migration Initial -OutputDir Data\Migrations -Context AppOfflineDbContext -V
 ```
 Or open a terminal in your Boilerplate.Server.Web project directory and run followings:
 ```bash
-dotnet ef migrations add Initial --context AppOfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dotnet tool restore && dotnet ef migrations add Initial --context AppOfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 *Note*: If you encounter any problem in running these commands, first make sure that the solution builds successfully.
@@ -47,6 +47,11 @@ To implement this optimization, follow these steps in the Package Manager Consol
 
 ```powershell
 Optimize-DbContext -Context AppOfflineDbContext -OutputDir Data/CompiledModel -Namespace Boilerplate.Client.Core.Data -Verbose
+```
+
+**OR** Run the following command in Boilerplate.Server.Web directory:
+```bash
+dotnet tool restore && dotnet ef dbcontext optimize --context AppOfflineDbContext --output-dir Data/CompiledModel --namespace Boilerplate.Client.Core.Data --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 By adhering to these steps, you leverage EF Core compiled models to boost the performance of your application, ensuring an optimized and efficient data access method.

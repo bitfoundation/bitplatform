@@ -1,12 +1,18 @@
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Todo;
 
 namespace Boilerplate.Shared.Controllers.Todo;
+
+//#if (offlineDb == true)
+// The following controller is not required when using the offline database.
+// The controller that works with the offline database is implemented in TodoItemTableController.cs
+//#endif
 
 [Route("api/[controller]/[action]/"), AuthorizedApi]
 public interface ITodoItemController : IAppController
 {
     [HttpGet("{id}")]
-    Task<TodoItemDto> Get(Guid id, CancellationToken cancellationToken);
+    Task<TodoItemDto> Get(string id, CancellationToken cancellationToken);
 
     [HttpPost]
     Task<TodoItemDto> Create(TodoItemDto dto, CancellationToken cancellationToken);
@@ -15,7 +21,7 @@ public interface ITodoItemController : IAppController
     Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancellationToken);
 
     [HttpDelete("{id}")]
-    Task Delete(Guid id, CancellationToken cancellationToken);
+    Task Delete(string id, CancellationToken cancellationToken);
 
     [HttpGet]
     Task<List<TodoItemDto>> Get(CancellationToken cancellationToken) => default!;

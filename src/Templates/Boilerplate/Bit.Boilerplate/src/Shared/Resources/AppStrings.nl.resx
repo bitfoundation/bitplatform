@@ -1,0 +1,1367 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- +:cnd:noEmit -->
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- .NET Validation messages -->
+  <data name="CompareAttribute_ValidationError" xml:space="preserve">
+    <value>'{0}' en '{1}' komen niet overeen.</value>
+  </data>
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
+    <value>Het veld {0} is geen geldig e-mailadres.</value>
+  </data>
+  <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
+    <value>MaxLengthAttribute moet een lengtewaarde hebben die groter is dan nul. Gebruik MaxLength() zonder parameters om aan te geven dat de tekenreeks of het array de maximale toegestane lengte kan hebben.</value>
+  </data>
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Het veld {0} moet een tekenreeks- of arraytype zijn met een minimale lengte van '{1}'.</value>
+  </data>
+  <data name="RangeAttribute_ValidationError" xml:space="preserve">
+    <value>Het veld {0} moet tussen {1} en {2} liggen.</value>
+  </data>
+  <data name="RequiredAttribute_ValidationError" xml:space="preserve">
+    <value>Het veld {0} is verplicht.</value>
+  </data>
+  <data name="PhoneAttribute_ValidationError" xml:space="preserve">
+    <value>Het veld {0} is geen geldig telefoonnummer.</value>
+  </data>
+  <!-- Exceptions -->
+  <data name="BadRequestException" xml:space="preserve">
+    <value>Ongeldig verzoek</value>
+  </data>
+  <data name="ConflictException" xml:space="preserve">
+    <value>Het verzoek kon niet worden verwerkt vanwege een conflict in het verzoek</value>
+  </data>
+  <data name="NotAuthorizedPageTitle" xml:space="preserve">
+    <value>Niet geautoriseerd</value>
+  </data>
+  <data name="ForbiddenException" xml:space="preserve">
+    <value>Toegang tot de gevraagde bron is verboden</value>
+  </data>
+  <data name="ResourceValidationException" xml:space="preserve">
+    <value>Gegevens van het verzoek zijn niet geldig</value>
+  </data>
+  <data name="RestException" xml:space="preserve">
+    <value>Er is een fout opgetreden tijdens de communicatie met de server</value>
+  </data>
+  <data name="UnauthorizedException" xml:space="preserve">
+    <value>Uw verzoek mist geldige authenticatiegegevens</value>
+  </data>
+  <data name="UnknownException" xml:space="preserve">
+    <value>Onbekende fout is opgetreden</value>
+  </data>
+  <data name="UpdateConcurrencyException" xml:space="preserve">
+    <value>Het record is gewijzigd door een andere gebruiker nadat u de oorspronkelijke gegevens hebt ontvangen. De bewerking is geannuleerd.</value>
+  </data>
+  <data name="ResourceNotFoundException" xml:space="preserve">
+    <value>Bron niet gevonden</value>
+  </data>
+  <data name="TooManyRequestExceptions" xml:space="preserve">
+    <value>Te veel verzoeken</value>
+  </data>
+  <data name="ServerConnectionException" xml:space="preserve">
+    <value>Kan geen verbinding maken met de server.</value>
+  </data>
+  <!-- Boilerplate strings -->
+  <data name="Active" xml:space="preserve">
+    <value>Actief</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="Alphabetical" xml:space="preserve">
+    <value>A-Z</value>
+  </data>
+  <data name="Completed" xml:space="preserve">
+    <value>Voltooid</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="SettingsPageTitle" xml:space="preserve">
+    <value>Instellingen</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Instellingen</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>Donker</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Licht</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Taal</value>
+  </data>
+  <data name="SelectLanguage" xml:space="preserve">
+    <value>Selecteer taal</value>
+  </data>
+  <data name="ProfileTitle" xml:space="preserve">
+    <value>Profiel</value>
+  </data>
+  <data name="ProfileSubtitle" xml:space="preserve">
+    <value>Bewerk uw profielgegevens</value>
+  </data>
+  <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
+    <value>Er is een e-mailtoken voor wijziging naar u verzonden</value>
+  </data>
+  <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
+    <value>Er is een tokencode voor telefoonnummerwijziging naar u verzonden</value>
+  </data>
+  <data name="SuccessfulSendTokenMessage" xml:space="preserve">
+    <value>De token is naar u verzonden</value>
+  </data>
+  <data name="SessionsTitle" xml:space="preserve">
+    <value>Sessies</value>
+  </data>
+  <data name="SessionsSubtitle" xml:space="preserve">
+    <value>Uw actieve sessies op meerdere apparaten</value>
+  </data>
+  <data name="CurrentSession" xml:space="preserve">
+    <value>Huidige sessie</value>
+  </data>
+  <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
+    <value>Van {0} toegestane apparaten voor volledige functies, hebt u {1} gebruikt.
+Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.</value>
+  </data>
+  <data name="OtherSessions" xml:space="preserve">
+    <value>Andere sessies</value>
+  </data>
+  <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <value>Probeer andere sessies te verwijderen</value>
+  </data>
+  <data name="RemoveSessionSuccessMessage" xml:space="preserve">
+    <value>Sessie succesvol verwijderd</value>
+  </data>
+  <data name="NotFoundPageTitle" xml:space="preserve">
+    <value>404</value>
+  </data>
+  <data name="NotFoundText" xml:space="preserve">
+    <value>Er is hier niets.</value>
+  </data>
+  <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
+    <value>Update de webview via Google Play.</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>Oké</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SystemPromptsTitle" xml:space="preserve">
+    <value>Systeem prompts</value>
+  </data>
+  <data name="SystemPromptsSubTitle" xml:space="preserve">
+    <value>Bekijk hier de systeem prompts voor de chatbot.</value>
+  </data>
+  <data name="PushNotificationJob" xml:space="preserve">
+    <value>Push notification job</value>
+  </data>
+  <!--#endif-->
+  <!--#if (offlineDb == true) -->
+  <data name="OfflineTodoTitle" xml:space="preserve">
+    <value>Te doen (Offline)</value>
+  </data>
+  <data name="SyncPushFailed" xml:space="preserve">
+    <value>Het doorsturen van wijzigingen naar de server is mislukt</value>
+  </data>
+  <data name="SyncPullFailed" xml:space="preserve">
+    <value>Het ophalen van wijzigingen van de server is mislukt</value>
+  </data>
+  <data name="SyncPushSuccess" xml:space="preserve">
+    <value>{0} wijzigingen naar de server doorgestuurd</value>
+  </data>
+  <!--#endif-->
+  <data name="FullName" xml:space="preserve">
+    <value>Volledige naam</value>
+  </data>
+  <data name="TermsPageTitle" xml:space="preserve">
+    <value>Voorwaarden</value>
+  </data>
+  <data name="Terms" xml:space="preserve">
+    <value>Voorwaarden</value>
+  </data>
+  <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
+    <value>Profiel succesvol bijgewerkt.</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>Bevestig wachtwoord</value>
+  </data>
+  <data name="ConfirmNewPassword" xml:space="preserve">
+    <value>Bevestig nieuw wachtwoord</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="NewEmail" xml:space="preserve">
+    <value>Nieuwe e-mail</value>
+  </data>
+  <data name="NewEmailPlaceholder" xml:space="preserve">
+    <value>Voer nieuwe e-mail in</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Telefoon</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>Telefoonnummer</value>
+  </data>
+  <data name="NewPhoneNumber" xml:space="preserve">
+    <value>Nieuw telefoonnummer</value>
+  </data>
+  <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
+    <value>Voer nieuw telefoonnummer in</value>
+  </data>
+  <data name="GoBack" xml:space="preserve">
+    <value>Terug</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Wachtwoord</value>
+  </data>
+  <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>Voer wachtwoord in</value>
+  </data>
+  <data name="ImageCouldNotBeFound" xml:space="preserve">
+    <value>Afbeelding kon niet worden gevonden</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Fout</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Geslacht</value>
+  </data>
+  <data name="BirthDate" xml:space="preserve">
+    <value>Geboortedatum</value>
+  </data>
+  <data name="UserName" xml:space="preserve">
+    <value>Gebruikersnaam</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Naam</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Beschrijving</value>
+  </data>
+  <data name="Price" xml:space="preserve">
+    <value>Prijs</value>
+  </data>
+  <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
+    <value>Geef óf e-mail óf telefoonnummer op.</value>
+  </data>
+  <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
+    <value>Geef óf gebruikersnaam, óf e-mail óf telefoonnummer op.</value>
+  </data>
+  <data name="YouNeedToSignIn" xml:space="preserve">
+    <value>U moet zijn aangemeld om door te gaan.</value>
+  </data>
+  <data name="InvalidUserCredentials" xml:space="preserve">
+    <value>Ongeldige gebruikersreferenties</value>
+  </data>
+  <data name="EmailAlreadyConfirmed" xml:space="preserve">
+    <value>Uw e-mail is al bevestigd.</value>
+  </data>
+  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
+    <value>Uw telefoonnummer is al bevestigd.</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Titel</value>
+  </data>
+  <data name="AreYouSureWannaDelete" xml:space="preserve">
+    <value>Weet u zeker dat u {0} wilt verwijderen?</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Vernieuwen</value>
+  </data>
+  <data name="Recover" xml:space="preserve">
+    <value>Herstellen</value>
+  </data>
+  <data name="SomethingWentWrong" xml:space="preserve">
+    <value>Oeps, er is iets misgegaan...</value>
+  </data>
+  <data name="BackToHome" xml:space="preserve">
+    <value>Terug naar home</value>
+  </data>
+  <data name="UserLockedOut" xml:space="preserve">
+    <value>Gebruiker is geblokkeerd. Probeer het opnieuw over {0}</value>
+  </data>
+  <data name="UserIsNotConfirmed" xml:space="preserve">
+    <value>Gebruiker is niet bevestigd.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Gebruiker bestaat niet.</value>
+  </data>
+  <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
+    <value>Dit e-mailadres of telefoonnummer is al in gebruik.</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Toevoegen</value>
+  </data>
+  <data name="Token" xml:space="preserve">
+    <value>Token</value>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>Ongeldige token.</value>
+  </data>
+  <data name="ExpiredToken" xml:space="preserve">
+    <value>Vervallen token.</value>
+  </data>
+  <data name="SignInMessageInSignUp" xml:space="preserve">
+    <value>Hebt u al een account?</value>
+  </data>
+  <data name="ConfirmMessageInProfile" xml:space="preserve">
+    <value>Hebt u al een token?</value>
+  </data>
+  <data name="ConfirmEmailHeaderText" xml:space="preserve">
+    <value>E-mailadres</value>
+  </data>
+  <data name="ConfirmEmailSubtitle" xml:space="preserve">
+    <value>We hebben een bevestigingstoken naar uw e-mailadres verzonden.</value>
+  </data>
+  <data name="ConfirmPageTitle" xml:space="preserve">
+    <value>Bevestigen</value>
+  </data>
+  <data name="ConfirmTitle" xml:space="preserve">
+    <value>Bevestig uw account</value>
+  </data>
+  <data name="ConfirmEmailMessage" xml:space="preserve">
+    <value>Bevestig uw e-mail door de token hier in te typen.</value>
+  </data>
+  <data name="EmailPlaceholder" xml:space="preserve">
+    <value>Voer e-mailadres in</value>
+  </data>
+  <data name="EmailToken" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="EmailTokenConfirmButtonText" xml:space="preserve">
+    <value>Bevestig e-mailadres</value>
+  </data>
+  <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
+    <value>Uw e-mailadres ({0}) is bevestigd.</value>
+  </data>
+  <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
+    <value>U kunt nu aanmelden met uw account.</value>
+  </data>
+  <data name="ConfirmPhoneHeaderText" xml:space="preserve">
+    <value>Telefoonnummer</value>
+  </data>
+  <data name="ConfirmPhoneSubtitle" xml:space="preserve">
+    <value>We hebben een bevestigingstoken naar uw telefoon verzonden.</value>
+  </data>
+  <data name="ConfirmPhoneMessage" xml:space="preserve">
+    <value>Bevestig uw telefoonnummer door de token hier in te typen.</value>
+  </data>
+  <data name="PhoneNumberPlaceholder" xml:space="preserve">
+    <value>Voer telefoonnummer in</value>
+  </data>
+  <data name="PhoneToken" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
+    <value>Bevestig telefoonnummer</value>
+  </data>
+  <data name="NotReceivedPhoneMessage" xml:space="preserve">
+    <value>Hebt u de token niet ontvangen op uw telefoon?</value>
+  </data>
+  <data name="ResendPhoneTokenButtonText" xml:space="preserve">
+    <value>Code opnieuw verzenden</value>
+  </data>
+  <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
+    <value>Uw telefoonnummer ({0}) is bevestigd.</value>
+  </data>
+  <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
+    <value>U kunt nu aanmelden met uw account.</value>
+  </data>
+  <data name="AccountTitle" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="AccountSubtitle" xml:space="preserve">
+    <value>Wijzig het e-mailadres, telefoonnummer of wachtwoordloze instellingen van uw account</value>
+  </data>
+  <data name="DeleteAccount" xml:space="preserve">
+    <value>Account verwijderen</value>
+  </data>
+  <data name="DeleteAccountPrompt" xml:space="preserve">
+    <value>Weet u zeker dat u uw account wilt verwijderen?</value>
+  </data>
+  <data name="DontHaveAccountMessage" xml:space="preserve">
+    <value>Hebt u nog geen account?</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Bewerken</value>
+  </data>
+  <data name="FileUploadFailed" xml:space="preserve">
+    <value>Er is een fout opgetreden tijdens het uploaden van het bestand</value>
+  </data>
+  <data name="ForgotPasswordPageTitle" xml:space="preserve">
+    <value>Wachtwoord vergeten</value>
+  </data>
+  <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>Wachtwoord vergeten</value>
+  </data>
+  <data name="ForgotPasswordMessage" xml:space="preserve">
+    <value>Voer uw e-mailadres of telefoonnummer in zodat we een reset-wachtwoordtoken naar u kunnen sturen.</value>
+  </data>
+  <data name="GenderMale" xml:space="preserve">
+    <value>Man</value>
+  </data>
+  <data name="GenderOther" xml:space="preserve">
+    <value>Anders</value>
+  </data>
+  <data name="GoToToday" xml:space="preserve">
+    <value>Ga naar vandaag</value>
+  </data>
+  <data name="HomeMessage" xml:space="preserve">
+    <value>Maak eenvoudig uw multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor-app in de kortst mogelijke tijd!</value>
+  </data>
+  <data name="HomePageTitle" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="HomePanelTitle" xml:space="preserve">
+    <value>Bouw al uw apps</value>
+  </data>
+  <data name="HomePanelSubtitle" xml:space="preserve">
+    <value>met wat u al kent en leuk vindt</value>
+  </data>
+  <data name="WatchVideo" xml:space="preserve">
+    <value>Bekijk video</value>
+  </data>
+  <data name="LearnMore" xml:space="preserve">
+    <value>Meer informatie</value>
+  </data>
+  <data name="BitPlatformMessage" xml:space="preserve">
+    <value>Een set tools voor .NET-ontwikkelaars op meerdere platforms</value>
+  </data>
+  <data name="BitBlazorUIMessage" xml:space="preserve">
+    <value>Een set hoogwaardige, eenvoudig aan te passen en mooie Blazor-componenten</value>
+  </data>
+  <data name="BitProjectTemplateMessage" xml:space="preserve">
+    <value>Een rijk aan functies .NET-projecttemplate dat overal naadloos werkt</value>
+  </data>
+  <data name="DescriptionMetaTagValue" xml:space="preserve">
+    <value>De Boilerplate is gebouwd met ASP.NET Core, Identity, Web API, EF Core en Blazor.</value>
+  </data>
+  <data name="NewPassword" xml:space="preserve">
+    <value>Nieuw wachtwoord</value>
+  </data>
+  <data name="OldPassword" xml:space="preserve">
+    <value>Oud wachtwoord</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Nee</value>
+  </data>
+  <data name="NotReceivedEmailMessage" xml:space="preserve">
+    <value>Hebt u de e-mail niet ontvangen?</value>
+  </data>
+  <data name="Or" xml:space="preserve">
+    <value>of</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Verwijderen</value>
+  </data>
+  <data name="ResendEmailTokenButtonText" xml:space="preserve">
+    <value>Code opnieuw verzenden</value>
+  </data>
+  <data name="ResetPasswordPageTitle" xml:space="preserve">
+    <value>Wachtwoord resetten</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Wachtwoord resetten</value>
+  </data>
+  <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>Wachtwoord resetten</value>
+  </data>
+  <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>We hebben een token naar uw telefoon of e-mail verzonden.</value>
+  </data>
+  <data name="ResetPasswordMessage" xml:space="preserve">
+    <value>Dien hier de token samen met uw nieuwe wachtwoord in.</value>
+  </data>
+  <data name="ResetPasswordButtonText" xml:space="preserve">
+    <value>Wachtwoord instellen</value>
+  </data>
+  <data name="ResetPasswordSuccessTitle" xml:space="preserve">
+    <value>Uw wachtwoord is gereset.</value>
+  </data>
+  <data name="ResetPasswordSuccessBody" xml:space="preserve">
+    <value>U kunt nu aanmelden met uw wachtwoord.</value>
+  </data>
+  <data name="ResetPasswordMessageInForgot" xml:space="preserve">
+    <value>Hebt u al een reset-wachtwoordtoken?</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Opslaan</value>
+  </data>
+  <data name="SignInPageTitle" xml:space="preserve">
+    <value>Aanmelden</value>
+  </data>
+  <data name="SignInPanelTitle" xml:space="preserve">
+    <value>Welkom</value>
+  </data>
+  <data name="SignInPanelSubtitle" xml:space="preserve">
+    <value>Ga door met uw</value>
+  </data>
+  <data name="Continue" xml:space="preserve">
+    <value>Doorgaan</value>
+  </data>
+  <data name="GoogleSignInButtonText" xml:space="preserve">
+    <value>Aanmelden met Google</value>
+  </data>
+  <data name="FacebookSignInButtonText" xml:space="preserve">
+    <value>Aanmelden met Facebook</value>
+  </data>
+  <data name="GitHubSignInButtonText" xml:space="preserve">
+    <value>Aanmelden met GitHub</value>
+  </data>
+  <data name="TwitterSignInButtonText" xml:space="preserve">
+    <value>Aanmelden met Twitter (X)</value>
+  </data>
+  <data name="AppleSignInButtonText" xml:space="preserve">
+    <value>Aanmelden met Apple</value>
+  </data>
+  <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
+    <value>Aanmelden met Test server</value>
+  </data>
+  <data name="AzureEntraSignInButtonText" xml:space="preserve">
+    <value>Aanmelden met Azure Entra</value>
+  </data>
+  <data name="SignOut" xml:space="preserve">
+    <value>Afmelden</value>
+  </data>
+  <data name="SignOutPrompt" xml:space="preserve">
+    <value>Weet u zeker dat u wilt afmelden?</value>
+  </data>
+  <data name="SignUp" xml:space="preserve">
+    <value>Registreren</value>
+  </data>
+  <data name="SignUpPageTitle" xml:space="preserve">
+    <value>Registreren</value>
+  </data>
+  <data name="SignUpPanelTitle" xml:space="preserve">
+    <value>Begin vandaag</value>
+  </data>
+  <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <value>Maak nieuw account met</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Verzenden</value>
+  </data>
+  <data name="UploadNewImage" xml:space="preserve">
+    <value>Sleep of selecteer een afbeelding</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="SelectBirthDate" xml:space="preserve">
+    <value>Selecteer uw geboortedatum</value>
+  </data>
+  <data name="Action" xml:space="preserve">
+    <value>Actie</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Terug</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuleren</value>
+  </data>
+  <data name="CheckSpamMailMessage" xml:space="preserve">
+    <value>Controleer uw Spam/Junk als u het niet in de Inbox kunt vinden.</value>
+  </data>
+  <data name="Color" xml:space="preserve">
+    <value>Kleur</value>
+  </data>
+  <data name="CustomColor" xml:space="preserve">
+    <value>Aangepaste kleur</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Verwijderen</value>
+  </data>
+  <data name="Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>Aanmelden</value>
+  </data>
+  <data name="SignInByModal" xml:space="preserve">
+    <value>Aanmelden (Popup)</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>Bevestigen</value>
+  </data>
+  <data name="SignInAsDifferentUser" xml:space="preserve">
+    <value>Aanmelden als andere gebruiker</value>
+  </data>
+  <data name="YouAreSignedInAs" xml:space="preserve">
+    <value>U bent aangemeld als</value>
+  </data>
+  <data name="ForgotPasswordLink" xml:space="preserve">
+    <value>Wachtwoord vergeten?</value>
+  </data>
+  <data name="GenderFemale" xml:space="preserve">
+    <value>Vrouw</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Onthoud mij?</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Kopiëren</value>
+  </data>
+  <data name="Copied" xml:space="preserve">
+    <value>Gekopieerd</value>
+  </data>
+  <data name="TfaTitle" xml:space="preserve">
+    <value>Twee-factor authenticatie</value>
+  </data>
+  <data name="TfaSubtitle" xml:space="preserve">
+    <value>Beheer de multi-factor authenticatie van uw account</value>
+  </data>
+  <data name="TwoFactorCode" xml:space="preserve">
+    <value>2FA-code</value>
+  </data>
+  <data name="TwoFactorRecoveryCode" xml:space="preserve">
+    <value>Herstelcode</value>
+  </data>
+  <data name="TfaPanelTitle" xml:space="preserve">
+    <value>Twee-factor authenticatie</value>
+  </data>
+  <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>Haal een nieuwe code op uit uw authenticator-app of gebruik uw herstelcode.</value>
+  </data>
+  <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>Probeer een andere manier</value>
+  </data>
+  <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>U kunt een nieuwe code krijgen via e-mail of telefoon.</value>
+  </data>
+  <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>Code ophalen</value>
+  </data>
+  <data name="TfaResetSharedKeyError" xml:space="preserve">
+    <value>Het resetten van de 2FA-gedeelde sleutel schakelt 2FA uit totdat een 2FA-token op basis van de nieuwe gedeelde sleutel is gevalideerd.</value>
+  </data>
+  <data name="TfaEmptyCodeError" xml:space="preserve">
+    <value>Er is geen 2FA-token geleverd door het verzoek. Een geldige 2FA-token is vereist om 2FA in te schakelen.</value>
+  </data>
+  <data name="TfaInvalidCodeError" xml:space="preserve">
+    <value>De 2FA-token geleverd door het verzoek was ongeldig. Een geldige 2FA-token is vereist om 2FA in te schakelen.</value>
+  </data>
+  <data name="TfaConfigureAutAppTitle" xml:space="preserve">
+    <value>Authenticator-app configureren</value>
+  </data>
+  <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
+    <value>Om een authenticator-app te gebruiken, volg deze stappen:</value>
+  </data>
+  <data name="TfaConfigureAutAppStep1" xml:space="preserve">
+    <value>Download een twee-factor authenticator-app zoals Google Authenticator voor {0} en {1}.</value>
+  </data>
+  <data name="TfaConfigureAutAppStep2" xml:space="preserve">
+    <value>Scan/klik op de QR-code of voer de volgende sleutel in uw twee-factor authenticator-app in (spaties en hoofdletters doen er niet toe):</value>
+  </data>
+  <data name="TfaConfigureAutAppStep3" xml:space="preserve">
+    <value>Zodra u de QR-code hebt gescand of de sleutel hierboven hebt ingevoerd, zal uw twee-factor authenticatie-app u een unieke code geven. Voer de code in het bevestigingsvak hieronder in.</value>
+  </data>
+  <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <value>Twee-factor authenticatie is ingeschakeld.</value>
+  </data>
+  <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <value>Twee-factor authenticatie is uitgeschakeld.</value>
+  </data>
+  <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
+    <value>Verificatiecode:</value>
+  </data>
+  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
+    <value>Voer verificatiecode in.</value>
+  </data>
+  <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
+    <value>Verifiëren</value>
+  </data>
+  <data name="TfaRecoveryCodesHeader" xml:space="preserve">
+    <value>Herstel</value>
+  </data>
+  <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
+    <value>U hebt geen herstelcodes meer.</value>
+  </data>
+  <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
+    <value>U moet een nieuwe set herstelcodes genereren voordat u kunt aanmelden met een herstelcode.</value>
+  </data>
+  <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
+    <value>U hebt nog 1 herstelcode.</value>
+  </data>
+  <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
+    <value>U kunt een nieuwe set herstelcodes genereren.</value>
+  </data>
+  <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
+    <value>U hebt nog {0} herstelcodes.</value>
+  </data>
+  <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
+    <value>U zou een nieuwe set herstelcodes moeten genereren.</value>
+  </data>
+  <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
+    <value>Het genereren van nieuwe herstelcodes verandert de sleutels die in authenticator-apps worden gebruikt niet. Als u de sleutel in een authenticator-app wilt wijzigen, moet u uw authenticator-sleutels resetten in het volgende tabblad.</value>
+  </data>
+  <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
+    <value>Genereer herstelcodes</value>
+  </data>
+  <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
+    <value>Bewaar deze codes op een veilige plaats.</value>
+  </data>
+  <data name="TfaRecoveryCodesWarning" xml:space="preserve">
+    <value>Als u uw authenticator-apparaat verliest en geen herstelcodes hebt, verliest u de toegang tot uw account.</value>
+  </data>
+  <data name="TfaRecoveryCodesTitle" xml:space="preserve">
+    <value>Herstelcodes:</value>
+  </data>
+  <data name="TfaAuthAppHeader" xml:space="preserve">
+    <value>Authenticator</value>
+  </data>
+  <data name="TfaAuthAppWarningTitle" xml:space="preserve">
+    <value>Als u uw authenticator-sleutel reset, werkt uw authenticator-app niet meer totdat u deze opnieuw configureert.</value>
+  </data>
+  <data name="TfaAuthAppWarning" xml:space="preserve">
+    <value>Dit proces schakelt 2FA uit totdat u uw authenticator-app verifieert. Als u de configuratie van uw authenticator-app niet voltooit, kunt u de toegang tot uw account verliezen.</value>
+  </data>
+  <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
+    <value>Reset authenticator-sleutel</value>
+  </data>
+  <data name="TfaDisable2faHeader" xml:space="preserve">
+    <value>Uitschakelen</value>
+  </data>
+  <data name="TfaDisable2faWarningTitle" xml:space="preserve">
+    <value>Deze actie schakelt alleen 2FA uit.</value>
+  </data>
+  <data name="TfaDisable2faWarning" xml:space="preserve">
+    <value>Het uitschakelen van 2FA verandert de sleutels die in authenticator-apps worden gebruikt niet. Als u de sleutel in een authenticator-app wilt wijzigen, moet u uw authenticator-sleutels resetten in het vorige tabblad.</value>
+  </data>
+  <data name="TfaDisable2faButtonText" xml:space="preserve">
+    <value>Schakel 2FA uit</value>
+  </data>
+  <data name="TfaTokenSentMessage" xml:space="preserve">
+    <value>De 2FA-token is gegenereerd en naar u verzonden.</value>
+  </data>
+  <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <value>Voer de verhoogde toegangs-token in die we zojuist naar u hebben gestuurd of uw authenticator-app-code in om door te gaan.</value>
+  </data>
+  <data name="ElevatedAccessTokenShortText" xml:space="preserve">
+    <value>{0} is uw code in Boilerplate.</value>
+  </data>
+  <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
+    <value>U hebt al een bevestigings-e-mail aangevraagd. Probeer het opnieuw over {0}</value>
+  </data>
+  <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
+    <value>U hebt al een bevestigings-sms aangevraagd. Probeer het opnieuw over {0}</value>
+  </data>
+  <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
+    <value>U hebt al een reset-wachtwoordtoken aangevraagd. Probeer het opnieuw over {0}</value>
+  </data>
+  <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
+    <value>U hebt al een OTP aangevraagd. Probeer het opnieuw over {0}</value>
+  </data>
+  <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>U hebt al een verhoogde toegangs-token aangevraagd. Probeer het opnieuw over {0}</value>
+  </data>
+  <data name="Otp" xml:space="preserve">
+    <value>OTP</value>
+  </data>
+  <data name="OtpPanelTitle" xml:space="preserve">
+    <value>Controleer uw {0}</value>
+  </data>
+  <data name="OtpPanelSubtitle" xml:space="preserve">
+    <value>Bevestig uw {0} door de code in te voeren die is verzonden naar {1}</value>
+  </data>
+  <data name="Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="OtpResendMessage" xml:space="preserve">
+    <value>Geen code ontvangen?</value>
+  </data>
+  <data name="Resend" xml:space="preserve">
+    <value>Opnieuw verzenden</value>
+  </data>
+  <data name="SendOtpButtonText" xml:space="preserve">
+    <value>OTP verzenden</value>
+  </data>
+  <data name="SendMagicLinkButtonText" xml:space="preserve">
+    <value>Stuur magische link en OTP</value>
+  </data>
+  <data name="SignInByPassword" xml:space="preserve">
+    <value>Gebruik wachtwoord</value>
+  </data>
+  <data name="SignInByOtp" xml:space="preserve">
+    <value>Gebruik OTP</value>
+  </data>
+  <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
+    <value>Geef óf wachtwoord óf OTP op</value>
+  </data>
+  <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
+    <value>U hebt al een 2FA-token-e-mail aangevraagd. Probeer het opnieuw over {0}.</value>
+  </data>
+  <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
+    <value>{0} is uw code in Boilerplate.</value>
+  </data>
+  <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
+    <value>{0} is uw code in Boilerplate.</value>
+  </data>
+  <data name="TwoFactorTokenShortText" xml:space="preserve">
+    <value>{0} is uw code in Boilerplate.</value>
+  </data>
+  <data name="OtpShortText" xml:space="preserve">
+    <value>{0} is uw code in Boilerplate.</value>
+  </data>
+  <data name="ResetPasswordTokenShortText" xml:space="preserve">
+    <value>{0} is uw code in Boilerplate.</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>Online</value>
+  </data>
+  <data name="Recently" xml:space="preserve">
+    <value>Recent</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Bijwerken</value>
+  </data>
+  <data name="ForceUpdateTitle" xml:space="preserve">
+    <value>Tijd voor een update</value>
+  </data>
+  <data name="ForceUpdateBody" xml:space="preserve">
+    <value>Deze update is vereist om uw app soepel te laten draaien</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>Over</value>
+  </data>
+  <data name="AboutPageTitle" xml:space="preserve">
+    <value>Over</value>
+  </data>
+  <!--#if (sample == true || offlineDb == true) -->
+  <data name="TodoAddPlaceholder" xml:space="preserve">
+    <value>Voeg een todo toe</value>
+  </data>
+  <data name="NoTodos" xml:space="preserve">
+    <value>Nog geen todos</value>
+  </data>
+  <data name="TodoSearchPlaceholder" xml:space="preserve">
+    <value>Zoek todo...</value>
+  </data>
+  <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
+    <value>Todo-item kon niet worden gevonden</value>
+  </data>
+  <data name="TodoPageTitle" xml:space="preserve">
+    <value>Todo</value>
+  </data>
+  <data name="Todo" xml:space="preserve">
+    <value>Todo</value>
+  </data>
+  <data name="DeleteTodoItem" xml:space="preserve">
+    <value>Verwijder todo-item</value>
+  </data>
+  <!--#endif -->
+  <!--#if (module == "Admin" || module == "Sales") -->
+  <data name="CategoryCouldNotBeFound" xml:space="preserve">
+    <value>Categorie-entiteit kon niet worden gevonden</value>
+  </data>
+  <data name="ProductCouldNotBeFound" xml:space="preserve">
+    <value>Product-entiteit kon niet worden gevonden</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Categorie</value>
+  </data>
+  <data name="AltText" xml:space="preserve">
+    <value>Alt-tekst</value>
+  </data>
+  <!--#endif -->
+  <!--#if (module == "Admin") -->
+  <data name="AdminPanel" xml:space="preserve">
+    <value>Admin-paneel</value>
+  </data>
+  <data name="PaginatorSummary" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
+  <data name="Page" xml:space="preserve">
+    <value>Pagina</value>
+  </data>
+  <data name="Of" xml:space="preserve">
+    <value>van</value>
+  </data>
+  <data name="Last30DaysProductCount" xml:space="preserve">
+    <value>Aantal producten laatste 30 dagen</value>
+  </data>
+  <data name="AddProduct" xml:space="preserve">
+    <value>Voeg product toe</value>
+  </data>
+  <data name="SearchProductsPlaceholder" xml:space="preserve">
+    <value>Zoek op naam, categorie en beschrijving van product...</value>
+  </data>
+  <data name="SelectCategory" xml:space="preserve">
+    <value>Selecteer categorie</value>
+  </data>
+  <data name="TotalCategories" xml:space="preserve">
+    <value>Totaal categorieën</value>
+  </data>
+  <data name="TotalProducts" xml:space="preserve">
+    <value>Totaal producten</value>
+  </data>
+  <data name="EditCategory" xml:space="preserve">
+    <value>Bewerk categorie</value>
+  </data>
+  <data name="AddCategory" xml:space="preserve">
+    <value>Nieuwe categorie</value>
+  </data>
+  <data name="CategoriesPageTitle" xml:space="preserve">
+    <value>Categorieën</value>
+  </data>
+  <data name="EnterCategoryName" xml:space="preserve">
+    <value>Voer categorienaam in</value>
+  </data>
+  <data name="EnterProductName" xml:space="preserve">
+    <value>Voer productnaam in</value>
+  </data>
+  <data name="CategoriesWithProductCount" xml:space="preserve">
+    <value>Categorieën met productenaantal</value>
+  </data>
+  <data name="SearchOnName" xml:space="preserve">
+    <value>Zoek op naam</value>
+  </data>
+  <data name="ProductsCountPerCategoryChart" xml:space="preserve">
+    <value>Grafiek producten per categorie</value>
+  </data>
+  <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
+    <value>Deze grafiek toont het aantal producten in elke categorie.</value>
+  </data>
+  <data name="ProductsPageTitle" xml:space="preserve">
+    <value>Producten</value>
+  </data>
+  <data name="ProductsPercentagePerCategory" xml:space="preserve">
+    <value>Percentage producten per categorie</value>
+  </data>
+  <data name="ProductsPercentagePerCategoryText" xml:space="preserve">
+    <value>Deze grafiek toont het percentage producten in elke categorie.</value>
+  </data>
+  <data name="Categories" xml:space="preserve">
+    <value>Categorieën</value>
+  </data>
+  <data name="Products" xml:space="preserve">
+    <value>Producten</value>
+  </data>
+  <data name="CategoryNotEmpty" xml:space="preserve">
+    <value>Deze categorie bevat producten, dus u kunt deze niet verwijderen</value>
+  </data>
+  <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
+    <value>Weet u zeker dat u product {0} wilt verwijderen</value>
+  </data>
+  <data name="DeleteProduct" xml:space="preserve">
+    <value>Verwijder product</value>
+  </data>
+  <data name="DefaultColorPicker" xml:space="preserve">
+    <value>Standaard kleurkiezer</value>
+  </data>
+  <data name="EditProduct" xml:space="preserve">
+    <value>Bewerk product {0}</value>
+  </data>
+  <data name="DuplicateProductName" xml:space="preserve">
+    <value>Dubbele productnaam</value>
+  </data>
+  <data name="DuplicateCategoryName" xml:space="preserve">
+    <value>Dubbele categorie {0}</value>
+  </data>
+  <data name="DashboardPageTitle" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="DashboardSubtitle" xml:space="preserve">
+    <value>Hier zijn uw analysegegevens</value>
+  </data>
+  <!--#endif -->
+  <!--#if (captcha == "reCaptcha") -->
+  <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
+    <value>Ongeldig Google reCAPTCHA-antwoord.</value>
+  </data>
+  <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
+    <value>U moet de Google reCAPTCHA-uitdaging doorstaan.</value>
+  </data>
+  <!--#endif -->
+  <!--#if (module == "Sales") -->
+  <data name="SimilarProducts" xml:space="preserve">
+    <value>Vergelijkbare producten</value>
+  </data>
+  <data name="SiblingProducts" xml:space="preserve">
+    <value>Producten in dezelfde categorie</value>
+  </data>
+  <data name="Buy" xml:space="preserve">
+    <value>Koop</value>
+  </data>
+  <data name="PurchaseSuccessful" xml:space="preserve">
+    <value>Aankoop succesvol!</value>
+  </data>
+  <!--#endif -->
+  <data name="Passwordless" xml:space="preserve">
+    <value>Wachtwoordloos</value>
+  </data>
+  <data name="PasswordlessTitle" xml:space="preserve">
+    <value>Wachtwoordloze aanmelding</value>
+  </data>
+  <data name="EnablePasswordless" xml:space="preserve">
+    <value>Schakel wachtwoordloze aanmelding in</value>
+  </data>
+  <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Wachtwoordloze aanmelding succesvol ingeschakeld</value>
+  </data>
+  <data name="DisablePasswordless" xml:space="preserve">
+    <value>Schakel wachtwoordloze aanmelding uit</value>
+  </data>
+  <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
+    <value>Wachtwoordloze aanmelding succesvol uitgeschakeld</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Wissen</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Verzenden</value>
+  </data>
+  <data name="Canceled" xml:space="preserve">
+    <value>Geannuleerd</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="AiChatPanelTitle" xml:space="preserve">
+    <value>AI chat-paneel</value>
+  </data>
+  <data name="AiChatPanelInitialResponse" xml:space="preserve">
+    <value>Hallo! Ik ben hier om uw app-ervaring geweldig te maken! Hebt u een vraag of heeft u hulp nodig?</value>
+  </data>
+  <data name="AiChatPanelPrompt1" xml:space="preserve">
+    <value>Open reset-wachtwoordpagina en vertel me hoe het werkt</value>
+  </data>
+  <data name="AiChatPanelPrompt2" xml:space="preserve">
+    <value>Hoe kan ik de PWA-versie van de app installeren?</value>
+  </data>
+  <!--#if (module == "Admin") -->
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>Ik heb wat feedback die ik wil delen!</value>
+  </data>
+  <!--#elif (module == "Sales") -->
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>Ik heb wat feedback die ik wil delen!</value>
+  </data>
+  <!--#else -->
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
+    <value>Ik heb wat feedback die ik wil delen!</value>
+  </data>
+  <!--#endif -->
+  <data name="AiChatPanelPlaceholder" xml:space="preserve">
+    <value>Schrijf een bericht...</value>
+  </data>
+  <!--#endif -->
+  <!--#if (ads == true) -->
+  <data name="Upgrade" xml:space="preserve">
+    <value>Upgrade</value>
+  </data>
+  <data name="UpgradeTitle" xml:space="preserve">
+    <value>Upgrade account</value>
+  </data>
+  <data name="UpgradeSubtitle" xml:space="preserve">
+    <value>Er is geen account-upgrade hier. Dit is slechts een demo voor beloningsadvertenties.</value>
+  </data>
+  <data name="UpgradeSuccessMessage" xml:space="preserve">
+    <value>Upgrade account succesvol voltooid.</value>
+  </data>
+  <data name="UpgradeFailMessage" xml:space="preserve">
+    <value>Upgrade account mislukt.</value>
+  </data>
+  <data name="UpgradeAdHaveTrouble" xml:space="preserve">
+    <value>Problemen met het bekijken van advertentie?</value>
+  </data>
+  <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
+    <value>Ik heb problemen met het bekijken van in-app-advertenties.</value>
+  </data>
+  <!--#endif -->
+  <data name="PleaseWait" xml:space="preserve">
+    <value>Even geduld aub</value>
+  </data>
+  <data name="Management" xml:space="preserve">
+    <value>Beheer</value>
+  </data>
+  <data name="UserGroups" xml:space="preserve">
+    <value>Gebruikersgroepen</value>
+  </data>
+  <data name="RolesPageTitle" xml:space="preserve">
+    <value>Beheer gebruikersgroepen</value>
+  </data>
+  <data name="NoRoleMessage" xml:space="preserve">
+    <value>Geen gebruikersgroepen</value>
+  </data>
+  <data name="AddRole" xml:space="preserve">
+    <value>Voeg gebruikersgroep toe</value>
+  </data>
+  <data name="EditRole" xml:space="preserve">
+    <value>Bewerk gebruikersgroep</value>
+  </data>
+  <data name="NewRoleName" xml:space="preserve">
+    <value>Nieuwe naam voor gebruikersgroep</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Gebruikers</value>
+  </data>
+  <data name="UsersWithCount" xml:space="preserve">
+    <value>Gebruikers {0}</value>
+  </data>
+  <data name="Features" xml:space="preserve">
+    <value>Functies</value>
+  </data>
+  <data name="Quota" xml:space="preserve">
+    <value>Quota</value>
+  </data>
+  <data name="QuotaDescription" xml:space="preserve">
+    <value>Om het gebruik van functies te beperken, kunt u quota's definiëren op dit tabblad, die kunnen variëren per rol. Bijvoorbeeld, het aantal apparaten waarop een gebruiker kan aanmelden of het aantal keren dat ze een specifieke app-functie kunnen gebruiken.</value>
+  </data>
+  <data name="MaxPrevilegedSessions" xml:space="preserve">
+    <value>Max geprivilegieerde sessies</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>Algemeen</value>
+  </data>
+  <data name="RoleName" xml:space="preserve">
+    <value>Gebruikersgroepnaam</value>
+  </data>
+  <!--#if (notification == true || signalR == true) -->
+  <data name="RoleNotificationLabel" xml:space="preserve">
+    <value>Notificatiebericht</value>
+  </data>
+  <data name="SendRoleNotification" xml:space="preserve">
+    <value>Verstuur notificatie</value>
+  </data>
+  <data name="EnableNotifications" xml:space="preserve">
+    <value>Schakel notificaties in</value>
+  </data>
+  <data name="DisableNotifications" xml:space="preserve">
+    <value>Schakel notificaties uit</value>
+  </data>
+  <data name="TestNotificationMessage1" xml:space="preserve">
+    <value>Test notificatie 1</value>
+  </data>
+  <data name="TestNotificationMessage2" xml:space="preserve">
+    <value>Test notificatie 2</value>
+  </data>
+  <!--#endif -->
+  <data name="UsersPageTitle" xml:space="preserve">
+    <value>Beheer gebruikers</value>
+  </data>
+  <data name="DeleteRole" xml:space="preserve">
+    <value>Verwijder gebruikersgroep</value>
+  </data>
+  <data name="Sessions" xml:space="preserve">
+    <value>Sessies {0}</value>
+  </data>
+  <data name="DeleteUser" xml:space="preserve">
+    <value>Verwijder gebruiker</value>
+  </data>
+  <data name="AppVersion" xml:space="preserve">
+    <value>App-versie</value>
+  </data>
+  <data name="IP" xml:space="preserve">
+    <value>IP</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>Adres</value>
+  </data>
+  <data name="DeviceInfo" xml:space="preserve">
+    <value>DeviceInfo</value>
+  </data>
+  <data name="Privileged" xml:space="preserve">
+    <value>Geprivilegieerd</value>
+  </data>
+  <data name="RenewedOn" xml:space="preserve">
+    <value>VernieuwdOp</value>
+  </data>
+  <data name="OnlineUsers" xml:space="preserve">
+    <value>Online gebruikers: {0}</value>
+  </data>
+  <data name="DeleteSession" xml:space="preserve">
+    <value>Verwijder sessie</value>
+  </data>
+  <data name="NoUserMessage" xml:space="preserve">
+    <value>Geen gebruikers</value>
+  </data>
+  <data name="NoUserSessionMessage" xml:space="preserve">
+    <value>Geen gebruikerssessie</value>
+  </data>
+  <data name="NoUserSelectedMessage" xml:space="preserve">
+    <value>Selecteer eerst een gebruiker</value>
+  </data>
+  <data name="RevokeAllSessions" xml:space="preserve">
+    <value>Vervallen alle sessies</value>
+  </data>
+  <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
+    <value>Weet u zeker dat u alle sessies van {0} wilt vervallen?</value>
+  </data>
+  <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
+    <value>U kunt deze gebruiker niet verwijderen uit de SuperAdmin-gebruikersgroep.</value>
+  </data>
+  <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
+    <value>Super admin-rechten mogen niet worden gewijzigd.</value>
+  </data>
+  <data name="CanNotChangeBuiltInRole" xml:space="preserve">
+    <value>Gebruikersgroep {0} mag niet worden gewijzigd.</value>
+  </data>
+  <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
+    <value>U kunt uw eigen gebruiker niet verwijderen</value>
+  </data>
+  <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
+    <value>U kunt deze SuperAdmin-gebruiker niet verwijderen</value>
+  </data>
+  <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
+    <value>U kunt uw huidige sessie niet verwijderen</value>
+  </data>
+  <data name="SearchRolesPlaceholder" xml:space="preserve">
+    <value>Zoek gebruikersgroepen</value>
+  </data>
+  <data name="SearchUsersPlaceholder" xml:space="preserve">
+    <value>Zoek gebruikers</value>
+  </data>
+  <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
+    <value>Zoek gebruikers</value>
+  </data>
+  <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
+    <value>Zoek gebruikerssessies</value>
+  </data>
+  <data name="RemoveRoleFromAllUsers" xml:space="preserve">
+    <value>Verwijder alle gebruikers uit gebruikersgroep</value>
+  </data>
+  <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
+    <value>Weet u zeker dat u alle gebruikers uit {0} wilt verwijderen?</value>
+  </data>
+  <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
+    <value>Pagina-URL</value>
+  </data>
+  <data name="YouAreNotAuthorized" xml:space="preserve">
+    <value>U bent niet geautoriseerd</value>
+  </data>
+  <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
+    <value>U hebt geen toestemming om deze pagina te benaderen.</value>
+  </data>
+  <data name="SignInPasswordMessage1" xml:space="preserve">
+    <value>Eerste keer hier?</value>
+  </data>
+  <data name="SignInPasswordMessage2" xml:space="preserve">
+    <value>We maken automatisch een account voor u aan.</value>
+  </data>
+  <data name="ImageTooSmall" xml:space="preserve">
+    <value>Afbeelding is te klein. Minimale vereiste afmetingen zijn {0}x{1}, maar de huidige afmetingen zijn {2}x{3}.</value>
+  </data>
+  <data name="ImageNotCarError" xml:space="preserve">
+    <value>De opgegeven afbeelding bevat geen auto.</value>
+  </data>
+</root>

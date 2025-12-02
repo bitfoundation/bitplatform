@@ -38,7 +38,7 @@ public partial class AppDiagnosticModal
     private int selectedLogIndex;
     private DiagnosticLogDto? selectedLog;
     private bool isDescendingSort = true;
-    private Action unsubscribe = default!;
+    private List<Action> unsubscribers = [];
     private IEnumerable<string>? filterCategoryValues;
     private DiagnosticLogDto[] allLogs = default!;
     private BitDropdownItem<string>[] allCategoryItems = [];
@@ -54,12 +54,19 @@ public partial class AppDiagnosticModal
     {
         await base.OnInitAsync();
 
-        unsubscribe = PubSubService.Subscribe(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
+        unsubscribers.Add(PubSubService.Subscribe(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
         {
             isOpen = true;
             ReloadLogs();
             await InvokeAsync(StateHasChanged);
-        });
+        }));
+
+        //#if (signalR == true)
+        unsubscribers.Add(PubSubService.Subscribe(ClientAppMessages.CLEAR_APP_FILES, async _ =>
+        {
+            await ClearAppFiles();
+        }));
+        //#endif
     }
 
 
@@ -198,6 +205,6 @@ public partial class AppDiagnosticModal
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         await base.DisposeAsync(disposing);
-        unsubscribe?.Invoke();
+        unsubscribers.ForEach(unsubscriber => unsubscriber());
     }
 }

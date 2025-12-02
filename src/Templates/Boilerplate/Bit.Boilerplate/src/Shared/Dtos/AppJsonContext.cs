@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (sample == true)
+//#if (sample == true || offlineDb == true)
 using Boilerplate.Shared.Dtos.Todo;
 //#endif
 //#if (module == "Admin")
@@ -19,13 +19,37 @@ using Boilerplate.Shared.Dtos.SignalR;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Dtos.Statistics;
 using Boilerplate.Shared.Dtos.Diagnostic;
+//#if (offlineDb == true)
+using CommunityToolkit.Datasync.Server.Abstractions.Json;
+//#endif
 
 namespace Boilerplate.Shared.Dtos;
 
 /// <summary>
 /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
 /// </summary>
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSourceGenerationOptions(
+
+  //#if (offlineDb == true)
+  Converters = [
+    typeof(DateTimeConverter),
+    typeof(DateTimeOffsetConverter),
+    typeof(TimeOnlyConverter)
+  ],
+  //#endif
+
+
+  PropertyNameCaseInsensitive = true,
+  PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+  DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
+  UseStringEnumConverter = true,
+  WriteIndented = false,
+  GenerationMode = JsonSourceGenerationMode.Metadata,
+  AllowTrailingCommas = true,
+  DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+)]
+
+
 [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 [JsonSerializable(typeof(Dictionary<string, string?>))]
 [JsonSerializable(typeof(TimeSpan))]
@@ -40,7 +64,7 @@ namespace Boilerplate.Shared.Dtos;
 //#if (notification == true)
 [JsonSerializable(typeof(PushNotificationSubscriptionDto))]
 //#endif
-//#if (sample == true)
+//#if (sample == true || offlineDb == true)
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(PagedResponse<TodoItemDto>))]
 [JsonSerializable(typeof(List<TodoItemDto>))]

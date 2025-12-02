@@ -90,13 +90,6 @@ public partial class TodoPage
         return condition1 && condition2;
     }
 
-    private async Task ToggleIsDone(TodoItemDto todoItem)
-    {
-        todoItem.IsDone = !todoItem.IsDone;
-
-        await UpdateTodoItem(todoItem);
-    }
-
     private void SearchTodoItems(string text)
     {
         searchText = text;
@@ -134,7 +127,11 @@ public partial class TodoPage
     {
         if (string.IsNullOrWhiteSpace(newTodoTitle)) return;
 
-        var addedTodoItem = await todoItemController.Create(new() { Title = newTodoTitle }, CurrentCancellationToken);
+        var addedTodoItem = await todoItemController.Create(new()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Title = newTodoTitle
+        }, CurrentCancellationToken);
 
         allTodoItems.Add(addedTodoItem!);
 

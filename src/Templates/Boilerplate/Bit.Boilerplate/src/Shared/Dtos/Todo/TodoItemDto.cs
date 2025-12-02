@@ -1,18 +1,29 @@
-﻿namespace Boilerplate.Shared.Dtos.Todo;
+﻿//+:cnd:noEmit
+namespace Boilerplate.Shared.Dtos.Todo;
 
 [DtoResourceType(typeof(AppStrings))]
 public partial class TodoItemDto
+//#if (offlineDb == true)
+    : BaseDtoTableData
+//#endif
 {
-    public Guid Id { get; set; }
+    //#if (offlineDb != true)
+    //#if (IsInsideProjectTemplate == true)
+    /*
+    //#endif
+    public new string Id { get; set; }
+    public new DateTimeOffset? UpdatedAt { get; set; }
+    //#if (IsInsideProjectTemplate == true)
+    */
+    //#endif
+    //#endif
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Title))]
     public string? Title { get; set; }
 
-    public DateTimeOffset UpdatedAt { get; set; }
-
     public bool IsDone { get; set; }
 
-    [JsonIgnore]
+    [JsonIgnore, NotMapped]
     public bool IsInEditMode { get; set; }
 }

@@ -94,7 +94,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     private SemaphoreSlim semaphore = new(1, 1);
     private TaskCompletionSource<string?>? accessTokenTsc = null;
 
-    public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null)
+    public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null, bool ignoreServerConnectionException = false)
     {
         if (accessTokenTsc is null)
         {
@@ -126,11 +126,14 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                 }
                 catch (Exception exp)
                 {
-                    exceptionHandler.Handle(exp, parameters: new()
+                    if (exp is not ServerConnectionException || ignoreServerConnectionException is false)
                     {
-                        { "AdditionalData", "Refreshing access token failed." },
-                        { "RefreshTokenRequestedBy", requestedBy }
-                    }, displayKind: ExceptionDisplayKind.NonInterrupting);
+                        exceptionHandler.Handle(exp, parameters: new()
+                        {
+                            { "AdditionalData", "Refreshing access token failed." },
+                            { "RefreshTokenRequestedBy", requestedBy }
+                        }, displayKind: ExceptionDisplayKind.NonInterrupting);
+                    }
 
                     if (exp is UnauthorizedException) // refresh token is also invalid
                     {
@@ -200,7 +203,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         return string.IsNullOrEmpty(accessToken) is false;
     }
 
-    public async Task<string?> GetFreshAccessToken(string requestedBy)
+    public async Task<string?> GetFreshAccessToken(string requestedBy, bool ignoreServerConnectionException = false)
     {
         var accessToken = await tokenProvider.GetAccessToken();
 
@@ -211,7 +214,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         if (isValid) return accessToken;
 
-        return await RefreshToken(requestedBy);
+        return await RefreshToken(requestedBy, ignoreServerConnectionException: ignoreServerConnectionException);
     }
 
     private async Task ClearTokens()

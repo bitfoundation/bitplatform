@@ -205,7 +205,7 @@ The service worker has **four different modes** to match your app's PreRendering
 - Field service apps, medical apps
 - Apps where guaranteed offline navigation is critical
 
-**Demo:** https://todo-offline.bitplatform.cc/offline-database-demo
+**Demo:** https://todo-offline.bitplatform.cc/offline-todo
 
 **Pros:**
 - ✅ Guaranteed offline functionality

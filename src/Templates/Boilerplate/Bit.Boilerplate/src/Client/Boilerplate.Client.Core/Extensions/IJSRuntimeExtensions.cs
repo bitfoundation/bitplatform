@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Reflection;
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;
@@ -49,5 +49,13 @@ public static partial class IJSRuntimeExtensions
             "WebViewJSRuntime" /* blazor hybrid */ => type.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(jsRuntime) is not null,
             _ => true // blazor wasm
         };
+    }
+
+    /// <summary>
+    /// Clears web browser / web view storages
+    /// </summary>
+    public static async Task ClearWebStorages(this IJSRuntime jsRuntime)
+    {
+        await jsRuntime.InvokeVoidAsync("App.clearWebStorages");
     }
 }

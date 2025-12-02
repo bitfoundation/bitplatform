@@ -1,7 +1,13 @@
-﻿using Boilerplate.Shared.Dtos.Todo;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Todo;
 using Boilerplate.Shared.Controllers.Todo;
 
 namespace Boilerplate.Server.Api.Controllers.Todo;
+
+//#if (offlineDb == true)
+// The following controller is not required when using the offline database.
+// The controller that works with the offline database is implemented in TodoItemTableController.cs
+//#endif
 
 [ApiController, Route("api/[controller]/[action]"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
@@ -32,7 +38,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     }
 
     [HttpGet("{id}")]
-    public async Task<TodoItemDto> Get(Guid id, CancellationToken cancellationToken)
+    public async Task<TodoItemDto> Get(string id, CancellationToken cancellationToken)
     {
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
@@ -70,7 +76,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     }
 
     [HttpDelete("{id}")]
-    public async Task Delete(Guid id, CancellationToken cancellationToken)
+    public async Task Delete(string id, CancellationToken cancellationToken)
     {
         DbContext.TodoItems.Remove(new() { Id = id });
 
