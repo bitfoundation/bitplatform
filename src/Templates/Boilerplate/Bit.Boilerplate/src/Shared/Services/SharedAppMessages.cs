@@ -51,6 +51,11 @@ public partial class SharedAppMessages
     /// </summary>
     public const string CHANGE_THEME = nameof(CHANGE_THEME);
 
+    /// <summary>
+    /// A publisher that sends this message announces that the subscriber should clear all application files stored in the client device.
+    /// </summary>
+    public const string CLEAR_APP_FILES = nameof(CLEAR_APP_FILES);
+
     #endregion
 
     #region Server announcements to client

@@ -126,16 +126,17 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             });
 
-            if (AppEnvironment.IsDevelopment() is false)
-            {
-                optionsBuilder.UseModel(AppOfflineDbContextModel.Instance);
-            }
-
             optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
                     .EnableDetailedErrors(AppEnvironment.IsDevelopment());
 
         }
-        , dbContextInitializer: async (sp, dbContext) => await Task.Run(async () => await dbContext.Database.MigrateAsync())
+        , dbContextInitializer: async (_, dbContext) =>
+        {
+            if (AppEnvironment.IsDevelopment() is false && dbContext.Model.GetType() == typeof(EntityFrameworkCore.Metadata.RuntimeModel))
+                throw new InvalidOperationException("DbContext has not been optimized"); // Checkout Boilerplate.Client.Core/Data/README.md for more info about Optimize-DbContext command.
+
+            await Task.Run(async () => await dbContext.Database.MigrateAsync());
+        }
         , lifetime: ServiceLifetime.Scoped);
         services.AddScoped<SyncService>();
         //#endif

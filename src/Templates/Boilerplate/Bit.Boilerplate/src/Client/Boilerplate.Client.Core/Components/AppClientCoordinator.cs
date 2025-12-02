@@ -279,6 +279,14 @@ public partial class AppClientCoordinator : AppComponentBase
             return true;
         }));
 
+        hubConnection.Remove(SharedAppMessages.CLEAR_APP_FILES);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.CLEAR_APP_FILES, async () =>
+        {
+            PubSubService.Publish(ClientAppMessages.CLEAR_APP_FILES);
+
+            return true;
+        }));
+
         hubConnection.Remove(SharedAppMessages.UPLOAD_LAST_ERROR);
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.UPLOAD_LAST_ERROR, async () =>
         {

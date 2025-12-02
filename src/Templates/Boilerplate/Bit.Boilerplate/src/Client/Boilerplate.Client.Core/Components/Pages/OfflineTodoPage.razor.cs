@@ -143,7 +143,7 @@ public partial class OfflineTodoPage
 
         await dbContext.SaveChangesAsync(CurrentCancellationToken);
 
-        _ = syncService.Push();
+        await syncService.Push();
 
         allTodoItems.Add(addedTodoItem!);
 
@@ -168,7 +168,7 @@ public partial class OfflineTodoPage
             dbContext.TodoItems.Remove(deletingTodoItem);
             await dbContext.SaveChangesAsync(CurrentCancellationToken);
 
-            _ = syncService.Push();
+            await syncService.Push();
 
             allTodoItems.Remove(deletingTodoItem);
             viewTodoItems.Remove(deletingTodoItem);
@@ -203,7 +203,7 @@ public partial class OfflineTodoPage
         dbContext.TodoItems.Update(todoItem);
         await dbContext.SaveChangesAsync(CurrentCancellationToken);
 
-        _ = syncService.Push();
+        await syncService.Push();
 
         todoItem.IsInEditMode = false;
 

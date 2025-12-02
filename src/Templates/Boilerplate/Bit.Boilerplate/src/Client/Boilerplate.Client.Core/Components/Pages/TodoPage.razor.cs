@@ -127,7 +127,11 @@ public partial class TodoPage
     {
         if (string.IsNullOrWhiteSpace(newTodoTitle)) return;
 
-        var addedTodoItem = await todoItemController.Create(new() { Title = newTodoTitle }, CurrentCancellationToken);
+        var addedTodoItem = await todoItemController.Create(new()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Title = newTodoTitle
+        }, CurrentCancellationToken);
 
         allTodoItems.Add(addedTodoItem!);
 

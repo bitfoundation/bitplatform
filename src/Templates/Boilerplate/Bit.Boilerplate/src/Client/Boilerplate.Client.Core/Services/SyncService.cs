@@ -38,13 +38,18 @@ public partial class SyncService : IAsyncDisposable
         using var localCts = cts;
         await localCts.TryCancel();
 
-        cts = new();
+        cts = new(TimeSpan.FromSeconds(5));
 
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
 
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(linkedCts.Token);
 
-        await Sync(dbContext, pullRecentChanges, linkedCts.Token);
+        var task = Sync(dbContext, pullRecentChanges, linkedCts.Token);
+
+        if (telemetryContext.IsOnline is true)
+        {
+            await task;
+        }
     }
 
     /// <summary>

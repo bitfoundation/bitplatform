@@ -223,6 +223,10 @@ jobs:
       run: |
           sed -i "s/\/\/ self.mode = 'AlwaysPrerender'/self.mode = 'FullOffline'/g" TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
 
+    - name: Optimize DbContext
+      run: |
+          cd TodoSample/src/Server/TodoSample.Server.Web && dotnet tool restore && dotnet ef dbcontext optimize --context AppOfflineDbContext --output-dir Data/CompiledModel --namespace Boilerplate.Client.Core.Data --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true --no-restore -c Release
       

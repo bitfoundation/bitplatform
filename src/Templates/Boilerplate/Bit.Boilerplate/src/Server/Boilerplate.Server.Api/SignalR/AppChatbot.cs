@@ -159,6 +159,7 @@ public partial class AppChatbot
             AIFunctionFactory.Create(SetCulture),
             AIFunctionFactory.Create(SetTheme),
             AIFunctionFactory.Create(CheckLastError),
+            AIFunctionFactory.Create(ClearAppFiles),
             //#if (module == "Sales")
             //#if (database == "PostgreSQL" || database == "SqlServer")
             AIFunctionFactory.Create(GetProductRecommendations)
@@ -342,6 +343,34 @@ public partial class AppChatbot
         {
             serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
             return "Failed to retrieve error information from the device.";
+        }
+    }
+
+    /// <summary>
+    /// Clears application files on the user's device to fix issues.
+    /// </summary>
+    [Description("Clears application files on the user's device to fix issues.")]
+    [McpServerTool(Name = nameof(ClearAppFiles))]
+    private async Task<string?> ClearAppFiles(
+        [Required, Description("SignalR connection id")] string signalRConnectionId)
+    {
+        if (string.IsNullOrEmpty(signalRConnectionId))
+            return "There's no access to your app on your device";
+
+        await using var scope = serviceProvider.CreateAsyncScope();
+
+        try
+        {
+            await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+                .Clients.Client(signalRConnectionId)
+                .InvokeAsync<DiagnosticLogDto?>(SharedAppMessages.CLEAR_APP_FILES, CancellationToken.None);
+
+            return "App files cleared successfully on the device.";
+        }
+        catch (Exception exp)
+        {
+            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            return "Failed to clear app files on the device.";
         }
     }
 

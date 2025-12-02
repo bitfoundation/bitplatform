@@ -28,12 +28,12 @@
 
     "Logging": {
         "LogLevel": {
-            "System.Net.Http.HttpClient.AI.LogicalHandler": "Warning"
+            "System.Net.Http.HttpClient.*.LogicalHandler": "Warning"
         },
         "Console": {
             "LogLevel": {
                 "Default": "Information",
-                "System.Net.Http.HttpClient.AI.LogicalHandler": "Warning"
+                "System.Net.Http.HttpClient.*.LogicalHandler": "Warning"
             }
         }
     }

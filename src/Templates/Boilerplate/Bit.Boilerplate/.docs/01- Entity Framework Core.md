@@ -335,7 +335,7 @@ await dbContext.Database.MigrateAsync();
 Open a terminal in the `Boilerplate.Server.Api` project directory and run:
 
 ```bash
-dotnet ef migrations add Initial --output-dir Data/Migrations --verbose
+dotnet tool restore && dotnet ef migrations add Initial --output-dir Data/Migrations --verbose
 ```
 
 This creates migration files in the `/Data/Migrations/` folder.
@@ -351,7 +351,7 @@ The migration will be **automatically applied** when the application starts (tha
 When you modify entities or configurations, create a new migration:
 
 ```bash
-dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose
+dotnet tool restore && dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose
 ```
 
 ---
@@ -440,7 +440,7 @@ Add-Migration YourMigrationName -OutputDir Data\Migrations -Context AppOfflineDb
 
 Open a terminal in the `Boilerplate.Server.Web` project directory and run:
 ```bash
-dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dotnet tool restore && dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 **Important Notes:**
