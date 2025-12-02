@@ -1,6 +1,12 @@
-﻿using Boilerplate.Shared.Dtos.Todo;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Todo;
 
 namespace Boilerplate.Shared.Controllers.Todo;
+
+//#if (offlineDb == true)
+// The following controller is not required when using the offline database.
+// The controller that works with the offline database is implemented in TodoItemTableController.cs
+//#endif
 
 [Route("api/[controller]/[action]/"), AuthorizedApi]
 public interface ITodoItemController : IAppController
