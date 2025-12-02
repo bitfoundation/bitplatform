@@ -1,19 +1,22 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Defines per-part CSS class/style values for <see cref="BitActionButton"/>.
+/// </summary>
 public class BitActionButtonClassStyles
 {
     /// <summary>
-    /// Custom CSS classes/styles for the root element of the BitActionButton.
+    /// Custom class or style applied to the root element.
     /// </summary>
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the Icon of the BitActionButton.
+    /// Custom class or style applied to the icon element.
     /// </summary>
     public string? Icon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the content of the BitActionButton.
+    /// Custom class or style applied to the content container.
     /// </summary>
     public string? Content { get; set; }
 }
