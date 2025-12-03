@@ -37,6 +37,6 @@ jobs:
     - name: Upload server artifact
       uses: actions/upload-artifact@v5
       with:
-        name: server-bundle
+        name: BitServices
         path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
