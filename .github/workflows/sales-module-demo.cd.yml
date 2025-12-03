@@ -78,7 +78,7 @@ jobs:
     - name: Upload server artifact
       uses: actions/upload-artifact@v5
       with:
-        name: server-bundle
+        name: SalesModule
         path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
@@ -137,5 +137,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v5
       with:
-        name: win-exe-bundle
+        name: WinSalesModule
         path: SalesModule\src\Client\SalesModule.Client.Windows\Releases
