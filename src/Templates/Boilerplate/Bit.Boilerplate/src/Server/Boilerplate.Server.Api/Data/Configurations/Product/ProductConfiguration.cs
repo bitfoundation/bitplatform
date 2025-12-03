@@ -34,7 +34,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Ignore(p => p.Embedding);
         //#endif
 
-        var defaultConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+        var version = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
         DateTimeOffset baseDate = DateTimeOffset.Parse("2022-07-12", styles: DateTimeStyles.AssumeUniversal);
 
         // --- Benz Entries (19 cars) ---
@@ -51,7 +51,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10000,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -65,7 +65,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10001,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -79,7 +79,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10003,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -93,7 +93,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10004,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -107,7 +107,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10005,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -121,7 +121,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10006,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -135,7 +135,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10007,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -149,7 +149,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10008,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -163,7 +163,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10009,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -177,7 +177,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10010,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -191,7 +191,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10011,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -205,7 +205,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10012,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -219,7 +219,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10013,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -233,7 +233,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10014,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -247,7 +247,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10015,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -261,7 +261,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10016,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -275,7 +275,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10017,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -289,7 +289,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10018,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -303,7 +303,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = benzId,
             ShortId = 10019,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -320,7 +320,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = fordId,
             ShortId = 10020,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -334,7 +334,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = fordId,
             ShortId = 10021,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -348,7 +348,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = fordId,
             ShortId = 10022,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -362,7 +362,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = fordId,
             ShortId = 10023,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -376,7 +376,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = fordId,
             ShortId = 10024,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -390,7 +390,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = fordId,
             ShortId = 10025,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -404,7 +404,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = fordId,
             ShortId = 10026,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -418,7 +418,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = fordId,
             ShortId = 10027,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -436,7 +436,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = nissanId,
             ShortId = 10028,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -450,7 +450,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = nissanId,
             ShortId = 10029,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -464,7 +464,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = nissanId,
             ShortId = 10030,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -478,7 +478,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = nissanId,
             ShortId = 10031,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -492,7 +492,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = nissanId,
             ShortId = 10032,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -506,7 +506,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = nissanId,
             ShortId = 10033,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -520,7 +520,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = nissanId,
             ShortId = 10034,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -534,7 +534,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = nissanId,
             ShortId = 10035,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -551,7 +551,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = bmwId,
             ShortId = 10036,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -565,7 +565,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = bmwId,
             ShortId = 10037,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -579,7 +579,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = bmwId,
             ShortId = 10038,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -593,7 +593,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = bmwId,
             ShortId = 10039,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -607,7 +607,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = bmwId,
             ShortId = 10040,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -621,7 +621,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = bmwId,
             ShortId = 10041,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -635,7 +635,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = bmwId,
             ShortId = 10042,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -649,7 +649,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = bmwId,
             ShortId = 10043,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -666,7 +666,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = teslaId,
             ShortId = 10044,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -680,7 +680,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = teslaId,
             ShortId = 10045,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -694,7 +694,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = teslaId,
             ShortId = 10046,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -708,7 +708,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = teslaId,
             ShortId = 10047,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -722,7 +722,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = teslaId,
             ShortId = 10048,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -736,7 +736,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = teslaId,
             ShortId = 10049,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
 
@@ -750,7 +750,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
             CreatedOn = baseDate.AddDays(-10),
             CategoryId = teslaId,
             ShortId = 10050,
-            ConcurrencyStamp = defaultConcurrencyStamp,
+            Version = version,
             HasPrimaryImage = false
         });
     }

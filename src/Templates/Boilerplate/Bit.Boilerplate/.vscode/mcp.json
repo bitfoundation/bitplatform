@@ -3,6 +3,10 @@
         "DeepWiki": {
             "type": "sse",
             "url": "https://mcp.deepwiki.com/mcp"
+        },
+        "MicrosoftLearn": {
+            "type": "http",
+            "url": "https://learn.microsoft.com/api/mcp"
         }
     }
 }

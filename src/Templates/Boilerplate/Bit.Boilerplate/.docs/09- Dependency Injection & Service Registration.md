@@ -188,31 +188,26 @@ This allows each platform to provide its own native implementation while sharing
 
 ## Example: Adding a New Service
 
-Let's say you want to add a `ProductSyncService` that works on all client platforms:
+Let's say you want to add a `FeedbackService` that works on all client platforms:
 
 ### Step 1: Create the Service
 
 ```csharp
-// src/Client/Boilerplate.Client.Core/Services/ProductSyncService.cs
+// src/Client/Boilerplate.Client.Core/Services/FeedbackService.cs
 namespace Boilerplate.Client.Core.Services;
 
-public partial class ProductSyncService
+public partial class FeedbackService
 {
-    [AutoInject] private IProductController productController = default!;
-    [AutoInject] private OfflineDbContext offlineDb = default!;
-    [AutoInject] private ILogger<ProductSyncService> logger = default!;
+    [AutoInject] private IFeedbackController feedbackController = default!;
+    [AutoInject] private ILogger<FeedbackService> logger = default!;
 
-    public async Task SyncProductsAsync()
+    public async Task SendFeedbackAsync(string message, CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Starting product sync...");
+        logger.LogInformation("Sending user feedback...");
         
-        var products = await productController.GetProducts();
+        await feedbackController.SendFeedback(new FeedbackDto { Message = message }, cancellationToken);
         
-        // Save to offline database
-        await offlineDb.Products.AddRangeAsync(products);
-        await offlineDb.SaveChangesAsync();
-        
-        logger.LogInformation("Product sync completed. Synced {Count} products.", products.Count);
+        logger.LogInformation("Feedback sent successfully.");
     }
 }
 ```
@@ -225,8 +220,8 @@ public static IServiceCollection AddClientCoreProjectServices(this IServiceColle
 {
     // ... existing services ...
     
-    // Register as Sessioned because sync state should be per-user
-    services.AddSessioned<ProductSyncService>();
+    // Register as Sessioned because feedback state should be per-user
+    services.AddSessioned<FeedbackService>();
     
     return services;
 }
@@ -236,16 +231,16 @@ public static IServiceCollection AddClientCoreProjectServices(this IServiceColle
 
 ```csharp
 // In any component or page
-public partial class ProductPage : AppPageBase
+public partial class FeedbackPage : AppPageBase
 {
-    [AutoInject] private ProductSyncService productSyncService = default!;
+    [AutoInject] private FeedbackService feedbackService = default!;
 
-    protected override async Task OnInitAsync()
+    private async Task OnSubmitFeedback(string message)
     {
         try
         {
-            await productSyncService.SyncProductsAsync();
-            SnackBarService.Success(Localizer[nameof(AppStrings.ProductsSyncedSuccessfully)]);
+            await feedbackService.SendFeedbackAsync(message);
+            SnackBarService.Success(Localizer[nameof(AppStrings.FeedbackSentSuccessfully)]);
         }
         catch (Exception ex)
         {
@@ -255,6 +250,52 @@ public partial class ProductPage : AppPageBase
 }
 ```
 
+## Owned services
+
+### Default Service Lifetime in Blazor Components
+
+By default, services injected in Blazor components remain tied to the application scope for the entire lifetime:
+
+- **Blazor Server**: Until the user closes the browser tab or the browser gets disconnected.
+- **Blazor WebAssembly / Blazor Hybrid**: Until the browser tab or app is closed.
+
+This is perfectly fine for most services (especially singletons or stateless ones), but services that hold resources (timers, event subscriptions, native handlers, etc.) may need to be disposed when their associated component is destroyed.
+
+### Using ScopedServices for Automatic Disposal
+
+To achieve automatic disposal when the component is disposed, inject the service via `ScopedServices` instead of using `[AutoInject]`. This creates a scoped service instance that gets disposed along with the component.
+
+**Example:**
+
+```csharp
+Keyboard keyboard => field ??= ScopedServices.GetRequiredService<Keyboard>(); // ??= means the service gets resolved when accessed, results into better performance.
+
+protected override async Task OnAfterFirstRenderAsync()
+{
+    await keyboard.Add(ButilKeyCodes.KeyF, () => searchBox.FocusAsync(), ButilModifiers.Ctrl); // Handles keyboard shortcuts
+
+    await base.OnAfterFirstRenderAsync();
+}
+```
+
+Instead of 
+
+```csharp
+[AutoInject] private Keyboard keyboard = default!;
+
+protected override async Task OnAfterFirstRenderAsync()
+{
+    await keyboard.Add(ButilKeyCodes.KeyF, () => searchBox.FocusAsync(), ButilModifiers.Ctrl); // Handles keyboard shortcuts
+
+    await base.OnAfterFirstRenderAsync();
+}
+
+protected override async ValueTask DisposeAsync(bool disposing)
+{
+    await keyboard.DisposeAsync();
+    await base.DisposeAsync(disposing);
+}
+```
 ---
 
 ### AI Wiki: Answered Questions

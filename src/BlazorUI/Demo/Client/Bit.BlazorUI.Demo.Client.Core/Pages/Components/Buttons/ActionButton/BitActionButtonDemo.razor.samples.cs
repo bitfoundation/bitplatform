@@ -3,87 +3,250 @@
 public partial class BitActionButtonDemo
 {
     private readonly string example1RazorCode = @"
-<BitActionButton IconName=""@BitIconName.AddFriend"">Create account</BitActionButton>
-<BitActionButton IconName=""@BitIconName.AddFriend"" ReversedIcon>Reversed Icon</BitActionButton>
-<BitActionButton IconName=""@BitIconName.AddFriend"" IsEnabled=""false"">Disabled</BitActionButton>
-<BitActionButton>No Icon</BitActionButton>";
+<BitActionButton IconName=""@BitIconName.AddFriend"">
+    Create account
+</BitActionButton>
+
+<BitActionButton IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.AddFriend"">
+    End Icon
+</BitActionButton>
+
+<BitActionButton IconName=""@BitIconName.AddFriend"" IsEnabled=""false"">
+    Disabled
+</BitActionButton>
+
+<BitActionButton IconName=""@BitIconName.AlarmClock"" AriaLabel=""Call"">
+    AriaLabel
+</BitActionButton>
+
+<BitActionButton>
+    No Icon
+</BitActionButton>
+
+<BitActionButton IconOnly IconName=""@BitIconName.Phone"">
+</BitActionButton>";
 
     private readonly string example2RazorCode = @"
+<BitActionButton IconPosition=""BitIconPosition.Start"" IconName=""@BitIconName.AddFriend"">
+    Start (default)
+</BitActionButton>
+
+<BitActionButton IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.AddFriend"">
+    End
+</BitActionButton>";
+
+    private readonly string example3RazorCode = @"
 <BitActionButton IconName=""@BitIconName.Globe"" Href=""https://bitplatform.dev"" Target=""_blank"">
-    Open bitplatform.dev
+    Open bitplatform.dev in a new tab
 </BitActionButton>
 
 <BitActionButton IconName=""@BitIconName.Globe"" Href=""https://github.com/bitfoundation/bitplatform"">
     Go to bitplatform GitHub
 </BitActionButton>";
 
-    private readonly string example3RazorCode = @"
-<BitActionButton Rel=""BitLinkRel.NoFollow"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
+    private readonly string example4RazorCode = @"
+<BitActionButton Rel=""BitLinkRel.NoFollow"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"">
     Open bitplatform.dev with a rel attribute (nofollow)
 </BitActionButton>
 
-<BitActionButton Rel=""BitLinkRel.NoFollow | BitLinkRel.NoReferrer"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
+<BitActionButton Rel=""BitLinkRel.NoFollow | BitLinkRel.NoReferrer"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"">
     Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
 </BitActionButton>";
 
-    private readonly string example4RazorCode = @"
-<BitActionButton Color=""BitColor.Primary"" IconName=""@BitIconName.ColorSolid"">Primary</BitActionButton>
-<BitActionButton Color=""BitColor.Primary"">Primary</BitActionButton>
-
-<BitActionButton Color=""BitColor.Secondary"" IconName=""@BitIconName.ColorSolid"">Secondary</BitActionButton>
-<BitActionButton Color=""BitColor.Secondary"">Secondary</BitActionButton>
-
-<BitActionButton Color=""BitColor.Tertiary"" IconName=""@BitIconName.ColorSolid"">Tertiary</BitActionButton>
-<BitActionButton Color=""BitColor.Tertiary"">Tertiary</BitActionButton>
-
-<BitActionButton Color=""BitColor.Info"" IconName=""@BitIconName.ColorSolid"">Info</BitActionButton>
-<BitActionButton Color=""BitColor.Info"">Info</BitActionButton>
-
-<BitActionButton Color=""BitColor.Success"" IconName=""@BitIconName.ColorSolid"">Success</BitActionButton>
-<BitActionButton Color=""BitColor.Success"">Success</BitActionButton>
-
-<BitActionButton Color=""BitColor.Warning"" IconName=""@BitIconName.ColorSolid"">Warning</BitActionButton>
-<BitActionButton Color=""BitColor.Warning"">Warning</BitActionButton>
-
-<BitActionButton Color=""BitColor.SevereWarning"" IconName=""@BitIconName.ColorSolid"">SevereWarning</BitActionButton>
-<BitActionButton Color=""BitColor.SevereWarning"">SevereWarning</BitActionButton>
-
-<BitActionButton Color=""BitColor.Error"" IconName=""@BitIconName.ColorSolid"">Error</BitActionButton>
-<BitActionButton Color=""BitColor.Error"">Error</BitActionButton>
-
-<BitActionButton Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.ColorSolid"">PrimaryBackground</BitActionButton>
-<BitActionButton Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitActionButton>
-
-<BitActionButton Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.ColorSolid"">SecondaryBackground</BitActionButton>
-<BitActionButton Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitActionButton>
-
-<BitActionButton Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.ColorSolid"">TertiaryBackground</BitActionButton>
-<BitActionButton Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitActionButton>
-
-<BitActionButton Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.ColorSolid"">PrimaryForeground</BitActionButton>
-<BitActionButton Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitActionButton>
-
-<BitActionButton Color=""BitColor.SecondaryForeground"" IconName=""@BitIconName.ColorSolid"">SecondaryForeground</BitActionButton>
-<BitActionButton Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitActionButton>
-
-<BitActionButton Color=""BitColor.TertiaryForeground"" IconName=""@BitIconName.ColorSolid"">TertiaryForeground</BitActionButton>
-<BitActionButton Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitActionButton>
-
-<BitActionButton Color=""BitColor.PrimaryBorder"" IconName=""@BitIconName.ColorSolid"">PrimaryBorder</BitActionButton>
-<BitActionButton Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitActionButton>
-
-<BitActionButton Color=""BitColor.SecondaryBorder"" IconName=""@BitIconName.ColorSolid"">SecondaryBorder</BitActionButton>
-<BitActionButton Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitActionButton>
-
-<BitActionButton Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.ColorSolid"">TertiaryBorder</BitActionButton>
-<BitActionButton Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitActionButton>";
-
     private readonly string example5RazorCode = @"
-<BitActionButton Size=""BitSize.Small"" IconName=""@BitIconName.FontSize"">Small</BitActionButton>
-<BitActionButton Size=""BitSize.Medium"" IconName=""@BitIconName.FontSize"">Medium</BitActionButton>
-<BitActionButton Size=""BitSize.Large"" IconName=""@BitIconName.FontSize"">Large</BitActionButton>";
+<BitActionButton IconName=""@BitIconName.AddFriend"">
+    <div style=""display:flex;gap:0.5rem;"">
+        <b>This is a custom template</b>
+        <BitSpinnerLoading CustomSize=""20"" />
+    </div>
+</BitActionButton>";
 
     private readonly string example6RazorCode = @"
+<EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"">
+    <DataAnnotationsValidator />
+
+    <ValidationSummary />
+
+    <BitTextField Label=""Required"" Required @bind-Value=""validationButtonModel.RequiredText"" />
+    <ValidationMessage For=""() => validationButtonModel.RequiredText"" style=""color:red"" />
+
+    <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonRequiredText"" />
+
+    <div>
+        <BitActionButton IconName=""@BitIconName.SendMirrored"" ButtonType=""BitButtonType.Submit"">
+            Submit
+        </BitActionButton>
+        <BitActionButton IconName=""@BitIconName.Reset"" ButtonType=""BitButtonType.Reset"">
+            Reset
+        </BitActionButton>
+        <BitActionButton IconName=""@BitIconName.ButtonControl"" ButtonType=""BitButtonType.Button"">
+            Button
+        </BitActionButton>
+    </div>
+</EditForm>";
+    private readonly string example6CsharpCode = @"
+public class ButtonValidationModel
+{
+    [Required]
+    public string RequiredText { get; set; } = string.Empty;
+
+    public string? NonRequiredText { get; set; }
+}
+
+private ButtonValidationModel validationButtonModel = new();
+
+private async Task HandleValidSubmit()
+{
+    await Task.Delay(2000);
+
+    validationButtonModel = new();
+
+    StateHasChanged();
+}";
+
+    private readonly string example7RazorCode = @"
+<BitActionButton FullWidth IconName=""@BitIconName.NavigationFlipper"">
+    FullWidth
+</BitActionButton>
+
+<BitActionButton FullWidth IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.Forward"">
+    FullWidth with end icon
+</BitActionButton>";
+
+    private readonly string example8RazorCode = @"
+<BitActionButton Color=""BitColor.Primary"" IconName=""@BitIconName.ColorSolid"">
+    Primary
+</BitActionButton>
+<BitActionButton Color=""BitColor.Primary"">
+    Primary
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.Secondary"" IconName=""@BitIconName.ColorSolid"">
+    Secondary
+</BitActionButton>
+<BitActionButton Color=""BitColor.Secondary"">
+    Secondary
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.Tertiary"" IconName=""@BitIconName.ColorSolid"">
+    Tertiary
+</BitActionButton>
+<BitActionButton Color=""BitColor.Tertiary"">
+    Tertiary
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.Info"" IconName=""@BitIconName.ColorSolid"">
+    Info
+</BitActionButton>
+<BitActionButton Color=""BitColor.Info"">
+    Info
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.Success"" IconName=""@BitIconName.ColorSolid"">
+    Success
+</BitActionButton>
+<BitActionButton Color=""BitColor.Success"">
+    Success
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.Warning"" IconName=""@BitIconName.ColorSolid"">
+    Warning
+</BitActionButton>
+<BitActionButton Color=""BitColor.Warning"">
+    Warning
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.SevereWarning"" IconName=""@BitIconName.ColorSolid"">
+    SevereWarning
+</BitActionButton>
+<BitActionButton Color=""BitColor.SevereWarning"">
+    SevereWarning
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.Error"" IconName=""@BitIconName.ColorSolid"">
+    Error
+</BitActionButton>
+<BitActionButton Color=""BitColor.Error"">
+    Error
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.ColorSolid"">
+    PrimaryBackground
+</BitActionButton>
+<BitActionButton Color=""BitColor.PrimaryBackground"">
+    PrimaryBackground
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.ColorSolid"">
+    SecondaryBackground
+</BitActionButton>
+<BitActionButton Color=""BitColor.SecondaryBackground"">
+    SecondaryBackground
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.ColorSolid"">
+    TertiaryBackground
+</BitActionButton>
+<BitActionButton Color=""BitColor.TertiaryBackground"">
+    TertiaryBackground
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.ColorSolid"">
+    PrimaryForeground
+</BitActionButton>
+<BitActionButton Color=""BitColor.PrimaryForeground"">
+    PrimaryForeground
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.SecondaryForeground"" IconName=""@BitIconName.ColorSolid"">
+    SecondaryForeground
+</BitActionButton>
+<BitActionButton Color=""BitColor.SecondaryForeground"">
+    SecondaryForeground
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.TertiaryForeground"" IconName=""@BitIconName.ColorSolid"">
+    TertiaryForeground
+</BitActionButton>
+<BitActionButton Color=""BitColor.TertiaryForeground"">
+    TertiaryForeground
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.PrimaryBorder"" IconName=""@BitIconName.ColorSolid"">
+    PrimaryBorder
+</BitActionButton>
+<BitActionButton Color=""BitColor.PrimaryBorder"">
+    PrimaryBorder
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.SecondaryBorder"" IconName=""@BitIconName.ColorSolid"">
+    SecondaryBorder
+</BitActionButton>
+<BitActionButton Color=""BitColor.SecondaryBorder"">
+    SecondaryBorder
+</BitActionButton>
+
+<BitActionButton Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.ColorSolid"">
+    TertiaryBorder
+</BitActionButton>
+<BitActionButton Color=""BitColor.TertiaryBorder"">
+    TertiaryBorder
+</BitActionButton>";
+
+    private readonly string example9RazorCode = @"
+<BitActionButton Size=""BitSize.Small"" IconName=""@BitIconName.FontSize"">
+    Small
+</BitActionButton>
+
+<BitActionButton Size=""BitSize.Medium"" IconName=""@BitIconName.FontSize"">
+    Medium
+</BitActionButton>
+
+<BitActionButton Size=""BitSize.Large"" IconName=""@BitIconName.FontSize"">
+    Large
+</BitActionButton>";
+
+    private readonly string example10RazorCode = @"
 <style>
     .custom-icon {
         color: hotpink;
@@ -128,52 +291,9 @@ public partial class BitActionButtonDemo
     Action Button Classes (Hover me)
 </BitActionButton>";
 
-    private readonly string example7RazorCode = @"
-<BitActionButton IconName=""@BitIconName.AddFriend"">
-    <div style=""display:flex;gap:0.5rem;"">
-        <div>This is a custom template</div>
-        <BitSpinnerLoading CustomSize=""20"" />
-    </div>
+    private readonly string example11RazorCode = @"
+<BitActionButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.AddFriend"">
+    ساخت حساب
 </BitActionButton>";
-
-    private readonly string example8RazorCode = @"
-<EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"">
-    <DataAnnotationsValidator />
-
-    <ValidationSummary />
-
-    <BitTextField Label=""Required"" Required @bind-Value=""validationButtonModel.RequiredText"" />
-    <ValidationMessage For=""() => validationButtonModel.RequiredText"" style=""color:red"" />
-
-    <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonRequiredText"" />
-
-    <div>
-        <BitActionButton IconName=""@BitIconName.SendMirrored"" ButtonType=""BitButtonType.Submit"">Submit</BitActionButton>
-        <BitActionButton IconName=""@BitIconName.Reset""  ButtonType=""BitButtonType.Reset"">Reset</BitActionButton>
-        <BitActionButton IconName=""@BitIconName.ButtonControl"" ButtonType=""BitButtonType.Button"">Button</BitActionButton>
-    </div>
-</EditForm>";
-    private readonly string example8CsharpCode = @"
-public class ButtonValidationModel
-{
-    [Required]
-    public string RequiredText { get; set; } = string.Empty;
-
-    public string? NonRequiredText { get; set; }
-}
-
-private ButtonValidationModel validationButtonModel = new();
-
-private async Task HandleValidSubmit()
-{
-    await Task.Delay(2000);
-
-    validationButtonModel = new();
-
-    StateHasChanged();
-}";
-
-    private readonly string example9RazorCode = @"
-<BitActionButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.AddFriend"">ساخت حساب</BitActionButton>";
 
 }

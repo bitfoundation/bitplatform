@@ -247,8 +247,8 @@ public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellat
     return entityToUpdate.Map();
 }
 
-[HttpDelete("{id}/{concurrencyStamp}")]
-public async Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken)
+[HttpDelete("{id}/{version}")]
+public async Task Delete(Guid id, string version, CancellationToken cancellationToken)
 {
     // ... delete logic ...
     await DbContext.SaveChangesAsync(cancellationToken);

@@ -1,7 +1,13 @@
-﻿using Boilerplate.Shared.Dtos.Todo;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Todo;
 using Boilerplate.Shared.Controllers.Todo;
 
 namespace Boilerplate.Server.Api.Controllers.Todo;
+
+//#if (offlineDb == true)
+// The following controller is not required when using the offline database.
+// The controller that works with the offline database is implemented in TodoItemTableController.cs
+//#endif
 
 [ApiController, Route("api/[controller]/[action]"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
@@ -19,7 +25,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     }
 
     [HttpGet]
-    public async Task<PagedResult<TodoItemDto>> GetTodoItems(ODataQueryOptions<TodoItemDto> odataQuery, CancellationToken cancellationToken)
+    public async Task<PagedResponse<TodoItemDto>> GetTodoItems(ODataQueryOptions<TodoItemDto> odataQuery, CancellationToken cancellationToken)
     {
         var query = (IQueryable<TodoItemDto>)odataQuery.ApplyTo(Get(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
 
@@ -28,11 +34,11 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
         query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
                      .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
-        return new PagedResult<TodoItemDto>(await query.ToArrayAsync(cancellationToken), totalCount);
+        return new PagedResponse<TodoItemDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
 
     [HttpGet("{id}")]
-    public async Task<TodoItemDto> Get(Guid id, CancellationToken cancellationToken)
+    public async Task<TodoItemDto> Get(string id, CancellationToken cancellationToken)
     {
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
@@ -47,7 +53,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
 
         entityToAdd.UserId = User.GetUserId();
 
-        entityToAdd.Date = DateTimeOffset.UtcNow;
+        entityToAdd.UpdatedAt = DateTimeOffset.UtcNow;
 
         await DbContext.TodoItems.AddAsync(entityToAdd, cancellationToken);
 
@@ -70,7 +76,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     }
 
     [HttpDelete("{id}")]
-    public async Task Delete(Guid id, CancellationToken cancellationToken)
+    public async Task Delete(string id, CancellationToken cancellationToken)
     {
         DbContext.TodoItems.Remove(new() { Id = id });
 

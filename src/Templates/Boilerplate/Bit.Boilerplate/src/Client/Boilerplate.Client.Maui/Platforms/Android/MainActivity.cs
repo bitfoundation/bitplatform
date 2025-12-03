@@ -28,14 +28,13 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                             //#if (module == "Sales")
                             PageUrls.Product,
                             //#endif
-                            //#if (sample == true)
+                            //#if (offlineDb == true)
+                            PageUrls.OfflineTodo,
+                            //#elseif (sample == true)
                             PageUrls.Todo,
                             //#endif
                             //#if (signalR == true)
                             PageUrls.SystemPrompts,
-                            //#endif
-                            //#if (offlineDb == true)
-                            PageUrls.OfflineDatabaseDemo
                             //#endif
                             ],
                         AutoVerify = true,
@@ -80,7 +79,7 @@ public partial class MainActivity : MauiAppCompatActivity
     //#if (notification == true)
     private static void HandlePushNotificationTap(Intent? intent)
     {
-        if (intent is null) 
+        if (intent is null)
             return;
 
         var dataString = intent.GetStringExtra(LocalNotificationCenter.ReturnRequest);

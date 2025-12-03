@@ -3,7 +3,7 @@
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Server.Api.Models.Categories;
 //#endif
-//#if (sample == true)
+//#if (sample == true || offlineDb == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
 using Boilerplate.Server.Api.Models.Identity;
@@ -12,12 +12,12 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 //#if (notification == true)
 using Boilerplate.Server.Api.Models.PushNotification;
 //#endif
-//#if (database == "Sqlite")
-using System.Security.Cryptography;
-//#endif
 using Hangfire.EntityFrameworkCore;
 using Boilerplate.Server.Api.Models.Attachments;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+//#if (offlineDb == true)
+using CommunityToolkit.Datasync.Server.EntityFrameworkCore;
+//#endif
 
 namespace Boilerplate.Server.Api.Data;
 
@@ -26,7 +26,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
-    //#if (sample == true)
+    //#if (sample == true || offlineDb == true)
     public DbSet<TodoItem> TodoItems { get; set; } = default!;
     //#endif
     //#if (module == "Admin" || module == "Sales")
@@ -101,7 +101,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         try
         {
-            SetConcurrencyStamp();
+            OnSavingChanges();
 
 #pragma warning disable NonAsyncEFCoreMethodsUsageAnalyzer
             return base.SaveChanges(acceptAllChangesOnSuccess);
@@ -117,7 +117,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         try
         {
-            SetConcurrencyStamp();
+            OnSavingChanges();
 
             return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
@@ -127,36 +127,24 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         }
     }
 
-    private void SetConcurrencyStamp()
+    private void OnSavingChanges()
     {
         ChangeTracker.DetectChanges();
 
+        foreach (var entry in ChangeTracker.Entries().Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
+        {
+            if (entry.Properties.Any(p => p.Metadata.Name == "UpdatedAt"))
+                entry.CurrentValues["UpdatedAt"] = DateTimeOffset.UtcNow;
+        }
+
         foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified or EntityState.Deleted))
         {
-            if (entityEntry.CurrentValues.TryGetValue<object>("ConcurrencyStamp", out var currentConcurrencyStamp) is false
-                || currentConcurrencyStamp is not byte[])
+            if (entityEntry.CurrentValues.TryGetValue<object>("Version", out var currentVersion) is false
+                || currentVersion is not byte[])
                 continue;
 
-            //#if (database != "Sqlite")
-            //#if (IsInsideProjectTemplate == true)
-            if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture) is false)
-            {
-                //#endif
-                // https://github.com/dotnet/efcore/issues/35443
-                entityEntry.OriginalValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", currentConcurrencyStamp } });
-                //#if (IsInsideProjectTemplate == true)
-            }
-            //#endif
-            //#else
-            //#if (IsInsideProjectTemplate == true)
-            if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
-            {
-                //#endif
-                entityEntry.CurrentValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", RandomNumberGenerator.GetBytes(8) } });
-                //#if (IsInsideProjectTemplate == true)
-            }
-            //#endif
-            //#endif
+            // https://github.com/dotnet/efcore/issues/35443
+            entityEntry.OriginalValues["Version"] = currentVersion;
         }
     }
 
@@ -230,8 +218,13 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
+            //#if (offlineDb == true)
+            if (typeof(BaseEntityTableData).IsAssignableFrom(entityType.ClrType))
+                continue; // No concurrency check for client side offline database sync entities
+            //#endif
+
             foreach (var property in entityType.GetProperties()
-                .Where(p => p.Name is "ConcurrencyStamp" && p.PropertyInfo?.PropertyType == typeof(byte[])))
+                .Where(p => p.Name is "Version" && p.PropertyInfo?.PropertyType == typeof(byte[])))
             {
                 var builder = new PropertyBuilder(property);
 

@@ -1,6 +1,6 @@
-using Boilerplate.Server.Api.Models.Todo;
+﻿using Riok.Mapperly.Abstractions;
 using Boilerplate.Shared.Dtos.Todo;
-using Riok.Mapperly.Abstractions;
+using Boilerplate.Server.Api.Models.Todo;
 
 namespace Boilerplate.Server.Api.Mappers;
 

@@ -9,28 +9,28 @@ public partial class BitActionButtonDemo
             Name = "AllowDisabledFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the button can have focus in disabled mode.",
+            Description = "Keeps the disabled action button focusable by not forcing a negative tabindex when IsEnabled is false.",
         },
         new()
         {
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Detailed description of the button for the benefit of screen readers.",
+            Description = "Detailed description of the button for the benefit of screen readers (rendered into aria-describedby).",
         },
         new()
         {
             Name = "AriaHidden",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the button.",
+            Description = "If true, adds an aria-hidden attribute instructing screen readers to ignore the button.",
         },
         new()
         {
             Name = "ButtonType",
             Type = "BitButtonType",
             DefaultValue = "null",
-            Description = "The type html attribute of the button element.",
+            Description = "The type of the button element; defaults to submit inside an EditForm otherwise button.",
             LinkType = LinkType.Link,
             Href = "#button-type-enum",
         },
@@ -39,14 +39,14 @@ public partial class BitActionButtonDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the button.",
+            Description = "The custom body of the action button (text and/or any render fragment).",
         },
         new()
         {
             Name = "Classes",
             Type = "BitActionButtonClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the button.",
+            Description = "Custom CSS classes for the root, icon, and content sections of the action button.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
         },
@@ -55,9 +55,16 @@ public partial class BitActionButtonDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the button.",
+            Description = "The general color of the button that applies to the icon and text of the action button.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "EditContext",
+            Type = "EditContext?",
+            DefaultValue = "null",
+            Description = "The EditContext, which is set if the button is inside an EditForm. The value is coming from the cascading value provided by the EditForm.",
         },
         new()
         {
@@ -78,43 +85,47 @@ public partial class BitActionButtonDemo
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name of the icon to render inside the button.",
+            Description = "The Fluent UI icon name to render inside the action button (e.g., BitIconName.AddFriend). Browse available names in BitIconName of the Bit.BlazorUI.Icons nuget package or the gallery: https://blazorui.bitplatform.dev/iconography.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
             Name = "IconOnly",
             Type = "bool",
-            DefaultValue = "null",
+            DefaultValue = "false",
             Description = "Removes the container of the text and only renders the icon.",
+        },
+        new()
+        {
+            Name = "IconPosition",
+            Type = "BitIconPosition?",
+            DefaultValue = "null",
+            Description = "Sets whether the icon renders before or after the content.",
+            LinkType = LinkType.Link,
+            Href = "#icon-position-enum",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "The callback for the click event of the button.",
+            Description = "Raised when the action button is clicked (only when IsEnabled is true); receives MouseEventArgs.",
         },
         new()
         {
             Name = "Styles",
             Type = "BitActionButtonClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the button.",
+            Description = "Custom inline styles for the root, icon, and content sections of the action button.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
-        },
-        new()
-        {
-            Name = "ReversedIcon",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Reverses the positions of the icon and the content of the button.",
         },
         new()
         {
             Name = "Rel",
             Type = "BitLinkRel?",
             DefaultValue = "null",
-            Description = "If Href provided, specifies the relationship between the current document and the linked document.",
+            Description = "Sets the rel attribute for link-rendered buttons when Href is a non-anchor URL; ignored for empty or hash-only hrefs. The rel attribute specifies the relationship between the current document and the linked document.",
             LinkType = LinkType.Link,
             Href = "#button-rel",
         },
@@ -123,7 +134,7 @@ public partial class BitActionButtonDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the button.",
+            Description = "Sets the preset size for typography and padding of the action button.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -149,6 +160,7 @@ public partial class BitActionButtonDemo
         {
             Id = "class-styles",
             Title = "BitActionButtonClassStyles",
+            Description = "Defines per-part CSS class/style values for BitActionButton.",
             Parameters =
             [
                 new()
@@ -156,21 +168,21 @@ public partial class BitActionButtonDemo
                     Name = "Root",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the root element of the BitActionButton."
+                    Description = "Custom class or style applied to the root element of the BitActionButton."
                 },
                 new()
                 {
                     Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the Icon of the BitActionButton."
+                    Description = "Custom class or style applied to the icon element of the BitActionButton."
                 },
                 new()
                 {
                     Name = "Content",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the content of the BitActionButton."
+                    Description = "Custom class or style applied to the content container of the BitActionButton."
                 }
             ]
         }
@@ -340,6 +352,27 @@ public partial class BitActionButtonDemo
                     Name= "Large",
                     Description="The large size button.",
                     Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "icon-position-enum",
+            Name = "BitIconPosition",
+            Description = "Describes the placement of an icon relative to other content.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Start",
+                    Description = "Icon renders before the content (default).",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "End",
+                    Description = "Icon renders after the content.",
+                    Value = "1",
                 }
             ]
         },

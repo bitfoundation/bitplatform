@@ -41,6 +41,9 @@ using Boilerplate.Server.Api.Services.Jobs;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+//#if (offlineDb == true)
+using CommunityToolkit.Datasync.Server;
+//#endif
 
 namespace Boilerplate.Server.Api;
 
@@ -283,6 +286,12 @@ public static partial class Program
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
             //#endif
         }
+
+        //#if (offlineDb == true)
+        // Register CommunityToolkit.Datasync services and repositories
+        services.AddDatasyncServices();
+        services.AddScoped<Controllers.Todo.TodoItemTableRepository>();
+        //#endif
 
         services.AddOptions<IdentityOptions>()
             .Bind(configuration.GetRequiredSection(nameof(ServerApiSettings.Identity)))

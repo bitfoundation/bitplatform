@@ -12,7 +12,7 @@ This stage provides a comprehensive exploration of the backend API architecture,
 2. [Dependency Injection with [AutoInject]](#dependency-injection-with-autoinject)
 3. [Reading Data with IQueryable](#reading-data-with-iqueryable)
 4. [OData Query Options Support](#odata-query-options-support)
-5. [PagedResult for Total Count](#pagedresult-for-total-count)
+5. [PagedResponse for Total Count](#PagedResponse-for-total-count)
 6. [Data Security and Permissions](#data-security-and-permissions)
 7. [Live Demos](#live-demos)
 8. [Performance Optimization](#performance-optimization)
@@ -280,26 +280,26 @@ private void PrepareGridDataProvider()
 This code:
 1. Creates an `ODataQuery` object with pagination, sorting, and filtering
 2. Applies it to the API request using `WithQuery()`
-3. Gets a `PagedResult` containing both the data and total count
+3. Gets a `PagedResponse` containing both the data and total count
 
 ---
 
-## PagedResult for Total Count
+## PagedResponse for Total Count
 
-When a client (like a data grid) needs to know both the **page data** AND the **total count** of records, use `PagedResult<T>`.
+When a client (like a data grid) needs to know both the **page data** AND the **total count** of records, use `PagedResponse<T>`.
 
-### The PagedResult Class
+### The PagedResponse Class
 
-**File**: [`src/Shared/Dtos/PagedResultDto.cs`](/src/Shared/Dtos/PagedResultDto.cs)
+**File**: [`src/Shared/Dtos/PagedResponseDto.cs`](/src/Shared/Dtos/PagedResponseDto.cs)
 
 ```csharp
-public partial class PagedResult<T>
+public partial class PagedResponse<T>
 {
     public T[] Items { get; set; } = [];
     public long TotalCount { get; set; }
 
     [JsonConstructor]
-    public PagedResult(T[] items, long totalCount)
+    public PagedResponse(T[] items, long totalCount)
     {
         Items = items;
         TotalCount = totalCount;
@@ -307,7 +307,7 @@ public partial class PagedResult<T>
 }
 ```
 
-### Why Use PagedResult?
+### Why Use PagedResponse?
 
 Without total count, the client doesn't know:
 - How many pages exist
@@ -320,7 +320,7 @@ Without total count, the client doesn't know:
 
 ```csharp
 [HttpGet]
-public async Task<PagedResult<CategoryDto>> GetCategories(
+public async Task<PagedResponse<CategoryDto>> GetCategories(
     ODataQueryOptions<CategoryDto> odataQuery, 
     CancellationToken cancellationToken)
 {
@@ -337,7 +337,7 @@ public async Task<PagedResult<CategoryDto>> GetCategories(
                  .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
     // Return both data and count
-    return new PagedResult<CategoryDto>(
+    return new PagedResponse<CategoryDto>(
         await query.ToArrayAsync(cancellationToken), 
         totalCount);
 }
@@ -347,7 +347,7 @@ public async Task<PagedResult<CategoryDto>> GetCategories(
 1. Apply filters/sorting but ignore `$top`/`$skip`
 2. Count the total filtered results
 3. Apply pagination
-4. Return data + count in `PagedResult`
+4. Return data + count in `PagedResponse`
 
 ---
 
@@ -522,10 +522,10 @@ public IQueryable<CategoryDto> Get()
 }
 ```
 
-#### PagedResult with Total Count
+#### PagedResponse with Total Count
 ```csharp
 [HttpGet]
-public async Task<PagedResult<CategoryDto>> GetCategories(
+public async Task<PagedResponse<CategoryDto>> GetCategories(
     ODataQueryOptions<CategoryDto> odataQuery, 
     CancellationToken cancellationToken)
 {
@@ -538,7 +538,7 @@ public async Task<PagedResult<CategoryDto>> GetCategories(
     query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
                  .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
-    return new PagedResult<CategoryDto>(
+    return new PagedResponse<CategoryDto>(
         await query.ToArrayAsync(cancellationToken), 
         totalCount);
 }
@@ -601,8 +601,8 @@ public async Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancell
 
 #### Delete with Business Logic Validation
 ```csharp
-[HttpDelete("{id}/{concurrencyStamp}")]
-public async Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken)
+[HttpDelete("{id}/{version}")]
+public async Task Delete(Guid id, string version, CancellationToken cancellationToken)
 {
     // Business rule: Cannot delete category if it has products
     if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))
@@ -613,7 +613,7 @@ public async Task Delete(Guid id, string concurrencyStamp, CancellationToken can
     DbContext.Categories.Remove(new() 
     { 
         Id = id, 
-        ConcurrencyStamp = Convert.FromHexString(concurrencyStamp) 
+        Version = Convert.FromHexString(version) 
     });
 
     await DbContext.SaveChangesAsync(cancellationToken);
@@ -646,7 +646,7 @@ This controller shows more advanced features:
 #### Semantic Search Integration
 ```csharp
 [HttpGet("{searchQuery}")]
-public async Task<PagedResult<ProductDto>> SearchProducts(
+public async Task<PagedResponse<ProductDto>> SearchProducts(
     string searchQuery, 
     ODataQueryOptions<ProductDto> odataQuery, 
     CancellationToken cancellationToken)
@@ -663,7 +663,7 @@ public async Task<PagedResult<ProductDto>> SearchProducts(
     query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
                  .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
-    return new PagedResult<ProductDto>(
+    return new PagedResponse<ProductDto>(
         await query.ToArrayAsync(cancellationToken), 
         totalCount);
 }
@@ -710,7 +710,7 @@ public interface ICategoryController : IAppController
     Task<CategoryDto> Get(Guid id, CancellationToken cancellationToken);
 
     [HttpGet]
-    Task<PagedResult<CategoryDto>> GetCategories(CancellationToken cancellationToken) => default!;
+    Task<PagedResponse<CategoryDto>> GetCategories(CancellationToken cancellationToken) => default!;
 
     [HttpGet]
     Task<List<CategoryDto>> Get(CancellationToken cancellationToken) => default!;
@@ -721,8 +721,8 @@ public interface ICategoryController : IAppController
     [HttpPut]
     Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancellationToken);
 
-    [HttpDelete("{id}/{concurrencyStamp}")]
-    Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken);
+    [HttpDelete("{id}/{version}")]
+    Task Delete(Guid id, string version, CancellationToken cancellationToken);
 }
 ```
 
@@ -741,7 +741,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     }
 
     [HttpGet]
-    public async Task<PagedResult<CategoryDto>> GetCategories(
+    public async Task<PagedResponse<CategoryDto>> GetCategories(
         ODataQueryOptions<CategoryDto> odataQuery, // Server-specific parameter
         CancellationToken cancellationToken)
     {
@@ -773,7 +773,7 @@ public partial class ProductsPage
         };
         
         // Apply query and call API
-        var pagedResult = await productController
+        var PagedResponse = await productController
             .WithQuery(query.ToString())
             .GetProducts(CurrentCancellationToken);
     }
@@ -800,7 +800,7 @@ public interface ICategoryController : IAppController
 {
     // Server accepts ODataQueryOptions, but client doesn't pass it
     [HttpGet]
-    Task<PagedResult<CategoryDto>> GetCategories(CancellationToken cancellationToken) => default!;
+    Task<PagedResponse<CategoryDto>> GetCategories(CancellationToken cancellationToken) => default!;
 }
 ```
 

@@ -272,17 +272,17 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <!--#endif-->
     <!--#if (offlineDb == true) -->
-    <data name="OfflineDatabaseDemoTitle" xml:space="preserve">
-    <value>Offline database demo</value>
+    <data name="OfflineTodoTitle" xml:space="preserve">
+    <value>Todo (Offline)</value>
   </data>
-    <data name="OfflineDatabaseDemoMessage" xml:space="preserve">
-    <value>Entity Framework Core / SQLite powered offline form inside your web/mobile/desktop apps:
- • Migrations
- • Transaction
- • LINQ queries
- • Batch operations
- • Schema based database
-</value>
+    <data name="SyncPushFailed" xml:space="preserve">
+    <value>Pushing changes to server failed</value>
+  </data>
+    <data name="SyncPullFailed" xml:space="preserve">
+    <value>Pulling changes from server failed</value>
+  </data>
+    <data name="SyncPushSuccess" xml:space="preserve">
+    <value>Pushed {0} changes to server</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
@@ -945,7 +945,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AboutPageTitle" xml:space="preserve">
     <value>About</value>
   </data>
-    <!--#if (sample == true) -->
+    <!--#if (sample == true || offlineDb == true) -->
     <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>Add a todo</value>
   </data>

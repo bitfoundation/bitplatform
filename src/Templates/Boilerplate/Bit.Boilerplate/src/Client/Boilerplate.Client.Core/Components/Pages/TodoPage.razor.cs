@@ -5,8 +5,10 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class TodoPage
 {
-    [AutoInject] Keyboard keyboard = default!;
     [AutoInject] ITodoItemController todoItemController = default!;
+
+    // Refer to .docs/09- Dependency Injection & Service Registration.md 's Owned services section for more information about ScopedServices
+    Keyboard keyboard => field ??= ScopedServices.GetRequiredService<Keyboard>();
 
     private bool isLoading;
     private string? searchText;
@@ -67,12 +69,12 @@ public partial class TodoPage
         if (isDescendingSort)
         {
             items = items.OrderByDescendingIf(selectedSort == nameof(AppStrings.Alphabetical), t => t.Title!)
-                         .OrderByDescendingIf(selectedSort == nameof(AppStrings.Date), t => t.Date!);
+                         .OrderByDescendingIf(selectedSort == nameof(AppStrings.Date), t => t.UpdatedAt!);
         }
         else
         {
             items = items.OrderByIf(selectedSort == nameof(AppStrings.Alphabetical), t => t.Title!)
-                         .OrderByIf(selectedSort == nameof(AppStrings.Date), t => t.Date!);
+                         .OrderByIf(selectedSort == nameof(AppStrings.Date), t => t.UpdatedAt!);
         }
         viewTodoItems = items.ToList();
     }
@@ -86,13 +88,6 @@ public partial class TodoPage
             : true;
 
         return condition1 && condition2;
-    }
-
-    private async Task ToggleIsDone(TodoItemDto todoItem)
-    {
-        todoItem.IsDone = !todoItem.IsDone;
-
-        await UpdateTodoItem(todoItem);
     }
 
     private void SearchTodoItems(string text)
@@ -132,7 +127,11 @@ public partial class TodoPage
     {
         if (string.IsNullOrWhiteSpace(newTodoTitle)) return;
 
-        var addedTodoItem = await todoItemController.Create(new() { Title = newTodoTitle }, CurrentCancellationToken);
+        var addedTodoItem = await todoItemController.Create(new()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Title = newTodoTitle
+        }, CurrentCancellationToken);
 
         allTodoItems.Add(addedTodoItem!);
 
@@ -191,16 +190,6 @@ public partial class TodoPage
         if (TodoItemIsVisible(todoItem) is false)
         {
             viewTodoItems.Remove(todoItem);
-        }
-    }
-
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        await base.DisposeAsync(true);
-
-        if (disposing)
-        {
-            await keyboard.DisposeAsync();
         }
     }
 }

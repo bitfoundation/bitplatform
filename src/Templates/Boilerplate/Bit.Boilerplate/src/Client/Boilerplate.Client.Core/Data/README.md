@@ -21,14 +21,14 @@ https://inloop.github.io/sqlite-viewer/
 
 **Migration**
 
-`OfflineDbContext` migrations are slightly different from Boilerplate.Server.Api's `AppDbContext` migrations.
-To add migration for `OfflineDbContext` first set `Boilerplate.Server.Web` as the Startup Project in solution explorer and set `Boilerplate.Client.Core` it as the Default Project in Package Manager Console and run the following commands:
+`AppOfflineDbContext` migrations are slightly different from Boilerplate.Server.Api's `AppDbContext` migrations.
+To add migration for `AppOfflineDbContext` first set `Boilerplate.Server.Web` as the Startup Project in solution explorer and set `Boilerplate.Client.Core` it as the Default Project in Package Manager Console and run the following commands:
 ```powershell
-Add-Migration Initial -OutputDir Data\Migrations -Context OfflineDbContext -Verbose
+Add-Migration Initial -OutputDir Data\Migrations -Context AppOfflineDbContext -Verbose
 ```
 Or open a terminal in your Boilerplate.Server.Web project directory and run followings:
 ```bash
-dotnet ef migrations add Initial --context OfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dotnet tool restore && dotnet ef migrations add Initial --context AppOfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 *Note*: If you encounter any problem in running these commands, first make sure that the solution builds successfully.
@@ -45,8 +45,13 @@ To implement this optimization, follow these steps in the Package Manager Consol
 
 2. Run the following command:
 
-    ```powershell
-    Optimize-DbContext -Context OfflineDbContext -OutputDir Data/CompiledModel -Namespace Boilerplate.Client.Core.Data -Verbose
-    ```
+```powershell
+Optimize-DbContext -Context AppOfflineDbContext -OutputDir Data/CompiledModel -Namespace Boilerplate.Client.Core.Data -Verbose
+```
+
+**OR** Run the following command in Boilerplate.Server.Web directory:
+```bash
+dotnet tool restore && dotnet ef dbcontext optimize --context AppOfflineDbContext --output-dir Data/CompiledModel --namespace Boilerplate.Client.Core.Data --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+```
 
 By adhering to these steps, you leverage EF Core compiled models to boost the performance of your application, ensuring an optimized and efficient data access method.

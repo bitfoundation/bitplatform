@@ -118,13 +118,82 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ConfirmationEmailSubject" xml:space="preserve">
+    <value>Mall {0} - Bekräfta din e-postadress</value>
+  </data>
+  <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
+    <value>Du får detta e-postmeddelande eftersom du nyligen har registrerat {0} till ditt Boilerplate-konto.</value>
+  </data>
+  <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
+    <value>Bekräfta din e-postadress genom att ange numret nedan i appen.</value>
+  </data>
+  <data name="EmailConfirmationMessageBodyLink" xml:space="preserve">
+    <value>Eller klicka på följande länk för att bekräfta denna e-postadress.</value>
+  </data>
+  <data name="ResetPasswordEmailSubject" xml:space="preserve">
+    <value>Mall {0} - Återställ ditt lösenord</value>
+  </data>
+  <data name="ResetPasswordTitle" xml:space="preserve">
+    <value>Hej {0}</value>
+  </data>
+  <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>Någon har begärt en token för att ändra ditt lösenord.</value>
+  </data>
   <data name="ResetPasswordBody" xml:space="preserve">
     <value>Om det inte var du som begärde återställning av lösenordet kan du ignorera detta e-postmeddelande.</value>
+  </data>
+  <data name="ResetPasswordTokenMessage" xml:space="preserve">
+    <value>Du kan kopiera token nedan och ange den på sidan för lösenordsåterställning.</value>
+  </data>
+  <data name="ResetPasswordLinkMessage" xml:space="preserve">
+    <value>Eller du kan klicka på följande länk för att försöka återställa ditt lösenord.</value>
+  </data>
+  <data name="OtpEmailSubject" xml:space="preserve">
+    <value>Mall {0} - OTP</value>
+  </data>
+  <data name="OtpTitle" xml:space="preserve">
+    <value>Hej {0}</value>
+  </data>
+  <data name="OtpSubtitle" xml:space="preserve">
+    <value>Någon har begärt en OTP för att logga in i appen.</value>
+  </data>
+  <data name="OtpBody" xml:space="preserve">
+    <value>Om du inte begärde OTP:n kan du ignorera detta e-postmeddelande.</value>
+  </data>
+  <data name="OtpMessage" xml:space="preserve">
+    <value>Du kan kopiera OTP:n nedan och ange den på inloggningssidan.</value>
+  </data>
+  <data name="OtpLinkMessage" xml:space="preserve">
+    <value>Eller du kan klicka på följande länk för att logga in.</value>
+  </data>
+  <data name="AppName" xml:space="preserve">
+    <value>Mall</value>
+  </data>
+  <data name="WelcomeToApp" xml:space="preserve">
+    <value>Välkommen till Mall!</value>
+  </data>
+  <data name="TfaTokenEmailSubject" xml:space="preserve">
+    <value>Mall {0} - 2FA-token</value>
   </data>
   <data name="TfaTokenHello" xml:space="preserve">
     <value>Hej {0}</value>
   </data>
+  <data name="TfaTokenMessage" xml:space="preserve">
+    <value>Här är din nya 2FA-token för inloggning:</value>
+  </data>
+  <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
+    <value>Mall {0} - Förhöjd åtkomsttoken</value>
+  </data>
   <data name="ElevatedAccessTokenHello" xml:space="preserve">
     <value>Hej {0}</value>
+  </data>
+  <data name="ElevatedAccessTokenMessage" xml:space="preserve">
+    <value>Här är din nya förhöjda åtkomsttoken:</value>
+  </data>
+  <data name="CopyTokenNote" xml:space="preserve">
+    <value>Kopiera denna kod och använd den i appen.</value>
+  </data>
+  <data name="DefaultFromName" xml:space="preserve">
+    <value>Mall-app</value>
   </data>
 </root>

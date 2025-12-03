@@ -358,13 +358,6 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "TabIndex",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The tabIndex of the DateRangePicker's input.",
-        },
-        new()
-        {
             Name = "TimeFormat",
             Type = "BitTimeFormat",
             DefaultValue = "BitTimeFormat.TwentyFourHours",

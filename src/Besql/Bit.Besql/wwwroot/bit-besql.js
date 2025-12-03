@@ -1,7 +1,7 @@
-﻿var BitBesql = window.BitBesql || {};
-BitBesql.version = window['bit-besql version'] = '10.1.1';
+var BitBesql = window.BitBesql || {};
+BitBesql.version = window['bit-besql version'] = '10.2.0';
 
-BitBesql.persist = async function persist(fileName) {
+BitBesql.persist = async function besqlPersist(fileName) {
 
     if (BitBesql.dbCache == null) {
         BitBesql.dbCache = await caches.open('bit-Besql');
@@ -33,7 +33,7 @@ BitBesql.persist = async function persist(fileName) {
     await dbCache.put(cacheStorageFilePath, response);
 }
 
-BitBesql.load = async function init(fileName) {
+BitBesql.load = async function besqlLoad(fileName) {
     const sqliteFilePath = `/${fileName}`;
     const cacheStorageFilePath = `/data/cache/${fileName}`;
 

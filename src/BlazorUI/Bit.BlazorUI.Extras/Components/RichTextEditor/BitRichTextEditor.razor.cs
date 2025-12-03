@@ -209,7 +209,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
         try
         {
-            await _js.BitMarkdownEditorDispose(_Id);
+            await _js.BitRichTextEditorDispose(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

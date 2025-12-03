@@ -94,15 +94,15 @@ public partial class Category
 
     public string? Color { get; set; }
 
-    public byte[] ConcurrencyStamp { get; set; } = [];
+    public byte[] Version { get; set; } = [];
 
     public IList<Product> Products { get; set; } = [];
 }
 ```
 
-### **ConcurrencyStamp**
+### **Version** Concurrency Stamp
 ```csharp
-public byte[] ConcurrencyStamp { get; set; } = [];
+public byte[] Version { get; set; } = [];
 ```
 - **Critical for optimistic concurrency control**
 - Configured as a **row version** in SQL Server
@@ -220,19 +220,19 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.HasIndex(p => p.Name).IsUnique();
 
         // Seed initial data
-        var defaultConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+        var defaultVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
         builder.HasData(
             new Category { 
                 Id = Guid.Parse("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"), 
                 Name = "Ford", 
                 Color = "#FFCD56", 
-                ConcurrencyStamp = defaultConcurrencyStamp 
+                Version = defaultVersion 
             },
             new Category { 
                 Id = Guid.Parse("582b8c19-0709-4dae-b7a6-fa0e704dad3c"), 
                 Name = "Nissan", 
                 Color = "#FF6384", 
-                ConcurrencyStamp = defaultConcurrencyStamp 
+                Version = defaultVersion 
             }
         );
     }
@@ -335,7 +335,7 @@ await dbContext.Database.MigrateAsync();
 Open a terminal in the `Boilerplate.Server.Api` project directory and run:
 
 ```bash
-dotnet ef migrations add Initial --output-dir Data/Migrations --verbose
+dotnet tool restore && dotnet ef migrations add Initial --output-dir Data/Migrations --verbose
 ```
 
 This creates migration files in the `/Data/Migrations/` folder.
@@ -351,7 +351,7 @@ The migration will be **automatically applied** when the application starts (tha
 When you modify entities or configurations, create a new migration:
 
 ```bash
-dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose
+dotnet tool restore && dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose
 ```
 
 ---
@@ -382,12 +382,12 @@ For client-side databases:
 
 ### Location and Technology
 
-**DbContext Location:** [`/src/Client/Boilerplate.Client.Core/Data/OfflineDbContext.cs`](/src/Client/Boilerplate.Client.Core/Data/OfflineDbContext.cs)
+**DbContext Location:** [`/src/Client/Boilerplate.Client.Core/Data/AppOfflineDbContext.cs`](/src/Client/Boilerplate.Client.Core/Data/AppOfflineDbContext.cs)
 
 **Technology:** [bit Besql](https://bitplatform.dev/besql) - EF Core SQLite for Blazor
 
 ```csharp
-public partial class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbContext(options)
+public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> options) : DbContext(options)
 {
     public virtual DbSet<UserDto> Users { get; set; }
     
@@ -425,7 +425,7 @@ This ensures:
 
 ### Creating Client-Side Migrations
 
-To add a migration for `OfflineDbContext`, follow these steps:
+To add a migration for `AppOfflineDbContext`, follow these steps:
 
 #### Option 1: Using Package Manager Console (Visual Studio)
 
@@ -433,20 +433,30 @@ To add a migration for `OfflineDbContext`, follow these steps:
 2. Set `Boilerplate.Client.Core` as the **Default Project** in Package Manager Console
 3. Run:
 ```powershell
-Add-Migration YourMigrationName -OutputDir Data\Migrations -Context OfflineDbContext -Verbose
+Add-Migration YourMigrationName -OutputDir Data\Migrations -Context AppOfflineDbContext -Verbose
 ```
 
 #### Option 2: Using dotnet CLI
 
 Open a terminal in the `Boilerplate.Server.Web` project directory and run:
 ```bash
-dotnet ef migrations add YourMigrationName --context OfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dotnet tool restore && dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 **Important Notes:**
 - Ensure the solution builds successfully before running migration commands
 - Do **NOT** run `Update-Database` for client-side migrations
-- The migration is automatically applied via `MigrateAsync()` when the app starts using OfflineDbContext
+- The migration is automatically applied via `MigrateAsync()` when the app starts using AppOfflineDbContext
+
+### Data Synchronization
+
+`SyncService` uses `CommunityToolkit.DataSync` to synchronize data between the client-side offline database and the server database.
+Conventions:
+
+- Entity must inherit from `BaseEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs)
+- DTO must inherit from `BaseDtoTableData` Example: [`/src/Shared/Dtos/Todo/TodoItemDto.cs`](/src/Shared/Dtos/Todo/TodoItemDto.cs)
+- TableController: A controller inheriting from `TableController` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs)
+- Repository: A repository inheriting from `EntityTableRepository` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs)
 
 ### Additional Resources
 
@@ -460,9 +470,6 @@ For comprehensive information about the client-side offline database, including:
 
 ---
 
-### AI Wiki: Answered Questions
-* [Why do the delete actions in the built-in boilerplate controllers check the concurrency stamp? Describe the problem they aim to solve, and then outline the solution.](https://deepwiki.com/search/why-do-the-delete-actions-in-t_d89c90a5-8854-4b9c-a555-b160327ae9b7)
-
-Ask your own question [here](https://wiki.bitplatform.dev)
+Ask your question [here](https://wiki.bitplatform.dev)
 
 ---

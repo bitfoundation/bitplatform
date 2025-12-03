@@ -80,6 +80,13 @@ public partial class DemoPage
         },
         new()
         {
+            Name = "TabIndex",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The value of the tabindex html attribute of the element.",
+        },
+        new()
+        {
             Name = "Visibility",
             Type = "BitVisibility",
             DefaultValue = "BitVisibility.Visible",

@@ -113,7 +113,7 @@ public partial class ProductsPage
         if (deletingProduct is null) return;
 
         await productController.Delete(deletingProduct.Id, 
-            deletingProduct.ConcurrencyStamp.ToStampString(), 
+            deletingProduct.Version.ToStampString(), 
             CurrentCancellationToken);
 
         await RefreshData();
@@ -537,17 +537,6 @@ public static partial class PageUrls
     public const string Terms = "/terms";
     public const string Settings = "/settings";
     public const string About = "/about";
-    
-    public const string Categories = "/categories";
-    public const string Dashboard = "/dashboard";
-    public const string Products = "/products";
-    public const string AddOrEditProduct = "/add-edit-product";
-    public const string Todo = "/todo";
-    public const string SystemPrompts = "/system-prompts";
-    public const string Authorize = "/authorize";
-    public const string Roles = "/user-groups";
-    public const string Users = "/users";
-    public const string OfflineDatabaseDemo = "/offline-database-demo";
 }
 ```
 
@@ -701,7 +690,7 @@ public partial class ProductsPage
     private async Task DeleteProduct()
     {
         await productController.Delete(deletingProduct.Id, 
-            deletingProduct.ConcurrencyStamp.ToStampString(), 
+            deletingProduct.Version.ToStampString(), 
             CurrentCancellationToken);
     }
 }

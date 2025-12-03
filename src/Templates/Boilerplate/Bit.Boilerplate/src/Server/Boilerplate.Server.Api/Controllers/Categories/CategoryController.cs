@@ -26,7 +26,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     }
 
     [HttpGet]
-    public async Task<PagedResult<CategoryDto>> GetCategories(ODataQueryOptions<CategoryDto> odataQuery, CancellationToken cancellationToken)
+    public async Task<PagedResponse<CategoryDto>> GetCategories(ODataQueryOptions<CategoryDto> odataQuery, CancellationToken cancellationToken)
     {
         var query = (IQueryable<CategoryDto>)odataQuery.ApplyTo(Get(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
 
@@ -35,7 +35,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
                      .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
-        return new PagedResult<CategoryDto>(await query.ToArrayAsync(cancellationToken), totalCount);
+        return new PagedResponse<CategoryDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
 
     [HttpGet("{id}")]
@@ -86,15 +86,15 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         return entityToUpdate.Map();
     }
 
-    [HttpDelete("{id}/{concurrencyStamp}")]
-    public async Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken)
+    [HttpDelete("{id}/{version}")]
+    public async Task Delete(Guid id, string version, CancellationToken cancellationToken)
     {
         if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))
         {
             throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
         }
 
-        DbContext.Categories.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromHexString(concurrencyStamp) });
+        DbContext.Categories.Remove(new() { Id = id, Version = Convert.FromHexString(version) });
 
         await DbContext.SaveChangesAsync(cancellationToken);
 

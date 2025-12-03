@@ -60,6 +60,7 @@ The solution is organized into the following projects. Understand their roles to
 
 -   **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` and `riok/mapperly` repositories.
 -   **Website Fetcher**: Gathers information from URLs provided by the user, using `fetch` or `get_web_pages` tools.
+-   **Microsoft Learn**: Provides access to official Microsoft documentation and code samples for Azure, .NET Aspire, .NET MAUI, Entity Framework Core, SignalR, Microsoft.Extensions.AI, SQL Server, and other Microsoft technologies. Use `microsoft_docs_search` to find relevant documentation and `microsoft_code_sample_search` to find official code examples.
 
 ## 5. Mandatory Workflow
 
@@ -98,7 +99,7 @@ After applying changes, you **MUST** verify the integrity of the application.
 
 *   **Be Decisive**: Do not ask for permission to proceed or for a review of your plan. Directly state your plan and proceed with the implementation.
 *   **Execute Commands Individually**: **Never** chain CLI commands with `&&`. Execute each command in a separate step.
-*   **Getting started**: When a developer first interacts with you with a message like `Run getting started`, you **MUST** proactively follow `.github/prompts/getting-started.prompt.md`.
+*   **Important**: If the user's prompt language is a Right-to-Left (RTL) language (e.g., فارسی, العربية, עברית), you **MUST** prepend the Unicode character U+202B (‫) at the beginning of **text, bullet points, and paragraphs**, except inside code blocks, code examples, file paths, or any technical content that should remain in LTR format.
 
 ## 7. Critical Command Reference
 
@@ -129,13 +130,13 @@ Example 1: `OnClick="WrapHandled(MyMethod)"` instead of `OnClick="MyMethod"`.
 Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnClick="async () => await MyMethod()"`.
 16. **Use OData Query Options**: Leverage `[EnableQuery]` and `ODataQueryOptions` for efficient data filtering and pagination.
 17. **Follow Mapperly Conventions**: Use **partial static classes and extensions methods** with Mapperly for high-performance object mapping.
-18. **Handle Concurrency**: Always use `ConcurrencyStamp` for optimistic concurrency control in update and delete operations.
+18. **Handle Concurrency**: Always use `byte[] Version` for optimistic concurrency control in update and delete operations.
 
 ## Instructions for adding new model/entity to ef-core DbContext / Database
 Create the Entity Model
 - **Location**: `Boilerplate.Server.Api's Models folder`
 - **Requirements**:
-  - Include `Id`, `ConcurrencyStamp` properties
+  - Include `Id`, `Version` properties
   - Add appropriate navigation properties
   - Use nullable reference types
   - Add data annotations as needed
@@ -154,7 +155,7 @@ Create the DTO
   - Use `[DtoResourceType(typeof(AppStrings))]` attribute
   - Add validation attributes: `[Required]`, `[MaxLength]`, `[Display]`
   - Use `nameof(AppStrings.PropertyName)` for error messages and display names
-  - Include `Id`, `ConcurrencyStamp` properties
+  - Include `Id`, `Version` properties
   - Add calculated properties if needed (e.g., `ProductsCount`)
   - Add `[JsonSerializable(typeof({DtoName}))]` to AppJsonContext.cs
 

@@ -108,7 +108,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         });
 
         //#if (offlineDb == true)
-        services.AddBesqlDbContextFactory<OfflineDbContext>((sp, optionsBuilder) =>
+        services.AddBesqlDbContextFactory<AppOfflineDbContext>((sp, optionsBuilder) =>
         {
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
             var dirPath = isRunningInsideDocker ? "/container_volume"
@@ -119,22 +119,26 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             Directory.CreateDirectory(dirPath);
 
-            var dbPath = Path.Combine(dirPath, "Offline.db");
+            var dbPath = Path.Combine(dirPath, "AppOffline.db");
 
             optionsBuilder.UseSqlite($"Data Source={dbPath}", dbOptions =>
             {
 
             });
 
-            if (AppEnvironment.IsDevelopment() is false)
-            {
-                optionsBuilder.UseModel(OfflineDbContextModel.Instance);
-            }
-
             optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
                     .EnableDetailedErrors(AppEnvironment.IsDevelopment());
 
-        }, dbContextInitializer: async (sp, dbContext) => await Task.Run(async () => await dbContext.Database.MigrateAsync()));
+        }
+        , dbContextInitializer: async (_, dbContext) =>
+        {
+            if (AppEnvironment.IsDevelopment() is false && dbContext.Model.GetType() == typeof(EntityFrameworkCore.Metadata.RuntimeModel))
+                throw new InvalidOperationException("DbContext has not been optimized"); // Checkout Boilerplate.Client.Core/Data/README.md for more info about Optimize-DbContext command.
+
+            await Task.Run(async () => await dbContext.Database.MigrateAsync());
+        }
+        , lifetime: ServiceLifetime.Scoped);
+        services.AddScoped<SyncService>();
         //#endif
 
         //#if (appInsights == true)
@@ -174,12 +178,8 @@ public static partial class IClientCoreServiceCollectionExtensions
                     options.HttpMessageHandlerFactory = httpClientHandler => sp.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(httpClientHandler);
                     options.AccessTokenProvider = async () =>
                     {
-                        try
-                        {
-                            return await authManager.GetFreshAccessToken(requestedBy: nameof(HubConnection));
-                        }
-                        catch (ServerConnectionException) { } // If the client is disconnected and the access token is expired, this code will execute repeatedly every few seconds, causing an annoying error message to be displayed to the user.
-                        return null;
+                        return await authManager.GetFreshAccessToken(requestedBy: nameof(HubConnection),
+                            ignoreServerConnectionException: true); // ignoreServerConnectionException: If the client is disconnected and the access token is expired, this code will execute repeatedly every few seconds, causing an annoying error message to be displayed to the user.
                     };
                 })
                 .Build();

@@ -11,7 +11,7 @@ namespace Bit.Besql.Demo.Client.Data.CompiledModel
     public partial class OfflineDbContextModel
     {
         private OfflineDbContextModel()
-            : base(skipDetectChanges: false, modelId: new Guid("ac96847b-e3a9-46a3-82cf-7605a37f26af"), entityTypeCount: 1)
+            : base(skipDetectChanges: false, modelId: new Guid("a517c835-3ee2-49c8-b15c-99478d0fbb8b"), entityTypeCount: 1)
         {
         }
 
@@ -21,7 +21,7 @@ namespace Bit.Besql.Demo.Client.Data.CompiledModel
 
             WeatherForecastEntityType.CreateAnnotations(weatherForecast);
 
-            AddAnnotation("ProductVersion", "9.0.0");
+            AddAnnotation("ProductVersion", "10.0.0");
         }
     }
 }

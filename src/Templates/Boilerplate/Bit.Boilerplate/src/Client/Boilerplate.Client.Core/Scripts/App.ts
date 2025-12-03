@@ -87,5 +87,16 @@ export class App {
 
         bswup.checkForUpdate();
     }
+
+    /* Clears web browser / web view storages */
+    public static async clearWebStorages() {
+        await Promise.all([
+            ...await caches.keys().then(k => k.map(caches.delete.bind(caches))),
+            ...await indexedDB.databases().then(d => d.map(db => indexedDB.deleteDatabase(db.name!))),
+            localStorage.clear(),
+            sessionStorage.clear(),
+            document.cookie.split(';').forEach(c => document.cookie = c.split('=')[0].trim() + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/')
+        ]);
+    }
 }
 

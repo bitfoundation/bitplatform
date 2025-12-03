@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <RunSettingsFilePath>$(MSBuildProjectDirectory)\.runsettings</RunSettingsFilePath>
         <TestingPlatformCommandLineArguments>--settings ./.runsettings</TestingPlatformCommandLineArguments>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
     </PropertyGroup>
 
     <ItemGroup>
