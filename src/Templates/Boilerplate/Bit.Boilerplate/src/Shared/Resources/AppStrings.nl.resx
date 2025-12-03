@@ -126,10 +126,10 @@
     <value>Het veld {0} is geen geldig e-mailadres.</value>
   </data>
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>MaxLengthAttribute moet een lengtewaarde hebben die groter is dan nul. Gebruik MaxLength() zonder parameters om aan te geven dat de tekenreeks of het array de maximale toegestane lengte kan hebben.</value>
+    <value>MaxLengthAttribute moet een lengtewaarde hebben die groter is dan nul. Gebruik MaxLength() zonder parameters om aan te geven dat de string of array de maximale toegestane lengte kan hebben.</value>
   </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
-    <value>Het veld {0} moet een tekenreeks- of arraytype zijn met een minimale lengte van '{1}'.</value>
+    <value>Het veld {0} moet een string- of arraytype zijn met een minimale lengte van '{1}'.</value>
   </data>
   <data name="RangeAttribute_ValidationError" xml:space="preserve">
     <value>Het veld {0} moet tussen {1} en {2} liggen.</value>
@@ -151,10 +151,10 @@
     <value>Niet geautoriseerd</value>
   </data>
   <data name="ForbiddenException" xml:space="preserve">
-    <value>Toegang tot de gevraagde bron is verboden</value>
+    <value>Toegang tot de gevraagde resource is verboden</value>
   </data>
   <data name="ResourceValidationException" xml:space="preserve">
-    <value>Gegevens van het verzoek zijn niet geldig</value>
+    <value>Verzoekgegevens zijn niet geldig</value>
   </data>
   <data name="RestException" xml:space="preserve">
     <value>Er is een fout opgetreden tijdens de communicatie met de server</value>
@@ -169,7 +169,7 @@
     <value>Het record is gewijzigd door een andere gebruiker nadat u de oorspronkelijke gegevens hebt ontvangen. De bewerking is geannuleerd.</value>
   </data>
   <data name="ResourceNotFoundException" xml:space="preserve">
-    <value>Bron niet gevonden</value>
+    <value>Resource niet gevonden</value>
   </data>
   <data name="TooManyRequestExceptions" xml:space="preserve">
     <value>Te veel verzoeken</value>
@@ -218,13 +218,13 @@
     <value>Bewerk uw profielgegevens</value>
   </data>
   <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
-    <value>Er is een e-mailtoken voor wijziging naar u verzonden</value>
+    <value>Er is een token voor het wijzigen van e-mail naar u verzonden</value>
   </data>
   <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
-    <value>Er is een tokencode voor telefoonnummerwijziging naar u verzonden</value>
+    <value>Er is een token voor het wijzigen van telefoonnummer naar u verzonden</value>
   </data>
   <data name="SuccessfulSendTokenMessage" xml:space="preserve">
-    <value>De token is naar u verzonden</value>
+    <value>Het token is naar u verzonden</value>
   </data>
   <data name="SessionsTitle" xml:space="preserve">
     <value>Sessies</value>
@@ -237,7 +237,7 @@
   </data>
   <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
     <value>Van {0} toegestane apparaten voor volledige functies, hebt u {1} gebruikt.
-Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.</value>
+Na het bereiken van {0} zullen extra aanmeldingen beperkte functies hebben.</value>
   </data>
   <data name="OtherSessions" xml:space="preserve">
     <value>Andere sessies</value>
@@ -262,10 +262,10 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
   </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
-    <value>Systeem prompts</value>
+    <value>System prompts</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
-    <value>Bekijk hier de systeem prompts voor de chatbot.</value>
+    <value>Bekijk hier de systeemprompts voor de chatbot.</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>Push notification job</value>
@@ -273,16 +273,16 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
   <!--#endif-->
   <!--#if (offlineDb == true) -->
   <data name="OfflineTodoTitle" xml:space="preserve">
-    <value>Te doen (Offline)</value>
+    <value>Todo (Offline)</value>
   </data>
   <data name="SyncPushFailed" xml:space="preserve">
-    <value>Het doorsturen van wijzigingen naar de server is mislukt</value>
+    <value>Het pushen van wijzigingen naar de server is mislukt</value>
   </data>
   <data name="SyncPullFailed" xml:space="preserve">
     <value>Het ophalen van wijzigingen van de server is mislukt</value>
   </data>
   <data name="SyncPushSuccess" xml:space="preserve">
-    <value>{0} wijzigingen naar de server doorgestuurd</value>
+    <value>{0} wijzigingen naar de server gepusht</value>
   </data>
   <!--#endif-->
   <data name="FullName" xml:space="preserve">
@@ -364,7 +364,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Geef óf gebruikersnaam, óf e-mail óf telefoonnummer op.</value>
   </data>
   <data name="YouNeedToSignIn" xml:space="preserve">
-    <value>U moet zijn aangemeld om door te gaan.</value>
+    <value>U moet zijn ingelogd om door te gaan.</value>
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Ongeldige gebruikersreferenties</value>
@@ -397,7 +397,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Terug naar home</value>
   </data>
   <data name="UserLockedOut" xml:space="preserve">
-    <value>Gebruiker is geblokkeerd. Probeer het opnieuw over {0}</value>
+    <value>Gebruiker is uitgesloten. Probeer het opnieuw over {0}</value>
   </data>
   <data name="UserIsNotConfirmed" xml:space="preserve">
     <value>Gebruiker is niet bevestigd.</value>
@@ -415,10 +415,10 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Token</value>
   </data>
   <data name="InvalidToken" xml:space="preserve">
-    <value>Ongeldige token.</value>
+    <value>Ongeldig token.</value>
   </data>
   <data name="ExpiredToken" xml:space="preserve">
-    <value>Vervallen token.</value>
+    <value>Verlopen token.</value>
   </data>
   <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>Hebt u al een account?</value>
@@ -430,7 +430,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>E-mailadres</value>
   </data>
   <data name="ConfirmEmailSubtitle" xml:space="preserve">
-    <value>We hebben een bevestigingstoken naar uw e-mailadres verzonden.</value>
+    <value>We hebben een bevestigingstoken naar uw e-mailadres gestuurd.</value>
   </data>
   <data name="ConfirmPageTitle" xml:space="preserve">
     <value>Bevestigen</value>
@@ -448,19 +448,19 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Code</value>
   </data>
   <data name="EmailTokenConfirmButtonText" xml:space="preserve">
-    <value>Bevestig e-mailadres</value>
+    <value>Bevestig E-mailadres</value>
   </data>
   <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
     <value>Uw e-mailadres ({0}) is bevestigd.</value>
   </data>
   <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
-    <value>U kunt nu aanmelden met uw account.</value>
+    <value>U kunt nu inloggen met uw account.</value>
   </data>
   <data name="ConfirmPhoneHeaderText" xml:space="preserve">
     <value>Telefoonnummer</value>
   </data>
   <data name="ConfirmPhoneSubtitle" xml:space="preserve">
-    <value>We hebben een bevestigingstoken naar uw telefoon verzonden.</value>
+    <value>We hebben een bevestigingstoken naar uw telefoon gestuurd.</value>
   </data>
   <data name="ConfirmPhoneMessage" xml:space="preserve">
     <value>Bevestig uw telefoonnummer door de token hier in te typen.</value>
@@ -472,19 +472,19 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Code</value>
   </data>
   <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
-    <value>Bevestig telefoonnummer</value>
+    <value>Bevestig Telefoonnummer</value>
   </data>
   <data name="NotReceivedPhoneMessage" xml:space="preserve">
     <value>Hebt u de token niet ontvangen op uw telefoon?</value>
   </data>
   <data name="ResendPhoneTokenButtonText" xml:space="preserve">
-    <value>Code opnieuw verzenden</value>
+    <value>Code opnieuw versturen</value>
   </data>
   <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
     <value>Uw telefoonnummer ({0}) is bevestigd.</value>
   </data>
   <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
-    <value>U kunt nu aanmelden met uw account.</value>
+    <value>U kunt nu inloggen met uw account.</value>
   </data>
   <data name="AccountTitle" xml:space="preserve">
     <value>Account</value>
@@ -499,7 +499,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Weet u zeker dat u uw account wilt verwijderen?</value>
   </data>
   <data name="DontHaveAccountMessage" xml:space="preserve">
-    <value>Hebt u nog geen account?</value>
+    <value>Hebt u geen account?</value>
   </data>
   <data name="Edit" xml:space="preserve">
     <value>Bewerken</value>
@@ -526,7 +526,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Ga naar vandaag</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Maak eenvoudig uw multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor-app in de kortst mogelijke tijd!</value>
+    <value>Maak uw multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor-app eenvoudig in de kortst mogelijke tijd!</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>Home</value>
@@ -547,7 +547,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Een set tools voor .NET-ontwikkelaars op meerdere platforms</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
-    <value>Een set hoogwaardige, eenvoudig aan te passen en mooie Blazor-componenten</value>
+    <value>Een set performante, eenvoudig aan te passen en mooie Blazor-componenten</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
     <value>Een rijk aan functies .NET-projecttemplate dat overal naadloos werkt</value>
@@ -574,7 +574,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Verwijderen</value>
   </data>
   <data name="ResendEmailTokenButtonText" xml:space="preserve">
-    <value>Code opnieuw verzenden</value>
+    <value>Code opnieuw versturen</value>
   </data>
   <data name="ResetPasswordPageTitle" xml:space="preserve">
     <value>Wachtwoord resetten</value>
@@ -586,7 +586,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Wachtwoord resetten</value>
   </data>
   <data name="ResetPasswordSubtitle" xml:space="preserve">
-    <value>We hebben een token naar uw telefoon of e-mail verzonden.</value>
+    <value>We hebben een token naar uw telefoon of e-mail gestuurd.</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
     <value>Dien hier de token samen met uw nieuwe wachtwoord in.</value>
@@ -598,7 +598,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Uw wachtwoord is gereset.</value>
   </data>
   <data name="ResetPasswordSuccessBody" xml:space="preserve">
-    <value>U kunt nu aanmelden met uw wachtwoord.</value>
+    <value>U kunt nu inloggen met uw wachtwoord.</value>
   </data>
   <data name="ResetPasswordMessageInForgot" xml:space="preserve">
     <value>Hebt u al een reset-wachtwoordtoken?</value>
@@ -607,43 +607,43 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Opslaan</value>
   </data>
   <data name="SignInPageTitle" xml:space="preserve">
-    <value>Aanmelden</value>
+    <value>Inloggen</value>
   </data>
   <data name="SignInPanelTitle" xml:space="preserve">
     <value>Welkom</value>
   </data>
   <data name="SignInPanelSubtitle" xml:space="preserve">
-    <value>Ga door met uw</value>
+    <value>Doorgaan met uw</value>
   </data>
   <data name="Continue" xml:space="preserve">
     <value>Doorgaan</value>
   </data>
   <data name="GoogleSignInButtonText" xml:space="preserve">
-    <value>Aanmelden met Google</value>
+    <value>Inloggen met Google</value>
   </data>
   <data name="FacebookSignInButtonText" xml:space="preserve">
-    <value>Aanmelden met Facebook</value>
+    <value>Inloggen met Facebook</value>
   </data>
   <data name="GitHubSignInButtonText" xml:space="preserve">
-    <value>Aanmelden met GitHub</value>
+    <value>Inloggen met GitHub</value>
   </data>
   <data name="TwitterSignInButtonText" xml:space="preserve">
-    <value>Aanmelden met Twitter (X)</value>
+    <value>Inloggen met Twitter (X)</value>
   </data>
   <data name="AppleSignInButtonText" xml:space="preserve">
-    <value>Aanmelden met Apple</value>
+    <value>Inloggen met Apple</value>
   </data>
   <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
-    <value>Aanmelden met Test server</value>
+    <value>Inloggen met Test server</value>
   </data>
   <data name="AzureEntraSignInButtonText" xml:space="preserve">
-    <value>Aanmelden met Azure Entra</value>
+    <value>Inloggen met Azure Entra</value>
   </data>
   <data name="SignOut" xml:space="preserve">
-    <value>Afmelden</value>
+    <value>Uitloggen</value>
   </data>
   <data name="SignOutPrompt" xml:space="preserve">
-    <value>Weet u zeker dat u wilt afmelden?</value>
+    <value>Weet u zeker dat u wilt uitloggen?</value>
   </data>
   <data name="SignUp" xml:space="preserve">
     <value>Registreren</value>
@@ -661,7 +661,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Verzenden</value>
   </data>
   <data name="UploadNewImage" xml:space="preserve">
-    <value>Sleep of selecteer een afbeelding</value>
+    <value>Sleep een afbeelding of selecteer er een</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Ja</value>
@@ -694,19 +694,19 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Id</value>
   </data>
   <data name="SignIn" xml:space="preserve">
-    <value>Aanmelden</value>
+    <value>Inloggen</value>
   </data>
   <data name="SignInByModal" xml:space="preserve">
-    <value>Aanmelden (Popup)</value>
+    <value>Inloggen (Popup)</value>
   </data>
   <data name="Confirm" xml:space="preserve">
     <value>Bevestigen</value>
   </data>
   <data name="SignInAsDifferentUser" xml:space="preserve">
-    <value>Aanmelden als andere gebruiker</value>
+    <value>Inloggen als andere gebruiker</value>
   </data>
   <data name="YouAreSignedInAs" xml:space="preserve">
-    <value>U bent aangemeld als</value>
+    <value>U bent ingelogd als</value>
   </data>
   <data name="ForgotPasswordLink" xml:space="preserve">
     <value>Wachtwoord vergeten?</value>
@@ -724,10 +724,10 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Gekopieerd</value>
   </data>
   <data name="TfaTitle" xml:space="preserve">
-    <value>Twee-factor authenticatie</value>
+    <value>Twee-factor-authenticatie</value>
   </data>
   <data name="TfaSubtitle" xml:space="preserve">
-    <value>Beheer de multi-factor authenticatie van uw account</value>
+    <value>Beheer de multi-factor authenticatie van je account</value>
   </data>
   <data name="TwoFactorCode" xml:space="preserve">
     <value>2FA-code</value>
@@ -739,28 +739,28 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Twee-factor authenticatie</value>
   </data>
   <data name="TfaPanelSubtitle" xml:space="preserve">
-    <value>Haal een nieuwe code op uit uw authenticator-app of gebruik uw herstelcode.</value>
+    <value>Haal een nieuwe code op uit je authenticator-app of gebruik je herstelcode.</value>
   </data>
   <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
     <value>Probeer een andere manier</value>
   </data>
   <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
-    <value>U kunt een nieuwe code krijgen via e-mail of telefoon.</value>
+    <value>Je kunt een nieuwe code ophalen via je e-mail of telefoon.</value>
   </data>
   <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
     <value>Code ophalen</value>
   </data>
   <data name="TfaResetSharedKeyError" xml:space="preserve">
-    <value>Het resetten van de 2FA-gedeelde sleutel schakelt 2FA uit totdat een 2FA-token op basis van de nieuwe gedeelde sleutel is gevalideerd.</value>
+    <value>Het resetten van de gedeelde 2FA-sleutel schakelt 2FA uit totdat een 2FA-token gebaseerd op de nieuwe gedeelde sleutel is gevalideerd.</value>
   </data>
   <data name="TfaEmptyCodeError" xml:space="preserve">
-    <value>Er is geen 2FA-token geleverd door het verzoek. Een geldige 2FA-token is vereist om 2FA in te schakelen.</value>
+    <value>Er is geen 2FA-token meegegeven in het verzoek. Een geldig 2FA-token is vereist om 2FA in te schakelen.</value>
   </data>
   <data name="TfaInvalidCodeError" xml:space="preserve">
-    <value>De 2FA-token geleverd door het verzoek was ongeldig. Een geldige 2FA-token is vereist om 2FA in te schakelen.</value>
+    <value>Het 2FA-token dat in het verzoek is meegegeven was ongeldig. Een geldig 2FA-token is vereist om 2FA in te schakelen.</value>
   </data>
   <data name="TfaConfigureAutAppTitle" xml:space="preserve">
-    <value>Authenticator-app configureren</value>
+    <value>Configureer authenticator-app</value>
   </data>
   <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
     <value>Om een authenticator-app te gebruiken, volg deze stappen:</value>
@@ -769,10 +769,10 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Download een twee-factor authenticator-app zoals Google Authenticator voor {0} en {1}.</value>
   </data>
   <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>Scan/klik op de QR-code of voer de volgende sleutel in uw twee-factor authenticator-app in (spaties en hoofdletters doen er niet toe):</value>
+    <value>Scan/klik op de QR-code of voer de volgende sleutel in je twee-factor authenticator-app in (spaties en hoofdlettergebruik doen er niet toe):</value>
   </data>
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
-    <value>Zodra u de QR-code hebt gescand of de sleutel hierboven hebt ingevoerd, zal uw twee-factor authenticatie-app u een unieke code geven. Voer de code in het bevestigingsvak hieronder in.</value>
+    <value>Zodra je de QR-code hebt gescand of de sleutel hierboven hebt ingevoerd, zal je twee-factor authenticatie-app je een unieke code geven. Voer de code in het bevestigingsvak hieronder in.</value>
   </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>Twee-factor authenticatie is ingeschakeld.</value>
@@ -793,34 +793,34 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Herstel</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
-    <value>U hebt geen herstelcodes meer.</value>
+    <value>Je hebt geen herstelcodes meer.</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
-    <value>U moet een nieuwe set herstelcodes genereren voordat u kunt aanmelden met een herstelcode.</value>
+    <value>Je moet een nieuw set herstelcodes genereren voordat je kunt inloggen met een herstelcode.</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
-    <value>U hebt nog 1 herstelcode.</value>
+    <value>Je hebt nog 1 herstelcode.</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
-    <value>U kunt een nieuwe set herstelcodes genereren.</value>
+    <value>Je kunt een nieuw set herstelcodes genereren.</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
-    <value>U hebt nog {0} herstelcodes.</value>
+    <value>Je hebt {0} herstelcodes over.</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
-    <value>U zou een nieuwe set herstelcodes moeten genereren.</value>
+    <value>Je zou een nieuw set herstelcodes moeten genereren.</value>
   </data>
   <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
-    <value>Het genereren van nieuwe herstelcodes verandert de sleutels die in authenticator-apps worden gebruikt niet. Als u de sleutel in een authenticator-app wilt wijzigen, moet u uw authenticator-sleutels resetten in het volgende tabblad.</value>
+    <value>Het genereren van nieuwe herstelcodes verandert niet de sleutels die gebruikt worden in authenticator-apps. Als je de sleutel in een authenticator-app wilt wijzigen, reset dan je authenticator-sleutels in het volgende tabblad.</value>
   </data>
   <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
     <value>Genereer herstelcodes</value>
   </data>
   <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
-    <value>Bewaar deze codes op een veilige plaats.</value>
+    <value>Bewaar deze codes op een veilige plek.</value>
   </data>
   <data name="TfaRecoveryCodesWarning" xml:space="preserve">
-    <value>Als u uw authenticator-apparaat verliest en geen herstelcodes hebt, verliest u de toegang tot uw account.</value>
+    <value>Als je je authenticator-apparaat verliest en geen herstelcodes hebt, verlies je toegang tot je account.</value>
   </data>
   <data name="TfaRecoveryCodesTitle" xml:space="preserve">
     <value>Herstelcodes:</value>
@@ -829,10 +829,10 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Authenticator</value>
   </data>
   <data name="TfaAuthAppWarningTitle" xml:space="preserve">
-    <value>Als u uw authenticator-sleutel reset, werkt uw authenticator-app niet meer totdat u deze opnieuw configureert.</value>
+    <value>Als je je authenticator-sleutel reset, werkt je authenticator-app niet meer totdat je deze opnieuw configureert.</value>
   </data>
   <data name="TfaAuthAppWarning" xml:space="preserve">
-    <value>Dit proces schakelt 2FA uit totdat u uw authenticator-app verifieert. Als u de configuratie van uw authenticator-app niet voltooit, kunt u de toegang tot uw account verliezen.</value>
+    <value>Dit proces schakelt 2FA uit totdat je je authenticator-app verifieert. Als je de configuratie van je authenticator-app niet voltooit, kun je toegang tot je account verliezen.</value>
   </data>
   <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
     <value>Reset authenticator-sleutel</value>
@@ -844,43 +844,43 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Deze actie schakelt alleen 2FA uit.</value>
   </data>
   <data name="TfaDisable2faWarning" xml:space="preserve">
-    <value>Het uitschakelen van 2FA verandert de sleutels die in authenticator-apps worden gebruikt niet. Als u de sleutel in een authenticator-app wilt wijzigen, moet u uw authenticator-sleutels resetten in het vorige tabblad.</value>
+    <value>Het uitschakelen van 2FA verandert niet de sleutels die gebruikt worden in authenticator-apps. Als je de sleutel in een authenticator-app wilt wijzigen, reset dan je authenticator-sleutels in het vorige tabblad.</value>
   </data>
   <data name="TfaDisable2faButtonText" xml:space="preserve">
     <value>Schakel 2FA uit</value>
   </data>
   <data name="TfaTokenSentMessage" xml:space="preserve">
-    <value>De 2FA-token is gegenereerd en naar u verzonden.</value>
+    <value>Het 2FA-token is gegenereerd en naar je verzonden.</value>
   </data>
   <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Voer de verhoogde toegangs-token in die we zojuist naar u hebben gestuurd of uw authenticator-app-code in om door te gaan.</value>
+    <value>Voer het verhoogde toegangstoken in dat we net naar je hebben verzonden of je authenticator-app code in om door te gaan.</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
-    <value>{0} is uw code in Boilerplate.</value>
+    <value>{0} is je code in Boilerplate.</value>
   </data>
   <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
-    <value>U hebt al een bevestigings-e-mail aangevraagd. Probeer het opnieuw over {0}</value>
+    <value>Je hebt al een bevestigings-e-mail aangevraagd. Probeer het opnieuw over {0}</value>
   </data>
   <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
-    <value>U hebt al een bevestigings-sms aangevraagd. Probeer het opnieuw over {0}</value>
+    <value>Je hebt al een bevestigings-sms aangevraagd. Probeer het opnieuw over {0}</value>
   </data>
   <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>U hebt al een reset-wachtwoordtoken aangevraagd. Probeer het opnieuw over {0}</value>
+    <value>Je hebt al een reset-wachtwoord-token aangevraagd. Probeer het opnieuw over {0}</value>
   </data>
   <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>U hebt al een OTP aangevraagd. Probeer het opnieuw over {0}</value>
+    <value>Je hebt al een OTP aangevraagd. Probeer het opnieuw over {0}</value>
   </data>
   <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
-    <value>U hebt al een verhoogde toegangs-token aangevraagd. Probeer het opnieuw over {0}</value>
+    <value>Je hebt al een verhoogd toegangstoken aangevraagd. Probeer het opnieuw over {0}</value>
   </data>
   <data name="Otp" xml:space="preserve">
     <value>OTP</value>
   </data>
   <data name="OtpPanelTitle" xml:space="preserve">
-    <value>Controleer uw {0}</value>
+    <value>Controleer je {0}</value>
   </data>
   <data name="OtpPanelSubtitle" xml:space="preserve">
-    <value>Bevestig uw {0} door de code in te voeren die is verzonden naar {1}</value>
+    <value>Bevestig je {0} door de code in te voeren die naar {1} is verzonden</value>
   </data>
   <data name="Code" xml:space="preserve">
     <value>Code</value>
@@ -892,10 +892,10 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Opnieuw verzenden</value>
   </data>
   <data name="SendOtpButtonText" xml:space="preserve">
-    <value>OTP verzenden</value>
+    <value>Verzend OTP</value>
   </data>
   <data name="SendMagicLinkButtonText" xml:space="preserve">
-    <value>Stuur magische link en OTP</value>
+    <value>Verzend magische link en OTP</value>
   </data>
   <data name="SignInByPassword" xml:space="preserve">
     <value>Gebruik wachtwoord</value>
@@ -904,25 +904,25 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Gebruik OTP</value>
   </data>
   <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>Geef óf wachtwoord óf OTP op</value>
+    <value>Geef óf een wachtwoord óf een OTP op</value>
   </data>
   <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
-    <value>U hebt al een 2FA-token-e-mail aangevraagd. Probeer het opnieuw over {0}.</value>
+    <value>Je hebt al een 2FA-token e-mail aangevraagd. Probeer het opnieuw over {0}.</value>
   </data>
   <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
-    <value>{0} is uw code in Boilerplate.</value>
+    <value>{0} is je code in Boilerplate.</value>
   </data>
   <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
-    <value>{0} is uw code in Boilerplate.</value>
+    <value>{0} is je code in Boilerplate.</value>
   </data>
   <data name="TwoFactorTokenShortText" xml:space="preserve">
-    <value>{0} is uw code in Boilerplate.</value>
+    <value>{0} is je code in Boilerplate.</value>
   </data>
   <data name="OtpShortText" xml:space="preserve">
-    <value>{0} is uw code in Boilerplate.</value>
+    <value>{0} is je code in Boilerplate.</value>
   </data>
   <data name="ResetPasswordTokenShortText" xml:space="preserve">
-    <value>{0} is uw code in Boilerplate.</value>
+    <value>{0} is je code in Boilerplate.</value>
   </data>
   <data name="Online" xml:space="preserve">
     <value>Online</value>
@@ -937,7 +937,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Tijd voor een update</value>
   </data>
   <data name="ForceUpdateBody" xml:space="preserve">
-    <value>Deze update is vereist om uw app soepel te laten draaien</value>
+    <value>Deze update is vereist om je app soepel te laten draaien</value>
   </data>
   <data name="About" xml:space="preserve">
     <value>Over</value>
@@ -956,7 +956,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Zoek todo...</value>
   </data>
   <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
-    <value>Todo-item kon niet worden gevonden</value>
+    <value>Todo-item niet gevonden</value>
   </data>
   <data name="TodoPageTitle" xml:space="preserve">
     <value>Todo</value>
@@ -970,10 +970,10 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
-    <value>Categorie-entiteit kon niet worden gevonden</value>
+    <value>Categorie-entiteit niet gevonden</value>
   </data>
   <data name="ProductCouldNotBeFound" xml:space="preserve">
-    <value>Product-entiteit kon niet worden gevonden</value>
+    <value>Product-entiteit niet gevonden</value>
   </data>
   <data name="Category" xml:space="preserve">
     <value>Categorie</value>
@@ -1002,7 +1002,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Voeg product toe</value>
   </data>
   <data name="SearchProductsPlaceholder" xml:space="preserve">
-    <value>Zoek op naam, categorie en beschrijving van product...</value>
+    <value>Zoek door productnaam, categorie en beschrijving...</value>
   </data>
   <data name="SelectCategory" xml:space="preserve">
     <value>Selecteer categorie</value>
@@ -1032,10 +1032,10 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Categorieën met productenaantal</value>
   </data>
   <data name="SearchOnName" xml:space="preserve">
-    <value>Zoek op naam</value>
+    <value>Zoeken op naam</value>
   </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
-    <value>Grafiek producten per categorie</value>
+    <value>Aantal producten per categorie grafiek</value>
   </data>
   <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
     <value>Deze grafiek toont het aantal producten in elke categorie.</value>
@@ -1056,19 +1056,19 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Producten</value>
   </data>
   <data name="CategoryNotEmpty" xml:space="preserve">
-    <value>Deze categorie bevat producten, dus u kunt deze niet verwijderen</value>
+    <value>Deze categorie bevat producten, dus kun je deze niet verwijderen</value>
   </data>
   <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
-    <value>Weet u zeker dat u product {0} wilt verwijderen</value>
+    <value>Weet je zeker dat je product {0} wilt verwijderen</value>
   </data>
   <data name="DeleteProduct" xml:space="preserve">
-    <value>Verwijder product</value>
+    <value>Product verwijderen</value>
   </data>
   <data name="DefaultColorPicker" xml:space="preserve">
     <value>Standaard kleurkiezer</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
-    <value>Bewerk product {0}</value>
+    <value>Product {0} bewerken</value>
   </data>
   <data name="DuplicateProductName" xml:space="preserve">
     <value>Dubbele productnaam</value>
@@ -1083,7 +1083,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Dashboard</value>
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
-    <value>Hier zijn uw analysegegevens</value>
+    <value>Hier zijn je analysegegevens</value>
   </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
@@ -1091,7 +1091,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Ongeldig Google reCAPTCHA-antwoord.</value>
   </data>
   <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
-    <value>U moet de Google reCAPTCHA-uitdaging doorstaan.</value>
+    <value>Je moet de Google reCAPTCHA-uitdaging voltooien.</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Sales") -->
@@ -1115,13 +1115,13 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Wachtwoordloze aanmelding</value>
   </data>
   <data name="EnablePasswordless" xml:space="preserve">
-    <value>Schakel wachtwoordloze aanmelding in</value>
+    <value>Wachtwoordloze aanmelding inschakelen</value>
   </data>
   <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Wachtwoordloze aanmelding succesvol ingeschakeld</value>
   </data>
   <data name="DisablePasswordless" xml:space="preserve">
-    <value>Schakel wachtwoordloze aanmelding uit</value>
+    <value>Wachtwoordloze aanmelding uitschakelen</value>
   </data>
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Wachtwoordloze aanmelding succesvol uitgeschakeld</value>
@@ -1137,13 +1137,13 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
   </data>
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
-    <value>AI chat-paneel</value>
+    <value>AI chatpaneel</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>Hallo! Ik ben hier om uw app-ervaring geweldig te maken! Hebt u een vraag of heeft u hulp nodig?</value>
+    <value>Hallo! Ik ben hier om je app-ervaring geweldig te maken! Heb je een vraag of heb je hulp nodig?</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
-    <value>Open reset-wachtwoordpagina en vertel me hoe het werkt</value>
+    <value>Open de reset wachtwoord-pagina en vertel me hoe het werkt</value>
   </data>
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>Hoe kan ik de PWA-versie van de app installeren?</value>
@@ -1167,25 +1167,25 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
-    <value>Upgrade</value>
+    <value>Upgraden</value>
   </data>
   <data name="UpgradeTitle" xml:space="preserve">
-    <value>Upgrade account</value>
+    <value>Account upgraden</value>
   </data>
   <data name="UpgradeSubtitle" xml:space="preserve">
     <value>Er is geen account-upgrade hier. Dit is slechts een demo voor beloningsadvertenties.</value>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
-    <value>Upgrade account succesvol voltooid.</value>
+    <value>Account-upgrade succesvol voltooid.</value>
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
-    <value>Upgrade account mislukt.</value>
+    <value>Account-upgrade mislukt.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Problemen met het bekijken van advertentie?</value>
   </data>
   <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
-    <value>Ik heb problemen met het bekijken van in-app-advertenties.</value>
+    <value>Ik heb problemen met het bekijken van in-app advertenties.</value>
   </data>
   <!--#endif -->
   <data name="PleaseWait" xml:space="preserve">
@@ -1198,19 +1198,19 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Gebruikersgroepen</value>
   </data>
   <data name="RolesPageTitle" xml:space="preserve">
-    <value>Beheer gebruikersgroepen</value>
+    <value>Gebruikersgroepen beheren</value>
   </data>
   <data name="NoRoleMessage" xml:space="preserve">
     <value>Geen gebruikersgroepen</value>
   </data>
   <data name="AddRole" xml:space="preserve">
-    <value>Voeg gebruikersgroep toe</value>
+    <value>Gebruikersgroep toevoegen</value>
   </data>
   <data name="EditRole" xml:space="preserve">
-    <value>Bewerk gebruikersgroep</value>
+    <value>Gebruikersgroep bewerken</value>
   </data>
   <data name="NewRoleName" xml:space="preserve">
-    <value>Nieuwe naam voor gebruikersgroep</value>
+    <value>Naam nieuwe gebruikersgroep</value>
   </data>
   <data name="Users" xml:space="preserve">
     <value>Gebruikers</value>
@@ -1225,7 +1225,7 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Quota</value>
   </data>
   <data name="QuotaDescription" xml:space="preserve">
-    <value>Om het gebruik van functies te beperken, kunt u quota's definiëren op dit tabblad, die kunnen variëren per rol. Bijvoorbeeld, het aantal apparaten waarop een gebruiker kan aanmelden of het aantal keren dat ze een specifieke app-functie kunnen gebruiken.</value>
+    <value>Om het gebruik van functies te beperken, kun je quota's definiëren op dit tabblad, die kunnen variëren per rol. Bijvoorbeeld, het aantal apparaten waarop een gebruiker kan inloggen of het aantal keren dat ze een specifieke app-functie kunnen gebruiken.</value>
   </data>
   <data name="MaxPrevilegedSessions" xml:space="preserve">
     <value>Max geprivilegieerde sessies</value>
@@ -1241,32 +1241,32 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Notificatiebericht</value>
   </data>
   <data name="SendRoleNotification" xml:space="preserve">
-    <value>Verstuur notificatie</value>
+    <value>Notificatie verzenden</value>
   </data>
   <data name="EnableNotifications" xml:space="preserve">
-    <value>Schakel notificaties in</value>
+    <value>Notificaties inschakelen</value>
   </data>
   <data name="DisableNotifications" xml:space="preserve">
-    <value>Schakel notificaties uit</value>
+    <value>Notificaties uitschakelen</value>
   </data>
   <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Test notificatie 1</value>
+    <value>Testnotificatie 1</value>
   </data>
   <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Test notificatie 2</value>
+    <value>Testnotificatie 2</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
-    <value>Beheer gebruikers</value>
+    <value>Gebruikers beheren</value>
   </data>
   <data name="DeleteRole" xml:space="preserve">
-    <value>Verwijder gebruikersgroep</value>
+    <value>Gebruikersgroep verwijderen</value>
   </data>
   <data name="Sessions" xml:space="preserve">
     <value>Sessies {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
-    <value>Verwijder gebruiker</value>
+    <value>Gebruiker verwijderen</value>
   </data>
   <data name="AppVersion" xml:space="preserve">
     <value>App-versie</value>
@@ -1284,13 +1284,13 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Geprivilegieerd</value>
   </data>
   <data name="RenewedOn" xml:space="preserve">
-    <value>VernieuwdOp</value>
+    <value>Vervangen op</value>
   </data>
   <data name="OnlineUsers" xml:space="preserve">
     <value>Online gebruikers: {0}</value>
   </data>
   <data name="DeleteSession" xml:space="preserve">
-    <value>Verwijder sessie</value>
+    <value>Sessie verwijderen</value>
   </data>
   <data name="NoUserMessage" xml:space="preserve">
     <value>Geen gebruikers</value>
@@ -1302,61 +1302,61 @@ Na het bereiken van {0}, zullen extra aanmeldingen verminderde functies hebben.<
     <value>Selecteer eerst een gebruiker</value>
   </data>
   <data name="RevokeAllSessions" xml:space="preserve">
-    <value>Vervallen alle sessies</value>
+    <value>Alle sessies intrekken</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>Weet u zeker dat u alle sessies van {0} wilt vervallen?</value>
+    <value>Weet je zeker dat je alle sessies van {0} wilt intrekken?</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>U kunt deze gebruiker niet verwijderen uit de SuperAdmin-gebruikersgroep.</value>
+    <value>Je kunt deze gebruiker niet verwijderen uit de SuperAdmin-gebruikersgroep.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
-    <value>Super admin-rechten mogen niet worden gewijzigd.</value>
+    <value>Superadmin-rechten mogen niet worden gewijzigd.</value>
   </data>
   <data name="CanNotChangeBuiltInRole" xml:space="preserve">
     <value>Gebruikersgroep {0} mag niet worden gewijzigd.</value>
   </data>
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
-    <value>U kunt uw eigen gebruiker niet verwijderen</value>
+    <value>Je kunt je eigen gebruiker niet verwijderen</value>
   </data>
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>U kunt deze SuperAdmin-gebruiker niet verwijderen</value>
+    <value>Je kunt deze SuperAdmin-gebruiker niet verwijderen</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
-    <value>U kunt uw huidige sessie niet verwijderen</value>
+    <value>Je kunt je huidige sessie niet verwijderen</value>
   </data>
   <data name="SearchRolesPlaceholder" xml:space="preserve">
-    <value>Zoek gebruikersgroepen</value>
+    <value>Gebruikersgroepen zoeken</value>
   </data>
   <data name="SearchUsersPlaceholder" xml:space="preserve">
-    <value>Zoek gebruikers</value>
+    <value>Gebruikers zoeken</value>
   </data>
   <data name="SearchRoleUsersPlaceholder" xml:space="preserve">
-    <value>Zoek gebruikers</value>
+    <value>Gebruikers zoeken</value>
   </data>
   <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
-    <value>Zoek gebruikerssessies</value>
+    <value>Gebruikerssessies zoeken</value>
   </data>
   <data name="RemoveRoleFromAllUsers" xml:space="preserve">
-    <value>Verwijder alle gebruikers uit gebruikersgroep</value>
+    <value>Alle gebruikers verwijderen uit gebruikersgroep</value>
   </data>
   <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
-    <value>Weet u zeker dat u alle gebruikers uit {0} wilt verwijderen?</value>
+    <value>Weet je zeker dat je alle gebruikers wilt verwijderen uit {0}?</value>
   </data>
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
-    <value>Pagina-URL</value>
+    <value>Paginage-URL</value>
   </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
-    <value>U bent niet geautoriseerd</value>
+    <value>Je bent niet geautoriseerd</value>
   </data>
   <data name="YouAreNotAuthorizedMessage" xml:space="preserve">
-    <value>U hebt geen toestemming om deze pagina te benaderen.</value>
+    <value>Je hebt geen toestemming om deze pagina te openen.</value>
   </data>
   <data name="SignInPasswordMessage1" xml:space="preserve">
     <value>Eerste keer hier?</value>
   </data>
   <data name="SignInPasswordMessage2" xml:space="preserve">
-    <value>We maken automatisch een account voor u aan.</value>
+    <value>We maken automatisch een account voor je aan.</value>
   </data>
   <data name="ImageTooSmall" xml:space="preserve">
     <value>Afbeelding is te klein. Minimale vereiste afmetingen zijn {0}x{1}, maar de huidige afmetingen zijn {2}x{3}.</value>

@@ -163,11 +163,11 @@
     <comment>Error when a password doesn't match</comment>
   </data>
   <data name="PasswordRequiresDigit" xml:space="preserve">
-    <value>密码必须至少包含一个数字 ('0'-'9')。</value>
+    <value>密码必须至少包含一个数字（'0'-'9'）。</value>
     <comment>Error when passwords do not have a digit</comment>
   </data>
   <data name="PasswordRequiresLower" xml:space="preserve">
-    <value>密码必须至少包含一个小写字母 ('a'-'z')。</value>
+    <value>密码必须至少包含一个小写字母（'a'-'z'）。</value>
     <comment>Error when passwords do not have a lowercase letter</comment>
   </data>
   <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
@@ -175,11 +175,11 @@
     <comment>Error when password does not have enough non alphanumeric characters</comment>
   </data>
   <data name="PasswordRequiresUpper" xml:space="preserve">
-    <value>密码必须至少包含一个大写字母 ('A'-'Z')。</value>
+    <value>密码必须至少包含一个大写字母（'A'-'Z'）。</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
-    <value>密码长度必须至少为 {0} 个字符。</value>
+    <value>密码长度至少为 {0} 个字符。</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
   <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">

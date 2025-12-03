@@ -125,7 +125,7 @@
     <value>您收到此电子邮件是因为您最近将 {0} 注册到您的样板账户。</value>
   </data>
   <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
-    <value>通过在应用中输入下面的数字来确认您的电子邮件地址。</value>
+    <value>在应用中输入下面的号码来确认您的电子邮件地址。</value>
   </data>
   <data name="EmailConfirmationMessageBodyLink" xml:space="preserve">
     <value>或者点击以下链接来确认此电子邮件地址。</value>
@@ -140,13 +140,13 @@
     <value>有人请求了一个令牌来更改您的密码。</value>
   </data>
   <data name="ResetPasswordBody" xml:space="preserve">
-    <value>如果您不是请求重置密码的人，您可以忽略此电子邮件。</value>
+    <value>如果不是您请求重置密码，您可以忽略此电子邮件。</value>
   </data>
   <data name="ResetPasswordTokenMessage" xml:space="preserve">
     <value>您可以复制下面的令牌并在重置密码页面中输入它。</value>
   </data>
   <data name="ResetPasswordLinkMessage" xml:space="preserve">
-    <value>或者您可以点击以下链接来尝试重置您的密码。</value>
+    <value>或者您可以点击以下链接来尝试重置密码。</value>
   </data>
   <data name="OtpEmailSubject" xml:space="preserve">
     <value>样板 {0} - 一次性密码</value>
@@ -155,7 +155,7 @@
     <value>您好 {0}</value>
   </data>
   <data name="OtpSubtitle" xml:space="preserve">
-    <value>有人请求了一个用于登录应用的 OTP。</value>
+    <value>有人请求了一个 OTP 来登录应用。</value>
   </data>
   <data name="OtpBody" xml:space="preserve">
     <value>如果您没有请求 OTP，您可以忽略此电子邮件。</value>
@@ -164,13 +164,13 @@
     <value>您可以复制下面的 OTP 并在登录页面中输入它。</value>
   </data>
   <data name="OtpLinkMessage" xml:space="preserve">
-    <value>或者您可以点击以下链接登录。</value>
+    <value>或者您可以点击以下链接来登录。</value>
   </data>
   <data name="AppName" xml:space="preserve">
     <value>样板</value>
   </data>
   <data name="WelcomeToApp" xml:space="preserve">
-    <value>欢迎使用样板！</value>
+    <value>欢迎来到样板！</value>
   </data>
   <data name="TfaTokenEmailSubject" xml:space="preserve">
     <value>样板 {0} - 2FA 令牌</value>

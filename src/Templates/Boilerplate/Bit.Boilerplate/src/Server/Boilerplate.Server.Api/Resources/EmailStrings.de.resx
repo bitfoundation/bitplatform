@@ -119,7 +119,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>Boilerplate {0} - Bestätigen Sie Ihre E-Mail-Adresse</value>
+    <value>Boilerplate {0} – Bestätigen Sie Ihre E-Mail-Adresse</value>
   </data>
   <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
     <value>Sie erhalten diese E-Mail, weil Sie kürzlich {0} zu Ihrem Boilerplate-Konto registriert haben.</value>
@@ -131,7 +131,7 @@
     <value>Oder klicken Sie auf den folgenden Link, um diese E-Mail-Adresse zu bestätigen.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>Boilerplate {0} - Passwort zurücksetzen</value>
+    <value>Boilerplate {0} – Passwort zurücksetzen</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Hallo {0}</value>
@@ -140,7 +140,7 @@
     <value>Jemand hat ein Token angefordert, um Ihr Passwort zu ändern.</value>
   </data>
   <data name="ResetPasswordBody" xml:space="preserve">
-    <value>Wenn Sie das Zurücksetzen des Passworts nicht angefordert haben, können Sie diese E-Mail ignorieren.</value>
+    <value>Falls Sie das Zurücksetzen des Passworts nicht angefordert haben, können Sie diese E-Mail ignorieren.</value>
   </data>
   <data name="ResetPasswordTokenMessage" xml:space="preserve">
     <value>Sie können das unten stehende Token kopieren und auf der Seite zum Zurücksetzen des Passworts eingeben.</value>
@@ -149,7 +149,7 @@
     <value>Oder Sie können auf den folgenden Link klicken, um Ihr Passwort zurückzusetzen.</value>
   </data>
   <data name="OtpEmailSubject" xml:space="preserve">
-    <value>Boilerplate {0} - OTP</value>
+    <value>Boilerplate {0} – OTP</value>
   </data>
   <data name="OtpTitle" xml:space="preserve">
     <value>Hallo {0}</value>
@@ -158,7 +158,7 @@
     <value>Jemand hat ein OTP zur Anmeldung in der App angefordert.</value>
   </data>
   <data name="OtpBody" xml:space="preserve">
-    <value>Wenn Sie das OTP nicht angefordert haben, können Sie diese E-Mail ignorieren.</value>
+    <value>Falls Sie das OTP nicht angefordert haben, können Sie diese E-Mail ignorieren.</value>
   </data>
   <data name="OtpMessage" xml:space="preserve">
     <value>Sie können das unten stehende OTP kopieren und auf der Anmeldeseite eingeben.</value>
@@ -173,7 +173,7 @@
     <value>Willkommen bei Boilerplate!</value>
   </data>
   <data name="TfaTokenEmailSubject" xml:space="preserve">
-    <value>Boilerplate {0} - 2FA-Token</value>
+    <value>Boilerplate {0} – 2FA-Token</value>
   </data>
   <data name="TfaTokenHello" xml:space="preserve">
     <value>Hallo {0}</value>
@@ -182,7 +182,7 @@
     <value>Hier ist Ihr neues 2FA-Token zur Anmeldung:</value>
   </data>
   <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
-    <value>Boilerplate {0} - Erhöhtes Zugriffstoken</value>
+    <value>Boilerplate {0} – Erhöhtes Zugriffstoken</value>
   </data>
   <data name="ElevatedAccessTokenHello" xml:space="preserve">
     <value>Hallo {0}</value>
@@ -194,6 +194,6 @@
     <value>Kopieren Sie diesen Code und verwenden Sie ihn in der App.</value>
   </data>
   <data name="DefaultFromName" xml:space="preserve">
-    <value>Boilerplate App</value>
+    <value>Boilerplate-App</value>
   </data>
 </root>

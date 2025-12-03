@@ -119,7 +119,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>Mall {0} - Bekräfta din e-postadress</value>
+    <value>Boilerplate {0} - Bekräfta din e-postadress</value>
   </data>
   <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
     <value>Du får detta e-postmeddelande eftersom du nyligen har registrerat {0} till ditt Boilerplate-konto.</value>
@@ -128,10 +128,10 @@
     <value>Bekräfta din e-postadress genom att ange numret nedan i appen.</value>
   </data>
   <data name="EmailConfirmationMessageBodyLink" xml:space="preserve">
-    <value>Eller klicka på följande länk för att bekräfta denna e-postadress.</value>
+    <value>Eller klicka på länken nedan för att bekräfta denna e-postadress.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>Mall {0} - Återställ ditt lösenord</value>
+    <value>Boilerplate {0} - Återställ ditt lösenord</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Hej {0}</value>
@@ -146,10 +146,10 @@
     <value>Du kan kopiera token nedan och ange den på sidan för lösenordsåterställning.</value>
   </data>
   <data name="ResetPasswordLinkMessage" xml:space="preserve">
-    <value>Eller du kan klicka på följande länk för att försöka återställa ditt lösenord.</value>
+    <value>Eller du kan klicka på länken nedan för att försöka återställa ditt lösenord.</value>
   </data>
   <data name="OtpEmailSubject" xml:space="preserve">
-    <value>Mall {0} - OTP</value>
+    <value>Boilerplate {0} - OTP</value>
   </data>
   <data name="OtpTitle" xml:space="preserve">
     <value>Hej {0}</value>
@@ -164,16 +164,16 @@
     <value>Du kan kopiera OTP:n nedan och ange den på inloggningssidan.</value>
   </data>
   <data name="OtpLinkMessage" xml:space="preserve">
-    <value>Eller du kan klicka på följande länk för att logga in.</value>
+    <value>Eller du kan klicka på länken nedan för att logga in.</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>Mall</value>
+    <value>Boilerplate</value>
   </data>
   <data name="WelcomeToApp" xml:space="preserve">
-    <value>Välkommen till Mall!</value>
+    <value>Välkommen till Boilerplate!</value>
   </data>
   <data name="TfaTokenEmailSubject" xml:space="preserve">
-    <value>Mall {0} - 2FA-token</value>
+    <value>Boilerplate {0} - 2FA-token</value>
   </data>
   <data name="TfaTokenHello" xml:space="preserve">
     <value>Hej {0}</value>
@@ -182,7 +182,7 @@
     <value>Här är din nya 2FA-token för inloggning:</value>
   </data>
   <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
-    <value>Mall {0} - Förhöjd åtkomsttoken</value>
+    <value>Boilerplate {0} - Förhöjd åtkomsttoken</value>
   </data>
   <data name="ElevatedAccessTokenHello" xml:space="preserve">
     <value>Hej {0}</value>
@@ -194,6 +194,6 @@
     <value>Kopiera denna kod och använd den i appen.</value>
   </data>
   <data name="DefaultFromName" xml:space="preserve">
-    <value>Mall-app</value>
+    <value>Boilerplate-appen</value>
   </data>
 </root>

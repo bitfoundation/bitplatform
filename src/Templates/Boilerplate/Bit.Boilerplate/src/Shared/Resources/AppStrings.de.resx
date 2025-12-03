@@ -126,7 +126,7 @@
     <value>Das Feld {0} ist keine gültige E-Mail-Adresse.</value>
   </data>
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>MaxLengthAttribute muss einen Längenwert größer als null haben. Verwenden Sie MaxLength() ohne Parameter, um anzugeben, dass die Zeichenkette oder das Array die maximale zulässige Länge haben kann.</value>
+    <value>MaxLengthAttribute muss einen Längenwert haben, der größer als null ist. Verwenden Sie MaxLength() ohne Parameter, um anzugeben, dass die Zeichenfolge oder das Array die maximale zulässige Länge haben kann.</value>
   </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Das Feld {0} muss ein String- oder Array-Typ mit einer Mindestlänge von '{1}' sein.</value>
@@ -157,10 +157,10 @@
     <value>Anfragedaten sind nicht gültig</value>
   </data>
   <data name="RestException" xml:space="preserve">
-    <value>Ein Fehler ist aufgetreten, während mit dem Server kommuniziert wurde</value>
+    <value>Ein Fehler ist beim Kommunizieren mit dem Server aufgetreten</value>
   </data>
   <data name="UnauthorizedException" xml:space="preserve">
-    <value>Ihre Anfrage enthält keine gültigen Authentifizierungsdaten</value>
+    <value>Ihrer Anfrage fehlen gültige Authentifizierungsdaten</value>
   </data>
   <data name="UnknownException" xml:space="preserve">
     <value>Unbekannter Fehler ist aufgetreten</value>
@@ -218,10 +218,10 @@
     <value>Bearbeiten Sie Ihre Profildaten</value>
   </data>
   <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
-    <value>Token zur Änderung der E-Mail wurde an Sie gesendet</value>
+    <value>Token zum Ändern der E-Mail wurde an Sie gesendet</value>
   </data>
   <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
-    <value>Token zur Änderung der Telefonnummer wurde an Sie gesendet</value>
+    <value>Token zum Ändern der Telefonnummer wurde an Sie gesendet</value>
   </data>
   <data name="SuccessfulSendTokenMessage" xml:space="preserve">
     <value>Das Token wurde an Sie gesendet</value>
@@ -255,7 +255,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Hier ist nichts.</value>
   </data>
   <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
-    <value>Bitte aktualisieren Sie die Webview über den Google Play Store.</value>
+    <value>Bitte aktualisieren Sie die Webansicht über den Google Play Store.</value>
   </data>
   <data name="Ok" xml:space="preserve">
     <value>OK</value>
@@ -268,7 +268,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Hier können Sie die Systemprompts für den Chatbot ansehen.</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
-    <value>Push-Benachrichtigungsjob</value>
+    <value>Push-Benachrichtigungsauftrag</value>
   </data>
   <!--#endif-->
   <!--#if (offlineDb == true) -->
@@ -276,10 +276,10 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Todo (Offline)</value>
   </data>
   <data name="SyncPushFailed" xml:space="preserve">
-    <value>Übermittlung der Änderungen an den Server fehlgeschlagen</value>
+    <value>Übermitteln der Änderungen an den Server fehlgeschlagen</value>
   </data>
   <data name="SyncPullFailed" xml:space="preserve">
-    <value>Abruf der Änderungen vom Server fehlgeschlagen</value>
+    <value>Abrufen der Änderungen vom Server fehlgeschlagen</value>
   </data>
   <data name="SyncPushSuccess" xml:space="preserve">
     <value>{0} Änderungen an den Server übermittelt</value>
@@ -394,7 +394,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Ups, etwas ist schiefgelaufen...</value>
   </data>
   <data name="BackToHome" xml:space="preserve">
-    <value>Zurück zur Startseite</value>
+    <value>Zur Startseite</value>
   </data>
   <data name="UserLockedOut" xml:space="preserve">
     <value>Benutzer ist gesperrt. Versuchen Sie es erneut in {0}</value>
@@ -430,7 +430,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>E-Mail-Adresse</value>
   </data>
   <data name="ConfirmEmailSubtitle" xml:space="preserve">
-    <value>Wir haben ein Bestätigungstoken an Ihre E-Mail-Adresse gesendet.</value>
+    <value>Wir haben einen Bestätigungstoken an Ihre E-Mail-Adresse gesendet.</value>
   </data>
   <data name="ConfirmPageTitle" xml:space="preserve">
     <value>Bestätigen</value>
@@ -439,7 +439,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Konto bestätigen</value>
   </data>
   <data name="ConfirmEmailMessage" xml:space="preserve">
-    <value>Bitte bestätigen Sie Ihre E-Mail, indem Sie das Token hier eingeben.</value>
+    <value>Bitte bestätigen Sie Ihre E-Mail, indem Sie den Token hier eingeben.</value>
   </data>
   <data name="EmailPlaceholder" xml:space="preserve">
     <value>E-Mail-Adresse eingeben</value>
@@ -460,10 +460,10 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Telefonnummer</value>
   </data>
   <data name="ConfirmPhoneSubtitle" xml:space="preserve">
-    <value>Wir haben ein Bestätigungstoken an Ihr Telefon gesendet.</value>
+    <value>Wir haben einen Bestätigungstoken an Ihr Telefon gesendet.</value>
   </data>
   <data name="ConfirmPhoneMessage" xml:space="preserve">
-    <value>Bitte bestätigen Sie Ihre Telefonnummer, indem Sie das Token hier eingeben.</value>
+    <value>Bitte bestätigen Sie Ihre Telefonnummer, indem Sie den Token hier eingeben.</value>
   </data>
   <data name="PhoneNumberPlaceholder" xml:space="preserve">
     <value>Telefonnummer eingeben</value>
@@ -475,7 +475,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Telefonnummer bestätigen</value>
   </data>
   <data name="NotReceivedPhoneMessage" xml:space="preserve">
-    <value>Haben Sie das Token nicht auf Ihrem Telefon erhalten?</value>
+    <value>Haben Sie den Token auf Ihrem Telefon nicht erhalten?</value>
   </data>
   <data name="ResendPhoneTokenButtonText" xml:space="preserve">
     <value>Code erneut senden</value>
@@ -499,7 +499,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Sind Sie sicher, dass Sie Ihr Konto löschen möchten?</value>
   </data>
   <data name="DontHaveAccountMessage" xml:space="preserve">
-    <value>Sie haben kein Konto?</value>
+    <value>Sie haben noch kein Konto?</value>
   </data>
   <data name="Edit" xml:space="preserve">
     <value>Bearbeiten</value>
@@ -514,19 +514,19 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Passwort vergessen</value>
   </data>
   <data name="ForgotPasswordMessage" xml:space="preserve">
-    <value>Bitte geben Sie Ihre E-Mail-Adresse oder Telefonnummer ein, damit wir ein Token zum Zurücksetzen des Passworts an Sie senden können.</value>
+    <value>Bitte geben Sie Ihre E-Mail-Adresse oder Telefonnummer ein, damit wir einen Token zum Zurücksetzen des Passworts an Sie senden können.</value>
   </data>
   <data name="GenderMale" xml:space="preserve">
     <value>Männlich</value>
   </data>
   <data name="GenderOther" xml:space="preserve">
-    <value>Anderes</value>
+    <value>Andere</value>
   </data>
   <data name="GoToToday" xml:space="preserve">
     <value>Zu heute gehen</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Erstellen Sie Ihre Multi-Mode (WASM, Server, Hybrid, Pre-Rendering) Blazor-App ganz einfach in kürzester Zeit!</value>
+    <value>Erstellen Sie Ihre Multi-Mode-Blazor-App (WASM, Server, Hybrid, Pre-Rendering) in kürzester Zeit!</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>Startseite</value>
@@ -544,7 +544,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Mehr erfahren</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>Ein Satz von Tools für .NET-Entwickler auf mehreren Plattformen</value>
+    <value>Ein Satz an Tools für .NET-Entwickler auf mehreren Plattformen</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>Ein Satz performanter, leicht anpassbarer und schöner Blazor-Komponenten</value>
@@ -586,10 +586,10 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Passwort zurücksetzen</value>
   </data>
   <data name="ResetPasswordSubtitle" xml:space="preserve">
-    <value>Wir haben ein Token an Ihr Telefon oder Ihre E-Mail gesendet.</value>
+    <value>Wir haben einen Token an Ihr Telefon oder Ihre E-Mail gesendet.</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>Bitte reichen Sie das Token zusammen mit Ihrem neuen Passwort hier ein.</value>
+    <value>Bitte geben Sie hier den Token zusammen mit Ihrem neuen Passwort ein.</value>
   </data>
   <data name="ResetPasswordButtonText" xml:space="preserve">
     <value>Passwort festlegen</value>
@@ -601,7 +601,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Sie können sich jetzt mit Ihrem Passwort anmelden.</value>
   </data>
   <data name="ResetPasswordMessageInForgot" xml:space="preserve">
-    <value>Haben Sie bereits ein Token zum Zurücksetzen des Passworts?</value>
+    <value>Haben Sie bereits einen Token zum Zurücksetzen des Passworts?</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Speichern</value>
@@ -739,10 +739,10 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Zwei-Faktor-Authentifizierung</value>
   </data>
   <data name="TfaPanelSubtitle" xml:space="preserve">
-    <value>Erhalten Sie einen neuen Code aus Ihrer Authentifizierungs-App oder verwenden Sie Ihren Wiederherstellungscode.</value>
+    <value>Holen Sie einen neuen Code aus Ihrer Authentifizierungs-App oder verwenden Sie Ihren Wiederherstellungscode.</value>
   </data>
   <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
-    <value>Anderen Weg versuchen</value>
+    <value>Versuchen Sie einen anderen Weg</value>
   </data>
   <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
     <value>Sie können einen neuen Code per E-Mail oder Telefon erhalten.</value>
@@ -751,7 +751,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Code abrufen</value>
   </data>
   <data name="TfaResetSharedKeyError" xml:space="preserve">
-    <value>Das Zurücksetzen des 2FA-Freigabeschlüssels deaktiviert 2FA, bis ein 2FA-Token basierend auf dem neuen Freigabes Schlüssel validiert wurde.</value>
+    <value>Das Zurücksetzen des 2FA-Freigabeschlüssels deaktiviert 2FA, bis ein 2FA-Token basierend auf dem neuen Freigabeschlüssel validiert wurde.</value>
   </data>
   <data name="TfaEmptyCodeError" xml:space="preserve">
     <value>Kein 2FA-Token wurde von der Anfrage bereitgestellt. Ein gültiger 2FA-Token ist erforderlich, um 2FA zu aktivieren.</value>
@@ -769,10 +769,10 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Laden Sie eine Zwei-Faktor-Authentifizierungs-App wie Google Authenticator für {0} und {1} herunter.</value>
   </data>
   <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>Scannen/Klicken Sie den QR-Code oder geben Sie den folgenden Schlüssel in Ihre Zwei-Faktor-Authentifizierungs-App ein (Leerzeichen und Groß-/Kleinschreibung sind egal):</value>
+    <value>Scannen Sie/klicken Sie den QR-Code oder geben Sie den folgenden Schlüssel in Ihre Zwei-Faktor-Authentifizierungs-App ein (Leerzeichen und Groß-/Kleinschreibung sind unwichtig):</value>
   </data>
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
-    <value>Sobald Sie den QR-Code gescannt oder den Schlüssel oben eingegeben haben, stellt Ihre Zwei-Faktor-Authentifizierungs-App Ihnen einen eindeutigen Code zur Verfügung. Geben Sie den Code in das Bestätigungsfeld unten ein.</value>
+    <value>Sobald Sie den QR-Code gescannt oder den obigen Schlüssel eingegeben haben, stellt Ihre Zwei-Faktor-Authentifizierungs-App Ihnen einen eindeutigen Code zur Verfügung. Geben Sie den Code in das Bestätigungsfeld unten ein.</value>
   </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>Zwei-Faktor-Authentifizierung wurde aktiviert.</value>
@@ -781,10 +781,10 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Zwei-Faktor-Authentifizierung wurde deaktiviert.</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
-    <value>Bestätigungs-Code:</value>
+    <value>Verifizierungscode:</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Bestätigungs-Code eingeben.</value>
+    <value>Verifizierungscode eingeben.</value>
   </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Verifizieren</value>
@@ -799,13 +799,13 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Sie müssen einen neuen Satz Wiederherstellungscodes generieren, bevor Sie sich mit einem Wiederherstellungscode anmelden können.</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
-    <value>Sie haben 1 Wiederherstellungscode übrig.</value>
+    <value>Sie haben noch 1 Wiederherstellungscode.</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
     <value>Sie können einen neuen Satz Wiederherstellungscodes generieren.</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
-    <value>Sie haben {0} Wiederherstellungscodes übrig.</value>
+    <value>Sie haben noch {0} Wiederherstellungscodes.</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
     <value>Sie sollten einen neuen Satz Wiederherstellungscodes generieren.</value>
@@ -832,7 +832,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Wenn Sie Ihren Authentifizierungsschlüssel zurücksetzen, funktioniert Ihre Authentifizierungs-App nicht mehr, bis Sie sie neu konfigurieren.</value>
   </data>
   <data name="TfaAuthAppWarning" xml:space="preserve">
-    <value>Dieser Vorgang deaktiviert 2FA, bis Sie Ihre Authentifizierungs-App verifiziert haben. Wenn Sie die Konfiguration Ihrer Authentifizierungs-App nicht abschließen, können Sie den Zugriff auf Ihr Konto verlieren.</value>
+    <value>Dieser Vorgang deaktiviert 2FA, bis Sie Ihre Authentifizierungs-App verifizieren. Wenn Sie die Konfiguration Ihrer Authentifizierungs-App nicht abschließen, können Sie den Zugriff auf Ihr Konto verlieren.</value>
   </data>
   <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
     <value>Authentifizierungsschlüssel zurücksetzen</value>
@@ -853,25 +853,25 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Der 2FA-Token wurde generiert und an Sie gesendet.</value>
   </data>
   <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Bitte geben Sie den gerade gesendeten erweiterten Zugriffstoken oder den Code aus Ihrer Authentifizierungs-App ein, um fortzufahren.</value>
+    <value>Bitte geben Sie den gerade gesendeten erhöhten Zugriffstoken oder Ihren Authentifizierungs-App-Code ein, um fortzufahren.</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} ist Ihr Code in Boilerplate.</value>
   </data>
   <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
-    <value>Sie haben bereits die Bestätigungs-E-Mail angefordert. Versuchen Sie es erneut in {0}</value>
+    <value>Sie haben die Bestätigungs-E-Mail bereits angefordert. Versuchen Sie es erneut in {0}</value>
   </data>
   <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
-    <value>Sie haben bereits die Bestätigungs-SMS angefordert. Versuchen Sie es erneut in {0}</value>
+    <value>Sie haben die Bestätigungs-SMS bereits angefordert. Versuchen Sie es erneut in {0}</value>
   </data>
   <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>Sie haben bereits das Token zum Zurücksetzen des Passworts angefordert. Versuchen Sie es erneut in {0}</value>
+    <value>Sie haben den Zurücksetzen-Passwort-Token bereits angefordert. Versuchen Sie es erneut in {0}</value>
   </data>
   <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>Sie haben bereits einen OTP angefordert. Versuchen Sie es erneut in {0}</value>
+    <value>Sie haben einen OTP bereits angefordert. Versuchen Sie es erneut in {0}</value>
   </data>
   <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
-    <value>Sie haben bereits einen erweiterten Zugriffstoken angefordert. Versuchen Sie es erneut in {0}</value>
+    <value>Sie haben einen erhöhten Zugriffstoken bereits angefordert. Versuchen Sie es erneut in {0}</value>
   </data>
   <data name="Otp" xml:space="preserve">
     <value>OTP</value>
@@ -904,10 +904,10 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>OTP verwenden</value>
   </data>
   <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>Geben Sie entweder ein Passwort oder einen OTP an</value>
+    <value>Geben Sie entweder Passwort oder OTP an</value>
   </data>
   <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
-    <value>Sie haben bereits die 2FA-Token-E-Mail angefordert. Versuchen Sie es erneut in {0}.</value>
+    <value>Sie haben die 2FA-Token-E-Mail bereits angefordert. Versuchen Sie es erneut in {0}.</value>
   </data>
   <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
     <value>{0} ist Ihr Code in Boilerplate.</value>
@@ -940,10 +940,10 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Dieses Update ist erforderlich, um Ihre App reibungslos laufen zu lassen</value>
   </data>
   <data name="About" xml:space="preserve">
-    <value>Über</value>
+    <value>Info</value>
   </data>
   <data name="AboutPageTitle" xml:space="preserve">
-    <value>Über</value>
+    <value>Info</value>
   </data>
   <!--#if (sample == true || offlineDb == true) -->
   <data name="TodoAddPlaceholder" xml:space="preserve">
@@ -953,7 +953,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Noch keine Todos</value>
   </data>
   <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>Todo suchen...</value>
+    <value>Suche nach Todo...</value>
   </data>
   <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
     <value>Todo-Element konnte nicht gefunden werden</value>
@@ -1035,7 +1035,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Nach Name suchen</value>
   </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
-    <value>Produkte pro Kategorie Diagramm</value>
+    <value>Produkteanzahl pro Kategorie Diagramm</value>
   </data>
   <data name="ProductsCountPerCategoryChartText" xml:space="preserve">
     <value>Dieses Diagramm zeigt die Anzahl der Produkte in jeder Kategorie.</value>
@@ -1143,7 +1143,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Guten Tag! Ich bin hier, um Ihr App-Erlebnis fantastisch zu machen! Haben Sie eine Frage oder brauchen Sie Hilfe?</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
-    <value>Öffnen Sie die Seite zum Zurücksetzen des Passworts und erklären Sie mir, wie es funktioniert</value>
+    <value>Öffnen Sie die Zurücksetzen-Passwort-Seite und erklären Sie mir, wie sie funktioniert</value>
   </data>
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>Wie kann ich die PWA-Version der App installieren?</value>
@@ -1182,10 +1182,10 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Konto-Upgrade fehlgeschlagen.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
-    <value>Probleme beim Anschauen von Anzeigen?</value>
+    <value>Probleme beim Anschauen der Anzeige?</value>
   </data>
   <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
-    <value>Ich habe Probleme beim Anschauen von In-App-Anzeigen.</value>
+    <value>Ich habe Probleme beim Anschauen der In-App-Anzeigen.</value>
   </data>
   <!--#endif -->
   <data name="PleaseWait" xml:space="preserve">
@@ -1210,7 +1210,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Benutzergruppe bearbeiten</value>
   </data>
   <data name="NewRoleName" xml:space="preserve">
-    <value>Neuer Name für Benutzergruppe</value>
+    <value>Name der neuen Benutzergruppe</value>
   </data>
   <data name="Users" xml:space="preserve">
     <value>Benutzer</value>
@@ -1225,7 +1225,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Quote</value>
   </data>
   <data name="QuotaDescription" xml:space="preserve">
-    <value>Um die Nutzung von Funktionen einzuschränken, können Sie auf dieser Registerkarte Quoten definieren, die für jede Rolle variieren können. Zum Beispiel die Anzahl der Geräte, auf die sich ein Benutzer anmelden kann, oder die Anzahl der Male, die sie eine bestimmte App-Funktion nutzen können.</value>
+    <value>Um die Nutzung von Funktionen einzuschränken, können Sie auf dieser Registerkarte Quoten definieren, die für jede Rolle variieren können. Zum Beispiel die Anzahl der Geräte, auf die ein Benutzer sich anmelden kann, oder die Anzahl der Male, die sie eine bestimmte App-Funktion nutzen können.</value>
   </data>
   <data name="MaxPrevilegedSessions" xml:space="preserve">
     <value>Max. privilegierte Sitzungen</value>
@@ -1314,10 +1314,10 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Super-Admin-Berechtigungen dürfen nicht geändert werden.</value>
   </data>
   <data name="CanNotChangeBuiltInRole" xml:space="preserve">
-    <value>Benutzergruppe {0} darf nicht geändert werden.</value>
+    <value>Benutzergruppe {0} kann nicht geändert werden.</value>
   </data>
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
-    <value>Sie können sich selbst nicht entfernen</value>
+    <value>Sie können Ihren eigenen Benutzer nicht entfernen</value>
   </data>
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>Sie können diesen SuperAdmin-Benutzer nicht entfernen</value>
@@ -1359,7 +1359,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Wir erstellen automatisch ein Konto für Sie.</value>
   </data>
   <data name="ImageTooSmall" xml:space="preserve">
-    <value>Bild ist zu klein. Minimale erforderliche Abmessungen sind {0}x{1}, aber die aktuellen Abmessungen sind {2}x{3}.</value>
+    <value>Das Bild ist zu klein. Die Mindestabmessungen betragen {0}x{1}, aber die aktuellen Abmessungen sind {2}x{3}.</value>
   </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>Das bereitgestellte Bild enthält kein Auto.</value>

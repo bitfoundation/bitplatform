@@ -163,23 +163,23 @@
     <comment>Error when a password doesn't match</comment>
   </data>
   <data name="PasswordRequiresDigit" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste één cijfer ('0'-'9') bevatten.</value>
+    <value>Wachtwoorden moeten minstens één cijfer bevatten ('0'-'9').</value>
     <comment>Error when passwords do not have a digit</comment>
   </data>
   <data name="PasswordRequiresLower" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste één kleine letter ('a'-'z') bevatten.</value>
+    <value>Wachtwoorden moeten minstens één kleine letter bevatten ('a'-'z').</value>
     <comment>Error when passwords do not have a lowercase letter</comment>
   </data>
   <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste één niet-alfanumeriek teken bevatten.</value>
+    <value>Wachtwoorden moeten minstens één niet-alfanumeriek teken bevatten.</value>
     <comment>Error when password does not have enough non alphanumeric characters</comment>
   </data>
   <data name="PasswordRequiresUpper" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste één hoofdletter ('A'-'Z') bevatten.</value>
+    <value>Wachtwoorden moeten minstens één hoofdletter bevatten ('A'-'Z').</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste {0} tekens lang zijn.</value>
+    <value>Wachtwoorden moeten minstens {0} tekens lang zijn.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
   <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">
@@ -195,7 +195,7 @@
     <comment>Error when a user is already in a role</comment>
   </data>
   <data name="UserLockoutNotEnabled" xml:space="preserve">
-    <value>Uitsluiting is niet ingeschakeld voor deze gebruiker.</value>
+    <value>Accountvergrendeling is niet ingeschakeld voor deze gebruiker.</value>
     <comment>Error when lockout is not enabled</comment>
   </data>
   <data name="UserNotInRole" xml:space="preserve">
@@ -203,7 +203,7 @@
     <comment>Error when a user is not in the role</comment>
   </data>
   <data name="PasswordRequiresUniqueChars" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste {0} verschillende tekens gebruiken.</value>
+    <value>Wachtwoorden moeten minstens {0} verschillende tekens gebruiken.</value>
     <comment>Error message for passwords that are based on similar characters</comment>
   </data>
 </root>

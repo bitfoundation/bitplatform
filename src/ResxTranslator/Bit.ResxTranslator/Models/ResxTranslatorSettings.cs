@@ -14,6 +14,7 @@ public class ResxTranslatorSettings
     public OpenAIOptions? OpenAI { get; set; }
 
     public OpenAIOptions? AzureOpenAI { get; set; }
+    public ParallelOptions ParallelOptions { get; set; } = new() { MaxDegreeOfParallelism = 4 };
 }
 
 public class OpenAIOptions

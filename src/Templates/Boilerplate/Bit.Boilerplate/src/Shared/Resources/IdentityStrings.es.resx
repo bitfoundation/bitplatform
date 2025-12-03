@@ -127,7 +127,7 @@
     <comment>Default identity result error message</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
-    <value>El correo '{0}' ya está en uso.</value>
+    <value>El correo electrónico '{0}' ya está en uso.</value>
     <comment>Error for duplicate emails</comment>
   </data>
   <data name="DuplicateRoleName" xml:space="preserve">
@@ -139,7 +139,7 @@
     <comment>Error for duplicate user names</comment>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
-    <value>El correo '{0}' no es válido.</value>
+    <value>El correo electrónico '{0}' no es válido.</value>
     <comment>Invalid email</comment>
   </data>
   <data name="InvalidRoleName" xml:space="preserve">

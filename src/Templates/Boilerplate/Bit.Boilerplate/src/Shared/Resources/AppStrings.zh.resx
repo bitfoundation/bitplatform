@@ -236,7 +236,7 @@
     <value>当前会话</value>
   </data>
   <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
-    <value>从 {0} 个允许全功能的设备中，您已使用 {1} 个。
+    <value>从允许完整功能的 {0} 个设备中，您已使用了 {1}。
 达到 {0} 后，额外的登录将具有减少的功能。</value>
   </data>
   <data name="OtherSessions" xml:space="preserve">
@@ -439,13 +439,13 @@
     <value>确认您的账户</value>
   </data>
   <data name="ConfirmEmailMessage" xml:space="preserve">
-    <value>请输入发送到您的电子邮件的令牌来确认您的电子邮件。</value>
+    <value>请在此输入令牌以确认您的电子邮件。</value>
   </data>
   <data name="EmailPlaceholder" xml:space="preserve">
     <value>输入电子邮件地址</value>
   </data>
   <data name="EmailToken" xml:space="preserve">
-    <value>代码</value>
+    <value>验证码</value>
   </data>
   <data name="EmailTokenConfirmButtonText" xml:space="preserve">
     <value>确认电子邮件地址</value>
@@ -460,25 +460,25 @@
     <value>电话号码</value>
   </data>
   <data name="ConfirmPhoneSubtitle" xml:space="preserve">
-    <value>我们已向您的电话发送确认令牌。</value>
+    <value>我们已向您的手机发送确认令牌。</value>
   </data>
   <data name="ConfirmPhoneMessage" xml:space="preserve">
-    <value>请输入发送到您的电话的令牌来确认您的电话号码。</value>
+    <value>请在此输入令牌以确认您的电话号码。</value>
   </data>
   <data name="PhoneNumberPlaceholder" xml:space="preserve">
     <value>输入电话号码</value>
   </data>
   <data name="PhoneToken" xml:space="preserve">
-    <value>代码</value>
+    <value>验证码</value>
   </data>
   <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>确认电话号码</value>
   </data>
   <data name="NotReceivedPhoneMessage" xml:space="preserve">
-    <value>您没有在电话上收到令牌吗？</value>
+    <value>您还没有在手机上收到令牌吗？</value>
   </data>
   <data name="ResendPhoneTokenButtonText" xml:space="preserve">
-    <value>重新发送代码</value>
+    <value>重新发送验证码</value>
   </data>
   <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
     <value>您的电话号码 ({0}) 已确认。</value>
@@ -526,7 +526,7 @@
     <value>转到今天</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>使用最短时间轻松创建您的多模式 (WASM、Server、Hybrid、预渲染) Blazor 应用！</value>
+    <value>以最短时间轻松创建您的多模式（WASM、服务器、混合、预渲染）Blazor 应用！</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>首页</value>
@@ -535,7 +535,7 @@
     <value>构建所有您的应用</value>
   </data>
   <data name="HomePanelSubtitle" xml:space="preserve">
-    <value>使用您已经知道和喜爱的技术</value>
+    <value>使用您已经熟悉并喜爱的技术</value>
   </data>
   <data name="WatchVideo" xml:space="preserve">
     <value>观看视频</value>
@@ -544,16 +544,16 @@
     <value>了解更多</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>一套适用于多平台的 .NET 开发者的工具</value>
+    <value>一套适用于多平台的 .NET 开发工具</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>一套高性能、易自定义且美观的 Blazor 组件</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>一套功能丰富的 .NET 项目模板，无缝适用于所有环境</value>
+    <value>一套功能丰富的 .NET 项目模板，可无缝工作于任何地方</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
-    <value>Boilerplate 使用 ASP.NET Core、Identity、Web API、EF Core 和 Blazor 构建。</value>
+    <value>该样板基于 ASP.NET Core、Identity、Web API、EF Core 和 Blazor 构建。</value>
   </data>
   <data name="NewPassword" xml:space="preserve">
     <value>新密码</value>
@@ -565,7 +565,7 @@
     <value>否</value>
   </data>
   <data name="NotReceivedEmailMessage" xml:space="preserve">
-    <value>您没有收到电子邮件吗？</value>
+    <value>您还没有收到电子邮件吗？</value>
   </data>
   <data name="Or" xml:space="preserve">
     <value>或</value>
@@ -574,7 +574,7 @@
     <value>移除</value>
   </data>
   <data name="ResendEmailTokenButtonText" xml:space="preserve">
-    <value>重新发送代码</value>
+    <value>重新发送验证码</value>
   </data>
   <data name="ResetPasswordPageTitle" xml:space="preserve">
     <value>重置密码</value>
@@ -586,7 +586,7 @@
     <value>重置密码</value>
   </data>
   <data name="ResetPasswordSubtitle" xml:space="preserve">
-    <value>我们已向您的电话或电子邮件发送令牌。</value>
+    <value>我们已向您的手机或电子邮件发送令牌。</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
     <value>请在此提交令牌和新密码。</value>
@@ -613,7 +613,7 @@
     <value>欢迎</value>
   </data>
   <data name="SignInPanelSubtitle" xml:space="preserve">
-    <value>继续您的</value>
+    <value>使用您的</value>
   </data>
   <data name="Continue" xml:space="preserve">
     <value>继续</value>
@@ -655,7 +655,7 @@
     <value>立即开始</value>
   </data>
   <data name="SignUpPanelSubtitle" xml:space="preserve">
-    <value>使用创建新账户</value>
+    <value>使用</value>
   </data>
   <data name="Submit" xml:space="preserve">
     <value>提交</value>
@@ -697,7 +697,7 @@
     <value>登录</value>
   </data>
   <data name="SignInByModal" xml:space="preserve">
-    <value>登录 (弹出窗口)</value>
+    <value>登录（弹出窗口）</value>
   </data>
   <data name="Confirm" xml:space="preserve">
     <value>确认</value>
@@ -706,7 +706,7 @@
     <value>以不同用户登录</value>
   </data>
   <data name="YouAreSignedInAs" xml:space="preserve">
-    <value>您已作为登录</value>
+    <value>您已作为 {0} 登录</value>
   </data>
   <data name="ForgotPasswordLink" xml:space="preserve">
     <value>忘记密码？</value>
@@ -727,7 +727,7 @@
     <value>两因素认证</value>
   </data>
   <data name="TfaSubtitle" xml:space="preserve">
-    <value>管理您的账户多因素认证</value>
+    <value>管理您帐户的多因素认证</value>
   </data>
   <data name="TwoFactorCode" xml:space="preserve">
     <value>2FA 代码</value>
@@ -745,7 +745,7 @@
     <value>尝试其他方式</value>
   </data>
   <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
-    <value>您可以从电子邮件或电话获取新代码。</value>
+    <value>您可以通过电子邮件或手机获取新代码。</value>
   </data>
   <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
     <value>获取代码</value>
@@ -754,10 +754,10 @@
     <value>重置 2FA 共享密钥必须禁用 2FA，直到基于新共享密钥的 2FA 令牌得到验证。</value>
   </data>
   <data name="TfaEmptyCodeError" xml:space="preserve">
-    <value>请求未提供 2FA 令牌。要启用 2FA，需要有效的 2FA 令牌。</value>
+    <value>请求未提供 2FA 令牌。启用 2FA 需要有效的 2FA 令牌。</value>
   </data>
   <data name="TfaInvalidCodeError" xml:space="preserve">
-    <value>请求提供的 2FA 令牌无效。要启用 2FA，需要有效的 2FA 令牌。</value>
+    <value>请求提供的 2FA 令牌无效。启用 2FA 需要有效的 2FA 令牌。</value>
   </data>
   <data name="TfaConfigureAutAppTitle" xml:space="preserve">
     <value>配置认证器应用</value>
@@ -766,13 +766,13 @@
     <value>要使用认证器应用，请按照以下步骤操作：</value>
   </data>
   <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>下载适用于 {0} 和 {1} 的两因素认证器应用，如 Google Authenticator。</value>
+    <value>下载像 Google Authenticator 这样的两因素认证器应用，用于 {0} 和 {1}。</value>
   </data>
   <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>扫描/点击二维码，或将以下密钥输入您的两因素认证器应用（空格和大小写无关）：</value>
+    <value>扫描/点击二维码，或将以下密钥输入到您的两因素认证器应用中（空格和大写小写无关）：</value>
   </data>
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
-    <value>扫描二维码或输入上述密钥后，您的两因素认证应用将为您提供唯一代码。在下面的确认框中输入代码。</value>
+    <value>扫描二维码或输入上述密钥后，您的两因素认证应用将为您提供一个唯一代码。在下面的确认框中输入该代码。</value>
   </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>两因素认证已启用。</value>
@@ -796,7 +796,7 @@
     <value>您没有剩余恢复代码。</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
-    <value>您必须生成一组新的恢复代码才能使用恢复代码登录。</value>
+    <value>您必须生成一组新的恢复代码，然后才能使用恢复代码登录。</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
     <value>您还剩 1 个恢复代码。</value>
@@ -820,7 +820,7 @@
     <value>将这些代码放在安全的地方。</value>
   </data>
   <data name="TfaRecoveryCodesWarning" xml:space="preserve">
-    <value>如果您丢失认证器设备且没有恢复代码，您将失去对账户的访问权限。</value>
+    <value>如果您丢失认证器设备且没有恢复代码，您将无法访问您的帐户。</value>
   </data>
   <data name="TfaRecoveryCodesTitle" xml:space="preserve">
     <value>恢复代码：</value>
@@ -832,7 +832,7 @@
     <value>如果您重置认证器密钥，您的认证器应用将无法工作，直到您重新配置它。</value>
   </data>
   <data name="TfaAuthAppWarning" xml:space="preserve">
-    <value>此过程会禁用 2FA，直到您验证您的认证器应用。如果您未完成认证器应用配置，您可能会失去对账户的访问权限。</value>
+    <value>此过程会禁用 2FA，直到您验证您的认证器应用。如果您未完成认证器应用配置，您可能会丢失对帐户的访问权限。</value>
   </data>
   <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
     <value>重置认证器密钥</value>
@@ -996,7 +996,7 @@
     <value>共</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
-    <value>过去 30 天产品数量</value>
+    <value>最近 30 天产品数量</value>
   </data>
   <data name="AddProduct" xml:space="preserve">
     <value>添加产品</value>
@@ -1029,7 +1029,7 @@
     <value>输入产品名称</value>
   </data>
   <data name="CategoriesWithProductCount" xml:space="preserve">
-    <value>带产品数量的类别</value>
+    <value>带有产品数量的类别</value>
   </data>
   <data name="SearchOnName" xml:space="preserve">
     <value>按名称搜索</value>
@@ -1059,7 +1059,7 @@
     <value>此类别包含一些产品，因此您无法删除它</value>
   </data>
   <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
-    <value>您确定要删除产品 {0} 吗</value>
+    <value>您确定要删除产品 {0} 吗？</value>
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>删除产品</value>
@@ -1074,7 +1074,7 @@
     <value>产品名称重复</value>
   </data>
   <data name="DuplicateCategoryName" xml:space="preserve">
-    <value>类别 {0} 重复</value>
+    <value>重复类别 {0}</value>
   </data>
   <data name="DashboardPageTitle" xml:space="preserve">
     <value>仪表板</value>
@@ -1091,12 +1091,12 @@
     <value>无效的 Google reCAPTCHA 响应。</value>
   </data>
   <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
-    <value>您需要通过 Google reCAPTCHA 挑战。</value>
+    <value>您需要通过 Google reCAPTCHA 验证。</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Sales") -->
   <data name="SimilarProducts" xml:space="preserve">
-    <value>类似产品</value>
+    <value>相似产品</value>
   </data>
   <data name="SiblingProducts" xml:space="preserve">
     <value>同一类别的产品</value>
@@ -1118,13 +1118,13 @@
     <value>启用无密码登录</value>
   </data>
   <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>无密码登录已成功启用</value>
+    <value>无密码登录启用成功</value>
   </data>
   <data name="DisablePasswordless" xml:space="preserve">
     <value>禁用无密码登录</value>
   </data>
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>无密码登录已成功禁用</value>
+    <value>无密码登录禁用成功</value>
   </data>
   <data name="Clear" xml:space="preserve">
     <value>清除</value>
@@ -1140,13 +1140,13 @@
     <value>AI 聊天面板</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>问候！我是来让您的应用体验超棒的！有问题或需要帮助吗？</value>
+    <value>您好！我是来让您的应用体验更棒的！有问题或需要帮助吗？</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>打开重置密码页面并告诉我它是如何工作的</value>
   </data>
   <data name="AiChatPanelPrompt2" xml:space="preserve">
-    <value>我如何安装应用的 PWA 版本？</value>
+    <value>如何安装应用的 PWA 版本？</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
@@ -1182,14 +1182,14 @@
     <value>账户升级失败。</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
-    <value>观看广告有问题？</value>
+    <value>观看广告有问题吗？</value>
   </data>
   <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
-    <value>我在应用内观看广告有问题。</value>
+    <value>我在应用内观看广告时遇到问题。</value>
   </data>
   <!--#endif -->
   <data name="PleaseWait" xml:space="preserve">
-    <value>请等待</value>
+    <value>请稍候</value>
   </data>
   <data name="Management" xml:space="preserve">
     <value>管理</value>
@@ -1225,7 +1225,7 @@
     <value>配额</value>
   </data>
   <data name="QuotaDescription" xml:space="preserve">
-    <value>要限制功能的使用，您可以在此选项卡上为每个角色定义配额。例如，用户可以登录的设备数量或使用特定应用功能的次数。</value>
+    <value>要限制功能的使用，您可以在此选项卡上定义配额，每个角色可以不同。例如，用户可以登录的设备数量或使用特定应用功能的次数。</value>
   </data>
   <data name="MaxPrevilegedSessions" xml:space="preserve">
     <value>最大特权会话数</value>
@@ -1284,7 +1284,7 @@
     <value>特权</value>
   </data>
   <data name="RenewedOn" xml:space="preserve">
-    <value>续订于</value>
+    <value>续订时间</value>
   </data>
   <data name="OnlineUsers" xml:space="preserve">
     <value>在线用户：{0}</value>
@@ -1311,19 +1311,19 @@
     <value>您不能从 SuperAdmin 用户组中移除此用户。</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
-    <value>不能修改超级管理员权限。</value>
+    <value>超级管理员权限不可修改。</value>
   </data>
   <data name="CanNotChangeBuiltInRole" xml:space="preserve">
-    <value>不能修改用户组 {0}。</value>
+    <value>用户组 {0} 不可修改。</value>
   </data>
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
-    <value>您不能移除自己的用户</value>
+    <value>您不能删除自己的用户</value>
   </data>
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>您不能移除此 SuperAdmin 用户</value>
+    <value>您不能删除此 SuperAdmin 用户</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
-    <value>您不能移除当前会话</value>
+    <value>您不能删除当前会话</value>
   </data>
   <data name="SearchRolesPlaceholder" xml:space="preserve">
     <value>搜索用户组</value>
@@ -1353,15 +1353,15 @@
     <value>您没有权限访问此页面。</value>
   </data>
   <data name="SignInPasswordMessage1" xml:space="preserve">
-    <value>第一次来？</value>
+    <value>首次来到这里吗？</value>
   </data>
   <data name="SignInPasswordMessage2" xml:space="preserve">
     <value>我们将自动为您创建账户。</value>
   </data>
   <data name="ImageTooSmall" xml:space="preserve">
-    <value>图像太小。最小要求尺寸为 {0}x{1}，但当前尺寸为 {2}x{3}。</value>
+    <value>图像太小了。最小要求尺寸为 {0}x{1}，但当前尺寸为 {2}x{3}。</value>
   </data>
   <data name="ImageNotCarError" xml:space="preserve">
-    <value>提供的图像不包含汽车。</value>
+    <value>提供的图像中不包含汽车。</value>
   </data>
 </root>

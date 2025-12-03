@@ -119,19 +119,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>نموذج أساسي {0} - تأكيد عنوان بريدك الإلكتروني</value>
+    <value>النموذج الأساسي {0} - تأكيد عنوان بريدك الإلكتروني</value>
   </data>
   <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
     <value>أنت تتلقى هذا البريد الإلكتروني لأنك قمت مؤخرًا بتسجيل {0} في حسابك في النموذج الأساسي.</value>
   </data>
   <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
-    <value>قم بتأكيد عنوان بريدك الإلكتروني بإدخال الرقم أدناه في التطبيق.</value>
+    <value>تأكيد عنوان بريدك الإلكتروني بإدخال الرقم أدناه في التطبيق.</value>
   </data>
   <data name="EmailConfirmationMessageBodyLink" xml:space="preserve">
     <value>أو انقر على الرابط التالي لتأكيد عنوان البريد الإلكتروني هذا.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>نموذج أساسي {0} - إعادة تعيين كلمة المرور</value>
+    <value>النموذج الأساسي {0} - إعادة تعيين كلمة المرور</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>مرحبا {0}</value>
@@ -149,7 +149,7 @@
     <value>أو يمكنك النقر على الرابط التالي لمحاولة إعادة تعيين كلمة مرورك.</value>
   </data>
   <data name="OtpEmailSubject" xml:space="preserve">
-    <value>نموذج أساسي {0} - رمز OTP</value>
+    <value>النموذج الأساسي {0} - رمز OTP</value>
   </data>
   <data name="OtpTitle" xml:space="preserve">
     <value>مرحبا {0}</value>
@@ -167,13 +167,13 @@
     <value>أو يمكنك النقر على الرابط التالي لتسجيل الدخول.</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>نموذج أساسي</value>
+    <value>النموذج الأساسي</value>
   </data>
   <data name="WelcomeToApp" xml:space="preserve">
     <value>مرحبا بك في النموذج الأساسي!</value>
   </data>
   <data name="TfaTokenEmailSubject" xml:space="preserve">
-    <value>نموذج أساسي {0} - رمز 2FA</value>
+    <value>النموذج الأساسي {0} - رمز 2FA</value>
   </data>
   <data name="TfaTokenHello" xml:space="preserve">
     <value>مرحبا عزيزي {0}</value>
@@ -182,7 +182,7 @@
     <value>إليك رمز 2FA الجديد لتسجيل الدخول:</value>
   </data>
   <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
-    <value>نموذج أساسي {0} - رمز وصول مرتفع</value>
+    <value>النموذج الأساسي {0} - رمز وصول مرتفع</value>
   </data>
   <data name="ElevatedAccessTokenHello" xml:space="preserve">
     <value>مرحبا عزيزي {0}</value>

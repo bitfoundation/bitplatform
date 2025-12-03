@@ -119,10 +119,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>Plantilla {0} - Confirma tu dirección de correo electrónico</value>
+    <value>Boilerplate {0} - Confirma tu dirección de correo electrónico</value>
   </data>
   <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
-    <value>Estás recibiendo este correo porque recientemente has registrado {0} en tu cuenta de Plantilla.</value>
+    <value>Estás recibiendo este correo porque recientemente has registrado {0} en tu cuenta de Boilerplate.</value>
   </data>
   <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
     <value>Confirma tu dirección de correo electrónico ingresando el número de abajo en la app.</value>
@@ -131,7 +131,7 @@
     <value>O haz clic en el siguiente enlace para confirmar esta dirección de correo electrónico.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>Plantilla {0} - Restablece tu contraseña</value>
+    <value>Boilerplate {0} - Restablece tu contraseña</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Hola {0}</value>
@@ -140,7 +140,7 @@
     <value>Alguien ha solicitado un token para cambiar tu contraseña.</value>
   </data>
   <data name="ResetPasswordBody" xml:space="preserve">
-    <value>Si no fuiste tú quien solicitó el restablecimiento de contraseña, puedes ignorar este correo.</value>
+    <value>Si no eres tú quien solicitó el restablecimiento de contraseña, puedes ignorar este correo.</value>
   </data>
   <data name="ResetPasswordTokenMessage" xml:space="preserve">
     <value>Puedes copiar el token de abajo e ingresarlo en la página de restablecimiento de contraseña.</value>
@@ -149,7 +149,7 @@
     <value>O puedes hacer clic en el siguiente enlace para intentar restablecer tu contraseña.</value>
   </data>
   <data name="OtpEmailSubject" xml:space="preserve">
-    <value>Plantilla {0} - OTP</value>
+    <value>Boilerplate {0} - OTP</value>
   </data>
   <data name="OtpTitle" xml:space="preserve">
     <value>Hola {0}</value>
@@ -167,33 +167,33 @@
     <value>O puedes hacer clic en el siguiente enlace para iniciar sesión.</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>Plantilla</value>
+    <value>Boilerplate</value>
   </data>
   <data name="WelcomeToApp" xml:space="preserve">
-    <value>¡Bienvenido a Plantilla!</value>
+    <value>¡Bienvenido a Boilerplate!</value>
   </data>
   <data name="TfaTokenEmailSubject" xml:space="preserve">
-    <value>Plantilla {0} - Token 2FA</value>
+    <value>Boilerplate {0} - Token 2FA</value>
   </data>
   <data name="TfaTokenHello" xml:space="preserve">
     <value>Hola querido {0}</value>
   </data>
   <data name="TfaTokenMessage" xml:space="preserve">
-    <value>Aquí está tu nuevo token 2FA para iniciar sesión:</value>
+    <value>Aquí tienes tu nuevo token 2FA para iniciar sesión:</value>
   </data>
   <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
-    <value>Plantilla {0} - Token de acceso elevado</value>
+    <value>Boilerplate {0} - Token de acceso elevado</value>
   </data>
   <data name="ElevatedAccessTokenHello" xml:space="preserve">
     <value>Hola querido {0}</value>
   </data>
   <data name="ElevatedAccessTokenMessage" xml:space="preserve">
-    <value>Aquí está tu nuevo token de acceso elevado:</value>
+    <value>Aquí tienes tu nuevo token de acceso elevado:</value>
   </data>
   <data name="CopyTokenNote" xml:space="preserve">
     <value>Copia este código y úsalo en la app.</value>
   </data>
   <data name="DefaultFromName" xml:space="preserve">
-    <value>App Plantilla</value>
+    <value>App Boilerplate</value>
   </data>
 </root>
