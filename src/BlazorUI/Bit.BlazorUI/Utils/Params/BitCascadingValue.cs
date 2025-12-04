@@ -20,17 +20,28 @@ public class BitCascadingValue
     /// </summary>
     public bool IsFixed { get; set; }
 
+    /// <summary>
+    /// The actual type of the value to be used as the TValue of the CascadingValue component.
+    /// </summary>
+    public Type ValueType { get; }
+
 
 
     public BitCascadingValue() { }
     public BitCascadingValue(object? value, string? name = null) : this(value, name, false) { }
     public BitCascadingValue(object? value, bool isFixed) : this(value, null, isFixed) { }
-    public BitCascadingValue(object? value, string? name, bool isFixed)
+    public BitCascadingValue(object? value, Type valueType) : this(value, null, false, valueType) { }
+    public BitCascadingValue(object? value, string? name, bool isFixed, Type? valueType = null)
     {
         Value = value;
         Name = name;
         IsFixed = isFixed;
+        ValueType = valueType ?? value?.GetType() ?? throw new ArgumentNullException(nameof(valueType));
     }
+
+
+
+    public static BitCascadingValue From<T>(T value, string? name, bool isFixed) => new(value, name, isFixed, typeof(T));
 
 
 
