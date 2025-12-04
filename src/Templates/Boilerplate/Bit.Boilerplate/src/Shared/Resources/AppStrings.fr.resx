@@ -120,16 +120,16 @@
   </resheader>
   <!-- .NET Validation messages -->
   <data name="CompareAttribute_ValidationError" xml:space="preserve">
-    <value>'{0}' et '{1}' ne correspondent pas.</value>
+    <value>« {0} » et « {1} » ne correspondent pas.</value>
   </data>
   <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
-    <value>Le champ {0} n'est pas une adresse e-mail valide.</value>
+    <value>Le champ {0} n’est pas une adresse e-mail valide.</value>
   </data>
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute doit avoir une valeur Length supérieure à zéro. Utilisez MaxLength() sans paramètres pour indiquer que la chaîne ou le tableau peut avoir la longueur maximale autorisée.</value>
   </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
-    <value>Le champ {0} doit être de type chaîne ou tableau avec une longueur minimale de '{1}'.</value>
+    <value>Le champ {0} doit être de type chaîne ou tableau avec une longueur minimale de « {1} ».</value>
   </data>
   <data name="RangeAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} doit être compris entre {1} et {2}.</value>
@@ -138,35 +138,35 @@
     <value>Le champ {0} est requis.</value>
   </data>
   <data name="PhoneAttribute_ValidationError" xml:space="preserve">
-    <value>Le champ {0} n'est pas un numéro de téléphone valide.</value>
+    <value>Le champ {0} n’est pas un numéro de téléphone valide.</value>
   </data>
   <!-- Exceptions -->
   <data name="BadRequestException" xml:space="preserve">
-    <value>Requête invalide</value>
+    <value>Requête non valide</value>
   </data>
   <data name="ConflictException" xml:space="preserve">
-    <value>La requête n'a pas pu être traitée en raison d'un conflit dans la requête</value>
+    <value>La requête n’a pas pu être traitée en raison d’un conflit dans la requête</value>
   </data>
   <data name="NotAuthorizedPageTitle" xml:space="preserve">
     <value>Non autorisé</value>
   </data>
   <data name="ForbiddenException" xml:space="preserve">
-    <value>L'accès à la ressource demandée est interdit</value>
+    <value>L’accès à la ressource demandée est interdit</value>
   </data>
   <data name="ResourceValidationException" xml:space="preserve">
     <value>Les données de la requête ne sont pas valides</value>
   </data>
   <data name="RestException" xml:space="preserve">
-    <value>Une erreur s'est produite lors de la communication avec le serveur</value>
+    <value>Une erreur s’est produite lors de la communication avec le serveur</value>
   </data>
   <data name="UnauthorizedException" xml:space="preserve">
-    <value>Votre requête manque de credentials d'authentification valides</value>
+    <value>Votre requête manque d’identifiants d’authentification valides</value>
   </data>
   <data name="UnknownException" xml:space="preserve">
-    <value>Une erreur inconnue s'est produite</value>
+    <value>Une erreur inconnue s’est produite</value>
   </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
-    <value>L'enregistrement a été modifié par un autre utilisateur après que vous ayez obtenu les données originales. L'opération a été annulée.</value>
+    <value>L’enregistrement a été modifié par un autre utilisateur après que vous ayez obtenu les données originales. L’opération a été annulée.</value>
   </data>
   <data name="ResourceNotFoundException" xml:space="preserve">
     <value>Ressource non trouvée</value>
@@ -218,10 +218,10 @@
     <value>Modifier vos données de profil</value>
   </data>
   <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
-    <value>Un jeton de changement d'e-mail vous a été envoyé</value>
+    <value>Le jeton de changement d’e-mail vous a été envoyé</value>
   </data>
   <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
-    <value>Un jeton de changement de numéro de téléphone vous a été envoyé</value>
+    <value>Le jeton de changement de numéro de téléphone vous a été envoyé</value>
   </data>
   <data name="SuccessfulSendTokenMessage" xml:space="preserve">
     <value>Le jeton vous a été envoyé</value>
@@ -236,14 +236,14 @@
     <value>Session actuelle</value>
   </data>
   <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
-    <value>Sur {0} appareils autorisés pour les fonctionnalités complètes, vous en avez utilisé {1}.
+    <value>Sur {0} appareils autorisés pour les fonctionnalités complètes, vous avez utilisé {1}.
 Après avoir atteint {0}, les connexions supplémentaires auront des fonctions réduites.</value>
   </data>
   <data name="OtherSessions" xml:space="preserve">
     <value>Autres sessions</value>
   </data>
   <data name="TryRemovingOtherSessions" xml:space="preserve">
-    <value>Essayez de supprimer d'autres sessions</value>
+    <value>Essayez de supprimer d’autres sessions</value>
   </data>
   <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>Session supprimée avec succès</value>
@@ -252,20 +252,20 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>404</value>
   </data>
   <data name="NotFoundText" xml:space="preserve">
-    <value>Il n'y a rien ici.</value>
+    <value>Il n’y a rien ici.</value>
   </data>
   <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
-    <value>Veuillez mettre à jour le webview via Google Play.</value>
+    <value>Veuillez mettre à jour le WebView via Google Play.</value>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>Ok</value>
+    <value>OK</value>
   </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
-    <value>Invites système</value>
+    <value>Instructions système</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
-    <value>Consultez ici les invites système pour le chatbot.</value>
+    <value>Afficher les instructions système pour le chatbot ici.</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>Tâche de notification push</value>
@@ -276,13 +276,13 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>À faire (Hors ligne)</value>
   </data>
   <data name="SyncPushFailed" xml:space="preserve">
-    <value>Échec de la synchronisation des changements vers le serveur</value>
+    <value>Échec de la synchronisation des modifications vers le serveur</value>
   </data>
   <data name="SyncPullFailed" xml:space="preserve">
-    <value>Échec de la récupération des changements depuis le serveur</value>
+    <value>Échec de la récupération des modifications depuis le serveur</value>
   </data>
   <data name="SyncPushSuccess" xml:space="preserve">
-    <value>{0} changements synchronisés vers le serveur</value>
+    <value>{0} modifications synchronisées vers le serveur</value>
   </data>
   <!--#endif-->
   <data name="FullName" xml:space="preserve">
@@ -346,7 +346,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Date de naissance</value>
   </data>
   <data name="UserName" xml:space="preserve">
-    <value>Nom d'utilisateur</value>
+    <value>Nom d’utilisateur</value>
   </data>
   <data name="Name" xml:space="preserve">
     <value>Nom</value>
@@ -358,16 +358,16 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Prix</value>
   </data>
   <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
-    <value>Fournissez soit un e-mail, soit un numéro de téléphone.</value>
+    <value>Fournissez un e-mail ou un numéro de téléphone.</value>
   </data>
   <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
-    <value>Fournissez un nom d'utilisateur, un e-mail ou un numéro de téléphone.</value>
+    <value>Fournissez un nom d’utilisateur, un e-mail ou un numéro de téléphone.</value>
   </data>
   <data name="YouNeedToSignIn" xml:space="preserve">
     <value>Vous devez être connecté pour continuer.</value>
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
-    <value>Identifiants utilisateur invalides</value>
+    <value>Identifiants utilisateur non valides</value>
   </data>
   <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>Votre e-mail est déjà confirmé.</value>
@@ -391,22 +391,22 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Récupérer</value>
   </data>
   <data name="SomethingWentWrong" xml:space="preserve">
-    <value>Oups, quelque chose s'est mal passé...</value>
+    <value>Oups, une erreur s’est produite…</value>
   </data>
   <data name="BackToHome" xml:space="preserve">
-    <value>Retour à l'accueil</value>
+    <value>Retour à l’accueil</value>
   </data>
   <data name="UserLockedOut" xml:space="preserve">
-    <value>L'utilisateur est verrouillé. Réessayez dans {0}</value>
+    <value>L’utilisateur est verrouillé. Réessayez dans {0}</value>
   </data>
   <data name="UserIsNotConfirmed" xml:space="preserve">
-    <value>L'utilisateur n'est pas confirmé.</value>
+    <value>L’utilisateur n’est pas confirmé.</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
-    <value>L'utilisateur n'existe pas.</value>
+    <value>L’utilisateur n’existe pas.</value>
   </data>
   <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
-    <value>Cet e-mail ou ce numéro de téléphone est déjà pris.</value>
+    <value>Cette adresse e-mail ou ce numéro de téléphone est déjà utilisé.</value>
   </data>
   <data name="Add" xml:space="preserve">
     <value>Ajouter</value>
@@ -415,7 +415,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Jeton</value>
   </data>
   <data name="InvalidToken" xml:space="preserve">
-    <value>Jeton invalide.</value>
+    <value>Jeton non valide.</value>
   </data>
   <data name="ExpiredToken" xml:space="preserve">
     <value>Jeton expiré.</value>
@@ -442,13 +442,13 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Veuillez confirmer votre e-mail en saisissant le jeton ici.</value>
   </data>
   <data name="EmailPlaceholder" xml:space="preserve">
-    <value>Saisir l'adresse e-mail</value>
+    <value>Saisir l’adresse e-mail</value>
   </data>
   <data name="EmailToken" xml:space="preserve">
     <value>Code</value>
   </data>
   <data name="EmailTokenConfirmButtonText" xml:space="preserve">
-    <value>Confirmer l'adresse e-mail</value>
+    <value>Confirmer l’adresse e-mail</value>
   </data>
   <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
     <value>Votre adresse e-mail ({0}) a été confirmée.</value>
@@ -475,7 +475,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Confirmer le numéro de téléphone</value>
   </data>
   <data name="NotReceivedPhoneMessage" xml:space="preserve">
-    <value>Vous n'avez pas reçu le jeton sur votre téléphone ?</value>
+    <value>Vous n’avez pas reçu le jeton sur votre téléphone ?</value>
   </data>
   <data name="ResendPhoneTokenButtonText" xml:space="preserve">
     <value>Renvoyer le code</value>
@@ -490,22 +490,22 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Compte</value>
   </data>
   <data name="AccountSubtitle" xml:space="preserve">
-    <value>Modifier l'e-mail, le numéro de téléphone ou les paramètres sans mot de passe de votre compte</value>
+    <value>Changer l’e-mail, le numéro de téléphone ou les paramètres sans mot de passe de votre compte</value>
   </data>
   <data name="DeleteAccount" xml:space="preserve">
     <value>Supprimer le compte</value>
   </data>
   <data name="DeleteAccountPrompt" xml:space="preserve">
-    <value>Êtes-vous sûr de vouloir supprimer votre compte ?</value>
+    <value>Êtes-vous sûr de vouloir supprimer votre compte ?</value>
   </data>
   <data name="DontHaveAccountMessage" xml:space="preserve">
-    <value>Pas de compte ?</value>
+    <value>Vous n’avez pas de compte ?</value>
   </data>
   <data name="Edit" xml:space="preserve">
     <value>Modifier</value>
   </data>
   <data name="FileUploadFailed" xml:space="preserve">
-    <value>Une erreur s'est produite lors du téléchargement du fichier</value>
+    <value>Une erreur s’est produite lors du téléchargement du fichier</value>
   </data>
   <data name="ForgotPasswordPageTitle" xml:space="preserve">
     <value>Mot de passe oublié</value>
@@ -514,7 +514,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Mot de passe oublié</value>
   </data>
   <data name="ForgotPasswordMessage" xml:space="preserve">
-    <value>Veuillez saisir votre adresse e-mail ou votre numéro de téléphone afin que nous puissions vous envoyer un jeton de réinitialisation de mot de passe.</value>
+    <value>Veuillez saisir votre adresse e-mail ou numéro de téléphone pour que nous puissions vous envoyer un jeton de réinitialisation de mot de passe.</value>
   </data>
   <data name="GenderMale" xml:space="preserve">
     <value>Homme</value>
@@ -523,10 +523,10 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Autre</value>
   </data>
   <data name="GoToToday" xml:space="preserve">
-    <value>Aller à aujourd'hui</value>
+    <value>Aller à aujourd’hui</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Créez facilement votre application Blazor multi-mode (WASM, Server, Hybrid, pré-rendu) en un temps record !</value>
+    <value>Créez facilement votre application Blazor multi-mode (WASM, Server, Hybrid, pré-rendu) en un temps record !</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>Accueil</value>
@@ -535,7 +535,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Construisez toutes vos applications</value>
   </data>
   <data name="HomePanelSubtitle" xml:space="preserve">
-    <value>avec ce que vous connaissez et aimez déjà</value>
+    <value>en utilisant ce que vous connaissez et aimez déjà</value>
   </data>
   <data name="WatchVideo" xml:space="preserve">
     <value>Regarder la vidéo</value>
@@ -544,13 +544,13 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>En savoir plus</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>Un ensemble d'outils pour les développeurs .NET sur plusieurs plateformes</value>
+    <value>Un ensemble d’outils pour les développeurs .NET sur plusieurs plateformes</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
-    <value>Un ensemble de composants Blazor performants, faciles à personnaliser et beaux</value>
+    <value>Un ensemble de composants Blazor performants, faciles à personnaliser et élégants</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>Un modèle de projet .NET riche en fonctionnalités qui fonctionne partout de manière fluide</value>
+    <value>Un modèle de projet .NET riche en fonctionnalités qui fonctionne partout de manière transparente</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>Le Boilerplate est construit avec ASP.NET Core, Identity, Web API, EF Core et Blazor.</value>
@@ -565,7 +565,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Non</value>
   </data>
   <data name="NotReceivedEmailMessage" xml:space="preserve">
-    <value>Vous n'avez pas reçu l'e-mail ?</value>
+    <value>Vous n’avez pas reçu l’e-mail ?</value>
   </data>
   <data name="Or" xml:space="preserve">
     <value>ou</value>
@@ -601,7 +601,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Vous pouvez maintenant vous connecter avec votre mot de passe.</value>
   </data>
   <data name="ResetPasswordMessageInForgot" xml:space="preserve">
-    <value>Vous avez déjà un jeton de réinitialisation de mot de passe ?</value>
+    <value>Vous avez déjà un jeton de réinitialisation de mot de passe ?</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Enregistrer</value>
@@ -643,16 +643,16 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Se déconnecter</value>
   </data>
   <data name="SignOutPrompt" xml:space="preserve">
-    <value>Êtes-vous sûr de vouloir vous déconnecter ?</value>
+    <value>Êtes-vous sûr de vouloir vous déconnecter ?</value>
   </data>
   <data name="SignUp" xml:space="preserve">
-    <value>S'inscrire</value>
+    <value>S’inscrire</value>
   </data>
   <data name="SignUpPageTitle" xml:space="preserve">
-    <value>S'inscrire</value>
+    <value>S’inscrire</value>
   </data>
   <data name="SignUpPanelTitle" xml:space="preserve">
-    <value>Commencez aujourd'hui</value>
+    <value>Commencez aujourd’hui</value>
   </data>
   <data name="SignUpPanelSubtitle" xml:space="preserve">
     <value>Créer un nouveau compte avec</value>
@@ -667,7 +667,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Oui</value>
   </data>
   <data name="SelectBirthDate" xml:space="preserve">
-    <value>Sélectionnez votre date de naissance</value>
+    <value>Sélectionner votre date de naissance</value>
   </data>
   <data name="Action" xml:space="preserve">
     <value>Action</value>
@@ -679,7 +679,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Annuler</value>
   </data>
   <data name="CheckSpamMailMessage" xml:space="preserve">
-    <value>Vérifiez vos Courriers indésirables/Spam, si vous ne le trouvez pas dans la Boîte de réception.</value>
+    <value>Vérifiez Courrier indésirable/Pourriels si vous ne le trouvez pas dans la boîte de réception.</value>
   </data>
   <data name="Color" xml:space="preserve">
     <value>Couleur</value>
@@ -697,25 +697,25 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Se connecter</value>
   </data>
   <data name="SignInByModal" xml:space="preserve">
-    <value>Se connecter (Fenêtre contextuelle)</value>
+    <value>Se connecter (Pop-up)</value>
   </data>
   <data name="Confirm" xml:space="preserve">
     <value>Confirmer</value>
   </data>
   <data name="SignInAsDifferentUser" xml:space="preserve">
-    <value>Se connecter en tant qu'utilisateur différent</value>
+    <value>Se connecter en tant qu’utilisateur différent</value>
   </data>
   <data name="YouAreSignedInAs" xml:space="preserve">
     <value>Vous êtes connecté en tant que</value>
   </data>
   <data name="ForgotPasswordLink" xml:space="preserve">
-    <value>Mot de passe oublié ?</value>
+    <value>Mot de passe oublié ?</value>
   </data>
   <data name="GenderFemale" xml:space="preserve">
     <value>Femme</value>
   </data>
   <data name="RememberMe" xml:space="preserve">
-    <value>Se souvenir de moi ?</value>
+    <value>Se souvenir de moi ?</value>
   </data>
   <data name="Copy" xml:space="preserve">
     <value>Copier</value>
@@ -727,7 +727,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Authentification à deux facteurs</value>
   </data>
   <data name="TfaSubtitle" xml:space="preserve">
-    <value>Gérer l'authentification multifacteur de votre compte</value>
+    <value>Gérer l’authentification multifacteur de votre compte</value>
   </data>
   <data name="TwoFactorCode" xml:space="preserve">
     <value>Code 2FA</value>
@@ -739,52 +739,52 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Authentification à deux facteurs</value>
   </data>
   <data name="TfaPanelSubtitle" xml:space="preserve">
-    <value>Obtenez un nouveau code depuis votre application d'authentification ou utilisez votre code de récupération.</value>
+    <value>Obtenez un nouveau code depuis votre application d’authentification ou utilisez votre code de récupération.</value>
   </data>
   <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
-    <value>Essayez une autre méthode</value>
+    <value>Essayer une autre méthode</value>
   </data>
   <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
-    <value>Vous pouvez obtenir un nouveau code par e-mail ou sur votre téléphone.</value>
+    <value>Vous pouvez obtenir un nouveau code par e-mail ou téléphone.</value>
   </data>
   <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
     <value>Obtenir le code</value>
   </data>
   <data name="TfaResetSharedKeyError" xml:space="preserve">
-    <value>La réinitialisation de la clé partagée 2FA doit désactiver la 2FA jusqu'à ce qu'un jeton 2FA basé sur la nouvelle clé partagée soit validé.</value>
+    <value>La réinitialisation de la clé partagée 2FA doit désactiver la 2FA jusqu’à ce qu’un jeton 2FA basé sur la nouvelle clé partagée soit validé.</value>
   </data>
   <data name="TfaEmptyCodeError" xml:space="preserve">
-    <value>Aucun jeton 2FA n'a été fourni par la requête. Un jeton 2FA valide est requis pour activer la 2FA.</value>
+    <value>Aucun jeton 2FA fourni par la requête. Un jeton 2FA valide est requis pour activer la 2FA.</value>
   </data>
   <data name="TfaInvalidCodeError" xml:space="preserve">
-    <value>Le jeton 2FA fourni par la requête était invalide. Un jeton 2FA valide est requis pour activer la 2FA.</value>
+    <value>Le jeton 2FA fourni par la requête est invalide. Un jeton 2FA valide est requis pour activer la 2FA.</value>
   </data>
   <data name="TfaConfigureAutAppTitle" xml:space="preserve">
-    <value>Configurer l'application d'authentification</value>
+    <value>Configurer l’application d’authentification</value>
   </data>
   <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
-    <value>Pour utiliser une application d'authentification, suivez ces étapes :</value>
+    <value>Pour utiliser une application d’authentification, suivez ces étapes :</value>
   </data>
   <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>Téléchargez une application d'authentification à deux facteurs comme Google Authenticator pour {0} et {1}.</value>
+    <value>Téléchargez une application d’authentification à deux facteurs comme Google Authenticator pour {0} et {1}.</value>
   </data>
   <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>Scannez/cliquez sur le code QR ou entrez la clé suivante dans votre application d'authentification à deux facteurs (les espaces et la casse n'ont pas d'importance) :</value>
+    <value>Scannez/cliquez sur le code QR ou saisissez la clé suivante dans votre application d’authentification à deux facteurs (espaces et casse sans importance) :</value>
   </data>
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
-    <value>Une fois que vous avez scanné le code QR ou saisi la clé ci-dessus, votre application d'authentification à deux facteurs vous fournira un code unique. Entrez ce code dans la boîte de confirmation ci-dessous.</value>
+    <value>Une fois le code QR scanné ou la clé saisie ci-dessus, votre application d’authentification à deux facteurs vous fournira un code unique. Saisissez-le dans la boîte de confirmation ci-dessous.</value>
   </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
-    <value>L'authentification à deux facteurs a été activée.</value>
+    <value>L’authentification à deux facteurs a été activée.</value>
   </data>
   <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
-    <value>L'authentification à deux facteurs a été désactivée.</value>
+    <value>L’authentification à deux facteurs a été désactivée.</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
-    <value>Code de vérification :</value>
+    <value>Code de vérification :</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Entrez le code de vérification.</value>
+    <value>Saisir le code de vérification.</value>
   </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Vérifier</value>
@@ -793,7 +793,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Récupération</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
-    <value>Vous n'avez plus de codes de récupération.</value>
+    <value>Vous n’avez plus de codes de récupération.</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
     <value>Vous devez générer un nouveau jeu de codes de récupération avant de pouvoir vous connecter avec un code de récupération.</value>
@@ -811,31 +811,31 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Vous devriez générer un nouveau jeu de codes de récupération.</value>
   </data>
   <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
-    <value>La génération de nouveaux codes de récupération ne change pas les clés utilisées dans les applications d'authentification. Si vous souhaitez changer la clé utilisée dans une application d'authentification, vous devez réinitialiser vos clés d'authentification dans l'onglet suivant.</value>
+    <value>La génération de nouveaux codes de récupération ne modifie pas les clés utilisées dans les applications d’authentification. Pour changer la clé d’une application d’authentification, réinitialisez vos clés d’authentification dans l’onglet suivant.</value>
   </data>
   <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
-    <value>Générer des codes de récupération</value>
+    <value>Générer les codes de récupération</value>
   </data>
   <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
-    <value>Mettez ces codes en lieu sûr.</value>
+    <value>Conservez ces codes en lieu sûr.</value>
   </data>
   <data name="TfaRecoveryCodesWarning" xml:space="preserve">
-    <value>Si vous perdez votre appareil d'authentification et que vous n'avez pas les codes de récupération, vous perdrez l'accès à votre compte.</value>
+    <value>Si vous perdez votre appareil d’authentification sans les codes de récupération, vous perdrez l’accès à votre compte.</value>
   </data>
   <data name="TfaRecoveryCodesTitle" xml:space="preserve">
-    <value>Codes de récupération :</value>
+    <value>Codes de récupération :</value>
   </data>
   <data name="TfaAuthAppHeader" xml:space="preserve">
     <value>Authentificateur</value>
   </data>
   <data name="TfaAuthAppWarningTitle" xml:space="preserve">
-    <value>Si vous réinitialisez votre clé d'authentificateur, votre application d'authentification ne fonctionnera plus jusqu'à ce que vous la reconfiguriez.</value>
+    <value>Si vous réinitialisez votre clé d’authentificateur, l’application ne fonctionnera pas avant reconfiguration.</value>
   </data>
   <data name="TfaAuthAppWarning" xml:space="preserve">
-    <value>Ce processus désactive la 2FA jusqu'à ce que vous vérifiiez votre application d'authentification. Si vous ne terminez pas la configuration de votre application d'authentification, vous risquez de perdre l'accès à votre compte.</value>
+    <value>Ce processus désactive la 2FA jusqu’à vérification de l’application d’authentification. Sans achèvement, vous risquez de perdre l’accès à votre compte.</value>
   </data>
   <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
-    <value>Réinitialiser la clé d'authentificateur</value>
+    <value>Réinitialiser la clé d’authentificateur</value>
   </data>
   <data name="TfaDisable2faHeader" xml:space="preserve">
     <value>Désactiver</value>
@@ -844,7 +844,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Cette action désactive uniquement la 2FA.</value>
   </data>
   <data name="TfaDisable2faWarning" xml:space="preserve">
-    <value>La désactivation de la 2FA ne change pas les clés utilisées dans les applications d'authentification. Si vous souhaitez changer la clé utilisée dans une application d'authentification, vous devez réinitialiser vos clés d'authentification dans l'onglet précédent.</value>
+    <value>Désactiver la 2FA ne change pas les clés des applications d’authentification. Pour changer une clé, réinitialisez dans l’onglet précédent.</value>
   </data>
   <data name="TfaDisable2faButtonText" xml:space="preserve">
     <value>Désactiver la 2FA</value>
@@ -853,25 +853,25 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Le jeton 2FA a été généré et envoyé.</value>
   </data>
   <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Veuillez entrer le jeton d'accès élevé que nous venons de vous envoyer ou le code de votre application d'authentification pour continuer.</value>
+    <value>Saisissez le jeton d’accès élevé envoyé ou le code de votre application d’authentification pour continuer.</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} est votre code dans Boilerplate.</value>
   </data>
   <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
-    <value>Vous avez déjà demandé l'e-mail de confirmation. Réessayez dans {0}</value>
+    <value>Vous avez déjà demandé l’e-mail de confirmation. Réessayez dans {0}</value>
   </data>
   <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé le SMS de confirmation. Réessayez dans {0}</value>
   </data>
   <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>Vous avez déjà demandé le jeton de réinitialisation du mot de passe. Réessayez dans {0}</value>
+    <value>Vous avez déjà demandé le jeton de réinitialisation de mot de passe. Réessayez dans {0}</value>
   </data>
   <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé un OTP. Réessayez dans {0}</value>
   </data>
   <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
-    <value>Vous avez déjà demandé un jeton d'accès élevé. Réessayez dans {0}</value>
+    <value>Vous avez déjà demandé un jeton d’accès élevé. Réessayez dans {0}</value>
   </data>
   <data name="Otp" xml:space="preserve">
     <value>OTP</value>
@@ -904,7 +904,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Utiliser OTP</value>
   </data>
   <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>Fournissez soit le mot de passe, soit l'OTP</value>
+    <value>Fournissez soit le mot de passe, soit OTP</value>
   </data>
   <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail du jeton 2FA. Réessayez dans {0}.</value>
@@ -937,7 +937,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Il est temps de mettre à jour</value>
   </data>
   <data name="ForceUpdateBody" xml:space="preserve">
-    <value>Cette mise à jour est requise pour que votre application continue de fonctionner correctement</value>
+    <value>Cette mise à jour est nécessaire pour que votre application fonctionne correctement</value>
   </data>
   <data name="About" xml:space="preserve">
     <value>À propos</value>
@@ -947,25 +947,25 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <!--#if (sample == true || offlineDb == true) -->
   <data name="TodoAddPlaceholder" xml:space="preserve">
-    <value>Ajouter une todo</value>
+    <value>Ajouter une tâche</value>
   </data>
   <data name="NoTodos" xml:space="preserve">
-    <value>Aucune todo pour l'instant</value>
+    <value>Aucune tâche pour le moment</value>
   </data>
   <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>Rechercher une todo...</value>
+    <value>Rechercher une tâche...</value>
   </data>
   <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
-    <value>Élément todo introuvable</value>
+    <value>Élément de tâche introuvable</value>
   </data>
   <data name="TodoPageTitle" xml:space="preserve">
-    <value>Todo</value>
+    <value>Tâche</value>
   </data>
   <data name="Todo" xml:space="preserve">
-    <value>Todo</value>
+    <value>Tâche</value>
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
-    <value>Supprimer l'élément todo</value>
+    <value>Supprimer l'élément de tâche</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
@@ -1002,16 +1002,16 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Ajouter un produit</value>
   </data>
   <data name="SearchProductsPlaceholder" xml:space="preserve">
-    <value>Rechercher par nom, catégorie et description du produit ici...</value>
+    <value>Rechercher par nom du produit, catégorie et description ici...</value>
   </data>
   <data name="SelectCategory" xml:space="preserve">
-    <value>Sélectionner la catégorie</value>
+    <value>Sélectionner une catégorie</value>
   </data>
   <data name="TotalCategories" xml:space="preserve">
-    <value>Nombre total de catégories</value>
+    <value>Total des catégories</value>
   </data>
   <data name="TotalProducts" xml:space="preserve">
-    <value>Nombre total de produits</value>
+    <value>Total des produits</value>
   </data>
   <data name="EditCategory" xml:space="preserve">
     <value>Modifier la catégorie</value>
@@ -1023,10 +1023,10 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Catégories</value>
   </data>
   <data name="EnterCategoryName" xml:space="preserve">
-    <value>Entrez le nom de la catégorie</value>
+    <value>Saisir le nom de la catégorie</value>
   </data>
   <data name="EnterProductName" xml:space="preserve">
-    <value>Entrez le nom du produit</value>
+    <value>Saisir le nom du produit</value>
   </data>
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Catégories avec nombre de produits</value>
@@ -1056,7 +1056,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Produits</value>
   </data>
   <data name="CategoryNotEmpty" xml:space="preserve">
-    <value>Cette catégorie contient des produits, vous ne pouvez donc pas la supprimer</value>
+    <value>Cette catégorie contient des produits, vous ne pouvez pas la supprimer</value>
   </data>
   <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir supprimer le produit {0}</value>
@@ -1146,7 +1146,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Ouvrir la page de réinitialisation du mot de passe et me dire comment ça marche</value>
   </data>
   <data name="AiChatPanelPrompt2" xml:space="preserve">
-    <value>Comment puis-je installer la version PWA de l'application ?</value>
+    <value>Comment installer la version PWA de l'application ?</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
@@ -1167,19 +1167,19 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
-    <value>Mettre à niveau</value>
+    <value>Améliorer</value>
   </data>
   <data name="UpgradeTitle" xml:space="preserve">
-    <value>Mettre à niveau le compte</value>
+    <value>Améliorer le compte</value>
   </data>
   <data name="UpgradeSubtitle" xml:space="preserve">
-    <value>Il n'y a pas de mise à niveau de compte ici. Ceci est juste une démo pour les publicités de récompense.</value>
+    <value>Il n'y a pas d'amélioration de compte ici. Ceci est juste une démo pour les publicités récompensées.</value>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
-    <value>Mise à niveau du compte effectuée avec succès.</value>
+    <value>Amélioration du compte effectuée avec succès.</value>
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
-    <value>Échec de la mise à niveau du compte.</value>
+    <value>Échec de l'amélioration du compte.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Problème pour regarder la pub ?</value>
@@ -1210,7 +1210,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Modifier le groupe d'utilisateurs</value>
   </data>
   <data name="NewRoleName" xml:space="preserve">
-    <value>Nouveau nom de groupe d'utilisateurs</value>
+    <value>Nom du nouveau groupe d'utilisateurs</value>
   </data>
   <data name="Users" xml:space="preserve">
     <value>Utilisateurs</value>
@@ -1241,7 +1241,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Message de notification</value>
   </data>
   <data name="SendRoleNotification" xml:space="preserve">
-    <value>Envoyer une notification</value>
+    <value>Envoyer la notification</value>
   </data>
   <data name="EnableNotifications" xml:space="preserve">
     <value>Activer les notifications</value>
@@ -1278,7 +1278,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Adresse</value>
   </data>
   <data name="DeviceInfo" xml:space="preserve">
-    <value>DeviceInfo</value>
+    <value>Informations appareil</value>
   </data>
   <data name="Privileged" xml:space="preserve">
     <value>Privilégié</value>
@@ -1302,7 +1302,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Veuillez sélectionner un utilisateur d'abord</value>
   </data>
   <data name="RevokeAllSessions" xml:space="preserve">
-    <value>Révoquer toutes les sessions</value>
+    <value>Révoker toutes les sessions</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir révoquer toutes les sessions de {0} ?</value>
@@ -1311,7 +1311,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Vous ne pouvez pas retirer cet utilisateur du groupe d'utilisateurs SuperAdmin.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
-    <value>Les permissions SuperAdmin ne peuvent pas être modifiées.</value>
+    <value>Les permissions super administrateur ne peuvent pas être modifiées.</value>
   </data>
   <data name="CanNotChangeBuiltInRole" xml:space="preserve">
     <value>Le groupe d'utilisateurs {0} ne peut pas être modifié.</value>
@@ -1338,7 +1338,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Rechercher des sessions utilisateur</value>
   </data>
   <data name="RemoveRoleFromAllUsers" xml:space="preserve">
-    <value>Retirer tous les utilisateurs du groupe d'utilisateurs</value>
+    <value>Retirer tous les utilisateurs du groupe</value>
   </data>
   <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir retirer tous les utilisateurs de {0} ?</value>
@@ -1359,7 +1359,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Nous créerons automatiquement un compte pour vous.</value>
   </data>
   <data name="ImageTooSmall" xml:space="preserve">
-    <value>L'image est trop petite. Les dimensions minimales requises sont {0}x{1}, mais les dimensions actuelles sont {2}x{3}.</value>
+    <value>L'image est trop petite. Dimensions minimales requises : {0}x{1}, mais les dimensions actuelles sont {2}x{3}.</value>
   </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>L'image fournie ne contient pas de voiture.</value>

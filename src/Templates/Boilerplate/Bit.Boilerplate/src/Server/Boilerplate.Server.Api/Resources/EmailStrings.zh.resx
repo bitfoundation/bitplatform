@@ -119,61 +119,61 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>样板 {0} - 确认您的电子邮件地址</value>
+    <value>Boilerplate {0} - 确认您的邮箱地址</value>
   </data>
   <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
-    <value>您收到此电子邮件是因为您最近将 {0} 注册到您的样板账户。</value>
+    <value>您收到此邮件是因为您最近将 {0} 注册到您的 Boilerplate 账户。</value>
   </data>
   <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
-    <value>在应用中输入下面的号码来确认您的电子邮件地址。</value>
+    <value>通过在应用中输入以下数字确认您的邮箱地址。</value>
   </data>
   <data name="EmailConfirmationMessageBodyLink" xml:space="preserve">
-    <value>或者点击以下链接来确认此电子邮件地址。</value>
+    <value>或点击以下链接确认此邮箱地址。</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>样板 {0} - 重置您的密码</value>
+    <value>Boilerplate {0} - 重置您的密码</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>您好 {0}</value>
   </data>
   <data name="ResetPasswordSubtitle" xml:space="preserve">
-    <value>有人请求了一个令牌来更改您的密码。</value>
+    <value>有人请求了一个用于更改密码的令牌。</value>
   </data>
   <data name="ResetPasswordBody" xml:space="preserve">
-    <value>如果不是您请求重置密码，您可以忽略此电子邮件。</value>
+    <value>如果不是您请求重置密码，请忽略此邮件。</value>
   </data>
   <data name="ResetPasswordTokenMessage" xml:space="preserve">
-    <value>您可以复制下面的令牌并在重置密码页面中输入它。</value>
+    <value>您可以复制下方令牌并在重置密码页面输入。</value>
   </data>
   <data name="ResetPasswordLinkMessage" xml:space="preserve">
-    <value>或者您可以点击以下链接来尝试重置密码。</value>
+    <value>或点击以下链接重置密码。</value>
   </data>
   <data name="OtpEmailSubject" xml:space="preserve">
-    <value>样板 {0} - 一次性密码</value>
+    <value>Boilerplate {0} - 验证码</value>
   </data>
   <data name="OtpTitle" xml:space="preserve">
     <value>您好 {0}</value>
   </data>
   <data name="OtpSubtitle" xml:space="preserve">
-    <value>有人请求了一个 OTP 来登录应用。</value>
+    <value>有人请求了一个用于登录应用的验证码。</value>
   </data>
   <data name="OtpBody" xml:space="preserve">
-    <value>如果您没有请求 OTP，您可以忽略此电子邮件。</value>
+    <value>如果您未请求验证码，请忽略此邮件。</value>
   </data>
   <data name="OtpMessage" xml:space="preserve">
-    <value>您可以复制下面的 OTP 并在登录页面中输入它。</value>
+    <value>您可以复制下方验证码并在登录页面输入。</value>
   </data>
   <data name="OtpLinkMessage" xml:space="preserve">
-    <value>或者您可以点击以下链接来登录。</value>
+    <value>或点击以下链接登录。</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>样板</value>
+    <value>Boilerplate</value>
   </data>
   <data name="WelcomeToApp" xml:space="preserve">
-    <value>欢迎来到样板！</value>
+    <value>欢迎使用 Boilerplate！</value>
   </data>
   <data name="TfaTokenEmailSubject" xml:space="preserve">
-    <value>样板 {0} - 2FA 令牌</value>
+    <value>Boilerplate {0} - 2FA 令牌</value>
   </data>
   <data name="TfaTokenHello" xml:space="preserve">
     <value>亲爱的 {0}，您好</value>
@@ -182,18 +182,18 @@
     <value>这是您的新 2FA 登录令牌：</value>
   </data>
   <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
-    <value>样板 {0} - 提升访问令牌</value>
+    <value>Boilerplate {0} - 高级访问令牌</value>
   </data>
   <data name="ElevatedAccessTokenHello" xml:space="preserve">
     <value>亲爱的 {0}，您好</value>
   </data>
   <data name="ElevatedAccessTokenMessage" xml:space="preserve">
-    <value>这是您的新提升访问令牌：</value>
+    <value>这是您的新高级访问令牌：</value>
   </data>
   <data name="CopyTokenNote" xml:space="preserve">
     <value>复制此代码并在应用中使用。</value>
   </data>
   <data name="DefaultFromName" xml:space="preserve">
-    <value>样板应用</value>
+    <value>Boilerplate 应用</value>
   </data>
 </root>

@@ -119,19 +119,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>बॉयलरप्लेट {0} - अपना ईमेल पता सत्यापित करें</value>
+    <value>Boilerplate {0} - अपना ईमेल पता सत्यापित करें</value>
   </data>
   <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
-    <value>आपको यह ईमेल इसलिए प्राप्त हो रहा है क्योंकि हाल ही में आपने {0} को अपने बॉयलरप्लेट खाते में पंजीकृत किया है।</value>
+    <value>आपको यह ईमेल इसलिए प्राप्त हो रहा है क्योंकि हाल ही में आपने अपने Boilerplate खाते में {0} रजिस्टर किया है।</value>
   </data>
   <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
     <value>ऐप में नीचे दिए गए नंबर को दर्ज करके अपना ईमेल पता सत्यापित करें।</value>
   </data>
   <data name="EmailConfirmationMessageBodyLink" xml:space="preserve">
-    <value>या इस ईमेल पता को सत्यापित करने के लिए नीचे दिए गए लिंक पर क्लिक करें।</value>
+    <value>या इस ईमेल पते की पुष्टि करने के लिए नीचे दिए गए लिंक पर क्लिक करें।</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>बॉयलरप्लेट {0} - अपना पासवर्ड रीसेट करें</value>
+    <value>Boilerplate {0} - अपना पासवर्ड रीसेट करें</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>नमस्ते {0}</value>
@@ -149,7 +149,7 @@
     <value>या आप पासवर्ड रीसेट करने का प्रयास करने के लिए नीचे दिए गए लिंक पर क्लिक कर सकते हैं।</value>
   </data>
   <data name="OtpEmailSubject" xml:space="preserve">
-    <value>बॉयलरप्लेट {0} - OTP</value>
+    <value>Boilerplate {0} - OTP</value>
   </data>
   <data name="OtpTitle" xml:space="preserve">
     <value>नमस्ते {0}</value>
@@ -161,31 +161,31 @@
     <value>यदि आपने OTP का अनुरोध नहीं किया है, तो आप इस ईमेल को नजरअंदाज कर सकते हैं।</value>
   </data>
   <data name="OtpMessage" xml:space="preserve">
-    <value>आप नीचे दिए गए OTP को कॉपी कर सकते हैं और साइन इन पेज में दर्ज कर सकते हैं।</value>
+    <value>आप नीचे दिए गए OTP को कॉपी कर सकते हैं और साइन-इन पेज में दर्ज कर सकते हैं।</value>
   </data>
   <data name="OtpLinkMessage" xml:space="preserve">
     <value>या आप साइन इन करने के लिए नीचे दिए गए लिंक पर क्लिक कर सकते हैं।</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>बॉयलरप्लेट</value>
+    <value>Boilerplate</value>
   </data>
   <data name="WelcomeToApp" xml:space="preserve">
-    <value>बॉयलरप्लेट में आपका स्वागत है!</value>
+    <value>Boilerplate में आपका स्वागत है!</value>
   </data>
   <data name="TfaTokenEmailSubject" xml:space="preserve">
-    <value>बॉयलरप्लेट {0} - 2FA टोकन</value>
+    <value>Boilerplate {0} - 2FA टोकन</value>
   </data>
   <data name="TfaTokenHello" xml:space="preserve">
-    <value>प्रिय {0} नमस्ते</value>
+    <value>नमस्ते प्रिय {0}</value>
   </data>
   <data name="TfaTokenMessage" xml:space="preserve">
-    <value>यहाँ आपका नया 2FA टोकन साइन इन करने के लिए है:</value>
+    <value>यहाँ आपका नया 2FA साइन-इन टोकन है:</value>
   </data>
   <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
-    <value>बॉयलरप्लेट {0} - उन्नत पहुँच टोकन</value>
+    <value>Boilerplate {0} - उन्नत पहुँच टोकन</value>
   </data>
   <data name="ElevatedAccessTokenHello" xml:space="preserve">
-    <value>प्रिय {0} नमस्ते</value>
+    <value>नमस्ते प्रिय {0}</value>
   </data>
   <data name="ElevatedAccessTokenMessage" xml:space="preserve">
     <value>यहाँ आपका नया उन्नत पहुँच टोकन है:</value>
@@ -194,6 +194,6 @@
     <value>इस कोड को कॉपी करें और ऐप में उपयोग करें।</value>
   </data>
   <data name="DefaultFromName" xml:space="preserve">
-    <value>बॉयलरप्लेट ऐप</value>
+    <value>Boilerplate ऐप</value>
   </data>
 </root>

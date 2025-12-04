@@ -119,7 +119,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConcurrencyFailure" xml:space="preserve">
-    <value>आशावादी समवर्तीता विफलता, ऑब्जेक्ट को संशोधित किया गया है।</value>
+    <value>आशावादी समवर्तन विफलता, वस्तु को संशोधित किया जा चुका है।</value>
     <comment>Error when optimistic concurrency fails</comment>
   </data>
   <data name="DefaultError" xml:space="preserve">
@@ -127,15 +127,15 @@
     <comment>Default identity result error message</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
-    <value>ईमेल '{0}' पहले से ही लिया गया है।</value>
+    <value>ईमेल '{0}' पहले से लिया जा चुका है।</value>
     <comment>Error for duplicate emails</comment>
   </data>
   <data name="DuplicateRoleName" xml:space="preserve">
-    <value>भूमिका का नाम '{0}' पहले से ही लिया गया है।</value>
+    <value>भूमिका का नाम '{0}' पहले से लिया जा चुका है।</value>
     <comment>Error for duplicate roles</comment>
   </data>
   <data name="DuplicateUserName" xml:space="preserve">
-    <value>उपयोगकर्ता नाम '{0}' पहले से ही लिया गया है।</value>
+    <value>उपयोगकर्ता नाम '{0}' पहले से लिया जा चुका है।</value>
     <comment>Error for duplicate user names</comment>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
@@ -151,7 +151,7 @@
     <comment>Error when a token is not recognized</comment>
   </data>
   <data name="InvalidUserName" xml:space="preserve">
-    <value>उपयोगकर्ता नाम '{0}' अमान्य है, केवल अक्षर या अंक हो सकते हैं।</value>
+    <value>उपयोगकर्ता नाम '{0}' अमान्य है, केवल अक्षर या अंक ही शामिल हो सकते हैं।</value>
     <comment>User names can only contain letters or digits</comment>
   </data>
   <data name="LoginAlreadyAssociated" xml:space="preserve">
@@ -171,11 +171,11 @@
     <comment>Error when passwords do not have a lowercase letter</comment>
   </data>
   <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
-    <value>पासवर्ड में कम से कम एक गैर-अक्षर-संख्या चिह्न होना चाहिए।</value>
+    <value>पासवर्ड में कम से कम एक गैर-अक्षर-संख्या चरित्र होना चाहिए।</value>
     <comment>Error when password does not have enough non alphanumeric characters</comment>
   </data>
   <data name="PasswordRequiresUpper" xml:space="preserve">
-    <value>पासवर्ड में कम से कम एक महत्त्वपूर्ण अक्षर ('A'-'Z') होना चाहिए।</value>
+    <value>पासवर्ड में कम से कम एक महत्तम अक्षर ('A'-'Z') होना चाहिए।</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
@@ -183,15 +183,15 @@
     <comment>Error message for passwords that are too short</comment>
   </data>
   <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">
-    <value>पुनर्प्राप्ति कोड का प्रतिदान विफल रहा।</value>
+    <value>पुनर्प्राप्ति कोड भुनाने में विफलता।</value>
     <comment>Error when a recovery code is not redeemed.</comment>
   </data>
   <data name="UserAlreadyHasPassword" xml:space="preserve">
-    <value>उपयोगकर्ता के पास पहले से पासवर्ड सेट है।</value>
+    <value>उपयोगकर्ता का पहले से पासवर्ड सेट है।</value>
     <comment>Error when AddPasswordAsync called when a user already has a password</comment>
   </data>
   <data name="UserAlreadyInRole" xml:space="preserve">
-    <value>उपयोगकर्ता भूमिका '{0}' में पहले से है।</value>
+    <value>उपयोगकर्ता पहले से भूमिका '{0}' में है।</value>
     <comment>Error when a user is already in a role</comment>
   </data>
   <data name="UserLockoutNotEnabled" xml:space="preserve">
@@ -203,7 +203,7 @@
     <comment>Error when a user is not in the role</comment>
   </data>
   <data name="PasswordRequiresUniqueChars" xml:space="preserve">
-    <value>पासवर्ड में कम से कम {0} विभिन्न अक्षरों का उपयोग करना चाहिए।</value>
+    <value>पासवर्ड में कम से कम {0} विभिन्न अक्षरों का उपयोग होना चाहिए।</value>
     <comment>Error message for passwords that are based on similar characters</comment>
   </data>
 </root>

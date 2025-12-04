@@ -119,11 +119,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConcurrencyFailure" xml:space="preserve">
-    <value>Fallo de concurrencia optimista, el objeto ha sido modificado.</value>
+    <value>Error de concurrencia optimista, el objeto ha sido modificado.</value>
     <comment>Error when optimistic concurrency fails</comment>
   </data>
   <data name="DefaultError" xml:space="preserve">
-    <value>Ha ocurrido un fallo desconocido.</value>
+    <value>Ha ocurrido un error desconocido.</value>
     <comment>Default identity result error message</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
@@ -131,7 +131,7 @@
     <comment>Error for duplicate emails</comment>
   </data>
   <data name="DuplicateRoleName" xml:space="preserve">
-    <value>El nombre de rol '{0}' ya está en uso.</value>
+    <value>El nombre del rol '{0}' ya está en uso.</value>
     <comment>Error for duplicate roles</comment>
   </data>
   <data name="DuplicateUserName" xml:space="preserve">
@@ -143,7 +143,7 @@
     <comment>Invalid email</comment>
   </data>
   <data name="InvalidRoleName" xml:space="preserve">
-    <value>El nombre de rol '{0}' no es válido.</value>
+    <value>El nombre del rol '{0}' no es válido.</value>
     <comment>Error for invalid role names</comment>
   </data>
   <data name="InvalidToken" xml:space="preserve">

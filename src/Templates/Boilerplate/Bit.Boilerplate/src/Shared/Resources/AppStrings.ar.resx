@@ -120,25 +120,25 @@
   </resheader>
   <!-- .NET Validation messages -->
   <data name="CompareAttribute_ValidationError" xml:space="preserve">
-    <value>' {0} ' و ' {1} ' لا يتطابقان.</value>
+    <value>لا يتطابق '{0}' و'{1}'</value>
   </data>
   <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
-    <value>حقل {0} ليس عنوان بريد إلكتروني صالحًا.</value>
+    <value>حقل {0} ليس عنوان بريد إلكتروني صالحًا</value>
   </data>
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>يجب أن يكون لـ MaxLengthAttribute قيمة طول أكبر من صفر. استخدم MaxLength() بدون معاملات للإشارة إلى أن السلسلة أو المصفوفة يمكن أن يكون لها الطول الأقصى المسموح به.</value>
+    <value>يجب أن تكون قيمة Length في MaxLengthAttribute أكبر من صفر. استخدم MaxLength() بدون معاملات للإشارة إلى أن السلسلة أو المصفوفة يمكن أن تكون بأقصى طول مسموح.</value>
   </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
-    <value>يجب أن يكون الحقل {0} من نوع سلسلة أو مصفوفة مع طول أدنى قدره ' {1} '.</value>
+    <value>يجب أن يكون حقل {0} من نوع سلسلة أو مصفوفة بطول أدنى '{1}'</value>
   </data>
   <data name="RangeAttribute_ValidationError" xml:space="preserve">
-    <value>يجب أن يكون الحقل {0} بين {1} و {2}.</value>
+    <value>يجب أن يكون حقل {0} بين {1} و{2}</value>
   </data>
   <data name="RequiredAttribute_ValidationError" xml:space="preserve">
-    <value>الحقل {0} مطلوب.</value>
+    <value>حقل {0} مطلوب</value>
   </data>
   <data name="PhoneAttribute_ValidationError" xml:space="preserve">
-    <value>حقل {0} ليس رقم هاتف صالحًا.</value>
+    <value>حقل {0} ليس رقم هاتف صالحًا</value>
   </data>
   <!-- Exceptions -->
   <data name="BadRequestException" xml:space="preserve">
@@ -157,16 +157,16 @@
     <value>بيانات الطلب غير صالحة</value>
   </data>
   <data name="RestException" xml:space="preserve">
-    <value>حدث خطأ أثناء التواصل مع الخادم</value>
+    <value>حدث خطأ أثناء الاتصال بالخادم</value>
   </data>
   <data name="UnauthorizedException" xml:space="preserve">
-    <value>طلبك يفتقر إلى بيانات اعتماد مصادقة صالحة</value>
+    <value>يفتقر طلبك إلى بيانات اعتماد مصادقة صالحة</value>
   </data>
   <data name="UnknownException" xml:space="preserve">
     <value>حدث خطأ غير معروف</value>
   </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
-    <value>تم تعديل السجل بواسطة مستخدم آخر بعد الحصول على البيانات الأصلية. تم إلغاء العملية.</value>
+    <value>تم تعديل السجل بواسطة مستخدم آخر بعد الحصول على البيانات الأصلية. تم إلغاء العملية</value>
   </data>
   <data name="ResourceNotFoundException" xml:space="preserve">
     <value>المورد غير موجود</value>
@@ -175,7 +175,7 @@
     <value>طلبات كثيرة جدًا</value>
   </data>
   <data name="ServerConnectionException" xml:space="preserve">
-    <value>تعذر الاتصال بالخادم.</value>
+    <value>تعذر الاتصال بالخادم</value>
   </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
@@ -237,7 +237,7 @@
   </data>
   <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
     <value>من {0} أجهزة مسموح بها للميزات الكاملة، لقد استخدمت {1}.
-بعد الوصول إلى {0}، ستكون تسجيلات الدخول الإضافية بميزات مخفضة.</value>
+بعد الوصول إلى {0}، ستكون تسجيلات الدخول الإضافية بميزات مخفضة</value>
   </data>
   <data name="OtherSessions" xml:space="preserve">
     <value>جلسات أخرى</value>
@@ -252,10 +252,10 @@
     <value>404</value>
   </data>
   <data name="NotFoundText" xml:space="preserve">
-    <value>لا يوجد شيء هنا.</value>
+    <value>لا يوجد شيء هنا</value>
   </data>
   <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
-    <value>يرجى تحديث webview عبر google play.</value>
+    <value>يرجى تحديث webview عبر Google Play</value>
   </data>
   <data name="Ok" xml:space="preserve">
     <value>موافق</value>
@@ -265,7 +265,7 @@
     <value>تلقينات النظام</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
-    <value>عرض تلقينات النظام للدردشة الآلية هنا.</value>
+    <value>عرض تلقينات النظام للدردشة الآلية هنا</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>مهمة إشعارات الدفع</value>
@@ -282,7 +282,7 @@
     <value>فشل في سحب التغييرات من الخادم</value>
   </data>
   <data name="SyncPushSuccess" xml:space="preserve">
-    <value>تم دفع {0} تغييرات إلى الخادم</value>
+    <value>تم دفع {0} تغيير إلى الخادم</value>
   </data>
   <!--#endif-->
   <data name="FullName" xml:space="preserve">
@@ -295,7 +295,7 @@
     <value>الشروط</value>
   </data>
   <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
-    <value>تم تحديث الملف الشخصي بنجاح.</value>
+    <value>تم تحديث الملف الشخصي بنجاح</value>
   </data>
   <data name="ConfirmPassword" xml:space="preserve">
     <value>تأكيد كلمة المرور</value>
@@ -358,22 +358,22 @@
     <value>السعر</value>
   </data>
   <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
-    <value>يجب تقديم البريد الإلكتروني أو رقم الهاتف.</value>
+    <value>يجب تقديم البريد الإلكتروني أو رقم الهاتف</value>
   </data>
   <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
-    <value>يجب تقديم اسم المستخدم أو البريد الإلكتروني أو رقم الهاتف.</value>
+    <value>يجب تقديم اسم المستخدم أو البريد الإلكتروني أو رقم الهاتف</value>
   </data>
   <data name="YouNeedToSignIn" xml:space="preserve">
-    <value>يجب أن تكون مسجل الدخول للمتابعة.</value>
+    <value>يجب أن تكون مسجل الدخول للمتابعة</value>
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
     <value>بيانات اعتماد المستخدم غير صالحة</value>
   </data>
   <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>تم تأكيد بريدك الإلكتروني بالفعل.</value>
+    <value>تم تأكيد بريدك الإلكتروني بالفعل</value>
   </data>
   <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>تم تأكيد رقم هاتفك بالفعل.</value>
+    <value>تم تأكيد رقم هاتفك بالفعل</value>
   </data>
   <data name="Title" xml:space="preserve">
     <value>العنوان</value>
@@ -400,25 +400,25 @@
     <value>المستخدم محظور. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="UserIsNotConfirmed" xml:space="preserve">
-    <value>المستخدم غير مؤكد.</value>
+    <value>المستخدم غير مؤكد</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
-    <value>المستخدم غير موجود.</value>
+    <value>المستخدم غير موجود</value>
   </data>
   <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
-    <value>هذا البريد الإلكتروني أو رقم الهاتف مستخدم بالفعل.</value>
+    <value>هذا البريد الإلكتروني أو رقم الهاتف مستخدم بالفعل</value>
   </data>
   <data name="Add" xml:space="preserve">
     <value>إضافة</value>
   </data>
   <data name="Token" xml:space="preserve">
-    <value>رمز</value>
+    <value>الرمز</value>
   </data>
   <data name="InvalidToken" xml:space="preserve">
-    <value>رمز غير صالح.</value>
+    <value>رمز غير صالح</value>
   </data>
   <data name="ExpiredToken" xml:space="preserve">
-    <value>رمز منتهي الصلاحية.</value>
+    <value>رمز منتهي الصلاحية</value>
   </data>
   <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>لديك حساب بالفعل؟</value>
@@ -430,7 +430,7 @@
     <value>عنوان البريد الإلكتروني</value>
   </data>
   <data name="ConfirmEmailSubtitle" xml:space="preserve">
-    <value>لقد أرسلنا رمز التأكيد إلى عنوان بريدك الإلكتروني.</value>
+    <value>لقد أرسلنا رمز التأكيد إلى عنوان بريدك الإلكتروني</value>
   </data>
   <data name="ConfirmPageTitle" xml:space="preserve">
     <value>تأكيد</value>
@@ -439,70 +439,70 @@
     <value>تأكيد حسابك</value>
   </data>
   <data name="ConfirmEmailMessage" xml:space="preserve">
-    <value>يرجى تأكيد بريدك الإلكتروني بكتابة الرمز هنا.</value>
+    <value>يرجى تأكيد بريدك الإلكتروني بكتابة الرمز هنا</value>
   </data>
   <data name="EmailPlaceholder" xml:space="preserve">
     <value>أدخل عنوان البريد الإلكتروني</value>
   </data>
   <data name="EmailToken" xml:space="preserve">
-    <value>الرمز</value>
+    <value>الكود</value>
   </data>
   <data name="EmailTokenConfirmButtonText" xml:space="preserve">
     <value>تأكيد عنوان البريد الإلكتروني</value>
   </data>
   <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
-    <value>تم تأكيد عنوان بريدك الإلكتروني ({0}).</value>
+    <value>تم تأكيد عنوان بريدك الإلكتروني ({0})</value>
   </data>
   <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
-    <value>يمكنك الآن تسجيل الدخول إلى حسابك.</value>
+    <value>يمكنك الآن تسجيل الدخول بحسابك</value>
   </data>
   <data name="ConfirmPhoneHeaderText" xml:space="preserve">
     <value>رقم الهاتف</value>
   </data>
   <data name="ConfirmPhoneSubtitle" xml:space="preserve">
-    <value>لقد أرسلنا رمز تأكيد إلى هاتفك.</value>
+    <value>لقد أرسلنا رمز التأكيد إلى هاتفك</value>
   </data>
   <data name="ConfirmPhoneMessage" xml:space="preserve">
-    <value>يرجى تأكيد رقم هاتفك بكتابة الرمز هنا.</value>
+    <value>يرجى تأكيد رقم هاتفك بكتابة الرمز هنا</value>
   </data>
   <data name="PhoneNumberPlaceholder" xml:space="preserve">
     <value>أدخل رقم الهاتف</value>
   </data>
   <data name="PhoneToken" xml:space="preserve">
-    <value>الرمز</value>
+    <value>الكود</value>
   </data>
   <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>تأكيد رقم الهاتف</value>
   </data>
   <data name="NotReceivedPhoneMessage" xml:space="preserve">
-    <value>ألم تتلقَ الرمز على هاتفك؟</value>
+    <value>ألم تتلق الرمز على هاتفك؟</value>
   </data>
   <data name="ResendPhoneTokenButtonText" xml:space="preserve">
-    <value>إعادة إرسال الرمز</value>
+    <value>إعادة إرسال الكود</value>
   </data>
   <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
-    <value>تم تأكيد رقم هاتفك ({0}).</value>
+    <value>تم تأكيد رقم هاتفك ({0})</value>
   </data>
   <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
-    <value>يمكنك الآن تسجيل الدخول إلى حسابك.</value>
+    <value>يمكنك الآن تسجيل الدخول بحسابك</value>
   </data>
   <data name="AccountTitle" xml:space="preserve">
     <value>الحساب</value>
   </data>
   <data name="AccountSubtitle" xml:space="preserve">
-    <value>تغيير بريد الحساب الإلكتروني، أو رقم الهاتف، أو إعدادات تسجيل الدخول بدون كلمة مرور</value>
+    <value>تغيير بريد الحساب الإلكتروني أو رقم الهاتف أو إعدادات كلمة المرور الخالية</value>
   </data>
   <data name="DeleteAccount" xml:space="preserve">
     <value>حذف الحساب</value>
   </data>
   <data name="DeleteAccountPrompt" xml:space="preserve">
-    <value>هل أنت متأكد من أنك تريد حذف حسابك؟</value>
+    <value>هل أنت متأكد من رغبتك في حذف حسابك؟</value>
   </data>
   <data name="DontHaveAccountMessage" xml:space="preserve">
     <value>ليس لديك حساب؟</value>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>تعديل</value>
+    <value>تحرير</value>
   </data>
   <data name="FileUploadFailed" xml:space="preserve">
     <value>حدث خطأ أثناء رفع الملف</value>
@@ -514,7 +514,7 @@
     <value>نسيت كلمة المرور</value>
   </data>
   <data name="ForgotPasswordMessage" xml:space="preserve">
-    <value>يرجى إدخال عنوان بريدك الإلكتروني أو رقم هاتفك حتى نتمكن من إرسال رمز إعادة تعيين كلمة المرور إليك.</value>
+    <value>يرجى إدخال عنوان بريدك الإلكتروني أو رقم هاتفك حتى نتمكن من إرسال رمز إعادة تعيين كلمة المرور إليك</value>
   </data>
   <data name="GenderMale" xml:space="preserve">
     <value>ذكر</value>
@@ -523,10 +523,10 @@
     <value>آخر</value>
   </data>
   <data name="GoToToday" xml:space="preserve">
-    <value>الذهاب إلى اليوم</value>
+    <value>الانتقال إلى اليوم</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>أنشئ تطبيق Blazor متعدد الوضعيات (WASM، Server، Hybrid، التحضير المسبق) بسهولة في أقصر وقت ممكن!</value>
+    <value>أنشئ تطبيق Blazor متعدد الوضعيات (WASM، خادم، هجين، ما قبل التصيير) بسهولة في أقصر وقت ممكن!</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>الرئيسية</value>
@@ -553,19 +553,19 @@
     <value>قالب مشروع .NET غني بالميزات يعمل بسلاسة في كل مكان</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
-    <value>القالب المبني باستخدام ASP.NET Core، Identity، Web API، EF Core و Blazor.</value>
+    <value>تم بناء الـ Boilerplate باستخدام ASP.NET Core، Identity، Web API، EF Core و Blazor</value>
   </data>
   <data name="NewPassword" xml:space="preserve">
-    <value>كلمة مرور جديدة</value>
+    <value>كلمة المرور الجديدة</value>
   </data>
   <data name="OldPassword" xml:space="preserve">
-    <value>كلمة مرور قديمة</value>
+    <value>كلمة المرور القديمة</value>
   </data>
   <data name="No" xml:space="preserve">
     <value>لا</value>
   </data>
   <data name="NotReceivedEmailMessage" xml:space="preserve">
-    <value>ألم تتلقَ البريد الإلكتروني؟</value>
+    <value>ألم تتلق البريد الإلكتروني؟</value>
   </data>
   <data name="Or" xml:space="preserve">
     <value>أو</value>
@@ -574,7 +574,7 @@
     <value>إزالة</value>
   </data>
   <data name="ResendEmailTokenButtonText" xml:space="preserve">
-    <value>إعادة إرسال الرمز</value>
+    <value>إعادة إرسال الكود</value>
   </data>
   <data name="ResetPasswordPageTitle" xml:space="preserve">
     <value>إعادة تعيين كلمة المرور</value>
@@ -586,22 +586,22 @@
     <value>إعادة تعيين كلمة المرور</value>
   </data>
   <data name="ResetPasswordSubtitle" xml:space="preserve">
-    <value>لقد أرسلنا رمزًا إلى هاتفك أو بريدك الإلكتروني.</value>
+    <value>لقد أرسلنا رمزًا إلى هاتفك أو بريدك الإلكتروني</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>يرجى تقديم الرمز مع كلمة المرور الجديدة هنا.</value>
+    <value>يرجى تقديم الرمز مع كلمة المرور الجديدة هنا</value>
   </data>
   <data name="ResetPasswordButtonText" xml:space="preserve">
-    <value>تعيين كلمة مرور</value>
+    <value>تعيين كلمة المرور</value>
   </data>
   <data name="ResetPasswordSuccessTitle" xml:space="preserve">
-    <value>تم إعادة تعيين كلمة المرور الخاصة بك.</value>
+    <value>تم إعادة تعيين كلمة المرور الخاصة بك</value>
   </data>
   <data name="ResetPasswordSuccessBody" xml:space="preserve">
-    <value>يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الخاصة بك.</value>
+    <value>يمكنك الآن تسجيل الدخول بكلمة مرورك</value>
   </data>
   <data name="ResetPasswordMessageInForgot" xml:space="preserve">
-    <value>هل لديك رمز إعادة تعيين كلمة مرور بالفعل؟</value>
+    <value>لديك رمز إعادة تعيين كلمة مرور بالفعل؟</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>حفظ</value>
@@ -610,7 +610,7 @@
     <value>تسجيل الدخول</value>
   </data>
   <data name="SignInPanelTitle" xml:space="preserve">
-    <value>مرحباً</value>
+    <value>مرحبًا بك</value>
   </data>
   <data name="SignInPanelSubtitle" xml:space="preserve">
     <value>المتابعة باستخدام</value>
@@ -619,37 +619,37 @@
     <value>متابعة</value>
   </data>
   <data name="GoogleSignInButtonText" xml:space="preserve">
-    <value>تسجيل الدخول باستخدام Google</value>
+    <value>تسجيل الدخول بـ Google</value>
   </data>
   <data name="FacebookSignInButtonText" xml:space="preserve">
-    <value>تسجيل الدخول باستخدام Facebook</value>
+    <value>تسجيل الدخول بـ Facebook</value>
   </data>
   <data name="GitHubSignInButtonText" xml:space="preserve">
-    <value>تسجيل الدخول باستخدام GitHub</value>
+    <value>تسجيل الدخول بـ GitHub</value>
   </data>
   <data name="TwitterSignInButtonText" xml:space="preserve">
-    <value>تسجيل الدخول باستخدام Twitter (X)</value>
+    <value>تسجيل الدخول بـ Twitter (X)</value>
   </data>
   <data name="AppleSignInButtonText" xml:space="preserve">
-    <value>تسجيل الدخول باستخدام Apple</value>
+    <value>تسجيل الدخول بـ Apple</value>
   </data>
   <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
-    <value>تسجيل الدخول باستخدام خادم الاختبار</value>
+    <value>تسجيل الدخول بخادم الاختبار</value>
   </data>
   <data name="AzureEntraSignInButtonText" xml:space="preserve">
-    <value>تسجيل الدخول باستخدام Azure Entra</value>
+    <value>تسجيل الدخول بـ Azure Entra</value>
   </data>
   <data name="SignOut" xml:space="preserve">
     <value>تسجيل الخروج</value>
   </data>
   <data name="SignOutPrompt" xml:space="preserve">
-    <value>هل أنت متأكد من أنك تريد تسجيل الخروج؟</value>
+    <value>هل أنت متأكد من رغبتك في تسجيل الخروج؟</value>
   </data>
   <data name="SignUp" xml:space="preserve">
     <value>إنشاء حساب</value>
   </data>
   <data name="SignUpPageTitle" xml:space="preserve">
-    <value>إنشاء حساب</value>
+    <value>التسجيل</value>
   </data>
   <data name="SignUpPanelTitle" xml:space="preserve">
     <value>ابدأ اليوم</value>
@@ -670,169 +670,169 @@
     <value>اختر تاريخ ميلادك</value>
   </data>
   <data name="Action" xml:space="preserve">
-    <value>إجراء</value>
+    <value>الإجراء</value>
   </data>
   <data name="Back" xml:space="preserve">
     <value>رجوع</value>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>تحقق من مجلد البريد غير المرغوب فيه/المزعج إذا لم تجده في البريد الوارد.</value>
+    <value>إلغاء</value>
   </data>
   <data name="CheckSpamMailMessage" xml:space="preserve">
-    <value>لون</value>
+    <value>تحقق من مجلد البريد غير المرغوب فيه/المزعج إذا لم تجده في البريد الوارد</value>
   </data>
   <data name="Color" xml:space="preserve">
-    <value>لون مخصص</value>
+    <value>اللون</value>
   </data>
   <data name="CustomColor" xml:space="preserve">
-    <value>حذف</value>
+    <value>لون مخصص</value>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>معرف</value>
+    <value>حذف</value>
   </data>
   <data name="Id" xml:space="preserve">
-    <value>تسجيل الدخول</value>
+    <value>معرف</value>
   </data>
   <data name="SignIn" xml:space="preserve">
-    <value>تسجيل الدخول (نافذة منبثقة)</value>
+    <value>تسجيل الدخول</value>
   </data>
   <data name="SignInByModal" xml:space="preserve">
-    <value>تأكيد</value>
+    <value>تسجيل الدخول (نافذة منبثقة)</value>
   </data>
   <data name="Confirm" xml:space="preserve">
-    <value>تسجيل الدخول كمستخدم مختلف</value>
+    <value>تأكيد</value>
   </data>
   <data name="SignInAsDifferentUser" xml:space="preserve">
-    <value>أنت مسجل الدخول كـ</value>
+    <value>تسجيل الدخول كمستخدم مختلف</value>
   </data>
   <data name="YouAreSignedInAs" xml:space="preserve">
-    <value>نسيت كلمة المرور؟</value>
+    <value>أنت مسجل الدخول كـ</value>
   </data>
   <data name="ForgotPasswordLink" xml:space="preserve">
-    <value>أنثى</value>
+    <value>نسيت كلمة المرور؟</value>
   </data>
   <data name="GenderFemale" xml:space="preserve">
-    <value>تذكرني؟</value>
+    <value>أنثى</value>
   </data>
   <data name="RememberMe" xml:space="preserve">
-    <value>نسخ</value>
+    <value>تذكرني؟</value>
   </data>
   <data name="Copy" xml:space="preserve">
-    <value>تم النسخ</value>
+    <value>نسخ</value>
   </data>
   <data name="Copied" xml:space="preserve">
-    <value>مصادقة عاملين</value>
+    <value>تم النسخ</value>
   </data>
   <data name="TfaTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
+    <value>مصادقة عاملين</value>
   </data>
   <data name="TfaSubtitle" xml:space="preserve">
-    <value>إدارة المصادقة متعددة العوامل لحسابك</value>
+    <value>إدارة مصادقة الحساب متعددة العوامل</value>
   </data>
   <data name="TwoFactorCode" xml:space="preserve">
-    <value>رمز 2FA</value>
+    <value>كود 2FA</value>
   </data>
   <data name="TwoFactorRecoveryCode" xml:space="preserve">
-    <value>رمز الاسترداد</value>
+    <value>كود الاسترداد</value>
   </data>
   <data name="TfaPanelTitle" xml:space="preserve">
-    <value>المصادقة الثنائية العوامل</value>
+    <value>مصادقة عاملين</value>
   </data>
   <data name="TfaPanelSubtitle" xml:space="preserve">
-    <value>احصل على رمز جديد من تطبيق المصادقة أو استخدم رمز الاسترداد الخاص بك.</value>
+    <value>احصل على كود جديد من تطبيق المصادقة أو استخدم كود الاسترداد الخاص بك</value>
   </data>
   <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
     <value>جرب طريقة أخرى</value>
   </data>
   <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
-    <value>يمكنك الحصول على رمز جديد عبر بريدك الإلكتروني أو هاتفك.</value>
+    <value>يمكنك الحصول على كود جديد عبر بريدك الإلكتروني أو هاتفك</value>
   </data>
   <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
-    <value>احصل على الرمز</value>
+    <value>الحصول على الكود</value>
   </data>
   <data name="TfaResetSharedKeyError" xml:space="preserve">
-    <value>إعادة تعيين مفتاح 2fa المشترك يجب أن تعطل 2fa حتى يتم التحقق من رمز 2fa بناءً على المفتاح المشترك الجديد.</value>
+    <value>يجب أن تعطل 2FA حتى يتم التحقق من رمز 2FA بناءً على المفتاح المشترك الجديد عند إعادة تعيين مفتاح 2FA المشترك</value>
   </data>
   <data name="TfaEmptyCodeError" xml:space="preserve">
-    <value>لم يتم تقديم رمز 2fa من قبل الطلب. يلزم رمز 2fa صالح لتمكين 2fa.</value>
+    <value>لم يتم تقديم رمز 2FA في الطلب. يلزم رمز 2FA صالح لتفعيل 2FA</value>
   </data>
   <data name="TfaInvalidCodeError" xml:space="preserve">
-    <value>كان رمز 2fa المقدم من قبل الطلب غير صالح. يلزم رمز 2fa صالح لتمكين 2fa.</value>
+    <value>كان رمز 2FA المقدم في الطلب غير صالح. يلزم رمز 2FA صالح لتفعيل 2FA</value>
   </data>
   <data name="TfaConfigureAutAppTitle" xml:space="preserve">
-    <value>تكوين تطبيق المصادقة</value>
+    <value>إعداد تطبيق المصادقة</value>
   </data>
   <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
     <value>لاستخدام تطبيق مصادقة، اتبع الخطوات التالية:</value>
   </data>
   <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>قم بتنزيل تطبيق مصادقة ثنائي العوامل مثل Google Authenticator لـ {0} و {1}.</value>
+    <value>قم بتنزيل تطبيق مصادقة عاملين مثل Google Authenticator لـ {0} و {1}</value>
   </data>
   <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>امسح/انقر على رمز QR أو أدخل المفتاح التالي في تطبيق المصادقة الثنائي (المسافات وحساسية الأحرف لا تُهم):</value>
+    <value>امسح/انقر على رمز QR أو أدخل المفتاح التالي في تطبيق المصادقة عاملين (المسافات وحساسية الأحرف غير مهمة):</value>
   </data>
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
-    <value>بمجرد مسح رمز QR أو إدخال المفتاح أعلاه، سيوفر تطبيق المصادقة الثنائي رمزًا فريدًا. أدخل الرمز في مربع التأكيد أدناه.</value>
+    <value>بعد مسح رمز QR أو إدخال المفتاح أعلاه، سيوفر تطبيق المصادقة عاملين كودًا فريدًا. أدخل الكود في مربع التأكيد أدناه</value>
   </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
-    <value>تم تمكين المصادقة الثنائية العوامل.</value>
+    <value>تم تفعيل المصادقة عاملين</value>
   </data>
   <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
-    <value>تم تعطيل المصادقة الثنائية العوامل.</value>
+    <value>تم تعطيل المصادقة عاملين</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
-    <value>رمز التحقق:</value>
+    <value>كود التحقق:</value>
   </data>
   <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>أدخل رمز التحقق.</value>
+    <value>أدخل كود التحقق</value>
   </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
-    <value>تحقق</value>
+    <value>التحقق</value>
   </data>
   <data name="TfaRecoveryCodesHeader" xml:space="preserve">
-    <value>استرداد</value>
+    <value>الاسترداد</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
-    <value>لا يوجد رموز استرداد متبقية.</value>
+    <value>لا توجد أكواد استرداد متبقية</value>
   </data>
   <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
-    <value>يجب عليك إنشاء مجموعة جديدة من رموز الاسترداد قبل أن تتمكن من تسجيل الدخول برمز استرداد.</value>
+    <value>يجب إنشاء مجموعة جديدة من أكواد الاسترداد قبل تسجيل الدخول بكود استرداد</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
-    <value>يوجد لديك رمز استرداد واحد متبقي.</value>
+    <value>تبقى كود استرداد واحد</value>
   </data>
   <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
-    <value>يمكنك إنشاء مجموعة جديدة من رموز الاسترداد.</value>
+    <value>يمكنك إنشاء مجموعة جديدة من أكواد الاسترداد</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
-    <value>يوجد لديك {0} رموز استرداد متبقية.</value>
+    <value>تبقى {0} أكواد استرداد</value>
   </data>
   <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
-    <value>يجب عليك إنشاء مجموعة جديدة من رموز الاسترداد.</value>
+    <value>يجب عليك إنشاء مجموعة جديدة من أكواد الاسترداد</value>
   </data>
   <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
-    <value>إنشاء رموز استرداد جديدة لا يغير المفاتيح المستخدمة في تطبيقات المصادقة. إذا كنت ترغب في تغيير المفتاح المستخدم في تطبيق مصادقة، يجب إعادة تعيين مفاتيح المصادقة في علامة التبويب التالية.</value>
+    <value>إنشاء أكواد استرداد جديدة لا يغير المفاتيح المستخدمة في تطبيقات المصادقة. إذا كنت ترغب في تغيير المفتاح المستخدم في تطبيق مصادقة، قم بإعادة تعيين مفاتيح المصادقة في علامة التبويب التالية</value>
   </data>
   <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
-    <value>إنشاء رموز الاسترداد</value>
+    <value>إنشاء أكواد استرداد</value>
   </data>
   <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
-    <value>ضع هذه الرموز في مكان آمن.</value>
+    <value>ضع هذه الأكواد في مكان آمن</value>
   </data>
   <data name="TfaRecoveryCodesWarning" xml:space="preserve">
-    <value>إذا فقدت جهاز المصادقة ولم يكن لديك رموز الاسترداد، ستفقد الوصول إلى حسابك.</value>
+    <value>إذا فقدت جهاز المصادقة وليس لديك أكواد الاسترداد، ستفقد الوصول إلى حسابك</value>
   </data>
   <data name="TfaRecoveryCodesTitle" xml:space="preserve">
-    <value>رموز الاسترداد:</value>
+    <value>أكواد الاسترداد:</value>
   </data>
   <data name="TfaAuthAppHeader" xml:space="preserve">
-    <value>المصادق</value>
+    <value>المصادقة</value>
   </data>
   <data name="TfaAuthAppWarningTitle" xml:space="preserve">
-    <value>إذا أعدت تعيين مفتاح المصادقة، لن يعمل تطبيق المصادقة حتى تقوم بإعادة تكوينه.</value>
+    <value>إذا أعدت تعيين مفتاح المصادقة، لن يعمل تطبيق المصادقة حتى تعيد تهيئته</value>
   </data>
   <data name="TfaAuthAppWarning" xml:space="preserve">
-    <value>هذه العملية تعطل 2FA حتى تتحقق من تطبيق المصادقة. إذا لم تكمل تكوين تطبيق المصادقة، قد تفقد الوصول إلى حسابك.</value>
+    <value>هذه العملية تعطل 2FA حتى تتحقق من تطبيق المصادقة. إذا لم تكمل تهيئة تطبيق المصادقة، قد تفقد الوصول إلى حسابك</value>
   </data>
   <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
     <value>إعادة تعيين مفتاح المصادقة</value>
@@ -841,73 +841,73 @@
     <value>تعطيل</value>
   </data>
   <data name="TfaDisable2faWarningTitle" xml:space="preserve">
-    <value>هذا الإجراء يعطل 2FA فقط.</value>
+    <value>هذا الإجراء يعطل 2FA فقط</value>
   </data>
   <data name="TfaDisable2faWarning" xml:space="preserve">
-    <value>تعطيل 2FA لا يغير المفاتيح المستخدمة في تطبيقات المصادقة. إذا كنت ترغب في تغيير المفتاح المستخدم في تطبيق مصادقة، يجب إعادة تعيين مفاتيح المصادقة في علامة التبويب السابقة.</value>
+    <value>تعطيل 2FA لا يغير المفاتيح المستخدمة في تطبيقات المصادقة. إذا كنت ترغب في تغيير المفتاح المستخدم في تطبيق مصادقة، قم بإعادة تعيين مفاتيح المصادقة في علامة التبويب السابقة</value>
   </data>
   <data name="TfaDisable2faButtonText" xml:space="preserve">
     <value>تعطيل 2FA</value>
   </data>
   <data name="TfaTokenSentMessage" xml:space="preserve">
-    <value>تم إنشاء رمز 2FA وإرساله إليك.</value>
+    <value>تم إنشاء رمز 2FA وإرساله إليك</value>
   </data>
   <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>يرجى إدخال رمز الوصول المرتفع الذي أرسلناه للتو أو رمز تطبيق المصادقة للمتابعة.</value>
+    <value>يرجى إدخال رمز الوصول المرتفع الذي أرسلناه للتو أو كود تطبيق المصادقة للمتابعة</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
-    <value>{0} هو رمزك في Boilerplate.</value>
+    <value>{0} هو كودك في Boilerplate</value>
   </data>
   <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
-    <value>لقد طلبت بالفعل بريد التأكيد. جرب مرة أخرى بعد {0}</value>
+    <value>لقد طلبت بريد التأكيد بالفعل. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
-    <value>لقد طلبت بالفعل رسالة التأكيد النصية. جرب مرة أخرى بعد {0}</value>
+    <value>لقد طلبت رسالة التأكيد SMS بالفعل. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>لقد طلبت بالفعل رمز إعادة تعيين كلمة المرور. جرب مرة أخرى بعد {0}</value>
+    <value>لقد طلبت رمز إعادة تعيين كلمة المرور بالفعل. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>لقد طلبت بالفعل OTP. جرب مرة أخرى بعد {0}</value>
+    <value>لقد طلبت OTP بالفعل. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
-    <value>لقد طلبت بالفعل رمز الوصول المرتفع. جرب مرة أخرى بعد {0}</value>
+    <value>لقد طلبت رمز وصول مرتفع بالفعل. جرب مرة أخرى بعد {0}</value>
   </data>
   <data name="Otp" xml:space="preserve">
     <value>OTP</value>
   </data>
   <data name="OtpPanelTitle" xml:space="preserve">
-    <value>تحقق من {0}</value>
+    <value>قم بالتحقق من {0}</value>
   </data>
   <data name="OtpPanelSubtitle" xml:space="preserve">
-    <value>تأكيد {0} بإدخال الرمز المرسل إلى {1}</value>
+    <value>أكد {0} الخاص بك بإدخال الرمز المرسل إلى {1}</value>
   </data>
   <data name="Code" xml:space="preserve">
     <value>الرمز</value>
   </data>
   <data name="OtpResendMessage" xml:space="preserve">
-    <value>لم تحصل على الرمز؟</value>
+    <value>لم تتلقَ الرمز؟</value>
   </data>
   <data name="Resend" xml:space="preserve">
-    <value>إعادة إرسال</value>
+    <value>إعادة الإرسال</value>
   </data>
   <data name="SendOtpButtonText" xml:space="preserve">
     <value>إرسال OTP</value>
   </data>
   <data name="SendMagicLinkButtonText" xml:space="preserve">
-    <value>إرسال رابط سحري و OTP</value>
+    <value>إرسال الرابط السحري ورمز OTP</value>
   </data>
   <data name="SignInByPassword" xml:space="preserve">
-    <value>استخدم كلمة المرور</value>
+    <value>استخدام كلمة المرور</value>
   </data>
   <data name="SignInByOtp" xml:space="preserve">
-    <value>استخدم OTP</value>
+    <value>استخدام OTP</value>
   </data>
   <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>قدم كلمة المرور أو OTP</value>
+    <value>قدّم كلمة المرور أو OTP</value>
   </data>
   <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
-    <value>لقد طلبت بالفعل بريد رمز 2FA. جرب مرة أخرى بعد {0}.</value>
+    <value>لقد طلبتَ بريد رمز التحقق بخطوتين بالفعل. حاولَ مرةً أخرى بعد {0}.</value>
   </data>
   <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
     <value>{0} هو رمزك في Boilerplate.</value>
@@ -925,10 +925,10 @@
     <value>{0} هو رمزك في Boilerplate.</value>
   </data>
   <data name="Online" xml:space="preserve">
-    <value>عبر الإنترنت</value>
+    <value>متصل</value>
   </data>
   <data name="Recently" xml:space="preserve">
-    <value> مؤخرًا</value>
+    <value>حديثًا</value>
   </data>
   <data name="Update" xml:space="preserve">
     <value>تحديث</value>
@@ -979,7 +979,7 @@
     <value>فئة</value>
   </data>
   <data name="AltText" xml:space="preserve">
-    <value>نص بديل</value>
+    <value>النص البديل</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin") -->
@@ -1002,7 +1002,7 @@
     <value>إضافة منتج</value>
   </data>
   <data name="SearchProductsPlaceholder" xml:space="preserve">
-    <value>البحث في اسم المنتج والفئة والوصف هنا...</value>
+    <value>ابحث في اسم المنتج والفئة والوصف هنا...</value>
   </data>
   <data name="SelectCategory" xml:space="preserve">
     <value>اختر الفئة</value>
@@ -1032,7 +1032,7 @@
     <value>الفئات مع عدد المنتجات</value>
   </data>
   <data name="SearchOnName" xml:space="preserve">
-    <value>البحث بالاسم</value>
+    <value>البحث حسب الاسم</value>
   </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>مخطط عدد المنتجات لكل فئة</value>
@@ -1059,7 +1059,7 @@
     <value>تحتوي هذه الفئة على بعض المنتجات، لذا لا يمكنك حذفها</value>
   </data>
   <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
-    <value>هل أنت متأكد من أنك تريد حذف المنتج {0}</value>
+    <value>هل أنت متأكد من رغبتك في حذف المنتج {0}؟</value>
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>حذف المنتج</value>
@@ -1091,7 +1091,7 @@
     <value>استجابة Google reCAPTCHA غير صالحة.</value>
   </data>
   <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
-    <value>يجب عليك اجتياز تحدي Google reCAPTCHA.</value>
+    <value>تحتاج إلى اجتياز تحدي Google reCAPTCHA.</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Sales") -->
@@ -1102,29 +1102,29 @@
     <value>منتجات في نفس الفئة</value>
   </data>
   <data name="Buy" xml:space="preserve">
-    <value>اشترِ</value>
+    <value>شراء</value>
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>تم الشراء بنجاح!</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">
-    <value>دون كلمة مرور</value>
+    <value>بدون كلمة مرور</value>
   </data>
   <data name="PasswordlessTitle" xml:space="preserve">
-    <value>تسجيل الدخول دون كلمة مرور</value>
+    <value>تسجيل الدخول بدون كلمة مرور</value>
   </data>
   <data name="EnablePasswordless" xml:space="preserve">
-    <value>تفعيل تسجيل الدخول دون كلمة مرور</value>
+    <value>تمكين تسجيل الدخول بدون كلمة مرور</value>
   </data>
   <data name="EnablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>تم تفعيل تسجيل الدخول دون كلمة مرور بنجاح</value>
+    <value>تم تمكين تسجيل الدخول بدون كلمة مرور بنجاح</value>
   </data>
   <data name="DisablePasswordless" xml:space="preserve">
-    <value>إلغاء تفعيل تسجيل الدخول دون كلمة مرور</value>
+    <value>تعطيل تسجيل الدخول بدون كلمة مرور</value>
   </data>
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
-    <value>تم إلغاء تفعيل تسجيل الدخول دون كلمة مرور بنجاح</value>
+    <value>تم تعطيل تسجيل الدخول بدون كلمة مرور بنجاح</value>
   </data>
   <data name="Clear" xml:space="preserve">
     <value>مسح</value>
@@ -1137,28 +1137,28 @@
   </data>
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
-    <value>لوحة الدردشة الذكاء الاصطناعي</value>
+    <value>لوحة الدردشة بالذكاء الاصطناعي</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>مرحبا! أنا هنا لجعل تجربة التطبيق رائعة! هل لديك سؤال أو تحتاج إلى مساعدة؟</value>
+    <value>مرحبًا! أنا هنا لجعل تجربة التطبيق رائعة! هل لديك سؤال أو تحتاج مساعدة؟</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>افتح صفحة إعادة تعيين كلمة المرور وأخبرني كيف تعمل</value>
   </data>
   <data name="AiChatPanelPrompt2" xml:space="preserve">
-    <value>كيف يمكنني تثبيت النسخة التطبيقية التقدمية (PWA) من التطبيق؟</value>
+    <value>كيف يمكنني تثبيت إصدار PWA من التطبيق؟</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض الملاحظات التي أود مشاركتها!</value>
+    <value>لدي بعض التعليقات أود مشاركتها!</value>
   </data>
   <!--#elif (module == "Sales") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض الملاحظات التي أود مشاركتها!</value>
+    <value>لدي بعض التعليقات أود مشاركتها!</value>
   </data>
   <!--#else -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض الملاحظات التي أود مشاركتها!</value>
+    <value>لدي بعض التعليقات أود مشاركتها!</value>
   </data>
   <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
@@ -1173,23 +1173,23 @@
     <value>ترقية الحساب</value>
   </data>
   <data name="UpgradeSubtitle" xml:space="preserve">
-    <value>لا توجد ترقية حساب هنا. هذا مجرد عرض توضيحي لإعلانات المكافآت.</value>
+    <value>لا توجد ترقية حساب هنا. هذا مجرّد عرض توضيحي للإعلانات المجزية.</value>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
     <value>تمت ترقية الحساب بنجاح.</value>
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
-    <value>فشل ترقية الحساب.</value>
+    <value>فشلت ترقية الحساب.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
-    <value>هل تواجه مشكلة في مشاهدة الإعلان؟</value>
+    <value>تواجه مشكلة في مشاهدة الإعلان؟</value>
   </data>
   <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
     <value>أواجه مشكلة في مشاهدة الإعلانات داخل التطبيق.</value>
   </data>
   <!--#endif -->
   <data name="PleaseWait" xml:space="preserve">
-    <value>الرجاء الانتظار</value>
+    <value>يرجى الانتظار</value>
   </data>
   <data name="Management" xml:space="preserve">
     <value>إدارة</value>
@@ -1207,7 +1207,7 @@
     <value>إضافة مجموعة مستخدمين</value>
   </data>
   <data name="EditRole" xml:space="preserve">
-    <value>تعديل مجموعة مستخدمين</value>
+    <value>تعديل مجموعة المستخدمين</value>
   </data>
   <data name="NewRoleName" xml:space="preserve">
     <value>اسم مجموعة المستخدمين الجديدة</value>
@@ -1225,10 +1225,10 @@
     <value>الحصة</value>
   </data>
   <data name="QuotaDescription" xml:space="preserve">
-    <value>لتقييد استخدام الميزات، يمكنك تحديد حصص في هذه التبويب، والتي يمكن أن تختلف لكل دور. على سبيل المثال، عدد الأجهزة التي يمكن للمستخدم تسجيل الدخول إليها أو عدد المرات التي يمكنه استخدام ميزة تطبيق معينة فيها.</value>
+    <value>لتقييد استخدام الميزات، يمكنك تحديد حصص في هذه التبويبة، والتي يمكن أن تختلف لكل دور. على سبيل المثال، عدد الأجهزة التي يمكن للمستخدم تسجيل الدخول إليها أو عدد المرات التي يمكنه استخدام ميزة تطبيق محددة بها.</value>
   </data>
   <data name="MaxPrevilegedSessions" xml:space="preserve">
-    <value>أقصى جلسات مميزة</value>
+    <value>الحد الأقصى للجلسات المميزة</value>
   </data>
   <data name="General" xml:space="preserve">
     <value>عام</value>
@@ -1244,10 +1244,10 @@
     <value>إرسال إشعار</value>
   </data>
   <data name="EnableNotifications" xml:space="preserve">
-    <value>تفعيل الإشعارات</value>
+    <value>تمكين الإشعارات</value>
   </data>
   <data name="DisableNotifications" xml:space="preserve">
-    <value>إلغاء تفعيل الإشعارات</value>
+    <value>تعطيل الإشعارات</value>
   </data>
   <data name="TestNotificationMessage1" xml:space="preserve">
     <value>إشعار اختبار 1</value>
@@ -1272,7 +1272,7 @@
     <value>إصدار التطبيق</value>
   </data>
   <data name="IP" xml:space="preserve">
-    <value>عنوان IP</value>
+    <value>IP</value>
   </data>
   <data name="Address" xml:space="preserve">
     <value>العنوان</value>
@@ -1284,7 +1284,7 @@
     <value>مميز</value>
   </data>
   <data name="RenewedOn" xml:space="preserve">
-    <value>تم تجديده في</value>
+    <value>تم التجديد في</value>
   </data>
   <data name="OnlineUsers" xml:space="preserve">
     <value>المستخدمون المتصلون: {0}</value>
@@ -1299,13 +1299,13 @@
     <value>لا توجد جلسة مستخدم</value>
   </data>
   <data name="NoUserSelectedMessage" xml:space="preserve">
-    <value>الرجاء اختيار مستخدم أولاً</value>
+    <value>يرجى اختيار مستخدم أولاً</value>
   </data>
   <data name="RevokeAllSessions" xml:space="preserve">
-    <value>سحب جميع الجلسات</value>
+    <value>إلغاء جميع الجلسات</value>
   </data>
   <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>هل أنت متأكد من أنك تريد سحب جميع جلسات {0}؟</value>
+    <value>هل أنت متأكد من إلغاء جميع جلسات {0}؟</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة هذا المستخدم من مجموعة SuperAdmin.</value>
@@ -1320,7 +1320,7 @@
     <value>لا يمكنك إزالة مستخدمك الخاص</value>
   </data>
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
-    <value>لا يمكنك إزالة هذا المستخدم SuperAdmin</value>
+    <value>لا يمكنك إزالة مستخدم SuperAdmin هذا</value>
   </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>لا يمكنك إزالة جلساتك الحالية</value>
@@ -1335,13 +1335,13 @@
     <value>البحث عن المستخدمين</value>
   </data>
   <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
-    <value>البحث في جلسات المستخدم</value>
+    <value>البحث في جلسات المستخدمين</value>
   </data>
   <data name="RemoveRoleFromAllUsers" xml:space="preserve">
     <value>إزالة جميع المستخدمين من مجموعة المستخدمين</value>
   </data>
   <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
-    <value>هل أنت متأكد من أنك تريد إزالة جميع المستخدمين من {0}؟</value>
+    <value>هل أنت متأكد من إزالة جميع المستخدمين من {0}؟</value>
   </data>
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>رابط الصفحة</value>
@@ -1353,13 +1353,13 @@
     <value>ليس لديك إذن للوصول إلى هذه الصفحة.</value>
   </data>
   <data name="SignInPasswordMessage1" xml:space="preserve">
-    <value>هل هذه أول مرة لك هنا؟</value>
+    <value>هل هذه أول مرة هنا؟</value>
   </data>
   <data name="SignInPasswordMessage2" xml:space="preserve">
     <value>سنقوم تلقائيًا بإنشاء حساب لك.</value>
   </data>
   <data name="ImageTooSmall" xml:space="preserve">
-    <value>الصورة صغيرة جدًا. الأبعاد المطلوبة هي {0}×{1}، لكن الأبعاد الحالية هي {2}×{3}.</value>
+    <value>الصورة صغيرة جدًا. الأبعاد المطلوبة الدنيا هي {0}×{1}، لكن الأبعاد الحالية هي {2}×{3}.</value>
   </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>الصورة المقدمة لا تحتوي على سيارة.</value>

@@ -36,9 +36,5 @@
                 "System.Net.Http.HttpClient.*.LogicalHandler": "Warning"
             }
         }
-    },
-
-    "ParallelOptions": {
-        "MaxDegreeOfParallelism": 4
     }
 }

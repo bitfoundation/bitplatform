@@ -122,10 +122,10 @@
     <value>Boilerplate {0} - Confirma tu dirección de correo electrónico</value>
   </data>
   <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
-    <value>Estás recibiendo este correo porque recientemente has registrado {0} en tu cuenta de Boilerplate.</value>
+    <value>Estás recibiendo este correo electrónico porque recientemente has registrado {0} en tu cuenta de Boilerplate.</value>
   </data>
   <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
-    <value>Confirma tu dirección de correo electrónico ingresando el número de abajo en la app.</value>
+    <value>Confirma tu dirección de correo electrónico ingresando el número a continuación en la app.</value>
   </data>
   <data name="EmailConfirmationMessageBodyLink" xml:space="preserve">
     <value>O haz clic en el siguiente enlace para confirmar esta dirección de correo electrónico.</value>
@@ -140,13 +140,13 @@
     <value>Alguien ha solicitado un token para cambiar tu contraseña.</value>
   </data>
   <data name="ResetPasswordBody" xml:space="preserve">
-    <value>Si no eres tú quien solicitó el restablecimiento de contraseña, puedes ignorar este correo.</value>
+    <value>Si no fuiste tú quien solicitó el restablecimiento de contraseña, puedes ignorar este correo.</value>
   </data>
   <data name="ResetPasswordTokenMessage" xml:space="preserve">
-    <value>Puedes copiar el token de abajo e ingresarlo en la página de restablecimiento de contraseña.</value>
+    <value>Puedes copiar el token a continuación e ingresarlo en la página de restablecimiento de contraseña.</value>
   </data>
   <data name="ResetPasswordLinkMessage" xml:space="preserve">
-    <value>O puedes hacer clic en el siguiente enlace para intentar restablecer tu contraseña.</value>
+    <value>O puedes hacer clic en el siguiente enlace para restablecer tu contraseña.</value>
   </data>
   <data name="OtpEmailSubject" xml:space="preserve">
     <value>Boilerplate {0} - OTP</value>
@@ -161,7 +161,7 @@
     <value>Si no solicitaste el OTP, puedes ignorar este correo.</value>
   </data>
   <data name="OtpMessage" xml:space="preserve">
-    <value>Puedes copiar el OTP de abajo e ingresarlo en la página de inicio de sesión.</value>
+    <value>Puedes copiar el OTP a continuación e ingresarlo en la página de inicio de sesión.</value>
   </data>
   <data name="OtpLinkMessage" xml:space="preserve">
     <value>O puedes hacer clic en el siguiente enlace para iniciar sesión.</value>
@@ -176,7 +176,7 @@
     <value>Boilerplate {0} - Token 2FA</value>
   </data>
   <data name="TfaTokenHello" xml:space="preserve">
-    <value>Hola querido {0}</value>
+    <value>Hola {0}</value>
   </data>
   <data name="TfaTokenMessage" xml:space="preserve">
     <value>Aquí tienes tu nuevo token 2FA para iniciar sesión:</value>
@@ -185,7 +185,7 @@
     <value>Boilerplate {0} - Token de acceso elevado</value>
   </data>
   <data name="ElevatedAccessTokenHello" xml:space="preserve">
-    <value>Hola querido {0}</value>
+    <value>Hola {0}</value>
   </data>
   <data name="ElevatedAccessTokenMessage" xml:space="preserve">
     <value>Aquí tienes tu nuevo token de acceso elevado:</value>
@@ -194,6 +194,6 @@
     <value>Copia este código y úsalo en la app.</value>
   </data>
   <data name="DefaultFromName" xml:space="preserve">
-    <value>App Boilerplate</value>
+    <value>Aplicación Boilerplate</value>
   </data>
 </root>

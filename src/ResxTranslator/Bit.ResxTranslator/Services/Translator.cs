@@ -18,7 +18,8 @@ public partial class Translator(ResxTranslatorSettings settings,
 {
     public async Task UpdateResxTranslations()
     {
-        await Parallel.ForEachAsync(GetResxGroups(), settings.ParallelOptions, async (resxGroup, cancellationToken) =>
+        // The parallel for each is beneficial for projects that have many "DIFFERENT" resx files
+        await Parallel.ForEachAsync(GetResxGroups(), async (resxGroup, cancellationToken) =>
         {
             var defaultLanguageKeyValues = await DeserializeResxToDictionary(resxGroup.Path, cancellationToken);
 
@@ -38,7 +39,7 @@ public partial class Translator(ResxTranslatorSettings settings,
 
                 logger.LogInformation("Translating {Count} items from {ResxGroup} to {RelatedResx}...", notTranslatedKeyValues.Count, resxGroup.CultureInfo.Name, relatedResx.CultureInfo.Name);
 
-                const int batchSize = 100;
+                const int batchSize = 250;
                 var batches = notTranslatedKeyValues
                     .Select((kvp, index) => new { kvp, index })
                     .GroupBy(x => x.index / batchSize)
@@ -71,15 +72,19 @@ Return the translations in the same order as the source strings."),
 
                     var response = await chatClient.GetResponseAsync<TranslationBatchResponse>(messages, options: chatOptions, cancellationToken: cancellationToken);
 
-                    if (response.Result?.Translations != null)
+                    if (response.Result.Translations is null)
+                        throw new InvalidOperationException("Translation response contained no translations.");
+
+                    if (response.Result.Translations.Length != batch.Count)
                     {
-                        foreach ((string translate, int index) in response.Result.Translations.Select((translate, index) => (translate, index)))
-                        {
-                            if (index < batch.Count)
-                            {
-                                relatedLanguageKeyValues.Add(batch.ElementAt(index).Key, translate);
-                            }
-                        }
+                        throw new InvalidOperationException(
+                            $"Translation count mismatch for {Path.GetFileName(relatedResx.Path)}: " +
+                            $"expected {batch.Count} translations but received {response.Result.Translations.Length}.");
+                    }
+
+                    foreach ((string translate, int index) in response.Result.Translations.Select((translate, index) => (translate, index)))
+                    {
+                        relatedLanguageKeyValues.Add(batch.ElementAt(index).Key, translate);
                     }
 
                     logger.LogInformation("{ResxFileName} Batch {BatchIndex}/{TotalBatches} translated. Input Tokens: {InputTokens}, Output Tokens: {OutputTokens}.",

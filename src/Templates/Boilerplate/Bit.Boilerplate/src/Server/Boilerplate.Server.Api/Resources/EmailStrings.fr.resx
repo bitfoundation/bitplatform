@@ -119,10 +119,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>Modèle {0} - Confirmez votre adresse e-mail</value>
+    <value>Boilerplate {0} - Confirmez votre adresse e-mail</value>
   </data>
   <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
-    <value>Vous recevez cet e-mail car vous avez récemment enregistré {0} sur votre compte Modèle.</value>
+    <value>Vous recevez cet e-mail car vous avez récemment enregistré {0} sur votre compte Boilerplate.</value>
   </data>
   <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
     <value>Confirmez votre adresse e-mail en entrant le numéro ci-dessous dans l'application.</value>
@@ -131,7 +131,7 @@
     <value>Ou cliquez sur le lien suivant pour confirmer cette adresse e-mail.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>Modèle {0} - Réinitialisez votre mot de passe</value>
+    <value>Boilerplate {0} - Réinitialisez votre mot de passe</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Bonjour {0}</value>
@@ -140,16 +140,16 @@
     <value>Quelqu'un a demandé un jeton pour changer votre mot de passe.</value>
   </data>
   <data name="ResetPasswordBody" xml:space="preserve">
-    <value>Si ce n'est pas vous qui avez demandé la réinitialisation du mot de passe, vous pouvez ignorer cet e-mail.</value>
+    <value>Si vous n'êtes pas la personne qui a demandé la réinitialisation du mot de passe, vous pouvez ignorer cet e-mail.</value>
   </data>
   <data name="ResetPasswordTokenMessage" xml:space="preserve">
     <value>Vous pouvez copier le jeton ci-dessous et le saisir sur la page de réinitialisation du mot de passe.</value>
   </data>
   <data name="ResetPasswordLinkMessage" xml:space="preserve">
-    <value>Ou vous pouvez cliquer sur le lien suivant pour essayer de réinitialiser votre mot de passe.</value>
+    <value>Ou vous pouvez cliquer sur le lien suivant pour réinitialiser votre mot de passe.</value>
   </data>
   <data name="OtpEmailSubject" xml:space="preserve">
-    <value>Modèle {0} - OTP</value>
+    <value>Boilerplate {0} - OTP</value>
   </data>
   <data name="OtpTitle" xml:space="preserve">
     <value>Bonjour {0}</value>
@@ -167,33 +167,33 @@
     <value>Ou vous pouvez cliquer sur le lien suivant pour vous connecter.</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>Modèle</value>
+    <value>Boilerplate</value>
   </data>
   <data name="WelcomeToApp" xml:space="preserve">
-    <value>Bienvenue dans Modèle !</value>
+    <value>Bienvenue sur Boilerplate !</value>
   </data>
   <data name="TfaTokenEmailSubject" xml:space="preserve">
-    <value>Modèle {0} - Jeton 2FA</value>
+    <value>Boilerplate {0} - Jeton 2FA</value>
   </data>
   <data name="TfaTokenHello" xml:space="preserve">
     <value>Bonjour cher {0}</value>
   </data>
   <data name="TfaTokenMessage" xml:space="preserve">
-    <value>Voici votre nouveau jeton 2FA pour vous connecter :</value>
+    <value>Voici votre nouveau jeton 2FA pour vous connecter :</value>
   </data>
   <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
-    <value>Modèle {0} - Jeton d'accès élevé</value>
+    <value>Boilerplate {0} - Jeton d'accès élevé</value>
   </data>
   <data name="ElevatedAccessTokenHello" xml:space="preserve">
     <value>Bonjour cher {0}</value>
   </data>
   <data name="ElevatedAccessTokenMessage" xml:space="preserve">
-    <value>Voici votre nouveau jeton d'accès élevé :</value>
+    <value>Voici votre nouveau jeton d'accès élevé :</value>
   </data>
   <data name="CopyTokenNote" xml:space="preserve">
     <value>Copiez ce code et utilisez-le dans l'application.</value>
   </data>
   <data name="DefaultFromName" xml:space="preserve">
-    <value>Application Modèle</value>
+    <value>Application Boilerplate</value>
   </data>
 </root>
