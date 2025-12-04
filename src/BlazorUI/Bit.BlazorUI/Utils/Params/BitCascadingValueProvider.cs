@@ -17,6 +17,11 @@ public class BitCascadingValueProvider : ComponentBase
     /// </summary>
     [Parameter] public IEnumerable<BitCascadingValue>? Values { get; set; }
 
+    /// <summary>
+    /// The cascading value list to be provided for the children.
+    /// </summary>
+    [Parameter] public BitCascadingValueList? ValueList { get; set; }
+
 
 
     public override Task SetParametersAsync(ParameterView parameters)
@@ -32,6 +37,10 @@ public class BitCascadingValueProvider : ComponentBase
                 case nameof(Values):
                     Values = (IEnumerable<BitCascadingValue>?)parameter.Value;
                     break;
+
+                case nameof(ValueList):
+                    ValueList = (BitCascadingValueList?)parameter.Value;
+                    break;
             }
         }
 
@@ -43,20 +52,19 @@ public class BitCascadingValueProvider : ComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCascadingValue))]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var seq = 1;
-
         RenderFragment current = ChildContent ?? (_ => { });
 
-        if (Values is not null)
+        var list = Values?.ToList() ?? ValueList;
+
+        if (list is not null)
         {
-            var list = Values.ToList();
             for (int i = list.Count - 1; i > 0; i--)
             {
                 var item = list[i];
                 var prev = current;
-                current = b => CreateCascadingValue(b, i * 4, item.Name, item.Value, prev);
+                current = b => CreateCascadingValue(b, i * 5, item, prev);
             }
-            CreateCascadingValue(builder, 0, list[0].Name, list[0].Value, current);
+            CreateCascadingValue(builder, 0, list[0], current);
         }
         else
         {
@@ -72,14 +80,22 @@ public class BitCascadingValueProvider : ComponentBase
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     private static readonly Type _cascadingValueType = typeof(CascadingValue<>);
 
-    public static void CreateCascadingValue(RenderTreeBuilder builder, int seq, string? name, object value, RenderFragment? innerBuilder)
+    public static void CreateCascadingValue(RenderTreeBuilder builder, int seq, BitCascadingValue cascadingValue, RenderFragment? innerBuilder)
     {
 #pragma warning disable IL3050, IL2055
-        builder.OpenComponent(seq, _cascadingValueType.MakeGenericType(value.GetType()));
+        builder.OpenComponent(seq, _cascadingValueType.MakeGenericType(cascadingValue.ValueType));
 #pragma warning restore IL3050, IL2055
-        builder.AddComponentParameter(seq++, "Name", name);
-        builder.AddComponentParameter(seq++, "Value", value);
+
+        if (cascadingValue.Name is not null)
+        {
+            builder.AddComponentParameter(seq++, "Name", cascadingValue.Name);
+        }
+
+        builder.AddComponentParameter(seq++, "Value", cascadingValue.Value);
+        builder.AddComponentParameter(seq++, "IsFixed", cascadingValue.IsFixed);
+
         builder.AddComponentParameter(seq++, "ChildContent", innerBuilder);
+
         builder.CloseComponent();
     }
 }
