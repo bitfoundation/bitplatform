@@ -126,10 +126,10 @@
     <value>El campo {0} no es una dirección de correo electrónico válida.</value>
   </data>
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>MaxLengthAttribute debe tener un valor de Longitud mayor que cero. Use MaxLength() sin parámetros para indicar que la cadena o el arreglo puede tener la longitud máxima permitida.</value>
+    <value>MaxLengthAttribute debe tener un valor Length mayor que cero. Use MaxLength() sin parámetros para indicar que la cadena o el arreglo puede tener la longitud máxima permitida.</value>
   </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
-    <value>El campo {0} debe ser un tipo de cadena o arreglo con una longitud mínima de '{1}'.</value>
+    <value>El campo {0} debe ser un tipo cadena o arreglo con una longitud mínima de '{1}'.</value>
   </data>
   <data name="RangeAttribute_ValidationError" xml:space="preserve">
     <value>El campo {0} debe estar entre {1} y {2}.</value>
@@ -145,7 +145,7 @@
     <value>Solicitud inválida</value>
   </data>
   <data name="ConflictException" xml:space="preserve">
-    <value>La solicitud no pudo ser procesada debido a un conflicto en la solicitud</value>
+    <value>La solicitud no pudo procesarse debido a un conflicto en la solicitud</value>
   </data>
   <data name="NotAuthorizedPageTitle" xml:space="preserve">
     <value>No autorizado</value>
@@ -166,7 +166,7 @@
     <value>Ha ocurrido un error desconocido</value>
   </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
-    <value>El registro fue modificado por otro usuario después de que obtuviste los datos originales. La operación fue cancelada.</value>
+    <value>El registro fue modificado por otro usuario después de que obtuvo los datos originales. La operación fue cancelada.</value>
   </data>
   <data name="ResourceNotFoundException" xml:space="preserve">
     <value>Recurso no encontrado</value>
@@ -215,16 +215,16 @@
     <value>Perfil</value>
   </data>
   <data name="ProfileSubtitle" xml:space="preserve">
-    <value>Editar tus datos de perfil</value>
+    <value>Editar los datos de tu perfil</value>
   </data>
   <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
-    <value>Se ha enviado un token de cambio de correo electrónico</value>
+    <value>El token para cambiar el correo electrónico ha sido enviado</value>
   </data>
   <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
-    <value>Se ha enviado un token de cambio de número de teléfono</value>
+    <value>El token para cambiar el número de teléfono ha sido enviado</value>
   </data>
   <data name="SuccessfulSendTokenMessage" xml:space="preserve">
-    <value>Se ha enviado el token</value>
+    <value>El token ha sido enviado</value>
   </data>
   <data name="SessionsTitle" xml:space="preserve">
     <value>Sesiones</value>
@@ -237,7 +237,7 @@
   </data>
   <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
     <value>De {0} dispositivos permitidos para funciones completas, has usado {1}.
-Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reducidas.</value>
+Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones reducidas.</value>
   </data>
   <data name="OtherSessions" xml:space="preserve">
     <value>Otras sesiones</value>
@@ -255,7 +255,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>No hay nada aquí.</value>
   </data>
   <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
-    <value>Por favor actualiza webview a través de google play.</value>
+    <value>Por favor actualiza webview a través de Google Play.</value>
   </data>
   <data name="Ok" xml:space="preserve">
     <value>Aceptar</value>
@@ -268,12 +268,12 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Ver las instrucciones del sistema para el chatbot aquí.</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
-    <value>Trabajo de notificación push</value>
+    <value>Trabajo de notificaciones push</value>
   </data>
   <!--#endif-->
   <!--#if (offlineDb == true) -->
   <data name="OfflineTodoTitle" xml:space="preserve">
-    <value>Tareas pendientes (Sin conexión)</value>
+    <value>Por hacer (Sin conexión)</value>
   </data>
   <data name="SyncPushFailed" xml:space="preserve">
     <value>Error al enviar cambios al servidor</value>
@@ -310,7 +310,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Nuevo correo electrónico</value>
   </data>
   <data name="NewEmailPlaceholder" xml:space="preserve">
-    <value>Ingresa nuevo correo electrónico</value>
+    <value>Ingresar nuevo correo electrónico</value>
   </data>
   <data name="Phone" xml:space="preserve">
     <value>Teléfono</value>
@@ -322,7 +322,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Nuevo número de teléfono</value>
   </data>
   <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
-    <value>Ingresa nuevo número de teléfono</value>
+    <value>Ingresar nuevo número de teléfono</value>
   </data>
   <data name="GoBack" xml:space="preserve">
     <value>Atrás</value>
@@ -331,10 +331,10 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Contraseña</value>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
-    <value>Ingresa contraseña</value>
+    <value>Ingresar contraseña</value>
   </data>
   <data name="ImageCouldNotBeFound" xml:space="preserve">
-    <value>No se pudo encontrar la imagen</value>
+    <value>La imagen no se pudo encontrar</value>
   </data>
   <data name="Error" xml:space="preserve">
     <value>Error</value>
@@ -358,10 +358,10 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Precio</value>
   </data>
   <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
-    <value>Debes proporcionar correo electrónico o número de teléfono.</value>
+    <value>Proporciona correo electrónico o número de teléfono.</value>
   </data>
   <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
-    <value>Debes proporcionar nombre de usuario, correo electrónico o número de teléfono.</value>
+    <value>Proporciona nombre de usuario, correo electrónico o número de teléfono.</value>
   </data>
   <data name="YouNeedToSignIn" xml:space="preserve">
     <value>Debes iniciar sesión para continuar.</value>
@@ -379,7 +379,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Título</value>
   </data>
   <data name="AreYouSureWannaDelete" xml:space="preserve">
-    <value>¿Estás seguro de que quieres eliminar {0}?</value>
+    <value>¿Estás seguro de que deseas eliminar {0}?</value>
   </data>
   <data name="Home" xml:space="preserve">
     <value>Inicio</value>
@@ -391,19 +391,19 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Recuperar</value>
   </data>
   <data name="SomethingWentWrong" xml:space="preserve">
-    <value>¡Ups, algo salió mal...!</value>
+    <value>¡Ups, algo salió mal...</value>
   </data>
   <data name="BackToHome" xml:space="preserve">
     <value>Volver al inicio</value>
   </data>
   <data name="UserLockedOut" xml:space="preserve">
-    <value>Usuario bloqueado. Intenta de nuevo en {0}</value>
+    <value>El usuario está bloqueado. Intenta de nuevo en {0}</value>
   </data>
   <data name="UserIsNotConfirmed" xml:space="preserve">
-    <value>Usuario no confirmado.</value>
+    <value>El usuario no está confirmado.</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
-    <value>Usuario no existe.</value>
+    <value>El usuario no existe.</value>
   </data>
   <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
     <value>Este correo electrónico o número de teléfono ya está en uso.</value>
@@ -436,13 +436,13 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Confirmar</value>
   </data>
   <data name="ConfirmTitle" xml:space="preserve">
-    <value>Confirma tu cuenta</value>
+    <value>Confirmar tu cuenta</value>
   </data>
   <data name="ConfirmEmailMessage" xml:space="preserve">
-    <value>Por favor confirma tu correo electrónico escribiendo el token aquí.</value>
+    <value>Confirma tu correo electrónico escribiendo el token aquí.</value>
   </data>
   <data name="EmailPlaceholder" xml:space="preserve">
-    <value>Ingresa dirección de correo electrónico</value>
+    <value>Ingresar dirección de correo electrónico</value>
   </data>
   <data name="EmailToken" xml:space="preserve">
     <value>Código</value>
@@ -463,10 +463,10 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Hemos enviado un token de confirmación a tu teléfono.</value>
   </data>
   <data name="ConfirmPhoneMessage" xml:space="preserve">
-    <value>Por favor confirma tu número de teléfono escribiendo el token aquí.</value>
+    <value>Confirma tu número de teléfono escribiendo el token aquí.</value>
   </data>
   <data name="PhoneNumberPlaceholder" xml:space="preserve">
-    <value>Ingresa número de teléfono</value>
+    <value>Ingresar número de teléfono</value>
   </data>
   <data name="PhoneToken" xml:space="preserve">
     <value>Código</value>
@@ -475,7 +475,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Confirmar número de teléfono</value>
   </data>
   <data name="NotReceivedPhoneMessage" xml:space="preserve">
-    <value>¿No recibiste el token en tu teléfono?</value>
+    <value>¿No has recibido el token en tu teléfono?</value>
   </data>
   <data name="ResendPhoneTokenButtonText" xml:space="preserve">
     <value>Reenviar código</value>
@@ -496,7 +496,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Eliminar cuenta</value>
   </data>
   <data name="DeleteAccountPrompt" xml:space="preserve">
-    <value>¿Estás seguro de que quieres eliminar tu cuenta?</value>
+    <value>¿Estás seguro de que deseas eliminar tu cuenta?</value>
   </data>
   <data name="DontHaveAccountMessage" xml:space="preserve">
     <value>¿No tienes una cuenta?</value>
@@ -505,7 +505,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Editar</value>
   </data>
   <data name="FileUploadFailed" xml:space="preserve">
-    <value>Ocurrió un error al subir el archivo</value>
+    <value>Ocurrió un error al cargar el archivo</value>
   </data>
   <data name="ForgotPasswordPageTitle" xml:space="preserve">
     <value>¿Olvidaste tu contraseña?</value>
@@ -514,7 +514,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>¿Olvidaste tu contraseña?</value>
   </data>
   <data name="ForgotPasswordMessage" xml:space="preserve">
-    <value>Por favor ingresa tu dirección de correo electrónico o número de teléfono para que podamos enviarte un token de restablecimiento de contraseña.</value>
+    <value>Ingresa tu dirección de correo electrónico o número de teléfono para que podamos enviarte un token de restablecimiento de contraseña.</value>
   </data>
   <data name="GenderMale" xml:space="preserve">
     <value>Masculino</value>
@@ -526,13 +526,13 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Ir a hoy</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>¡Crea tu aplicación Blazor multi-modo (WASM, Server, Hybrid, pre-rendering) fácilmente en el menor tiempo posible!</value>
+    <value>¡Crea tu app Blazor multi-modo (WASM, Server, Hybrid, pre-rendering) fácilmente en el menor tiempo posible!</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>Inicio</value>
   </data>
   <data name="HomePanelTitle" xml:space="preserve">
-    <value>Construye todas tus aplicaciones</value>
+    <value>Construye todas tus apps</value>
   </data>
   <data name="HomePanelSubtitle" xml:space="preserve">
     <value>usando lo que ya conoces y amas</value>
@@ -565,7 +565,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>No</value>
   </data>
   <data name="NotReceivedEmailMessage" xml:space="preserve">
-    <value>¿No recibiste el correo electrónico?</value>
+    <value>¿No has recibido el correo electrónico?</value>
   </data>
   <data name="Or" xml:space="preserve">
     <value>o</value>
@@ -589,7 +589,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Hemos enviado un token a tu teléfono o correo electrónico.</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>Por favor envía el token junto con tu nueva contraseña aquí.</value>
+    <value>Envía el token junto con tu nueva contraseña aquí.</value>
   </data>
   <data name="ResetPasswordButtonText" xml:space="preserve">
     <value>Establecer contraseña</value>
@@ -643,7 +643,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Cerrar sesión</value>
   </data>
   <data name="SignOutPrompt" xml:space="preserve">
-    <value>¿Estás seguro de que quieres cerrar sesión?</value>
+    <value>¿Estás seguro de que deseas cerrar sesión?</value>
   </data>
   <data name="SignUp" xml:space="preserve">
     <value>Registrarse</value>
@@ -679,7 +679,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Cancelar</value>
   </data>
   <data name="CheckSpamMailMessage" xml:space="preserve">
-    <value>Revisa tu Spam/Basura, si no lo encuentras en el Bandeja de entrada.</value>
+    <value>Revisa tu carpeta de Spam/Basura si no lo encuentras en la Bandeja de entrada.</value>
   </data>
   <data name="Color" xml:space="preserve">
     <value>Color</value>
@@ -727,7 +727,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Autenticación de dos factores</value>
   </data>
   <data name="TfaSubtitle" xml:space="preserve">
-    <value>Gestiona la autenticación multifactor de tu cuenta</value>
+    <value>Administra la autenticación multifactor de tu cuenta</value>
   </data>
   <data name="TwoFactorCode" xml:space="preserve">
     <value>Código 2FA</value>
@@ -739,7 +739,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Autenticación de dos factores</value>
   </data>
   <data name="TfaPanelSubtitle" xml:space="preserve">
-    <value>Obtén un nuevo código de tu aplicación autenticadora o usa tu código de recuperación.</value>
+    <value>Obtén un nuevo código de tu app autenticadora o usa tu código de recuperación.</value>
   </data>
   <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
     <value>Intenta otra forma</value>
@@ -751,28 +751,28 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Obtener código</value>
   </data>
   <data name="TfaResetSharedKeyError" xml:space="preserve">
-    <value>Restablecer la clave compartida de 2fa debe deshabilitar 2fa hasta que se valide un token 2fa basado en la nueva clave compartida.</value>
+    <value>Restablecer la clave compartida 2FA debe deshabilitar 2FA hasta que se valide un token 2FA basado en la nueva clave compartida.</value>
   </data>
   <data name="TfaEmptyCodeError" xml:space="preserve">
-    <value>La solicitud no proporcionó un token 2fa. Se requiere un token 2fa válido para habilitar 2fa.</value>
+    <value>La solicitud no proporcionó un token 2FA. Se requiere un token 2FA válido para habilitar 2FA.</value>
   </data>
   <data name="TfaInvalidCodeError" xml:space="preserve">
-    <value>El token 2fa proporcionado por la solicitud era inválido. Se requiere un token 2fa válido para habilitar 2fa.</value>
+    <value>El token 2FA proporcionado por la solicitud era inválido. Se requiere un token 2FA válido para habilitar 2FA.</value>
   </data>
   <data name="TfaConfigureAutAppTitle" xml:space="preserve">
-    <value>Configurar aplicación autenticadora</value>
+    <value>Configurar app autenticadora</value>
   </data>
   <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
-    <value>Para usar una aplicación autenticadora, sigue estos pasos:</value>
+    <value>Para usar una app autenticadora, sigue estos pasos:</value>
   </data>
   <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>Descarga una aplicación autenticadora de dos factores como Google Authenticator para {0} y {1}.</value>
+    <value>Descarga una app autenticadora de dos factores como Google Authenticator para {0} y {1}.</value>
   </data>
   <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>Escanea/haz clic en el código QR o ingresa la siguiente clave en tu aplicación autenticadora de dos factores (los espacios y mayúsculas no importan):</value>
+    <value>Escanea/haz clic en el código QR o ingresa la siguiente clave en tu app autenticadora de dos factores (los espacios y mayúsculas no importan):</value>
   </data>
   <data name="TfaConfigureAutAppStep3" xml:space="preserve">
-    <value>Una vez que hayas escaneado el código QR o ingresado la clave anterior, tu aplicación de autenticación de dos factores te proporcionará un código único. Ingresa el código en el cuadro de confirmación a continuación.</value>
+    <value>Una vez que hayas escaneado el código QR o ingresado la clave anterior, tu app de autenticación de dos factores te proporcionará un código único. Ingresa el código en el cuadro de confirmación a continuación.</value>
   </data>
   <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
     <value>La autenticación de dos factores ha sido habilitada.</value>
@@ -811,7 +811,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Deberías generar un nuevo conjunto de códigos de recuperación.</value>
   </data>
   <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
-    <value>Generar nuevos códigos de recuperación no cambia las claves usadas en las aplicaciones autenticadoras. Si deseas cambiar la clave usada en una aplicación autenticadora, debes restablecer tus claves autenticadoras en la siguiente pestaña.</value>
+    <value>Generar nuevos códigos de recuperación no cambia las claves usadas en las apps autenticadoras. Si deseas cambiar la clave usada en una app autenticadora, restablece tus claves autenticadoras en la siguiente pestaña.</value>
   </data>
   <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
     <value>Generar códigos de recuperación</value>
@@ -829,10 +829,10 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Autenticador</value>
   </data>
   <data name="TfaAuthAppWarningTitle" xml:space="preserve">
-    <value>Si restableces tu clave autenticadora, tu aplicación autenticadora no funcionará hasta que la reconfigures.</value>
+    <value>Si restableces tu clave autenticadora, tu app autenticadora no funcionará hasta que la reconfigures.</value>
   </data>
   <data name="TfaAuthAppWarning" xml:space="preserve">
-    <value>Este proceso deshabilita 2FA hasta que verifiques tu aplicación autenticadora. Si no completas la configuración de tu aplicación autenticadora, podrías perder el acceso a tu cuenta.</value>
+    <value>Este proceso deshabilita 2FA hasta que verifiques tu app autenticadora. Si no completas la configuración de tu app autenticadora, podrías perder el acceso a tu cuenta.</value>
   </data>
   <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
     <value>Restablecer clave autenticadora</value>
@@ -844,7 +844,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Esta acción solo deshabilita 2FA.</value>
   </data>
   <data name="TfaDisable2faWarning" xml:space="preserve">
-    <value>Deshabilitar 2FA no cambia las claves usadas en las aplicaciones autenticadoras. Si deseas cambiar la clave usada en una aplicación autenticadora, debes restablecer tus claves autenticadoras en la pestaña anterior.</value>
+    <value>Deshabilitar 2FA no cambia las claves usadas en las apps autenticadoras. Si deseas cambiar la clave usada en una app autenticadora, restablece tus claves autenticadoras en la pestaña anterior.</value>
   </data>
   <data name="TfaDisable2faButtonText" xml:space="preserve">
     <value>Deshabilitar 2FA</value>
@@ -853,31 +853,31 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>El token 2FA ha sido generado y enviado.</value>
   </data>
   <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Por favor ingresa el token de acceso elevado que acabamos de enviarte o el código de tu aplicación autenticadora para continuar.</value>
+    <value>Ingresa el token de acceso elevado que te acabamos de enviar o el código de tu app autenticadora para continuar.</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} es tu código en Boilerplate.</value>
   </data>
   <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
-    <value>Ya solicitaste el correo de confirmación. Intenta de nuevo en {0}</value>
+    <value>Ya has solicitado el correo de confirmación. Intenta de nuevo en {0}</value>
   </data>
   <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
-    <value>Ya solicitaste el SMS de confirmación. Intenta de nuevo en {0}</value>
+    <value>Ya has solicitado el SMS de confirmación. Intenta de nuevo en {0}</value>
   </data>
   <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>Ya solicitaste el token de restablecimiento de contraseña. Intenta de nuevo en {0}</value>
+    <value>Ya has solicitado el token de restablecimiento de contraseña. Intenta de nuevo en {0}</value>
   </data>
   <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>Ya solicitaste un OTP. Intenta de nuevo en {0}</value>
+    <value>Ya has solicitado un OTP. Intenta de nuevo en {0}</value>
   </data>
   <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
-    <value>Ya solicitaste un token de acceso elevado. Intenta de nuevo en {0}</value>
+    <value>Ya has solicitado un token de acceso elevado. Intenta de nuevo en {0}</value>
   </data>
   <data name="Otp" xml:space="preserve">
     <value>OTP</value>
   </data>
   <data name="OtpPanelTitle" xml:space="preserve">
-    <value>Revisa tu {0}</value>
+    <value>Verifica tu {0}</value>
   </data>
   <data name="OtpPanelSubtitle" xml:space="preserve">
     <value>Confirma tu {0} ingresando el código enviado a {1}</value>
@@ -904,10 +904,10 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Usar OTP</value>
   </data>
   <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>Debes proporcionar contraseña o OTP</value>
+    <value>Proporciona contraseña o OTP</value>
   </data>
   <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
-    <value>Ya solicitaste el correo del token 2FA. Intenta de nuevo en {0}.</value>
+    <value>Ya has solicitado el correo del token 2FA. Intenta de nuevo en {0}.</value>
   </data>
   <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
     <value>{0} es tu código en Boilerplate.</value>
@@ -934,7 +934,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Actualizar</value>
   </data>
   <data name="ForceUpdateTitle" xml:space="preserve">
-    <value>Hora de actualizar</value>
+    <value>Hora de una actualización</value>
   </data>
   <data name="ForceUpdateBody" xml:space="preserve">
     <value>Esta actualización es requerida para mantener tu app funcionando sin problemas</value>
@@ -956,7 +956,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Buscar tarea...</value>
   </data>
   <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
-    <value>No se pudo encontrar la tarea</value>
+    <value>Elemento de tarea no encontrado</value>
   </data>
   <data name="TodoPageTitle" xml:space="preserve">
     <value>Tarea</value>
@@ -965,15 +965,15 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Tarea</value>
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
-    <value>Eliminar tarea</value>
+    <value>Eliminar elemento de tarea</value>
   </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
-    <value>No se pudo encontrar la entidad de categoría</value>
+    <value>Entidad de categoría no encontrada</value>
   </data>
   <data name="ProductCouldNotBeFound" xml:space="preserve">
-    <value>No se pudo encontrar la entidad de producto</value>
+    <value>Entidad de producto no encontrada</value>
   </data>
   <data name="Category" xml:space="preserve">
     <value>Categoría</value>
@@ -996,22 +996,22 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>de</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
-    <value>Conteo de productos últimos 30 días</value>
+    <value>Conteo de productos de los últimos 30 días</value>
   </data>
   <data name="AddProduct" xml:space="preserve">
     <value>Agregar producto</value>
   </data>
   <data name="SearchProductsPlaceholder" xml:space="preserve">
-    <value>Buscar por nombre, categoría y descripción del producto aquí...</value>
+    <value>Buscar por nombre del producto, categoría y descripción aquí...</value>
   </data>
   <data name="SelectCategory" xml:space="preserve">
     <value>Seleccionar categoría</value>
   </data>
   <data name="TotalCategories" xml:space="preserve">
-    <value>Total categorías</value>
+    <value>Total de categorías</value>
   </data>
   <data name="TotalProducts" xml:space="preserve">
-    <value>Total productos</value>
+    <value>Total de productos</value>
   </data>
   <data name="EditCategory" xml:space="preserve">
     <value>Editar categoría</value>
@@ -1023,10 +1023,10 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Categorías</value>
   </data>
   <data name="EnterCategoryName" xml:space="preserve">
-    <value>Ingresa nombre de categoría</value>
+    <value>Ingresar nombre de categoría</value>
   </data>
   <data name="EnterProductName" xml:space="preserve">
-    <value>Ingresa nombre de producto</value>
+    <value>Ingresar nombre de producto</value>
   </data>
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Categorías con conteo de productos</value>
@@ -1088,7 +1088,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
-    <value>Respuesta inválida de Google reCAPTCHA.</value>
+    <value>Respuesta de Google reCAPTCHA inválida.</value>
   </data>
   <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>Debes pasar el desafío de Google reCAPTCHA.</value>
@@ -1137,10 +1137,10 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
   </data>
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
-    <value>Panel de chat IA</value>
+    <value>Panel de chat con IA</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>¡Saludos! Estoy aquí para hacer que tu experiencia en la app sea increíble! ¿Tienes una pregunta o necesitas ayuda?</value>
+    <value>¡Saludos! Estoy aquí para hacer que tu experiencia en la app sea genial. ¿Tienes una pregunta o necesitas ayuda?</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>Abrir página de restablecimiento de contraseña y dime cómo funciona</value>
@@ -1150,15 +1150,15 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
   </data>
   <!--#if (module == "Admin") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>¡Tengo algunos comentarios que quiero compartir!</value>
+    <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
   </data>
   <!--#elif (module == "Sales") -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>¡Tengo algunos comentarios que quiero compartir!</value>
+    <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
   </data>
   <!--#else -->
   <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>¡Tengo algunos comentarios que quiero compartir!</value>
+    <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
   </data>
   <!--#endif -->
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
@@ -1167,25 +1167,25 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
   <!--#endif -->
   <!--#if (ads == true) -->
   <data name="Upgrade" xml:space="preserve">
-    <value>Actualizar</value>
+    <value>Mejorar</value>
   </data>
   <data name="UpgradeTitle" xml:space="preserve">
-    <value>Actualizar cuenta</value>
+    <value>Mejorar cuenta</value>
   </data>
   <data name="UpgradeSubtitle" xml:space="preserve">
-    <value>No hay actualización de cuenta aquí. Esto es solo una demo para anuncios de recompensa.</value>
+    <value>No hay mejora de cuenta aquí. Esto es solo una demo para anuncios de recompensa.</value>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
-    <value>Actualización de cuenta realizada exitosamente.</value>
+    <value>Mejora de cuenta realizada exitosamente.</value>
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
-    <value>Actualización de cuenta fallida.</value>
+    <value>Falla al mejorar la cuenta.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
-    <value>¿Tienes problemas para ver anuncios?</value>
+    <value>¿Tienes problemas para ver el anuncio?</value>
   </data>
   <data name="UpgradeAdHaveTroublePrompt" xml:space="preserve">
-    <value>Tengo problemas para ver anuncios en la app.</value>
+    <value>Tengo problemas para ver los anuncios en la app.</value>
   </data>
   <!--#endif -->
   <data name="PleaseWait" xml:space="preserve">
@@ -1210,7 +1210,7 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Editar grupo de usuarios</value>
   </data>
   <data name="NewRoleName" xml:space="preserve">
-    <value>Nuevo nombre de grupo de usuarios</value>
+    <value>Nombre del nuevo grupo de usuarios</value>
   </data>
   <data name="Users" xml:space="preserve">
     <value>Usuarios</value>
@@ -1225,10 +1225,10 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Cuota</value>
   </data>
   <data name="QuotaDescription" xml:space="preserve">
-    <value>Para restringir el uso de características, puedes definir cuotas en esta pestaña, que pueden variar para cada rol. Por ejemplo, el número de dispositivos en los que un usuario puede iniciar sesión o el número de veces que pueden usar una característica específica de la app.</value>
+    <value>Para restringir el uso de funciones, puedes definir cuotas en esta pestaña, que pueden variar para cada rol. Por ejemplo, el número de dispositivos en los que un usuario puede iniciar sesión o el número de veces que pueden usar una función específica de la app.</value>
   </data>
   <data name="MaxPrevilegedSessions" xml:space="preserve">
-    <value>Máximo sesiones privilegiadas</value>
+    <value>Máximo de sesiones privilegiadas</value>
   </data>
   <data name="General" xml:space="preserve">
     <value>General</value>
@@ -1278,13 +1278,13 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Dirección</value>
   </data>
   <data name="DeviceInfo" xml:space="preserve">
-    <value>Info del dispositivo</value>
+    <value>Información del dispositivo</value>
   </data>
   <data name="Privileged" xml:space="preserve">
     <value>Privilegiado</value>
   </data>
   <data name="RenewedOn" xml:space="preserve">
-    <value>Renovado el</value>
+    <value>Renovado en</value>
   </data>
   <data name="OnlineUsers" xml:space="preserve">
     <value>Usuarios en línea: {0}</value>
@@ -1308,13 +1308,13 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>¿Estás seguro de que quieres revocar todas las sesiones de {0}?</value>
   </data>
   <data name="UserCantUnassignAllSuperAdminsErrorMessage" xml:space="preserve">
-    <value>No puedes eliminar este usuario del grupo de usuarios SuperAdmin.</value>
+    <value>No puedes remover este usuario del grupo de usuarios SuperAdmin.</value>
   </data>
   <data name="UserCantChangeSuperAdminRoleClaimsErrorMessage" xml:space="preserve">
-    <value>Los permisos de super administrador no pueden ser modificados.</value>
+    <value>Los permisos de super administrador no pueden modificarse.</value>
   </data>
   <data name="CanNotChangeBuiltInRole" xml:space="preserve">
-    <value>El grupo de usuarios {0} no puede ser modificado.</value>
+    <value>El grupo de usuarios {0} no puede modificarse.</value>
   </data>
   <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>No puedes eliminar tu propio usuario</value>
@@ -1338,10 +1338,10 @@ Después de alcanzar {0}, los inicios de sesión extras tendrán funciones reduc
     <value>Buscar sesiones de usuarios</value>
   </data>
   <data name="RemoveRoleFromAllUsers" xml:space="preserve">
-    <value>Eliminar todos los usuarios del grupo de usuarios</value>
+    <value>Remover todos los usuarios del grupo de usuarios</value>
   </data>
   <data name="RemoveRoleFromAllUsersConfrimMessage" xml:space="preserve">
-    <value>¿Estás seguro de que quieres eliminar todos los usuarios de {0}?</value>
+    <value>¿Estás seguro de que quieres remover todos los usuarios de {0}?</value>
   </data>
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>URL de la página</value>

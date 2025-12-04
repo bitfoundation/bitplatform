@@ -122,7 +122,7 @@
     <value>Boilerplate {0} - Bevestig je e-mailadres</value>
   </data>
   <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
-    <value>Je ontvangt deze e-mail omdat je onlangs {0} hebt geregistreerd voor je Boilerplate-account.</value>
+    <value>Je ontvangt deze e-mail omdat je onlangs {0} hebt geregistreerd aan je Boilerplate-account.</value>
   </data>
   <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
     <value>Bevestig je e-mailadres door het onderstaande nummer in de app in te voeren.</value>
@@ -140,13 +140,13 @@
     <value>Iemand heeft een token aangevraagd om je wachtwoord te wijzigen.</value>
   </data>
   <data name="ResetPasswordBody" xml:space="preserve">
-    <value>Als jij niet de persoon bent die het wachtwoordherstel heeft aangevraagd, kun je deze e-mail negeren.</value>
+    <value>Als je niet degene bent die het wachtwoordherstel heeft aangevraagd, kun je deze e-mail negeren.</value>
   </data>
   <data name="ResetPasswordTokenMessage" xml:space="preserve">
     <value>Je kunt de onderstaande token kopiëren en invoeren op de pagina voor wachtwoordherstel.</value>
   </data>
   <data name="ResetPasswordLinkMessage" xml:space="preserve">
-    <value>Of je kunt op de volgende link klikken om je wachtwoord te proberen te herstellen.</value>
+    <value>Of je kunt op de volgende link klikken om je wachtwoord te herstellen.</value>
   </data>
   <data name="OtpEmailSubject" xml:space="preserve">
     <value>Boilerplate {0} - OTP</value>
@@ -158,7 +158,7 @@
     <value>Iemand heeft een OTP aangevraagd om in te loggen in de app.</value>
   </data>
   <data name="OtpBody" xml:space="preserve">
-    <value>Als je geen OTP hebt aangevraagd, kun je deze e-mail negeren.</value>
+    <value>Als je de OTP niet hebt aangevraagd, kun je deze e-mail negeren.</value>
   </data>
   <data name="OtpMessage" xml:space="preserve">
     <value>Je kunt de onderstaande OTP kopiëren en invoeren op de inlogpagina.</value>
@@ -182,16 +182,16 @@
     <value>Hier is je nieuwe 2FA-token om in te loggen:</value>
   </data>
   <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
-    <value>Boilerplate {0} - Verhoogd toegangs-token</value>
+    <value>Boilerplate {0} - Token voor verhoogde toegang</value>
   </data>
   <data name="ElevatedAccessTokenHello" xml:space="preserve">
     <value>Hallo beste {0}</value>
   </data>
   <data name="ElevatedAccessTokenMessage" xml:space="preserve">
-    <value>Hier is je nieuwe verhoogd toegangs-token:</value>
+    <value>Hier is je nieuwe token voor verhoogde toegang:</value>
   </data>
   <data name="CopyTokenNote" xml:space="preserve">
-    <value>Kopieer deze code en gebruik deze in de app.</value>
+    <value>Kopieer deze code en gebruik hem in de app.</value>
   </data>
   <data name="DefaultFromName" xml:space="preserve">
     <value>Boilerplate-app</value>

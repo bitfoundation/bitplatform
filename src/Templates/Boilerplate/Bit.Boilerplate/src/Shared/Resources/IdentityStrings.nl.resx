@@ -127,7 +127,7 @@
     <comment>Default identity result error message</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
-    <value>E-mail '{0}' is al in gebruik.</value>
+    <value>E-mailadres '{0}' is al in gebruik.</value>
     <comment>Error for duplicate emails</comment>
   </data>
   <data name="DuplicateRoleName" xml:space="preserve">
@@ -139,7 +139,7 @@
     <comment>Error for duplicate user names</comment>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
-    <value>E-mail '{0}' is ongeldig.</value>
+    <value>E-mailadres '{0}' is ongeldig.</value>
     <comment>Invalid email</comment>
   </data>
   <data name="InvalidRoleName" xml:space="preserve">
@@ -163,27 +163,27 @@
     <comment>Error when a password doesn't match</comment>
   </data>
   <data name="PasswordRequiresDigit" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste één cijfer ('0'-'9') bevatten.</value>
+    <value>Wachtwoorden moeten minstens één cijfer bevatten ('0'-'9').</value>
     <comment>Error when passwords do not have a digit</comment>
   </data>
   <data name="PasswordRequiresLower" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste één kleine letter ('a'-'z') bevatten.</value>
+    <value>Wachtwoorden moeten minstens één kleine letter bevatten ('a'-'z').</value>
     <comment>Error when passwords do not have a lowercase letter</comment>
   </data>
   <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste één niet-alfanumeriek teken bevatten.</value>
+    <value>Wachtwoorden moeten minstens één niet-alfanumeriek teken bevatten.</value>
     <comment>Error when password does not have enough non alphanumeric characters</comment>
   </data>
   <data name="PasswordRequiresUpper" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste één hoofdletter ('A'-'Z') bevatten.</value>
+    <value>Wachtwoorden moeten minstens één hoofdletter bevatten ('A'-'Z').</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste {0} tekens lang zijn.</value>
+    <value>Wachtwoorden moeten minstens {0} tekens lang zijn.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
   <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">
-    <value>Inwisseling van herstelcode mislukt.</value>
+    <value>Inwisselen van herstelcode mislukt.</value>
     <comment>Error when a recovery code is not redeemed.</comment>
   </data>
   <data name="UserAlreadyHasPassword" xml:space="preserve">
@@ -191,19 +191,19 @@
     <comment>Error when AddPasswordAsync called when a user already has a password</comment>
   </data>
   <data name="UserAlreadyInRole" xml:space="preserve">
-    <value>Gebruiker zit al in rol '{0}'.</value>
+    <value>Gebruiker bevindt zich al in rol '{0}'.</value>
     <comment>Error when a user is already in a role</comment>
   </data>
   <data name="UserLockoutNotEnabled" xml:space="preserve">
-    <value>Uitsluiting is niet ingeschakeld voor deze gebruiker.</value>
+    <value>Vergrendeling is niet ingeschakeld voor deze gebruiker.</value>
     <comment>Error when lockout is not enabled</comment>
   </data>
   <data name="UserNotInRole" xml:space="preserve">
-    <value>Gebruiker zit niet in rol '{0}'.</value>
+    <value>Gebruiker bevindt zich niet in rol '{0}'.</value>
     <comment>Error when a user is not in the role</comment>
   </data>
   <data name="PasswordRequiresUniqueChars" xml:space="preserve">
-    <value>Wachtwoorden moeten ten minste {0} verschillende tekens gebruiken.</value>
+    <value>Wachtwoorden moeten minstens {0} verschillende tekens bevatten.</value>
     <comment>Error message for passwords that are based on similar characters</comment>
   </data>
 </root>

@@ -119,10 +119,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>نموذج أساسي {0} - تأكيد عنوان بريدك الإلكتروني</value>
+    <value>Boilerplate {0} - تأكيد عنوان بريدك الإلكتروني</value>
   </data>
   <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
-    <value>أنت تتلقى هذا البريد الإلكتروني لأنك قمت مؤخرًا بتسجيل {0} في حسابك في النموذج الأساسي.</value>
+    <value>تلقيت هذا البريد الإلكتروني لأنك قمت مؤخرًا بتسجيل {0} في حسابك على Boilerplate.</value>
   </data>
   <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
     <value>قم بتأكيد عنوان بريدك الإلكتروني بإدخال الرقم أدناه في التطبيق.</value>
@@ -131,10 +131,10 @@
     <value>أو انقر على الرابط التالي لتأكيد عنوان البريد الإلكتروني هذا.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>نموذج أساسي {0} - إعادة تعيين كلمة المرور</value>
+    <value>Boilerplate {0} - إعادة تعيين كلمة المرور</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
-    <value>مرحبا {0}</value>
+    <value>مرحبًا {0}</value>
   </data>
   <data name="ResetPasswordSubtitle" xml:space="preserve">
     <value>لقد طلب شخص ما رمزًا لتغيير كلمة مرورك.</value>
@@ -149,10 +149,10 @@
     <value>أو يمكنك النقر على الرابط التالي لمحاولة إعادة تعيين كلمة مرورك.</value>
   </data>
   <data name="OtpEmailSubject" xml:space="preserve">
-    <value>نموذج أساسي {0} - رمز OTP</value>
+    <value>Boilerplate {0} - رمز OTP</value>
   </data>
   <data name="OtpTitle" xml:space="preserve">
-    <value>مرحبا {0}</value>
+    <value>مرحبًا {0}</value>
   </data>
   <data name="OtpSubtitle" xml:space="preserve">
     <value>لقد طلب شخص ما رمز OTP لتسجيل الدخول إلى التطبيق.</value>
@@ -167,25 +167,25 @@
     <value>أو يمكنك النقر على الرابط التالي لتسجيل الدخول.</value>
   </data>
   <data name="AppName" xml:space="preserve">
-    <value>نموذج أساسي</value>
+    <value>Boilerplate</value>
   </data>
   <data name="WelcomeToApp" xml:space="preserve">
-    <value>مرحبا بك في النموذج الأساسي!</value>
+    <value>مرحبًا بك في Boilerplate!</value>
   </data>
   <data name="TfaTokenEmailSubject" xml:space="preserve">
-    <value>نموذج أساسي {0} - رمز 2FA</value>
+    <value>Boilerplate {0} - رمز 2FA</value>
   </data>
   <data name="TfaTokenHello" xml:space="preserve">
-    <value>مرحبا عزيزي {0}</value>
+    <value>مرحبًا عزيزي {0}</value>
   </data>
   <data name="TfaTokenMessage" xml:space="preserve">
     <value>إليك رمز 2FA الجديد لتسجيل الدخول:</value>
   </data>
   <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
-    <value>نموذج أساسي {0} - رمز وصول مرتفع</value>
+    <value>Boilerplate {0} - رمز الوصول المرتفع</value>
   </data>
   <data name="ElevatedAccessTokenHello" xml:space="preserve">
-    <value>مرحبا عزيزي {0}</value>
+    <value>مرحبًا عزيزي {0}</value>
   </data>
   <data name="ElevatedAccessTokenMessage" xml:space="preserve">
     <value>إليك رمز الوصول المرتفع الجديد:</value>
@@ -194,6 +194,6 @@
     <value>انسخ هذا الرمز واستخدمه في التطبيق.</value>
   </data>
   <data name="DefaultFromName" xml:space="preserve">
-    <value>تطبيق النموذج الأساسي</value>
+    <value>تطبيق Boilerplate</value>
   </data>
 </root>

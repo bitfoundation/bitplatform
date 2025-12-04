@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 
 using Bit.ResxTranslator.Models;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 
 namespace Bit.ResxTranslator.Services;
 
@@ -17,6 +18,7 @@ public partial class Translator(ResxTranslatorSettings settings,
 {
     public async Task UpdateResxTranslations()
     {
+        // The parallel for each is beneficial for projects that have many "DIFFERENT" resx files
         await Parallel.ForEachAsync(GetResxGroups(), async (resxGroup, cancellationToken) =>
         {
             var defaultLanguageKeyValues = await DeserializeResxToDictionary(resxGroup.Path, cancellationToken);
@@ -35,37 +37,59 @@ public partial class Translator(ResxTranslatorSettings settings,
                     continue;
                 }
 
-                logger.LogInformation("Translating from {ResxGroup} to {RelatedResx}...", resxGroup.CultureInfo.Name, relatedResx.CultureInfo.Name);
+                logger.LogInformation("Translating {Count} items from {ResxGroup} to {RelatedResx}...", notTranslatedKeyValues.Count, resxGroup.CultureInfo.Name, relatedResx.CultureInfo.Name);
 
-                ChatOptions chatOptions = new()
+                const int batchSize = 250;
+                var batches = notTranslatedKeyValues
+                    .Select((kvp, index) => new { kvp, index })
+                    .GroupBy(x => x.index / batchSize)
+                    .Select(g => g.Select(x => x.kvp).ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
+                    .ToList();
+
+                logger.LogInformation("Processing {BatchCount} batches for {RelatedResx}.", batches.Count, relatedResx.CultureInfo.Name);
+
+                foreach (var (batch, batchIndex) in batches.Select((batch, index) => (batch, index)))
                 {
-                    Tools =
-                    [
-                        AIFunctionFactory.Create(() =>
-                        {
-                            return notTranslatedKeyValues.Values;
-                        }, name: "GetSourceValuesToBeTranslated", description: $"Returns [{resxGroup.CultureInfo.NativeName} - {resxGroup.CultureInfo.EnglishName}] values."),
+                    ChatOptions chatOptions = new()
+                    {
+                        ResponseFormat = ChatResponseFormat.ForJsonSchema<TranslationBatchResponse>()
+                    };
 
-                        AIFunctionFactory.Create((string[] updatedRelatedLanguageValues) =>
-                        {
-                            foreach ((string translate, int index) in updatedRelatedLanguageValues.Select((translate, index) => (translate, index)))
-                            {
-                                relatedLanguageKeyValues.Add(notTranslatedKeyValues.ElementAt(index).Key, translate);
-                            }
-                        }, name: "SaveTranslatedValues", description: $"Saves [{relatedResx.CultureInfo.NativeName} - {relatedResx.CultureInfo.EnglishName}] values.")
-                    ]
-                };
+                    configuration.GetRequiredSection("ChatOptions").Bind(chatOptions);
 
-                configuration.GetRequiredSection("ChatOptions").Bind(chatOptions);
+                    var sourceValuesJson = JsonSerializer.Serialize(batch.Values);
 
-                var _ = await chatClient.GetResponseAsync(new ChatMessage(ChatRole.System, @$"You act as a translator for software resource files.
-Your task is to retrieve the values that need translation by calling the `GetSourceValuesToBeTranslated` tool,
-which returns an array of strings in [{resxGroup.CultureInfo.NativeName} - {resxGroup.CultureInfo.EnglishName}] language.
-These strings are used in a software application and may contain placeholders such as {0}, {1}, etc.
-Translate each string to {relatedResx.CultureInfo.NativeName} language, ensuring that any placeholders are preserved exactly as they are,
-including their numbers, and are placed correctly in the translated sentence according to the target language's grammar and syntax.
+                    var messages = new List<ChatMessage>
+                    {
+                        new(ChatRole.System, @$"Act as a translator for software resource files.
+Your task is to translate strings from [{resxGroup.CultureInfo.NativeName} - {resxGroup.CultureInfo.EnglishName}] to [{relatedResx.CultureInfo.NativeName} - {relatedResx.CultureInfo.EnglishName}].
+These strings are used in a software application and may contain placeholders such as {{0}}, {{1}}, etc.
+Translate each string ensuring that any placeholders are preserved exactly as they are, including their numbers, and are placed correctly in the translated sentence according to the target language's grammar and syntax.
 The translation should be accurate and suitable for a software application context.
-After translating, call the `SaveTranslatedValues` tool and pass an array of the translated strings in the same order as the source strings."), options: chatOptions, cancellationToken: cancellationToken);
+Return the translations in the same order as the source strings."),
+                        new(ChatRole.User, $"Translate the following strings to {relatedResx.CultureInfo.NativeName}:\n\n{sourceValuesJson}")
+                    };
+
+                    var response = await chatClient.GetResponseAsync<TranslationBatchResponse>(messages, options: chatOptions, cancellationToken: cancellationToken);
+
+                    if (response.Result.Translations is null)
+                        throw new InvalidOperationException("Translation response contained no translations.");
+
+                    if (response.Result.Translations.Length != batch.Count)
+                    {
+                        throw new InvalidOperationException(
+                            $"Translation count mismatch for {Path.GetFileName(relatedResx.Path)}: " +
+                            $"expected {batch.Count} translations but received {response.Result.Translations.Length}.");
+                    }
+
+                    foreach ((string translate, int index) in response.Result.Translations.Select((translate, index) => (translate, index)))
+                    {
+                        relatedLanguageKeyValues.Add(batch.ElementAt(index).Key, translate);
+                    }
+
+                    logger.LogInformation("{ResxFileName} Batch {BatchIndex}/{TotalBatches} translated. Input Tokens: {InputTokens}, Output Tokens: {OutputTokens}.",
+                        Path.GetFileName(relatedResx.Path), batchIndex + 1, batches.Count, response.Usage?.InputTokenCount, response.Usage?.OutputTokenCount);
+                }
 
                 var defaultFileContent = await File.ReadAllTextAsync(resxGroup.Path, cancellationToken);
                 var doc = XDocument.Parse(defaultFileContent);
@@ -177,4 +201,9 @@ After translating, call the `SaveTranslatedValues` tool and pass an array of the
 
         return dictionary;
     }
+}
+
+public record TranslationBatchResponse
+{
+    public required string[] Translations { get; set; }
 }

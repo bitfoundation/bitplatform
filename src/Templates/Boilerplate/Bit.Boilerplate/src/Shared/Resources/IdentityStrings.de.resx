@@ -119,7 +119,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConcurrencyFailure" xml:space="preserve">
-    <value>Optimistische Parallelitätsfehler, Objekt wurde geändert.</value>
+    <value>Optimistischer Parallelitätskonflikt, Objekt wurde geändert.</value>
     <comment>Error when optimistic concurrency fails</comment>
   </data>
   <data name="DefaultError" xml:space="preserve">
@@ -167,7 +167,7 @@
     <comment>Error when passwords do not have a digit</comment>
   </data>
   <data name="PasswordRequiresLower" xml:space="preserve">
-    <value>Passwörter müssen mindestens ein Kleinbuchstaben ('a'-'z') enthalten.</value>
+    <value>Passwörter müssen mindestens einen Kleinbuchstaben ('a'-'z') enthalten.</value>
     <comment>Error when passwords do not have a lowercase letter</comment>
   </data>
   <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
@@ -187,7 +187,7 @@
     <comment>Error when a recovery code is not redeemed.</comment>
   </data>
   <data name="UserAlreadyHasPassword" xml:space="preserve">
-    <value>Benutzer hat bereits ein Passwort gesetzt.</value>
+    <value>Benutzer hat bereits ein Passwort festgelegt.</value>
     <comment>Error when AddPasswordAsync called when a user already has a password</comment>
   </data>
   <data name="UserAlreadyInRole" xml:space="preserve">
