@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// Provies cascading parameter values for the bit BlazorUI components.
+/// Provides cascading parameter values for the bit BlazorUI components.
 /// </summary>
 public class BitParams : ComponentBase
 {
@@ -53,14 +53,6 @@ public class BitParams : ComponentBase
         builder.AddComponentParameter(seq++, nameof(BitCascadingValueProvider.Values), values);
         builder.AddComponentParameter(seq++, nameof(BitCascadingValueProvider.ChildContent), ChildContent);
         builder.CloseComponent();
-
-
-        //var p = new BitCardParams { Background = BitColorKind.Tertiary };
-        //builder.OpenComponent<CascadingValue<BitCardParams>>(seq++);
-        //builder.AddComponentParameter(seq++, "Name", p.Name);
-        //builder.AddComponentParameter(seq++, "Value", p);
-        //builder.AddComponentParameter(seq++, "ChildContent", ChildContent);
-        //builder.CloseComponent();
 #pragma warning restore ASP0006, IL2110
 
         base.BuildRenderTree(builder);
