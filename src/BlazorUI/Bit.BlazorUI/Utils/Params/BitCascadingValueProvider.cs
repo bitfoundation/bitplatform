@@ -71,7 +71,6 @@ public class BitCascadingValueProvider : ComponentBase
             ChildContent?.Invoke(builder);
         }
 
-
         base.BuildRenderTree(builder);
     }
 
