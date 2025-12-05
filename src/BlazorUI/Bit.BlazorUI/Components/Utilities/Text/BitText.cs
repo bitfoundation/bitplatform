@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
@@ -8,6 +9,11 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitText : BitComponentBase
 {
+    [CascadingParameter(Name = BitTextParams.ParamName)]
+    public BitTextParams? CascadingParameters { get; set; }
+
+
+
     /// <summary>
     /// Sets the horizontal alignment of the text content.
     /// </summary>
@@ -125,6 +131,13 @@ public partial class BitText : BitComponentBase
                 BitTextAlign.Unset => "unset",
                 _ => "start"
             }}");
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTextParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+        base.OnParametersSet();
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
