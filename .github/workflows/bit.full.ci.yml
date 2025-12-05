@@ -85,30 +85,11 @@ jobs:
 
     - name: Build and run tests
       id: run-test-postgresql
-      continue-on-error: true
       run: |
         cd TestPostgreSQL/src/Tests
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
         dotnet test --no-build
-        WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
-        WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
-        WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest"
-
-    - name: Build and run tests
-      id: run-test-postgresql2
-      continue-on-error: true
-      run: |
-        cd TestPostgreSQL/src/Tests
-        WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
-        WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
-        WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest"
-
-    - name: Build and run tests
-      id: run-test-postgresql3
-      continue-on-error: true
-      run: |
-        cd TestPostgreSQL/src/Tests
         WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
         WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
         WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest"
