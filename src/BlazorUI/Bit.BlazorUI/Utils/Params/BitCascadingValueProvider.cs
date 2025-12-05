@@ -50,6 +50,7 @@ public class BitCascadingValueProvider : ComponentBase
 
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCascadingValue))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCascadingValueList))]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         RenderFragment current = ChildContent ?? (_ => { });

@@ -38,10 +38,13 @@ public class BitCascadingValue(object? value, string? name, bool isFixed, Type? 
 
 
     public static implicit operator BitCascadingValue(int value) => new(value);
-    public static implicit operator BitCascadingValue(int? value) => new(value);
+    public static implicit operator BitCascadingValue(int? value) => new(value, typeof(int?));
+
     public static implicit operator BitCascadingValue(bool value) => new(value);
-    public static implicit operator BitCascadingValue(bool? value) => new(value);
+    public static implicit operator BitCascadingValue(bool? value) => new(value, typeof(bool?));
+    
     public static implicit operator BitCascadingValue(string value) => new(value);
-    public static implicit operator BitCascadingValue(BitDir? value) => new(value);
+    public static implicit operator BitCascadingValue(BitDir? value) => new(value, typeof(BitDir?));
+    
     public static implicit operator BitCascadingValue(RouteData value) => new(value);
 }
