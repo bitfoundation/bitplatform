@@ -56,12 +56,15 @@ public class BitCascadingValueProvider : ComponentBase
 
         var list = Values?.ToList() ?? ValueList;
 
-        if (list is not null)
+        if (list is not null && list.Count > 0)
         {
             for (int i = list.Count - 1; i > 0; i--)
             {
                 var item = list[i];
                 var prev = current;
+
+                if (item is null) continue;
+
                 current = b => CreateCascadingValue(b, i * 5, item, prev);
             }
             CreateCascadingValue(builder, 0, list[0], current);
