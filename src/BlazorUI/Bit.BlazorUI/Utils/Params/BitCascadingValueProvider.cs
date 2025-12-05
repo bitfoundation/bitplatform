@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -24,28 +25,7 @@ public class BitCascadingValueProvider : ComponentBase
 
 
 
-    public override Task SetParametersAsync(ParameterView parameters)
-    {
-        foreach (var parameter in parameters)
-        {
-            switch (parameter.Name)
-            {
-                case nameof(ChildContent):
-                    ChildContent = (RenderFragment?)parameter.Value;
-                    break;
-
-                case nameof(Values):
-                    Values = (IEnumerable<BitCascadingValue>?)parameter.Value;
-                    break;
-
-                case nameof(ValueList):
-                    ValueList = (BitCascadingValueList?)parameter.Value;
-                    break;
-            }
-        }
-
-        return base.SetParametersAsync(ParameterView.Empty);
-    }
+    public override Task SetParametersAsync(ParameterView parameters) => base.SetParametersAsync(parameters);
 
 
 
@@ -68,7 +48,16 @@ public class BitCascadingValueProvider : ComponentBase
 
                 current = b => CreateCascadingValue(b, i * 5, item, prev);
             }
-            CreateCascadingValue(builder, 0, list[0], current);
+
+            var first = list[0];
+            if (first is not null)
+            {
+                CreateCascadingValue(builder, 0, first, current);
+            }
+            else
+            {
+                current(builder);
+            }
         }
         else
         {

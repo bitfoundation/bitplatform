@@ -23,7 +23,7 @@ public class BitCascadingValue(object? value, string? name, bool isFixed, Type? 
     /// <summary>
     /// The actual type of the value to be used as the TValue of the CascadingValue component.
     /// </summary>
-    public Type ValueType { get; } = valueType ?? value?.GetType() ?? throw new ArgumentNullException(nameof(valueType));
+    public Type ValueType { get; } = valueType ?? value?.GetType() ?? throw new ArgumentNullException("Either value must be non-null or valueType must be explicitly provided.", nameof(valueType));
 
 
 
