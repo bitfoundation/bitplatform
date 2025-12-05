@@ -86,6 +86,8 @@ jobs:
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
         dotnet test
+        WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
+        WebAppRender__BlazorMode=BlazorWebAssembly ResponseCaching__EnableOutputCaching=true dotnet test --filter "TestCategory=UITest" --no-build
 
     - name: Upload Test Results on Failure
       uses: actions/upload-artifact@v5
@@ -151,6 +153,8 @@ jobs:
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
         dotnet test
+        WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
+        WebAppRender__BlazorMode=BlazorWebAssembly ResponseCaching__EnableOutputCaching=true dotnet test --filter "TestCategory=UITest" --no-build
 
     - name: Upload Test Results on Failure
       uses: actions/upload-artifact@v5

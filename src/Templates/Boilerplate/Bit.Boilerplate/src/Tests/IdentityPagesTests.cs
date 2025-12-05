@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Tests;
 
-[TestClass]
+[TestClass, TestCategory("UITest")]
 public partial class IdentityPagesTests : PageTest
 {
     [TestMethod]
