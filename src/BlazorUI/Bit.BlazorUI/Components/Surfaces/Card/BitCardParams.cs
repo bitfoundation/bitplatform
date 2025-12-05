@@ -1,7 +1,18 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// The parameters for <see cref="BitCard"/> component.
+/// </summary>
 public class BitCardParams : IBitComponentParams
 {
+    /// <summary>
+    /// Represents the parameter name used to identify the BitCard cascading parameters within BitParams.
+    /// </summary>
+    /// <remarks>
+    /// This constant is typically used when referencing or accessing the BitCard value in
+    /// parameterized APIs or configuration settings. Using this constant helps ensure consistency and reduces the risk
+    /// of typographical errors.
+    /// </remarks>
     public const string ParamName = $"{nameof(BitParams)}.{nameof(BitCard)}";
 
 
@@ -42,8 +53,21 @@ public class BitCardParams : IBitComponentParams
 
 
 
+    /// <summary>
+    /// Updates the properties of the specified <see cref="BitCard"/> instance with any values that have been set on
+    /// this object, if those properties have not already been set on the <see cref="BitCard"/>.
+    /// </summary>
+    /// <remarks>
+    /// Only properties that have a value set and have not already been set on the <paramref name="bitCard"/> will be updated. 
+    /// This method does not overwrite existing values on <paramref name="bitCard"/>.
+    /// </remarks>
+    /// <param name="bitCard">
+    /// The <see cref="BitCard"/> instance whose properties will be updated. Cannot be null.
+    /// </param>
     public void UpdateParameters(BitCard bitCard)
     {
+        if (bitCard is null) return;
+
         if (Background.HasValue && bitCard.HasNotBeenSet(nameof(Background)))
         {
             bitCard.Background = Background.Value;
