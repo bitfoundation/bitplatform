@@ -61,6 +61,7 @@ namespace {namespaceName}
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public override async Task SetParametersAsync(ParameterView parameters)
         {{");
+        builder.AppendLine($"            __assignedParameters.Clear();");
         foreach (var par in twoWayParameters)
         {
             builder.AppendLine($"            {par.PropertySymbol.Name}HasBeenSet = false;");
