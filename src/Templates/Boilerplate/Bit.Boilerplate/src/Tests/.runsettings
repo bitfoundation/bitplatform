@@ -13,8 +13,6 @@
 
             <!-- You can override the configuration from appsettings.json for tests here. -->
             <ConnectionStrings__sqlite>Data Source=BoilerplateDb.db;Mode=Memory;Cache=Shared;</ConnectionStrings__sqlite>
-
-            <WebAppRender__BlazorMode>BlazorWebAssembly</WebAppRender__BlazorMode>
         </EnvironmentVariables>
     </RunConfiguration>
 
