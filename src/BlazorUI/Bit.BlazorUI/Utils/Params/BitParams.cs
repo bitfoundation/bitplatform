@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Provides cascading parameter values for the bit BlazorUI components.
@@ -38,6 +40,7 @@ public class BitParams : ComponentBase
 
 
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IBitComponentParams))]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         var seq = 0;
@@ -45,6 +48,8 @@ public class BitParams : ComponentBase
 
         foreach (var compParams in Parameters ?? [])
         {
+            if (compParams is null) continue;
+
             values.Add(new(compParams, compParams.Name, true));
         }
 
