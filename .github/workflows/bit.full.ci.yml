@@ -74,7 +74,6 @@ jobs:
 
     - name: Create appsettings.json for Client.Web
       run: |
-        mkdir -p TestPostgreSQL/src/Client/TestPostgreSQL.Client.Web/wwwroot
         echo '{"ServerAddress":"/"}' > TestPostgreSQL/src/Client/TestPostgreSQL.Client.Web/wwwroot/appsettings.json
 
     - name: Build and setup database
@@ -140,7 +139,6 @@ jobs:
 
     - name: Create appsettings.json for Client.Web
       run: |
-        mkdir -p TestSqlServer/src/Client/TestSqlServer.Client.Web/wwwroot
         echo '{"ServerAddress":"/"}' > TestSqlServer/src/Client/TestSqlServer.Client.Web/wwwroot/appsettings.json
 
     - name: Build and setup database
