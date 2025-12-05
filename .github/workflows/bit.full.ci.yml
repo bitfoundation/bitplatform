@@ -89,9 +89,9 @@ jobs:
         cd TestPostgreSQL/src/Tests
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-        dotnet test
-        WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest"
-        WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest"
+        dotnet test --no-build
+        WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
+        WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
         WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest"
 
     - name: Upload Test Results on Failure
@@ -161,9 +161,9 @@ jobs:
         cd TestSqlServer/src/Tests
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-        dotnet test
-        WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest"
-        WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest"
+        dotnet test --no-build
+        WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
+        WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
         WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest"
 
     - name: Upload Test Results on Failure
