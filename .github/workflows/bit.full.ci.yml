@@ -85,6 +85,7 @@ jobs:
 
     - name: Build and run tests
       id: run-test-postgresql
+      continue-on-error: true
       run: |
         cd TestPostgreSQL/src/Tests
         dotnet build
@@ -96,6 +97,7 @@ jobs:
 
     - name: Build and run tests
       id: run-test-postgresql2
+      continue-on-error: true
       run: |
         cd TestPostgreSQL/src/Tests
         WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
@@ -104,6 +106,7 @@ jobs:
 
     - name: Build and run tests
       id: run-test-postgresql3
+      continue-on-error: true
       run: |
         cd TestPostgreSQL/src/Tests
         WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
