@@ -1,26 +1,34 @@
 @page "/overview"
 @page "/components"
 
+@code {
+    private IEnumerable<IBitComponentParams> _cascadingParams = new List<IBitComponentParams>
+    {
+        new BitCardParams { Background = BitColorKind.Primary, FullWidth = true },
+        new BitTextParams { Typography = BitTypography.Body1 }
+    };
+}
+
 <PageOutlet Url="overview"
             Title="Overview"
             Description="discover bit BlazorUI at a glance, explore component categories, and jump-start a project." />
 
 
-<BitParams Parameters="@([new BitCardParams { Background = BitColorKind.Primary, FullWidth = true }])">
-    <section class="page-container">
+<section class="page-container">
+    <BitParams Parameters="_cascadingParams">
         <BitText Typography="BitTypography.H3" Gutter>bit BlazorUI</BitText>
 
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 Production-ready and Fluent-inspired components for Blazor that stay native, flexible,
                 and fast across all interactive Blazor modes (WASM, Server, Hybrid, and pre-rendering).
             </BitText>
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 Build accessible experiences with built-in theme and RTL support, and consistent APIs that fit modern scenarios.
             </BitText>
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 <ul dir="auto">
                     <li>Optimized for .NET 8.0+ with SSR-friendly styles and responsive layouts.</li>
                     <li>Light/dark themes and global design tokens ready for customization.</li>
@@ -32,9 +40,9 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Explore components</BitText>
+            <BitText Typography="BitTypography.H4" Gutter>Explore components</BitText>
             <br />
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 Choose a category to jump into usage guidance and live examples.
             </BitText>
             <br />
@@ -154,15 +162,15 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Start with the project template</BitText>
+            <BitText Typography="BitTypography.H4" Gutter>Start with the project template</BitText>
             <br />
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 Spin up a clean bit BlazorUI solution that matches the .NET 8.0+ hosting model, preconfigured for theming, SSR, and responsive layouts.
             </BitText>
 
             <br />
 
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 Install the template once:
             </BitText>
 
@@ -170,7 +178,7 @@
 
             <br />
 
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 Create your app with the default setup:
             </BitText>
 
@@ -185,12 +193,12 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Supported browsers</BitText>
+            <BitText Typography="BitTypography.H4" Gutter>Supported browsers</BitText>
             <br />
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 Verified on current versions for both desktop and mobile:
             </BitText>
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 <ul dir="auto">
                     <li>Apple Safari (current+ version)</li>
                     <li>Google Chrome (current+ version)</li>
@@ -203,12 +211,12 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Supported platforms</BitText>
+            <BitText Typography="BitTypography.H4" Gutter>Supported platforms</BitText>
             <br />
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 Blazor Hybrid apps require:
             </BitText>
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 <ul dir="auto">
                     <li>Android 7.1 (API Level 24) or higher</li>
                     <li>iOS 15 or higher</li>
@@ -221,12 +229,12 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Play on the GitHub Codespaces</BitText>
+            <BitText Typography="BitTypography.H4" Gutter>Play on the GitHub Codespaces</BitText>
             <br />
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 Launch a ready-to-use playground in the browser with all the requirements preinstalled - no local setup needed.
             </BitText>
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 Test bit BlazorUI quickly, prototype a page, or reproduce an issue before opening a PR.
             </BitText>
             <br />
@@ -239,9 +247,9 @@
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Resources</BitText>
+            <BitText Typography="BitTypography.H4" Gutter>Resources</BitText>
             <br />
-            <BitText Typography="BitTypography.Body1" Gutter>
+            <BitText Gutter>
                 <ul dir="auto">
                     <li><BitLink Target="_blank" Href="https://blazorui.bitplatform.dev">Component docs</BitLink> - API reference and guidance.</li>
                     <li><BitLink Target="_blank" Href="https://github.com/bitfoundation/bitplatform">GitHub repository</BitLink> - source, issues, and roadmap.</li>
@@ -253,5 +261,5 @@
         <br />
 
         <FeedbackSection Url="OverviewPage.razor" />
-    </section>
-</BitParams>
+    </BitParams>
+</section>
