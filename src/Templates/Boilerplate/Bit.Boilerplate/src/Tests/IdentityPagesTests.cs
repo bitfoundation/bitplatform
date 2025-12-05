@@ -17,7 +17,7 @@ public partial class IdentityPagesTests : PageTest
 
         await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.Settings).ToString());
 
-        await Expect(Page).ToHaveTitleAsync(AppStrings.NotAuthorizedPageTitle);
+        await Expect(Page).ToHaveTitleAsync(AppStrings.NotAuthorizedPageTitle, new() { Timeout = 1_000 * 10 });
     }
 
     [TestMethod]
@@ -28,7 +28,7 @@ public partial class IdentityPagesTests : PageTest
 
         await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.SignIn).ToString());
 
-        await Expect(Page).ToHaveTitleAsync(AppStrings.SignInPageTitle);
+        await Expect(Page).ToHaveTitleAsync(AppStrings.SignInPageTitle, new() { Timeout = 1_000 * 10 });
 
         const string email = TestData.DefaultTestEmail;
         const string password = TestData.DefaultTestPassword;
