@@ -15,9 +15,10 @@ public partial class IdentityPagesTests : PageTest
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
         }).Start(TestContext.CancellationToken);
 
-        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.Settings).ToString());
+        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.Settings).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle, Timeout = TimeSpan.FromSeconds(30).Milliseconds });
 
-        await Expect(Page).ToHaveTitleAsync(AppStrings.NotAuthorizedPageTitle, new() { Timeout = 1_000 * 10 });
+        await Expect(Page)
+            .ToHaveTitleAsync(AppStrings.NotAuthorizedPageTitle);
     }
 
     [TestMethod]
@@ -26,9 +27,9 @@ public partial class IdentityPagesTests : PageTest
         await using var server = new AppTestServer();
         await server.Build().Start(TestContext.CancellationToken);
 
-        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.SignIn).ToString());
+        await Page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.SignIn).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle, Timeout = TimeSpan.FromSeconds(30).Milliseconds });
 
-        await Expect(Page).ToHaveTitleAsync(AppStrings.SignInPageTitle, new() { Timeout = 1_000 * 10 });
+        await Expect(Page).ToHaveTitleAsync(AppStrings.SignInPageTitle);
 
         const string email = TestData.DefaultTestEmail;
         const string password = TestData.DefaultTestPassword;
