@@ -44,36 +44,34 @@ public class BitCardParams : IBitComponentParams
 
     public void UpdateParameters(BitCard bitCard)
     {
-        if (bitCard.CascadingParameters is null) return;
-
-        if (bitCard.CascadingParameters.Background.HasValue && bitCard.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue && bitCard.HasNotBeenSet(nameof(Background)))
         {
-            bitCard.Background = bitCard.CascadingParameters.Background.Value;
+            bitCard.Background = Background.Value;
         }
 
-        if (bitCard.CascadingParameters.Border.HasValue && bitCard.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue && bitCard.HasNotBeenSet(nameof(Border)))
         {
-            bitCard.Border = bitCard.CascadingParameters.Border.Value;
+            bitCard.Border = Border.Value;
         }
 
-        if (bitCard.CascadingParameters.FullHeight.HasValue && bitCard.HasNotBeenSet(nameof(FullHeight)))
+        if (FullHeight.HasValue && bitCard.HasNotBeenSet(nameof(FullHeight)))
         {
-            bitCard.FullHeight = bitCard.CascadingParameters.FullHeight.Value;
+            bitCard.FullHeight = FullHeight.Value;
         }
 
-        if (bitCard.CascadingParameters.FullSize.HasValue && bitCard.HasNotBeenSet(nameof(FullSize)))
+        if (FullSize.HasValue && bitCard.HasNotBeenSet(nameof(FullSize)))
         {
-            bitCard.FullSize = bitCard.CascadingParameters.FullSize.Value;
+            bitCard.FullSize = FullSize.Value;
         }
 
-        if (bitCard.CascadingParameters.FullWidth.HasValue && bitCard.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitCard.HasNotBeenSet(nameof(FullWidth)))
         {
-            bitCard.FullWidth = bitCard.CascadingParameters.FullWidth.Value;
+            bitCard.FullWidth = FullWidth.Value;
         }
 
-        if (bitCard.CascadingParameters.NoShadow.HasValue && bitCard.HasNotBeenSet(nameof(NoShadow)))
+        if (NoShadow.HasValue && bitCard.HasNotBeenSet(nameof(NoShadow)))
         {
-            bitCard.NoShadow = bitCard.CascadingParameters.NoShadow.Value;
+            bitCard.NoShadow = NoShadow.Value;
         }
     }
 }

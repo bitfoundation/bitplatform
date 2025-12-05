@@ -48,7 +48,7 @@ namespace {namespaceName}
     public partial class {className}
     {{
 ");
-        builder.AppendLine("        private List<string> __assignedParameters = new();");
+        builder.AppendLine("        private HashSet<string> __assignedParameters = new();");
         builder.AppendLine("");
         foreach (var par in twoWayParameters)
         {
