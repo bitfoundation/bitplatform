@@ -58,7 +58,7 @@ The solution is organized into the following projects. Understand their roles to
 
 ## 4. Available Tooling
 
--   **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` and `riok/mapperly` repositories.
+-   **DeepWiki**: Provides access to an extensive knowledge base for open source repositories.
 -   **Website Fetcher**: Gathers information from URLs provided by the user, using `fetch` or `get_web_pages` tools.
 -   **Microsoft Learn**: Provides access to official Microsoft documentation and code samples for Azure, .NET Aspire, .NET MAUI, Entity Framework Core, SignalR, Microsoft.Extensions.AI, SQL Server, and other Microsoft technologies. Use `microsoft_docs_search` to find relevant documentation and `microsoft_code_sample_search` to find official code examples.
 
@@ -77,6 +77,7 @@ Before writing code, investigate thoroughly.
 *   For UI-related tasks, you **MUST** first ask `DeepWiki`: *"What features does BitPlatform offer to help me complete this task? [USER'S ORIGINAL REQUEST]"*
 *   For anything related to `Bit.BlazorUI`, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit project template, you **MUST** use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform` to find relevant information.
 *   For mapper/mapping entity/dto related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns focusing on its static classes and extension methods approach.
+*   For KeyCloak/realm related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `keycloak/keycloak` to find relevant information.
 *   **🚨 CRITICAL TOOL REQUIREMENT**: You **MUST** verify that you have access to the `DeepWiki_ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message:
 **❌ CRITICAL ERROR: DeepWiki_ask_question Tool Not Available**
 
