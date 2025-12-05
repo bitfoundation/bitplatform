@@ -72,6 +72,10 @@ jobs:
     - name: Create project from template with PostgreSQL
       run: dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR --aspire
 
+    - name: Create appsettings.json for Client.Web
+      run: |
+        echo '{"ServerAddress":"/"}' > TestPostgreSQL/src/Client/TestPostgreSQL.Client.Web/wwwroot/appsettings.json
+
     - name: Build and setup database
       run: |
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
@@ -85,7 +89,10 @@ jobs:
         cd TestPostgreSQL/src/Tests
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-        dotnet test
+        dotnet test --no-build
+        WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
+        WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
+        WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest"
 
     - name: Upload Test Results on Failure
       uses: actions/upload-artifact@v5
@@ -130,6 +137,10 @@ jobs:
     - name: Create project from template with SQL Server
       run: dotnet new bit-bp --name TestSqlServer --database SqlServer --module Admin --signalR --aspire false
 
+    - name: Create appsettings.json for Client.Web
+      run: |
+        echo '{"ServerAddress":"/"}' > TestSqlServer/src/Client/TestSqlServer.Client.Web/wwwroot/appsettings.json
+
     - name: Build and setup database
       run: |
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
@@ -150,7 +161,9 @@ jobs:
         cd TestSqlServer/src/Tests
         dotnet build
         pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
-        dotnet test
+        dotnet test --no-build
+        WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
+        WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
 
     - name: Upload Test Results on Failure
       uses: actions/upload-artifact@v5
