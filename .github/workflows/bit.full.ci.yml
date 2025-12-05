@@ -72,9 +72,9 @@ jobs:
     - name: Create project from template with PostgreSQL
       run: dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR --aspire
 
-    - name: Create appsettings.json for Client.Web
-      run: |
-        echo '{"ServerAddress":"/"}' > TestPostgreSQL/src/Client/TestPostgreSQL.Client.Web/wwwroot/appsettings.json
+    # - name: Create appsettings.json for Client.Web
+    #   run: |
+    #     echo '{"ServerAddress":"/"}' > TestPostgreSQL/src/Client/TestPostgreSQL.Client.Web/wwwroot/appsettings.json
 
     - name: Build and setup database
       run: |
@@ -137,9 +137,9 @@ jobs:
     - name: Create project from template with SQL Server
       run: dotnet new bit-bp --name TestSqlServer --database SqlServer --module Admin --signalR --aspire false
 
-    - name: Create appsettings.json for Client.Web
-      run: |
-        echo '{"ServerAddress":"/"}' > TestSqlServer/src/Client/TestSqlServer.Client.Web/wwwroot/appsettings.json
+    # - name: Create appsettings.json for Client.Web
+    #   run: |
+    #     echo '{"ServerAddress":"/"}' > TestSqlServer/src/Client/TestSqlServer.Client.Web/wwwroot/appsettings.json
 
     - name: Build and setup database
       run: |
