@@ -21,7 +21,7 @@
 
         <BitCard>
             <BitText Gutter>
-                Follow these steps to install the library, import the namespace, add the shared styles/scripts, 
+                Follow these steps to install the library, import the namespace, add the shared styles/scripts,
                 and make sure updates reach your users without cache hiccups.
             </BitText>
         </BitCard>
@@ -36,7 +36,9 @@
             <BitText Gutter>
                 <b>bit BlazorUI</b> ships as the
                 <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI/"
-                         Target="_blank">Bit.BlazorUI</BitLink>
+                         Target="_blank">
+                    Bit.BlazorUI
+                </BitLink>
                 NuGet package. Install it with any of the options below:
             </BitText>
 
@@ -69,7 +71,10 @@
                     <b>Extra components</b>: if you want to use the Extra components (like <b>BitChart</b>)
                     you need to add the
                     <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras/"
-                             Target="_blank">Bit.BlazorUI.Extras</BitLink> package:
+                             Target="_blank">
+                        Bit.BlazorUI.Extras
+                    </BitLink>
+                    package:
                 </BitText>
 
                 <CodeBox>dotnet add package Bit.BlazorUI.Extras</CodeBox>
@@ -84,7 +89,10 @@
                     <b>Optional assets</b>: if you need the asset files of the bit BlazorUI (like <b>Segoe UI</b>
                     font for non-Windows clients) you need to add the
                     <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets/"
-                             Target="_blank">Bit.BlazorUI.Assets</BitLink> package:
+                             Target="_blank">
+                        Bit.BlazorUI.Assets
+                    </BitLink>
+                    package:
                 </BitText>
 
                 <CodeBox>dotnet add package Bit.BlazorUI.Assets</CodeBox>
@@ -99,7 +107,10 @@
                     <b>Icon pack</b>: if you want to use the Fabric Icons of the bit BlazorUI (using <b>BitIconName</b> class)
                     you need to add the
                     <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Icons/"
-                             Target="_blank">Bit.BlazorUI.Icons</BitLink> package:
+                             Target="_blank">
+                        Bit.BlazorUI.Icons
+                    </BitLink>
+                    package:
                 </BitText>
 
                 <CodeBox>dotnet add package Bit.BlazorUI.Icons</CodeBox>
@@ -184,7 +195,7 @@
             <BitText Gutter>
                 You need to make sure you've implemented a proper <b>cache busting strategy</b> for all resources mentioned above.
                 Otherwise users will encounter issues related to cached versions of resources after you update the bit BlazorUI in your project.
-                
+
                 <br /><br />
 
                 On .NET 9 or later you can simply use the new <BitTag>@@Assets[""]</BitTag> feature to
@@ -198,7 +209,7 @@
                 <CodeBox>&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=@@Bit.BlazorUI.Info.Version">&lt;/script></CodeBox>
 
                 <b>Note</b>: You can only use this feature in the <BitTag>App.razor</BitTag> file,
-                for other root files (like <BitTag>index.html</BitTag> in a WASM standalone project) 
+                for other root files (like <BitTag>index.html</BitTag> in a WASM standalone project)
                 you have to apply another solution, for example manually adding the version query string to the resource URLs.
             </BitText>
 
@@ -210,7 +221,12 @@
 
                     <br />
 
-                    The <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets/" Target="_blank">Bit.BlazorUI.Assets</BitLink> package provides two
+                    The
+                    <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets/"
+                             Target="_blank">
+                        Bit.BlazorUI.Assets
+                    </BitLink>
+                    package provides two
                     standalone components designed for automatic fingerprinting in the <BitTag>App.razor</BitTag> file:
                 </BitText>
 
