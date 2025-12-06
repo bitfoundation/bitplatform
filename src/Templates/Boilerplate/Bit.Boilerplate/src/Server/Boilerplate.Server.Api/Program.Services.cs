@@ -636,7 +636,7 @@ public static partial class Program
         }
 
         // While Google, GitHub, Twitter(X), Apple and AzureAD needs configuration in their corresponding developer portals,
-        // the following OpenID Connect configuration would connect to your own KeyCloak, Auth0, Okta, Duende IdentityServer, etc.
+        // the following OpenID Connect configuration would connect to your own Keycloak, Auth0, Okta, Duende IdentityServer, etc.
         if (builder.Environment.IsDevelopment())
         {
             authenticationBuilder.AddOpenIdConnect("IdentityServerDemo", options =>
