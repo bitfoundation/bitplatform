@@ -200,9 +200,10 @@
 
                 <br /><br />
 
-                The <BitTag>bit BlazorUI</BitTag> has also a built-in feature (<BitTag>Bit.BlazorUI.Info.Version</BitTag>) 
-                to easily resolve the cache issues. using this feature you can simply add
-                a version query string to the url of the above resources like this:
+                
+                The <BitTag>bit BlazorUI</BitTag> also has a built-in feature (<BitTag>Bit.BlazorUI.Info.Version</BitTag>) 
+                to help resolve cache issues. Using this feature, you can add
+                a version query string to the URL of the above resources like this:
 
                 <CodeBox>&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=@@Bit.BlazorUI.Info.Version">&lt;/script></CodeBox>
 
@@ -247,7 +248,7 @@
                 <br /><br />
 
                 <BitText>
-                    <b>Link</b>: a direct replacement for the standard HTML <BitTag>&lt;Link></BitTag> tag.
+                    <b>Link</b>: a direct replacement for the standard HTML <BitTag>&lt;link></BitTag> tag.
                     It automatically fingerprints the resource URL (the <BitTag>href</BitTag> attribute) by
                     generating a hash from the actual file content, providing consistent cache busting and version management.
                 </BitText>
@@ -263,7 +264,7 @@
                 <br /><br />
 
                 <BitText>
-                    <b>Note</b>: You can checkout the usages of these two components in our demo website project
+                    <b>Note</b>: You can check out the usages of these two components in our demo website project
                     <BitLink Target="_blank"
                              Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Components/App.razor">
                         here
