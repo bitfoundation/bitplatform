@@ -153,7 +153,7 @@
 
             <BitAccordion Title="Optional steps">
                 <BitText>
-                    <b>Extra components</b>: if you are using the <BitTag>Extras</BitTag>
+                    <b>Extra components</b>: if you are using the <BitTag>Bit.BlazorUI.Extras</BitTag>
                     package you also need to add these css and js files:
                 </BitText>
 
@@ -189,8 +189,9 @@
             <br />
 
             <BitText Gutter>
-                You need to make sure you've implemented a proper <b>cache busting strategy</b> for all resources mentioned above.
-                Otherwise users will encounter issues related to cached versions of resources after you update the bit BlazorUI in your project.
+                You need to make sure you've implemented a proper <b>cache busting strategy</b> 
+                for all resources mentioned above. Otherwise users will encounter issues related 
+                to cached versions of resources after you update the bit BlazorUI in your project.
 
                 <br /><br />
 
@@ -199,7 +200,8 @@
 
                 <br /><br />
 
-                The bit BlazorUI has also a built-in feature to easily resolve the cache issues. using this feature you can simply add
+                The <BitTag>bit BlazorUI</BitTag> has also a built-in feature (<BitTag>Bit.BlazorUI.Info.Version</BitTag>) 
+                to easily resolve the cache issues. using this feature you can simply add
                 a version query string to the url of the above resources like this:
 
                 <CodeBox>&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=@@Bit.BlazorUI.Info.Version">&lt;/script></CodeBox>
