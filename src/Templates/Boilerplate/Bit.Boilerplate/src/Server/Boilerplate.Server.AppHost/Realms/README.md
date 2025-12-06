@@ -1,10 +1,10 @@
-# KeyCloak Realm Configuration
+# Keycloak Realm Configuration
 
-This directory contains KeyCloak realm configuration files that set up authentication and authorization for the Boilerplate application.
+This directory contains Keycloak realm configuration files that set up authentication and authorization for the Boilerplate application.
 
 ## Overview
 
-The `demo-realm.json` file defines a KeyCloak realm with pre-configured clients, users, roles, and security settings. This allows the Boilerplate application to demonstrate enterprise Single Sign-On (SSO) functionality using KeyCloak as an OpenID Connect identity provider.
+The `demo-realm.json` file defines a Keycloak realm with pre-configured clients, users, roles, and security settings. This allows the Boilerplate application to demonstrate enterprise Single Sign-On (SSO) functionality using Keycloak as an OpenID Connect identity provider.
 
 ## Realm Features
 
@@ -36,13 +36,6 @@ The realm supports multiple languages for localized user interfaces:
 | `bob` | BobSmith@email.com | `bob` | Standard User | Basic realm user with default permissions |
 | `test` | test@bitplatform.dev | `123456` | Super Admin | Administrative user with elevated privileges |
 
-### 🛡️ Role Structure
-
-#### Realm Roles
-- **`s-admin`**: Super Administrator role with elevated privileges for administrative operations
-- **`offline_access`**: Default role for offline token access
-- **`uma_authorization`**: User-Managed Access authorization role
-
 ### 🔗 Client Configuration
 
 #### Interactive Confidential Client
@@ -58,7 +51,6 @@ The realm supports multiple languages for localized user interfaces:
 - **`email`**: Email address and verification status
 - **`api`**: Custom API access scope for protected resources
 - **`offline_access`**: Refresh token support
-- **`roles`**: User role information in tokens
 
 ### ⚙️ Token Configuration
 
@@ -71,19 +63,19 @@ The realm supports multiple languages for localized user interfaces:
 
 ## Integration with Boilerplate
 
-The KeyCloak realm integrates seamlessly with the Boilerplate application through:
+The Keycloak realm integrates seamlessly with the Boilerplate application through:
 
-1. **Aspire Integration**: Automatically starts KeyCloak container with realm import
+1. **Aspire Integration**: Automatically starts Keycloak container with realm import
 2. **Environment Configuration**: Connects via `KEYCLOAK_HTTP` environment variable
 3. **OpenID Connect**: Uses standard OIDC flows for authentication
-4. **Token Validation**: JWT tokens validated against KeyCloak's public keys
+4. **Token Validation**: JWT tokens validated against Keycloak's public keys
 5. **User Mapping**: Claims automatically mapped to application user properties
 
 ## Development Usage
 
 When running the Boilerplate application with Aspire:
 
-1. **KeyCloak starts automatically** on port 8080
+1. **Keycloak starts automatically** on port 8080
 2. **Realm is imported** from this JSON file
 3. **Users are immediately available** for testing
 4. **Admin Console**: Access at `http://localhost:8080` (admin/P@ssw0rd)

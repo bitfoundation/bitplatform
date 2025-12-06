@@ -133,8 +133,7 @@
             "requiredActions": [],
             "realmRoles": [
                 "offline_access",
-                "uma_authorization",
-                "s-admin"
+                "uma_authorization"
             ],
             "notBefore": 0,
             "groups": []
@@ -154,14 +153,6 @@
                 "id": "uma_authorization",
                 "name": "uma_authorization",
                 "description": "${role_uma_authorization}",
-                "composite": false,
-                "clientRole": false,
-                "containerId": "demo"
-            },
-            {
-                "id": "s-admin-role-id",
-                "name": "s-admin",
-                "description": "Super Administrator role with elevated privileges",
                 "composite": false,
                 "clientRole": false,
                 "containerId": "demo"

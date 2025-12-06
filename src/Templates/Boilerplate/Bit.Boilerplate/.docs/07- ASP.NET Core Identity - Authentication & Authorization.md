@@ -132,12 +132,12 @@ You can easily configure SSO with:
 - **Twitter** - Social authentication
 - **Apple** - Sign in with Apple
 - **Facebook** - Social media authentication
-- **Duende Identity Server / KeyCloak** - OpenID Connect provider
+- **Duende Identity Server / Keycloak** - OpenID Connect provider
 - And many other OAuth/OpenID Connect providers
 
 #### Enterprise SSO
 
-The project is configured to connect to a **KeyCloak (If URL provided) or Duende Identity Server (A public demo server) instance** to demonstrate how external OpenID Connect providers work.
+The project is configured to connect to a **Keycloak (If URL provided) or Duende Identity Server (A public demo server) instance** to demonstrate how external OpenID Connect providers work.
 
 #### Configuration
 
