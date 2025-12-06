@@ -650,7 +650,7 @@ public static partial class Program
                 }
                 else
                 {
-                    // If no configuration found, use public demo duende identity server (No license required)
+                    // If no configuration found, use public demo Duende IdentityServer (No license required)
                     options.Authority = "https://demo.duendesoftware.com";
                 }
 
