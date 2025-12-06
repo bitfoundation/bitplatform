@@ -646,7 +646,7 @@ public static partial class Program
                 if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
                 {
                     // Keycloak requires the full authority URL including the realm
-                    options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/demo"; // Checkout src/Server/Boilerplate.Server.AppHost/Realms/demo.json
+                    options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/demo"; // Checkout src/Server/Boilerplate.Server.AppHost/Realms/demo-realm.json
                 }
                 else
                 {
