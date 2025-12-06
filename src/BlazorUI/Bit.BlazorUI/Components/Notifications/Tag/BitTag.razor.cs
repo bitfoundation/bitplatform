@@ -1,10 +1,17 @@
-﻿namespace Bit.BlazorUI;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Tag component provides a visual representation of an attribute, person, or asset.
 /// </summary>
 public partial class BitTag : BitComponentBase
 {
+    [CascadingParameter(Name = BitTagParams.ParamName)]
+    public BitTagParams? CascadingParameters { get; set; }
+
+
+
     /// <summary>
     /// Child content of component, the content that the tag will apply to.
     /// </summary>
@@ -120,6 +127,23 @@ public partial class BitTag : BitComponentBase
 
 
 
+    /// <summary>
+    /// Applies values from an optional cascading BitTagParams instance to this component and then invokes the base parameter handling.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTagParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
+    }
+
+
+
+    /// <summary>
+    /// Invokes the dismiss event callback if the tag is enabled.
+    /// </summary>
+    /// <param name="e">Mouse event data for the dismiss click.</param>
     private async Task HandleOnDismissClick(MouseEventArgs e)
     {
         if (IsEnabled)
