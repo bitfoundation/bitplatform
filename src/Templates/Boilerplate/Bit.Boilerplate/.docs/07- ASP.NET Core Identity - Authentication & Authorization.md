@@ -132,12 +132,12 @@ You can easily configure SSO with:
 - **Twitter** - Social authentication
 - **Apple** - Sign in with Apple
 - **Facebook** - Social media authentication
-- **Duende Identity Server / KeyCloak** - OpenID Connect provider (demo included)
+- **Duende Identity Server / Keycloak** - OpenID Connect provider
 - And many other OAuth/OpenID Connect providers
 
-#### Demo Provider
+#### Enterprise SSO
 
-By default, the project is configured to connect to a **demo Duende Identity Server 8 instance** to demonstrate how external OpenID Connect providers work. The implementation is in [`IdentityController.SocialSignIn.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.SocialSignIn.cs).
+The project is configured to connect to a **Keycloak (If URL provided) or Duende Identity Server (A public demo server) instance** to demonstrate how external OpenID Connect providers work.
 
 #### Configuration
 

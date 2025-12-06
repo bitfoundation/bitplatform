@@ -635,15 +635,24 @@ public static partial class Program
             });
         }
 
-        // While Google, GitHub, Twitter(X), Apple and AzureAD needs account creation in their corresponding developer portals,
-        // and configuring the client ID and secret, the following OpenID Connect configuration is for Duende IdentityServer demo server,
-        // which is a public server that allows you to test Social sign-in feature without needing to configure anything.
-        // Note: The following demo server doesn't require licensing and you can use the same approach to connect your project to KeyCloak server.
+        // While Google, GitHub, Twitter(X), Apple and AzureAD needs configuration in their corresponding developer portals,
+        // the following OpenID Connect configuration would connect to your own Keycloak, Auth0, Okta, Duende IdentityServer, etc.
         if (builder.Environment.IsDevelopment())
         {
             authenticationBuilder.AddOpenIdConnect("IdentityServerDemo", options =>
             {
-                options.Authority = "https://demo.duendesoftware.com";
+                var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"]; // Boilerplate.Server.AppHost (Aspire) would pass this value automatically,
+                                                                      // you could also use your own Keycloak URL here.
+                if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
+                {
+                    // Keycloak requires the full authority URL including the realm
+                    options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/demo"; // Checkout src/Server/Boilerplate.Server.AppHost/Realms/demo-realm.json
+                }
+                else
+                {
+                    // If no configuration found, use public demo Duende IdentityServer (No license required)
+                    options.Authority = "https://demo.duendesoftware.com";
+                }
 
                 options.ClientId = "interactive.confidential";
                 options.ClientSecret = "secret";
@@ -653,7 +662,7 @@ public static partial class Program
                 options.Scope.Clear();
                 options.Scope.Add("openid");
                 options.Scope.Add("profile");
-                options.Scope.Add("api");
+                options.Scope.Add("api"); // Custom API access scope for accessing protected resources
                 options.Scope.Add("offline_access");
                 options.Scope.Add("email");
 
