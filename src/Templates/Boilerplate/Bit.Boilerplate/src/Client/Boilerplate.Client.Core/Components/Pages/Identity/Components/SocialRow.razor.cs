@@ -33,5 +33,5 @@ public partial class SocialRow
     private async Task HandleApple() => await OnClick.InvokeAsync("Apple");
     private async Task HandleAzureAD() => await OnClick.InvokeAsync("AzureAD");
     private async Task HandleFacebook() => await OnClick.InvokeAsync("Facebook");
-    private async Task HandleIdentityServerDemo() => await OnClick.InvokeAsync("IdentityServerDemo");
+    private async Task HandleEnterpriseSso() => await OnClick.InvokeAsync("EnterpriseSso");
 }

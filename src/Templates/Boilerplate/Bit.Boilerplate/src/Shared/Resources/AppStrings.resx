@@ -633,8 +633,8 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AppleSignInButtonText" xml:space="preserve">
     <value>Sign in with Apple</value>
   </data>
-    <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
-    <value>Sign in with Test server</value>
+    <data name="EnterpriseSsoSignInButtonText" xml:space="preserve">
+    <value>Sign in with Enterprise SSO</value>
   </data>
     <data name="AzureEntraSignInButtonText" xml:space="preserve">
     <value>Sign in with Azure Entra</value>

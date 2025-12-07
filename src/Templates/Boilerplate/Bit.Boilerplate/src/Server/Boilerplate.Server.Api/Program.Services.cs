@@ -398,6 +398,12 @@ public static partial class Program
             //#endif
         });
 
+        services.AddHttpClient("Keycloak", c =>
+        {
+            c.BaseAddress = new Uri(configuration["KEYCLOAK_HTTP"] ?? throw new InvalidOperationException("KEYCLOAK_HTTP configuration is required"));
+            c.DefaultRequestVersion = HttpVersion.Version11;
+        });
+
         services.AddFido2(options =>
         {
 
@@ -637,16 +643,23 @@ public static partial class Program
 
         // While Google, GitHub, Twitter(X), Apple and AzureAD needs configuration in their corresponding developer portals,
         // the following OpenID Connect configuration would connect to your own Keycloak, Auth0, Okta, Duende IdentityServer, etc.
+        // It has been enabled only for dev environment, until you prepare your own production ready Keycloak server.
         if (builder.Environment.IsDevelopment())
         {
-            authenticationBuilder.AddOpenIdConnect("IdentityServerDemo", options =>
+            authenticationBuilder.AddOpenIdConnect("EnterpriseSso", options =>
             {
+                configuration.GetRequiredSection("Authentication:EnterpriseSso").Bind(options);
+
                 var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"]; // Boilerplate.Server.AppHost (Aspire) would pass this value automatically,
                                                                       // you could also use your own Keycloak URL here.
                 if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
                 {
-                    // Keycloak requires the full authority URL including the realm
-                    options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/demo"; // Checkout src/Server/Boilerplate.Server.AppHost/Realms/demo-realm.json
+                    // The user would sign-in using Keycloak, just like other providers such as Google.
+                    // IdentityController.SocialSignIn's SocialSignInCallback would store refresh token provided by Keycloak
+                    // Laster, AppUserClaimsPrincipalFactory would use the refresh token to retrieve claims (roles etc) from Keycloak.
+                    // This allows seamless integration with Keycloak, that way you could manage users, roles and claims from Keycloak admin console.
+                    // Checkout src/Server/Boilerplate.Server.AppHost/Realms/README.md for more information.
+                    options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/demo";
                 }
                 else
                 {
@@ -654,22 +667,19 @@ public static partial class Program
                     options.Authority = "https://demo.duendesoftware.com";
                 }
 
-                options.ClientId = "interactive.confidential";
-                options.ClientSecret = "secret";
                 options.ResponseType = "code";
                 options.ResponseMode = "query";
 
                 options.Scope.Clear();
                 options.Scope.Add("openid");
                 options.Scope.Add("profile");
-                options.Scope.Add("api"); // Custom API access scope for accessing protected resources
-                options.Scope.Add("offline_access");
                 options.Scope.Add("email");
+                options.Scope.Add("offline_access"); // To get refresh tokens
+                options.Scope.Add("api"); // Sample API scope
 
-                options.MapInboundClaims = false;
+                options.MapInboundClaims = true;
                 options.GetClaimsFromUserInfoEndpoint = true;
                 options.SaveTokens = true;
-                options.DisableTelemetry = true;
 
                 options.Prompt = "login"; // Force login every time
 

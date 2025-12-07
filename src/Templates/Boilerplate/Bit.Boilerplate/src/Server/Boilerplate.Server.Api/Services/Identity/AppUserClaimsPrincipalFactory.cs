@@ -1,8 +1,10 @@
-﻿using Boilerplate.Server.Api.Models.Identity;
+﻿using System.IdentityModel.Tokens.Jwt;
+using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Services.Identity;
 
-public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsService, UserManager<User> userManager, RoleManager<Role> roleManager, IOptions<IdentityOptions> optionsAccessor)
+public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsService, UserManager<User> userManager, RoleManager<Role> roleManager,
+        IOptions<IdentityOptions> optionsAccessor, IConfiguration configuration, IServiceProvider serviceProvider)
     : UserClaimsPrincipalFactory<User, Role>(userManager, roleManager, optionsAccessor)
 {
     /// <summary>
@@ -20,7 +22,61 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
                 result.AddClaim(sessionClaim);
         }
 
+        await RetrieveKeycloakClaims(user, result);
+
         return result;
+    }
+
+    /// <summary>
+    /// Retrieves additional claims from Keycloak and adds them to the user's claims.
+    /// </summary>
+    private async Task RetrieveKeycloakClaims(User user, ClaimsIdentity result)
+    {
+        var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"];
+        if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
+        {
+            var keycloakRefreshToken = await UserManager.GetAuthenticationTokenAsync(user, "EnterpriseSso", "refresh_token");
+            if (string.IsNullOrEmpty(keycloakRefreshToken) is false)
+            {
+                var keycloakTokenExpiryDate = DateTimeOffset.Parse(await UserManager.GetAuthenticationTokenAsync(user, "EnterpriseSso", "expires_at") ?? throw new InvalidOperationException("expires_at token is missing"));
+                var keycloakAccessToken = await UserManager.GetAuthenticationTokenAsync(user, "EnterpriseSso", "access_token") ?? throw new InvalidOperationException("access_token token is missing");
+                if (DateTimeOffset.UtcNow >= keycloakTokenExpiryDate)
+                {
+                    var httpClient = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("Keycloak");
+                    var refreshRequestPayload = new FormUrlEncodedContent(new Dictionary<string, string>
+                    {
+                        { "grant_type", "refresh_token" },
+                        { "client_id", configuration["Authentication:EnterpriseSso:ClientId"]! },
+                        { "client_secret", configuration["Authentication:EnterpriseSso:ClientSecret"]! },
+                        { "refresh_token", keycloakRefreshToken }
+                    });
+                    using var response = await httpClient.PostAsync($"realms/demo/protocol/openid-connect/token", refreshRequestPayload);
+                    if (response.IsSuccessStatusCode is false)
+                    {
+                        var errorDetails = await response.Content.ReadFromJsonAsync<Dictionary<string, object?>>();
+                        if (errorDetails?.Any(i => i.Key == "error" && i.Value?.ToString() is "invalid_grant") is true)
+                            throw new UnauthorizedException(errorDetails["error_description"]!.ToString()!).WithData(errorDetails);
+                        throw new InvalidOperationException("Failed to refresh Keycloak access token").WithData(errorDetails ?? []);
+                    }
+                    var responseBody = await response.Content.ReadFromJsonAsync<JsonElement>();
+                    keycloakAccessToken = responseBody!.GetProperty("access_token").GetString();
+                }
+                var handler = new JwtSecurityTokenHandler();
+                var parsedKeycloakAccessToken = handler.ReadJwtToken(keycloakAccessToken);
+                var keycloakClaims = parsedKeycloakAccessToken.Claims
+                    .Select(claim => new Claim(
+                        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.TryGetValue(claim.Type, out var mapped)
+                            ? mapped
+                            : claim.Type,
+                        claim.Value))
+                    .ToList();
+
+                foreach (var claim in keycloakClaims)
+                {
+                    result.AddClaim(claim);
+                }
+            }
+        }
     }
 
     /// <summary>

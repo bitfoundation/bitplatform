@@ -11,10 +11,10 @@
         }
         else
         {
-            @if (supportedProviders.Contains("IdentityServerDemo"))
+            @if (supportedProviders.Contains("EnterpriseSso"))
             {
-                <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleIdentityServerDemo)" Title="@Localizer[AppStrings.IdentityServerDemoSignInButtonText]">
-                    <IdentityServerDemoIcon />
+                <SocialButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleEnterpriseSso)" Title="@Localizer[AppStrings.EnterpriseSsoSignInButtonText]">
+                    <EnterpriseSsoIcon />
                 </SocialButton>
             }
             @if (supportedProviders.Contains("Google"))

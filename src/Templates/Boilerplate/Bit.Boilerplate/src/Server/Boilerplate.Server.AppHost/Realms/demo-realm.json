@@ -331,33 +331,20 @@
                 "display.on.consent.screen": "true",
                 "consent.screen.text": "${rolesScopeConsentText}"
             },
+
             "protocolMappers": [
                 {
-                    "id": "client-roles-mapper",
-                    "name": "client roles",
-                    "protocol": "openid-connect",
-                    "protocolMapper": "oidc-usermodel-client-role-mapper",
-                    "consentRequired": false,
-                    "config": {
-                        "user.attribute": "foo",
-                        "access.token.claim": "true",
-                        "claim.name": "resource_access.${client_id}.roles",
-                        "jsonType.label": "String",
-                        "multivalued": "true"
-                    }
-                },
-                {
-                    "id": "realm-roles-mapper",
-                    "name": "realm roles",
+                    "name": "realm roles mapper",
                     "protocol": "openid-connect",
                     "protocolMapper": "oidc-usermodel-realm-role-mapper",
                     "consentRequired": false,
                     "config": {
-                        "user.attribute": "foo",
-                        "access.token.claim": "true",
-                        "claim.name": "realm_access.roles",
+                        "claim.name": "roles",
                         "jsonType.label": "String",
-                        "multivalued": "true"
+                        "multivalued": "true",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "userinfo.token.claim": "true"
                     }
                 }
             ]

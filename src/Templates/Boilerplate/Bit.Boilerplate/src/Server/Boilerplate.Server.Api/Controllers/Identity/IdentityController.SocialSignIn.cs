@@ -87,6 +87,24 @@ public partial class IdentityController
                 await userManager.UpdateAsync(user);
             }
 
+            // Using these tokens (if provided by external provider) for further API calls to the provider on behalf of the user.
+            // Example: Getting more profile data from the provider, posting on behalf of the user or getting user claims updates, etc.
+            var accessToken = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "access_token")?.Value;
+            var refreshToken = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "refresh_token")?.Value;
+            var expiresAt = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "expires_at")?.Value;
+            if (string.IsNullOrEmpty(refreshToken) is false)
+            {
+                await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "refresh_token", refreshToken);
+            }
+            if (string.IsNullOrEmpty(accessToken) is false)
+            {
+                await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "access_token", accessToken);
+            }
+            if (string.IsNullOrEmpty(expiresAt) is false)
+            {
+                await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "expires_at", expiresAt);
+            }
+
             (_, signInPageUri) = await GenerateAutomaticSignInLink(user, returnUrl, originalAuthenticationMethod: "Social"); // Sign in with a magic link, and 2FA will be prompted if already enabled.
         }
         catch (Exception exp)
@@ -101,7 +119,7 @@ public partial class IdentityController
 
         var redirectRelativeUrl = $"{PageUrls.WebInteropApp}?actionName=SocialSignInCallback&url={Uri.EscapeDataString(signInPageUri!)}&localHttpPort={localHttpPort}";
 
-        if (localHttpPort is not null) 
+        if (localHttpPort is not null)
             return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), redirectRelativeUrl).ToString()); // Check out Client.web/wwwroot/web-interop-app.html's comments.
 
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), redirectRelativeUrl).ToString());

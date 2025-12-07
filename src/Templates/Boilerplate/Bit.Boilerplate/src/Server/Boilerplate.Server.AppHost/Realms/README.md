@@ -30,11 +30,11 @@ The realm supports multiple languages for localized user interfaces:
 
 ### 👥 Pre-configured Users
 
-| Username | Email | Password | Role | Description |
+| Username | Email | Password |
 |----------|-------|----------|------|-------------|
-| `alice` | AliceSmith@email.com | `alice` | Standard User | Basic realm user with default permissions |
-| `bob` | BobSmith@email.com | `bob` | Standard User | Basic realm user with default permissions |
-| `test` | test@bitplatform.dev | `123456` | Super Admin | Administrative user with elevated privileges |
+| `alice` | AliceSmith@email.com | `alice` |
+| `bob` | BobSmith@email.com | `bob` |
+| `test` | test@bitplatform.dev | `123456` |
 
 ### 🔗 Client Configuration
 
@@ -49,7 +49,7 @@ The realm supports multiple languages for localized user interfaces:
 - **`openid`**: Core OpenID Connect identity
 - **`profile`**: User profile information (name, username)
 - **`email`**: Email address and verification status
-- **`api`**: Custom API access scope for protected resources
+- **`api`**: Sample API scope
 - **`offline_access`**: Refresh token support
 
 ### ⚙️ Token Configuration
@@ -79,6 +79,7 @@ When running the Boilerplate application with Aspire:
 2. **Realm is imported** from this JSON file
 3. **Users are immediately available** for testing
 4. **Admin Console**: Access at `http://localhost:8080` (admin/P@ssw0rd)
+Note: Keycloak's admin panel opens master realm by default; switch to `demo` realm to manage users.
 
 ## Security Notes
 
@@ -89,7 +90,7 @@ For production deployments:
 - Restrict redirect URIs to specific domains
 - Use proper SSL certificates
 - Configure appropriate session timeouts
-- Enable additional security features (2FA, account lockout policies)
+- Enable additional security features for admin user (e.g., 2FA)
 - Review and minimize granted permissions
 - Use strong client secrets and rotate them regularly
 - Enable SMTP server
