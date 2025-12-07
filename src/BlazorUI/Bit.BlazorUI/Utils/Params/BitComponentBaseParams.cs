@@ -100,7 +100,9 @@ public abstract class BitComponentBaseParams
         {
             foreach (var attr in HtmlAttributes)
             {
-                bitComponentBase.HtmlAttributes.Add(attr.Key, attr.Value);
+                if (bitComponentBase.HtmlAttributes.ContainsKey(attr.Key)) continue;
+
+                bitComponentBase.HtmlAttributes[attr.Key] = attr.Value;
             }
         }
 
