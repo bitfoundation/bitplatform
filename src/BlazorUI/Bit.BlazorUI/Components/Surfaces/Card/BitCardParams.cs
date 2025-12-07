@@ -3,15 +3,16 @@
 /// <summary>
 /// The parameters for <see cref="BitCard"/> component.
 /// </summary>
-public class BitCardParams : IBitComponentParams
+public class BitCardParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the BitCard cascading parameters within BitParams.
     /// </summary>
     /// <remarks>
     /// This constant is typically used when referencing or accessing the BitCard value in
-    /// parameterized APIs or configuration settings. Using this constant helps ensure consistency and reduces the risk
-    /// of typographical errors.
+    /// parameterized APIs or configuration settings.
+    /// <br />
+    /// Using this constant helps ensure consistency and reduces the risk of typographical errors.
     /// </remarks>
     public const string ParamName = $"{nameof(BitParams)}.{nameof(BitCard)}";
 
@@ -67,6 +68,8 @@ public class BitCardParams : IBitComponentParams
     public void UpdateParameters(BitCard bitCard)
     {
         if (bitCard is null) return;
+
+        UpdateBaseParameters(bitCard);
 
         if (Background.HasValue && bitCard.HasNotBeenSet(nameof(Background)))
         {

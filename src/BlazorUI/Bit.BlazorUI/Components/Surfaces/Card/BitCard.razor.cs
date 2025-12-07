@@ -7,6 +7,14 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitCard : BitComponentBase
 {
+    /// <summary>
+    /// Gets or sets the cascading parameters for the card component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple card components through the <see cref="BitParams"/> component.
+    /// </remarks>
     [CascadingParameter(Name = BitCardParams.ParamName)]
     public BitCardParams? CascadingParameters { get; set; }
 
