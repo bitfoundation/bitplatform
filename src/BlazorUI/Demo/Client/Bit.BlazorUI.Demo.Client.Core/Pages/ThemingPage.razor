@@ -232,7 +232,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
             <br />
 
             <BitText>
-                In bit BlazorUI you can use the system theme as the default theme when the app starts up.
+                Using bit BlazorUI, you can use the system theme as the default theme when the app starts up.
                 <br />
                 In order to enable this feature a specific attribute named
                 <BitTag>bit-theme-system</BitTag> should be added to the <BitTag>html</BitTag> tag:
@@ -251,9 +251,9 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
             <br />
 
             <BitText>
-                In bit BlazorUI you can use persist the current theme in the local storage.
+                Using bit BlazorUI, you can persist the current theme in the local storage.
                 <br />
-                In order to enable this feature a specific attribute named
+                To enable this feature a specific attribute named
                 <BitTag>bit-theme-persist</BitTag> should be added to the <BitTag>html</BitTag> tag:
             </BitText>
 
@@ -270,7 +270,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
             <br />
 
             <BitText>
-                In bit BlazorUI you can change the default theme which is <BitTag>light</BitTag> using a specific attribute named
+                Using bit BlazorUI, you can change the default theme which is <BitTag>light</BitTag> using a specific attribute named
                 <BitTag>bit-theme-default</BitTag> on the <BitTag>html</BitTag> tag:
             </BitText>
 
@@ -287,7 +287,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
             <br />
 
             <BitText>
-                In bit BlazorUI the default name of the available themes are <BitTag>light</BitTag> and <BitTag>dark</BitTag>.
+                In bit BlazorUI, the default name of the available themes are <BitTag>light</BitTag> and <BitTag>dark</BitTag>.
                 you can change these default names using the following attributes on the <BitTag>html</BitTag> tag:
             </BitText>
 
@@ -304,7 +304,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
             <br />
 
             <BitText>
-                In bit BlazorUI the <BitTag>BitCss</BitTag> class is available to access theme related CSS classes & variables in C#.
+                In bit BlazorUI, the <BitTag>BitCss</BitTag> class is available to access theme related CSS classes & variables in C#.
                 <br />
                 You can use different properties of this class to further customize your UI:
             </BitText>
@@ -340,7 +340,7 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
             <br />
 
             <BitText>
-                In bit BlazorUI the <BitTag>BitThemeProvider</BitTag> component is available to further customize the Theme.
+                In bit BlazorUI, the <BitTag>BitThemeProvider</BitTag> component is available to further customize the Theme.
                 <br />
                 You can wrap any elements with the <BitTag>BitThemeProvider</BitTag> component and assign an instance of <BitTag>BitTheme</BitTag> to it:
             </BitText>
@@ -404,45 +404,49 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
             <br />
 
             <BitText>
-                bit BlazorUI also has a JavaScript API through <BitTag>BitTheme</BitTag> javascript object
+                bit BlazorUI has a rather extensive JavaScript API through <BitTag>BitTheme</BitTag> javascript object
                 to customize the UI of the app even further.
                 <br />
                 The differnet functions available in this object are as follows:
             </BitText>
 
-            <br />
+            <br /><br />
+
+            <BitText>
+                <b>get</b>: gets the current theme.
+            </BitText>
 
             <CodeBox Language="js">const currentTheme = BitTheme.get();</CodeBox>
 
-            <BitText>
-                Gets the current theme.
-            </BitText>
-
             <br /><br />
+            
+            <BitText>
+                <b>set</b>: sets the current theme.
+            </BitText>
 
             <CodeBox Language="js">BitTheme.set('dark');</CodeBox>
 
-            <BitText>
-                Sets the current theme.
-            </BitText>
-
             <br /><br />
+
+            <BitText>
+                <b>toggleDarkLight</b>: toggles the current theme between dark & light.
+            </BitText>
 
             <CodeBox Language="js">BitTheme.toggleDarkLight();</CodeBox>
 
-            <BitText>
-                Toggles the current theme between dark & light.
-            </BitText>
-
             <br /><br />
+
+            <BitText>
+                <b>useSystem</b>: uses the current theme of the system (dark or light) as the app theme.
+            </BitText>
 
             <CodeBox Language="js">BitTheme.useSystem();</CodeBox>
 
-            <BitText>
-                Uses the current theme of the system (dark or light) as the app theme.
-            </BitText>
-
             <br /><br />
+
+            <BitText>
+                <b>onChange</b>: an event that fires when the current theme changes.
+            </BitText>
 
             <CodeBox Language="js">BitTheme.onChange((newTheme, oldTheme) => {
     if (newTheme.includes('dark')) {
@@ -452,28 +456,28 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
     }
 });</CodeBox>
 
-            <BitText>
-                An event that fires when the current theme changes.
-            </BitText>
-
             <br /><br />
 
-            <CodeBox Language="js">BitTheme.applyBitTheme({ '--bit-clr-pri': '#1A86D8' }, myElement)</CodeBox>
-
             <BitText>
-                Applies an instance of BitTheme to the specified or body element just like the
+                <b>applyBitTheme</b>: applies an instance of BitTheme to the specified element or the body element, just like the
                 <BitTag>ApplyBitThemeAsync</BitTag> method of the <BitTag>BitThemeManager</BitTag>.
             </BitText>
 
+            <CodeBox Language="js">BitTheme.applyBitTheme({ '--bit-clr-pri': '#1A86D8' }, myElement)</CodeBox>
+
             <br /><br />
+
+            <BitText>
+                <b>isSystemDark</b>: checks if the current theme of the system is dark.
+            </BitText>
 
             <CodeBox Language="js">BitTheme.isSystemDark();</CodeBox>
 
-            <BitText>
-                Checks if the current theme of the system is dark.
-            </BitText>
-
             <br /><br />
+
+            <BitText>
+                <b>init</b>: initializes the BitTheme object using the provided options.
+            </BitText>
 
             <CodeBox Language="js">BitTheme.init({
     system: true,
@@ -490,10 +494,6 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
         }
     }
 });</CodeBox>
-
-            <BitText>
-                Initializes the BitTheme object using the provided options.
-            </BitText>
         </BitCard>
 
         <br />
