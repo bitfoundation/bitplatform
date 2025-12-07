@@ -7,6 +7,14 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitTag : BitComponentBase
 {
+    /// <summary>
+    /// Gets or sets the cascading parameters for the tag component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple tag components through the <see cref="BitParams"/> component.
+    /// </remarks>
     [CascadingParameter(Name = BitTagParams.ParamName)]
     public BitTagParams? CascadingParameters { get; set; }
 

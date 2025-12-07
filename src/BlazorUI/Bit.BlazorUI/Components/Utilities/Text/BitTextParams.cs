@@ -3,7 +3,7 @@
 /// <summary>
 /// The parameters for <see cref="BitText"/> component.
 /// </summary>
-public class BitTextParams : IBitComponentParams
+public class BitTextParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the BitText cascading parameters within BitParams.
@@ -78,6 +78,8 @@ public class BitTextParams : IBitComponentParams
     public void UpdateParameters(BitText bitText)
     {
         if (bitText is null) return;
+
+        UpdateBaseParameters(bitText);
 
         if (Align.HasValue && bitText.HasNotBeenSet(nameof(Align)))
         {

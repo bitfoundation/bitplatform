@@ -3,10 +3,10 @@
 /// <summary>
 /// The parameters for <see cref="BitTag"/> component.
 /// </summary>
-public class BitTagParams : IBitComponentParams
+public class BitTagParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
-    /// Represents the parameter name used to identify the BitTag cascading parameters within BitParams.
+    /// Represents the parameter name used to identify the <see cref="BitTag"/> cascading parameters within <see cref="BitParams"/>.
     /// </summary>
     /// <remarks>
     /// This constant is typically used when referencing or accessing the BitTag value in
@@ -77,6 +77,8 @@ public class BitTagParams : IBitComponentParams
     public void UpdateParameters(BitTag bitTag)
     {
         if (bitTag is null) return;
+
+        UpdateBaseParameters(bitTag);
 
         if (Classes is not null && bitTag.HasNotBeenSet(nameof(Classes)))
         {

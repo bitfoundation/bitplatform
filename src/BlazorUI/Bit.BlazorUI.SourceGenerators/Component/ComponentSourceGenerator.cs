@@ -48,7 +48,7 @@ namespace {namespaceName}
     public partial class {className}
     {{
 ");
-        builder.AppendLine("        private HashSet<string> __assignedParameters = new();");
+        builder.AppendLine("        private readonly HashSet<string> __assignedParameters = [];");
         builder.AppendLine("");
         foreach (var par in twoWayParameters)
         {
@@ -85,7 +85,7 @@ namespace {namespaceName}
             var varName = $"@{paramName.ToLower()}";
             var paramType = sym.Type.ToDisplayString();
             builder.AppendLine($"                    case nameof({paramName}):");
-            builder.AppendLine($"                       __assignedParameters.Add(nameof({paramName})); ");
+            builder.AppendLine($"                       __assignedParameters.Add(nameof({paramName}));");
             if (par.IsTwoWayBound)
             {
                 builder.AppendLine($"                       {paramName}HasBeenSet = true;");
