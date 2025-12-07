@@ -1,52 +1,85 @@
-﻿@page "/iconography"
+@page "/iconography"
+
+@code {
+    private IEnumerable<IBitComponentParams> _cascadingParams = new List<IBitComponentParams>
+    {
+        new BitCardParams { Background = BitColorKind.Primary, FullWidth = true, Style = "padding: 1.5rem" },
+        new BitTextParams { Typography = BitTypography.Body1 },
+        new BitTagParams { Color = BitColor.TertiaryBackground },
+    };
+}
 
 <PageOutlet Url="iconography"
             Title="Iconography"
             Description="iconography of the bit blazorui components" />
 
-<div class="page-container">
-    <BitText Typography="BitTypography.H3" Class="title">Iconography</BitText>
-    <section class="page-section">
-        <BitText Typography="BitTypography.Body1">
-            bit BlazorUI has traditionally used a custom font for its iconography. This font is part of the MDL2 design system and contains glyphs that you can scale, color, and style in any way.
-        </BitText>
-    </section>
-    <section class="page-section">
-        <BitText Typography="BitTypography.Body1">
-            <b>Note:</b> To use these Icons, you need to add the <b>Bit.BlazorUI.Icons</b> nuget package to your project as described in the Optional steps of the <BitLink Href="/getting-started">Getting started</BitLink> page.
-        </BitText>
-    </section>
-    <section class="page-section">
-        <BitText Typography="BitTypography.H4" Gutter>Icon list</BitText>
-        <BitText Typography="BitTypography.Caption1" Gutter Element="div">
-            <b>Note</b>: click on an icon to copy its name to clipboard.
-        </BitText>
-        <BitSearchBox Immediate
-                      DebounceTime="300"
-                      OnClear="HandleClear"
-                      OnChange="HandleChange"
-                      Placeholder="Search icons"
-                      IconName="@BitIconName.Search"
-                      Class="iconography-search-box" />
-        <div class="icon-list">
-            @if (filteredIcons.Count == 0)
-            {
-                <div class="empty-list">
-                    <BitText Typography="BitTypography.H4">No result</BitText>
-                </div>
-            }
-            else
-            {
-                foreach (var icon in filteredIcons)
-                {
-                    <div class="icon-box" @onclick="async () => await CopyToClipboard(icon)">
-                        <i class="bit-icon bit-icon--iconography bit-icon--@icon"></i>
-                        <span class="icon-name">@icon</span>
-                    </div>
-                }
-            }
-        </div>
-    </section>
+<section class="page-container">
+    <BitParams Parameters="_cascadingParams">
+        <BitText Typography="BitTypography.H3">Iconography</BitText>
 
-    <FeedbackSection Url="IconographyPage.razor" />
-</div>
+        <br />
+
+        <BitText Typography="BitTypography.H6">
+            bit BlazorUI is using a custom font for icons of its components.
+            This font is part of the MDL2 design system (Office UI fabric icons) and contains glyphs that you can scale, color, and style in any way.
+        </BitText>
+
+        <br /><br />
+
+        <BitCard>
+            <BitText>
+                <b>Note:</b> To use these Icons, you need to add the <BitTag>Bit.BlazorUI.Icons</BitTag> nuget package to your project
+                as described in the Optional steps of the <BitLink Href="/getting-started">Getting started</BitLink> page.
+            </BitText>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4" Gutter>Icon list</BitText>
+
+            <br />
+
+            <BitText Typography="BitTypography.Caption1" Gutter Element="div">
+                <b>Note</b>: click on an icon to copy its name to clipboard.
+            </BitText>
+
+            <BitSearchBox Immediate
+                          DebounceTime="300"
+                          OnClear="HandleClear"
+                          OnChange="HandleChange"
+                          Placeholder="Search icons"
+                          IconName="@BitIconName.Search"
+                          Class="iconography-search-box" />
+
+            <br />
+
+            <BitScrollablePane Height="23rem" OverflowX="BitOverflow.Hidden" Modern>
+                <BitStack Horizontal Wrap FitHeight Gap="1rem">
+                    @if (filteredIcons.Count == 0)
+                    {
+                        <BitText Typography="BitTypography.H6">No result</BitText>
+                    }
+                    else
+                    {
+                        foreach (var icon in filteredIcons)
+                        {
+                            <BitStack Gap="0.5rem" Class="icon-box"
+                                      Alignment="BitAlignment.Center"
+                                      @onclick="async () => await CopyToClipboard(icon)">
+                                <BitIcon IconName="@icon" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
+                                <BitText Class="icon-name" Typography="BitTypography.Caption1">
+                                    @icon
+                                </BitText>
+                            </BitStack>
+                        }
+                    }
+                </BitStack>
+            </BitScrollablePane>
+        </BitCard>
+
+        <br />
+
+        <FeedbackSection Url="IconographyPage.razor" />
+    </BitParams>
+</section>
