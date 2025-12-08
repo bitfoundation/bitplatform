@@ -568,7 +568,7 @@ public partial class BitButtonDemo
         {
             Id = "link-rels",
             Name = "BitLinkRels",
-            Description = "",
+            Description = "The rel attribute defines the relationship between a linked resource and the current document.",
             Items =
             [
                 new()

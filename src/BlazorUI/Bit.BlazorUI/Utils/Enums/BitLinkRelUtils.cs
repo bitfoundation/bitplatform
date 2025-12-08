@@ -2,7 +2,7 @@
 
 internal class BitLinkRelUtils
 {
-    internal static BitLinkRels[] AllRels = Enum.GetValues<BitLinkRels>();
+    internal static readonly BitLinkRels[] AllRels = Enum.GetValues<BitLinkRels>();
 
     internal static string GetRels(BitLinkRels rel)
     {
