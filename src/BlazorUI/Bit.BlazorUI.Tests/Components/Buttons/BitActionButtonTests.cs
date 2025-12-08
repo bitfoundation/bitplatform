@@ -39,12 +39,12 @@ public class BitActionButtonTests : BunitTestContext
     ]
     public void BitActionButtonIconTest(string iconName)
     {
-        var componnet = RenderComponent<BitActionButton>(parameters =>
+        var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.IconName, iconName);
         });
 
-        var icon = componnet.Find(".bit-icon");
+        var icon = component.Find(".bit-icon");
 
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
     }
@@ -161,11 +161,10 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(true, true),
-        DataRow(false, false),
-        DataRow(null, false)
+        DataRow(true),
+        DataRow(false),
     ]
-    public void BitActionButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
+    public void BitActionButtonAriaHiddenTest(bool ariaHidden)
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
@@ -174,7 +173,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var button = component.Find(".bit-acb");
 
-        Assert.AreEqual(expectedResult, button.HasAttribute("aria-hidden"));
+        Assert.AreEqual(ariaHidden, button.HasAttribute("aria-hidden"));
     }
 
     [TestMethod,
@@ -521,24 +520,20 @@ public class BitActionButtonTests : BunitTestContext
 
         var button = component.Find(".bit-acb");
 
-        Assert.IsTrue(button.TextContent.Contains(content));
+        Assert.Contains(content, button.TextContent);
     }
 
-    [TestMethod, Ignore]
-    public void BitActionButtonShouldRespectArbitraryHtmlAttributes()
+    [TestMethod,
+        DataRow("data-value", "ID-123"),
+        DataRow("aria-test", "this is test")
+    ]
+    public void BitActionButtonShouldRespectArbitraryHtmlAttributes(string name, string value)
     {
-        const string dataTestId = "acb-1";
-
-        var component = RenderComponent<BitActionButton>(parameters =>
-        {
-            parameters.AddUnmatched("data-test-id", dataTestId);
-            parameters.AddUnmatched("aria-live", "polite");
-        });
+        var component = RenderComponent<BitActionButton>((name, value));
 
         var button = component.Find(".bit-acb");
 
-        Assert.AreEqual(dataTestId, button.GetAttribute("data-test-id"));
-        Assert.AreEqual("polite", button.GetAttribute("aria-live"));
+        Assert.AreEqual(value, button.GetAttribute(name));
     }
 
     [TestMethod]
@@ -647,6 +642,51 @@ public class BitActionButtonTests : BunitTestContext
 
         Assert.IsTrue(button.ClassList.Contains("bit-dis"));
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--Delete"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonRelShouldUpdateWhenHrefChanges()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev/docs");
+            parameters.Add(p => p.Rel, BitLinkRels.NoOpener | BitLinkRels.NoReferrer);
+        });
+
+        var anchor = component.Find(".bit-acb");
+
+        Assert.AreEqual("noopener noreferrer", anchor.GetAttribute("rel"));
+
+        component.SetParametersAndRender(parameters => parameters.Add(p => p.Href, "#section-one"));
+
+        anchor = component.Find(".bit-acb");
+        Assert.IsFalse(anchor.HasAttribute("rel"));
+
+        component.SetParametersAndRender(parameters => parameters.Add(p => p.Href, "/resources"));
+
+        anchor = component.Find(".bit-acb");
+        Assert.AreEqual("noopener noreferrer", anchor.GetAttribute("rel"));
+    }
+
+    [TestMethod,
+        DataRow("5"),
+        DataRow("50"),
+    ]
+    public void BitActionButtonTabIndexShouldRecoverAfterReEnable(string tabIndex)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.TabIndex, tabIndex);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual("-1", button.GetAttribute("tabindex"));
+
+        component.SetParametersAndRender(parameters => parameters.Add(p => p.IsEnabled, true));
+
+        Assert.AreEqual(tabIndex, button.GetAttribute("tabindex"));
     }
 
 

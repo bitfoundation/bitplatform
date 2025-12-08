@@ -205,14 +205,9 @@ public partial class BitActionButton : BitComponentBase
 
     protected override void OnParametersSet()
     {
-        if (IsEnabled is false)
-        {
-            _tabIndex = AllowDisabledFocus ? null : "-1";
-        }
-        else
-        {
-            _tabIndex = TabIndex ?? _tabIndex;
-        }
+        _tabIndex = IsEnabled
+            ? TabIndex
+            : AllowDisabledFocus ? TabIndex : "-1";
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
