@@ -103,7 +103,7 @@ public partial class DemoPage
             Name = "UniqueId",
             Type = "Guid",
             DefaultValue = "Guid.NewGuid()",
-            Description = "The readonly unique id of the root element. it will be assigned to a new Guid at component instance construction.",
+            Description = "Gets the readonly unique identifier for the component's root element, assigned when the component instance is constructed.",
         },
         new()
         {
