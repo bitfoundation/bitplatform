@@ -1,4 +1,4 @@
-﻿@page "/components/actionbutton"
+@page "/components/actionbutton"
 @page "/components/action-button"
 
 <PageOutlet Url="components/actionbutton"
@@ -12,36 +12,47 @@
           SubEnums="componentSubEnums"
           GitHubUrl="Buttons/ActionButton/BitActionButton.razor"
           GitHubDemoUrl="Buttons/ActionButton/BitActionButtonDemo.razor">
+
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>Explore the core features of the BitActionButton to get a feel for its baseline behavior.</div>
+        
         <br />
+
         <BitActionButton IconName="@BitIconName.AddFriend">
             Create account
         </BitActionButton>
+
         <br />
-        <BitActionButton IconPosition="BitIconPosition.End" IconName="@BitIconName.AddFriend">
-            End Icon
-        </BitActionButton>
-        <br />
+
         <BitActionButton IconName="@BitIconName.AddFriend" IsEnabled="false">
             Disabled
         </BitActionButton>
+        
         <br />
+        
         <BitActionButton IconName="@BitIconName.AlarmClock" AriaLabel="Call">
             AriaLabel
         </BitActionButton>
+        
         <br />
+        
         <BitActionButton>
             No Icon
         </BitActionButton>
+        
         <br />
+        
         <BitActionButton IconOnly IconName="@BitIconName.Phone">
         </BitActionButton>
     </DemoExample>
 
     <DemoExample Title="IconPosition" RazorCode="@example2RazorCode" Id="example2">
         <div>Pick where the icon sits relative to the content: leave it at the start (default) or move it to the end without changing your content order.</div>
+
+        <div>Using the <b>IconPosition</b> parameter and <BitLink Href="#icon-position-enum">BitIconPosition</BitLink> enum as its value:</div>
+        
         <br />
+
         <div class="example-content">
             <BitActionButton IconPosition="BitIconPosition.Start" IconName="@BitIconName.AddFriend">
                 Start (default)
@@ -54,8 +65,10 @@
     </DemoExample>
 
     <DemoExample Title="Href" RazorCode="@example3RazorCode" Id="example3">
-        <div>Turn ActionButton into a link and choose whether it opens in the current tab or a new one.</div>
+        <div>Turn BitActionButton into a link using the <b>Href</b> parameter, and choose whether it opens in the current tab or a new one.</div>
+        
         <br />
+        
         <div class="example-content">
             <BitActionButton IconName="@BitIconName.Globe" Href="https://bitplatform.dev" Target="_blank">
                 Open bitplatform.dev in a new tab
@@ -68,21 +81,28 @@
     </DemoExample>
 
     <DemoExample Title="Rel" RazorCode="@example4RazorCode" Id="example4">
-        <div>Attach rel attribute values (e.g., nofollow, noreferrer) when using ActionButton as an external link.</div>
+        <div>Attach rel attribute values (e.g., nofollow, noreferrer) when using BitActionButton as an external link.</div>
+
+        <div>The actual <b>rel</b> attribute value is generated using the provided <BitLink Href="#link-rels">BitLinkRels</BitLink> and Href value.</div>
+        
         <br />
+        
         <div class="example-content">
-            <BitActionButton Rel="BitLinkRel.NoFollow" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe">
+            <BitActionButton Rel="BitLinkRels.NoFollow" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe">
                 Open bitplatform.dev with a rel attribute (nofollow)
             </BitActionButton>
 
-            <BitActionButton Rel="BitLinkRel.NoFollow | BitLinkRel.NoReferrer" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe">
+            <BitActionButton Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe">
                 Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
             </BitActionButton>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Template" RazorCode="@example5RazorCode" Id="example5">
-        <div>Drop richer content inside ActionButton with a custom template (text plus spinner in this example).</div><br />
+    <DemoExample Title="Rich content" RazorCode="@example5RazorCode" Id="example5">
+        <div>You can put richer content inside BitActionButton with a custom template (text plus spinner in this example).</div>
+        
+        <br />
+        
         <div class="example-content">
             <BitActionButton IconName="@BitIconName.AddFriend">
                 <div style="display:flex;gap:0.5rem;">
@@ -95,7 +115,9 @@
 
     <DemoExample Title="ButtonType" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>See submit/reset/button types in action inside a validated form.</div>
+        
         <br />
+        
         <div class="form-container">
             @if (formIsValidSubmit is false)
             {
@@ -104,16 +126,22 @@
 
                     <BitTextField Label="Required" Required @bind-Value="buttonValidationModel.RequiredText" />
                     <ValidationMessage For="() => buttonValidationModel.RequiredText" style="color:red" />
+                    
                     <br />
-                    <BitTextField Label="Nonrequired" @bind-Value="buttonValidationModel.NonRequiredText" />
+
+                    <BitTextField Label="Non-required" @bind-Value="buttonValidationModel.NonRequiredText" />
+                    
                     <br />
+                    
                     <div>
                         <BitActionButton IconName="@BitIconName.SendMirrored" ButtonType="BitButtonType.Submit">
                             Submit
                         </BitActionButton>
+
                         <BitActionButton IconName="@BitIconName.Reset" ButtonType="BitButtonType.Reset">
                             Reset
                         </BitActionButton>
+
                         <BitActionButton IconName="@BitIconName.ButtonControl" ButtonType="BitButtonType.Button">
                             Button
                         </BitActionButton>
@@ -131,11 +159,15 @@
 
     <DemoExample Title="FullWidth" RazorCode="@example7RazorCode" Id="example7">
         <div>Stretch buttons or align content by combining FullWidth and an end-positioned icon.</div>
+        
         <br />
+
         <BitActionButton FullWidth IconName="@BitIconName.NavigationFlipper">
             FullWidth
         </BitActionButton>
+        
         <br />
+        
         <BitActionButton FullWidth IconPosition="BitIconPosition.End" IconName="@BitIconName.Forward">
             FullWidth with end icon
         </BitActionButton>
@@ -143,158 +175,211 @@
 
     <DemoExample Title="Color" RazorCode="@example8RazorCode" Id="example8">
         <div>Preview the predefined colors of the BitActionButton for icon and text, from primary through warning/error, and the background/foreground/border sets.</div>
+        
+        <div>Using the <b>Color</b> parameter and its value of type <BitLink Href="#color-enum">BitColor</BitLink> enum:</div>
+
         <br />
+        
         <div>
             <div class="example-content">
                 <BitActionButton Color="BitColor.Primary" IconName="@BitIconName.ColorSolid">
                     Primary
                 </BitActionButton>
+
                 <BitActionButton Color="BitColor.Primary">
                     Primary
                 </BitActionButton>
             </div>
+            
             <br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.Secondary" IconName="@BitIconName.ColorSolid">
                     Secondary
                 </BitActionButton>
+
                 <BitActionButton Color="BitColor.Secondary">
                     Secondary
                 </BitActionButton>
             </div>
+            
             <br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.Tertiary" IconName="@BitIconName.ColorSolid">
                     Tertiary
                 </BitActionButton>
+
                 <BitActionButton Color="BitColor.Tertiary">
                     Tertiary
                 </BitActionButton>
             </div>
+            
             <br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.Info" IconName="@BitIconName.ColorSolid">
                     Info
                 </BitActionButton>
+
                 <BitActionButton Color="BitColor.Info">
                     Info
                 </BitActionButton>
             </div>
+            
             <br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.Success" IconName="@BitIconName.ColorSolid">
                     Success
                 </BitActionButton>
+
                 <BitActionButton Color="BitColor.Success">
                     Success
                 </BitActionButton>
             </div>
+            
             <br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.Warning" IconName="@BitIconName.ColorSolid">
                     Warning
                 </BitActionButton>
+
                 <BitActionButton Color="BitColor.Warning">
                     Warning
                 </BitActionButton>
             </div>
+            
             <br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.SevereWarning" IconName="@BitIconName.ColorSolid">
                     SevereWarning
                 </BitActionButton>
+            
                 <BitActionButton Color="BitColor.SevereWarning">
                     SevereWarning
                 </BitActionButton>
             </div>
+            
             <br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.Error" IconName="@BitIconName.ColorSolid">
                     Error
                 </BitActionButton>
+            
                 <BitActionButton Color="BitColor.Error">
                     Error
                 </BitActionButton>
             </div>
+            
             <br /><br />
+            
             <div style="background:var(--bit-clr-fg-ter);padding:1rem">
                 <div class="example-content">
                     <BitActionButton Color="BitColor.PrimaryBackground" IconName="@BitIconName.ColorSolid">
                         PrimaryBackground
                     </BitActionButton>
+
                     <BitActionButton Color="BitColor.PrimaryBackground">
                         PrimaryBackground
                     </BitActionButton>
                 </div>
+                
                 <br />
+                
                 <div class="example-content">
                     <BitActionButton Color="BitColor.SecondaryBackground" IconName="@BitIconName.ColorSolid">
                         SecondaryBackground
                     </BitActionButton>
+
                     <BitActionButton Color="BitColor.SecondaryBackground">
                         SecondaryBackground
                     </BitActionButton>
                 </div>
+                
                 <br />
+                
                 <div class="example-content">
                     <BitActionButton Color="BitColor.TertiaryBackground" IconName="@BitIconName.ColorSolid">
                         TertiaryBackground
                     </BitActionButton>
+
                     <BitActionButton Color="BitColor.TertiaryBackground">
                         TertiaryBackground
                     </BitActionButton>
                 </div>
             </div>
+            
             <br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.PrimaryForeground" IconName="@BitIconName.ColorSolid">
                     PrimaryForeground
                 </BitActionButton>
+
                 <BitActionButton Color="BitColor.PrimaryForeground">
                     PrimaryForeground
                 </BitActionButton>
             </div>
+            
             <br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.SecondaryForeground" IconName="@BitIconName.ColorSolid">
                     SecondaryForeground
                 </BitActionButton>
+
                 <BitActionButton Color="BitColor.SecondaryForeground">
                     SecondaryForeground
                 </BitActionButton>
             </div>
+            
             <br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.TertiaryForeground" IconName="@BitIconName.ColorSolid">
                     TertiaryForeground
                 </BitActionButton>
+
                 <BitActionButton Color="BitColor.TertiaryForeground">
                     TertiaryForeground
                 </BitActionButton>
             </div>
+            
             <br /><br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.PrimaryBorder" IconName="@BitIconName.ColorSolid">
                     PrimaryBorder
                 </BitActionButton>
+                
                 <BitActionButton Color="BitColor.PrimaryBorder">
                     PrimaryBorder
                 </BitActionButton>
             </div>
+            
             <br />
+
             <div class="example-content">
                 <BitActionButton Color="BitColor.SecondaryBorder" IconName="@BitIconName.ColorSolid">
                     SecondaryBorder
                 </BitActionButton>
+
                 <BitActionButton Color="BitColor.SecondaryBorder">
                     SecondaryBorder
                 </BitActionButton>
             </div>
+            
             <br />
+            
             <div class="example-content">
                 <BitActionButton Color="BitColor.TertiaryBorder" IconName="@BitIconName.ColorSolid">
                     TertiaryBorder
                 </BitActionButton>
+            
                 <BitActionButton Color="BitColor.TertiaryBorder">
                     TertiaryBorder
                 </BitActionButton>
@@ -304,14 +389,20 @@
 
     <DemoExample Title="Size" RazorCode="@example9RazorCode" Id="example9">
         <div>Compare the Small, Medium, and Large presets to gauge typography and padding differences.</div>
+
+        <div>Using the <b>Size</b> parameter and its value of type <BitLink Href="#size-enum">BitSize</BitLink> enum:</div>
+        
         <br />
+        
         <div class="example-content">
             <BitActionButton Size="BitSize.Small" IconName="@BitIconName.FontSize">
                 Small
             </BitActionButton>
+        
             <BitActionButton Size="BitSize.Medium" IconName="@BitIconName.FontSize">
                 Medium
             </BitActionButton>
+            
             <BitActionButton Size="BitSize.Large" IconName="@BitIconName.FontSize">
                 Large
             </BitActionButton>
@@ -320,7 +411,11 @@
 
     <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
         <div>Override look-and-feel with inline styles or custom CSS classes applied to the root, icon, and content.</div>
+
+        <div>Using the <b>Styles</b> and <b>Classes</b> parameters and their value of <BitLink Href="#class-styles">BitActionButtonClassStyles</BitLink> class:</div>
+        
         <br />
+        
         <div class="example-content column">
             <BitActionButton IconName="@BitIconName.Brush"
                              Styles="@(new() { Root = "font-size: 1.5rem;",
@@ -339,13 +434,16 @@
     </DemoExample>
 
     <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
-        <div>View ActionButton inside a right-to-left layout, respecting RTL direction and icon/text ordering.</div>
+        <div>View BitActionButton inside a right-to-left layout, respecting RTL direction and icon/text ordering.</div>
+        
         <br />
+        
         <div dir="rtl">
             <BitActionButton Dir="BitDir.Rtl" IconName="@BitIconName.AddFriend">
                 ساخت حساب
             </BitActionButton>
         </div>
     </DemoExample>
+
 </DemoPage>
 

@@ -71,7 +71,7 @@ public partial class BitActionButtonDemo
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the action button in full width of its container with flex-start.",
+            Description = "Gets or sets a value indicating whether the component should expand to occupy the full available width.",
         },
         new()
         {
@@ -85,7 +85,7 @@ public partial class BitActionButtonDemo
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The Fluent UI icon name to render inside the action button (e.g., BitIconName.AddFriend). Browse available names in BitIconName of the Bit.BlazorUI.Icons nuget package or the gallery: https://blazorui.bitplatform.dev/iconography.",
+            Description = "Gets or sets the name of the icon to display.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
         },
@@ -94,14 +94,14 @@ public partial class BitActionButtonDemo
             Name = "IconOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the container of the text and only renders the icon.",
+            Description = "Gets or sets a value indicating whether only the icon is displayed, without accompanying text.",
         },
         new()
         {
             Name = "IconPosition",
             Type = "BitIconPosition?",
             DefaultValue = "null",
-            Description = "Sets whether the icon renders before or after the content.",
+            Description = "Gets or sets the position of the icon relative to the component's content.",
             LinkType = LinkType.Link,
             Href = "#icon-position-enum",
         },
@@ -109,32 +109,32 @@ public partial class BitActionButtonDemo
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "Raised when the action button is clicked (only when IsEnabled is true); receives MouseEventArgs.",
+            Description = "Gets or sets the callback that is invoked when the component is clicked.",
         },
         new()
         {
             Name = "Styles",
             Type = "BitActionButtonClassStyles?",
             DefaultValue = "null",
-            Description = "Custom inline styles for the root, icon, and content sections of the action button.",
+            Description = "Gets or sets the custom CSS inline styles to apply to the action button component.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
         },
         new()
         {
             Name = "Rel",
-            Type = "BitLinkRel?",
+            Type = "BitLinkRels?",
             DefaultValue = "null",
-            Description = "Sets the rel attribute for link-rendered buttons when Href is a non-anchor URL; ignored for empty or hash-only hrefs. The rel attribute specifies the relationship between the current document and the linked document.",
+            Description = "Gets or sets the relationship type between the current element and the linked resource, as defined by the link's rel attribute.",
             LinkType = LinkType.Link,
-            Href = "#button-rel",
+            Href = "#link-rels",
         },
         new()
         {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Sets the preset size for typography and padding of the action button.",
+            Description = "Sets the preset size (Small, Medium, Large) for typography and padding of the action button.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -143,7 +143,7 @@ public partial class BitActionButtonDemo
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).",
+            Description = "Gets or sets the name of the target frame or window for the navigation action when the action button renders as an anchor (by providing the Href parameter).",
         },
         new()
         {
@@ -378,9 +378,9 @@ public partial class BitActionButtonDemo
         },
         new()
         {
-            Id = "button-rel",
-            Name = "BitLinkRel",
-            Description = "",
+            Id = "link-rels",
+            Name = "BitLinkRels",
+            Description = "The rel attribute defines the relationship between a linked resource and the current document.",
             Items =
             [
                 new()

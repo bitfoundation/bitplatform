@@ -45,11 +45,11 @@ public partial class BitActionButtonDemo
 </BitActionButton>";
 
     private readonly string example4RazorCode = @"
-<BitActionButton Rel=""BitLinkRel.NoFollow"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"">
+<BitActionButton Rel=""BitLinkRels.NoFollow"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"">
     Open bitplatform.dev with a rel attribute (nofollow)
 </BitActionButton>
 
-<BitActionButton Rel=""BitLinkRel.NoFollow | BitLinkRel.NoReferrer"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"">
+<BitActionButton Rel=""BitLinkRels.NoFollow | BitLinkRels.NoReferrer"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"">
     Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
 </BitActionButton>";
 

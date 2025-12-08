@@ -206,11 +206,11 @@ public partial class BitButtonDemo
         new()
         {
             Name = "Rel",
-            Type = "BitLinkRel?",
+            Type = "BitLinkRels?",
             DefaultValue = "null",
             Description = "If Href provided, specifies the relationship between the current document and the linked document.",
             LinkType = LinkType.Link,
-            Href = "#button-rel",
+            Href = "#link-rels",
         },
         new()
         {
@@ -566,9 +566,9 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Id = "button-rel",
-            Name = "BitLinkRel",
-            Description = "",
+            Id = "link-rels",
+            Name = "BitLinkRels",
+            Description = "The rel attribute defines the relationship between a linked resource and the current document.",
             Items =
             [
                 new()
