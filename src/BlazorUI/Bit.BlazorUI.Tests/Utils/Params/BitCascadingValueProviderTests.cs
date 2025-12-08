@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Utils.Params;
 
 [TestClass]
-public class BitCascadingValueProviderTests : BunitTestContext
+public partial class BitCascadingValueProviderTests : BunitTestContext
 {
     [TestMethod]
     public void ShouldProvideCascadingValuesFromEnumerable()
@@ -90,6 +90,25 @@ public class BitCascadingValueProviderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void ShouldRenderChildContentWhenValueListIsEmpty()
+    {
+        var childContentRendered = false;
+
+        var component = RenderComponent<BitCascadingValueProvider>(parameters =>
+        {
+            parameters.Add(p => p.ValueList, new BitCascadingValueList());
+            parameters.AddChildContent(builder =>
+            {
+                childContentRendered = true;
+                builder.AddContent(0, "empty-list-child");
+            });
+        });
+
+        Assert.IsTrue(childContentRendered);
+        component.MarkupMatches("empty-list-child");
+    }
+
+    [TestMethod]
     public void ShouldPreferValuesParameterOverValueList()
     {
         var values = new List<BitCascadingValue> { new("from-values", "Greeting") };
@@ -138,6 +157,32 @@ public class BitCascadingValueProviderTests : BunitTestContext
 
         Assert.AreEqual(5, consumer.Number);
         Assert.AreEqual("hello", consumer.Greeting);
+    }
+
+    [TestMethod]
+    public void ShouldCascadeWhenFirstEntryIsNull()
+    {
+        var cascadingValues = new List<BitCascadingValue?>
+        {
+            null,
+            new("greet", "Greeting"),
+            new(11)
+        };
+
+        var component = RenderComponent<BitCascadingValueProvider>(parameters =>
+        {
+            parameters.Add(p => p.Values, cascadingValues!);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<CascadingConsumer>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var consumer = component.FindComponent<CascadingConsumer>().Instance;
+
+        Assert.AreEqual(11, consumer.Number);
+        Assert.AreEqual("greet", consumer.Greeting);
     }
 
     [TestMethod]
@@ -210,5 +255,31 @@ public class BitCascadingValueProviderTests : BunitTestContext
         var consumer = component.FindComponent<CascadingConsumer>().Instance;
 
         Assert.AreEqual(49, consumer.Number);
+    }
+
+    [TestMethod]
+    public void ShouldDefaultIsFixedToFalse()
+    {
+        var cascadingValues = new List<BitCascadingValue?>
+        {
+            new(1),
+            new("msg", "Greeting")
+        };
+
+        var component = RenderComponent<BitCascadingValueProvider>(parameters =>
+        {
+            parameters.Add(p => p.Values, cascadingValues!);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<CascadingConsumer>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var intCascade = component.FindComponent<CascadingValue<int>>().Instance;
+        var stringCascade = component.FindComponent<CascadingValue<string>>().Instance;
+
+        Assert.IsFalse(intCascade.IsFixed);
+        Assert.IsFalse(stringCascade.IsFixed);
     }
 }
