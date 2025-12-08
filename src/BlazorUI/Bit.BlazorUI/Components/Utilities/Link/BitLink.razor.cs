@@ -53,7 +53,7 @@ public partial class BitLink : BitComponentBase
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
-    public BitLinkRel? Rel { get; set; }
+    public BitLinkRels? Rel { get; set; }
 
     /// <summary>
     /// If Href provided, specifies how to open the link.

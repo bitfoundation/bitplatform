@@ -53,11 +53,11 @@ public partial class BitLinkDemo
         new()
         {
             Name = "Rel",
-            Type = "BitLinkRel?",
+            Type = "BitLinkRels?",
             DefaultValue = "null",
             Description = "If Href provided, specifies the relationship between the current document and the linked document.",
             LinkType = LinkType.Link,
-            Href = "#link-rel",
+            Href = "#link-rels",
         },
         new()
         {
@@ -234,8 +234,8 @@ public partial class BitLinkDemo
         },
         new()
         {
-            Id = "link-rel",
-            Name = "BitLinkRel",
+            Id = "link-rels",
+            Name = "BitLinkRels",
             Description = "",
             Items =
             [
