@@ -1,4 +1,5 @@
 @page "/getting-started"
+@inherits AppComponentBase
 
 @code {
     private IEnumerable<IBitComponentParams> _cascadingParams = new List<IBitComponentParams>
@@ -128,7 +129,7 @@
                 Add the following line to the <BitTag>_Imports.razor</BitTag> file of your Blazor application:
             </BitText>
 
-            <CodeBox>&#64;using Bit.BlazorUI</CodeBox>
+            <CodeBox Language="cshtml">&#64;using Bit.BlazorUI</CodeBox>
         </BitCard>
 
         <br />
@@ -143,11 +144,11 @@
                 <BitTag>index.html</BitTag> file and add the CSS file link tag:
             </BitText>
 
-            <CodeBox>&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></CodeBox>
+            <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></CodeBox>
 
             <BitText>Then add the JS file script tag:</BitText>
 
-            <CodeBox>&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script></CodeBox>
+            <CodeBox Language="html">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script></CodeBox>
 
             <br />
 
@@ -157,9 +158,9 @@
                     package you also need to add these css and js files:
                 </BitText>
 
-                <CodeBox>&lt;link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" rel="stylesheet" /></CodeBox>
+                <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" rel="stylesheet" /></CodeBox>
 
-                <CodeBox>&lt;script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js">&lt;/script></CodeBox>
+                <CodeBox Language="html">&lt;script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js">&lt;/script></CodeBox>
 
                 <br /><br />
 
@@ -168,7 +169,7 @@
                     package you also need to add this css file:
                 </BitText>
 
-                <CodeBox>&lt;link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" rel="stylesheet" /></CodeBox>
+                <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" rel="stylesheet" /></CodeBox>
 
                 <br /><br />
 
@@ -177,7 +178,7 @@
                     package you also need to add this css file:
                 </BitText>
 
-                <CodeBox>&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" /></CodeBox>
+                <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" /></CodeBox>
             </BitAccordion>
         </BitCard>
 
@@ -205,7 +206,7 @@
                 to help resolve cache issues. Using this feature, you can add
                 a version query string to the URL of the above resources like this:
 
-                <CodeBox>&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=@@Bit.BlazorUI.Info.Version">&lt;/script></CodeBox>
+                <CodeBox Language="html">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=@@Bit.BlazorUI.Info.Version">&lt;/script></CodeBox>
 
                 <b>Note</b>: You can only use this feature in the <BitTag>App.razor</BitTag> file,
                 for other root files (like <BitTag>index.html</BitTag> in a WASM standalone project)
@@ -237,13 +238,13 @@
                     calculating a hash from the actual file content, ensuring reliable cache busting and versioning.
                 </BitText>
 
-                <CodeBox>&lt;Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/Script></CodeBox>
+                <CodeBox Language="cshtml">&lt;Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/Script></CodeBox>
 
                 <BitText>
                     Example output:
                 </BitText>
 
-                <CodeBox>&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=sha256-Z5yBv0K89OBRVurhAVzatpp3aGXsNn00e3GzQiTq_Z4">&lt;/script></CodeBox>
+                <CodeBox Language="html">&lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js?v=sha256-Z5yBv0K89OBRVurhAVzatpp3aGXsNn00e3GzQiTq_Z4">&lt;/script></CodeBox>
 
                 <br /><br />
 
@@ -253,13 +254,13 @@
                     generating a hash from the actual file content, providing consistent cache busting and version management.
                 </BitText>
 
-                <CodeBox>&lt;Link Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></CodeBox>
+                <CodeBox Language="cshtml">&lt;Link Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" /></CodeBox>
 
                 <BitText>
                     Example output:
                 </BitText>
 
-                <CodeBox>&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css?v=sha256-VI6BIGZLTtmyhn3V-4RH-Yyi0Ud3p0g5dHvByeaoZ9Y" rel="stylesheet" /></CodeBox>
+                <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css?v=sha256-VI6BIGZLTtmyhn3V-4RH-Yyi0Ud3p0g5dHvByeaoZ9Y" rel="stylesheet" /></CodeBox>
 
                 <br /><br />
 
