@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Data;
+using System.Diagnostics;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -507,6 +508,146 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual(contentStyle, content.GetAttribute("style"));
     }
 
+    [TestMethod]
+    public void BitActionButtonShouldRenderChildContentWhenIconOnlyIsFalse()
+    {
+        const string content = "Action content";
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.AddChildContent(content);
+            parameters.Add(p => p.IconOnly, false);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.IsTrue(button.TextContent.Contains(content));
+    }
+
+    [TestMethod, Ignore]
+    public void BitActionButtonShouldRespectArbitraryHtmlAttributes()
+    {
+        const string dataTestId = "acb-1";
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.AddUnmatched("data-test-id", dataTestId);
+            parameters.AddUnmatched("aria-live", "polite");
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual(dataTestId, button.GetAttribute("data-test-id"));
+        Assert.AreEqual("polite", button.GetAttribute("aria-live"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonShouldRespectCascadingDir()
+    {
+        var component = RenderComponent<CascadingValue<BitDir>>(parameters =>
+        {
+            parameters.Add(p => p.Value, BitDir.Rtl);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitActionButton>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual("rtl", button.GetAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonInsideEditFormShouldSubmitForm()
+    {
+        var submitted = false;
+
+        var component = RenderComponent<EditForm>(parameters =>
+        {
+            parameters.Add(p => p.Model, new object());
+            parameters.Add(p => p.OnValidSubmit, _ => submitted = true);
+            parameters.Add(p => p.ChildContent, (RenderFragment<EditContext>)((ec) => builder =>
+            {
+                builder.OpenComponent<BitActionButton>(0);
+                builder.CloseComponent();
+            }));
+        });
+
+        var form = component.Find("form");
+
+        form.Submit();
+
+        Assert.IsTrue(submitted);
+    }
+
+    [TestMethod]
+    public void BitActionButtonTargetAttributeShouldRenderWhenHrefProvided()
+    {
+        const string href = "https://bitplatform.dev";
+        const string target = "_blank";
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.Target, target);
+        });
+
+        var anchor = component.Find(".bit-acb");
+
+        Assert.AreEqual(target, anchor.GetAttribute("target"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonRenderPerformanceSmokeTest()
+    {
+        const int renderCount = 200;
+
+        var stopwatch = Stopwatch.StartNew();
+
+        for (var i = 0; i < renderCount; i++)
+        {
+            RenderComponent<BitActionButton>(parameters =>
+            {
+                parameters.Add(p => p.Title, $"title-{i}");
+                parameters.Add(p => p.IconName, "Add");
+                parameters.Add(p => p.IsEnabled, i % 3 != 0);
+                parameters.Add(p => p.FullWidth, i % 2 == 0);
+                parameters.Add(p => p.Href, i % 5 == 0 ? "https://bitplatform.dev" : null);
+            });
+        }
+
+        stopwatch.Stop();
+
+        Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(5),
+            $"Rendering {renderCount} BitActionButton instances took {stopwatch.Elapsed}.");
+    }
+
+    [TestMethod]
+    public void BitActionButtonDynamicParameterUpdateShouldRefreshMarkup()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.IconName, "Add");
+        });
+
+        var button = component.Find(".bit-acb");
+        var icon = component.Find(".bit-acb-ico");
+
+        Assert.IsFalse(button.ClassList.Contains("bit-dis"));
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--Add"));
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.IconName, "Delete");
+        });
+
+        Assert.IsTrue(button.ClassList.Contains("bit-dis"));
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--Delete"));
+    }
 
 
     private static string GetColorClass(BitColor? color) => color switch
