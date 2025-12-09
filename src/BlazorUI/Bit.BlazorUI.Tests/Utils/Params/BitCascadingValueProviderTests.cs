@@ -234,6 +234,7 @@ public partial class BitCascadingValueProviderTests : BunitTestContext
         Assert.IsNull(intCascade.Value);
         Assert.AreEqual("Greeting", stringCascade.Name);
         Assert.IsNull(consumer.NullableNumber);
+        Assert.IsNull(consumer.Greeting);
         component.MarkupMatches("-");
     }
 
