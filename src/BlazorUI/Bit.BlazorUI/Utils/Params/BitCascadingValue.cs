@@ -146,8 +146,10 @@ public class BitCascadingValue(object? value, string? name, bool isFixed, Type? 
     public static implicit operator BitCascadingValue(string? value) => new(value, typeof(string));
     public static implicit operator BitCascadingValue((string? value, string name) tuple) => new(tuple.value, tuple.name, typeof(string));
 
+    public static implicit operator BitCascadingValue(BitDir value) => new(value);
+    public static implicit operator BitCascadingValue((BitDir value, string name) tuple) => new(tuple.value, tuple.name);
     public static implicit operator BitCascadingValue(BitDir? value) => new(value, typeof(BitDir?));
-    public static implicit operator BitCascadingValue((BitDir? value, string name) tuple) => new(tuple.value, tuple.name, typeof(BitDir));
+    public static implicit operator BitCascadingValue((BitDir? value, string name) tuple) => new(tuple.value, tuple.name, typeof(BitDir?));
 
     public static implicit operator BitCascadingValue(RouteData? value) => new(value, typeof(RouteData));
     public static implicit operator BitCascadingValue((RouteData? value, string name) tuple) => new(tuple.value, tuple.name, typeof(RouteData));
