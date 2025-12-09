@@ -41,6 +41,7 @@ using Boilerplate.Server.Api.Services.Jobs;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Medallion.Threading;
 //#if (offlineDb == true)
 using CommunityToolkit.Datasync.Server;
 //#endif
@@ -157,6 +158,11 @@ public static partial class Program
         services.AddScoped<PushNotificationService>();
         services.AddScoped<PushNotificationJobRunner>();
         //#endif
+
+        services.AddTransient(sp => new Func<string, IDistributedLock>((string lockKey) =>
+        {
+            return new Medallion.Threading.FileSystem.FileDistributedLock(new(Path.Combine(Path.GetTempPath(), $"Boilerplate-{lockKey}.lock")));
+        }));
 
         services.AddSingleton<ServerExceptionHandler>();
         services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ServerExceptionHandler>());
@@ -398,6 +404,14 @@ public static partial class Program
             //#endif
         });
 
+        services.AddHttpClient("Keycloak", c =>
+        {
+            c.BaseAddress = new Uri(configuration["KEYCLOAK_HTTP"]
+                ?? configuration["Authentication:Keycloak:KeycloakUrl"]
+                ?? throw new InvalidOperationException("KEYCLOAK_HTTP configuration is required"));
+            c.DefaultRequestVersion = HttpVersion.Version11;
+        });
+
         services.AddFido2(options =>
         {
 
@@ -635,50 +649,38 @@ public static partial class Program
             });
         }
 
-        // While Google, GitHub, Twitter(X), Apple and AzureAD needs configuration in their corresponding developer portals,
-        // the following OpenID Connect configuration would connect to your own Keycloak, Auth0, Okta, Duende IdentityServer, etc.
-        if (builder.Environment.IsDevelopment())
+        // In order to have better understanding of Keycloak integration, checkout .docs/07- ASP.NET Core Identity - Authentication & Authorization.md
+        authenticationBuilder.AddOpenIdConnect("Keycloak", options =>
         {
-            authenticationBuilder.AddOpenIdConnect("IdentityServerDemo", options =>
+            configuration.GetRequiredSection("Authentication:Keycloak").Bind(options);
+
+            var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"]
+                ?? configuration["Authentication:Keycloak:KeycloakUrl"]
+                ?? throw new InvalidOperationException("KEYCLOAK_HTTP or Authentication:Keycloak:KeycloakUrl configuration is required");
+
+            var realm = configuration["Authentication:Keycloak:Realm"] ?? throw new InvalidOperationException("Authentication:Keycloak:Realm configuration is required");
+
+            options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/{realm}";
+
+            options.ResponseType = "code";
+            options.ResponseMode = "query";
+
+            options.Scope.Clear();
+            options.Scope.Add("openid");
+            options.Scope.Add("profile");
+            options.Scope.Add("email");
+            options.Scope.Add("offline_access"); // To get refresh tokens
+
+            options.MapInboundClaims = true;
+            options.SaveTokens = true;
+
+            options.Prompt = "login"; // Force login every time
+
+            if (env.IsDevelopment())
             {
-                var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"]; // Boilerplate.Server.AppHost (Aspire) would pass this value automatically,
-                                                                      // you could also use your own Keycloak URL here.
-                if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
-                {
-                    // Keycloak requires the full authority URL including the realm
-                    options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/demo"; // Checkout src/Server/Boilerplate.Server.AppHost/Realms/demo-realm.json
-                }
-                else
-                {
-                    // If no configuration found, use public demo Duende IdentityServer (No license required)
-                    options.Authority = "https://demo.duendesoftware.com";
-                }
-
-                options.ClientId = "interactive.confidential";
-                options.ClientSecret = "secret";
-                options.ResponseType = "code";
-                options.ResponseMode = "query";
-
-                options.Scope.Clear();
-                options.Scope.Add("openid");
-                options.Scope.Add("profile");
-                options.Scope.Add("api"); // Custom API access scope for accessing protected resources
-                options.Scope.Add("offline_access");
-                options.Scope.Add("email");
-
-                options.MapInboundClaims = false;
-                options.GetClaimsFromUserInfoEndpoint = true;
-                options.SaveTokens = true;
-                options.DisableTelemetry = true;
-
-                options.Prompt = "login"; // Force login every time
-
-                if (env.IsDevelopment())
-                {
-                    options.RequireHttpsMetadata = false;
-                }
-            });
-        }
+                options.RequireHttpsMetadata = false;
+            }
+        });
     }
 
     private static string GetConnectionStringValue(string connectionString, string key, string? defaultValue = null)

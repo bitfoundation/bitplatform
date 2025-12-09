@@ -86,19 +86,19 @@ public partial class SignUpPage
         NavigationManager.NavigateTo(confirmUrl, replace: true);
     }
 
-    private async Task SocialSignUp(string provider)
+    private async Task ExternalSignUp(string provider)
     {
         try
         {
-            pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK, async (uriString) =>
+            pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK, async (uriString) =>
             {
-                // Social sign-in creates a new user automatically, so we only need to navigate to the sign-in page to automatically sign-in the user by provided OTP.
+                // External sign-in creates a new user automatically, so we only need to navigate to the sign-in page to automatically sign-in the user by provided OTP.
                 NavigationManager.NavigateTo(uriString!.ToString()!, replace: true);
             });
 
             var port = localHttpServer.EnsureStarted();
 
-            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
+            var redirectUrl = await identityController.GetExternalSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
 
             await externalNavigationService.NavigateTo(redirectUrl);
         }

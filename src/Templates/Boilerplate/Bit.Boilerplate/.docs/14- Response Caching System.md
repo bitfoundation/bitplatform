@@ -462,7 +462,7 @@ The project uses the **FusionCache** library for server-side caching:
 
 - **Output Cache Backend**: Powers the ASP.NET Core Output Cache implementation (Layer 4)
 - **Data Caching**: Provides data caching via `IFusionCache` interface for caching arbitrary data (database query results, computed values, etc.) in addition to HTTP responses
-- **Flexible Storage**: Supports multiple backends (in-memory, Redis, etc) for both response and data caching
+- **Flexible Storage**: Supports multiple backends (in-memory, Redis, hybrid etc) for both response and data caching
 
 ---
 

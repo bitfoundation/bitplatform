@@ -44,7 +44,7 @@ public interface IIdentityController : IAppController
     Task SendOtp(IdentityRequestDto request, string? returnUrl = null, CancellationToken cancellationToken = default);
 
     [HttpGet("{?provider,returnUrl,localHttpPort}")]
-    Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default);
+    Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default);
 
     [HttpPost]
     Task<JsonElement> GetWebAuthnAssertionOptions(WebAuthnAssertionOptionsRequestDto request, CancellationToken cancellationToken) => default!;
@@ -59,5 +59,5 @@ public interface IIdentityController : IAppController
     Task VerifyWebAuthAndSendTwoFactorToken(JsonElement clientResponse, CancellationToken cancellationToken) => default!;
 
     [HttpGet]
-    Task<string[]> GetSupportedSocialAuthSchemes(CancellationToken cancellationToken);
+    Task<string[]> GetSupportedExternalAuthSchemes(CancellationToken cancellationToken);
 }

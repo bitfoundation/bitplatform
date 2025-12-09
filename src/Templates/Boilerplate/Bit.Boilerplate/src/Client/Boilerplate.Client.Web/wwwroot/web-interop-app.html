@@ -1,12 +1,12 @@
 <!-- Most web features like animations, videos, or Google reCAPTCHA work fine in Blazor Hybrid.
 However, since Blazor Hybrid uses Web View with an IP-based Origin (http://0.0.0.1)
-more sensitive features like Social Sign-in and Face-ID/Fingerprint Sign-in using WebAuthn do not function properly in Web View.
+more sensitive features like External Sign-in and Face-ID/Fingerprint Sign-in using WebAuthn do not function properly in Web View.
 To address this, within a Blazor Hybrid App, you can use a Local HTTP Server to load a lightweight WebInteropApp component that
 only loads app.js (without Blazor.web.js) on an Origin like localhost.
 Then, using IExternalNavigationService, you can display it via an In-App Browser to bypass Web View limitations.
 
-Additionally, in a Web Browser, if Social Sign-in is performed in a Popup or a new Tab to preserve the app's
-state and avoid restarting Blazor upon returning from Social Sign-in, the Popup should redirect back to WebInteropApp
+Additionally, in a Web Browser, if External Sign-in is performed in a Popup or a new Tab to preserve the app's
+state and avoid restarting Blazor upon returning from External Sign-in, the Popup should redirect back to WebInteropApp
 after authentication. Using app.js, it can notify the main Window via window.opener.postMessage({ key: 'PUBLISH_MESSAGE', ... }),
 allowing the main Window to resume its operations.
 

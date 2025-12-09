@@ -233,7 +233,8 @@
             "parameters": {
                 "source": "name",
                 "toLower": true
-            }
+            },
+            "replaces": "boilerplate"
         },
         "nameToAppId": {
             "type": "generated",

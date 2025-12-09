@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -633,8 +633,8 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AppleSignInButtonText" xml:space="preserve">
     <value>Logga in med Apple</value>
   </data>
-  <data name="IdentityServerDemoSignInButtonText" xml:space="preserve">
-    <value>Logga in med Testserver</value>
+  <data name="KeycloakSignInButtonText" xml:space="preserve">
+    <value>Logga in med Enterprise SSO</value>
   </data>
   <data name="AzureEntraSignInButtonText" xml:space="preserve">
     <value>Logga in med Azure Entra</value>

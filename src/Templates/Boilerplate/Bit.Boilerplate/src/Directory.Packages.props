@@ -10,6 +10,7 @@
         <PackageVersion Include="Bit.Bswup" Version="10.2.0" />
         <PackageVersion Include="Bit.CodeAnalyzers" Version="10.2.0" />
         <PackageVersion Include="Bit.SourceGenerators" Version="10.2.0" />
+        <PackageVersion Include="DistributedLock.FileSystem" Version="1.0.3" />
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0" />
         <PackageVersion Include="Fido2.Models" Version="4.0.0" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.889" />
