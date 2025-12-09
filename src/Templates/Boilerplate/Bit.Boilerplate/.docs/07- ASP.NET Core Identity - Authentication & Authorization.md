@@ -17,8 +17,11 @@ Welcome to **Stage 7** of the Boilerplate project tutorial! In this stage, you w
 3. [Identity Configuration](#identity-configuration)
 4. [Security Best Practices](#security-best-practices)
 5. [One-Time Token System](#one-time-token-system)
-6. [Hands-On Exploration](#hands-on-exploration)
-7. [Video Tutorial](#video-tutorial)
+6. [Advanced Topics](#advanced-topics)
+   - [JWT Token Signing with PFX Certificates](#jwt-token-signing-with-pfx-certificates)
+   - [Keycloak Integration](#keycloak-integration)
+7. [Hands-On Exploration](#hands-on-exploration)
+8. [Video Tutorial](#video-tutorial)
 
 **Important**: All topics related to WebAuthn, passkeys, and passwordless authentication are explained in [Stage 24](/.docs/24-%20WebAuthn%20and%20Passwordless%20Authentication%20(Advanced).md).
 
