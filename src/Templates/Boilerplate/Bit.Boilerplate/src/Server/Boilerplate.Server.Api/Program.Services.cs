@@ -649,38 +649,40 @@ public static partial class Program
             });
         }
 
-        // In order to have better understanding of Keycloak integration, checkout .docs/07- ASP.NET Core Identity - Authentication & Authorization.md
-        authenticationBuilder.AddOpenIdConnect("Keycloak", options =>
+        var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"]
+            ?? configuration["Authentication:Keycloak:KeycloakUrl"];
+
+        if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
         {
-            configuration.GetRequiredSection("Authentication:Keycloak").Bind(options);
-
-            var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"]
-                ?? configuration["Authentication:Keycloak:KeycloakUrl"]
-                ?? throw new InvalidOperationException("KEYCLOAK_HTTP or Authentication:Keycloak:KeycloakUrl configuration is required");
-
-            var realm = configuration["Authentication:Keycloak:Realm"] ?? throw new InvalidOperationException("Authentication:Keycloak:Realm configuration is required");
-
-            options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/{realm}";
-
-            options.ResponseType = "code";
-            options.ResponseMode = "query";
-
-            options.Scope.Clear();
-            options.Scope.Add("openid");
-            options.Scope.Add("profile");
-            options.Scope.Add("email");
-            options.Scope.Add("offline_access"); // To get refresh tokens
-
-            options.MapInboundClaims = true;
-            options.SaveTokens = true;
-
-            options.Prompt = "login"; // Force login every time
-
-            if (env.IsDevelopment())
+            // In order to have better understanding of Keycloak integration, checkout .docs/07- ASP.NET Core Identity - Authentication & Authorization.md
+            authenticationBuilder.AddOpenIdConnect("Keycloak", options =>
             {
-                options.RequireHttpsMetadata = false;
-            }
-        });
+                configuration.GetRequiredSection("Authentication:Keycloak").Bind(options);
+
+                var realm = configuration["Authentication:Keycloak:Realm"] ?? throw new InvalidOperationException("Authentication:Keycloak:Realm configuration is required");
+
+                options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/{realm}";
+
+                options.ResponseType = "code";
+                options.ResponseMode = "query";
+
+                options.Scope.Clear();
+                options.Scope.Add("openid");
+                options.Scope.Add("profile");
+                options.Scope.Add("email");
+                options.Scope.Add("offline_access"); // To get refresh tokens
+
+                options.MapInboundClaims = true;
+                options.SaveTokens = true;
+
+                options.Prompt = "login"; // Force login every time
+
+                if (env.IsDevelopment())
+                {
+                    options.RequireHttpsMetadata = false;
+                }
+            });
+        }
     }
 
     private static string GetConnectionStringValue(string connectionString, string key, string? defaultValue = null)
