@@ -1,4 +1,4 @@
-﻿[
+[
     {
         "outputFile": "Components/CodeBox.razor.css",
         "inputFile": "Components/CodeBox.razor.scss",
@@ -416,6 +416,12 @@
     {
         "outputFile": "Pages/Components/Surfaces/Tooltip/BitTooltipDemo.razor.css",
         "inputFile": "Pages/Components/Surfaces/Tooltip/BitTooltipDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Utilities/CascadingValueProvider/BitCascadingValueProviderDemo.razor.css",
+        "inputFile": "Pages/Components/Utilities/CascadingValueProvider/BitCascadingValueProviderDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
