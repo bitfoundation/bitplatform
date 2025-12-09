@@ -1,0 +1,67 @@
+@page "/components/cascadingvalueprovider"
+
+<PageOutlet Url="components/cascadingvalueprovider"
+            Title="CascadingValueProvider"
+            Description="cascading value provider component of the bit BlazorUI components" />
+
+<DemoPage Name="CascadingValueProvider"
+          Description="BitCascadingValueProvider makes it easy to push multiple cascading values to child components without nesting several CascadingValue components manually."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubUrl="../Utils/Params/BitCascadingValueProvider.cs"
+          GitHubDemoUrl="Utilities/CascadingValueProvider/BitCascadingValueProviderDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <div>Checkout the basic usage of the BitCascadingValueProvider in action here.</div>
+
+        <br /><br />
+
+        <BitCascadingValueProvider 
+            Values="@([
+                        ("light", "Theme"),
+                        (true, "IsAuthenticated"),
+                        ((2) as int?, "NotificationCount"),
+                        new(new CascadingDemoUser("Saleh Xafan", "CTO"), "NamedUser"),
+                        new(new CascadingDemoUser("Yaser Moradi", "CEO"))
+                    ])">
+            <CascadingValueConsumer />
+        </BitCascadingValueProvider>
+    </DemoExample>
+
+    <DemoExample Title="Values" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>Play with provided cascading values and see the effect:</div>
+
+        <br /><br />
+
+        <BitButton OnClick="() => currentTheme = nextTheme">Switch to @nextTheme theme</BitButton>
+        <BitButton OnClick="() => notificationCount++">Add notification (@notificationCount)</BitButton>
+        <br /><br />
+        <BitToggle @bind-Value="isAuthenticated" Text="Authenticated user" />
+        <br />
+        <BitTextField @bind-Value="userName" Label="UserName:" Immediate DebounceTime="300" />
+        <BitTextField @bind-Value="userRole" Label="UserRole:" Immediate DebounceTime="300" />
+
+        <br /><br />
+
+        <BitCascadingValueProvider Values="values">
+            <CascadingValueConsumer Title="Changing cascading values:" />
+        </BitCascadingValueProvider>
+    </DemoExample>
+
+    <DemoExample Title="ValueList" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>Use <b>ValueList</b> parameter when you're not sure of nullability of values.</div>
+
+        <br /><br />
+
+        <BitCascadingValueProvider 
+            ValueList="@(new()
+                        {
+                            { nullableTheme, "Theme" },
+                            { nullableIsAuthenticated, "IsAuthenticated" },
+                            { nullableNotificationCount, "NotificationCount" },
+                            { nullableNamedUser, "UserInfo" },
+                            { nullableTypedUser }
+                        })">
+            <CascadingValueConsumer Title="ValueList cascading values:" />
+        </BitCascadingValueProvider>
+    </DemoExample>
+</DemoPage>

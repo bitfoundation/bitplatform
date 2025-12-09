@@ -180,7 +180,7 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
-    public BitLinkRel? Rel { get; set; }
+    public BitLinkRels? Rel { get; set; }
 
     /// <summary>
     /// The text of the secondary section of the button.

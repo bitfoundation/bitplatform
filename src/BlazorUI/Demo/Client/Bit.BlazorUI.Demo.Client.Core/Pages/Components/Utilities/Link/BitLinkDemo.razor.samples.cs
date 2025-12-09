@@ -73,8 +73,8 @@ starting point. The possibilities are endless, and the journey begins now.
 <BitLink Style=""scroll-margin: 70px"" Id=""end-article"" Href=""#start-article"">Go To Start of this Article</BitLink>";
 
     private readonly string example7RazorCode = @"
-<BitLink Rel=""BitLinkRel.NoFollow"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow)</BitLink>
-<BitLink Rel=""BitLinkRel.NoFollow | BitLinkRel.NoReferrer"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow & noreferrer)</BitLink>";
+<BitLink Rel=""BitLinkRels.NoFollow"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow)</BitLink>
+<BitLink Rel=""BitLinkRels.NoFollow | BitLinkRels.NoReferrer"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow & noreferrer)</BitLink>";
 
     private readonly string example8RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"">

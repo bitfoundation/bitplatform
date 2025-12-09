@@ -32,21 +32,21 @@ public partial class DemoPage
             Name = "AriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The aria-label of the control for the benefit of screen readers.",
+            Description = "Gets or sets the accessible label for the component, used by assistive technologies.",
         },
         new()
         {
             Name = "Class",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Custom CSS class for the root element of the component.",
+            Description = "Gets or sets the CSS class name(s) to apply to the rendered element.",
         },
         new()
         {
             Name = "Dir",
             Type = "BitDir?",
             DefaultValue = "null",
-            Description = "Determines the component direction.",
+            Description = "Gets or sets the text directionality for the component's content.",
             LinkType = LinkType.Link,
             Href = "#component-dir",
         },
@@ -55,42 +55,42 @@ public partial class DemoPage
             Name = "HtmlAttributes",
             Type = "Dictionary<string, object>",
             DefaultValue = "new Dictionary<string, object>()",
-            Description = "Capture and render additional attributes in addition to the component's parameters.",
+            Description = "Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.",
         },
         new()
         {
             Name = "Id",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Custom id attribute for the root element. if null the UniqueId will be used instead.",
+            Description = "Gets or sets the unique identifier for the component's root element.",
         },
         new()
         {
             Name = "IsEnabled",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether or not the component is enabled.",
+            Description = "Gets or sets a value indicating whether the component is enabled and can respond to user interaction.",
         },
         new()
         {
             Name = "Style",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Custom CSS style for the root element of the component.",
+            Description = "Gets or sets the CSS style string to apply to the rendered element.",
         },
         new()
         {
             Name = "TabIndex",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The value of the tabindex html attribute of the element.",
+            Description = "Gets or sets the tab order index for the component when navigating with the keyboard.",
         },
         new()
         {
             Name = "Visibility",
             Type = "BitVisibility",
             DefaultValue = "BitVisibility.Visible",
-            Description = "Whether the component is visible, hidden or collapsed.",
+            Description = "Gets or sets the visibility state (visible, hidden, or collapsed) of the component.",
             LinkType = LinkType.Link,
             Href = "#component-visibility",
         },
@@ -103,13 +103,13 @@ public partial class DemoPage
             Name = "UniqueId",
             Type = "Guid",
             DefaultValue = "Guid.NewGuid()",
-            Description = "The readonly unique id of the root element. it will be assigned to a new Guid at component instance construction.",
+            Description = "Gets the readonly unique identifier for the component's root element, assigned when the component instance is constructed.",
         },
         new()
         {
             Name = "RootElement",
             Type = "ElementReference",
-            Description = "The ElementReference of the root element.",
+            Description = "Gets the reference to the root HTML element associated with this component.",
         },
     ];
 
@@ -307,5 +307,5 @@ public partial class DemoPage
 
 
 
-    private readonly List<string> _notInheritedComponents = ["DataGrid", "Chart", "ModalService"];
+    private readonly List<string> _notInheritedComponents = ["DataGrid", "Chart", "ModalService", "CascadingValueProvider"];
 }
