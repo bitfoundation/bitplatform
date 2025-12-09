@@ -1,8 +1,8 @@
 {
-    "realm": "demo",
-    "id": "demo-realm",
+    "realm": "dev",
+    "id": "dev-realm",
     "enabled": true,
-    "displayName": "Boilerplate Demo Realm",
+    "displayName": "Boilerplate Dev Realm",
     "sslRequired": "external",
     "supportedLocales": [
         "en",

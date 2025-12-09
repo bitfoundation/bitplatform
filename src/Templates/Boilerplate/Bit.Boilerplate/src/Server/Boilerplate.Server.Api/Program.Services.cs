@@ -41,6 +41,7 @@ using Boilerplate.Server.Api.Services.Jobs;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Medallion.Threading;
 //#if (offlineDb == true)
 using CommunityToolkit.Datasync.Server;
 //#endif
@@ -157,6 +158,11 @@ public static partial class Program
         services.AddScoped<PushNotificationService>();
         services.AddScoped<PushNotificationJobRunner>();
         //#endif
+
+        services.AddTransient(sp => new Func<string, IDistributedLock>((string lockKey) =>
+        {
+            return new Medallion.Threading.FileSystem.FileDistributedLock(new(Path.Combine(Path.GetTempPath(), $"Boilerplate-{lockKey}.lock")));
+        }));
 
         services.AddSingleton<ServerExceptionHandler>();
         services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ServerExceptionHandler>());
@@ -400,7 +406,9 @@ public static partial class Program
 
         services.AddHttpClient("Keycloak", c =>
         {
-            c.BaseAddress = new Uri(configuration["KEYCLOAK_HTTP"] ?? throw new InvalidOperationException("KEYCLOAK_HTTP configuration is required"));
+            c.BaseAddress = new Uri(configuration["KEYCLOAK_HTTP"]
+                ?? configuration["Authentication:Keycloak:KeycloakUrl"]
+                ?? throw new InvalidOperationException("KEYCLOAK_HTTP configuration is required"));
             c.DefaultRequestVersion = HttpVersion.Version11;
         });
 
@@ -641,22 +649,18 @@ public static partial class Program
             });
         }
 
-        // While Google, GitHub, Twitter(X), Apple and AzureAD needs configuration in their corresponding developer portals,
-        // the following OpenID Connect configuration would connect to your own Keycloak.
+        // In order to have better understanding of Keycloak integration, checkout .docs/07- ASP.NET Core Identity - Authentication & Authorization.md
         authenticationBuilder.AddOpenIdConnect("Keycloak", options =>
         {
             configuration.GetRequiredSection("Authentication:Keycloak").Bind(options);
 
-            var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] 
+            var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"]
                 ?? configuration["Authentication:Keycloak:KeycloakUrl"]
                 ?? throw new InvalidOperationException("KEYCLOAK_HTTP or Authentication:Keycloak:KeycloakUrl configuration is required");
 
-            // The user would sign-in using Keycloak, just like other providers such as Google.
-            // IdentityController.ExternalSignIn's ExternalSignInCallback would store refresh token provided by Keycloak
-            // Laster, AppUserClaimsPrincipalFactory would use the refresh token to retrieve claims (roles etc) from Keycloak.
-            // This allows seamless integration with Keycloak, that way you could manage users, roles and claims from Keycloak admin console.
-            // Checkout src/Server/Boilerplate.Server.AppHost/Realms/README.md for more information.
-            options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/demo";
+            var realm = configuration["Authentication:Keycloak:Realm"] ?? throw new InvalidOperationException("Authentication:Keycloak:Realm configuration is required");
+
+            options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/{realm}";
 
             options.ResponseType = "code";
             options.ResponseMode = "query";
