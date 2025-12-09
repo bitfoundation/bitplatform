@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -38,7 +39,7 @@ public class BitParamsTests : BunitTestContext
 
         var component = RenderComponent<BitParams>(builder =>
         {
-            builder.Add(p => p.Parameters, new[] { param });
+            builder.Add(p => p.Parameters, [param]);
             builder.AddChildContent("<div>content</div>");
         });
 
@@ -56,7 +57,7 @@ public class BitParamsTests : BunitTestContext
     {
         var component = RenderComponent<BitParams>(builder =>
         {
-            builder.Add(p => p.Parameters, new IBitComponentParams[] { null!, new FakeParamsB() });
+            builder.Add(p => p.Parameters, [null!, new FakeParamsB()]);
             builder.AddChildContent("<span>child</span>");
         });
 
@@ -64,7 +65,7 @@ public class BitParamsTests : BunitTestContext
         var values = provider.Values?.ToList();
 
         Assert.IsNotNull(values);
-        Assert.AreEqual(1, values!.Count);
+        Assert.HasCount(1, values);
         Assert.AreEqual("B", values[0].Name);
     }
 
@@ -84,7 +85,7 @@ public class BitParamsTests : BunitTestContext
     {
         var component = RenderComponent<BitParams>(builder =>
         {
-            builder.Add(p => p.Parameters, Enumerable.Empty<IBitComponentParams>());
+            builder.Add(p => p.Parameters, []);
             builder.AddChildContent("<p>empty</p>");
         });
 
@@ -100,7 +101,7 @@ public class BitParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void ShouldIgnoreUnknownParametersAndNotThrow()
+    public async Task ShouldIgnoreUnknownParametersAndNotThrow()
     {
         var component = RenderComponent<BitParams>();
 
@@ -110,7 +111,7 @@ public class BitParamsTests : BunitTestContext
             { nameof(BitParams.Parameters), new[] { new FakeParamsA() } }
         });
 
-        component.InvokeAsync(() => component.Instance.SetParametersAsync(parameters)).GetAwaiter().GetResult();
+        await component.InvokeAsync(() => component.Instance.SetParametersAsync(parameters));
 
         Assert.AreEqual(1, component.Instance.Parameters?.Count());
     }
@@ -123,7 +124,7 @@ public class BitParamsTests : BunitTestContext
 
         var component = RenderComponent<BitParams>(builder =>
         {
-            builder.Add(p => p.Parameters, new IBitComponentParams[] { first });
+            builder.Add(p => p.Parameters, [first]);
             builder.AddChildContent(childBuilder =>
             {
                 childBuilder.OpenComponent<ParamsConsumer>(0);
@@ -131,7 +132,7 @@ public class BitParamsTests : BunitTestContext
             });
         });
 
-        component.SetParametersAndRender(builder => builder.Add(p => p.Parameters, new IBitComponentParams[] { second }));
+        component.SetParametersAndRender(builder => builder.Add(p => p.Parameters, [second]));
 
         component.MarkupMatches("-Hello");
     }
