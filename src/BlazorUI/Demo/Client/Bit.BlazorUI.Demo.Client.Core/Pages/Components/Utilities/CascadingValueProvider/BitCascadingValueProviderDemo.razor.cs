@@ -13,19 +13,21 @@ public partial class BitCascadingValueProviderDemo
         },
         new()
         {
+            Name = "Values",
+            Type = "IEnumerable<BitCascadingValue>?",
+            DefaultValue = "null",
+            Description = "The cascading values to be provided for the children.",
+            LinkType = LinkType.Link,
+            Href = "#cascading-value"
+        },
+        new()
+        {
             Name = "ValueList",
             Type = "BitCascadingValueList?",
             DefaultValue = "null",
             Description = "The cascading value list to be provided for the children.",
             LinkType = LinkType.Link,
-            Href = "#bit-cascading-value-list"
-        },
-        new()
-        {
-            Name = "Values",
-            Type = "IEnumerable<BitCascadingValue>?",
-            DefaultValue = "null",
-            Description = "The cascading values to be provided for the children.",
+            Href = "#cascading-value-list"
         },
     ];
 
@@ -33,24 +35,24 @@ public partial class BitCascadingValueProviderDemo
     [
         new()
         {
-            Id = "bit-cascading-value",
+            Id = "cascading-value",
             Title = "BitCascadingValue",
             Description = "Defines a value that can be cascaded to descendant components.",
             Parameters =
             [
                 new()
                 {
-                    Name = "Name",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "The optional name of the cascading value.",
-                },
-                new()
-                {
                     Name = "Value",
                     Type = "object?",
                     DefaultValue = "null",
                     Description = "The value to be provided.",
+                },
+                new()
+                {
+                    Name = "Name",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The optional name of the cascading value.",
                 },
                 new()
                 {
@@ -70,16 +72,16 @@ public partial class BitCascadingValueProviderDemo
         },
         new()
         {
-            Id = "bit-cascading-value-list",
+            Id = "cascading-value-list",
             Title = "BitCascadingValueList",
-            Description = "A helper list that can add typed cascading values using the Add<T> helper.",
+            Description = "A helper class to ease the using of a list of the BitCascadingValue.",
             Parameters =
             [
                 new()
                 {
                     Name = "Add<T>(T value, string? name = null, bool isFixed = false)",
                     Type = "void",
-                    DefaultValue = "-",
+                    DefaultValue = "",
                     Description = "Adds a typed BitCascadingValue to the list.",
                 }
             ]

@@ -6,14 +6,14 @@
 public class BitCascadingValue(object? value, string? name, bool isFixed, Type? valueType = null)
 {
     /// <summary>
-    /// The optional name of the cascading value.
-    /// </summary>
-    public string? Name { get; set; } = name;
-
-    /// <summary>
     /// The value to be provided.
     /// </summary>
     public object? Value { get; set; } = value;
+
+    /// <summary>
+    /// The optional name of the cascading value.
+    /// </summary>
+    public string? Name { get; set; } = name;
 
     /// <summary>
     /// If true, indicates that <see cref="Value"/> will not change.

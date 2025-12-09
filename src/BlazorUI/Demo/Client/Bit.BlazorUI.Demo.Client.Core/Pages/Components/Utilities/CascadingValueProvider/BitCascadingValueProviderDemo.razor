@@ -30,7 +30,7 @@
     <DemoExample Title="Values" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>Play with provided cascading values and see the effect:</div>
 
-        <br />
+        <br /><br />
 
         <BitButton OnClick="() => currentTheme = nextTheme">Switch to @nextTheme theme</BitButton>
         <BitButton OnClick="() => notificationCount++">Add notification (@notificationCount)</BitButton>
@@ -43,14 +43,14 @@
         <br /><br />
 
         <BitCascadingValueProvider Values="values">
-            <CascadingValueConsumer Title="Values" />
+            <CascadingValueConsumer Title="Changing cascading values:" />
         </BitCascadingValueProvider>
     </DemoExample>
 
     <DemoExample Title="ValueList" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>Use <b>ValueList</b> parameter when you're not sure of nullability of values.</div>
 
-        <br />
+        <br /><br />
 
         <BitCascadingValueProvider 
             ValueList="@(new()
@@ -61,7 +61,7 @@
                             { nullableNamedUser, "UserInfo" },
                             { nullableTypedUser }
                         })">
-            <CascadingValueConsumer Title="ValueList" />
+            <CascadingValueConsumer Title="ValueList cascading values:" />
         </BitCascadingValueProvider>
     </DemoExample>
 </DemoPage>
