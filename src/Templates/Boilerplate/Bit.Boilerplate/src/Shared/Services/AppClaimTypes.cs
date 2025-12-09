@@ -1,4 +1,5 @@
-﻿namespace Boilerplate.Shared.Services;
+﻿//+:cnd:noEmit
+namespace Boilerplate.Shared.Services;
 
 /// <summary>
 /// These claims may not be added to RoleClaims/UserClaims tables.
@@ -25,8 +26,8 @@ public class AppClaimTypes
     public const string ELEVATED_SESSION = "e-s";
 
     /// <summary>
-    /// The list of features (claims) assigned to the user.
+    /// The list of Boilerplate app features (claims) assigned to the user.
     /// <see cref="AppFeatures"/>
     /// </summary>
-    public const string FEATURES = "feat";
+    public const string FEATURES = "boilerplate-features";
 }

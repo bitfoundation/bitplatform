@@ -112,8 +112,8 @@ public partial class ClientAppMessages
     //#endif
 
     /// <summary>
-    /// A publisher that publishes this message notifies that the user's social sign-in process has completed.
-    /// When a user completes social sign-in in a separate window, this message is published to notify the app.
+    /// A publisher that publishes this message notifies that the user's external sign-in process has completed.
+    /// When a user completes external sign-in in a separate window, this message is published to notify the app.
     /// </summary>
-    public const string SOCIAL_SIGN_IN_CALLBACK = nameof(SOCIAL_SIGN_IN_CALLBACK);
+    public const string EXTERNAL_SIGN_IN_CALLBACK = nameof(EXTERNAL_SIGN_IN_CALLBACK);
 }

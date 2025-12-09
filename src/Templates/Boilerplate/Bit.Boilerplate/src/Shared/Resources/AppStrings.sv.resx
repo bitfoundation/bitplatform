@@ -633,7 +633,7 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AppleSignInButtonText" xml:space="preserve">
     <value>Logga in med Apple</value>
   </data>
-  <data name="EnterpriseSsoSignInButtonText" xml:space="preserve">
+  <data name="KeycloakSignInButtonText" xml:space="preserve">
     <value>Logga in med Enterprise SSO</value>
   </data>
   <data name="AzureEntraSignInButtonText" xml:space="preserve">

@@ -642,53 +642,41 @@ public static partial class Program
         }
 
         // While Google, GitHub, Twitter(X), Apple and AzureAD needs configuration in their corresponding developer portals,
-        // the following OpenID Connect configuration would connect to your own Keycloak, Auth0, Okta, Duende IdentityServer, etc.
-        // It has been enabled only for dev environment, until you prepare your own production ready Keycloak server.
-        if (builder.Environment.IsDevelopment())
+        // the following OpenID Connect configuration would connect to your own Keycloak.
+        authenticationBuilder.AddOpenIdConnect("Keycloak", options =>
         {
-            authenticationBuilder.AddOpenIdConnect("EnterpriseSso", options =>
+            configuration.GetRequiredSection("Authentication:Keycloak").Bind(options);
+
+            var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] 
+                ?? configuration["Authentication:Keycloak:KeycloakUrl"]
+                ?? throw new InvalidOperationException("KEYCLOAK_HTTP or Authentication:Keycloak:KeycloakUrl configuration is required");
+
+            // The user would sign-in using Keycloak, just like other providers such as Google.
+            // IdentityController.ExternalSignIn's ExternalSignInCallback would store refresh token provided by Keycloak
+            // Laster, AppUserClaimsPrincipalFactory would use the refresh token to retrieve claims (roles etc) from Keycloak.
+            // This allows seamless integration with Keycloak, that way you could manage users, roles and claims from Keycloak admin console.
+            // Checkout src/Server/Boilerplate.Server.AppHost/Realms/README.md for more information.
+            options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/demo";
+
+            options.ResponseType = "code";
+            options.ResponseMode = "query";
+
+            options.Scope.Clear();
+            options.Scope.Add("openid");
+            options.Scope.Add("profile");
+            options.Scope.Add("email");
+            options.Scope.Add("offline_access"); // To get refresh tokens
+
+            options.MapInboundClaims = true;
+            options.SaveTokens = true;
+
+            options.Prompt = "login"; // Force login every time
+
+            if (env.IsDevelopment())
             {
-                configuration.GetRequiredSection("Authentication:EnterpriseSso").Bind(options);
-
-                var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"]; // Boilerplate.Server.AppHost (Aspire) would pass this value automatically,
-                                                                      // you could also use your own Keycloak URL here.
-                if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
-                {
-                    // The user would sign-in using Keycloak, just like other providers such as Google.
-                    // IdentityController.SocialSignIn's SocialSignInCallback would store refresh token provided by Keycloak
-                    // Laster, AppUserClaimsPrincipalFactory would use the refresh token to retrieve claims (roles etc) from Keycloak.
-                    // This allows seamless integration with Keycloak, that way you could manage users, roles and claims from Keycloak admin console.
-                    // Checkout src/Server/Boilerplate.Server.AppHost/Realms/README.md for more information.
-                    options.Authority = $"{keycloakBaseUrl.TrimEnd('/')}/realms/demo";
-                }
-                else
-                {
-                    // If no configuration found, use public demo Duende IdentityServer (No license required)
-                    options.Authority = "https://demo.duendesoftware.com";
-                }
-
-                options.ResponseType = "code";
-                options.ResponseMode = "query";
-
-                options.Scope.Clear();
-                options.Scope.Add("openid");
-                options.Scope.Add("profile");
-                options.Scope.Add("email");
-                options.Scope.Add("offline_access"); // To get refresh tokens
-                options.Scope.Add("api"); // Sample API scope
-
-                options.MapInboundClaims = true;
-                options.GetClaimsFromUserInfoEndpoint = true;
-                options.SaveTokens = true;
-
-                options.Prompt = "login"; // Force login every time
-
-                if (env.IsDevelopment())
-                {
-                    options.RequireHttpsMetadata = false;
-                }
-            });
-        }
+                options.RequireHttpsMetadata = false;
+            }
+        });
     }
 
     private static string GetConnectionStringValue(string connectionString, string key, string? defaultValue = null)

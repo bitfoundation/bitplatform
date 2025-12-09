@@ -3,14 +3,7 @@
     "id": "demo-realm",
     "enabled": true,
     "displayName": "Boilerplate Demo Realm",
-    "displayNameHtml": "<div class=\"kc-logo-text\"><span>Boilerplate Demo</span></div>",
     "sslRequired": "external",
-    "registrationAllowed": false,
-    "loginWithEmailAllowed": true,
-    "duplicateEmailsAllowed": false,
-    "resetPasswordAllowed": true,
-    "editUsernameAllowed": false,
-    "internationalizationEnabled": true,
     "supportedLocales": [
         "en",
         "nl",
@@ -24,47 +17,6 @@
         "de"
     ],
     "defaultLocale": "en",
-    "bruteForceProtected": true,
-    "permanentLockout": false,
-    "maxFailureWaitSeconds": 900,
-    "minimumQuickLoginWaitSeconds": 60,
-    "waitIncrementSeconds": 60,
-    "quickLoginCheckMilliSeconds": 1000,
-    "maxDeltaTimeSeconds": 43200,
-    "failureFactor": 30,
-    "defaultRoles": [
-        "offline_access",
-        "uma_authorization"
-    ],
-    "requiredCredentials": [
-        "password"
-    ],
-    "otpPolicyType": "totp",
-    "otpPolicyAlgorithm": "HmacSHA1",
-    "otpPolicyInitialCounter": 0,
-    "otpPolicyDigits": 6,
-    "otpPolicyLookAheadWindow": 1,
-    "otpPolicyPeriod": 30,
-    "accessTokenLifespan": 300,
-    "accessTokenLifespanForImplicitFlow": 900,
-    "ssoSessionIdleTimeout": 1800,
-    "ssoSessionMaxLifespan": 36000,
-    "ssoSessionIdleTimeoutRememberMe": 0,
-    "ssoSessionMaxLifespanRememberMe": 0,
-    "offlineSessionIdleTimeout": 2592000,
-    "offlineSessionMaxLifespanEnabled": false,
-    "offlineSessionMaxLifespan": 5184000,
-    "clientSessionIdleTimeout": 0,
-    "clientSessionMaxLifespan": 0,
-    "clientOfflineSessionIdleTimeout": 0,
-    "clientOfflineSessionMaxLifespan": 0,
-    "accessCodeLifespan": 60,
-    "accessCodeLifespanUserAction": 300,
-    "accessCodeLifespanLogin": 1800,
-    "actionTokenGeneratedByAdminLifespan": 43200,
-    "actionTokenGeneratedByUserLifespan": 300,
-    "oauth2DeviceCodeLifespan": 600,
-    "oauth2DevicePollingInterval": 5,
     "users": [
         {
             "id": "alice-user-id",
@@ -75,6 +27,9 @@
             "firstName": "Alice",
             "lastName": "Smith",
             "email": "AliceSmith@email.com",
+            "attributes": {
+                "mx-p-s": [ "5" ]
+            },
             "credentials": [
                 {
                     "type": "password",
@@ -88,7 +43,7 @@
                 "uma_authorization"
             ],
             "notBefore": 0,
-            "groups": []
+            "groups": [ "/demo" ]
         },
         {
             "id": "bob-user-id",
@@ -112,7 +67,7 @@
                 "uma_authorization"
             ],
             "notBefore": 0,
-            "groups": []
+            "groups": [ "/demo" ]
         },
         {
             "id": "test-user-id",
@@ -136,31 +91,33 @@
                 "uma_authorization"
             ],
             "notBefore": 0,
-            "groups": []
+            "groups": [ "/s-admin" ]
         }
     ],
-    "roles": {
-        "realm": [
-            {
-                "id": "offline_access",
-                "name": "offline_access",
-                "description": "${role_offline-access}",
-                "composite": false,
-                "clientRole": false,
-                "containerId": "demo"
+    "groups": [
+        {
+            "id": "s-admin-group-id",
+            "name": "s-admin",
+            "path": "/s-admin",
+            "attributes": {
+                "mx-p-s": [ "-1" ]
             },
-            {
-                "id": "uma_authorization",
-                "name": "uma_authorization",
-                "description": "${role_uma_authorization}",
-                "composite": false,
-                "clientRole": false,
-                "containerId": "demo"
-            }
-        ],
-        "client": {}
-    },
-    "groups": [],
+            "realmRoles": [],
+            "clientRoles": {},
+            "subGroups": []
+        },
+        {
+            "id": "demo-group-id",
+            "name": "demo",
+            "path": "/demo",
+            "attributes": {
+                "boilerplate-features": [ "3.0", "3.1", "4.0" ]
+            },
+            "realmRoles": [],
+            "clientRoles": {},
+            "subGroups": []
+        }
+    ],
     "defaultDefaultClientScopes": [
         "role_list",
         "profile",
@@ -175,31 +132,6 @@
         "microprofile-jwt"
     ],
     "clientScopes": [
-        {
-            "id": "api-scope-id",
-            "name": "api",
-            "description": "API Access Scope for Boilerplate Application",
-            "protocol": "openid-connect",
-            "attributes": {
-                "include.in.token.scope": "true",
-                "display.on.consent.screen": "true",
-                "consent.screen.text": "API access permissions"
-            },
-            "protocolMappers": [
-                {
-                    "id": "api-audience-mapper",
-                    "name": "API Audience Mapper",
-                    "protocol": "openid-connect",
-                    "protocolMapper": "oidc-audience-mapper",
-                    "consentRequired": false,
-                    "config": {
-                        "included.client.audience": "interactive.confidential",
-                        "id.token.claim": "false",
-                        "access.token.claim": "true"
-                    }
-                }
-            ]
-        },
         {
             "id": "profile-scope-id",
             "name": "profile",
@@ -283,21 +215,6 @@
                         "claim.name": "email",
                         "jsonType.label": "String"
                     }
-                },
-                {
-                    "id": "email-verified-mapper",
-                    "name": "email verified",
-                    "protocol": "openid-connect",
-                    "protocolMapper": "oidc-usermodel-property-mapper",
-                    "consentRequired": false,
-                    "config": {
-                        "userinfo.token.claim": "true",
-                        "user.attribute": "emailVerified",
-                        "id.token.claim": "true",
-                        "access.token.claim": "true",
-                        "claim.name": "email_verified",
-                        "jsonType.label": "boolean"
-                    }
                 }
             ]
         },
@@ -318,34 +235,6 @@
                     "protocolMapper": "oidc-allowed-origins-mapper",
                     "consentRequired": false,
                     "config": {}
-                }
-            ]
-        },
-        {
-            "id": "roles-scope-id",
-            "name": "roles",
-            "description": "OpenID Connect scope for add user roles to the access token",
-            "protocol": "openid-connect",
-            "attributes": {
-                "include.in.token.scope": "false",
-                "display.on.consent.screen": "true",
-                "consent.screen.text": "${rolesScopeConsentText}"
-            },
-
-            "protocolMappers": [
-                {
-                    "name": "realm roles mapper",
-                    "protocol": "openid-connect",
-                    "protocolMapper": "oidc-usermodel-realm-role-mapper",
-                    "consentRequired": false,
-                    "config": {
-                        "claim.name": "roles",
-                        "jsonType.label": "String",
-                        "multivalued": "true",
-                        "id.token.claim": "true",
-                        "access.token.claim": "true",
-                        "userinfo.token.claim": "true"
-                    }
                 }
             ]
         },
@@ -378,101 +267,81 @@
                 "consent.screen.text": "${offlineAccessScopeConsentText}",
                 "display.on.consent.screen": "true"
             }
+        },
+        {
+            "id": "roles-scope-id",
+            "name": "roles",
+            "description": "OpenID Connect scope for user roles including group memberships",
+            "protocol": "openid-connect",
+            "attributes": {
+                "include.in.token.scope": "false",
+                "display.on.consent.screen": "false"
+            }
         }
     ],
     "clients": [
         {
-            "id": "interactive-confidential-client-id",
-            "clientId": "interactive.confidential",
-            "name": "Interactive Confidential Client",
-            "description": "OpenID Connect client for Boilerplate application",
-            "rootUrl": "",
-            "adminUrl": "",
-            "baseUrl": "",
-            "surrogateAuthRequired": false,
-            "enabled": true,
-            "alwaysDisplayInConsole": false,
-            "clientAuthenticatorType": "client-secret",
+            "id": "Boilerplate-Id",
+            "clientId": "Boilerplate",
             "secret": "secret",
-            "registrationAccessToken": "",
+            "name": "Boilerplate",
+            "description": "OpenID Connect client for Boilerplate application",
             "redirectUris": [
                 "*"
             ],
             "webOrigins": [
                 "*"
             ],
-            "notBefore": 0,
-            "bearerOnly": false,
-            "consentRequired": false,
-            "standardFlowEnabled": true,
-            "implicitFlowEnabled": false,
-            "directAccessGrantsEnabled": true,
-            "serviceAccountsEnabled": false,
-            "publicClient": false,
-            "frontchannelLogout": true,
-            "protocol": "openid-connect",
-            "attributes": {
-                "oidc.ciba.grant.enabled": "false",
-                "client.secret.creation.time": "1640995200",
-                "backchannel.logout.session.required": "true",
-                "display.on.consent.screen": "false",
-                "oauth2.device.authorization.grant.enabled": "false",
-                "backchannel.logout.revoke.offline.tokens": "false"
-            },
-            "authenticationFlowBindingOverrides": {},
-            "fullScopeAllowed": true,
-            "nodeReRegistrationTimeout": -1,
-            "defaultClientScopes": [
-                "web-origins",
-                "acr",
-                "profile",
-                "roles",
-                "email",
-                "api"
-            ],
-            "optionalClientScopes": [
-                "address",
-                "phone",
-                "offline_access",
-                "microprofile-jwt"
+            "protocolMappers": [
+                {
+                    "id": "client-group-membership-mapper",
+                    "name": "client group membership",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-group-membership-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "full.path": "false",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "claim.name": "roles",
+                        "userinfo.token.claim": "true"
+                    }
+                },
+                {
+                    "id": "client-mx-p-s-mapper",
+                    "name": "client mx-p-s attribute",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "claim.name": "mx-p-s",
+                        "user.attribute": "mx-p-s",
+                        "jsonType.label": "String",
+                        "multivalued": "false",
+                        "aggregate.attrs": "true",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "userinfo.token.claim": "true"
+                    }
+                },
+                {
+                    "id": "client-boilerplate-features-mapper",
+                    "name": "client boilerplate-features attribute",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "claim.name": "boilerplate-features",
+                        "user.attribute": "boilerplate-features",
+                        "jsonType.label": "String",
+                        "multivalued": "true",
+                        "aggregate.attrs": "true",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "userinfo.token.claim": "true"
+                    }
+                }
             ]
         }
-    ],
-    "clientScopeMappings": {
-        "account": [
-            {
-                "client": "account-console",
-                "roles": [
-                    "manage-account"
-                ]
-            }
-        ]
-    },
-    "defaultGroups": [],
-    "browserFlow": "browser",
-    "registrationFlow": "registration",
-    "directGrantFlow": "direct grant",
-    "resetCredentialsFlow": "reset credentials",
-    "clientAuthenticationFlow": "clients",
-    "dockerAuthenticationFlow": "docker auth",
-    "attributes": {
-        "cibaBackchannelTokenDeliveryMode": "poll",
-        "cibaExpiresIn": "120",
-        "cibaInterval": "5",
-        "cibaAuthRequestedUserHint": "login_hint",
-        "oauth2DeviceCodeLifespan": "600",
-        "oauth2DevicePollingInterval": "5",
-        "parRequestUriLifespan": "60",
-        "cibaBackchannelUserCodeParameter": "false",
-        "frontendUrl": "",
-        "acr.loa.map": "{}"
-    },
-    "keycloakVersion": "25.0.0",
-    "userManagedAccessAllowed": false,
-    "clientProfiles": {
-        "profiles": []
-    },
-    "clientPolicies": {
-        "policies": []
-    }
+    ]
 }

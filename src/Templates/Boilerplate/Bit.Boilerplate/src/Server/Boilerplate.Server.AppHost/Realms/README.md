@@ -30,11 +30,42 @@ The realm supports multiple languages for localized user interfaces:
 
 ### 👥 Pre-configured Users
 
-| Username | Email | Password |
-|----------|-------|----------|------|-------------|
-| `alice` | AliceSmith@email.com | `alice` |
-| `bob` | BobSmith@email.com | `bob` |
-| `test` | test@bitplatform.dev | `123456` |
+| Username | Email | Password | Roles |
+|----------|-------|----------|-------|
+| `alice` | AliceSmith@email.com | `alice` | demo |
+| `bob` | BobSmith@email.com | `bob` | demo |
+| `test` | test@bitplatform.dev | `123456` | s-admin |
+
+### Application Roles
+
+The realm includes custom application roles for authorization:
+
+- **`s-admin`**: Super Admin role - Full administrative access to the Boilerplate application
+  - **Claims**: Automatically assigned all features via application logic
+  
+- **`demo`**: Demo role - Standard user access for demonstration purposes
+  - **Claims**:
+    - `mx-p-s`: `-1` (Unlimited privileged sessions)
+    - `feat`: `3.0`, `3.1`, `4.0` (Dashboard, ManageProductCatalog, and ManageTodo features)
+
+**Note**: The `s-admin` role has nothing to do with Keycloak admin privileges, it is specific to the Boilerplate app.
+See `AppRoles.cs` and `AppFeatures.cs` for complete details about application roles and features.
+
+### Role Claims Mapping
+
+Role attributes are automatically mapped to JWT token claims via protocol mappers:
+
+- **Max Privileged Sessions (`mx-p-s`)**: Controls the maximum number of concurrent privileged sessions
+  - `-1` = Unlimited sessions
+  - Positive number = Maximum session limit
+  
+- **Features (`feat`)**: Array of feature flags that grant access to specific application features
+  - `3.0` = `AppFeatures.AdminPanel.Dashboard`
+  - `3.1` = `AppFeatures.AdminPanel.ManageProductCatalog`
+  - `4.0` = `AppFeatures.Todo.ManageTodo`
+  - See `AppFeatures.cs` for all available features
+
+These role-specific claims are included in access tokens, ID tokens, and userinfo endpoints via the `roles` scope, enabling fine-grained authorization in the Boilerplate application.
 
 ### 🔗 Client Configuration
 

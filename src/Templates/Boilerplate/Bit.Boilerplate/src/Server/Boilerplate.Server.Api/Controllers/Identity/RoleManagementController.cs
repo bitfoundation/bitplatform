@@ -40,7 +40,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
     public IQueryable<UserDto> GetAllUsers()
     {
         return userManager.Users
-                          .Where(u => u.EmailConfirmed || u.PhoneNumberConfirmed || u.Logins.Any() /*Social sign-in*/)
+                          .Where(u => u.EmailConfirmed || u.PhoneNumberConfirmed || u.Logins.Any() /*External sign-in*/)
                           .Project();
     }
 

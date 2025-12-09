@@ -30,24 +30,24 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
     /// <summary>
     /// Retrieves additional claims from Keycloak and adds them to the user's claims.
     /// </summary>
-    private async Task RetrieveKeycloakClaims(User user, ClaimsIdentity result)
+    private async Task RetrieveKeycloakClaims(User user, ClaimsIdentity aspnetCoreIdentityClaims)
     {
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"];
         if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
         {
-            var keycloakRefreshToken = await UserManager.GetAuthenticationTokenAsync(user, "EnterpriseSso", "refresh_token");
+            var keycloakRefreshToken = await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "refresh_token");
             if (string.IsNullOrEmpty(keycloakRefreshToken) is false)
             {
-                var keycloakTokenExpiryDate = DateTimeOffset.Parse(await UserManager.GetAuthenticationTokenAsync(user, "EnterpriseSso", "expires_at") ?? throw new InvalidOperationException("expires_at token is missing"));
-                var keycloakAccessToken = await UserManager.GetAuthenticationTokenAsync(user, "EnterpriseSso", "access_token") ?? throw new InvalidOperationException("access_token token is missing");
+                var keycloakTokenExpiryDate = DateTimeOffset.Parse(await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "expires_at") ?? throw new InvalidOperationException("expires_at token is missing"));
+                var keycloakAccessToken = await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "access_token") ?? throw new InvalidOperationException("access_token token is missing");
                 if (DateTimeOffset.UtcNow >= keycloakTokenExpiryDate)
                 {
                     var httpClient = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("Keycloak");
                     var refreshRequestPayload = new FormUrlEncodedContent(new Dictionary<string, string>
                     {
                         { "grant_type", "refresh_token" },
-                        { "client_id", configuration["Authentication:EnterpriseSso:ClientId"]! },
-                        { "client_secret", configuration["Authentication:EnterpriseSso:ClientSecret"]! },
+                        { "client_id", configuration["Authentication:Keycloak:ClientId"]! },
+                        { "client_secret", configuration["Authentication:Keycloak:ClientSecret"]! },
                         { "refresh_token", keycloakRefreshToken }
                     });
                     using var response = await httpClient.PostAsync($"realms/demo/protocol/openid-connect/token", refreshRequestPayload);
@@ -60,6 +60,7 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
                     }
                     var responseBody = await response.Content.ReadFromJsonAsync<JsonElement>();
                     keycloakAccessToken = responseBody!.GetProperty("access_token").GetString();
+                    await UserManager.SetAuthenticationTokenAsync(user, "Keycloak", "access_token", keycloakAccessToken!);
                 }
                 var handler = new JwtSecurityTokenHandler();
                 var parsedKeycloakAccessToken = handler.ReadJwtToken(keycloakAccessToken);
@@ -71,10 +72,8 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
                         claim.Value))
                     .ToList();
 
-                foreach (var claim in keycloakClaims)
-                {
-                    result.AddClaim(claim);
-                }
+                foreach (var claim in parsedKeycloakAccessToken.Claims.Where(c => aspnetCoreIdentityClaims.HasClaim(c.Type, c.Value) is false))
+                    aspnetCoreIdentityClaims.AddClaim(claim);
             }
         }
     }
