@@ -131,6 +131,7 @@ public partial class MainLayout
             Text = "Utilities",
             ChildItems =
             [
+                new() { Text = "CascadingValueProvider", Url = "/components/cascadingvalueprovider" },
                 new() { Text = "Element", Url = "/components/element" },
                 new() { Text = "Icon", Url = "/components/icon" },
                 new() { Text = "Image", Url = "/components/image" },
