@@ -27,5 +27,5 @@ public class AppClaimTypes
     /// Array: The list of Boilerplate app features (claims) assigned to the user.
     /// <see cref="AppFeatures"/>
     /// </summary>
-    public const string FEATURES = "boilerplate-features";
+    public const string FEATURES = "features";
 }

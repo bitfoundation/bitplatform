@@ -111,7 +111,7 @@
             "name": "demo",
             "path": "/demo",
             "attributes": {
-                "boilerplate-features": [ "3.0", "3.1", "4.0" ]
+                "features": [ "3.0", "3.1", "4.0" ]
             },
             "realmRoles": [],
             "clientRoles": {},
@@ -325,14 +325,14 @@
                     }
                 },
                 {
-                    "id": "client-boilerplate-features-mapper",
-                    "name": "client boilerplate-features attribute",
+                    "id": "client-features-mapper",
+                    "name": "client features attribute",
                     "protocol": "openid-connect",
                     "protocolMapper": "oidc-usermodel-attribute-mapper",
                     "consentRequired": false,
                     "config": {
-                        "claim.name": "boilerplate-features",
-                        "user.attribute": "boilerplate-features",
+                        "claim.name": "features",
+                        "user.attribute": "features",
                         "jsonType.label": "String",
                         "multivalued": "true",
                         "aggregate.attrs": "true",
