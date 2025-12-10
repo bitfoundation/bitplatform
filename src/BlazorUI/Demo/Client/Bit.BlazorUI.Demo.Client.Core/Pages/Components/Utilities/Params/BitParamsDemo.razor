@@ -43,15 +43,43 @@
     </DemoExample>
 
     <DemoExample Title="Changing parameter values" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>You can change provided cascading values at runtime.</div>
+
+        <br />
+
         <BitToggle @bind-Value="useAltParameters" Text="Use alternate parameters" />
 
         <br />
 
-        <BitParams Parameters="@(useAltParameters ? altParams : basicParams)">
+        <BitParams Parameters="@(useAltParameters? altParams : basicParams)">
             <BitCard>
                 <BitText>BitText with provided parameters</BitText>
                 <br />
                 <BitTag>BitTag with provided parameters</BitTag>
+            </BitCard>
+        </BitParams>
+    </DemoExample>
+
+    <DemoExample Title="Nesting Params" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>Inner BitParams can override or extend outer defaults for a scoped area.</div>
+
+        <br />
+
+        <BitParams Parameters="nestedParentParams">
+            <BitCard Style="padding:1rem">
+                <BitText Typography="BitTypography.H6">Outer defaults</BitText>
+                <BitText>These tags use the parent BitParams values.</BitText>
+                <BitTag IconName="@BitIconName.Globe">Global</BitTag>
+                <BitTag IconName="@BitIconName.People">Team</BitTag>
+
+                <BitParams Parameters="nestedChildParams">
+                    <BitCard Style="margin-top: 0.75rem; padding: 0.75rem">
+                        <BitText Typography="BitTypography.H6">Nested overrides</BitText>
+                        <BitText>Inner BitParams changes colors and variants for this scope.</BitText>
+                        <BitTag IconName="@BitIconName.Warning">Alert</BitTag>
+                        <BitTag IconName="@BitIconName.FavoriteStar">Highlight</BitTag>
+                    </BitCard>
+                </BitParams>
             </BitCard>
         </BitParams>
     </DemoExample>

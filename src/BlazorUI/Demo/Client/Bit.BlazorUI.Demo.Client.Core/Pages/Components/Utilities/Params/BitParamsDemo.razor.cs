@@ -17,6 +17,8 @@ public partial class BitParamsDemo
             Type = "IEnumerable<IBitComponentParams>?",
             DefaultValue = "null",
             Description = "List of parameters to provide for the children components.",
+            LinkType = LinkType.Link,
+            Href = "#component-params",
         },
     ];
 
@@ -24,7 +26,7 @@ public partial class BitParamsDemo
     [
         new()
         {
-            Id = "ibit-component-params",
+            Id = "component-params",
             Title = "IBitComponentParams",
             Description = "Defines the contract for parameters that can be cascaded by BitParams.",
             Parameters =
@@ -134,96 +136,115 @@ public partial class BitParamsDemo
 
 
 
+    private readonly List<IBitComponentParams> nestedParentParams =
+    [
+        new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = true, Style = "padding: 1rem" },
+        new BitTagParams { Color = BitColor.Primary, Variant = BitVariant.Outline, Size = BitSize.Medium },
+        new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.PrimaryForeground }
+    ];
+
+    private readonly List<IBitComponentParams> nestedChildParams =
+    [
+        new BitCardParams { Background = BitColorKind.Secondary, FullWidth = true, Style = "padding: 0.75rem" },
+        new BitTagParams { Color = BitColor.Warning, Variant = BitVariant.Fill, Size = BitSize.Small },
+        new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.Warning }
+    ];
+
+
+
     private readonly string example1RazorCode = @"
 <BitParams Parameters=""basicParams"">
-    <div class=""bit-params-demo-grid"">
-        <BitCard Class=""bit-params-demo-card"">
-            <BitText Typography=""BitTypography.H6"">Release tags</BitText>
-            <BitText>Tags and texts below inherit color, variant, and typography from BitParams.</BitText>
-            <div class=""bit-params-demo-tags"">
-                <BitTag IconName=""@BitIconName.Rocket"">Launch</BitTag>
-                <BitTag IconName=""@BitIconName.Accept"">Ready</BitTag>
-                <BitTag IconName=""@BitIconName.Tag"">Label</BitTag>
-            </div>
-        </BitCard>
-
-        <BitCard Class=""bit-params-demo-card"">
-            <BitText Typography=""BitTypography.H6"">Team</BitText>
-            <BitText>Shared defaults keep typography and tag styling consistent.</BitText>
-            <div class=""bit-params-demo-tags"">
-                <BitTag IconName=""@BitIconName.Contact"">Owner</BitTag>
-                <BitTag IconName=""@BitIconName.People"">Contributors</BitTag>
-            </div>
-        </BitCard>
-    </div>
+    <BitCard>
+        <BitText>BitText with provided parameters</BitText>
+        <br />
+        <BitTag>BitTag with provided parameters</BitTag>
+    </BitCard>
 </BitParams>";
-
     private readonly string example1CsharpCode = @"
 private readonly List<IBitComponentParams> basicParams =
 [
-    new BitTagParams { Color = BitColor.Primary, Variant = BitVariant.Fill, Size = BitSize.Medium },
-    new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.Secondary, Gutter = true },
-    new BitCardParams { FullWidth = true, Style = ""padding: 1rem"" }
+    new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = true, Style = ""padding: 3rem"" },
+    new BitTagParams { Color = BitColor.Tertiary, Variant = BitVariant.Fill, Size = BitSize.Large },
+    new BitTextParams { Typography = BitTypography.H5, Color = BitColor.Secondary, Gutter = true },
 ];";
-
-
 
     private readonly string example2RazorCode = @"
-<BitParams Parameters=""overrideParams"">
-    <BitCard Class=""bit-params-demo-card"">
-        <BitText Typography=""BitTypography.H6"">Per-instance overrides</BitText>
-        <div class=""bit-params-demo-tags"">
-            <BitTag>Inherit</BitTag>
-            <BitTag Color=""BitColor.Success"" Variant=""BitVariant.Outline"">Explicit color</BitTag>
-            <BitTag Variant=""BitVariant.Text"" IconName=""@BitIconName.Info"">Text variant</BitTag>
-            <BitTag Color=""BitColor.Error"" IconName=""@BitIconName.Error"">Critical</BitTag>
-        </div>
-        <BitText>Unspecified properties still come from the cascaded BitTagParams defaults.</BitText>
+<BitParams Parameters=""basicParams"">
+    <BitCard Style=""padding:1rem"">
+        <BitText Color=""BitColor.Primary"">
+            BitText with provided and overriden parameters
+        </BitText>
+        <br />
+        <BitTag Color=""BitColor.Secondary"">
+            BitTag with provided and overriden parameters
+        </BitTag>
     </BitCard>
 </BitParams>";
-
     private readonly string example2CsharpCode = @"
-private readonly List<IBitComponentParams> overrideParams =
+private readonly List<IBitComponentParams> basicParams =
 [
-    new BitTagParams { Color = BitColor.Primary, Variant = BitVariant.Fill, Size = BitSize.Medium },
-    new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.Secondary }
+    new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = true, Style = ""padding: 3rem"" },
+    new BitTagParams { Color = BitColor.Tertiary, Variant = BitVariant.Fill, Size = BitSize.Large },
+    new BitTextParams { Typography = BitTypography.H5, Color = BitColor.Secondary, Gutter = true },
 ];";
 
-
-
     private readonly string example3RazorCode = @"
-<BitStack Gap=""0.75rem"">
-    <BitToggle @bind-Value=""useAltPreset"" Text=""Use alternate preset"" />
+<BitToggle @bind-Value=""useAltParameters"" Text=""Use alternate parameters"" />
 
-    <BitParams Parameters=""ActiveParams"">
-        <BitCard Class=""bit-params-demo-card"">
-            <BitText Typography=""BitTypography.H6"">Preset-aware content</BitText>
-            <BitText>Flip the toggle to swap the cascaded parameter set.</BitText>
-            <div class=""bit-params-demo-tags"">
-                <BitTag IconName=""@BitIconName.Heart"">Favorite</BitTag>
-                <BitTag IconName=""@BitIconName.Pinned"">Pinned</BitTag>
-                <BitTag IconName=""@BitIconName.Emoji2"">Mood</BitTag>
-            </div>
-        </BitCard>
-    </BitParams>
-</BitStack>";
-
+<BitParams Parameters=""@(useAltParameters? altParams : basicParams)"">
+    <BitCard>
+        <BitText>BitText with provided parameters</BitText>
+        <br />
+        <BitTag>BitTag with provided parameters</BitTag>
+    </BitCard>
+</BitParams>";
     private readonly string example3CsharpCode = @"
-private readonly List<IBitComponentParams> defaultPresetParams =
+private bool useAltParameters;
+
+private readonly List<IBitComponentParams> basicParams =
 [
-    new BitTagParams { Color = BitColor.Primary, Variant = BitVariant.Fill, Size = BitSize.Medium },
-    new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.Secondary },
-    new BitCardParams { FullWidth = true, Style = ""padding: 1rem"" }
+    new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = true, Style = ""padding: 3rem"" },
+    new BitTagParams { Color = BitColor.Tertiary, Variant = BitVariant.Fill, Size = BitSize.Large },
+    new BitTextParams { Typography = BitTypography.H5, Color = BitColor.Secondary, Gutter = true },
 ];
 
-private readonly List<IBitComponentParams> alternatePresetParams =
+private readonly List<IBitComponentParams> altParams =
 [
-    new BitTagParams { Color = BitColor.Tertiary, Variant = BitVariant.Outline, Size = BitSize.Medium },
-    new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.PrimaryForeground },
-    new BitCardParams { FullWidth = true, Background = BitColorKind.Tertiary, Style = ""padding: 1rem"" }
+    new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = false, Style = ""padding: 1rem"" },
+    new BitTagParams { Color = BitColor.Secondary, Variant = BitVariant.Outline, Size = BitSize.Small },
+    new BitTextParams { Typography = BitTypography.H4, Color = BitColor.Primary, Gutter = true },
+];";
+
+    private readonly string example4RazorCode = @"
+<BitParams Parameters=""nestedParentParams"">
+    <BitCard Style=""padding:1rem"">
+        <BitText Typography=""BitTypography.H6"">Outer defaults</BitText>
+        <BitText>These tags use the parent BitParams values.</BitText>
+        <BitTag IconName=""@BitIconName.Globe"">Global</BitTag>
+        <BitTag IconName=""@BitIconName.People"">Team</BitTag>
+
+        <BitParams Parameters=""nestedChildParams"">
+            <BitCard Style=""margin-top: 0.75rem; padding: 0.75rem"">
+                <BitText Typography=""BitTypography.H6"">Nested overrides</BitText>
+                <BitText>Inner BitParams changes colors and variants for this scope.</BitText>
+                <BitTag IconName=""@BitIconName.Warning"">Alert</BitTag>
+                <BitTag IconName=""@BitIconName.FavoriteStar"">Highlight</BitTag>
+            </BitCard>
+        </BitParams>
+    </BitCard>
+</BitParams>";
+    private readonly string example4CsharpCode = @"
+private readonly List<IBitComponentParams> nestedParentParams =
+[
+    new BitCardParams { Background = BitColorKind.Tertiary, FullWidth = true, Style = ""padding: 1rem"" },
+    new BitTagParams { Color = BitColor.Primary, Variant = BitVariant.Outline, Size = BitSize.Medium },
+    new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.PrimaryForeground }
 ];
 
-private bool useAltPreset;
-
-private IEnumerable<IBitComponentParams> ActiveParams => useAltPreset ? alternatePresetParams : defaultPresetParams;";
+private readonly List<IBitComponentParams> nestedChildParams =
+[
+    new BitCardParams { Background = BitColorKind.Secondary, FullWidth = true, Style = ""padding: 0.75rem"" },
+    new BitTagParams { Color = BitColor.Warning, Variant = BitVariant.Fill, Size = BitSize.Small },
+    new BitTextParams { Typography = BitTypography.Body2, Color = BitColor.Warning }
+];";
 }
