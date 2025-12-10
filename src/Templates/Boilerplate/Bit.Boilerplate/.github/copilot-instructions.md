@@ -143,7 +143,7 @@ Create the Entity Model
   - Add data annotations as needed
 
 Create the EntityTypeConfiguration
-- **Location**: `Boilerplate.Server.Api's Data/Configuration folder`
+- **Location**: `Boilerplate.Server.Api's Data/Configurations folder`
   - Implement `IEntityTypeConfiguration<{EntityName}>`
   - Configure unique indexes, relationships
   - Add `DbSet<{EntityName}>` to AppDbContext

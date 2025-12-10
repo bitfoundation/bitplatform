@@ -70,22 +70,21 @@ csharp_new_line_before_open_brace = all
 
 **Why it matters**: This ensures all team members and CI/CD pipelines use the same SDK version, preventing "works on my machine" issues.
 
----
-
-### 1.3 `dotnet.config`
-
-**Location**: [`/dotnet.config`](/dotnet.config)
-
-**Purpose**: Configures the .NET test runner.
-
-**Content**:
-
-```plaintext
-[dotnet.test.runner]
-name = "Microsoft.Testing.Platform"
+```json
+{
+    "sdk": {
+        "version": "10.0.100",
+        "rollForward": "latestFeature"
+    },
+    "test": {
+        "runner": "Microsoft.Testing.Platform"
+    }
+}
 ```
 
-**Why it matters**: This tells the `dotnet test` command to use the **Microsoft.Testing.Platform** (MSTest v4) for running tests, which provides better performance and features compared to older test frameworks.
+**Additional Properties**:
+
+- **`test.runner`**: Configures the .NET test runner to use **Microsoft.Testing.Platform** (MSTest v4), which provides better performance and features compared to older test runners.
 
 ---
 
@@ -334,6 +333,16 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 **Learn more**: See [bit-resx documentation](https://github.com/bitfoundation/bitplatform/tree/develop/src/ResxTranslator)
 
+**Installation and Usage**:
+
+```bash
+# Install the bit-resx CLI tool globally
+dotnet tool install --global Bit.ResxTranslator
+
+# Run the translator (from the project root directory)
+bit-resx
+```
+
 **To add a new language**:
 1. Add its ISO code to `SupportedLanguages` (e.g., `"it"` for Italian)
 2. Update `CultureInfoManager.SupportedCultures` in the `Shared` project
@@ -474,7 +483,7 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
         "*.resx": "$(capture).*.resx",
         "*.razor": "$(capture).*.razor, $(capture).razor.cs, $(capture).razor.scss",
         "*.scss": "$(capture).*.scss, $(capture).css, $(capture).css.map",
-        "*.json": "$(capture).*.json, $(capture).*.json"
+        "*.json": "$(capture).*.json"
     }
 }
 ```

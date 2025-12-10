@@ -596,7 +596,7 @@ This is the **base class for all components**. Most `.razor.cs` files inherit fr
 **Key features provided:**
 
 ```csharp
-public partial class AppComponentBase : ComponentBase, IAsyncDisposable
+public partial class AppComponentBase
 {
     [AutoInject] protected IJSRuntime JSRuntime = default!;
     [AutoInject] protected NavigationManager NavigationManager = default!;

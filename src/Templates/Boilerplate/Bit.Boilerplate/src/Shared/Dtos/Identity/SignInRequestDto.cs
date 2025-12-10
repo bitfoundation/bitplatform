@@ -10,7 +10,7 @@ public partial class SignInRequestDto : IdentityRequestDto
     public string? Password { get; set; }
 
     /// <summary>
-    /// Read SignInManagerExtensions.OtpSignInAsync comments.
+    /// Read SignInManagerExtensions.OtpSignIn comments.
     /// </summary>
     /// <example>null</example>
     [StringLength(6)]

@@ -60,7 +60,7 @@ Priority Order (Each level can override previous levels):
 │    │   • Client.Web/appsettings.json                     │  │
 │    │   • Client.Web/appsettings.{environment}.json       │  │
 │    │   • Client.Web/wwwroot/appsettings.json             │  │
-│    │   • Client.Web/wwwroot/{environment}.json           │  │
+│    │   • Client.Web/wwwroot/appsettings.{environment}.json │
 │    └─────────────────────────────────────────────────────┘  │
 │    ┌─────────────────────────────────────────────────────┐  │
 │    │ .NET MAUI:                                          │  │
@@ -159,9 +159,7 @@ In [`src/Client/Boilerplate.Client.Core/appsettings.json`](/src/Client/Boilerpla
 {
     "ServerAddress": "http://localhost:5030/",
     "ServerAddress_Comment": "If you're running Boilerplate.Server.Web project, then you can also use relative urls such as / for Blazor Server and WebAssembly",
-    "GoogleRecaptchaSiteKey": "6LdMKr4pAAAAAKMyuEPn3IHNf04EtULXA8uTIVRw",
-    "AdUnitPath": "/22639388115/rewarded_web_example",
-    "AdUnitPath__Comment": "The advertisement's unit path of the google ads from the Google Ad Manager panel."
+    "GoogleRecaptchaSiteKey": "6LdMKr4pAAAAAKMyuEPn3IHNf04EtULXA8uTIVRw"
 }
 ```
 
@@ -202,7 +200,7 @@ In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplat
         }
     },
     "Identity": {
-        "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSiginingKeySecret...",
+        "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSigningKeySecret...",
         "Issuer": "Boilerplate",
         "Audience": "Boilerplate",
         "BearerTokenExpiration": "0.00:05:00",
@@ -383,8 +381,9 @@ public class EmailService
 
 ## Configuration and Environments
 
-The project supports three environments by default:
+The project supports four environments by default:
 - **Development** - Local development (uses `appsettings.Development.json`)
+- **Test** - Testing environment (uses `appsettings.Test.json`)
 - **Staging** - Pre-production testing environment
 - **Production** - Live production environment (uses `appsettings.Production.json`)
 

@@ -318,12 +318,14 @@ All components that inherit from `AppComponentBase` or pages that inherit from `
 **Base class location**: `src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs`
 
 ```csharp
-public partial class AppComponentBase : ComponentBase
+public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
 {
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
     // ... other injected services
 }
 ```
+
+> **Note:** `AppComponentBase` inherits from `OwningComponentBase` (not `ComponentBase`), which provides a scoped service container for each component instance. This enables proper service lifetime management and automatic disposal of scoped services when the component is disposed.
 
 This means **every component in the project** automatically has the `Localizer` property available without needing to inject it manually.
 

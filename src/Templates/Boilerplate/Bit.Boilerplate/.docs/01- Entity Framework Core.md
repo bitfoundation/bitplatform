@@ -146,7 +146,7 @@ public Guid CategoryId { get; set; }
 **Pattern: Nullable with `?`**
 
 - **Why nullable?** The related entity might not be loaded from the database
-- EF Core uses "lazy loading" or "explicit loading" - related entities aren't automatically fetched
+- EF Core does **not** automatically load related entities
 - Example: When you query `Products`, the `Category` property is `null` unless you explicitly include it:
   ```csharp
   // Category will be null
@@ -210,11 +210,11 @@ Configurations/
 ```csharp
 using Boilerplate.Server.Api.Models.Categories;
 
-namespace Boilerplate.Server.Api.Data.Configurations.Identity;
+namespace Boilerplate.Server.Api.Data.Configurations.Category;
 
-public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
+public partial class CategoryConfiguration : IEntityTypeConfiguration<Models.Categories.Category>
 {
-    public void Configure(EntityTypeBuilder<Category> builder)
+    public void Configure(EntityTypeBuilder<Models.Categories.Category> builder)
     {
         // Configure unique index on Name
         builder.HasIndex(p => p.Name).IsUnique();
@@ -222,13 +222,13 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
         // Seed initial data
         var defaultVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
         builder.HasData(
-            new Category { 
+            new () { 
                 Id = Guid.Parse("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"), 
                 Name = "Ford", 
                 Color = "#FFCD56", 
                 Version = defaultVersion 
             },
-            new Category { 
+            new () { 
                 Id = Guid.Parse("582b8c19-0709-4dae-b7a6-fa0e704dad3c"), 
                 Name = "Nissan", 
                 Color = "#FF6384", 
@@ -387,24 +387,9 @@ For client-side databases:
 **Technology:** [bit Besql](https://bitplatform.dev/besql) - EF Core SQLite for Blazor
 
 ```csharp
-public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> options) : DbContext(options)
+public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> options) : OfflineDbContext(options)
 {
-    public virtual DbSet<UserDto> Users { get; set; }
-    
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        // Seed initial offline user data
-        modelBuilder.Entity<UserDto>()
-            .HasData([new()
-            {
-                Id = Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"),
-                Email = "test@bitplatform.dev",
-                UserName = "test",
-                FullName = "Boilerplate test account"
-            }]);
-        
-        base.OnModelCreating(modelBuilder);
-    }
+    public virtual DbSet<TodoItemDto> TodoItems { get; set; }
 }
 ```
 
@@ -440,7 +425,8 @@ Add-Migration YourMigrationName -OutputDir Data\Migrations -Context AppOfflineDb
 
 Open a terminal in the `Boilerplate.Server.Web` project directory and run:
 ```bash
-dotnet tool restore && dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dotnet tool restore
+dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 **Important Notes:**
@@ -456,7 +442,7 @@ Conventions:
 - Entity must inherit from `BaseEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs)
 - DTO must inherit from `BaseDtoTableData` Example: [`/src/Shared/Dtos/Todo/TodoItemDto.cs`](/src/Shared/Dtos/Todo/TodoItemDto.cs)
 - TableController: A controller inheriting from `TableController` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs)
-- Repository: A repository inheriting from `EntityTableRepository` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Controllers/Todo/TodoItemTableController.cs)
+- Repository: A repository inheriting from `EntityTableRepository` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs)
 
 ### Additional Resources
 

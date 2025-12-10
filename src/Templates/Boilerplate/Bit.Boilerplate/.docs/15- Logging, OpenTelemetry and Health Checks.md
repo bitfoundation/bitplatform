@@ -12,8 +12,7 @@ Welcome to Stage 15! In this stage, you'll learn about the comprehensive logging
 4. [In-App Diagnostic Logger](#in-app-diagnostic-logger)
 5. [Integration with Sentry and Azure Application Insights](#integration-with-sentry-and-azure-application-insights)
 6. [Aspire Dashboard](#aspire-dashboard)
-7. [Critical Warning About Sensitive Data](#critical-warning-about-sensitive-data)
-8. [Health Checks](#health-checks)
+7. [Health Checks](#health-checks)
 
 ---
 
