@@ -89,7 +89,7 @@ public class AppResponseCacheAttribute : Attribute
 // MaxAge = 5 minutes on browser/in-memory cache (not purgeable) which improves page navigations when the user navigates back to the locally cached page
 
 // Note: StreamRendering is incompatible with response caching.
-// AppResponseCachePolicy automatically disables streaming when caching is enabled.
+// AppResponseCachePolicy automatically disables streaming when current request is configured for response caching.
 ```
 
 ```csharp
@@ -141,7 +141,7 @@ The `AppResponseCachePolicy` class (located in `src/Server/Boilerplate.Server.Sh
 
 Note: **Multi-Language Limitation**: For non-invariant globalization, client and edge caching are disabled for pre-rendered Blazor pages.
 It's because it doesn't work with the free Tier of Cloudflare CDN and needs Enterprise plan that supports tag based purging with multiple dimensions (culture + URL).
-You can switch to AWS CloudFront or Azure Frontdoor which supports this feature for lower/free plans.
+You can switch to AWS CloudFront or Azure Frontdoor which support this feature for lower/free plans.
 Output cache still works correctly for multi-language scenarios.
 
 **Cache Duration Logic:**
