@@ -1,0 +1,58 @@
+@page "/components/params"
+
+<PageOutlet Url="components/params"
+            Title="Params"
+            Description="params component of the bit BlazorUI components" />
+
+<DemoPage Name="Params"
+          Description="BitParams lets you cascade shared parameter objects to compatible components so you can define common defaults once."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubUrl="../Utils/Params/BitParams.cs"
+          GitHubDemoUrl="Utilities/Params/BitParamsDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <div>Use BitParams to share parameters between child components.</div>
+
+        <br />
+
+        <BitParams Parameters="basicParams">
+            <BitCard>
+                <BitText>BitText with provided parameters</BitText>
+                <br />
+                <BitTag>BitTag with provided parameters</BitTag>
+            </BitCard>
+        </BitParams>
+    </DemoExample>
+
+    <DemoExample Title="Overriding cascaded values" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>You can override cascaded parameters by setting them directly on the component.</div>
+
+        <br />
+
+        <BitParams Parameters="basicParams">
+            <BitCard Style="padding:1rem">
+                <BitText Color="BitColor.Primary">
+                    BitText with provided and overriden parameters
+                </BitText>
+                <br />
+                <BitTag Color="BitColor.Secondary">
+                    BitTag with provided and overriden parameters
+                </BitTag>
+            </BitCard>
+        </BitParams>
+    </DemoExample>
+
+    <DemoExample Title="Changing parameter values" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <BitToggle @bind-Value="useAltParameters" Text="Use alternate parameters" />
+
+        <br />
+
+        <BitParams Parameters="@(useAltParameters ? altParams : basicParams)">
+            <BitCard>
+                <BitText>BitText with provided parameters</BitText>
+                <br />
+                <BitTag>BitTag with provided parameters</BitTag>
+            </BitCard>
+        </BitParams>
+    </DemoExample>
+</DemoPage>

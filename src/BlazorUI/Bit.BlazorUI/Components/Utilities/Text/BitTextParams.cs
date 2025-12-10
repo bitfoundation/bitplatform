@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitText"/> component.
@@ -84,11 +86,15 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
         if (Align.HasValue && bitText.HasNotBeenSet(nameof(Align)))
         {
             bitText.Align = Align.Value;
+
+            bitText.StyleBuilder.Reset();
         }
 
         if (Color.HasValue && bitText.HasNotBeenSet(nameof(Color)))
         {
             bitText.Color = Color.Value;
+
+            bitText.ClassBuilder.Reset();
         }
 
         if (Element.HasValue() && bitText.HasNotBeenSet(nameof(Element)))
@@ -99,26 +105,36 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
         if (ForceBreak.HasValue && bitText.HasNotBeenSet(nameof(ForceBreak)))
         {
             bitText.ForceBreak = ForceBreak.Value;
+
+            bitText.ClassBuilder.Reset();
         }
 
         if (Foreground.HasValue && bitText.HasNotBeenSet(nameof(Foreground)))
         {
             bitText.Foreground = Foreground.Value;
+
+            bitText.ClassBuilder.Reset();
         }
 
         if (Gutter.HasValue && bitText.HasNotBeenSet(nameof(Gutter)))
         {
             bitText.Gutter = Gutter.Value;
+
+            bitText.ClassBuilder.Reset();
         }
 
         if (NoWrap.HasValue && bitText.HasNotBeenSet(nameof(NoWrap)))
         {
             bitText.NoWrap = NoWrap.Value;
+
+            bitText.ClassBuilder.Reset();
         }
 
         if (Typography.HasValue && bitText.HasNotBeenSet(nameof(Typography)))
         {
             bitText.Typography = Typography.Value;
+
+            bitText.ClassBuilder.Reset();
         }
     }
 }

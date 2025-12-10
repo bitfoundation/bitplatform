@@ -139,6 +139,7 @@ public partial class MainLayout
                 new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
                 new() { Text = "MediaQuery", Url = "/components/mediaquery" },
                 new() { Text = "Overlay", Url = "/components/overlay" },
+                new() { Text = "Params", Url = "/components/params" },
                 new() { Text = "PullToRefresh", Url = "/components/pulltorefresh" },
                 new() { Text = "Separator", Url = "/components/separator" },
                 new() { Text = "Sticky", Url = "/components/sticky" },

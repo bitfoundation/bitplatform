@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitComponentBase"/> component.
@@ -89,11 +91,15 @@ public abstract class BitComponentBaseParams
         if (Class.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Class)))
         {
             bitComponentBase.Class = Class;
+
+            bitComponentBase.ClassBuilder.Reset();
         }
 
         if (Dir.HasValue && bitComponentBase.HasNotBeenSet(nameof(Dir)))
         {
             bitComponentBase.Dir = Dir.Value;
+
+            bitComponentBase.ClassBuilder.Reset();
         }
 
         if (HtmlAttributes is not null)
@@ -114,11 +120,15 @@ public abstract class BitComponentBaseParams
         if (IsEnabled.HasValue && bitComponentBase.HasNotBeenSet(nameof(IsEnabled)))
         {
             bitComponentBase.IsEnabled = IsEnabled.Value;
+
+            bitComponentBase.ClassBuilder.Reset();
         }
 
         if (Style.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Style)))
         {
             bitComponentBase.Style = Style;
+
+            bitComponentBase.StyleBuilder.Reset();
         }
 
         if (TabIndex.HasValue() && bitComponentBase.HasNotBeenSet(nameof(TabIndex)))
@@ -129,6 +139,8 @@ public abstract class BitComponentBaseParams
         if (Visibility.HasValue && bitComponentBase.HasNotBeenSet(nameof(Visibility)))
         {
             bitComponentBase.Visibility = Visibility.Value;
+
+            bitComponentBase.StyleBuilder.Reset();
         }
     }
 }

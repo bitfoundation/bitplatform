@@ -255,12 +255,12 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                 _ => string.Empty
             });
 
+        RegisterCssClasses();
+
         ClassBuilder
               .Register(() => RootElementClass)
               .Register(() => IsEnabled ? string.Empty : "bit-dis")
               .Register(() => Dir == BitDir.Rtl ? "bit-rtl" : string.Empty);
-
-        RegisterCssClasses();
 
         ClassBuilder.Register(() => Class);
 
@@ -293,7 +293,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// This property is intended for use by derived classes to manage and compose CSS classes dynamically. 
     /// It is not accessible outside the class hierarchy.
     /// </remarks>
-    protected ElementClassBuilder ClassBuilder { get; private set; } = new ElementClassBuilder();
+    public ElementClassBuilder ClassBuilder { get; private set; } = new();
 
     /// <summary>
     /// Gets the builder used to configure inline CSS styles for the element.
@@ -302,7 +302,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// Use this property to programmatically construct or modify the element's style attributes before rendering.
     /// Changes made through the builder affect the element's appearance in the rendered output.
     /// </remarks>
-    protected ElementStyleBuilder StyleBuilder { get; private set; } = new ElementStyleBuilder();
+    public ElementStyleBuilder StyleBuilder { get; private set; } = new();
 
     /// <summary>
     /// Registers the CSS styles required for the component.

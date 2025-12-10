@@ -83,6 +83,8 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
         if (Classes is not null && bitTag.HasNotBeenSet(nameof(Classes)))
         {
             bitTag.Classes = Classes;
+
+            bitTag.ClassBuilder.Reset();
         }
 
         if (Color.HasValue && bitTag.HasNotBeenSet(nameof(Color)))
@@ -98,11 +100,15 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
         if (Reversed.HasValue && bitTag.HasNotBeenSet(nameof(Reversed)))
         {
             bitTag.Reversed = Reversed.Value;
+
+            bitTag.ClassBuilder.Reset();
         }
 
         if (Size.HasValue && bitTag.HasNotBeenSet(nameof(Size)))
         {
             bitTag.Size = Size.Value;
+
+            bitTag.ClassBuilder.Reset();
         }
 
         if (Styles is not null && bitTag.HasNotBeenSet(nameof(Styles)))
@@ -118,6 +124,8 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
         if (Variant.HasValue && bitTag.HasNotBeenSet(nameof(Variant)))
         {
             bitTag.Variant = Variant.Value;
+
+            bitTag.ClassBuilder.Reset();
         }
     }
 }
