@@ -31,7 +31,6 @@
   <Folder Name="/.SolutionItems/.github/prompts/">
     <File Path=".github/prompts/resx.prompt.md" />
     <File Path=".github/prompts/bitify.prompt.md" />
-    <File Path=".github/prompts/getting-started.prompt.md" />
     <File Path=".github/prompts/scaffold.prompt.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.docs/">

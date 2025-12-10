@@ -79,5 +79,3 @@ This project includes several specialized prompt templates designed to help you 
 - Ensures light/dark theme compatibility
 
 **Example usage**: "Run bitify.prompt.md on the UserProfile.razor page to replace all HTML elements with Bit.BlazorUI components"
-
----

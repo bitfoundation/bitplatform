@@ -6,24 +6,67 @@ Welcome to **Stage 7** of the Boilerplate project tutorial! In this stage, you w
 
 ## Table of Contents
 
-1. [Authentication Architecture](#authentication-architecture)
+1. [Understanding Authentication Methods](#understanding-authentication-methods)
+   - [The Two Fundamental Methods](#the-two-fundamental-methods)
+   - [Two-Factor Authentication (2FA)](#two-factor-authentication-2fa)
+   - [Other Sign-In Methods Are Built on OTP](#other-sign-in-methods-are-built-on-otp)
+2. [Authentication Architecture](#authentication-architecture)
    - [JWT Token-Based Authentication](#jwt-token-based-authentication)
    - [Session Management](#session-management)
    - [External Identity Support](#external-identity-support)
-2. [Authorization and Access Control](#authorization-and-access-control)
+3. [Authorization and Access Control](#authorization-and-access-control)
    - [Role-Based and Permission-Based Authorization](#role-based-and-permission-based-authorization)
    - [Policy-Based Authorization](#policy-based-authorization)
    - [Custom Claim Types](#custom-claim-types)
-3. [Identity Configuration](#identity-configuration)
-4. [Security Best Practices](#security-best-practices)
-5. [One-Time Token System](#one-time-token-system)
-6. [Advanced Topics](#advanced-topics)
+4. [Identity Configuration](#identity-configuration)
+5. [Security Best Practices](#security-best-practices)
+6. [One-Time Token System](#one-time-token-system)
+7. [Advanced Topics](#advanced-topics)
    - [JWT Token Signing with PFX Certificates](#jwt-token-signing-with-pfx-certificates)
    - [Keycloak Integration](#keycloak-integration)
-7. [Hands-On Exploration](#hands-on-exploration)
-8. [Video Tutorial](#video-tutorial)
+8. [Hands-On Exploration](#hands-on-exploration)
+9. [Video Tutorial](#video-tutorial)
 
 **Important**: All topics related to WebAuthn, passkeys, and passwordless authentication are explained in [Stage 24](/.docs/24-%20WebAuthn%20and%20Passwordless%20Authentication%20(Advanced).md).
+
+---
+
+## Understanding Authentication Methods
+
+Before diving into the technical architecture, it's important to understand that the Boilerplate project fundamentally supports only **two authentication methods**. All other sign-in options are built on top of these core methods.
+
+### The Two Fundamental Methods
+
+**1. Identifier + Password**
+- **Identifier**: Username, Email, or Phone Number
+- **Password**: User's secret password
+- This is the traditional authentication method
+
+**2. Identifier + OTP (One-Time Password)**
+- **Identifier**: Username, Email, or Phone Number  
+- **OTP**: A 6-digit code sent to the user
+- Also known as "Magic Link" authentication when delivered via email
+
+> **Note about Username field**: In the default UI, the Username field is commented out to keep the interface clean and simple. If your business requires username-based authentication, you can easily re-enable it in the sign-in/sign-up components.
+
+### Two-Factor Authentication (2FA)
+
+Depending on user settings, **Two-Factor Authentication** may be triggered after the initial sign-in.
+
+### Other Sign-In Methods Are Built on OTP
+
+All alternative authentication methods in the Boilerplate ultimately generate a 6-digit OTP code and perform an **automatic OTP sign-in** behind the scenes:
+
+| Method | How It Works |
+|--------|-------------|
+| **External Providers** (Google, Facebook, GitHub, etc.) | After successful OAuth flow, generates an OTP and auto-signs in |
+| **WebAuthn / Passkeys** (Fingerprint, Face ID) | After biometric verification, generates an OTP and auto-signs in |
+| **Magic Link** (Email link) | Clicking the link triggers OTP sign-in with the embedded token |
+
+This unified approach means:
+- ✅ **2FA is always respected** regardless of how the user signs in
+- ✅ **Session management works the same way** for all sign-in methods
+- ✅ **Simplified codebase** with a single authentication pipeline
 
 ---
 
@@ -48,7 +91,7 @@ You can configure token expiration in [`appsettings.json`](/src/Server/Boilerpla
 "Identity": {
     "BearerTokenExpiration": "0.00:05:00",  // Format: D.HH:mm:ss (5 minutes)
     "RefreshTokenExpiration": "14.00:00:00", // 14 days
-    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSiginingKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm"
+    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSigningKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm"
 }
 ```
 
@@ -403,7 +446,7 @@ public class AppClaimTypes
     public const string PRIVILEGED_SESSION = "p-s";
     public const string MAX_PRIVILEGED_SESSIONS = "mx-p-s";
     public const string ELEVATED_SESSION = "e-s";
-    public const string FEATURES = "feat";
+    public const string FEATURES = "features";
 }
 ```
 
@@ -411,8 +454,8 @@ public class AppClaimTypes
 
 - **`SESSION_ID`**: Unique identifier for the current user session => Guid value stored in UserSessions table
 - **`MAX_PRIVILEGED_SESSIONS`**: Maximum allowed privileged sessions for this user => -1 (Unlimited) or a positive number
-- **`PRIVILEGED_SESSION`**: Indicates if this session counts toward the privileged session limit => A positive number
-- **`ELEVATED_SESSION`**: Indicates the user has recently authenticated for sensitive operations => true or false
+- **`PRIVILEGED_SESSION`**: Indicates if this session is privileged => "true" or "false"
+- **`ELEVATED_SESSION`**: Indicates the user has recently authenticated for sensitive operations => "true" or "false"
 - **`FEATURES`**: Contains the list of features/permissions values granted to the user => Array of AppFeature's values, for example ["1.1", "2.1"]
 
 ---
@@ -427,7 +470,7 @@ public class AppClaimTypes
 
 ```json
 "Identity": {
-    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSiginingKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm",
+    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSigningKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm",
     "Issuer": "Boilerplate",
     "Audience": "Boilerplate",
     "BearerTokenExpiration": "0.00:05:00",

@@ -99,7 +99,7 @@ The modal provides several powerful diagnostic and maintenance actions:
   - SignalR connection (if connected)
 - Displays results in a BitMessageBox
 
-#### 🛠️ **Open Dev Tools** (Mobile & Desktop Apps)
+#### 🛠️ **Open Dev Tools**
 - Opens an **in-app browser DevTools** interface
 - **Critical Feature**: Works on **mobile devices** (Android/iOS) where traditional DevTools are unavailable
 - Provides console, network inspector, and other debugging tools
@@ -115,12 +115,11 @@ The modal provides several powerful diagnostic and maintenance actions:
   ```
 - **Use Case**: Testing memory management and investigating memory leaks
 
-#### 🧹 **Clear Cache**
-- Comprehensive cache clearing operation:
+#### 🧹 **Clear App Files**
+- Comprehensive app storage clearing operation:
   - Deletes all WebAuthn credentials
   - Signs out the current user
   - Clears all local/session storage
-  - Removes all cookies
   - **Web**: Uninstalls service worker and clears cache storages using `BitBswup.forceRefresh()`
   - **Hybrid Apps**: Forces a full application reload
 - **Use Case**: Reset app state for troubleshooting or testing fresh installations

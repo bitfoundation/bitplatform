@@ -11,8 +11,8 @@ env:
 
 jobs:
 
-  build_blazor_server:
-    name: build blazor
+  build_and_test:
+    name: build and test
     runs-on: ubuntu-24.04
 
     steps:

@@ -210,13 +210,10 @@ public static ValueTask<string> GetTimeZone(this IJSRuntime jsRuntime)
 @code {
     private string? userTimeZone;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterFirstRenderAsync()
     {
-        if (firstRender)
-        {
-            userTimeZone = await JSRuntime.GetTimeZone();
-            StateHasChanged();
-        }
+        userTimeZone = await JSRuntime.GetTimeZone();
+        StateHasChanged();
     }
 }
 ```
@@ -335,7 +332,7 @@ The build process will:
 
 ---
 
-## 8. Common Scenarios
+## 6. Common Scenarios
 
 ### Adding a New TypeScript File
 

@@ -367,30 +367,30 @@ This is the **core deployment workflow** that handles building and deploying all
    - The keystore is stored as a GitHub secret in base64 format for security
 
 2. **Build Android App Bundle (AAB)**
-   ```bash
-   # Install MAUI Android workload
-   dotnet workload install maui-android
+```bash
+# Install MAUI Android workload
+dotnet workload install maui-android
    
-   # Install Android SDK platform tools
-   ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager \
-     --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+# Install Android SDK platform tools
+${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager \
+  --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
    
-   # Generate CSS/JS files
-   dotnet build -t:BeforeBuildTasks -c Release
+# Generate CSS/JS files
+dotnet build -t:BeforeBuildTasks -c Release
    
-   # Publish signed AAB
-   dotnet publish -c Release \
-     -p:ApplicationId=com.company.app \
-     -p:AndroidPackageFormat=aab \
-     -p:AndroidKeyStore=true \
-     -p:AndroidSigningKeyStore="Boilerplate.keystore" \
-     -p:AndroidSigningKeyAlias=Boilerplate \
-     -p:AndroidSigningKeyPass="password" \
-     -p:AndroidSigningStorePass="password" \
-     -p:Version="1.0.0" \
-     -p:Environment=Production \
-     -f net10.0-android
-   ```
+# Publish signed AAB (Or APK if needed)
+dotnet publish -c Release \
+  -p:ApplicationId=com.company.app \
+  -p:AndroidPackageFormat=aab \
+  -p:AndroidKeyStore=true \
+  -p:AndroidSigningKeyStore="Boilerplate.keystore" \
+  -p:AndroidSigningKeyAlias=Boilerplate \
+  -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" \
+  -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" \
+  -p:Version="1.0.0" \
+  -p:Environment=Production \
+  -f net10.0-android
+```
 
 3. **Upload Artifact**
    ```yaml

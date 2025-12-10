@@ -344,7 +344,7 @@ The server can send messages to different targets:
 
 ---
 
-## 5. AppClientCoordinator - Orchestrating Everything
+## 4. AppClientCoordinator - Orchestrating Everything
 
 The **AppClientCoordinator** is responsible for initializing and coordinating all messaging services when the application starts.
 
@@ -421,7 +421,7 @@ This ensures all services are updated when authentication state changes.
 
 ---
 
-## 6. Push Notifications
+## 5. Push Notifications
 
 ### Push Notification Architecture
 
@@ -503,7 +503,7 @@ Each platform has its own implementation:
 
 ---
 
-## 7. Bit.Butil.Notification - Browser Notification API
+## 6. Bit.Butil.Notification - Browser Notification API
 
 The project uses **Bit.Butil.Notification** to access the browser's native Notification API.
 
@@ -560,7 +560,7 @@ private async Task ShowNotification()
 
 ---
 
-## 8. Testing Push Notifications - Understanding the Four Scenarios
+## 7. Testing Push Notifications - Understanding the Four Scenarios
 
 When testing push notifications, it's critical to understand that there are **four distinct scenarios** based on the app state when the notification is sent and when the user taps on it. The Boilerplate project handles all four scenarios across all platforms.
 
@@ -580,10 +580,10 @@ When testing push notifications, it's critical to understand that there are **fo
 
 ---
 
+---
+
 ### AI Wiki: Answered Questions
 * [Describe the workflow of bit Boilerplate's AI chat feature and provide a high-level overview.
 ](https://deepwiki.com/search/describe-the-workflow-of-bit-b_822b9510-8e1d-456f-99bf-fb1778374a9a)
 
 Ask your own question [here](https://wiki.bitplatform.dev)
-
----

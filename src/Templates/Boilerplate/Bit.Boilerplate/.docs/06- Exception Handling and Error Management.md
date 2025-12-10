@@ -29,7 +29,7 @@ These are **expected, business-logic exceptions** that represent predictable err
 **Characteristics:**
 - Their messages are **displayed directly to users** (user-friendly)
 - They are **localized** using `IStringLocalizer<AppStrings>`
-- They are logged as **warnings/errors** (not critical)
+- They are logged as **non critical errors**
 - They do NOT indicate bugs in the code
 
 **Examples of Known Exceptions in the project:**
@@ -53,7 +53,9 @@ These are **expected, business-logic exceptions** that represent predictable err
 5. **`ServerConnectionException`** ([`src/Shared/Exceptions/ServerConnectionException.cs`](/src/Shared/Exceptions/ServerConnectionException.cs))
    - Indicates connectivity issues between client and server
 
-**All Known Exceptions inherit from `RestException`** ([`src/Shared/Exceptions/RestException.cs`](/src/Shared/Exceptions/RestException.cs)), which inherits from `KnownException` and provides HTTP status code mapping for REST APIs.
+**Exception Inheritance:**
+- Exceptions that map to HTTP status codes (like `BadRequestException`, `UnauthorizedException`, `ResourceNotFoundException`) inherit from **`RestException`** ([`src/Shared/Exceptions/RestException.cs`](/src/Shared/Exceptions/RestException.cs)), which inherits from `KnownException` and provides HTTP status code mapping for REST APIs.
+- Exceptions that don't require HTTP status codes (like `DomainLogicException`, `ServerConnectionException`) inherit directly from **`KnownException`**.
 
 ---
 
