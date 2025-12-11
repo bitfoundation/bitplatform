@@ -532,8 +532,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
         else
         {
-            if (GetIsEnabled(item) is false) return;
-
             await OnClick.InvokeAsync(item);
 
             await InvokeItemClick(item);
