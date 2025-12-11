@@ -454,7 +454,7 @@ public class Operation
 
 private static List<Operation> itemStyleClassCustoms =
 [
-    new() { Name = ""Custom A (Default)"", Id = ""A"", Icon = BitIconName.Emoji },
+    new() { Name = ""Custom A (Default)"", Id = ""A"", Icon = BitIconName.Emoji, Style = ""color: brown"" },
     new() { Name = ""Custom B (Styled)"", Id = ""B"", Icon = BitIconName.Emoji, Style = ""color: tomato; border-color: brown; background-color: peachpuff;"" },
     new() { Name = ""Custom C (Classed)"", Id = ""C"", Icon = BitIconName.Emoji2, Class = ""custom-item"" },
 ];
