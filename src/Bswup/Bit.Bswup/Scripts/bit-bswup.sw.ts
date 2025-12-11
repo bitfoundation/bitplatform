@@ -1,4 +1,4 @@
-﻿self['bit-bswup.sw version'] = '10.2.1-pre-01';
+self['bit-bswup.sw version'] = '10.2.1-pre-01';
 
 interface Window {
     clients: any
@@ -209,7 +209,9 @@ async function handleFetch(e: any) {
 
     const request = createNewAssetRequest(asset);
     const response = await fetch(request);
-    bitBswupCache.put(cacheUrl, response.clone());
+    if (response.ok) {
+        bitBswupCache.put(cacheUrl, response.clone());
+    }
 
     diagFetch('+++ handleFetch ended - passive saving asset:', start, asset, e, req);
 
