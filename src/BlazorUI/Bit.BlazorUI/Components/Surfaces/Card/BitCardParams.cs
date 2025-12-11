@@ -74,31 +74,43 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (Background.HasValue && bitCard.HasNotBeenSet(nameof(Background)))
         {
             bitCard.Background = Background.Value;
+
+            bitCard.ClassBuilder.Reset();
         }
 
         if (Border.HasValue && bitCard.HasNotBeenSet(nameof(Border)))
         {
             bitCard.Border = Border.Value;
+
+            bitCard.ClassBuilder.Reset();
         }
 
         if (FullHeight.HasValue && bitCard.HasNotBeenSet(nameof(FullHeight)))
         {
             bitCard.FullHeight = FullHeight.Value;
+
+            bitCard.ClassBuilder.Reset();
         }
 
         if (FullSize.HasValue && bitCard.HasNotBeenSet(nameof(FullSize)))
         {
             bitCard.FullSize = FullSize.Value;
+
+            bitCard.ClassBuilder.Reset();
         }
 
         if (FullWidth.HasValue && bitCard.HasNotBeenSet(nameof(FullWidth)))
         {
             bitCard.FullWidth = FullWidth.Value;
+
+            bitCard.ClassBuilder.Reset();
         }
 
         if (NoShadow.HasValue && bitCard.HasNotBeenSet(nameof(NoShadow)))
         {
             bitCard.NoShadow = NoShadow.Value;
+
+            bitCard.ClassBuilder.Reset();
         }
     }
 }

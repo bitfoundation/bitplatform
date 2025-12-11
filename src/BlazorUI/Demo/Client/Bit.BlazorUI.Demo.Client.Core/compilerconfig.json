@@ -426,6 +426,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Utilities/Params/BitParamsDemo.razor.css",
+        "inputFile": "Pages/Components/Utilities/Params/BitParamsDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Utilities/Element/BitElementDemo.razor.css",
         "inputFile": "Pages/Components/Utilities/Element/BitElementDemo.razor.scss",
         "minify": { "enabled": false },
