@@ -427,7 +427,8 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 <BitMenuButton Text=""Classed Button"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Class=""custom-class"" Variant=""BitVariant.Outline"" />
 
 
-<BitMenuButton Text=""Item Styled & Classed Button"" Items=""itemStyleClassCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />
+<BitMenuButton Text=""Non-Sticky"" Items=""itemStyleClassCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />
+<BitMenuButton Text=""Sticky"" Sticky Items=""itemStyleClassCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />
 
 
 <BitMenuButton Text=""Classes"" Items=""basicCustoms"" IconName=""@BitIconName.FormatPainter"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text""

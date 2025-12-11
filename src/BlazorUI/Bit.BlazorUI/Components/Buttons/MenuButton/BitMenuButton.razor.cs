@@ -172,14 +172,17 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         _items.Add(item);
 
-        if (SelectedItemHasBeenSet is false && option.IsSelected)
+        if (Sticky)
         {
-            _ = AssignSelectedItem(item);
-        }
+            if (SelectedItemHasBeenSet is false && option.IsSelected)
+            {
+                _ = AssignSelectedItem(item);
+            }
 
-        if (SelectedItem is null)
-        {
-            _ = AssignSelectedItem(_items.FirstOrDefault(GetIsEnabled));
+            if (SelectedItem is null)
+            {
+                _ = AssignSelectedItem(_items.FirstOrDefault(GetIsEnabled));
+            }
         }
 
         StateHasChanged();
@@ -254,7 +257,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
 
-        if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
+        if (Sticky && SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
         {
             await AssignSelectedItem(DefaultSelectedItem);
         }
@@ -271,7 +274,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         if (ChildContent is not null || Items.Any() is false || Items == _oldItems) return;
 
         _oldItems = Items;
-        _items = Items.ToList();
+        _items = [.. Items];
+
+        if (Sticky is false) return;
 
         if (SelectedItem is not null) return;
 
@@ -519,19 +524,19 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         await CloseCallout();
 
-        if (Sticky is false)
+        if (Sticky)
+        {
+            if (await AssignSelectedItem(item) is false) return;
+
+            await OnChange.InvokeAsync(item);
+        }
+        else
         {
             if (GetIsEnabled(item) is false) return;
 
             await OnClick.InvokeAsync(item);
 
             await InvokeItemClick(item);
-        }
-        else
-        {
-            if (await AssignSelectedItem(item) is false) return;
-
-            await OnChange.InvokeAsync(item);
         }
     }
 

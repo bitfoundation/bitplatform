@@ -315,7 +315,8 @@ private List<BitMenuButtonItem> basicItemsIcon =
 <BitMenuButton Text=""Classed Button"" Items=""basicItems"" Class=""custom-class"" Variant=""BitVariant.Outline"" />
 
 
-<BitMenuButton Text=""Item Styled & Classed Button"" Items=""itemStyleClassItems"" Variant=""BitVariant.Text"" />
+<BitMenuButton Text=""Non-Sticky"" Items=""itemStyleClassItems"" Variant=""BitVariant.Text"" />
+<BitMenuButton Text=""Sticky"" Sticky Items=""itemStyleClassItems"" Variant=""BitVariant.Text"" />
 
 
 <BitMenuButton Text=""Classes"" Items=""basicItems"" IconName=""@BitIconName.FormatPainter"" Variant=""BitVariant.Text""
