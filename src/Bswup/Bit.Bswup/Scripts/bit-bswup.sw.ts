@@ -1,4 +1,4 @@
-﻿self['bit-bswup.sw version'] = '10.2.1-pre-01';
+self['bit-bswup.sw version'] = '10.2.1-pre-01';
 
 interface Window {
     clients: any
@@ -231,6 +231,10 @@ function handleMessage(e: MessageEvent<string>) {
 
     if (e.data === 'BLAZOR_STARTED') {
         createAssetsCache(true);
+    }
+
+    if (e.data === 'CLEAN_UP') {
+        deleteOldCaches(); // remove the old caches
     }
 }
 
