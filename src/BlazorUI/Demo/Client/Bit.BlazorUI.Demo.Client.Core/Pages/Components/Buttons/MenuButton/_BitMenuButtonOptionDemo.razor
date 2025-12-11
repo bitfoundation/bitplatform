@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <div class="example-content">
         <BitMenuButton Text="MenuButton" TItem="BitMenuButtonOption">
             <BitMenuButtonOption Text="Option A" Key="A" />
@@ -904,7 +904,7 @@
 <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br />
-    <div>Component's Style & Class:</div>
+    <div><b>Component's Style & Class</b>:</div>
     <br />
     <div class="example-content">
         <BitMenuButton Text="Styled Button" TItem="BitMenuButtonOption" Style="border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;">
@@ -919,17 +919,23 @@
             <BitMenuButtonOption Text="Option C" Key="C" />
         </BitMenuButton>
     </div>
-    <br /><br /><br /><br />
-    <div>Option's Style & Class:</div>
+    <br /><br /><br />
+    <div><b>Option's Style & Class</b>:</div>
     <br />
-    <div class="example-content">
-        <BitMenuButton Text="Option Styled & Classed Button" TItem="BitMenuButtonOption" Variant="BitVariant.Text">
-            <BitMenuButtonOption Text="Option A (Default)" Key="A" IconName="@BitIconName.Emoji" />
-            <BitMenuButtonOption Text="Option B (Styled)" Key="B" IconName="@BitIconName.Emoji" Style="color: tomato; border-color: brown; background-color: peachpuff;" IsEnabled="false" />
-            <BitMenuButtonOption Text="Option C (Classed)" Key="C" IconName="@BitIconName.Emoji2" Class="custom-item" />
-        </BitMenuButton>
-    </div>
-    <br /><br /><br /><br />
+    <div>Non-Sticky:</div>
+    <BitMenuButton Text="Non-Sticky" TItem="BitMenuButtonOption" Variant="BitVariant.Text">
+        <BitMenuButtonOption Text="Option A (Default)" Key="A" IconName="@BitIconName.Emoji" Style="color:brown" />
+        <BitMenuButtonOption Text="Option B (Styled)" Key="B" IconName="@BitIconName.Emoji" Style="color: tomato; border-color: brown; background-color: peachpuff;" />
+        <BitMenuButtonOption Text="Option C (Classed)" Key="C" IconName="@BitIconName.Emoji2" Class="custom-item" />
+    </BitMenuButton>
+    <br />
+    <div>Sticky:</div>
+    <BitMenuButton Text="Sticky" Sticky TItem="BitMenuButtonOption" Variant="BitVariant.Text">
+        <BitMenuButtonOption Text="Option A (Default)" Key="A" IconName="@BitIconName.Emoji" Style="color:brown" />
+        <BitMenuButtonOption Text="Option B (Styled)" Key="B" IconName="@BitIconName.Emoji" Style="color: tomato; border-color: brown; background-color: peachpuff;" />
+        <BitMenuButtonOption Text="Option C (Classed)" Key="C" IconName="@BitIconName.Emoji2" Class="custom-item" />
+    </BitMenuButton>
+    <br /><br /><br />
     <div><b>Styles</b> & <b>Classes</b>:</div>
     <br />
     <div>
