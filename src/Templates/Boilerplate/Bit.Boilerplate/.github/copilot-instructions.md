@@ -74,6 +74,7 @@ Before writing code, investigate thoroughly.
 *   If the user provides a **URL**, you **MUST** use the `fetch` or `get_web_pages` tools to retrieve its content.
 *   If the user provides a **git commit id/hash**, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve its details.
 *   If the user talked about current changes in the codebase, you **MUST** run the `git --no-pager diff` and `git --no-pager diff --staged` commands to see the differences.
+*   **IMPORTANT:** If you want to add new entity, entity type configuration, DTO, mapper, controller, or IAppController, you **MUST** read `.github\prompts\scaffold.prompt.md` to understand the structure, naming conventions, file locations, and implementation patterns.
 *   For UI-related tasks, you **MUST** first ask `DeepWiki`: *"What features does BitPlatform offer to help me complete this task? [USER'S ORIGINAL REQUEST]"*
 *   For anything related to `Bit.BlazorUI`, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit project template, you **MUST** use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform` to find relevant information.
 *   For mapper/mapping entity/dto related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns focusing on its static classes and extension methods approach.
@@ -132,62 +133,3 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 16. **Use OData Query Options**: Leverage `[EnableQuery]` and `ODataQueryOptions` for efficient data filtering and pagination.
 17. **Follow Mapperly Conventions**: Use **partial static classes and extensions methods** with Mapperly for high-performance object mapping.
 18. **Handle Concurrency**: Always use `byte[] Version` for optimistic concurrency control in update and delete operations.
-
-## Instructions for adding new model/entity to ef-core DbContext / Database
-Create the Entity Model
-- **Location**: `Boilerplate.Server.Api's Models folder`
-- **Requirements**:
-  - Include `Id`, `Version` properties
-  - Add appropriate navigation properties
-  - Use nullable reference types
-  - Add data annotations as needed
-
-Create the EntityTypeConfiguration
-- **Location**: `Boilerplate.Server.Api's Data/Configurations folder`
-  - Implement `IEntityTypeConfiguration<{EntityName}>`
-  - Configure unique indexes, relationships
-  - Add `DbSet<{EntityName}>` to AppDbContext
-  - Add ef-core migration
-
-## Instructions for adding new DTO and Mapper
-Create the DTO
-- **Location**: `Boilerplate.Shared's Dtos folder`
-- **Requirements**:
-  - Use `[DtoResourceType(typeof(AppStrings))]` attribute
-  - Add validation attributes: `[Required]`, `[MaxLength]`, `[Display]`
-  - Use `nameof(AppStrings.PropertyName)` for error messages and display names
-  - Include `Id`, `Version` properties
-  - Add calculated properties if needed (e.g., `ProductsCount`)
-  - Add `[JsonSerializable(typeof({DtoName}))]` to AppJsonContext.cs
-
-Create the Mapper
-- **Location**: `Boilerplate.Server.Api's Mappers folders`
-- **Requirements**:
-  - Use `[Mapper]` attribute from Mapperly
-  - Create `static partial class {MapperName}Mapper`
-  - Add projection method: `public static partial IQueryable<{DtoName}> Project(this IQueryable<{EntityName}> query);`
-  - Add mapping methods: `Map()`, `Patch()` for CRUD operations
-  - Use `[MapProperty]` for complex mappings if needed
-
-#### Instructions for creating Strongly Typed Http Client Wrapper to Call Backend API
-- **Location**: `Boilerplate.Shared project's Controllers folder`
-- **Requirements**:
-  - Inherit from `IAppController`
-  - Add `[Route("api/[controller]/[action]/")]` attribute
-  - Add `[AuthorizedApi]` if authentication required
-  - Always Use `CancellationToken` parameters
-  - The return type should be `Task<T>` or Task<T> where T is JSON Serializable type like DTO, int, or List<Dto>
-  - If Backend API's action returns `IQueryable<T>`, use `Task<List<T>>` as return type with `=> default!`
-  - If Backend API's action returns `IActionResult`, use `Produces<T>` attribute to specify the response type with `=> default!`
-  - If Backend API accepts ODataQueryOptions, simply ignore it
-
-#### Instructions to create Backend API Controllers
-- **Location**: `Boilerplate.Server.Api's Controllers folder`
-- **Requirements**:
-  - Inherit from `AppControllerBase`
-  - Implement the corresponding IAppController interface
-  - Add appropriate authorization attributes
-  - Use `[EnableQuery]` for GET endpoints with OData support
-  - Implement validation in private methods
-  - Use `Project()` for querying and mapping
-  - Handle resource not found scenarios using ResourceNotFoundException.
