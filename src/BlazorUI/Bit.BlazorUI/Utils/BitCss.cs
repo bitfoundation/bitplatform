@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public static class BitCss
 {
@@ -12,12 +12,14 @@ public static class BitCss
                 public const string Dark = "bit-css-clr-pri-dark";
                 public const string Light = "bit-css-clr-pri-light";
                 public const string Text = "bit-css-clr-pri-text";
+
                 public static class Hover
                 {
                     public const string Main = "bit-css-clr-pri-hover";
                     public const string Dark = "bit-css-clr-pri-dark-hover";
                     public const string Light = "bit-css-clr-pri-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "bit-css-clr-pri-active";
@@ -32,12 +34,14 @@ public static class BitCss
                 public const string Dark = "bit-css-clr-sec-dark";
                 public const string Light = "bit-css-clr-sec-light";
                 public const string Text = "bit-css-clr-sec-text";
+
                 public static class Hover
                 {
                     public const string Main = "bit-css-clr-sec-hover";
                     public const string Dark = "bit-css-clr-sec-dark-hover";
                     public const string Light = "bit-css-clr-sec-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "bit-css-clr-sec-active";
@@ -52,12 +56,14 @@ public static class BitCss
                 public const string Dark = "bit-css-clr-ter-dark";
                 public const string Light = "bit-css-clr-ter-light";
                 public const string Text = "bit-css-clr-ter-text";
+
                 public static class Hover
                 {
                     public const string Main = "bit-css-clr-ter-hover";
                     public const string Dark = "bit-css-clr-ter-dark-hover";
                     public const string Light = "bit-css-clr-ter-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "bit-css-clr-ter-active";
@@ -72,12 +78,14 @@ public static class BitCss
                 public const string Dark = "bit-css-clr-inf-dark";
                 public const string Light = "bit-css-clr-inf-light";
                 public const string Text = "bit-css-clr-inf-text";
+
                 public static class Hover
                 {
                     public const string Main = "bit-css-clr-inf-hover";
                     public const string Dark = "bit-css-clr-inf-dark-hover";
                     public const string Light = "bit-css-clr-inf-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "bit-css-clr-inf-active";
@@ -92,12 +100,14 @@ public static class BitCss
                 public const string Dark = "bit-css-clr-suc-dark";
                 public const string Light = "bit-css-clr-suc-light";
                 public const string Text = "bit-css-clr-suc-text";
+
                 public static class Hover
                 {
                     public const string Main = "bit-css-clr-suc-hover";
                     public const string Dark = "bit-css-clr-suc-dark-hover";
                     public const string Light = "bit-css-clr-suc-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "bit-css-clr-suc-active";
@@ -112,12 +122,14 @@ public static class BitCss
                 public const string Dark = "bit-css-clr-wrn-dark";
                 public const string Light = "bit-css-clr-wrn-light";
                 public const string Text = "bit-css-clr-wrn-text";
+
                 public static class Hover
                 {
                     public const string Main = "bit-css-clr-wrn-hover";
                     public const string Dark = "bit-css-clr-wrn-dark-hover";
                     public const string Light = "bit-css-clr-wrn-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "bit-css-clr-wrn-active";
@@ -132,12 +144,14 @@ public static class BitCss
                 public const string Dark = "bit-css-clr-swr-dark";
                 public const string Light = "bit-css-clr-swr-light";
                 public const string Text = "bit-css-clr-swr-text";
+
                 public static class Hover
                 {
                     public const string Main = "bit-css-clr-swr-hover";
                     public const string Dark = "bit-css-clr-swr-dark-hover";
                     public const string Light = "bit-css-clr-swr-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "bit-css-clr-swr-active";
@@ -152,12 +166,14 @@ public static class BitCss
                 public const string Dark = "bit-css-clr-err-dark";
                 public const string Light = "bit-css-clr-err-light";
                 public const string Text = "bit-css-clr-err-text";
+
                 public static class Hover
                 {
                     public const string Main = "bit-css-clr-err-hover";
                     public const string Dark = "bit-css-clr-err-dark-hover";
                     public const string Light = "bit-css-clr-err-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "bit-css-clr-err-active";
@@ -169,52 +185,121 @@ public static class BitCss
             public static class Foreground
             {
                 public const string Primary = "bit-css-clr-fg-pri";
+                public const string PrimaryDark = "bit-css-clr-fg-pri-dark";
+                public const string PrimaryLight = "bit-css-clr-fg-pri-light";
                 public const string Secondary = "bit-css-clr-fg-sec";
+                public const string SecondaryDark = "bit-css-clr-fg-sec-dark";
+                public const string SecondaryLight = "bit-css-clr-fg-sec-light";
+                public const string Tertiary = "bit-css-clr-fg-ter";
+                public const string TertiaryDark = "bit-css-clr-fg-ter-dark";
+                public const string TertiaryLight = "bit-css-clr-fg-ter-light";
                 public const string Disabled = "bit-css-clr-fg-dis";
+
                 public static class Hover
                 {
                     public const string Primary = "bit-css-clr-fg-pri-hover";
+                    public const string PrimaryDark = "bit-css-clr-fg-pri-dark-hover";
+                    public const string PrimaryLight = "bit-css-clr-fg-pri-light-hover";
                     public const string Secondary = "bit-css-clr-fg-sec-hover";
+                    public const string SecondaryDark = "bit-css-clr-fg-sec-dark-hover";
+                    public const string SecondaryLight = "bit-css-clr-fg-sec-light-hover";
+                    public const string Tertiary = "bit-css-clr-fg-ter-hover";
+                    public const string TertiaryDark = "bit-css-clr-fg-ter-dark-hover";
+                    public const string TertiaryLight = "bit-css-clr-fg-ter-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Primary = "bit-css-clr-fg-pri-active";
+                    public const string PrimaryDark = "bit-css-clr-fg-pri-dark-active";
+                    public const string PrimaryLight = "bit-css-clr-fg-pri-light-active";
                     public const string Secondary = "bit-css-clr-fg-sec-active";
+                    public const string SecondaryDark = "bit-css-clr-fg-sec-dark-active";
+                    public const string SecondaryLight = "bit-css-clr-fg-sec-light-active";
+                    public const string Tertiary = "bit-css-clr-fg-ter-active";
+                    public const string TertiaryDark = "bit-css-clr-fg-ter-dark-active";
+                    public const string TertiaryLight = "bit-css-clr-fg-ter-light-active";
                 }
             }
 
             public static class Background
             {
                 public const string Primary = "bit-css-clr-bg-pri";
+                public const string PrimaryDark = "bit-css-clr-bg-pri-dark";
+                public const string PrimaryLight = "bit-css-clr-bg-pri-light";
                 public const string Secondary = "bit-css-clr-bg-sec";
+                public const string SecondaryDark = "bit-css-clr-bg-sec-dark";
+                public const string SecondaryLight = "bit-css-clr-bg-sec-light";
+                public const string Tertiary = "bit-css-clr-bg-ter";
+                public const string TertiaryDark = "bit-css-clr-bg-ter-dark";
+                public const string TertiaryLight = "bit-css-clr-bg-ter-light";
                 public const string Disabled = "bit-css-clr-bg-dis";
                 public const string Overlay = "bit-css-clr-bg-overlay";
+
                 public static class Hover
                 {
                     public const string Primary = "bit-css-clr-bg-pri-hover";
+                    public const string PrimaryDark = "bit-css-clr-bg-pri-dark-hover";
+                    public const string PrimaryLight = "bit-css-clr-bg-pri-light-hover";
                     public const string Secondary = "bit-css-clr-bg-sec-hover";
+                    public const string SecondaryDark = "bit-css-clr-bg-sec-dark-hover";
+                    public const string SecondaryLight = "bit-css-clr-bg-sec-light-hover";
+                    public const string Tertiary = "bit-css-clr-bg-ter-hover";
+                    public const string TertiaryDark = "bit-css-clr-bg-ter-dark-hover";
+                    public const string TertiaryLight = "bit-css-clr-bg-ter-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Primary = "bit-css-clr-bg-pri-active";
+                    public const string PrimaryDark = "bit-css-clr-bg-pri-dark-active";
+                    public const string PrimaryLight = "bit-css-clr-bg-pri-light-active";
                     public const string Secondary = "bit-css-clr-bg-sec-active";
+                    public const string SecondaryDark = "bit-css-clr-bg-sec-dark-active";
+                    public const string SecondaryLight = "bit-css-clr-bg-sec-light-active";
+                    public const string Tertiary = "bit-css-clr-bg-ter-active";
+                    public const string TertiaryDark = "bit-css-clr-bg-ter-dark-active";
+                    public const string TertiaryLight = "bit-css-clr-bg-ter-light-active";
                 }
             }
 
             public static class Border
             {
                 public const string Primary = "bit-css-clr-brd-pri";
+                public const string PrimaryDark = "bit-css-clr-brd-pri-dark";
+                public const string PrimaryLight = "bit-css-clr-brd-pri-light";
                 public const string Secondary = "bit-css-clr-brd-sec";
+                public const string SecondaryDark = "bit-css-clr-brd-sec-dark";
+                public const string SecondaryLight = "bit-css-clr-brd-sec-light";
+                public const string Tertiary = "bit-css-clr-brd-ter";
+                public const string TertiaryDark = "bit-css-clr-brd-ter-dark";
+                public const string TertiaryLight = "bit-css-clr-brd-ter-light";
                 public const string Disabled = "bit-css-clr-brd-dis";
+
                 public static class Hover
                 {
                     public const string Primary = "bit-css-clr-brd-pri-hover";
+                    public const string PrimaryDark = "bit-css-clr-brd-pri-dark-hover";
+                    public const string PrimaryLight = "bit-css-clr-brd-pri-light-hover";
                     public const string Secondary = "bit-css-clr-brd-sec-hover";
+                    public const string SecondaryDark = "bit-css-clr-brd-sec-dark-hover";
+                    public const string SecondaryLight = "bit-css-clr-brd-sec-light-hover";
+                    public const string Tertiary = "bit-css-clr-brd-ter-hover";
+                    public const string TertiaryDark = "bit-css-clr-brd-ter-dark-hover";
+                    public const string TertiaryLight = "bit-css-clr-brd-ter-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Primary = "bit-css-clr-brd-pri-active";
+                    public const string PrimaryDark = "bit-css-clr-brd-pri-dark-active";
+                    public const string PrimaryLight = "bit-css-clr-brd-pri-light-active";
                     public const string Secondary = "bit-css-clr-brd-sec-active";
+                    public const string SecondaryDark = "bit-css-clr-brd-sec-dark-active";
+                    public const string SecondaryLight = "bit-css-clr-brd-sec-light-active";
+                    public const string Tertiary = "bit-css-clr-brd-ter-active";
+                    public const string TertiaryDark = "bit-css-clr-brd-ter-dark-active";
+                    public const string TertiaryLight = "bit-css-clr-brd-ter-light-active";
                 }
             }
 
@@ -252,6 +337,15 @@ public static class BitCss
         public static class Shadow
         {
             public const string Callout = "bit-css-shd-cal";
+            public const string Callout2 = "bit-css-shd-cal2";
+
+            public const string Sm = "bit-css-shd-sm";
+            public const string Nm = "bit-css-shd-nm";
+            public const string Md = "bit-css-shd-md";
+            public const string Lg = "bit-css-shd-lg";
+            public const string Xl = "bit-css-shd-xl";
+            public const string Xxl = "bit-css-shd-2xl";
+            public const string Inner = "bit-css-shd-inner";
 
             public const string S1 = "bit-css-shd-1";
             public const string S2 = "bit-css-shd-2";
@@ -306,12 +400,14 @@ public static class BitCss
                 public const string Dark = "--bit-clr-pri-dark";
                 public const string Light = "--bit-clr-pri-light";
                 public const string Text = "--bit-clr-pri-text";
+
                 public static class Hover
                 {
                     public const string Main = "--bit-clr-pri-hover";
                     public const string Dark = "--bit-clr-pri-dark-hover";
                     public const string Light = "--bit-clr-pri-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "--bit-clr-pri-active";
@@ -326,12 +422,14 @@ public static class BitCss
                 public const string Dark = "--bit-clr-sec-dark";
                 public const string Light = "--bit-clr-sec-light";
                 public const string Text = "--bit-clr-sec-text";
+
                 public static class Hover
                 {
                     public const string Main = "--bit-clr-sec-hover";
                     public const string Dark = "--bit-clr-sec-dark-hover";
                     public const string Light = "--bit-clr-sec-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "--bit-clr-sec-active";
@@ -346,12 +444,14 @@ public static class BitCss
                 public const string Dark = "--bit-clr-ter-dark";
                 public const string Light = "--bit-clr-ter-light";
                 public const string Text = "--bit-clr-ter-text";
+
                 public static class Hover
                 {
                     public const string Main = "--bit-clr-ter-hover";
                     public const string Dark = "--bit-clr-ter-dark-hover";
                     public const string Light = "--bit-clr-ter-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "--bit-clr-ter-active";
@@ -366,12 +466,14 @@ public static class BitCss
                 public const string Dark = "--bit-clr-inf-dark";
                 public const string Light = "--bit-clr-inf-light";
                 public const string Text = "--bit-clr-inf-text";
+
                 public static class Hover
                 {
                     public const string Main = "--bit-clr-inf-hover";
                     public const string Dark = "--bit-clr-inf-dark-hover";
                     public const string Light = "--bit-clr-inf-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "--bit-clr-inf-active";
@@ -386,12 +488,14 @@ public static class BitCss
                 public const string Dark = "--bit-clr-suc-dark";
                 public const string Light = "--bit-clr-suc-light";
                 public const string Text = "--bit-clr-suc-text";
+
                 public static class Hover
                 {
                     public const string Main = "--bit-clr-suc-hover";
                     public const string Dark = "--bit-clr-suc-dark-hover";
                     public const string Light = "--bit-clr-suc-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "--bit-clr-suc-active";
@@ -406,12 +510,14 @@ public static class BitCss
                 public const string Dark = "--bit-clr-wrn-dark";
                 public const string Light = "--bit-clr-wrn-light";
                 public const string Text = "--bit-clr-wrn-text";
+
                 public static class Hover
                 {
                     public const string Main = "--bit-clr-wrn-hover";
                     public const string Dark = "--bit-clr-wrn-dark-hover";
                     public const string Light = "--bit-clr-wrn-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "--bit-clr-wrn-active";
@@ -426,12 +532,14 @@ public static class BitCss
                 public const string Dark = "--bit-clr-swr-dark";
                 public const string Light = "--bit-clr-swr-light";
                 public const string Text = "--bit-clr-swr-text";
+
                 public static class Hover
                 {
                     public const string Main = "--bit-clr-swr-hover";
                     public const string Dark = "--bit-clr-swr-dark-hover";
                     public const string Light = "--bit-clr-swr-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "--bit-clr-swr-active";
@@ -446,12 +554,14 @@ public static class BitCss
                 public const string Dark = "--bit-clr-err-dark";
                 public const string Light = "--bit-clr-err-light";
                 public const string Text = "--bit-clr-err-text";
+
                 public static class Hover
                 {
                     public const string Main = "--bit-clr-err-hover";
                     public const string Dark = "--bit-clr-err-dark-hover";
                     public const string Light = "--bit-clr-err-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Main = "--bit-clr-err-active";
@@ -463,52 +573,121 @@ public static class BitCss
             public static class Foreground
             {
                 public const string Primary = "--bit-clr-fg-pri";
+                public const string PrimaryDark = "--bit-clr-fg-pri-dark";
+                public const string PrimaryLight = "--bit-clr-fg-pri-light";
                 public const string Secondary = "--bit-clr-fg-sec";
+                public const string SecondaryDark = "--bit-clr-fg-sec-dark";
+                public const string SecondaryLight = "--bit-clr-fg-sec-light";
+                public const string Tertiary = "--bit-clr-fg-ter";
+                public const string TertiaryDark = "--bit-clr-fg-ter-dark";
+                public const string TertiaryLight = "--bit-clr-fg-ter-light";
                 public const string Disabled = "--bit-clr-fg-dis";
+
                 public static class Hover
                 {
                     public const string Primary = "--bit-clr-fg-pri-hover";
+                    public const string PrimaryDark = "--bit-clr-fg-pri-dark-hover";
+                    public const string PrimaryLight = "--bit-clr-fg-pri-light-hover";
                     public const string Secondary = "--bit-clr-fg-sec-hover";
+                    public const string SecondaryDark = "--bit-clr-fg-sec-dark-hover";
+                    public const string SecondaryLight = "--bit-clr-fg-sec-light-hover";
+                    public const string Tertiary = "--bit-clr-fg-ter-hover";
+                    public const string TertiaryDark = "--bit-clr-fg-ter-dark-hover";
+                    public const string TertiaryLight = "--bit-clr-fg-ter-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Primary = "--bit-clr-fg-pri-active";
+                    public const string PrimaryDark = "--bit-clr-fg-pri-dark-active";
+                    public const string PrimaryLight = "--bit-clr-fg-pri-light-active";
                     public const string Secondary = "--bit-clr-fg-sec-active";
+                    public const string SecondaryDark = "--bit-clr-fg-sec-dark-active";
+                    public const string SecondaryLight = "--bit-clr-fg-sec-light-active";
+                    public const string Tertiary = "--bit-clr-fg-ter-active";
+                    public const string TertiaryDark = "--bit-clr-fg-ter-dark-active";
+                    public const string TertiaryLight = "--bit-clr-fg-ter-light-active";
                 }
             }
 
             public static class Background
             {
                 public const string Primary = "--bit-clr-bg-pri";
+                public const string PrimaryDark = "--bit-clr-bg-pri-dark";
+                public const string PrimaryLight = "--bit-clr-bg-pri-light";
                 public const string Secondary = "--bit-clr-bg-sec";
+                public const string SecondaryDark = "--bit-clr-bg-sec-dark";
+                public const string SecondaryLight = "--bit-clr-bg-sec-light";
+                public const string Tertiary = "--bit-clr-bg-ter";
+                public const string TertiaryDark = "--bit-clr-bg-ter-dark";
+                public const string TertiaryLight = "--bit-clr-bg-ter-light";
                 public const string Disabled = "--bit-clr-bg-dis";
                 public const string Overlay = "--bit-clr-bg-overlay";
+
                 public static class Hover
                 {
                     public const string Primary = "--bit-clr-bg-pri-hover";
+                    public const string PrimaryDark = "--bit-clr-bg-pri-dark-hover";
+                    public const string PrimaryLight = "--bit-clr-bg-pri-light-hover";
                     public const string Secondary = "--bit-clr-bg-sec-hover";
+                    public const string SecondaryDark = "--bit-clr-bg-sec-dark-hover";
+                    public const string SecondaryLight = "--bit-clr-bg-sec-light-hover";
+                    public const string Tertiary = "--bit-clr-bg-ter-hover";
+                    public const string TertiaryDark = "--bit-clr-bg-ter-dark-hover";
+                    public const string TertiaryLight = "--bit-clr-bg-ter-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Primary = "--bit-clr-bg-pri-active";
+                    public const string PrimaryDark = "--bit-clr-bg-pri-dark-active";
+                    public const string PrimaryLight = "--bit-clr-bg-pri-light-active";
                     public const string Secondary = "--bit-clr-bg-sec-active";
+                    public const string SecondaryDark = "--bit-clr-bg-sec-dark-active";
+                    public const string SecondaryLight = "--bit-clr-bg-sec-light-active";
+                    public const string Tertiary = "--bit-clr-bg-ter-active";
+                    public const string TertiaryDark = "--bit-clr-bg-ter-dark-active";
+                    public const string TertiaryLight = "--bit-clr-bg-ter-light-active";
                 }
             }
 
             public static class Border
             {
                 public const string Primary = "--bit-clr-brd-pri";
+                public const string PrimaryDark = "--bit-clr-brd-pri-dark";
+                public const string PrimaryLight = "--bit-clr-brd-pri-light";
                 public const string Secondary = "--bit-clr-brd-sec";
+                public const string SecondaryDark = "--bit-clr-brd-sec-dark";
+                public const string SecondaryLight = "--bit-clr-brd-sec-light";
+                public const string Tertiary = "--bit-clr-brd-ter";
+                public const string TertiaryDark = "--bit-clr-brd-ter-dark";
+                public const string TertiaryLight = "--bit-clr-brd-ter-light";
                 public const string Disabled = "--bit-clr-brd-dis";
+
                 public static class Hover
                 {
                     public const string Primary = "--bit-clr-brd-pri-hover";
+                    public const string PrimaryDark = "--bit-clr-brd-pri-dark-hover";
+                    public const string PrimaryLight = "--bit-clr-brd-pri-light-hover";
                     public const string Secondary = "--bit-clr-brd-sec-hover";
+                    public const string SecondaryDark = "--bit-clr-brd-sec-dark-hover";
+                    public const string SecondaryLight = "--bit-clr-brd-sec-light-hover";
+                    public const string Tertiary = "--bit-clr-brd-ter-hover";
+                    public const string TertiaryDark = "--bit-clr-brd-ter-dark-hover";
+                    public const string TertiaryLight = "--bit-clr-brd-ter-light-hover";
                 }
+
                 public static class Active
                 {
                     public const string Primary = "--bit-clr-brd-pri-active";
+                    public const string PrimaryDark = "--bit-clr-brd-pri-dark-active";
+                    public const string PrimaryLight = "--bit-clr-brd-pri-light-active";
                     public const string Secondary = "--bit-clr-brd-sec-active";
+                    public const string SecondaryDark = "--bit-clr-brd-sec-dark-active";
+                    public const string SecondaryLight = "--bit-clr-brd-sec-light-active";
+                    public const string Tertiary = "--bit-clr-brd-ter-active";
+                    public const string TertiaryDark = "--bit-clr-brd-ter-dark-active";
+                    public const string TertiaryLight = "--bit-clr-brd-ter-light-active";
                 }
             }
 
@@ -546,6 +725,15 @@ public static class BitCss
         public static class Shadow
         {
             public const string Callout = "--bit-shd-cal";
+            public const string Callout2 = "--bit-shd-cal2";
+
+            public const string Sm = "--bit-shd-sm";
+            public const string Nm = "--bit-shd-nm";
+            public const string Md = "--bit-shd-md";
+            public const string Lg = "--bit-shd-lg";
+            public const string Xl = "--bit-shd-xl";
+            public const string Xxl = "--bit-shd-2xl";
+            public const string Inner = "--bit-shd-inner";
 
             public const string S1 = "--bit-shd-1";
             public const string S2 = "--bit-shd-2";
@@ -579,6 +767,7 @@ public static class BitCss
             public const string Modal = "--bit-zin-modal";
             public const string Callout = "--bit-zin-callout";
             public const string Overlay = "--bit-zin-overlay";
+            public const string Base = "--bit-zin-base";
         }
 
         public static class Shape
@@ -586,6 +775,159 @@ public static class BitCss
             public const string BorderRadius = "--bit-shp-brd-radius";
             public const string BorderWidth = "--bit-shp-brd-width";
             public const string BorderStyle = "--bit-shp-brd-style";
+        }
+
+        public static class Spacing
+        {
+            public const string ScalingFactor = "--bit-spa-scaling-factor";
+        }
+
+        public static class Typography
+        {
+            public const string FontFamily = "--bit-tpg-font-family";
+            public const string FontWeight = "--bit-tpg-font-weight";
+            public const string LineHeight = "--bit-tpg-line-height";
+            public const string GutterSize = "--bit-tpg-gutter-size";
+
+            public static class H1
+            {
+                public const string Margin = "--bit-tpg-h1-margin";
+                public const string FontWeight = "--bit-tpg-h1-font-weight";
+                public const string FontSize = "--bit-tpg-h1-font-size";
+                public const string LineHeight = "--bit-tpg-h1-line-height";
+                public const string LetterSpacing = "--bit-tpg-h1-letter-spacing";
+            }
+
+            public static class H2
+            {
+                public const string Margin = "--bit-tpg-h2-margin";
+                public const string FontWeight = "--bit-tpg-h2-font-weight";
+                public const string FontSize = "--bit-tpg-h2-font-size";
+                public const string LineHeight = "--bit-tpg-h2-line-height";
+                public const string LetterSpacing = "--bit-tpg-h2-letter-spacing";
+            }
+
+            public static class H3
+            {
+                public const string Margin = "--bit-tpg-h3-margin";
+                public const string FontWeight = "--bit-tpg-h3-font-weight";
+                public const string FontSize = "--bit-tpg-h3-font-size";
+                public const string LineHeight = "--bit-tpg-h3-line-height";
+                public const string LetterSpacing = "--bit-tpg-h3-letter-spacing";
+            }
+
+            public static class H4
+            {
+                public const string Margin = "--bit-tpg-h4-margin";
+                public const string FontWeight = "--bit-tpg-h4-font-weight";
+                public const string FontSize = "--bit-tpg-h4-font-size";
+                public const string LineHeight = "--bit-tpg-h4-line-height";
+                public const string LetterSpacing = "--bit-tpg-h4-letter-spacing";
+            }
+
+            public static class H5
+            {
+                public const string Margin = "--bit-tpg-h5-margin";
+                public const string FontWeight = "--bit-tpg-h5-font-weight";
+                public const string FontSize = "--bit-tpg-h5-font-size";
+                public const string LineHeight = "--bit-tpg-h5-line-height";
+                public const string LetterSpacing = "--bit-tpg-h5-letter-spacing";
+            }
+
+            public static class H6
+            {
+                public const string Margin = "--bit-tpg-h6-margin";
+                public const string FontWeight = "--bit-tpg-h6-font-weight";
+                public const string FontSize = "--bit-tpg-h6-font-size";
+                public const string LineHeight = "--bit-tpg-h6-line-height";
+                public const string LetterSpacing = "--bit-tpg-h6-letter-spacing";
+            }
+
+            public static class Subtitle1
+            {
+                public const string Margin = "--bit-tpg-subtitle1-margin";
+                public const string FontWeight = "--bit-tpg-subtitle1-font-weight";
+                public const string FontSize = "--bit-tpg-subtitle1-font-size";
+                public const string LineHeight = "--bit-tpg-subtitle1-line-height";
+                public const string LetterSpacing = "--bit-tpg-subtitle1-letter-spacing";
+            }
+
+            public static class Subtitle2
+            {
+                public const string Margin = "--bit-tpg-subtitle2-margin";
+                public const string FontWeight = "--bit-tpg-subtitle2-font-weight";
+                public const string FontSize = "--bit-tpg-subtitle2-font-size";
+                public const string LineHeight = "--bit-tpg-subtitle2-line-height";
+                public const string LetterSpacing = "--bit-tpg-subtitle2-letter-spacing";
+            }
+
+            public static class Body1
+            {
+                public const string Margin = "--bit-tpg-body1-margin";
+                public const string FontWeight = "--bit-tpg-body1-font-weight";
+                public const string FontSize = "--bit-tpg-body1-font-size";
+                public const string LineHeight = "--bit-tpg-body1-line-height";
+                public const string LetterSpacing = "--bit-tpg-body1-letter-spacing";
+            }
+
+            public static class Body2
+            {
+                public const string Margin = "--bit-tpg-body2-margin";
+                public const string FontWeight = "--bit-tpg-body2-font-weight";
+                public const string FontSize = "--bit-tpg-body2-font-size";
+                public const string LineHeight = "--bit-tpg-body2-line-height";
+                public const string LetterSpacing = "--bit-tpg-body2-letter-spacing";
+            }
+
+            public static class Button
+            {
+                public const string Margin = "--bit-tpg-button-margin";
+                public const string FontWeight = "--bit-tpg-button-font-weight";
+                public const string FontSize = "--bit-tpg-button-font-size";
+                public const string LineHeight = "--bit-tpg-button-line-height";
+                public const string LetterSpacing = "--bit-tpg-button-letter-spacing";
+                public const string TextTransform = "--bit-tpg-button-text-transform";
+                public const string Display = "--bit-tpg-button-display";
+            }
+
+            public static class Caption1
+            {
+                public const string Margin = "--bit-tpg-caption1-margin";
+                public const string FontWeight = "--bit-tpg-caption1-font-weight";
+                public const string FontSize = "--bit-tpg-caption1-font-size";
+                public const string LineHeight = "--bit-tpg-caption1-line-height";
+                public const string LetterSpacing = "--bit-tpg-caption1-letter-spacing";
+            }
+
+            public static class Caption2
+            {
+                public const string Margin = "--bit-tpg-caption2-margin";
+                public const string FontWeight = "--bit-tpg-caption2-font-weight";
+                public const string FontSize = "--bit-tpg-caption2-font-size";
+                public const string LineHeight = "--bit-tpg-caption2-line-height";
+                public const string LetterSpacing = "--bit-tpg-caption2-letter-spacing";
+            }
+
+            public static class Overline
+            {
+                public const string Margin = "--bit-tpg-overline-margin";
+                public const string FontWeight = "--bit-tpg-overline-font-weight";
+                public const string FontSize = "--bit-tpg-overline-font-size";
+                public const string LineHeight = "--bit-tpg-overline-line-height";
+                public const string LetterSpacing = "--bit-tpg-overline-letter-spacing";
+                public const string TextTransform = "--bit-tpg-overline-text-transform";
+                public const string Display = "--bit-tpg-overline-display";
+            }
+
+            public static class Inherit
+            {
+                public const string Margin = "--bit-tpg-inherit-margin";
+                public const string FontFamily = "--bit-tpg-inherit-font-family";
+                public const string FontWeight = "--bit-tpg-inherit-font-weight";
+                public const string FontSize = "--bit-tpg-inherit-font-size";
+                public const string LineHeight = "--bit-tpg-inherit-line-height";
+                public const string LetterSpacing = "--bit-tpg-inherit-letter-spacing";
+            }
         }
     }
 }
