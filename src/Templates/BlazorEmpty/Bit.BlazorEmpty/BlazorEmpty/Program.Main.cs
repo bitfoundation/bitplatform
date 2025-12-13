@@ -1,4 +1,5 @@
 ﻿using BlazorEmpty.Components;
+using Microsoft.AspNetCore.ResponseCompression;
 #if (UseWebAssembly)
 using BlazorEmpty.Client.Pages;
 #endif
@@ -11,8 +12,11 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddResponseCompression(opts => 
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/wasm", "application/octet-stream"]));
+
         // Add services to the container.
-        #if (!UseServer && !UseWebAssembly)
+#if (!UseServer && !UseWebAssembly)
         builder.Services.AddRazorComponents();
         #else
         builder.Services.AddRazorComponents()

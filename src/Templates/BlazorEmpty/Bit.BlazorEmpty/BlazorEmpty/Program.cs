@@ -7,7 +7,8 @@ using BlazorEmpty.Client.Pages;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddResponseCompression();
+builder.Services.AddResponseCompression(opts => 
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/wasm", "application/octet-stream"]));
 
 // Add services to the container.
 #if (!UseServer && !UseWebAssembly)
