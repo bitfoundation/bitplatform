@@ -1,4 +1,4 @@
-﻿@import '../media-queries.scss';
+@import '../media-queries.scss';
 
 :root,
 :root[bit-theme="light"],
@@ -106,8 +106,8 @@
     --bit-tpg-inherit-font-size: inherit;
     --bit-tpg-inherit-line-height: inherit;
     --bit-tpg-inherit-letter-spacing: inherit;
-    --bit-tpg-overline-text-transform: inherit;
-    --bit-tpg-overline-display: inherit;
+    --bit-tpg-inherit-text-transform: inherit;
+    --bit-tpg-inherit-display: inherit;
     // media
     @include lt-sm {
         // h1

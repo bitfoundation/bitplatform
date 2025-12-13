@@ -623,6 +623,8 @@ public static partial class BitCss
                 public const string FontSize = "--bit-tpg-inherit-font-size";
                 public const string LineHeight = "--bit-tpg-inherit-line-height";
                 public const string LetterSpacing = "--bit-tpg-inherit-letter-spacing";
+                public const string TextTransform = "--bit-tpg-inherit-text-transform";
+                public const string Display = "--bit-tpg-inherit-display";
             }
         }
     }
