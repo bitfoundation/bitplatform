@@ -35,7 +35,7 @@ var app = builder.Build();
 #if (UseWebAssembly)
 if (builder.Environment.IsDevelopment())
 {
-    builder.UseWebAssemblyDebugging();
+    app.UseWebAssemblyDebugging();
 }
 else
 #else

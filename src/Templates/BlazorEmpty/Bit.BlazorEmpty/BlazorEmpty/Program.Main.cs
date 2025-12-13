@@ -41,7 +41,7 @@ public class Program
 #if (UseWebAssembly)
         if (builder.Environment.IsDevelopment())
         {
-            builder.UseWebAssemblyDebugging();
+            app.UseWebAssemblyDebugging();
         }
         else
 #else
