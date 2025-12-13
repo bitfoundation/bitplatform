@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI.Demo.Client.Core.Pages
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages
 @inherits AppComponentBase
 
 <section class="main-container">
@@ -8,7 +8,7 @@
             @foreach (var com in _components)
             {
                 <button @onclick="(() => SelectComponent(com))"
-                        class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null) @BitCss.Class.Color.Foreground.Primary">
+                        class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null) @BitCss.Class.Color.Foreground.Primary.Main">
                     <div class="component-icon">
                         <PopularComponentsIcon ComponentName="@com.Name"></PopularComponentsIcon>
                     </div>

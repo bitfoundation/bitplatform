@@ -10,9 +10,9 @@
     </BitButton>
 </div>
 <div class="hero-section-content">
-    <div class="hero-section-components @BitCss.Class.Color.Background.Secondary">
+    <div class="hero-section-components @BitCss.Class.Color.Background.Secondary.Main">
         <div class="hero-section-components-col">
-            <div class="component-box @BitCss.Class.Color.Background.Primary">
+            <div class="component-box @BitCss.Class.Color.Background.Primary.Main">
                 <BitDropdown Label="Select multiple products"
                              Items="_productDropdownItems"
                              MultiSelect="true"
@@ -20,7 +20,7 @@
                              Style="width: 326px; margin: 20px 0 20px 0"
                              TItem="BitDropdownItem<string>" TValue="string" />
             </div>
-            <div class="component-box @BitCss.Class.Color.Background.Primary">
+            <div class="component-box @BitCss.Class.Color.Background.Primary.Main">
                 <BitColorPicker ShowPreview="true" @bind-Color="@_selectedColor" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
             </div>
             <div class="component-box--transparent" style="height: fit-content;">
@@ -37,7 +37,7 @@
                     <BitChoiceGroupOption Text="Disabled" IsEnabled="false" Value=@("disabled_option") IconName="@BitIconName.BarChartVerticalFill" />
                 </BitChoiceGroup>
             </div>
-            <div class="component-box @BitCss.Class.Color.Background.Primary">
+            <div class="component-box @BitCss.Class.Color.Background.Primary.Main">
                 <BitSlider Label="Origin from zero"
                            Min="-5"
                            Max="5"
@@ -48,7 +48,7 @@
                            IsOriginFromZero="true"
                            Style="width: 100%" />
             </div>
-            <div class="component-box @BitCss.Class.Color.Background.Primary">
+            <div class="component-box @BitCss.Class.Color.Background.Primary.Main">
                 <BitButton IsEnabled="true"
                            SecondaryText="This is a button"
                            Style="margin-right: 10px">
@@ -72,7 +72,7 @@
                 <BitPivotItem HeaderText="Comments" Key="Comments"></BitPivotItem>
                 <BitPivotItem HeaderText="FAQ" Key="FAQ"></BitPivotItem>
             </BitPivot>
-            <div class="tab-content @(BitCss.Class.Color.Background.Primary)">
+            <div class="tab-content @(BitCss.Class.Color.Background.Primary.Main)">
                 @if (_pivotSelectedKey == "Overview")
                 {
                     <div>This is the "Overview" tab.</div>
