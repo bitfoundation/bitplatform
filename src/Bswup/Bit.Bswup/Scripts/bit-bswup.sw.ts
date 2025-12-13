@@ -234,6 +234,10 @@ function handleMessage(e: MessageEvent<string>) {
     if (e.data === 'BLAZOR_STARTED') {
         createAssetsCache(true);
     }
+
+    if (e.data === 'CLEAN_UP') {
+        deleteOldCaches(); // remove the old caches
+    }
 }
 
 // ============================================================================

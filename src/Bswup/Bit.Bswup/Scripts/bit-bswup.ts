@@ -1,4 +1,4 @@
-﻿var BitBswup = BitBswup || {};
+var BitBswup = BitBswup || {};
 BitBswup.version = window['bit-bswup version'] = '10.2.1-pre-01';
 
 (function () {
@@ -19,6 +19,7 @@ BitBswup.version = window['bit-bswup version'] = '10.2.1-pre-01';
         startBlazor();
 
         let reload: () => void;
+        let cleanup: () => void;
         let blazorStartResolver: (value: unknown) => void;
 
         try {
@@ -39,7 +40,7 @@ BitBswup.version = window['bit-bswup version'] = '10.2.1-pre-01';
         function prepareRegistration(reg) {
             reload = () => {
                 if (navigator.serviceWorker.controller) {
-                    reg.waiting && reg.waiting.postMessage('SKIP_WAITING');
+                    reg.waiting?.postMessage('SKIP_WAITING');
                     return Promise.resolve();
                 }
 
@@ -49,6 +50,11 @@ BitBswup.version = window['bit-bswup version'] = '10.2.1-pre-01';
                 }
 
                 window.location.reload();
+            };
+
+            cleanup = () => {
+                reg.waiting?.postMessage('CLEAN_UP');
+                reg.active?.postMessage('CLEAN_UP');
             };
 
             if (reg.waiting) {
@@ -128,13 +134,13 @@ BitBswup.version = window['bit-bswup version'] = '10.2.1-pre-01';
 
                 if (data.percent >= 100) {
                     const firstInstall = !(navigator.serviceWorker.controller);
-                    handle(BswupMessage.downloadFinished, { reload, firstInstall });
+                    handle(BswupMessage.downloadFinished, { reload, cleanup, firstInstall });
                 }
             }
 
             if (type === 'bypass') {
                 const firstInstall = data?.firstTime || !(navigator.serviceWorker.controller);
-                handle(BswupMessage.downloadFinished, { reload, firstInstall });
+                handle(BswupMessage.downloadFinished, { reload, cleanup, firstInstall });
             }
 
             if (type === 'activate') {
