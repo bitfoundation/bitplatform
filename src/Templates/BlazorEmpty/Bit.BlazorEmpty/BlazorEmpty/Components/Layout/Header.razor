@@ -1,4 +1,5 @@
-﻿@*#if (OnlyServer && !InteractiveAtRoot)
+﻿@implements IDisposable
+@*#if (OnlyServer && !InteractiveAtRoot)
 @rendermode InteractiveServer
 ##elseif (OnlyWasm && !InteractiveAtRoot)
 @rendermode InteractiveWebAssembly
@@ -43,5 +44,10 @@
     private async Task ToggleTheme()
     {
         await _bitThemeManager.ToggleDarkLightAsync();
+    }
+
+    public void Dispose()
+    {
+        _navigationManager.LocationChanged -= OnLocationChanged;
     }
 }
