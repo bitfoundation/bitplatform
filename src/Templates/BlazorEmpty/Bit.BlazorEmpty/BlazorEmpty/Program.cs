@@ -17,14 +17,14 @@ if (builder.Environment.IsDevelopment() is false)
 builder.Services.AddRazorComponents();
 #else
 builder.Services.AddRazorComponents()
-    #if (UseServer && UseWebAssembly)
+#if (UseServer && UseWebAssembly)
                 .AddInteractiveServerComponents()
                 .AddInteractiveWebAssemblyComponents();
-    #elif (UseServer)
+#elif (UseServer)
                 .AddInteractiveServerComponents();
-    #elif (UseWebAssembly)
+#elif (UseWebAssembly)
                 .AddInteractiveWebAssemblyComponents();
-    #endif
+#endif
 #endif
 
 builder.Services.AddBitBlazorUIServices();

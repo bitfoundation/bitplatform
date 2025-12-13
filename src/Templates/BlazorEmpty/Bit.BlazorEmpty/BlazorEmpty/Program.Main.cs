@@ -21,17 +21,17 @@ public class Program
         // Add services to the container.
 #if (!UseServer && !UseWebAssembly)
         builder.Services.AddRazorComponents();
-        #else
+#else
         builder.Services.AddRazorComponents()
-          #if (UseServer && UseWebAssembly)
+#if (UseServer && UseWebAssembly)
                         .AddInteractiveServerComponents()
                         .AddInteractiveWebAssemblyComponents();
-          #elif(UseServer)
+#elif (UseServer)
                         .AddInteractiveServerComponents();
-          #elif(UseWebAssembly)
+#elif (UseWebAssembly)
                         .AddInteractiveWebAssemblyComponents();
-          #endif
-        #endif
+#endif
+#endif
 
         builder.Services.AddBitBlazorUIServices();
 
@@ -62,22 +62,22 @@ public class Program
         app.UseStaticFiles();
         app.UseAntiforgery();
         app.MapStaticAssets();
-        #if (UseServer && UseWebAssembly)
+#if (UseServer && UseWebAssembly)
         app.MapRazorComponents<App>()
            .AddInteractiveServerRenderMode()
            .AddInteractiveWebAssemblyRenderMode()
-        #elif (UseServer)
+#elif (UseServer)
         app.MapRazorComponents<App>()
            .AddInteractiveServerRenderMode();
-        #elif (UseWebAssembly)
+#elif (UseWebAssembly)
         app.MapRazorComponents<App>()
            .AddInteractiveWebAssemblyRenderMode()
-        #else
+#else
         app.MapRazorComponents<App>();
-        #endif
-        #if (UseWebAssembly)
+#endif
+#if (UseWebAssembly)
            .AddAdditionalAssemblies(typeof(BlazorEmpty.Client._Imports).Assembly);
-        #endif
+#endif
 
         app.Run();
     }
