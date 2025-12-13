@@ -1,5 +1,4 @@
-﻿using System.IO.Compression;
-using BlazorEmpty.Components;
+﻿using BlazorEmpty.Components;
 using Microsoft.AspNetCore.ResponseCompression;
 #if (UseWebAssembly)
 using BlazorEmpty.Client.Pages;
@@ -7,8 +6,11 @@ using BlazorEmpty.Client.Pages;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddResponseCompression(opts => 
-    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/wasm", "application/octet-stream"]));
+if (builder.Environment.IsDevelopment() is false)
+{
+    builder.Services.AddResponseCompression(opts =>
+        opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/wasm", "application/octet-stream"]));
+}
 
 // Add services to the container.
 #if (!UseServer && !UseWebAssembly)
@@ -31,13 +33,13 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 #if (UseWebAssembly)
-if (app.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment())
 {
-    app.UseWebAssemblyDebugging();
+    builder.UseWebAssemblyDebugging();
 }
 else
 #else
-if (!app.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment() is false)
 #endif
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
