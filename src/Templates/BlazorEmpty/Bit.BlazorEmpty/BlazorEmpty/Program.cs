@@ -1,9 +1,13 @@
+﻿using System.IO.Compression;
 using BlazorEmpty.Components;
+using Microsoft.AspNetCore.ResponseCompression;
 #if (UseWebAssembly)
 using BlazorEmpty.Client.Pages;
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddResponseCompression();
 
 // Add services to the container.
 #if (!UseServer && !UseWebAssembly)

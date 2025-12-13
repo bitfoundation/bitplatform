@@ -14,7 +14,7 @@
   "sourceName": "BlazorEmpty",
   "name": "bit Blazor Empty App",
   "defaultName": "BitBlazorEmpty",
-  "identity": "Bit.BlazorEmpty.8.0",
+  "identity": "Bit.BlazorEmpty.10.0",
   "groupIdentity": "Bit.BlazorEmpty",
   "preferNameDirectory": true,
   "precedence": "9999",

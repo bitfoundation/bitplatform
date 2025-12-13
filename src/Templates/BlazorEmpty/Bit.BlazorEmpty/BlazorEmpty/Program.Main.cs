@@ -1,4 +1,4 @@
-using BlazorEmpty.Components;
+﻿using BlazorEmpty.Components;
 #if (UseWebAssembly)
 using BlazorEmpty.Client.Pages;
 #endif
@@ -41,7 +41,7 @@ public class Program
         if (!app.Environment.IsDevelopment())
 #endif
         {
-            app.UseExceptionHandler("/Error");
+            app.UseExceptionHandler("/Error", createScopeForErrors: true);
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
