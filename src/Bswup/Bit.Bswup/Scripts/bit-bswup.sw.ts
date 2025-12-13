@@ -209,7 +209,9 @@ async function handleFetch(e: any) {
 
     const request = createNewAssetRequest(asset);
     const response = await fetch(request);
-    bitBswupCache.put(cacheUrl, response.clone());
+    if (response.ok) {
+        bitBswupCache.put(cacheUrl, response.clone());
+    }
 
     diagFetch('+++ handleFetch ended - passive saving asset:', start, asset, e, req);
 

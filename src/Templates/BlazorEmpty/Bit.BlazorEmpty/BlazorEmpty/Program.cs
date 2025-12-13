@@ -1,23 +1,30 @@
-using BlazorEmpty.Components;
+﻿using BlazorEmpty.Components;
+using Microsoft.AspNetCore.ResponseCompression;
 #if (UseWebAssembly)
 using BlazorEmpty.Client.Pages;
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment() is false)
+{
+    builder.Services.AddResponseCompression(opts =>
+        opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/wasm", "application/octet-stream"]));
+}
+
 // Add services to the container.
 #if (!UseServer && !UseWebAssembly)
 builder.Services.AddRazorComponents();
 #else
 builder.Services.AddRazorComponents()
-    #if (UseServer && UseWebAssembly)
+#if (UseServer && UseWebAssembly)
                 .AddInteractiveServerComponents()
                 .AddInteractiveWebAssemblyComponents();
-    #elif (UseServer)
+#elif (UseServer)
                 .AddInteractiveServerComponents();
-    #elif (UseWebAssembly)
+#elif (UseWebAssembly)
                 .AddInteractiveWebAssemblyComponents();
-    #endif
+#endif
 #endif
 
 builder.Services.AddBitBlazorUIServices();
@@ -26,13 +33,13 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 #if (UseWebAssembly)
-if (app.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
 }
 else
 #else
-if (!app.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment() is false)
 #endif
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);

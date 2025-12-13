@@ -21,7 +21,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="Bit.BlazorEmpty\**" Exclude="Bit.BlazorEmpty\.vs\**;Bit.BlazorEmpty\**\bin\**\*;Bit.BlazorEmpty\**\obj\**\*; " />
+        <Content Include="Bit.BlazorEmpty\**" 
+                 Exclude="Bit.BlazorEmpty\.vs\**;Bit.BlazorEmpty\**\bin\**\*;Bit.BlazorEmpty\**\obj\**\*;" />
         <Compile Remove="**\*" />
     </ItemGroup>
 

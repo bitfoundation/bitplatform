@@ -2,8 +2,8 @@
 
 ## Key Technologies
 
-- **C# 13.0**
-- **ASP.NET Core 9.0**
+- **C# 14.0**
+- **ASP.NET Core 10.0**
 - **Blazor**: Component-based web UI framework
 - **Bit.BlazorUI**: Primary UI component library
 
