@@ -1,11 +1,78 @@
-﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
+.overview-hero {
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.quick-stats-container {
+    margin: 2rem 0;
+    
+    .bit-stack {
+        @include md {
+            justify-content: center;
+        }
+        
+        @include sm {
+            flex-direction: column;
+        }
+    }
+    
+    @include sm {
+        margin: 1.5rem 0;
+    }
+}
+
+::deep {
+    .stat-card {
+        flex: 1;
+        min-width: 200px;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid transparent;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+            transform: translateY(-4px);
+            border-color: #{$bit-color-tertiary};
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+            .stat-icon-wrapper {
+                transform: scale(1.1);
+            }
+        }
+
+        @include md {
+            min-width: calc(50% - 0.75rem);
+        }
+
+        @include sm {
+            min-width: 100%;
+        }
+    }
+
+    .stat-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        position: relative;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+        //background: linear-gradient(135deg, #{$bit-color-primary-light}, #{$bit-color-primary});
+    }
+}
+
 ::deep {
     .card {
-        height: rem2(190px);
+        height: auto;
         width: calc(25% - 12px);
+        min-height: rem2(200px);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
 
         @include lg {
             width: calc((100% / 3) - 11px);
@@ -17,6 +84,30 @@
 
         @include sm {
             width: 100%;
+        }
+    }
+
+    .category-card {
+        text-decoration: none;
+        
+        &:hover {
+            transform: translateY(-4px);
+            
+            .bit-card {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+        }
+    }
+
+    .quick-link {
+        display: inline-block;
+        text-decoration: none;
+        
+        &:hover {
+            .bit-card {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
         }
     }
 }
