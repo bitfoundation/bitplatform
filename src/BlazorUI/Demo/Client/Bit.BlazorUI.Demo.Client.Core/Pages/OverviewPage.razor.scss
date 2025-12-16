@@ -1,11 +1,42 @@
-﻿@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
-    .card {
-        height: rem2(190px);
-        width: calc(25% - 12px);
+    .stat-card {
+        flex: 1;
+        min-width: 20rem;
+        border: 1px solid transparent;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+            transform: translateY(-4px);
+            border-color: #{$bit-color-tertiary};
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+            .stat-icon-wrapper {
+                transform: scale(1.1);
+            }
+        }
+
+        @include md {
+            min-width: calc(50% - 0.75rem);
+        }
+
+        @include sm {
+            min-width: 100%;
+        }
+    }
+
+    .stat-icon-wrapper {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+    }
+
+    .category-link {
+        flex: 1;
+        display: grid;
+        min-width: 15rem;
+        min-height: 13rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
 
         @include lg {
             width: calc((100% / 3) - 11px);
@@ -17,6 +48,18 @@
 
         @include sm {
             width: 100%;
+        }
+
+        &:hover {
+            transform: translateY(-4px);
+        }
+    }
+
+    .quick-link {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+            transform: translateY(-2px);
         }
     }
 }
