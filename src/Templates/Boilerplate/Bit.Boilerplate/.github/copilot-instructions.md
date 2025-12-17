@@ -114,18 +114,18 @@ After applying changes, you **MUST** verify the integrity of the application.
 ## 8. Coding Conventions & Best Practices
 
 01. **Follow Project Structure**: Adhere to the defined project layout for all new files and code.
-02. **Prioritize Bit.BlazorUI Components**: You **MUST** use components from the `Bit.BlazorUI` library (e.g., `BitButton`, `BitTextField`, `BitChart`) instead of generic HTML elements to ensure UI consistency and leverage built-in features.
+02. **Prioritize Bit.BlazorUI Components**: You **MUST** use components from the `Bit.BlazorUI` library (e.g., `BitButton`, `BitGrid`, `BitStack`, `BitChart`) instead of generic HTML elements to ensure UI consistency and leverage built-in features.
 03. **Embrace Nullable Reference Types**: All new code must be nullable-aware.
 04. **Use Dependency Injection**: Use the `[AutoInject]` attribute in components. For other classes, use constructor injection.
 05. **Implement Structured Logging**: Use structured logging for clear, queryable application logs.
 06. **Adhere to Security Best Practices**: Implement robust authentication and authorization patterns.
 07. **Use Async Programming**: Employ `async/await` for all I/O-bound operations to prevent blocking.
 08. **Write Modern C#**: Utilize the latest C# features, including implicit and global using statements.
-09. **Respect .editorconfig**: Adhere to the `.editorconfig` settings for consistent code style.
-10. **Use Code-Behind Files**: Place component logic in `.razor.cs` files instead of `@code` blocks.
-11. **Use Scoped SCSS Files**: Place component styles in `.razor.scss` files for CSS isolation.
-12. **Style Bit.BlazorUI Components Correctly**: Use the `::deep` selector in your `.scss` files to style `Bit.BlazorUI` components.
-13. **Use Theme Colors**: You **MUST** use `BitColor` theme variables in C#, Razor, and SCSS files (`_bit-css-variables.scss`) to support dark/light modes. Do not use hardcoded colors.
+09. **Use Code-Behind Files**: Place component logic in `.razor.cs` files instead of `@code` blocks.
+10. **Use Scoped SCSS Files**: Place component styles in `.razor.scss` files for CSS isolation.
+11. **Style Bit.BlazorUI Components Correctly**: Use the `::deep` selector in your `.scss` files to style `Bit.BlazorUI` components.
+12. **Use Theme Colors in C# and Razor**: In C# and Razor files, you **MUST** use `BitColor` enum and `BitCss` class to apply theme colors instead of hardcoded colors. Use `BitColor` for component parameters (e.g., `BitColor.Primary`, `BitColor.TertiaryBackground`). Use `BitCss.Class` for CSS classes (e.g., `@BitCss.Class.Color.Background.Primary`, `@BitCss.Class.Color.Foreground.Secondary`). Use `BitCss.Var` for inline styles with CSS variables (e.g., `border-color:var(@BitCss.Var.Color.Border.Primary)`). This ensures automatic dark/light mode support.
+13. **Use Theme Colors in SCSS**: In SCSS files, you **MUST** use SCSS variables from `_bit-css-variables.scss` instead of hardcoded colors. Import the file and use variables like `$bit-color-primary`, `$bit-color-foreground-primary`, `$bit-color-background-secondary`, etc. These map to CSS custom properties that automatically adapt to dark/light modes. Available variable categories include: primary, secondary, tertiary, info, success, warning, severe-warning, error, foreground, background, border, and neutral colors.
 14. **Use Enhanced Lifecycle Methods**: In components inheriting from `AppComponentBase` or pages inheriting from `AppPageBase`, you **MUST** use `OnInitAsync`, `OnParamsSetAsync`, and `OnAfterFirstRenderAsync`.
 15. **WrapHandled**: Use `WrapHandled` for event handlers in razor files to prevent unhandled exceptions.
 Example 1: `OnClick="WrapHandled(MyMethod)"` instead of `OnClick="MyMethod"`.
