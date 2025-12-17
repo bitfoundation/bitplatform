@@ -1,15 +1,15 @@
 <Project>
     <ItemGroup>
         <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
-        <PackageVersion Include="Bit.Butil" Version="10.2.1-pre-01" />
-        <PackageVersion Include="Bit.BlazorUI" Version="10.2.1-pre-01" />
-        <PackageVersion Include="Bit.BlazorES2019" Version="10.2.1-pre-01" />
-        <PackageVersion Include="Bit.BlazorUI.Icons" Version="10.2.1-pre-01" />
-        <PackageVersion Include="Bit.BlazorUI.Assets" Version="10.2.1-pre-01" />
-        <PackageVersion Include="Bit.BlazorUI.Extras" Version="10.2.1-pre-01" />
-        <PackageVersion Include="Bit.Bswup" Version="10.2.1-pre-01" />
-        <PackageVersion Include="Bit.CodeAnalyzers" Version="10.2.1-pre-01" />
-        <PackageVersion Include="Bit.SourceGenerators" Version="10.2.1-pre-01" />
+        <PackageVersion Include="Bit.Butil" Version="10.2.1-pre-02" />
+        <PackageVersion Include="Bit.BlazorUI" Version="10.2.1-pre-02" />
+        <PackageVersion Include="Bit.BlazorES2019" Version="10.2.1-pre-02" />
+        <PackageVersion Include="Bit.BlazorUI.Icons" Version="10.2.1-pre-02" />
+        <PackageVersion Include="Bit.BlazorUI.Assets" Version="10.2.1-pre-02" />
+        <PackageVersion Include="Bit.BlazorUI.Extras" Version="10.2.1-pre-02" />
+        <PackageVersion Include="Bit.Bswup" Version="10.2.1-pre-02" />
+        <PackageVersion Include="Bit.CodeAnalyzers" Version="10.2.1-pre-02" />
+        <PackageVersion Include="Bit.SourceGenerators" Version="10.2.1-pre-02" />
         <PackageVersion Include="DistributedLock.FileSystem" Version="1.0.3" />
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0" />
         <PackageVersion Include="Fido2.Models" Version="4.0.0" />
@@ -87,7 +87,7 @@
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server" Version="9.0.5" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server.Abstractions" Version="9.0.5" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server.EntityFrameworkCore" Version="9.0.5" />
-        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="10.2.1-pre-01" />
+        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="10.2.1-pre-02" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Client" Version="9.0.5" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.1" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.32.0" />

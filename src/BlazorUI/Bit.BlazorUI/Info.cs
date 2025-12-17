@@ -8,5 +8,5 @@ public static class Info
     /// <summary>
     /// The current version string of bit BlazorUI.
     /// </summary>
-    public static string Version { get; } = "10.2.1-pre-01";
+    public static string Version { get; } = "10.2.1-pre-02";
 }
