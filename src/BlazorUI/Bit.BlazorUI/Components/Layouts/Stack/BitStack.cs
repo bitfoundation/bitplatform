@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
 
