@@ -1,4 +1,4 @@
-﻿@page "/components/datepicker"
+@page "/components/datepicker"
 @page "/components/date-picker"
 @using Bit.BlazorUI.Demo.Client.Core.Helpers
 
@@ -179,7 +179,40 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="ReadOnly" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Mode" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>Use the BitDatePicker in MonthPicker mode to allow users to select only month and year. The day is automatically set to the 1st of the selected month.</div>
+        <br />
+        <div class="example-content">
+            <BitDatePicker Label="Basic MonthPicker" 
+                          Mode="BitDatePickerMode.MonthPicker" 
+                          Placeholder="Select a month" />
+            <br /><br />
+            <BitDatePicker Label="MonthPicker with binding" 
+                          Mode="BitDatePickerMode.MonthPicker" 
+                          @bind-Value="monthPickerDate" 
+                          Placeholder="Select a month" />
+            <br />
+            <div>Selected month: @(monthPickerDate?.ToString("MMMM yyyy") ?? "None")</div>
+            <br /><br />
+            <BitDatePicker Label="MonthPicker with Min/Max" 
+                          Mode="BitDatePickerMode.MonthPicker" 
+                          MinDate="DateTimeOffset.Now.AddMonths(-6)" 
+                          MaxDate="DateTimeOffset.Now.AddMonths(6)" 
+                          Placeholder="Select a month" />
+            <br /><br />
+            <BitDatePicker Label="MonthPicker with highlighting" 
+                          Mode="BitDatePickerMode.MonthPicker" 
+                          HighlightCurrentMonth 
+                          HighlightSelectedMonth 
+                          Placeholder="Select a month" />
+        </div>
+        <br /><br />
+        <BitDatePicker Label="Standalone MonthPicker" 
+                        Mode="BitDatePickerMode.MonthPicker" 
+                        Standalone />
+    </DemoExample>
+
+    <DemoExample Title="ReadOnly" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>The ReadOnly parameter makes the date picker input non-editable, preventing users from manually changing the time value.</div>
         <br />
         <div class="example-content">
@@ -195,7 +228,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Templates" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>Utilize various templates within the BitDatePicker, such as custom label templates, day cell templates, and year cell templates.</div>
         <br />
         <div class="example-content">
@@ -237,7 +270,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Responsive" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Responsive" RazorCode="@example13RazorCode" Id="example13">
         <div>Enable responsive design for the BitDatePicker, allowing it to adjust its layout and appearance based on the screen size.</div>
         <br />
         <div class="example-content">
@@ -248,7 +281,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="Validation" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>Implement form validation with BitDatePicker using data annotations, ensuring the user selects a valid date before submitting the form.</div>
         <br />
         <div class="example-content">
@@ -273,7 +306,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>Explore styling and class customization for BitDatePicker, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div><br />
@@ -320,7 +353,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
         <div>Use BitDatePicker in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

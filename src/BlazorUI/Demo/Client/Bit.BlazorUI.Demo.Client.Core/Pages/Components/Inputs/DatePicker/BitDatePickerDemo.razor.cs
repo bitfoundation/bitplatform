@@ -392,6 +392,15 @@ public partial class BitDatePickerDemo
             Type = "int",
             DefaultValue = "1",
             Description = "Determines increment/decrement steps for date-picker's minute.",
+        },
+        new()
+        {
+            Name = "Mode",
+            Type = "BitDatePickerMode",
+            DefaultValue = "BitDatePickerMode.DatePicker",
+            Description = "The selection mode of the DatePicker (DatePicker or MonthPicker).",
+            LinkType = LinkType.Link,
+            Href = "#datepicker-mode-enum"
         }
     };
 
@@ -463,6 +472,27 @@ public partial class BitDatePickerDemo
                     Name= "TwelveHours",
                     Description="Show time pickers in 12 hours format.",
                     Value="1"
+                }
+            }
+        },
+        new()
+        {
+            Id = "datepicker-mode-enum",
+            Name = "BitDatePickerMode",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name = "DatePicker",
+                    Description = "Standard date picker mode allowing selection of a specific day.",
+                    Value = "0"
+                },
+                new()
+                {
+                    Name = "MonthPicker",
+                    Description = "Month picker mode allowing selection of only month and year. The day is automatically set to the 1st of the selected month.",
+                    Value = "1"
                 }
             }
         }
@@ -917,6 +947,7 @@ public partial class BitDatePickerDemo
     private DateTimeOffset? timeZoneDate2;
 
     private DateTimeOffset? classesValue;
+    private DateTimeOffset? monthPickerDate;
 
     private CultureInfo culture = CultureInfo.CurrentUICulture;
 
