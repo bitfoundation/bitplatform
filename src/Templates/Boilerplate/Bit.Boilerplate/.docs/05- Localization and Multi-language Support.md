@@ -318,7 +318,7 @@ All components that inherit from `AppComponentBase` or pages that inherit from `
 **Base class location**: `src/Client/Boilerplate.Client.Core/Components/AppComponentBase.cs`
 
 ```csharp
-public partial class AppComponentBase : ComponentBase
+public partial class AppComponentBase
 {
     [AutoInject] protected IStringLocalizer<AppStrings> Localizer = default!;
     // ... other injected services

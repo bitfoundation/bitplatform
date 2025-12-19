@@ -119,11 +119,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConcurrencyFailure" xml:space="preserve">
-    <value>فشل في التزامن المتفائل، تم تعديل الكائن.</value>
+    <value>فشل التوافق المتفائل، تم تعديل الكائن.</value>
     <comment>Error when optimistic concurrency fails</comment>
   </data>
   <data name="DefaultError" xml:space="preserve">
-    <value>حدث فشل غير معروف.</value>
+    <value>حدث خطأ غير معروف.</value>
     <comment>Default identity result error message</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
@@ -159,7 +159,7 @@
     <comment>Error when a login already linked</comment>
   </data>
   <data name="PasswordMismatch" xml:space="preserve">
-    <value>كلمة مرور خاطئة.</value>
+    <value>كلمة مرور غير صحيحة.</value>
     <comment>Error when a password doesn't match</comment>
   </data>
   <data name="PasswordRequiresDigit" xml:space="preserve">
@@ -179,15 +179,15 @@
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
-    <value>يجب أن تكون كلمات المرور {0} أحرف على الأقل.</value>
+    <value>يجب أن تكون كلمات المرور على الأقل {0} أحرف.</value>
     <comment>Error message for passwords that are too short</comment>
   </data>
   <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">
-    <value>فشل في استرداد رمز الاسترداد.</value>
+    <value>فشل استرداد رمز الاسترداد.</value>
     <comment>Error when a recovery code is not redeemed.</comment>
   </data>
   <data name="UserAlreadyHasPassword" xml:space="preserve">
-    <value>للمستخدم كلمة مرور مضبوطة بالفعل.</value>
+    <value>المستخدم لديه كلمة مرور مضبوطة بالفعل.</value>
     <comment>Error when AddPasswordAsync called when a user already has a password</comment>
   </data>
   <data name="UserAlreadyInRole" xml:space="preserve">
@@ -203,7 +203,7 @@
     <comment>Error when a user is not in the role</comment>
   </data>
   <data name="PasswordRequiresUniqueChars" xml:space="preserve">
-    <value>يجب أن تستخدم كلمات المرور {0} أحرف مختلفة على الأقل.</value>
+    <value>يجب أن تستخدم كلمات المرور على الأقل {0} أحرف مختلفة.</value>
     <comment>Error message for passwords that are based on similar characters</comment>
   </data>
 </root>

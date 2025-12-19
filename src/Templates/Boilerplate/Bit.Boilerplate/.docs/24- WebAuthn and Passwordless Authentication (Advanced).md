@@ -129,7 +129,7 @@ When a user wants to **enable passwordless authentication**, here's what happens
      2. Navigate **in-app browser** (Not the webview) to `http://localhost:54321/web-interop-app.html?actionName=CreateWebAuthnCredential`
      3. `web-interop-app.html` runs on proper `localhost` origin
      4. Fetches options from local server: `GET /api/GetCreateWebAuthnCredentialOptions`
-     5. Calls WebAuthn API: `BitButil.webAuthn.createCredential(options)`
+     5. Calls WebAuthn API: `Bit.Butil.webAuthn.createCredential(options)`
      6. Device shows native biometric prompt
      7. Posts result back: `POST /api/CreateWebAuthnCredential`
      8. Local server completes TaskCompletionSource
@@ -164,8 +164,8 @@ When a user wants to **enable passwordless authentication**, here's what happens
 When a user signs in with passwordless authentication:
 
 **1. User Initiates Sign-In**
-   - Client checks if WebAuthn is available and configured (See previus steps)
-   - Shows "Sign in with Fingerprint/Face ID" button
+- Client checks if WebAuthn is available and configured (See previous steps)
+- Shows "Sign in with Fingerprint/Face ID" button
 
 **2. Client Requests Assertion Options**
    ```
@@ -307,10 +307,10 @@ public interface ILocalHttpServer : IAsyncDisposable
 1. **Finds Available Port**: Uses TCP listener to find free port
 2. **Starts EmbedIO Server**: Lightweight HTTP server embedded in the app
 3. **Registers Endpoints**:
-   - `GET /api/GetWebAuthnCredentialOptions` - Returns credential creation options
-   - `POST /api/WebAuthnCredential` - Receives created credential
-   - `GET /api/GetCreateWebAuthnCredentialOptions` - Returns creation options
-   - `POST /api/CreateWebAuthnCredential` - Receives attestation
+   - `GET /api/GetWebAuthnCredentialOptions` - Returns assertion options (for sign-in)
+   - `POST /api/WebAuthnCredential` - Receives assertion result (for sign-in)
+   - `GET /api/GetCreateWebAuthnCredentialOptions` - Returns credential creation options (for registration)
+   - `POST /api/CreateWebAuthnCredential` - Receives attestation result (for registration)
    - `POST /api/LogError` - Receives JavaScript errors
    - `GET /*` - Serves static files (web-interop-app.html, app.js, etc.)
 4. **Communicates Results**: Uses `TaskCompletionSource` to pass results back to calling code
@@ -362,13 +362,13 @@ export class WebInteropApp {
     }
     
     private static async getWebAuthnCredential() {
-        // Fetch options from local server
+        // Fetch assertion options from local server (for sign-in)
         const options = await fetch('api/GetWebAuthnCredentialOptions').json();
         
         // Call WebAuthn API (this is why we need proper origin!)
-        const credential = await BitButil.webAuthn.getCredential(options);
+        const credential = await Bit.Butil.webAuthn.getCredential(options);
         
-        // Post result back
+        // Post assertion result back
         await fetch('api/WebAuthnCredential', {
             method: 'POST',
             body: JSON.stringify(credential)

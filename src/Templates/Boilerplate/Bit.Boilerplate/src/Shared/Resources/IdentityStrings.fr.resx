@@ -123,11 +123,11 @@
     <comment>Error when optimistic concurrency fails</comment>
   </data>
   <data name="DefaultError" xml:space="preserve">
-    <value>Un échec inconnu s'est produit.</value>
+    <value>Une erreur inconnue s'est produite.</value>
     <comment>Default identity result error message</comment>
   </data>
   <data name="DuplicateEmail" xml:space="preserve">
-    <value>L'email '{0}' est déjà pris.</value>
+    <value>L'e-mail '{0}' est déjà pris.</value>
     <comment>Error for duplicate emails</comment>
   </data>
   <data name="DuplicateRoleName" xml:space="preserve">
@@ -139,7 +139,7 @@
     <comment>Error for duplicate user names</comment>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
-    <value>L'email '{0}' est invalide.</value>
+    <value>L'e-mail '{0}' est invalide.</value>
     <comment>Invalid email</comment>
   </data>
   <data name="InvalidRoleName" xml:space="preserve">
@@ -155,7 +155,7 @@
     <comment>User names can only contain letters or digits</comment>
   </data>
   <data name="LoginAlreadyAssociated" xml:space="preserve">
-    <value>Un utilisateur avec cette connexion existe déjà.</value>
+    <value>Un utilisateur avec ce nom de connexion existe déjà.</value>
     <comment>Error when a login already linked</comment>
   </data>
   <data name="PasswordMismatch" xml:space="preserve">

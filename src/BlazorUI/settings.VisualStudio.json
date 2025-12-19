@@ -12,5 +12,7 @@
   "languages.xml.tabs.character": "space",
   "languages.t-sql90.tabs.character": "space",
   "languages.sqlServerTools.tabs.character": "space",
-  "languages.dockerfile.tabs.character": "space"
+  "languages.dockerfile.tabs.character": "space",
+  "projectsAndSolutions.aspNetCore.general.autoRefreshOption": "refreshBrowserAfterBuild",
+  "debugging.hotReload.enableHotReload": false
 }

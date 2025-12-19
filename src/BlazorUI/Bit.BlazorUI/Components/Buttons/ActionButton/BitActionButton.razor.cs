@@ -58,7 +58,7 @@ public partial class BitActionButton : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Renders the action button in full width of its container with flex-start.
+    /// Gets or sets a value indicating whether the component should expand to occupy the full available width.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }
@@ -72,49 +72,82 @@ public partial class BitActionButton : BitComponentBase
     public string? Href { get; set; }
 
     /// <summary>
-    /// The Fluent UI icon name to render inside the action button (e.g., <c>BitIconName.AddFriend</c>).
-    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery: <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// Gets or sets the name of the icon to display.
     /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.AddFriend</c>).
+    /// <br />
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery: 
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// <br />
+    /// The value is case-sensitive and must match a valid icon identifier. 
+    /// If not set or set to <c>null</c>, no icon will be rendered.
+    /// </remarks>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Removes the text container and renders only the icon.
+    /// Gets or sets a value indicating whether only the icon is displayed, without accompanying text.
     /// </summary>
+    /// <remarks>
+    /// Set this property to <see langword="true"/> to render the component with only its icon visible. 
+    /// When <see langword="false"/>, both icon and text are shown if available.
+    /// </remarks>
     [Parameter] public bool IconOnly { get; set; }
 
     /// <summary>
-    /// Determines where the icon is rendered relative to the content.
+    /// Gets or sets the position of the icon relative to the component's content.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitIconPosition? IconPosition { get; set; }
 
     /// <summary>
-    /// Raised when the action button is clicked (only when <see cref="BitComponentBase.IsEnabled"/> is true); receives <see cref="MouseEventArgs"/>.
+    /// Gets or sets the callback that is invoked when the component is clicked.
     /// </summary>
+    /// <remarks>
+    /// The callback receives a <see cref="MouseEventArgs"/> instance containing details about the mouse event. 
+    /// Assign this property to handle click interactions, such as responding to user input or triggering actions.
+    /// </remarks>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Custom inline styles for the root, icon, and content sections of the action button.
+    /// Gets or sets the custom CSS inline styles to apply to the action button component.
     /// </summary>
+    /// <remarks>
+    /// Use this property to override the default styles of the action button.
+    /// If not set, the component uses its built-in styling. 
+    /// This property is typically used to provide additional visual customization.
+    /// </remarks>
     [Parameter] public BitActionButtonClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Gets or sets the relationship type between the current element and the linked resource, as defined by the link's rel attribute.
+    /// </summary>
+    /// <remarks>
     /// Sets the <c>rel</c> attribute for link-rendered buttons when <see cref="Href"/> is a non-anchor URL; ignored for empty or hash-only hrefs.
     /// The <c>rel</c> attribute specifies the relationship between the current document and the linked document.
-    /// </summary>
+    /// <br />
+    /// Set this property to specify how the linked resource is related to the current context.
+    /// Common values include "stylesheet", "noopener", or "nofollow". The value determines how browsers and search
+    /// engines interpret the link.
+    /// </remarks>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
-    public BitLinkRel? Rel { get; set; }
+    public BitLinkRels? Rel { get; set; }
 
     /// <summary>
-    /// Sets the preset size for typography and padding of the action button.
+    /// Sets the preset size (Small, Medium, Large) for typography and padding of the action button.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).
+    /// Gets or sets the name of the target frame or window for the navigation action when the action button renders as an anchor (by providing the Href parameter).
     /// </summary>
+    /// <remarks>
+    /// Specify a value to control where the linked content will be displayed. Common values include
+    /// "_blank" to open in a new window or tab, "_self" for the same frame, "_parent" for the parent frame, and "_top"
+    /// for the full body of the window. If not set, the default browser behavior is used.
+    /// </remarks>
     [Parameter] public string? Target { get; set; }
 
     /// <summary>
@@ -172,14 +205,9 @@ public partial class BitActionButton : BitComponentBase
 
     protected override void OnParametersSet()
     {
-        if (IsEnabled is false)
-        {
-            _tabIndex = AllowDisabledFocus ? null : "-1";
-        }
-        else
-        {
-            _tabIndex = TabIndex ?? _tabIndex;
-        }
+        _tabIndex = IsEnabled
+            ? TabIndex
+            : AllowDisabledFocus ? TabIndex : "-1";
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 

@@ -55,7 +55,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prompts", "prompts", "{4A5D
     ProjectSection(SolutionItems) = preProject
         .github\prompts\resx.prompt.md = .github\prompts\resx.prompt.md
         .github\prompts\bitify.prompt.md = .github\prompts\bitify.prompt.md
-        .github\prompts\getting-started.prompt.md = .github\prompts\getting-started.prompt.md
         .github\prompts\scaffold.prompt.md = .github\prompts\scaffold.prompt.md
     EndProjectSection
 EndProject

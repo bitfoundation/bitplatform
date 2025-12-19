@@ -1,4 +1,4 @@
-﻿@page "/components/button"
+@page "/components/button"
 @page "/components/compoundbutton"
 @page "/components/compound-button"
 @page "/components/iconbutton"
@@ -205,11 +205,11 @@
         <div>Use BitButton as a hyperlink to external URLs, with a rel attribute.</div>
         <br />
         <div class="example-content">
-            <BitButton Rel="BitLinkRel.NoFollow" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+            <BitButton Rel="BitLinkRels.NoFollow" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
                 Open bitplatform.dev with a rel attribute (nofollow)
             </BitButton>
 
-            <BitButton Rel="BitLinkRel.NoFollow | BitLinkRel.NoReferrer" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+            <BitButton Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
                 Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
             </BitButton>
         </div>

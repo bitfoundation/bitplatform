@@ -25,10 +25,7 @@
                                 </BitText>
                             </BitStack>
 
-                            <SocialRow IsWaiting="isWaiting" OnClick="SocialSignIn" />
-
-                            <BitSeparator Border="BitColorKind.Tertiary" Background="BitColorKind.Secondary" Class="lg-sep">@Localizer[AppStrings.Or]</BitSeparator>
-                            <BitSeparator Border="BitColorKind.Secondary" Background="BitColorKind.Primary" Class="sm-sep">@Localizer[AppStrings.Or]</BitSeparator>
+                            <ExternalIdentityProviders IsWaiting="isWaiting" OnClick="ExternalSignIn" />
 
                             <BitStack FillContent Gap="2rem">
                                 <BitStack FillContent>

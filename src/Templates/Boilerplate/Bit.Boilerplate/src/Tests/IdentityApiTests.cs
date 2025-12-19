@@ -5,7 +5,7 @@ using Boilerplate.Tests.Services;
 
 namespace Boilerplate.Tests;
 
-[TestClass]
+[TestClass, TestCategory("IntegrationTest")]
 public partial class IdentityApiTests
 {
     [TestMethod]

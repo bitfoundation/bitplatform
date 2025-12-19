@@ -1,4 +1,4 @@
-﻿self['bit-bswup.sw version'] = '10.2.0';
+self['bit-bswup.sw version'] = '10.2.1';
 
 interface Window {
     clients: any
@@ -209,7 +209,9 @@ async function handleFetch(e: any) {
 
     const request = createNewAssetRequest(asset);
     const response = await fetch(request);
-    bitBswupCache.put(cacheUrl, response.clone());
+    if (response.ok) {
+        bitBswupCache.put(cacheUrl, response.clone());
+    }
 
     diagFetch('+++ handleFetch ended - passive saving asset:', start, asset, e, req);
 
@@ -231,6 +233,10 @@ function handleMessage(e: MessageEvent<string>) {
 
     if (e.data === 'BLAZOR_STARTED') {
         createAssetsCache(true);
+    }
+
+    if (e.data === 'CLEAN_UP') {
+        deleteOldCaches(); // remove the old caches
     }
 }
 

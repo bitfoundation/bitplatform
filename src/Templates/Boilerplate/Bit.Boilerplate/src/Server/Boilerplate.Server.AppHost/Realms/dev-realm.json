@@ -1,0 +1,347 @@
+{
+    "realm": "dev",
+    "id": "dev-realm",
+    "enabled": true,
+    "displayName": "Boilerplate Dev Realm",
+    "sslRequired": "external",
+    "supportedLocales": [
+        "en",
+        "nl",
+        "fa",
+        "sv",
+        "hi",
+        "zh",
+        "es",
+        "fr",
+        "ar",
+        "de"
+    ],
+    "defaultLocale": "en",
+    "users": [
+        {
+            "id": "alice-user-id",
+            "username": "alice",
+            "enabled": true,
+            "totp": false,
+            "emailVerified": true,
+            "firstName": "Alice",
+            "lastName": "Smith",
+            "email": "AliceSmith@email.com",
+            "attributes": {
+                "mx-p-s": [ "5" ]
+            },
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "alice"
+                }
+            ],
+            "disableableCredentialTypes": [],
+            "requiredActions": [],
+            "realmRoles": [
+                "offline_access",
+                "uma_authorization"
+            ],
+            "notBefore": 0,
+            "groups": [ "/demo" ]
+        },
+        {
+            "id": "bob-user-id",
+            "username": "bob",
+            "enabled": true,
+            "totp": false,
+            "emailVerified": true,
+            "firstName": "Bob",
+            "lastName": "Johnson",
+            "email": "BobSmith@email.com",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "bob"
+                }
+            ],
+            "disableableCredentialTypes": [],
+            "requiredActions": [],
+            "realmRoles": [
+                "offline_access",
+                "uma_authorization"
+            ],
+            "notBefore": 0,
+            "groups": [ "/demo" ]
+        },
+        {
+            "id": "test-user-id",
+            "username": "test",
+            "enabled": true,
+            "totp": false,
+            "emailVerified": true,
+            "firstName": "Test",
+            "lastName": "User",
+            "email": "test@bitplatform.dev",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "123456"
+                }
+            ],
+            "disableableCredentialTypes": [],
+            "requiredActions": [],
+            "realmRoles": [
+                "offline_access",
+                "uma_authorization"
+            ],
+            "notBefore": 0,
+            "groups": [ "/s-admin" ]
+        }
+    ],
+    "groups": [
+        {
+            "id": "s-admin-group-id",
+            "name": "s-admin",
+            "path": "/s-admin",
+            "attributes": {
+                "mx-p-s": [ "-1" ]
+            },
+            "realmRoles": [],
+            "clientRoles": {},
+            "subGroups": []
+        },
+        {
+            "id": "demo-group-id",
+            "name": "demo",
+            "path": "/demo",
+            "attributes": {
+                "features": [ "3.0", "3.1", "4.0" ]
+            },
+            "realmRoles": [],
+            "clientRoles": {},
+            "subGroups": []
+        }
+    ],
+    "defaultDefaultClientScopes": [
+        "role_list",
+        "profile",
+        "email",
+        "web-origins",
+        "acr"
+    ],
+    "defaultOptionalClientScopes": [
+        "offline_access",
+        "address",
+        "phone",
+        "microprofile-jwt"
+    ],
+    "clientScopes": [
+        {
+            "id": "profile-scope-id",
+            "name": "profile",
+            "description": "OpenID Connect built-in scope: profile",
+            "protocol": "openid-connect",
+            "attributes": {
+                "include.in.token.scope": "true",
+                "display.on.consent.screen": "true",
+                "consent.screen.text": "${profileScopeConsentText}"
+            },
+            "protocolMappers": [
+                {
+                    "id": "profile-username-mapper",
+                    "name": "username",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-property-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "userinfo.token.claim": "true",
+                        "user.attribute": "username",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "claim.name": "preferred_username",
+                        "jsonType.label": "String"
+                    }
+                },
+                {
+                    "id": "profile-given-name-mapper",
+                    "name": "given name",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-property-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "userinfo.token.claim": "true",
+                        "user.attribute": "firstName",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "claim.name": "given_name",
+                        "jsonType.label": "String"
+                    }
+                },
+                {
+                    "id": "profile-family-name-mapper",
+                    "name": "family name",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-property-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "userinfo.token.claim": "true",
+                        "user.attribute": "lastName",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "claim.name": "family_name",
+                        "jsonType.label": "String"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "email-scope-id",
+            "name": "email",
+            "description": "OpenID Connect built-in scope: email",
+            "protocol": "openid-connect",
+            "attributes": {
+                "include.in.token.scope": "true",
+                "display.on.consent.screen": "true",
+                "consent.screen.text": "${emailScopeConsentText}"
+            },
+            "protocolMappers": [
+                {
+                    "id": "email-mapper",
+                    "name": "email",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-property-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "userinfo.token.claim": "true",
+                        "user.attribute": "email",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "claim.name": "email",
+                        "jsonType.label": "String"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "web-origins-scope-id",
+            "name": "web-origins",
+            "description": "OpenID Connect scope for add allowed web origins to the access token",
+            "protocol": "openid-connect",
+            "attributes": {
+                "include.in.token.scope": "false",
+                "display.on.consent.screen": "false"
+            },
+            "protocolMappers": [
+                {
+                    "id": "allowed-web-origins-mapper",
+                    "name": "allowed web origins",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-allowed-origins-mapper",
+                    "consentRequired": false,
+                    "config": {}
+                }
+            ]
+        },
+        {
+            "id": "acr-scope-id",
+            "name": "acr",
+            "description": "OpenID Connect scope for add acr (authentication context class reference) to the token",
+            "protocol": "openid-connect",
+            "attributes": {
+                "include.in.token.scope": "false",
+                "display.on.consent.screen": "false"
+            },
+            "protocolMappers": [
+                {
+                    "id": "acr-mapper",
+                    "name": "acr loa level",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-acr-mapper",
+                    "consentRequired": false,
+                    "config": {}
+                }
+            ]
+        },
+        {
+            "id": "offline-access-scope-id",
+            "name": "offline_access",
+            "description": "OpenID Connect built-in scope: offline_access",
+            "protocol": "openid-connect",
+            "attributes": {
+                "consent.screen.text": "${offlineAccessScopeConsentText}",
+                "display.on.consent.screen": "true"
+            }
+        },
+        {
+            "id": "roles-scope-id",
+            "name": "roles",
+            "description": "OpenID Connect scope for user roles including group memberships",
+            "protocol": "openid-connect",
+            "attributes": {
+                "include.in.token.scope": "false",
+                "display.on.consent.screen": "false"
+            }
+        }
+    ],
+    "clients": [
+        {
+            "id": "Boilerplate-Id",
+            "clientId": "Boilerplate",
+            "secret": "secret",
+            "name": "Boilerplate",
+            "description": "OpenID Connect client for Boilerplate application",
+            "redirectUris": [
+                "*"
+            ],
+            "webOrigins": [
+                "*"
+            ],
+            "protocolMappers": [
+                {
+                    "id": "client-group-membership-mapper",
+                    "name": "client group membership",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-group-membership-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "full.path": "false",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "claim.name": "roles",
+                        "userinfo.token.claim": "true"
+                    }
+                },
+                {
+                    "id": "client-mx-p-s-mapper",
+                    "name": "client mx-p-s attribute",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "claim.name": "mx-p-s",
+                        "user.attribute": "mx-p-s",
+                        "jsonType.label": "String",
+                        "multivalued": "false",
+                        "aggregate.attrs": "true",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "userinfo.token.claim": "true"
+                    }
+                },
+                {
+                    "id": "client-features-mapper",
+                    "name": "client features attribute",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "claim.name": "features",
+                        "user.attribute": "features",
+                        "jsonType.label": "String",
+                        "multivalued": "true",
+                        "aggregate.attrs": "true",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "userinfo.token.claim": "true"
+                    }
+                }
+            ]
+        }
+    ]
+}

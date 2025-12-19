@@ -1,10 +1,25 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// A Card provides a container to wrap around a specific content. Keeping a card to a single subject keeps the design clean.
 /// </summary>
 public partial class BitCard : BitComponentBase
 {
+    /// <summary>
+    /// Gets or sets the cascading parameters for the card component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple card components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitCardParams.ParamName)]
+    public BitCardParams? CascadingParameters { get; set; }
+
+
+
     /// <summary>
     /// The color kind of the background of the card.
     /// </summary>
@@ -74,5 +89,12 @@ public partial class BitCard : BitComponentBase
         ClassBuilder.Register(() => FullSize || FullWidth ? "bit-crd-fwi" : string.Empty);
 
         ClassBuilder.Register(() => NoShadow ? "bit-crd-nsd" : string.Empty);
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCardParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+        base.OnParametersSet();
     }
 }

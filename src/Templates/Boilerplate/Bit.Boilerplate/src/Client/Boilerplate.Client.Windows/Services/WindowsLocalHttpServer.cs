@@ -51,14 +51,14 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             .WithUrlPrefix($"http://localhost:{port}")
             .WithMode(HttpListenerMode.Microsoft))
             .WithCors()
-            .WithModule(new ActionModule("/api/SocialSignInCallback", HttpVerbs.Post, async ctx =>
+            .WithModule(new ActionModule("/api/ExternalSignInCallback", HttpVerbs.Post, async ctx =>
             {
                 try
                 {
                     await Application.OpenForms[0]!.InvokeAsync(async (_) =>
                     {
                         var urlToOpen = ctx.Request.QueryString["urlToOpen"];
-                        pubSubService.Publish(ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK, urlToOpen);
+                        pubSubService.Publish(ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK, urlToOpen);
                     });
                 }
                 finally

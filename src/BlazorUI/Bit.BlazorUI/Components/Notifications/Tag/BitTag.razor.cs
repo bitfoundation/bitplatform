@@ -1,10 +1,25 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Tag component provides a visual representation of an attribute, person, or asset.
 /// </summary>
 public partial class BitTag : BitComponentBase
 {
+    /// <summary>
+    /// Gets or sets the cascading parameters for the tag component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple tag components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitTagParams.ParamName)]
+    public BitTagParams? CascadingParameters { get; set; }
+
+
+
     /// <summary>
     /// Child content of component, the content that the tag will apply to.
     /// </summary>
@@ -116,6 +131,16 @@ public partial class BitTag : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+    }
+
+
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTagParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
 

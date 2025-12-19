@@ -290,7 +290,7 @@ When a client (like a data grid) needs to know both the **page data** AND the **
 
 ### The PagedResponse Class
 
-**File**: [`src/Shared/Dtos/PagedResponseDto.cs`](/src/Shared/Dtos/PagedResponseDto.cs)
+**File**: [`src/Shared/Dtos/PagedResponse.cs`](/src/Shared/Dtos/PagedResponse.cs)
 
 ```csharp
 public partial class PagedResponse<T>
@@ -824,9 +824,8 @@ You can also call external APIs using this pattern:
 public interface IStatisticsController : IAppController
 {
     // Call GitHub API directly
-    [HttpGet]
-    [ExternalApiUrl("https://api.github.com/repos/bitfoundation/bitplatform")]
-    Task<JsonElement> GetGitHubStats(CancellationToken cancellationToken);
+    [HttpGet, Route("https://api.github.com/repos/bitfoundation/bitplatform"), ExternalApi]
+    Task<GitHubStats> GetGitHubStats(CancellationToken cancellationToken) => default!;
 }
 ```
 

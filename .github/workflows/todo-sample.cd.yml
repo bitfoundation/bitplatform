@@ -67,7 +67,7 @@ jobs:
     - name: Upload server api artifact
       uses: actions/upload-artifact@v5
       with:
-        name: server-api-bundle
+        name: TodoApi
         path: server-api
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
@@ -132,7 +132,7 @@ jobs:
     - name: Upload server web artifact
       uses: actions/upload-artifact@v5
       with:
-        name: server-web-bundle
+        name: Todo
         path: server-web
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
@@ -202,7 +202,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb --ads
+       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb --signalR --ads
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -340,7 +340,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v5
       with:
-        name: win-exe-bundle
+        name: WinTodo
         path: TodoSample\src\Client\TodoSample.Client.Windows\Releases
   
   build_blazor_hybrid_android:

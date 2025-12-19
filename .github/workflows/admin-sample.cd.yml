@@ -84,14 +84,14 @@ jobs:
     - name: Upload server web artifact
       uses: actions/upload-artifact@v5
       with:
-        name: server-web-bundle
+        name: AdminPanelWeb
         path: server-web
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
     - name: Upload server api artifact
       uses: actions/upload-artifact@v5
       with:
-        name: server-api-bundle
+        name: AdminPanelApi
         path: server-api
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
@@ -199,7 +199,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v5
       with:
-        name: win-exe-bundle
+        name: WinAdminPanel
         path: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases
   
   build_blazor_hybrid_android:

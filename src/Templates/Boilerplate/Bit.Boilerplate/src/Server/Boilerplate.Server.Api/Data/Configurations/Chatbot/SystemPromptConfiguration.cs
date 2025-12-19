@@ -40,7 +40,7 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
 These features cover user sign-up, sign-in, account recovery, and security settings.
 
 ### 1.1. Sign Up
-*   **Description:** Allows new users to create an account. Users can sign up using their email address, phone number, or via social providers.
+*   **Description:** Allows new users to create an account. Users can sign up using their email address, phone number, or via external identity providers.
 *   **How to Use:**
     - Navigate to the [Sign Up page](/sign-up).
 

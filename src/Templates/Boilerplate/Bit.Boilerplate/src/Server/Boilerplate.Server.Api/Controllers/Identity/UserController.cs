@@ -422,7 +422,7 @@ public partial class UserController : AppControllerBase, IUserController
             sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!));
         }
 
-        if (user.TwoFactorEnabled || (user.EmailConfirmed is false && user.PhoneNumberConfirmed is false /* Users signed-in through social sign-in */))
+        if (user.TwoFactorEnabled || (user.EmailConfirmed is false && user.PhoneNumberConfirmed is false /* Users signed-in through external sign-in */))
         {
             //#if (signalR == true)
             // Check out AppHub's comments for more info.

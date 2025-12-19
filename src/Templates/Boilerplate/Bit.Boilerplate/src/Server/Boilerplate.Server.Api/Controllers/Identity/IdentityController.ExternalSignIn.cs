@@ -11,25 +11,25 @@ public partial class IdentityController
 
     [HttpGet]
     [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
-    public async Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
+    public async Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
-        var uri = Url.Action(nameof(SocialSignIn), new { provider, returnUrl, localHttpPort, origin = Request.GetWebAppUrl() })!;
+        var uri = Url.Action(nameof(ExternalSignIn), new { provider, returnUrl, localHttpPort, origin = Request.GetWebAppUrl() })!;
         return new Uri(Request.GetBaseUrl(), uri).ToString();
     }
 
     [HttpGet]
-    public async Task<ActionResult> SocialSignIn(string provider,
+    public async Task<ActionResult> ExternalSignIn(string provider,
         string? returnUrl = null, /* Specifies the relative page address to navigate to after completion. */
-        int? localHttpPort = null, /* Defines the local HTTP server port awaiting the social sign-in result on Windows/macOS/iOS versions of the app. */
+        int? localHttpPort = null, /* Defines the local HTTP server port awaiting the external sign-in result on Windows/macOS/iOS versions of the app. */
         [FromQuery] string? origin = null /* Indicates the base address URL for redirection after the process completes. */ )
     {
-        var redirectUrl = Url.Action(nameof(SocialSignInCallback), "Identity", new { returnUrl, localHttpPort, origin });
+        var redirectUrl = Url.Action(nameof(ExternalSignInCallback), "Identity", new { returnUrl, localHttpPort, origin });
         var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
         return new ChallengeResult(provider, properties);
     }
 
     [HttpGet]
-    public async Task<ActionResult> SocialSignInCallback(string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> ExternalSignInCallback(string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
         string? signInPageUri;
         ExternalLoginInfo? info = null;
@@ -70,7 +70,18 @@ public partial class IdentityController
                     await userPhoneNumberStore.SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
                 }
 
-                await userManager.CreateUserWithDemoRole(user);
+                if (info.LoginProvider is "Keycloak")
+                {
+                    // Roles are supposed to be managed through the key cloack provider.
+                    // The same decision can be made for other providers as well (e.g. AzureAD), if they support roles/claims management.
+                    await userManager.CreateAsync(user);
+                }
+                else
+                {
+                    // External sign-in providers like Google, Facebook, Twitter etc. are typically used for consumer sign-ups.
+                    // Therefore, we assign a role to these users by default.
+                    await userManager.CreateUserWithDemoRole(user);
+                }
 
                 await userManager.AddLoginAsync(user, info);
             }
@@ -87,7 +98,30 @@ public partial class IdentityController
                 await userManager.UpdateAsync(user);
             }
 
-            (_, signInPageUri) = await GenerateAutomaticSignInLink(user, returnUrl, originalAuthenticationMethod: "Social"); // Sign in with a magic link, and 2FA will be prompted if already enabled.
+            // Using these tokens (if provided by external provider) for further API calls to the provider on behalf of the user.
+            // Example: Getting more profile data from the provider, posting on behalf of the user or getting user claims updates, etc.
+            var idToken = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "id_token")?.Value;
+            var refreshToken = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "refresh_token")?.Value;
+            var accessToken = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "access_token")?.Value;
+            var expiresAt = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "expires_at")?.Value;
+            if (string.IsNullOrEmpty(idToken) is false)
+            {
+                await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "id_token", idToken);
+            }
+            if (string.IsNullOrEmpty(refreshToken) is false)
+            {
+                await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "refresh_token", refreshToken);
+            }
+            if (string.IsNullOrEmpty(accessToken) is false)
+            {
+                await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "access_token", accessToken);
+            }
+            if (string.IsNullOrEmpty(expiresAt) is false)
+            {
+                await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "expires_at", expiresAt);
+            }
+
+            (_, signInPageUri) = await GenerateAutomaticSignInLink(user, returnUrl, originalAuthenticationMethod: "External"); // Sign in with a magic link, and 2FA will be prompted if already enabled.
         }
         catch (Exception exp)
         {
@@ -99,9 +133,9 @@ public partial class IdentityController
             await Request.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme); // We'll handle sign-in with the following redirects, so no external identity cookie is needed.
         }
 
-        var redirectRelativeUrl = $"{PageUrls.WebInteropApp}?actionName=SocialSignInCallback&url={Uri.EscapeDataString(signInPageUri!)}&localHttpPort={localHttpPort}";
+        var redirectRelativeUrl = $"{PageUrls.WebInteropApp}?actionName=ExternalSignInCallback&url={Uri.EscapeDataString(signInPageUri!)}&localHttpPort={localHttpPort}";
 
-        if (localHttpPort is not null) 
+        if (localHttpPort is not null)
             return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), redirectRelativeUrl).ToString()); // Check out Client.web/wwwroot/web-interop-app.html's comments.
 
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), redirectRelativeUrl).ToString());
@@ -109,7 +143,7 @@ public partial class IdentityController
 
     [HttpGet]
     [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
-    public async Task<string[]> GetSupportedSocialAuthSchemes(CancellationToken cancellationToken = default)
+    public async Task<string[]> GetSupportedExternalAuthSchemes(CancellationToken cancellationToken = default)
     {
         var schemes = await authenticationSchemeProvider.GetAllSchemesAsync();
 

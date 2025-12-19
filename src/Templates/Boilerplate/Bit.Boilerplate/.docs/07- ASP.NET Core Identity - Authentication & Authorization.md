@@ -6,23 +6,67 @@ Welcome to **Stage 7** of the Boilerplate project tutorial! In this stage, you w
 
 ## Table of Contents
 
-1. [Authentication Architecture](#authentication-architecture)
+1. [Understanding Authentication Methods](#understanding-authentication-methods)
+   - [The Two Fundamental Methods](#the-two-fundamental-methods)
+   - [Two-Factor Authentication (2FA)](#two-factor-authentication-2fa)
+   - [Other Sign-In Methods Are Built on OTP](#other-sign-in-methods-are-built-on-otp)
+2. [Authentication Architecture](#authentication-architecture)
    - [JWT Token-Based Authentication](#jwt-token-based-authentication)
    - [Session Management](#session-management)
-   - [Single Sign-On (SSO) Support](#single-sign-on-sso-support)
-2. [Authorization and Access Control](#authorization-and-access-control)
+   - [External Identity Support](#external-identity-support)
+3. [Authorization and Access Control](#authorization-and-access-control)
    - [Role-Based and Permission-Based Authorization](#role-based-and-permission-based-authorization)
    - [Policy-Based Authorization](#policy-based-authorization)
    - [Custom Claim Types](#custom-claim-types)
-3. [Identity Configuration](#identity-configuration)
-4. [Security Best Practices](#security-best-practices)
-5. [One-Time Token System](#one-time-token-system)
-6. [Code Examples from the Project](#code-examples-from-the-project)
-7. [Hands-On Exploration](#hands-on-exploration)
-8. [Video Tutorial](#video-tutorial)
-9. [Summary](#summary)
+4. [Identity Configuration](#identity-configuration)
+5. [Security Best Practices](#security-best-practices)
+6. [One-Time Token System](#one-time-token-system)
+7. [Advanced Topics](#advanced-topics)
+   - [JWT Token Signing with PFX Certificates](#jwt-token-signing-with-pfx-certificates)
+   - [Keycloak Integration](#keycloak-integration)
+8. [Hands-On Exploration](#hands-on-exploration)
+9. [Video Tutorial](#video-tutorial)
 
 **Important**: All topics related to WebAuthn, passkeys, and passwordless authentication are explained in [Stage 24](/.docs/24-%20WebAuthn%20and%20Passwordless%20Authentication%20(Advanced).md).
+
+---
+
+## Understanding Authentication Methods
+
+Before diving into the technical architecture, it's important to understand that the Boilerplate project fundamentally supports only **two authentication methods**. All other sign-in options are built on top of these core methods.
+
+### The Two Fundamental Methods
+
+**1. Identifier + Password**
+- **Identifier**: Username, Email, or Phone Number
+- **Password**: User's secret password
+- This is the traditional authentication method
+
+**2. Identifier + OTP (One-Time Password)**
+- **Identifier**: Username, Email, or Phone Number  
+- **OTP**: A 6-digit code sent to the user
+- Also known as "Magic Link" authentication when delivered via email
+
+> **Note about Username field**: In the default UI, the Username field is commented out to keep the interface clean and simple. If your business requires username-based authentication, you can easily re-enable it in the sign-in/sign-up components.
+
+### Two-Factor Authentication (2FA)
+
+Depending on user settings, **Two-Factor Authentication** may be triggered after the initial sign-in.
+
+### Other Sign-In Methods Are Built on OTP
+
+All alternative authentication methods in the Boilerplate ultimately generate a 6-digit OTP code and perform an **automatic OTP sign-in** behind the scenes:
+
+| Method | How It Works |
+|--------|-------------|
+| **External Providers** (Google, Facebook, GitHub, etc.) | After successful OAuth flow, generates an OTP and auto-signs in |
+| **WebAuthn / Passkeys** (Fingerprint, Face ID) | After biometric verification, generates an OTP and auto-signs in |
+| **Magic Link** (Email link) | Clicking the link triggers OTP sign-in with the embedded token |
+
+This unified approach means:
+- ✅ **2FA is always respected** regardless of how the user signs in
+- ✅ **Session management works the same way** for all sign-in methods
+- ✅ **Simplified codebase** with a single authentication pipeline
 
 ---
 
@@ -47,7 +91,7 @@ You can configure token expiration in [`appsettings.json`](/src/Server/Boilerpla
 "Identity": {
     "BearerTokenExpiration": "0.00:05:00",  // Format: D.HH:mm:ss (5 minutes)
     "RefreshTokenExpiration": "14.00:00:00", // 14 days
-    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSiginingKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm"
+    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSigningKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm"
 }
 ```
 
@@ -118,26 +162,21 @@ private async Task<UserSession> CreateUserSession(Guid userId, CancellationToken
 
 ---
 
-### Single Sign-On (SSO) Support
+### External Identity Support
 
-The project supports **external authentication providers** for Single Sign-On (SSO).
+The project supports **external authentication providers** for Single Sign-On (SSO) and Social sign-in purposes.
 
 #### Supported Providers
 
-You can easily configure SSO with:
+The following external identity providers have been already configured:
 
-- **Google** - OAuth 2.0 authentication
-- **GitHub** - OAuth authentication for developers
-- **Microsoft/Azure AD** - Enterprise identity integration (Azure AD B2C/Entra)
-- **Twitter** - Social authentication
-- **Apple** - Sign in with Apple
-- **Facebook** - Social media authentication
-- **Duende Identity Server / KeyCloak** - OpenID Connect provider (demo included)
-- And many other OAuth/OpenID Connect providers
-
-#### Demo Provider
-
-By default, the project is configured to connect to a **demo Duende Identity Server 8 instance** to demonstrate how external OpenID Connect providers work. The implementation is in [`IdentityController.SocialSignIn.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.SocialSignIn.cs).
+- **Google**
+- **Microsoft/Azure Entra/Azure AD B2C**
+- **Twitter (X)**
+- **Apple**
+- **GitHub**
+- **Facebook**
+- **Keycloak** Free, Open Source Identity and Access Management
 
 #### Configuration
 
@@ -164,23 +203,23 @@ External provider settings are configured in [`appsettings.json`](/src/Server/Bo
 }
 ```
 
-#### Social Sign-In Flow
+#### External Sign-In Flow
 
-From [`IdentityController.SocialSignIn.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.SocialSignIn.cs):
+From [`IdentityController.ExternalSignIn.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.ExternalSignIn.cs):
 
 ```csharp
 [HttpGet]
-public async Task<ActionResult> SocialSignIn(string provider, string? returnUrl = null, 
+public async Task<ActionResult> ExternalSignIn(string provider, string? returnUrl = null, 
     int? localHttpPort = null, [FromQuery] string? origin = null)
 {
-    var redirectUrl = Url.Action(nameof(SocialSignInCallback), "Identity", 
+    var redirectUrl = Url.Action(nameof(ExternalSignInCallback), "Identity", 
         new { returnUrl, localHttpPort, origin });
     var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
     return new ChallengeResult(provider, properties);
 }
 ```
 
-When a social sign-in is successful, the system:
+When a external sign-in is successful, the system:
 1. Retrieves user information from the external provider
 2. Either finds an existing user or creates a new one
 3. Automatically confirms email/phone if the provider provides them
@@ -407,7 +446,7 @@ public class AppClaimTypes
     public const string PRIVILEGED_SESSION = "p-s";
     public const string MAX_PRIVILEGED_SESSIONS = "mx-p-s";
     public const string ELEVATED_SESSION = "e-s";
-    public const string FEATURES = "feat";
+    public const string FEATURES = "features";
 }
 ```
 
@@ -415,8 +454,8 @@ public class AppClaimTypes
 
 - **`SESSION_ID`**: Unique identifier for the current user session => Guid value stored in UserSessions table
 - **`MAX_PRIVILEGED_SESSIONS`**: Maximum allowed privileged sessions for this user => -1 (Unlimited) or a positive number
-- **`PRIVILEGED_SESSION`**: Indicates if this session counts toward the privileged session limit => A positive number
-- **`ELEVATED_SESSION`**: Indicates the user has recently authenticated for sensitive operations => true or false
+- **`PRIVILEGED_SESSION`**: Indicates if this session is privileged => "true" or "false"
+- **`ELEVATED_SESSION`**: Indicates the user has recently authenticated for sensitive operations => "true" or "false"
 - **`FEATURES`**: Contains the list of features/permissions values granted to the user => Array of AppFeature's values, for example ["1.1", "2.1"]
 
 ---
@@ -431,7 +470,7 @@ public class AppClaimTypes
 
 ```json
 "Identity": {
-    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSiginingKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm",
+    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSigningKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm",
     "Issuer": "Boilerplate",
     "Audience": "Boilerplate",
     "BearerTokenExpiration": "0.00:05:00",
@@ -660,127 +699,124 @@ Let's walk through a password reset scenario:
 
 ---
 
-## Code Examples from the Project
+## Advanced Topics
 
-### Sign Up with Validation
+### JWT Token Signing with PFX Certificates
 
-From [`IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs):
+By default, the Bit Boilerplate uses a string-based secret (`JwtIssuerSigningKeySecret`) for signing JWT tokens in the [`AppJwtSecureDataFormat`](/src/Server/Boilerplate.Server.Api/Services/Identity/AppJwtSecureDataFormat.cs) class. While this approach is valid and secure, using a **PFX certificate** is considered best practice for production environments, especially when:
 
-```csharp
-[HttpPost]
-public async Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken)
-{
-    request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-    
-    // Validate Google reCAPTCHA
-    if (await googleRecaptchaService.Verify(request.GoogleRecaptchaResponse, cancellationToken) is false)
-        throw new BadRequestException(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResponse)]);
+- You need to share JWT validation across multiple backend services
+- You want to follow industry-standard cryptographic practices
+- You're deploying to enterprise environments with strict security requirements
 
-    // Check for existing user
-    var existingUser = await userManager.FindUserAsync(
-        new() { Email = request.Email, PhoneNumber = request.PhoneNumber });
-        
-    if (existingUser is not null)
-    {
-        if (await userConfirmation.IsConfirmedAsync(userManager, existingUser) is false)
-        {
-            await SendConfirmationToken(existingUser, request.ReturnUrl, cancellationToken);
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)])
-                .WithData("UserId", existingUser.Id);
-        }
-        else
-        {
-            throw new BadRequestException(Localizer[nameof(AppStrings.DuplicateEmailOrPhoneNumber)])
-                .WithData("UserId", existingUser.Id);
-        }
-    }
+**Why We Didn't Use PFX by Default**
 
-    // Create new user
-    var userToAdd = new User { LockoutEnabled = true };
-    await userStore.SetUserNameAsync(userToAdd, request.UserName!, cancellationToken);
-    
-    if (string.IsNullOrEmpty(request.Email) is false)
-    {
-        await userEmailStore.SetEmailAsync(userToAdd, request.Email!, cancellationToken);
-    }
-    
-    if (string.IsNullOrEmpty(request.PhoneNumber) is false)
-    {
-        await userPhoneNumberStore.SetPhoneNumberAsync(userToAdd, request.PhoneNumber!, cancellationToken);
-    }
+We chose the string-based secret as the default because:
+- **Easier Deployment**: PFX certificates require additional configuration on shared hosting providers
+- **Simplified Development**: Developers can get started immediately without certificate management
+- **Good Security**: String-based secrets with HS512 are still cryptographically secure
 
-    await userManager.CreateUserWithDemoRole(userToAdd, request.Password!);
-    await SendConfirmationToken(userToAdd, request.ReturnUrl, cancellationToken);
-}
-```
+**How to Migrate to PFX Certificates**
 
-### Password Reset Flow
-
-From [`IdentityController.ResetPassword.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.ResetPassword.cs):
+If you want to use PFX certificates, you'll need to modify [`AppJwtSecureDataFormat`](/src/Server/Boilerplate.Server.Api/Services/Identity/AppJwtSecureDataFormat.cs) to use `AsymmetricSecurityKey` instead of `SymmetricSecurityKey`:
 
 ```csharp
-[HttpPost]
-public async Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken)
-{
-    request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
-    var user = await userManager.FindUserAsync(request) 
-        ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)])
-            .WithData("Identifier", request);
+// Instead of:
+IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret))
 
-    // Check if token has expired
-    var expired = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) 
-        > AppSettings.Identity.ResetPasswordTokenLifetime;
-
-    if (expired)
-        throw new BadRequestException(nameof(AppStrings.ExpiredToken))
-            .WithData("UserId", user.Id);
-
-    // Check if user is locked out
-    if (await userManager.IsLockedOutAsync(user))
-    {
-        var tryAgainIn = (user.LockoutEnd! - DateTimeOffset.UtcNow).Value;
-        throw new BadRequestException(
-            Localizer[nameof(AppStrings.UserLockedOut), 
-            tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)])
-            .WithData("UserId", user.Id)
-            .WithExtensionData("TryAgainIn", tryAgainIn);
-    }
-
-    // Verify the token
-    bool tokenIsValid = await userManager.VerifyUserTokenAsync(
-        user!, 
-        TokenOptions.DefaultPhoneProvider, 
-        FormattableString.Invariant($"ResetPassword,{user.ResetPasswordTokenRequestedOn?.ToUniversalTime()}"), 
-        request.Token!);
-
-    if (tokenIsValid is false)
-    {
-        await userManager.AccessFailedAsync(user);
-        throw new BadRequestException(nameof(AppStrings.InvalidToken))
-            .WithData("UserId", user.Id);
-    }
-
-    // Reset the password
-    var result = await userManager.ResetPasswordAsync(
-        user!, 
-        await userManager.GeneratePasswordResetTokenAsync(user!), 
-        request.Password!);
-
-    if (result.Succeeded is false)
-        throw new ResourceValidationException(result.Errors
-            .Select(e => new LocalizedString(e.Code, e.Description)).ToArray())
-            .WithData("UserId", user.Id);
-
-    // Reset access failed count and invalidate the token
-    await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
-    user.ResetPasswordTokenRequestedOn = null; // Invalidates the token
-    var updateResult = await userManager.UpdateAsync(user);
-    if (updateResult.Succeeded is false)
-        throw new ResourceValidationException(updateResult.Errors
-            .Select(e => new LocalizedString(e.Code, e.Description)).ToArray())
-            .WithData("UserId", user.Id);
-}
+// Use:
+var certificate = new X509Certificate2("path/to/certificate.pfx", "password");
+IssuerSigningKey = new X509SecurityKey(certificate)
 ```
+
+**Protecting ASP.NET Core Data Protection Keys**
+
+Additionally, you should protect the Data Protection keys stored in the database. In [`Program.Services.cs`](/src/Server/Boilerplate.Server.Api/Program.Services.cs), update the following code:
+
+```csharp
+services.AddDataProtection()
+   .PersistKeysToDbContext<AppDbContext>()
+   .ProtectKeysWithCertificate(certificate); // Add this line
+```
+
+**Cross-Service JWT Validation**
+
+When using PFX certificates, you can share the **public key** with other backend services to validate JWTs issued by your ASP.NET Core Identity system. Other services can use the `AddJwtAuthentication` method to validate tokens without needing the private key.
+
+This enables scenarios where:
+- Multiple microservices validate the same JWT
+- Third-party services can verify your tokens
+
+---
+
+### Keycloak Integration
+
+Bit Boilerplate includes built-in support for **Keycloak**, a free, open-source identity and access management solution. Keycloak provides enterprise-grade features like:
+
+- Centralized user management
+- Single Sign-On (SSO) across multiple applications
+- Fine-grained authorization
+- User federation (LDAP, Active Directory)
+
+#### Keycloak in .NET Aspire
+
+When you run the project with .NET Aspire enabled (default configuration), Keycloak is automatically started as a containerized service. This provides a complete identity server for development and testing without any manual setup.
+
+#### Demo User Accounts
+
+The Keycloak instance comes pre-configured with the following demo accounts (Provided by [src\Server\Boilerplate.Server.AppHost\Realms\dev-realm.json](..\src\Server\Boilerplate.Server.AppHost\Realms\dev-realm.json)):
+
+| Username | Password | Role | Description |
+|----------|----------|------|-------------|
+| test | 123456 | Admin | Full administrative access |
+| bob | bob | Demo | Standard demo user |
+| alice | alice | Demo | Standard demo user |
+
+#### How Keycloak Mapping Works
+
+The Boilerplate template integrates Keycloak with ASP.NET Core Identity through a custom mapping system in [`AppUserClaimsPrincipalFactory`](/src/Server/Boilerplate.Server.Api/Services/Identity/AppUserClaimsPrincipalFactory.cs):
+
+**1. Groups → Roles**
+- Keycloak **groups** are mapped to ASP.NET Core Identity **roles**
+- Users inherit all roles from their group memberships
+
+**2. Attributes → Claims**
+- **User attributes** in Keycloak become individual claims
+- **Group attributes** are also mapped to claims
+
+**3. Keycloak Roles → Custom Mapping** (Not required with the current project setup)
+- Keycloak's built-in **roles** (distinct from groups) are **not automatically mapped**
+- These roles follow a different structure than ASP.NET Core Identity roles
+
+#### Real-Time Claim Synchronization
+
+The `AppUserClaimsPrincipalFactory` retrieves the latest claims from Keycloak on every ASP.NET Core Identity token refresh:
+
+**Security Benefits:**
+- **Automatic Deactivation**: If a user is disabled or deleted in Keycloak, access is immediately revoked
+- **Fresh Claims**: Every token refresh fetches the latest permissions from Keycloak
+- **Session Validation**: Expired or revoked Keycloak sessions trigger `UnauthorizedException`
+
+#### JWT Token Issuance Flow
+
+Despite using Keycloak for authentication, the final JWT tokens are still issued by **ASP.NET Core Identity**:
+
+1. User signs in through Keycloak (via OpenID Connect)
+2. `AppUserClaimsPrincipalFactory` retrieves claims from Keycloak
+3. ASP.NET Core Identity merges Keycloak claims with local claims
+4. A new JWT is issued and signed using the configured secret (or PFX certificate)
+5. The JWT is sent to the client and used for all subsequent API requests
+
+**Validation:**
+- When the JWT is sent back to the backend, **ASP.NET Core Identity validates it**
+
+#### Using JWTs with Other Backend Services
+
+If you want to share the JWT with other backend services (e.g., microservices), follow these steps:
+
+1. **Switch to PFX Certificates** (as described in the previous section)
+2. **Share the Public Key** with other services
+3. Other services use `AddJwtAuthentication` to validate the token
 
 ---
 
@@ -816,7 +852,7 @@ public async Task ResetPassword(ResetPasswordRequestDto request, CancellationTok
 - Try using an already-used token
 
 ### 6. External Providers
-- Try **social sign-in** with the configured demo provider
+- Try **External sign-in** with the configured demo provider
 - Observe how email confirmation works with external providers
 
 ### 7. Permissions and Policies
@@ -853,7 +889,6 @@ public async Task ResetPassword(ResetPasswordRequestDto request, CancellationTok
 ### AI Wiki: Answered Questions
 * [How does a `refresh token` function in a Boilerplate project template?](https://deepwiki.com/search/how-does-a-refresh-token-funct_6a75fa66-ab98-4367-bd1a-24b081fbf88c)
 * [What would happen when I use [AuthorizedApi]](https://deepwiki.com/search/what-would-happen-when-i-use-a_c525d59d-5c55-489b-8f95-69f6df7c743d)
-* [Give me high level overview of social sign-in flow](https://deepwiki.com/search/give-me-high-level-overview-of_059d227a-0ffe-4077-9e01-ba9f61456a3f)
 * [Give me high level overview of two factor auth setup and usage flows](https://deepwiki.com/search/give-me-high-level-overview-of_1883503f-2e34-41ca-821a-1246d332990f)
 
 Ask your own question [here](https://wiki.bitplatform.dev)

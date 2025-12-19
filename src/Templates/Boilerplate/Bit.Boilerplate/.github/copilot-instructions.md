@@ -58,7 +58,7 @@ The solution is organized into the following projects. Understand their roles to
 
 ## 4. Available Tooling
 
--   **DeepWiki**: Provides access to an extensive knowledge base for the `bitfoundation/bitplatform` and `riok/mapperly` repositories.
+-   **DeepWiki**: Provides access to an extensive knowledge base for open source repositories.
 -   **Website Fetcher**: Gathers information from URLs provided by the user, using `fetch` or `get_web_pages` tools.
 -   **Microsoft Learn**: Provides access to official Microsoft documentation and code samples for Azure, .NET Aspire, .NET MAUI, Entity Framework Core, SignalR, Microsoft.Extensions.AI, SQL Server, and other Microsoft technologies. Use `microsoft_docs_search` to find relevant documentation and `microsoft_code_sample_search` to find official code examples.
 
@@ -74,9 +74,11 @@ Before writing code, investigate thoroughly.
 *   If the user provides a **URL**, you **MUST** use the `fetch` or `get_web_pages` tools to retrieve its content.
 *   If the user provides a **git commit id/hash**, you **MUST** run the `git --no-pager show <commit-id>` command to retrieve its details.
 *   If the user talked about current changes in the codebase, you **MUST** run the `git --no-pager diff` and `git --no-pager diff --staged` commands to see the differences.
+*   **IMPORTANT:** If you want to add new entity, entity type configuration, DTO, mapper, controller, or IAppController, you **MUST** read `.github\prompts\scaffold.prompt.md` to understand the structure, naming conventions, file locations, and implementation patterns.
 *   For UI-related tasks, you **MUST** first ask `DeepWiki`: *"What features does BitPlatform offer to help me complete this task? [USER'S ORIGINAL REQUEST]"*
 *   For anything related to `Bit.BlazorUI`, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit project template, you **MUST** use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform` to find relevant information.
 *   For mapper/mapping entity/dto related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns focusing on its static classes and extension methods approach.
+*   For Keycloak/realm related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `keycloak/keycloak` to find relevant information.
 *   **🚨 CRITICAL TOOL REQUIREMENT**: You **MUST** verify that you have access to the `DeepWiki_ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message:
 **❌ CRITICAL ERROR: DeepWiki_ask_question Tool Not Available**
 
@@ -112,18 +114,18 @@ After applying changes, you **MUST** verify the integrity of the application.
 ## 8. Coding Conventions & Best Practices
 
 01. **Follow Project Structure**: Adhere to the defined project layout for all new files and code.
-02. **Prioritize Bit.BlazorUI Components**: You **MUST** use components from the `Bit.BlazorUI` library (e.g., `BitButton`, `BitTextField`, `BitChart`) instead of generic HTML elements to ensure UI consistency and leverage built-in features.
+02. **Prioritize Bit.BlazorUI Components**: You **MUST** use components from the `Bit.BlazorUI` library (e.g., `BitButton`, `BitGrid`, `BitStack`, `BitChart`) instead of generic HTML elements to ensure UI consistency and leverage built-in features.
 03. **Embrace Nullable Reference Types**: All new code must be nullable-aware.
 04. **Use Dependency Injection**: Use the `[AutoInject]` attribute in components. For other classes, use constructor injection.
 05. **Implement Structured Logging**: Use structured logging for clear, queryable application logs.
 06. **Adhere to Security Best Practices**: Implement robust authentication and authorization patterns.
 07. **Use Async Programming**: Employ `async/await` for all I/O-bound operations to prevent blocking.
 08. **Write Modern C#**: Utilize the latest C# features, including implicit and global using statements.
-09. **Respect .editorconfig**: Adhere to the `.editorconfig` settings for consistent code style.
-10. **Use Code-Behind Files**: Place component logic in `.razor.cs` files instead of `@code` blocks.
-11. **Use Scoped SCSS Files**: Place component styles in `.razor.scss` files for CSS isolation.
-12. **Style Bit.BlazorUI Components Correctly**: Use the `::deep` selector in your `.scss` files to style `Bit.BlazorUI` components.
-13. **Use Theme Colors**: You **MUST** use `BitColor` theme variables in C#, Razor, and SCSS files (`_bit-css-variables.scss`) to support dark/light modes. Do not use hardcoded colors.
+09. **Use Code-Behind Files**: Place component logic in `.razor.cs` files instead of `@code` blocks.
+10. **Use Scoped SCSS Files**: Place component styles in `.razor.scss` files for CSS isolation.
+11. **Style Bit.BlazorUI Components Correctly**: Use the `::deep` selector in your `.scss` files to style `Bit.BlazorUI` components.
+12. **Use Theme Colors in C# and Razor**: In C# and Razor files, you **MUST** use `BitColor` enum and `BitCss` class to apply theme colors instead of hardcoded colors. Use `BitColor` for component parameters (e.g., `BitColor.Primary`, `BitColor.TertiaryBackground`). Use `BitCss.Class` for CSS classes (e.g., `@BitCss.Class.Color.Background.Primary`, `@BitCss.Class.Color.Foreground.Secondary`). Use `BitCss.Var` for inline styles with CSS variables (e.g., `border-color:var(@BitCss.Var.Color.Border.Primary)`). This ensures automatic dark/light mode support.
+13. **Use Theme Colors in SCSS**: In SCSS files, you **MUST** use SCSS variables from `_bit-css-variables.scss` instead of hardcoded colors. Import the file and use variables like `$bit-color-primary`, `$bit-color-foreground-primary`, `$bit-color-background-secondary`, etc. These map to CSS custom properties that automatically adapt to dark/light modes. Available variable categories include: primary, secondary, tertiary, info, success, warning, severe-warning, error, foreground, background, border, and neutral colors.
 14. **Use Enhanced Lifecycle Methods**: In components inheriting from `AppComponentBase` or pages inheriting from `AppPageBase`, you **MUST** use `OnInitAsync`, `OnParamsSetAsync`, and `OnAfterFirstRenderAsync`.
 15. **WrapHandled**: Use `WrapHandled` for event handlers in razor files to prevent unhandled exceptions.
 Example 1: `OnClick="WrapHandled(MyMethod)"` instead of `OnClick="MyMethod"`.
@@ -131,62 +133,3 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 16. **Use OData Query Options**: Leverage `[EnableQuery]` and `ODataQueryOptions` for efficient data filtering and pagination.
 17. **Follow Mapperly Conventions**: Use **partial static classes and extensions methods** with Mapperly for high-performance object mapping.
 18. **Handle Concurrency**: Always use `byte[] Version` for optimistic concurrency control in update and delete operations.
-
-## Instructions for adding new model/entity to ef-core DbContext / Database
-Create the Entity Model
-- **Location**: `Boilerplate.Server.Api's Models folder`
-- **Requirements**:
-  - Include `Id`, `Version` properties
-  - Add appropriate navigation properties
-  - Use nullable reference types
-  - Add data annotations as needed
-
-Create the EntityTypeConfiguration
-- **Location**: `Boilerplate.Server.Api's Data/Configuration folder`
-  - Implement `IEntityTypeConfiguration<{EntityName}>`
-  - Configure unique indexes, relationships
-  - Add `DbSet<{EntityName}>` to AppDbContext
-  - Add ef-core migration
-
-## Instructions for adding new DTO and Mapper
-Create the DTO
-- **Location**: `Boilerplate.Shared's Dtos folder`
-- **Requirements**:
-  - Use `[DtoResourceType(typeof(AppStrings))]` attribute
-  - Add validation attributes: `[Required]`, `[MaxLength]`, `[Display]`
-  - Use `nameof(AppStrings.PropertyName)` for error messages and display names
-  - Include `Id`, `Version` properties
-  - Add calculated properties if needed (e.g., `ProductsCount`)
-  - Add `[JsonSerializable(typeof({DtoName}))]` to AppJsonContext.cs
-
-Create the Mapper
-- **Location**: `Boilerplate.Server.Api's Mappers folders`
-- **Requirements**:
-  - Use `[Mapper]` attribute from Mapperly
-  - Create `static partial class {MapperName}Mapper`
-  - Add projection method: `public static partial IQueryable<{DtoName}> Project(this IQueryable<{EntityName}> query);`
-  - Add mapping methods: `Map()`, `Patch()` for CRUD operations
-  - Use `[MapProperty]` for complex mappings if needed
-
-#### Instructions for creating Strongly Typed Http Client Wrapper to Call Backend API
-- **Location**: `Boilerplate.Shared project's Controllers folder`
-- **Requirements**:
-  - Inherit from `IAppController`
-  - Add `[Route("api/[controller]/[action]/")]` attribute
-  - Add `[AuthorizedApi]` if authentication required
-  - Always Use `CancellationToken` parameters
-  - The return type should be `Task<T>` or Task<T> where T is JSON Serializable type like DTO, int, or List<Dto>
-  - If Backend API's action returns `IQueryable<T>`, use `Task<List<T>>` as return type with `=> default!`
-  - If Backend API's action returns `IActionResult`, use `Produces<T>` attribute to specify the response type with `=> default!`
-  - If Backend API accepts ODataQueryOptions, simply ignore it
-
-#### Instructions to create Backend API Controllers
-- **Location**: `Boilerplate.Server.Api's Controllers folder`
-- **Requirements**:
-  - Inherit from `AppControllerBase`
-  - Implement the corresponding IAppController interface
-  - Add appropriate authorization attributes
-  - Use `[EnableQuery]` for GET endpoints with OData support
-  - Implement validation in private methods
-  - Use `Project()` for querying and mapping
-  - Handle resource not found scenarios using ResourceNotFoundException.

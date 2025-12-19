@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div class="example-content">
         <BitMenuButton Text="MenuButton" Items="basicCustoms" NameSelectors="nameSelectors" />
     </div>
@@ -303,34 +303,36 @@
 <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br />
-    <div>Component's Style & Class:</div>
+    <div><b>Component's Style & Class</b>:</div>
     <br />
     <div class="example-content">
         <BitMenuButton Text="Styled Button" Items="basicCustoms" NameSelectors="nameSelectors" Style="border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;" />
         <BitMenuButton Text="Classed Button" Items="basicCustoms" NameSelectors="nameSelectors" Class="custom-class" Variant="BitVariant.Outline" />
     </div>
-    <br /><br /><br /><br />
-    <div>Item's Style & Class:</div>
+    <br /><br /><br />
+    <div><b>Item's Style & Class</b>:</div>
     <br />
-    <div class="example-content">
-        <BitMenuButton Text="Item Styled & Classed Button" Items="itemStyleClassCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" />
-    </div>
-    <br /><br /><br /><br />
+    <div>Non-Sticky:</div>
+    <BitMenuButton Text="Non-Sticky" Items="itemStyleClassCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" />
+    <br />
+    <div>Sticky:</div>
+    <BitMenuButton Text="Sticky" Sticky Items="itemStyleClassCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" />
+    <br /><br /><br />
     <div><b>Styles</b> & <b>Classes</b>:</div>
     <br />
     <div>
         <BitMenuButton Text="Classes" Items="basicCustoms" IconName="@BitIconName.FormatPainter" NameSelectors="nameSelectors" Variant="BitVariant.Text"
                        Classes="@(new() { OperatorButton = "custom-button",
-                                              Opened = "custom-opened",
-                                              Callout = "custom-callout",
-                                              ItemButton = "custom-item-button" })" />
+                                          Opened = "custom-opened",
+                                          Callout = "custom-callout",
+                                          ItemButton = "custom-item-button" })" />
         <br />
         <BitMenuButton Text="Styles" Items="basicCustoms" IconName="@BitIconName.Brush" NameSelectors="nameSelectors"
                        Styles="@(new() { Root = "--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;",
-                                             Opened = "--button-background: orangered;",
-                                             OperatorButton = "background: var(--button-background);",
-                                             ItemButton = "background: lightcoral;",
-                                             Callout = "border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;" })" />
+                                         Opened = "--button-background: orangered;",
+                                         OperatorButton = "background: var(--button-background);",
+                                         ItemButton = "background: lightcoral;",
+                                         Callout = "border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;" })" />
     </div>
 </DemoExample>
 

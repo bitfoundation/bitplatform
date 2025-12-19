@@ -107,7 +107,7 @@ public partial class SignInPanel
         isWaiting = true;
         successfulSignIn = false;
 
-        await InvokeAsync(StateHasChanged); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK references.
+        await InvokeAsync(StateHasChanged); // External sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK references.
 
         try
         {
@@ -202,16 +202,16 @@ public partial class SignInPanel
         finally
         {
             isWaiting = false;
-            await InvokeAsync(StateHasChanged); // Social sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK references.
+            await InvokeAsync(StateHasChanged); // External sign-in callback will eventually call this method, so we need to update the UI immediately. See ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK references.
         }
     }
 
-    private async Task SocialSignIn(string provider)
+    private async Task ExternalSignIn(string provider)
     {
         try
         {
             pubSubUnsubscribe?.Invoke();
-            pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK, async (uriString) =>
+            pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK, async (uriString) =>
             {
                 // Check out SignInModalService for more details
                 var uri = uriString!.ToString();
@@ -245,7 +245,7 @@ public partial class SignInPanel
 
             var port = localHttpServer.EnsureStarted();
 
-            var redirectUrl = await identityController.GetSocialSignInUri(provider, GetReturnUrl(), port is -1 ? null : port, CurrentCancellationToken);
+            var redirectUrl = await identityController.GetExternalSignInUri(provider, GetReturnUrl(), port is -1 ? null : port, CurrentCancellationToken);
 
             await externalNavigationService.NavigateTo(redirectUrl);
         }

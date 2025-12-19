@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
@@ -6,40 +6,42 @@
     <div style="display:none" hidden>@(Options ?? ChildContent)</div>
 </CascadingValue>
 
-
+@{
+    var _selectedItem = Sticky ? SelectedItem : null;
+}
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <button @onclick="() => HandleOnHeaderClick(Sticky ? SelectedItem : null)"
+    <button @onclick="() => HandleOnHeaderClick(_selectedItem)"
             type="button"
             tabindex="@(IsEnabled ? 0 : -1)"
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription"
-            style="@GetStyle(SelectedItem);@Styles?.OperatorButton"
-            class="bit-mnb-opb @GetClass(SelectedItem) @Classes?.OperatorButton">
+            style="@GetStyle(_selectedItem);@Styles?.OperatorButton"
+            class="bit-mnb-opb @GetClass(_selectedItem) @Classes?.OperatorButton">
         @if (Sticky)
         {
-            var template = GetTemplate(SelectedItem);
+            var template = GetTemplate(_selectedItem);
             if (template is not null)
             {
-                @template(SelectedItem!)
+                @template(_selectedItem!)
             }
             else if (ItemTemplate is not null)
             {
-                @ItemTemplate(SelectedItem)
+                @ItemTemplate(_selectedItem)
             }
             else
             {
-                var iconName = GetIconName(SelectedItem);
+                var iconName = GetIconName(_selectedItem);
                 @if (iconName.HasValue())
                 {
                     <i style="@Styles?.OperatorButtonIcon" class="bit-icon bit-icon--@iconName @Classes?.OperatorButtonIcon" />
                 }
                 <span style="@Styles?.OperatorButtonText" class="bit-mnb-btx @Classes?.OperatorButtonText">
-                    @GetText(SelectedItem)
+                    @GetText(_selectedItem)
                 </span>
             }
         }

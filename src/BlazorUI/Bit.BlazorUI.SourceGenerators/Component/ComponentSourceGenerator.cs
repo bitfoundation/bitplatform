@@ -48,6 +48,8 @@ namespace {namespaceName}
     public partial class {className}
     {{
 ");
+        builder.AppendLine("        private readonly HashSet<string> __assignedParameters = [];");
+        builder.AppendLine("");
         foreach (var par in twoWayParameters)
         {
             var sym = par.PropertySymbol;
@@ -59,6 +61,7 @@ namespace {namespaceName}
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public override async Task SetParametersAsync(ParameterView parameters)
         {{");
+        builder.AppendLine($"            __assignedParameters.Clear();");
         foreach (var par in twoWayParameters)
         {
             builder.AppendLine($"            {par.PropertySymbol.Name}HasBeenSet = false;");
@@ -82,6 +85,7 @@ namespace {namespaceName}
             var varName = $"@{paramName.ToLower()}";
             var paramType = sym.Type.ToDisplayString();
             builder.AppendLine($"                    case nameof({paramName}):");
+            builder.AppendLine($"                       __assignedParameters.Add(nameof({paramName}));");
             if (par.IsTwoWayBound)
             {
                 builder.AppendLine($"                       {paramName}HasBeenSet = true;");
@@ -139,6 +143,15 @@ namespace {namespaceName}
             }
         }
         builder.AppendLine(@"        }");
+
+        builder.AppendLine("");
+
+        builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
+        [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+        public bool HasNotBeenSet(string name)
+        {{");
+        builder.AppendLine("            return __assignedParameters.Contains(name) is false;");
+        builder.AppendLine("        }");
 
         if (twoWayParameters.Length > 0) builder.AppendLine("");
         foreach (var par in twoWayParameters)

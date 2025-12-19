@@ -4,7 +4,7 @@
 /// The rel attribute defines the relationship between a linked resource and the current document.
 /// </summary>
 [Flags]
-public enum BitLinkRel
+public enum BitLinkRels
 {
     /// <summary>
     /// Provides a link to an alternate representation of the document. (i.e. print page, translated or mirror)

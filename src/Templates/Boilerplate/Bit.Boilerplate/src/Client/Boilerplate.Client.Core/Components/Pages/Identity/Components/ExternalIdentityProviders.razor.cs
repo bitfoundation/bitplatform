@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.Components;
 
-public partial class SocialRow
+public partial class ExternalIdentityProviders
 {
     private bool isLoadingProviders = true;
     private string[] supportedProviders = [];
@@ -18,7 +18,7 @@ public partial class SocialRow
     {
         try
         {
-            var providers = await IdentityController.GetSupportedSocialAuthSchemes(CurrentCancellationToken);
+            var providers = await IdentityController.GetSupportedExternalAuthSchemes(CurrentCancellationToken);
             supportedProviders = providers;
         }
         finally
@@ -33,5 +33,5 @@ public partial class SocialRow
     private async Task HandleApple() => await OnClick.InvokeAsync("Apple");
     private async Task HandleAzureAD() => await OnClick.InvokeAsync("AzureAD");
     private async Task HandleFacebook() => await OnClick.InvokeAsync("Facebook");
-    private async Task HandleIdentityServerDemo() => await OnClick.InvokeAsync("IdentityServerDemo");
+    private async Task HandleKeycloak() => await OnClick.InvokeAsync("Keycloak");
 }

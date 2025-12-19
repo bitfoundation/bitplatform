@@ -392,10 +392,6 @@ public partial class PhoneServiceJobsRunner
 
 **Important**: Inside background job, there is **NO** `IHttpContextAccessor` or `User` object available. So if user context is needed, it must be passed as parameters to the job method.
 
-3. **CancellationToken**: Even background jobs support cancellation (e.g., if the server is shutting down)
-
-**Important**: Inside background job, there is **NO** `IHttpContextAccessor` or `User` object available. So if user context is needed, it must be passed as parameters to the job method.
-
 #### Step 3: Service Registration
 
 In [`Program.Services.cs`](/src/Server/Boilerplate.Server.Api/Program.Services.cs):

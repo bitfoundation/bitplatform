@@ -4,8 +4,11 @@
     [Parameter] public string? Url { get; set; }
 }
 
-<section class="page-section">
-    <BitText Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
+<BitCard>
+    <BitText Typography="BitTypography.H4">Feedback</BitText>
+
+    <br />
+
     <BitText>
         You can give us your feedback through our
         <BitLink Href="@GITHUB_URL" Target="_blank">GitHub repo</BitLink>
@@ -14,7 +17,9 @@
         or starting a new
         <BitLink Href="@($"{GITHUB_URL}/discussions/new/choose")" Target="_blank">Discussion</BitLink>.
     </BitText>
+
     <br />
+
     <BitText>
         Or you can
         <BitLink Href="@($"{GITHUB_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/{Url}")"
@@ -24,4 +29,4 @@
                  Target="_blank">edit</BitLink>
         this page on GitHub.
     </BitText>
-</section>
+</BitCard>

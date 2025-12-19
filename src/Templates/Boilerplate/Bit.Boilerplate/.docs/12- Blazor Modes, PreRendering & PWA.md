@@ -7,6 +7,7 @@ Welcome to Stage 12 of the Boilerplate project tutorial! In this stage, you'll l
 ## Table of Contents
 1. [App.razor and index.html Files](#apprazor-and-indexhtml-files)
 2. [Blazor Mode & PreRendering Configuration](#blazor-mode--prerendering-configuration)
+3. [PWA & Service Workers](#pwa--service-workers)
 
 ---
 
@@ -132,7 +133,7 @@ The project supports multiple Blazor hosting models, all configured in a single 
 
 Blazor Server, Auto, WebAssembly, Blazor WebAssembly Standalone and Blazor Hybrid.
 
-This [article](https://www.reddit.com/r/Blazor/comments/1kq5eyu/this_is_not_yet_just_another_incorrect_comparison/) as a good resource to compare Blazor modes.) compares these blazor modes together.
+This [article](https://www.reddit.com/r/Blazor/comments/1kq5eyu/this_is_not_yet_just_another_incorrect_comparison/) is a good resource to compare Blazor modes.
 In a nutshell:
  - Use Blazor Server for development purposes only.
  - Use Blazor WebAssembly or Blazor WebAssembly Standalone for production
@@ -147,7 +148,7 @@ In a nutshell:
 
 #### PrerenderEnabled Settings
 
-```csharp
+```json
 "PrerenderEnabled": true   // Shows content immediately + SEO benefits
 "PrerenderEnabled": false  // Shows loading screen while app initializes
 ```
@@ -245,7 +246,7 @@ self.mode = 'NoPrerender';
 - ✅ Best for apps that require network anyway
 
 **Cons:**
-- ❌ Network required for unvisited pages's assets
+- ❌ Network required for unvisited pages' assets
 - ❌ App might break if connectivity lost during navigation
 
 **Use when:**
@@ -300,7 +301,7 @@ self.mode = 'NoPrerender';
 **Demo:** https://sales.bitplatform.dev/
 
 **Initial Prerender** vs **Always Prerender**:
-If pre-rendering is enabled, `Always Prerender` fetches the site's document on every load of the app. The reason behind fetching the document on every app load is that Blazor WebAssembly's runtime might takes some time to kick in on low-end android devices, so if the user refreshes the page or visits a new page, it shows the pre-rendered document while the Blazor WebAssembly runtime is loading. Downside? It increases server load due to frequent pre-rendering which can be reduced by response caching which will be covered in upcoming stages.
+If pre-rendering is enabled, `Always Prerender` fetches the site's document on every load of the app. The reason behind fetching the document on every app load is that Blazor WebAssembly's runtime might take some time to kick in on low-end Android devices, so if the user refreshes the page or visits a new page, it shows the pre-rendered document while the Blazor WebAssembly runtime is loading. Downside? It increases server load due to frequent pre-rendering which can be reduced by response caching which will be covered in upcoming stages.
 
 ### Service Worker Asset Configuration
 

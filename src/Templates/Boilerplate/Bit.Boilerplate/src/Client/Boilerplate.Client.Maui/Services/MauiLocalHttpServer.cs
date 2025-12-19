@@ -66,14 +66,14 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             .WithUrlPrefix($"http://localhost:{port}")
             .WithMode(AppPlatform.IsWindows ? HttpListenerMode.Microsoft : HttpListenerMode.EmbedIO))
             .WithCors()
-            .WithModule(new ActionModule("/api/SocialSignInCallback", HttpVerbs.Post, async ctx =>
+            .WithModule(new ActionModule("/api/ExternalSignInCallback", HttpVerbs.Post, async ctx =>
             {
                 try
                 {
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
                         var urlToOpen = ctx.Request.QueryString["urlToOpen"];
-                        pubSubService.Publish(ClientAppMessages.SOCIAL_SIGN_IN_CALLBACK, urlToOpen);
+                        pubSubService.Publish(ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK, urlToOpen);
                     });
                 }
                 finally

@@ -52,7 +52,7 @@ jobs:
     - name: Upload server artifact
       uses: actions/upload-artifact@v5
       with:
-        name: server-bundle
+        name: BlazorUIDemo
         path: server
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
@@ -95,7 +95,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v5
       with:
-        name: win-exe-bundle
+        name: WinBlazorUIDemo
         path: src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\Releases
   
   build_blazor_hybrid_android:

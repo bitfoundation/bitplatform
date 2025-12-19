@@ -12,22 +12,22 @@
     <ItemGroup>
         <ProjectReference Include="..\Bit.Websites.Platform.Shared\Bit.Websites.Platform.Shared.csproj" />
         <ProjectReference Include="..\Bit.Websites.Platform.Client\Bit.Websites.Platform.Client.csproj" />
-        <PackageReference Include="Bit.BlazorES2019" Version="10.2.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.2.0">
+        <PackageReference Include="Bit.BlazorES2019" Version="10.2.1" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.2.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.2.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.2.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.1-preview.1.25571.5" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
-        <PackageReference Include="Microsoft.Extensions.AI" Version="10.0.1" />
+        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.1.1-preview.1.25612.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.1" />
+        <PackageReference Include="Microsoft.Extensions.AI" Version="10.1.1" />
         <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="10.0.0-preview.1.25559.3" />
-        <PackageReference Include="ModelContextProtocol" Version="0.4.1-preview.1" />
+        <PackageReference Include="ModelContextProtocol" Version="0.5.0-preview.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />

@@ -42,6 +42,11 @@ var s3Storage = builder.AddMinioContainer("s3")
     .WithDataVolume();
 //#endif
 
+// https://aspire.dev/integrations/security/keycloak/
+var keycloak = builder.AddKeycloak("keycloak", 8080)
+    .WithDataVolume()
+    .WithRealmImport("./Realms");
+
 var serverWebProject = builder.AddProject("serverweb", "../Boilerplate.Server.Web/Boilerplate.Server.Web.csproj")
     .WithExternalHttpEndpoints();
 
@@ -78,6 +83,7 @@ serverApiProject.WithReference(azureBlobStorage);
 //#elif (filesStorage == "S3")
 serverApiProject.WithReference(s3Storage);
 //#endif
+serverApiProject.WithReference(keycloak);
 //#else
 
 //#if (database == "SqlServer")
@@ -94,6 +100,7 @@ serverWebProject.WithReference(azureBlobStorage);
 //#elif (filesStorage == "S3")
 serverWebProject.WithReference(s3Storage);
 //#endif
+serverWebProject.WithReference(keycloak);
 //#endif
 
 if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.

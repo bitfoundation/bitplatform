@@ -44,7 +44,7 @@ The test project is located at [`src/Tests/Boilerplate.Tests.csproj`](/src/Tests
 
 ### Testing Frameworks:
 - **MSTest v4**: The modern MSTest framework with native support for async, improved performance, and better diagnostics
-- **Microsoft.Playwright.MSTest**: End-to-end browser automation for UI testing
+- **Microsoft.Playwright.MSTest.v4**: End-to-end browser automation for UI testing
 - **Aspire.Hosting.Testing**: Integration with .NET Aspire for running dependencies (database, email, S3)
 - **FakeItEasy**: Mocking library (when selective mocking is needed)
 
@@ -134,8 +134,7 @@ public partial class IdentityApiTests
         await server.Build(services =>
         {
             // Replace production services with test doubles
-            services.Replace(ServiceDescriptor.Scoped<IStorageService, TestStorageService>());
-            services.Replace(ServiceDescriptor.Transient<IAuthTokenProvider, TestAuthTokenProvider>());
+            services.Replace(ServiceDescriptor.Scoped<IExampleService, TestExampleService>());
         }).Start(TestContext.CancellationToken);
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -273,21 +272,8 @@ The [`.runsettings`](/src/Tests/.runsettings) file configures test execution:
 
 ```xml
 <RunSettings>
-    <Playwright>
-        <LaunchOptions>
-            <!--<Headless>true</Headless>-->
-        </LaunchOptions>
-    </Playwright>
-
-    <MSTest>
-        <Parallelize>
-            <Workers>3</Workers>
-            <Scope>MethodLevel</Scope>
-        </Parallelize>
-    </MSTest>
-
     <RunConfiguration>
-        <EnvironmentVariables>
+        <EnvironmentVariables>            
             <!-- Override appsettings for tests -->
             <ConnectionStrings__sqlite>Data Source=BoilerplateDb.db;Mode=Memory;Cache=Shared;</ConnectionStrings__sqlite>
         </EnvironmentVariables>
@@ -297,15 +283,7 @@ The [`.runsettings`](/src/Tests/.runsettings) file configures test execution:
 
 **Key Settings:**
 
-### Parallel Execution
-- **Workers**: 3 tests run simultaneously (configurable)
-- **Scope**: MethodLevel (each test method runs independently)
-- **Result**: Faster test execution without sacrificing isolation
 
-### Headless Browser
-- **Headless=true**: Browser runs without UI (faster, CI-friendly)
-- **Commented out by default**: Developers can watch tests run locally
-- **Debugging**: Uncomment `<PWDEBUG>1</PWDEBUG>` to debug with Playwright Inspector
 
 ### Environment Overrides
 - **SQLite In-Memory**: Default for fast, isolated tests
@@ -323,14 +301,17 @@ The [`.runsettings`](/src/Tests/.runsettings) file configures test execution:
 
 ### From Command Line:
 ```powershell
-# Run all tests
-dotnet test src/Tests/Boilerplate.Tests.csproj
+# Navigate to the Tests project directory
+cd src/Tests
 
-# Run specific test
-dotnet test src/Tests/Boilerplate.Tests.csproj --filter "FullyQualifiedName~SignInTest"
+# Run all tests
+dotnet test
+
+# Run UI tests
+dotnet test --filter "TestCategory=UITest"
 
 # Run with verbose output
-dotnet test src/Tests/Boilerplate.Tests.csproj --logger "console;verbosity=detailed"
+dotnet test --logger "console;verbosity=detailed"
 ```
 
 ### From VS Code:

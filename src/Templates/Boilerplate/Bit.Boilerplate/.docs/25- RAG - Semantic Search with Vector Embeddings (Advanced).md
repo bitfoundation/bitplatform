@@ -155,7 +155,7 @@ By default, embeddings are **disabled** in the project. To enable them:
 
 **File Location**: [`src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs`](/src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs)
 
-**Current State** (line 158):
+**Current State**:
 ```csharp
 // This requires SQL Server 2025+
 public static readonly bool IsEmbeddingEnabled = false;

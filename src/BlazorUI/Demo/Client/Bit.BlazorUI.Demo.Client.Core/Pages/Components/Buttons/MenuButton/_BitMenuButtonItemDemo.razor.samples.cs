@@ -315,7 +315,8 @@ private List<BitMenuButtonItem> basicItemsIcon =
 <BitMenuButton Text=""Classed Button"" Items=""basicItems"" Class=""custom-class"" Variant=""BitVariant.Outline"" />
 
 
-<BitMenuButton Text=""Item Styled & Classed Button"" Items=""itemStyleClassItems"" Variant=""BitVariant.Text"" />
+<BitMenuButton Text=""Non-Sticky"" Items=""itemStyleClassItems"" Variant=""BitVariant.Text"" />
+<BitMenuButton Text=""Sticky"" Sticky Items=""itemStyleClassItems"" Variant=""BitVariant.Text"" />
 
 
 <BitMenuButton Text=""Classes"" Items=""basicItems"" IconName=""@BitIconName.FormatPainter"" Variant=""BitVariant.Text""
@@ -340,7 +341,7 @@ private List<BitMenuButtonItem> basicItems = new()
 
 private static List<BitMenuButtonItem> itemStyleClassItems =
 [
-    new() { Text = ""Item A (Default)"", Key = ""A"", IconName = BitIconName.Emoji },
+    new() { Text = ""Item A (Default)"", Key = ""A"", IconName = BitIconName.Emoji, Style = ""color: brown"" },
     new() { Text = ""Item C (Styled)"", Key = ""B"", IconName = BitIconName.Emoji, Style = ""color: tomato; border-color: brown; background-color: peachpuff;"" },
     new() { Text = ""Item B (Classed)"", Key = ""C"", IconName = BitIconName.Emoji2, Class = ""custom-item"" }
 ];";
