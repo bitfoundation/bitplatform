@@ -381,7 +381,7 @@
                                             var monthName = _culture.DateTimeFormat.GetMonthName(month);
                                             var disabled = IsEnabled is false || IsMonthOutOfMinAndMaxDate(month);
                                             var selected = month == _currentMonth;
-                                            <button @onclick="() => SelectMonth(month)"
+                                            <button @onclick="async () => await SelectMonth(month)"
                                                     type="button"
                                                     role="gridcell"
                                                     title="@monthName"
