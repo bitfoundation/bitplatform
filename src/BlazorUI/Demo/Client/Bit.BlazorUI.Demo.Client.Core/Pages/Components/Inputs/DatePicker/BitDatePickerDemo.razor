@@ -184,32 +184,32 @@
         <br />
         <div class="example-content">
             <BitDatePicker Label="Basic MonthPicker" 
-                          Mode="BitDatePickerMode.MonthPicker" 
-                          Placeholder="Select a month" />
+                           Placeholder="Select a month" 
+                           Mode="BitDatePickerMode.MonthPicker" />
             <br /><br />
-            <BitDatePicker Label="MonthPicker with binding" 
-                          Mode="BitDatePickerMode.MonthPicker" 
-                          @bind-Value="monthPickerDate" 
-                          Placeholder="Select a month" />
+            <BitDatePicker @bind-Value="monthPickerDate" 
+                           Placeholder="Select a month" 
+                           Label="MonthPicker with binding" 
+                           Mode="BitDatePickerMode.MonthPicker" />
             <br />
             <div>Selected month: @(monthPickerDate?.ToString("MMMM yyyy") ?? "None")</div>
             <br /><br />
-            <BitDatePicker Label="MonthPicker with Min/Max" 
-                          Mode="BitDatePickerMode.MonthPicker" 
-                          MinDate="DateTimeOffset.Now.AddMonths(-6)" 
-                          MaxDate="DateTimeOffset.Now.AddMonths(6)" 
-                          Placeholder="Select a month" />
+            <BitDatePicker Placeholder="Select a month" 
+                           Label="MonthPicker with Min/Max" 
+                           Mode="BitDatePickerMode.MonthPicker" 
+                           MaxDate="DateTimeOffset.Now.AddMonths(6)" 
+                           MinDate="DateTimeOffset.Now.AddMonths(-6)" />
             <br /><br />
-            <BitDatePicker Label="MonthPicker with highlighting" 
-                          Mode="BitDatePickerMode.MonthPicker" 
-                          HighlightCurrentMonth 
-                          HighlightSelectedMonth 
-                          Placeholder="Select a month" />
+            <BitDatePicker HighlightCurrentMonth 
+                           HighlightSelectedMonth 
+                           Placeholder="Select a month" 
+                           Mode="BitDatePickerMode.MonthPicker" 
+                           Label="MonthPicker with highlighting" />
         </div>
         <br /><br />
-        <BitDatePicker Label="Standalone MonthPicker" 
-                        Mode="BitDatePickerMode.MonthPicker" 
-                        Standalone />
+        <BitDatePicker Standalone 
+                       Label="Standalone MonthPicker" 
+                       Mode="BitDatePickerMode.MonthPicker" />
     </DemoExample>
 
     <DemoExample Title="ReadOnly" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">

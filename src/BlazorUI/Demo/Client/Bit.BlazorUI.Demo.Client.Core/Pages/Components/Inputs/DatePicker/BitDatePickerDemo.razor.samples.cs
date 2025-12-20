@@ -86,30 +86,30 @@ private DateTimeOffset? timeZoneDate2;";
 
     private readonly string example10RazorCode = @"
 <BitDatePicker Label=""Basic MonthPicker"" 
-              Mode=""BitDatePickerMode.MonthPicker"" 
-              Placeholder=""Select a month"" />
+               Placeholder=""Select a month"" 
+               Mode=""BitDatePickerMode.MonthPicker"" />
 
-<BitDatePicker Label=""MonthPicker with binding"" 
-              Mode=""BitDatePickerMode.MonthPicker"" 
-              @bind-Value=""monthPickerDate"" 
-              Placeholder=""Select a month"" />
+<BitDatePicker @bind-Value=""monthPickerDate"" 
+               Placeholder=""Select a month"" 
+               Label=""MonthPicker with binding"" 
+               Mode=""BitDatePickerMode.MonthPicker"" />
 <div>Selected month: @(monthPickerDate?.ToString(""MMMM yyyy"") ?? ""None"")</div>
 
-<BitDatePicker Label=""MonthPicker with Min/Max"" 
-              Mode=""BitDatePickerMode.MonthPicker"" 
-              MinDate=""DateTimeOffset.Now.AddMonths(-6)"" 
-              MaxDate=""DateTimeOffset.Now.AddMonths(6)"" 
-              Placeholder=""Select a month"" />
+<BitDatePicker Placeholder=""Select a month"" 
+               Label=""MonthPicker with Min/Max"" 
+               Mode=""BitDatePickerMode.MonthPicker"" 
+               MaxDate=""DateTimeOffset.Now.AddMonths(6)"" 
+               MinDate=""DateTimeOffset.Now.AddMonths(-6)"" />
 
-<BitDatePicker Label=""MonthPicker with highlighting"" 
-              Mode=""BitDatePickerMode.MonthPicker"" 
-              HighlightCurrentMonth 
-              HighlightSelectedMonth 
-              Placeholder=""Select a month"" />
+<BitDatePicker HighlightCurrentMonth 
+               HighlightSelectedMonth 
+               Placeholder=""Select a month"" 
+               Mode=""BitDatePickerMode.MonthPicker"" 
+               Label=""MonthPicker with highlighting"" />
 
-<BitDatePicker Label=""Standalone MonthPicker"" 
-              Mode=""BitDatePickerMode.MonthPicker"" 
-              Standalone />";
+<BitDatePicker Standalone 
+               Label=""Standalone MonthPicker"" 
+               Mode=""BitDatePickerMode.MonthPicker"" />";
     private readonly string example10CsharpCode = @"
 private DateTimeOffset? monthPickerDate;";
 
