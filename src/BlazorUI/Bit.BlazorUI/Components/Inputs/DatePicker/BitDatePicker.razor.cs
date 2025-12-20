@@ -774,19 +774,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         if (Mode == BitDatePickerMode.MonthPicker)
         {
-            if (ReadOnly) return;
-            if (InvalidValueBinding()) return;
-            if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
+            var selectedDate = _culture.Calendar.ToDateTime(_currentYear, _currentMonth, 1, 0, 0, 0, 0);
 
-            var selectedDate = _culture.Calendar.ToDateTime(_currentYear, _currentMonth, 1, _hour, _minute, 0, 0);
-
-            CurrentValue = new DateTimeOffset(selectedDate, _timeZone.GetUtcOffset(selectedDate));
-
-            if (AutoClose && Standalone is false)
-            {
-                await AssignIsOpen(false);
-                await ToggleCallout();
-            }
+            await SelectDate(selectedDate);
         }
         else if (_showMonthPickerAsOverlayInternal || ShowTimePicker)
         {

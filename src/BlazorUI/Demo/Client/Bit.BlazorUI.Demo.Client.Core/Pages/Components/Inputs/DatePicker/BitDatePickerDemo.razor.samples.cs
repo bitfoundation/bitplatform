@@ -93,7 +93,7 @@ private DateTimeOffset? timeZoneDate2;";
                Placeholder=""Select a month"" 
                Label=""MonthPicker with binding"" 
                Mode=""BitDatePickerMode.MonthPicker"" />
-<div>Selected month: @(monthPickerDate?.ToString(""MMMM yyyy"") ?? ""None"")</div>
+<div>Selected Date: @(monthPickerDate?.ToString(""yyyy/MM/dd HH:mm:ss"") ?? ""None"")</div>
 
 <BitDatePicker Placeholder=""Select a month"" 
                Label=""MonthPicker with Min/Max"" 
