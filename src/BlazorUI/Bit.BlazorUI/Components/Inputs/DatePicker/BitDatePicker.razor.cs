@@ -279,6 +279,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     public DateTimeOffset? MinDate { get; set; }
 
     /// <summary>
+    /// The selection mode of the DatePicker (DatePicker or MonthPicker).
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public BitDatePickerMode Mode { get; set; } = BitDatePickerMode.DatePicker;
+
+    /// <summary>
     /// Custom template to render the month cells of the DatePicker.
     /// </summary>
     [Parameter] public RenderFragment<DateTimeOffset>? MonthCellTemplate { get; set; }
@@ -547,7 +554,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             return true;
         }
 
-        if (DateTime.TryParseExact(value, DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture, DateTimeStyles.None, out DateTime parsedValue))
+        var pattern = DateFormat ?? (Mode == BitDatePickerMode.MonthPicker
+            ? _culture.DateTimeFormat.YearMonthPattern
+            : _culture.DateTimeFormat.ShortDatePattern);
+
+        if (DateTime.TryParseExact(value, pattern, _culture, DateTimeStyles.None, out DateTime parsedValue))
         {
             result = new DateTimeOffset(parsedValue, _timeZone.GetUtcOffset(parsedValue));
             validationErrorMessage = null;
@@ -561,9 +572,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     protected override string? FormatValueAsString(DateTimeOffset? value)
     {
-        return value.HasValue
-            ? value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture)
-            : null;
+        if (value.HasValue is false) return null;
+
+        return Mode == BitDatePickerMode.MonthPicker
+            ? value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.YearMonthPattern, _culture)
+            : value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture);
     }
 
 
@@ -747,7 +760,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         GenerateMonthData(_currentYear, _currentMonth);
     }
 
-    private void SelectMonth(int month)
+    private async Task SelectMonth(int month)
     {
         if (IsEnabled is false) return;
         if (IsMonthOutOfMinAndMaxDate(month)) return;
@@ -756,7 +769,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         GenerateMonthData(_currentYear, _currentMonth);
 
-        if (_showMonthPickerAsOverlayInternal || ShowTimePicker)
+        if (Mode == BitDatePickerMode.MonthPicker)
+        {
+            var selectedDate = _culture.Calendar.ToDateTime(_currentYear, _currentMonth, 1, 0, 0, 0, 0);
+
+            await SelectDate(selectedDate);
+        }
+        else if (_showMonthPickerAsOverlayInternal || ShowTimePicker)
         {
             ToggleMonthPickerOverlay();
         }
@@ -1148,6 +1167,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             className.Append(" bit-dtp-psm");
         }
+        else if (Mode == BitDatePickerMode.MonthPicker && CurrentValue.HasValue)
+        {
+            var selectedYear = _culture.Calendar.GetYear(CurrentValue.Value.DateTime);
+            var selectedMonth = _culture.Calendar.GetMonth(CurrentValue.Value.DateTime);
+
+            if (selectedYear == _currentYear && selectedMonth == monthIndex)
+            {
+                className.Append(" bit-dtp-psm");
+            }
+        }
 
         return className.ToString();
     }
@@ -1346,6 +1375,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool ShowDayPicker()
     {
+        if (Mode == BitDatePickerMode.MonthPicker) return false;
+
         if (ShowTimePicker)
         {
             if (ShowTimePickerAsOverlay)
@@ -1365,6 +1396,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool ShowMonthPicker()
     {
+        if (Mode == BitDatePickerMode.MonthPicker) return true;
+
         if (ShowTimePicker)
         {
             if (ShowTimePickerAsOverlay)
@@ -1385,8 +1418,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private void ResetPickersState()
     {
         _showMonthPicker = true;
-        _isMonthPickerOverlayOnTop = false;
-        _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
+        _isMonthPickerOverlayOnTop = Mode == BitDatePickerMode.MonthPicker;
+        _showMonthPickerAsOverlayInternal = Mode == BitDatePickerMode.MonthPicker || ShowMonthPickerAsOverlay;
         _isTimePickerOverlayOnTop = false;
         _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
     }
