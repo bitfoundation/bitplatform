@@ -1180,8 +1180,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             className.Append(" bit-dtp-psm");
         }
-
-        if (Mode == BitDatePickerMode.MonthPicker && CurrentValue.HasValue)
+        else if (Mode == BitDatePickerMode.MonthPicker && CurrentValue.HasValue)
         {
             var selectedYear = _culture.Calendar.GetYear(CurrentValue.Value.DateTime);
             var selectedMonth = _culture.Calendar.GetMonth(CurrentValue.Value.DateTime);
