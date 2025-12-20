@@ -574,12 +574,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (value.HasValue is false) return null;
 
-        if (Mode == BitDatePickerMode.MonthPicker)
-        {
-            return value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.YearMonthPattern, _culture);
-        }
-
-        return value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture);
+        return Mode == BitDatePickerMode.MonthPicker
+            ? value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.YearMonthPattern, _culture)
+            : value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture);
     }
 
 
