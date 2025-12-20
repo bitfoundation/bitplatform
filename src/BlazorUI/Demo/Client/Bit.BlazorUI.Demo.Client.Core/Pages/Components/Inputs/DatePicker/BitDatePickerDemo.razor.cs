@@ -206,6 +206,15 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "Mode",
+            Type = "BitDatePickerMode",
+            DefaultValue = "BitDatePickerMode.DatePicker",
+            Description = "The selection mode of the DatePicker (DatePicker or MonthPicker).",
+            LinkType = LinkType.Link,
+            Href = "#datepicker-mode-enum"
+        },
+        new()
+        {
             Name = "MonthCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
@@ -392,15 +401,6 @@ public partial class BitDatePickerDemo
             Type = "int",
             DefaultValue = "1",
             Description = "Determines increment/decrement steps for date-picker's minute.",
-        },
-        new()
-        {
-            Name = "Mode",
-            Type = "BitDatePickerMode",
-            DefaultValue = "BitDatePickerMode.DatePicker",
-            Description = "The selection mode of the DatePicker (DatePicker or MonthPicker).",
-            LinkType = LinkType.Link,
-            Href = "#datepicker-mode-enum"
         }
     };
 
