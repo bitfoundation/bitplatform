@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
@@ -18,6 +19,17 @@ public partial class BitActionButton : BitComponentBase
     /// The value is coming from the cascading value provided by the EditForm.
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the action button component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple action button components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitActionButtonParams.ParamName)]
+    public BitActionButtonParams? CascadingParameters { get; set; }
 
 
 
@@ -203,8 +215,11 @@ public partial class BitActionButton : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitActionButtonParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         _tabIndex = IsEnabled
             ? TabIndex
             : AllowDisabledFocus ? TabIndex : "-1";
@@ -226,7 +241,7 @@ public partial class BitActionButton : BitComponentBase
 
 
 
-    private void OnSetHrefAndRel()
+    internal void OnSetHrefAndRel()
     {
         if (Rel.HasValue is false || Href.HasNoValue() || Href!.StartsWith('#'))
         {
