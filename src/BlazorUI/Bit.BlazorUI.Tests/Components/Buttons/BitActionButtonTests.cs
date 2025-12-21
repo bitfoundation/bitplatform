@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -687,6 +688,324 @@ public class BitActionButtonTests : BunitTestContext
         component.SetParametersAndRender(parameters => parameters.Add(p => p.IsEnabled, true));
 
         Assert.AreEqual(tabIndex, button.GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitActionButtonParams.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitActionButton)}";
+
+        Assert.AreEqual(expectedName, paramName);
+    }
+
+    [TestMethod]
+    public void BitActionButtonParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitActionButtonParams();
+
+        Assert.IsInstanceOfType(@params, typeof(IBitComponentParams));
+        Assert.AreEqual(BitActionButtonParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitActionButtonShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitActionButtonParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                IconName = "Add",
+                Title = "Cascaded Title",
+                FullWidth = true
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitActionButton>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-suc"));
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-lg"));
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-fwi"));
+        Assert.AreEqual("Cascaded Title", button.GetAttribute("title"));
+
+        var icon = component.Find(".bit-acb-ico");
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--Add"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitActionButtonParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                IconName = "Add",
+                Title = "Cascaded Title"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitActionButton>(0);
+                builder.AddAttribute(1, nameof(BitActionButton.Color), BitColor.Error);
+                builder.AddAttribute(2, nameof(BitActionButton.Size), BitSize.Small);
+                builder.AddAttribute(3, nameof(BitActionButton.Title), "Direct Title");
+                builder.CloseComponent();
+            });
+        });
+
+        var button = component.Find(".bit-acb");
+
+        // Direct parameters should override cascading ones
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-err"));
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-sm"));
+        Assert.AreEqual("Direct Title", button.GetAttribute("title"));
+
+        // IconName from cascading params should still apply (not overridden)
+        var icon = component.Find(".bit-acb-ico");
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--Add"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonParamsUpdateParametersShouldSetAllProperties()
+    {
+        var @params = new BitActionButtonParams
+        {
+            AllowDisabledFocus = true,
+            AriaDescription = "Test description",
+            AriaHidden = true,
+            ButtonType = BitButtonType.Reset,
+            Color = BitColor.Warning,
+            FullWidth = true,
+            Href = "https://bitplatform.dev",
+            IconName = "Share",
+            IconOnly = true,
+            IconPosition = BitIconPosition.End,
+            Rel = BitLinkRels.NoOpener,
+            Size = BitSize.Small,
+            Target = "_blank",
+            Title = "Test Title",
+            AriaLabel = "Test Label",
+            IsEnabled = false,
+            TabIndex = "5"
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitActionButton>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var button = component.Find(".bit-acb");
+        var instance = component.FindComponent<BitActionButton>().Instance;
+
+        Assert.IsTrue(instance.AllowDisabledFocus);
+        Assert.AreEqual("Test description", instance.AriaDescription);
+        Assert.IsTrue(instance.AriaHidden);
+        Assert.AreEqual(BitButtonType.Reset, instance.ButtonType);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.IsTrue(instance.FullWidth);
+        Assert.AreEqual("https://bitplatform.dev", instance.Href);
+        Assert.AreEqual("Share", instance.IconName);
+        Assert.IsTrue(instance.IconOnly);
+        Assert.AreEqual(BitIconPosition.End, instance.IconPosition);
+        Assert.AreEqual(BitLinkRels.NoOpener, instance.Rel);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("_blank", instance.Target);
+        Assert.AreEqual("Test Title", instance.Title);
+        Assert.AreEqual("Test Label", instance.AriaLabel);
+        Assert.IsFalse(instance.IsEnabled);
+        Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitActionButtonParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        var @params = new BitActionButtonParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Title = "Params Title"
+        };
+
+        // First render with direct parameters
+        var component = RenderComponent<BitActionButton>(p =>
+        {
+            p.Add(x => x.Color, BitColor.Error);
+            p.Add(x => x.Size, BitSize.Small);
+            p.Add(x => x.Title, "Existing Title");
+        });
+
+        var instance = component.Instance;
+
+        // Verify initial values
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing Title", instance.Title);
+
+        // Now try to update with param, should not overwrite since properties were already set
+        @params.UpdateParameters(instance);
+
+        // Values should remain unchanged because HasNotBeenSet returns false
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing Title", instance.Title);
+    }
+
+    [TestMethod]
+    public void BitActionButtonParamsShouldApplyClassesAndStyles()
+    {
+        var classes = new BitActionButtonClassStyles
+        {
+            Root = "custom-root",
+            Icon = "custom-icon",
+            Content = "custom-content"
+        };
+
+        var styles = new BitActionButtonClassStyles
+        {
+            Root = "color: red;",
+            Icon = "margin: 5px;",
+            Content = "padding: 10px;"
+        };
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitActionButtonParams
+            {
+                Classes = classes,
+                Styles = styles,
+                IconName = "Add"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitActionButton>(0);
+                builder.AddAttribute(1, nameof(BitActionButton.ChildContent), (RenderFragment)(b => b.AddContent(0, "Content")));
+                builder.CloseComponent();
+            });
+        });
+
+        var button = component.Find(".bit-acb");
+        var icon = component.Find(".bit-acb-ico");
+        var content = component.Find(".bit-acb-con");
+
+        Assert.IsTrue(button.ClassList.Contains("custom-root"));
+        Assert.IsTrue(icon.ClassList.Contains("custom-icon"));
+        Assert.IsTrue(content.ClassList.Contains("custom-content"));
+        Assert.IsTrue(button.GetAttribute("style")?.Contains("color: red;"));
+        Assert.AreEqual("margin: 5px;", icon.GetAttribute("style"));
+        Assert.AreEqual("padding: 10px;", content.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonParamsShouldHandleHrefAndRelCorrectly()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitActionButtonParams
+            {
+                Href = "https://bitplatform.dev",
+                Rel = BitLinkRels.NoOpener | BitLinkRels.NoReferrer
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitActionButton>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var anchor = component.Find(".bit-acb");
+
+        Assert.AreEqual("a", anchor.TagName, ignoreCase: true);
+        Assert.AreEqual("https://bitplatform.dev", anchor.GetAttribute("href"));
+        Assert.AreEqual("noopener noreferrer", anchor.GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonParamsShouldNotApplyWhenNull()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitActionButton>(0);
+                builder.AddAttribute(1, nameof(BitActionButton.Color), BitColor.Primary);
+                builder.CloseComponent();
+            });
+        });
+
+        var button = component.Find(".bit-acb");
+
+        // Should use default color (Primary) from direct parameter
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-pri"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonParamsShouldApplyBaseParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitActionButtonParams
+            {
+                AriaLabel = "Base Label",
+                Id = "test-id",
+                IsEnabled = false,
+                TabIndex = "3",
+                Style = "background: blue;",
+                Class = "base-class"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitActionButton>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual("Base Label", button.GetAttribute("aria-label"));
+        Assert.AreEqual("test-id", button.GetAttribute("id"));
+        Assert.IsTrue(button.HasAttribute("disabled"));
+        Assert.AreEqual("-1", button.GetAttribute("tabindex"));
+        Assert.IsTrue(button.GetAttribute("style")?.Contains("background: blue;"));
+        Assert.IsTrue(button.ClassList.Contains("base-class"));
     }
 
 
