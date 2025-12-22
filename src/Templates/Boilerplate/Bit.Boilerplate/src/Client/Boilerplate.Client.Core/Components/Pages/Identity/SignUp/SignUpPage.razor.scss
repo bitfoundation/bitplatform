@@ -1,5 +1,3 @@
-@import '../../../../Styles/abstracts/_media-queries.scss';
-
 section {
     width: 100%;
     height: 100%;
@@ -8,17 +6,5 @@ section {
 ::deep {
     form {
         width: 304px;
-    }
-
-    .lg-sep {
-        @include lt-md {
-            display: none;
-        }
-    }
-
-    .sm-sep {
-        @include gt-sm {
-            display: none;
-        }
     }
 }

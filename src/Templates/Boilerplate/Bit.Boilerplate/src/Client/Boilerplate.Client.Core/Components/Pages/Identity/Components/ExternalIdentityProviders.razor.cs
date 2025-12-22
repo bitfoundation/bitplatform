@@ -8,6 +8,7 @@ public partial class ExternalIdentityProviders
     private string[] supportedProviders = [];
 
     [Parameter] public bool IsWaiting { get; set; }
+    [Parameter] public bool IsInModal { get; set; }
     [Parameter] public EventCallback<string> OnClick { get; set; }
 
 
