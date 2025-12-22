@@ -1,64 +1,66 @@
 @inherits AppComponentBase
 
 <section>
-    <BitStack Horizontal>
-        @if (isLoadingProviders)
+    <BitStack>
+        <BitStack Horizontal Alignment="BitAlignment.Center">
+            @if (isLoadingProviders)
+            {
+                @for (int i = 0; i < 4; i++)
+                {
+                    <BitShimmer Height="60px" Width="60px" Shape="BitShimmerShape.Rectangle" Background="BitColor.SecondaryBackground" />
+                }
+            }
+            else
+            {
+                @if (supportedProviders.Contains("Keycloak"))
+                {
+                    <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleKeycloak)" Title="@Localizer[AppStrings.KeycloakSignInButtonText]">
+                        <KeycloakIcon />
+                    </ExternalSignInButton>
+                }
+                @if (supportedProviders.Contains("Google"))
+                {
+                    <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleGoogle)" Title="@Localizer[AppStrings.GoogleSignInButtonText]">
+                        <GoogleIcon />
+                    </ExternalSignInButton>
+                }
+                @if (supportedProviders.Contains("GitHub"))
+                {
+                    <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleGitHub)" Title="@Localizer[AppStrings.GitHubSignInButtonText]">
+                        <GitHubIcon />
+                    </ExternalSignInButton>
+                }
+                @if (supportedProviders.Contains("Twitter"))
+                {
+                    <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleTwitter)" Title="@Localizer[AppStrings.TwitterSignInButtonText]">
+                        <TwitterIcon />
+                    </ExternalSignInButton>
+                }
+                @if (supportedProviders.Contains("Apple"))
+                {
+                    <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleApple)" Title="@Localizer[AppStrings.AppleSignInButtonText]">
+                        <AppleIcon />
+                    </ExternalSignInButton>
+                }
+                @if (supportedProviders.Contains("AzureAD"))
+                {
+                    <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleAzureAD)" Title="@Localizer[AppStrings.AzureEntraSignInButtonText]">
+                        <AzureEntraIcon />
+                    </ExternalSignInButton>
+                }
+                @if (supportedProviders.Contains("Facebook"))
+                {
+                    <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleFacebook)" Title="@Localizer[AppStrings.FacebookSignInButtonText]">
+                        <FacebookIcon />
+                    </ExternalSignInButton>
+                }
+            }
+        </BitStack>
+
+        @if (supportedProviders.Any())
         {
-            @for (int i = 0; i < 4; i++)
-            {
-                <BitShimmer Height="60px" Width="60px" Shape="BitShimmerShape.Rectangle" Background="BitColor.SecondaryBackground" />
-            }
-        }
-        else
-        {
-            @if (supportedProviders.Contains("Keycloak"))
-            {
-                <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleKeycloak)" Title="@Localizer[AppStrings.KeycloakSignInButtonText]">
-                    <KeycloakIcon />
-                </ExternalSignInButton>
-            }
-            @if (supportedProviders.Contains("Google"))
-            {
-                <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleGoogle)" Title="@Localizer[AppStrings.GoogleSignInButtonText]">
-                    <GoogleIcon />
-                </ExternalSignInButton>
-            }
-            @if (supportedProviders.Contains("GitHub"))
-            {
-                <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleGitHub)" Title="@Localizer[AppStrings.GitHubSignInButtonText]">
-                    <GitHubIcon />
-                </ExternalSignInButton>
-            }
-            @if (supportedProviders.Contains("Twitter"))
-            {
-                <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleTwitter)" Title="@Localizer[AppStrings.TwitterSignInButtonText]">
-                    <TwitterIcon />
-                </ExternalSignInButton>
-            }
-            @if (supportedProviders.Contains("Apple"))
-            {
-                <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleApple)" Title="@Localizer[AppStrings.AppleSignInButtonText]">
-                    <AppleIcon />
-                </ExternalSignInButton>
-            }
-            @if (supportedProviders.Contains("AzureAD"))
-            {
-                <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleAzureAD)" Title="@Localizer[AppStrings.AzureEntraSignInButtonText]">
-                    <AzureEntraIcon />
-                </ExternalSignInButton>
-            }
-            @if (supportedProviders.Contains("Facebook"))
-            {
-                <ExternalSignInButton IsWaiting="IsWaiting" OnClick="WrapHandled(HandleFacebook)" Title="@Localizer[AppStrings.FacebookSignInButtonText]">
-                    <FacebookIcon />
-                </ExternalSignInButton>
-            }
+            <BitSeparator Border="BitColorKind.Tertiary" Background="BitColorKind.Secondary" Class="lg-sep">@Localizer[AppStrings.Or]</BitSeparator>
+            <BitSeparator Border="BitColorKind.Secondary" Background="BitColorKind.Primary" Class="sm-sep">@Localizer[AppStrings.Or]</BitSeparator>
         }
     </BitStack>
-
-    @if (supportedProviders.Any())
-    {
-        <BitSeparator Border="BitColorKind.Tertiary" Background="BitColorKind.Secondary" Class="lg-sep">@Localizer[AppStrings.Or]</BitSeparator>
-        <BitSeparator Border="BitColorKind.Secondary" Background="BitColorKind.Primary" Class="sm-sep">@Localizer[AppStrings.Or]</BitSeparator>
-    }
 </section>
