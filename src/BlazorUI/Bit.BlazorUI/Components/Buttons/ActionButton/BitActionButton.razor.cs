@@ -10,6 +10,7 @@ public partial class BitActionButton : BitComponentBase
 {
     private string? _rel;
     private string? _tabIndex;
+    private bool _isLoading;
     private BitButtonType _buttonType;
 
 
@@ -52,6 +53,11 @@ public partial class BitActionButton : BitComponentBase
     /// The type of the button element; defaults to <c>submit</c> inside an <see cref="EditForm"/> otherwise <c>button</c>.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
+
+    /// <summary>
+    /// Alias for <see cref="ChildContent"/>, the custom body of the action button (text and/or any render fragment).
+    /// </summary>
+    [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>
     /// The custom body of the action button (text and/or any render fragment).
@@ -113,6 +119,17 @@ public partial class BitActionButton : BitComponentBase
     public BitIconPosition? IconPosition { get; set; }
 
     /// <summary>
+    /// Determines whether the action button is in loading mode or not.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool IsLoading { get; set; }
+
+    /// <summary>
+    /// The custom template used to replace the default loading indicator inside the action button in the loading state.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
     /// Gets or sets the callback that is invoked when the component is clicked.
     /// </summary>
     /// <remarks>
@@ -167,6 +184,12 @@ public partial class BitActionButton : BitComponentBase
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>
+    /// Adds an underline to the action button text, useful for link-style buttons.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Underlined { get; set; }
+
 
 
     protected override string RootElementClass => "bit-acb";
@@ -199,6 +222,8 @@ public partial class BitActionButton : BitComponentBase
 
         ClassBuilder.Register(() => FullWidth ? "bit-acb-fwi" : string.Empty);
 
+        ClassBuilder.Register(() => IsLoading ? "bit-acb-lod" : string.Empty);
+
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-acb-sm",
@@ -206,6 +231,8 @@ public partial class BitActionButton : BitComponentBase
             BitSize.Large => "bit-acb-lg",
             _ => "bit-acb-md"
         });
+
+        ClassBuilder.Register(() => Underlined ? "bit-acb-und" : string.Empty);
 
         ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-acb-eni" : string.Empty);
     }
@@ -225,6 +252,8 @@ public partial class BitActionButton : BitComponentBase
             : AllowDisabledFocus ? TabIndex : "-1";
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
+
+        _isLoading = IsLoading;
 
         base.OnParametersSet();
     }

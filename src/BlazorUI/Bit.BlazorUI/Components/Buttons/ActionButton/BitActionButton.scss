@@ -4,12 +4,9 @@
     border: none;
     display: flex;
     cursor: pointer;
-    gap: spacing(1);
     color: $clr-fg-pri;
-    align-items: center;
     text-decoration: none;
     box-sizing: border-box;
-    justify-content: center;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
     background-color: transparent;
@@ -46,9 +43,37 @@
     color: var(--bit-acb-clr-ico);
 }
 
+.bit-acb-spn {
+    border-radius: 50%;
+    border-width: spacing(0.2125);
+    width: var(--bit-acb-spn-size);
+    height: var(--bit-acb-spn-size);
+    border-color: $clr-brd-sec;
+    border-style: $shp-border-style;
+    border-top-color: var(--bit-acb-clr-ico);
+    animation: bit-acb-spin 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+}
+
+@keyframes bit-acb-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 .bit-acb-con {
     flex-grow: 1;
     display: flex;
+}
+
+.bit-acb-inn {
+    display: inline-flex;
+    align-items: center;
+    gap: spacing(1);
 }
 
 .bit-acb-eni {
@@ -58,6 +83,34 @@
 .bit-acb-fwi {
     width: 100%;
     justify-content: flex-start;
+}
+
+.bit-acb-lod {
+    cursor: default;
+    pointer-events: none;
+}
+
+.bit-acb-und {
+    .bit-acb-inn {
+        text-decoration: none;
+        position: relative;
+
+        &::after {
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 1px;
+            content: "";
+            position: absolute;
+            background-color: currentColor;
+        }
+
+        @media (hover: hover) {
+            &:hover::after {
+                height: 2px;
+            }
+        }
+    }
 }
 
 
@@ -167,15 +220,18 @@
 
 .bit-acb-sm {
     --bit-acb-fontsize: #{spacing(1.25)};
+    --bit-acb-spn-size: #{spacing(1.25)};
     --bit-acb-padding: #{spacing(0.50)} #{spacing(1)};
 }
 
 .bit-acb-md {
     --bit-acb-fontsize: #{spacing(1.75)};
+    --bit-acb-spn-size: #{spacing(1.75)};
     --bit-acb-padding: #{spacing(0.75)} #{spacing(1.5)};
 }
 
 .bit-acb-lg {
     --bit-acb-fontsize: #{spacing(2.25)};
+    --bit-acb-spn-size: #{spacing(2.25)};
     --bit-acb-padding: #{spacing(1.00)} #{spacing(2.00)};
 }

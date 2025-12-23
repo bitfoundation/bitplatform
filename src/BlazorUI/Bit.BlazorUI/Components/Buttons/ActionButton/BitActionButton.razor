@@ -1,5 +1,10 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
+
+@{
+    RenderFragment b = @<div style="@Styles?.Content" class="bit-acb-con @Classes?.Content">@(Body ?? ChildContent)</div>;
+    var body = ((Body ?? ChildContent) is not null && IconOnly is false) ? b : null;
+}
 
 @if (Href.HasNoValue())
 {
@@ -14,17 +19,32 @@
             tabindex="@_tabIndex"
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
-            aria-describedby="@AriaDescription">
-        @if (IconName is not null)
-        {
-            <i style="@Styles?.Icon" class="bit-acb-ico bit-icon bit-icon--@IconName @Classes?.Icon" />
-        }
-        @if (ChildContent is not null && IconOnly is false)
-        {
-            <div style="@Styles?.Content" class="bit-acb-con @Classes?.Content">
-                @ChildContent
-            </div>
-        }
+            aria-describedby="@AriaDescription"
+            aria-busy="@(_isLoading ? "true" : null)">
+        <div class="bit-acb-inn">
+            @if (_isLoading)
+            {
+                @if (LoadingTemplate is not null)
+                {
+                    @LoadingTemplate
+                }
+                else
+                {
+                    <div style="@Styles?.Spinner" class="bit-acb-spn @Classes?.Spinner"></div>
+
+                    @body
+                }
+            }
+            else
+            {
+                if (IconName is not null)
+                {
+                    <i style="@Styles?.Icon" class="bit-acb-ico bit-icon bit-icon--@IconName @Classes?.Icon" />
+                }
+
+                @body
+            }
+        </div>
     </button>
 }
 else
@@ -36,22 +56,20 @@ else
        class="@ClassBuilder.Value"
        dir="@Dir?.ToString().ToLower()"
        disabled="@(IsEnabled is false)"
-       href="@(IsEnabled ? Href : null)"
+       href="@(IsEnabled? Href : null)"
        title="@Title"
        target="@Target"
        tabindex="@_tabIndex"
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
-        @if (IconName is not null)
-        {
-            <i style="@Styles?.Icon" class="bit-acb-ico bit-icon bit-icon--@IconName @Classes?.Icon" />
-        }
-        @if (ChildContent is not null && IconOnly is false)
-        {
-            <div style="@Styles?.Content" class="bit-acb-con @Classes?.Content">
-                @ChildContent
-            </div>
-        }
+        <span class="bit-acb-inn">
+            @if (IconName is not null)
+            {
+                <i style="@Styles?.Icon" class="bit-acb-ico bit-icon bit-icon--@IconName @Classes?.Icon" />
+            }
+        
+            @body
+        </span>
     </a>
 }

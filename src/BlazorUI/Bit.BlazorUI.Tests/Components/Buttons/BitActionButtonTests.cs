@@ -401,6 +401,71 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitActionButtonUnderlinedClassTest(bool underlined)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Underlined, underlined);
+            parameters.Add(p => p.IconName, "Add");
+            parameters.AddChildContent("Underlined content");
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual(underlined, button.ClassList.Contains("bit-acb-und"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitActionButtonIsLoadingClassAndSpinnerTest(bool isLoading)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.IconName, "Add");
+            parameters.AddChildContent("Content");
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual(isLoading, button.ClassList.Contains("bit-acb-lod"));
+        Assert.AreEqual(isLoading, button.HasAttribute("aria-busy"));
+        Assert.AreEqual(isLoading ? "true" : null, button.GetAttribute("aria-busy"));
+
+        var spinners = component.FindAll(".bit-acb-spn");
+        Assert.AreEqual(isLoading, spinners.Count == 1);
+    }
+
+    [TestMethod]
+    public void BitActionButtonLoadingTemplateShouldReplaceDefaultSpinner()
+    {
+        const string loadingContent = "custom-loading";
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add<RenderFragment>(p => p.LoadingTemplate, builder =>
+            {
+                builder.AddContent(0, loadingContent);
+            });
+            parameters.AddChildContent("Content");
+        });
+
+        var button = component.Find(".bit-acb");
+
+        // Default spinner should not be rendered
+        Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
+
+        // Custom loading template should be rendered instead
+        StringAssert.Contains(button.InnerHtml, loadingContent);
+    }
+
+    [TestMethod,
         DataRow("https://bitplatform.dev", BitLinkRels.NoOpener | BitLinkRels.NoReferrer, "noopener noreferrer"),
         DataRow("#section", BitLinkRels.NoOpener | BitLinkRels.NoReferrer, null)
     ]
@@ -719,7 +784,8 @@ public class BitActionButtonTests : BunitTestContext
                 Size = BitSize.Large,
                 IconName = "Add",
                 Title = "Cascaded Title",
-                FullWidth = true
+                FullWidth = true,
+                Underlined = true
             }
         };
 
@@ -738,6 +804,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.IsTrue(button.ClassList.Contains("bit-acb-suc"));
         Assert.IsTrue(button.ClassList.Contains("bit-acb-lg"));
         Assert.IsTrue(button.ClassList.Contains("bit-acb-fwi"));
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-und"));
         Assert.AreEqual("Cascaded Title", button.GetAttribute("title"));
 
         var icon = component.Find(".bit-acb-ico");
@@ -798,6 +865,7 @@ public class BitActionButtonTests : BunitTestContext
             IconName = "Share",
             IconOnly = true,
             IconPosition = BitIconPosition.End,
+            Underlined = true,
             Rel = BitLinkRels.NoOpener,
             Size = BitSize.Small,
             Target = "_blank",
@@ -830,6 +898,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual("Share", instance.IconName);
         Assert.IsTrue(instance.IconOnly);
         Assert.AreEqual(BitIconPosition.End, instance.IconPosition);
+        Assert.IsTrue(instance.Underlined);
         Assert.AreEqual(BitLinkRels.NoOpener, instance.Rel);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.AreEqual("_blank", instance.Target);
@@ -837,6 +906,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual("Test Label", instance.AriaLabel);
         Assert.IsFalse(instance.IsEnabled);
         Assert.AreEqual("5", instance.TabIndex);
+        Assert.IsTrue(instance.Underlined);
     }
 
     [TestMethod]

@@ -91,6 +91,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     public BitIconPosition? IconPosition { get; set; }
 
     /// <summary>
+    /// Determines whether the action button is in loading mode or not.
+    /// </summary>
+    public bool? IsLoading { get; set; }
+
+    /// <summary>
     /// Gets or sets the relationship type between the current element and the linked resource, as defined by the link's rel attribute.
     /// </summary>
     /// <remarks>
@@ -132,6 +137,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     /// The tooltip to show when the mouse is placed on the button.
     /// </summary>
     public string? Title { get; set; }
+
+    /// <summary>
+    /// Adds an underline to the action button text, useful for link-style buttons.
+    /// </summary>
+    public bool? Underlined { get; set; }
 
 
 
@@ -220,6 +230,13 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.ClassBuilder.Reset();
         }
 
+        if (IsLoading.HasValue && bitActionButton.HasNotBeenSet(nameof(IsLoading)))
+        {
+            bitActionButton.IsLoading = IsLoading.Value;
+
+            bitActionButton.ClassBuilder.Reset();
+        }
+
         if (Rel.HasValue && bitActionButton.HasNotBeenSet(nameof(Rel)))
         {
             bitActionButton.Rel = Rel.Value;
@@ -253,6 +270,13 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
         if (Title.HasValue() && bitActionButton.HasNotBeenSet(nameof(Title)))
         {
             bitActionButton.Title = Title;
+        }
+
+        if (Underlined.HasValue && bitActionButton.HasNotBeenSet(nameof(Underlined)))
+        {
+            bitActionButton.Underlined = Underlined.Value;
+
+            bitActionButton.ClassBuilder.Reset();
         }
     }
 }

@@ -99,16 +99,16 @@
     </DemoExample>
 
     <DemoExample Title="Rich content" RazorCode="@example5RazorCode" Id="example5">
-        <div>You can put richer content inside BitActionButton with a custom template (text plus spinner in this example).</div>
+        <div>You can put richer content inside BitActionButton with a custom template (like text plus spinner in this example).</div>
         
         <br />
         
         <div class="example-content">
             <BitActionButton IconName="@BitIconName.AddFriend">
-                <div style="display:flex;gap:0.5rem;">
+                    <div style="display:flex;gap:0.5rem;">
                     <b>This is a custom template</b>
-                    <BitSpinnerLoading CustomSize="20" />
-                </div>
+                        <BitSpinnerLoading CustomSize="20" />
+                    </div>
             </BitActionButton>
         </div>
     </DemoExample>
@@ -387,7 +387,72 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Loading" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>Show a loading spinner while an operation is in progress, indicating to users that the action is being processed.</div>
+        
+        <br />
+        
+        <BitToggle @bind-Value="isLoading" Label="Toggle loading" />
+        
+        <br />
+        
+        <div class="example-content">
+            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Save">
+                Save changes
+            </BitActionButton>
+
+            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.CloudUpload">
+                Upload file
+            </BitActionButton>
+            
+            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Send" Color="BitColor.Success">
+                Send message
+            </BitActionButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="LoadingTemplate" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>Use the <b>LoadingTemplate</b> parameter to design a custom loading experience inside the BitActionButton.</div>
+        
+        <br />
+
+        <BitToggle @bind-Value="templateIsLoading" Label="Toggle loading" />
+        
+        <br />
+
+        <div class="example-content">
+            <BitActionButton IsLoading="templateIsLoading" IconName="@BitIconName.Download">
+                <Body>
+                    Download
+                </Body>
+                <LoadingTemplate>
+                    <BitRingLoading CustomSize="20" Color="BitColor.Tertiary" /> Downloading...
+                </LoadingTemplate>
+            </BitActionButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Underlined" RazorCode="@example11RazorCode" Id="example11">
+        <div>Add an underline to the action button text for a link-style appearance using the <b>Underlined</b> parameter.</div>
+        
+        <br />
+        
+        <div class="example-content">
+            <BitActionButton Underlined IconName="@BitIconName.Link">
+                Link style
+            </BitActionButton>
+
+            <BitActionButton Underlined IconName="@BitIconName.OpenInNewTab" Href="https://github.com/bitfoundation/bitplatform" Target="_blank">
+                Open GitHub
+            </BitActionButton>
+
+            <BitActionButton Underlined Color="BitColor.Info" IconName="@BitIconName.Info">
+                More info
+            </BitActionButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">
         <div>Compare the Small, Medium, and Large presets to gauge typography and padding differences.</div>
 
         <div>Using the <b>Size</b> parameter and its value of type <BitLink Href="#size-enum">BitSize</BitLink> enum:</div>
@@ -409,7 +474,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
         <div>Override look-and-feel with inline styles or custom CSS classes applied to the root, icon, and content.</div>
 
         <div>Using the <b>Styles</b> and <b>Classes</b> parameters and their value of <BitLink Href="#class-styles">BitActionButtonClassStyles</BitLink> class:</div>
@@ -433,7 +498,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
         <div>View BitActionButton inside a right-to-left layout, respecting RTL direction and icon/text ordering.</div>
         
         <br />

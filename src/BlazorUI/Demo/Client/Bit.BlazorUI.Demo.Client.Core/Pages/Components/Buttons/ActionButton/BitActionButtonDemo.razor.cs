@@ -36,6 +36,13 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "Body",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias for ChildContent, the custom body of the action button (text and/or any render fragment).",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -107,6 +114,20 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "IsLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the action button is in loading mode or not.",
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template used to replace the default loading indicator inside the action button in the loading state.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Gets or sets the callback that is invoked when the component is clicked.",
@@ -151,6 +172,13 @@ public partial class BitActionButtonDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The tooltip to show when the mouse is placed on the button.",
+        },
+        new()
+        {
+            Name = "Underlined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Adds an underline to the action button text, useful for link-style buttons.",
         }
     ];
 
@@ -183,6 +211,13 @@ public partial class BitActionButtonDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom class or style applied to the content container of the BitActionButton."
+                },
+                new()
+                {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom class or style applied to the loading spinner element of the BitActionButton."
                 }
             ]
         }
@@ -467,6 +502,8 @@ public partial class BitActionButtonDemo
 
 
 
+    private bool isLoading;
+    private bool templateIsLoading;
     private bool formIsValidSubmit;
     private ButtonValidationModel buttonValidationModel = new();
 
