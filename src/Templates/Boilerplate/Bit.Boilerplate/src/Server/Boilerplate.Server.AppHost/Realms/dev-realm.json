@@ -3,7 +3,7 @@
     "realm": "dev",
     "id": "dev-realm",
     "enabled": true,
-    "displayName": "Boilerplate Dev Key Realm",
+    "displayName": "Boilerplate Dev Realm",
     "sslRequired": "external",
     "supportedLocales": [
         "en",
