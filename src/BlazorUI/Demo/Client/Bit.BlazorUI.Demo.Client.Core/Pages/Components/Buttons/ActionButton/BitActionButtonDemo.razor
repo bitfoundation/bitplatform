@@ -173,7 +173,72 @@
         </BitActionButton>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Loading" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>Show a loading spinner while an operation is in progress, indicating to users that the action is being processed.</div>
+        
+        <br />
+        
+        <BitToggle @bind-Value="isLoading" Label="Toggle loading" />
+        
+        <br />
+        
+        <div class="example-content">
+            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Save">
+                Save changes
+            </BitActionButton>
+
+            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.CloudUpload">
+                Upload file
+            </BitActionButton>
+            
+            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Send" Color="BitColor.Success">
+                Send message
+            </BitActionButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="LoadingTemplate" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>Use the <b>LoadingTemplate</b> parameter to design a custom loading experience inside the BitActionButton.</div>
+        
+        <br />
+
+        <BitToggle @bind-Value="templateIsLoading" Label="Toggle loading" />
+        
+        <br />
+
+        <div class="example-content">
+            <BitActionButton IsLoading="templateIsLoading" IconName="@BitIconName.Download">
+                <Body>
+                    Download
+                </Body>
+                <LoadingTemplate>
+                    <BitRingLoading CustomSize="20" Color="BitColor.Tertiary" /> Downloading...
+                </LoadingTemplate>
+            </BitActionButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Underlined" RazorCode="@example10RazorCode" Id="example10">
+        <div>Add an underline to the action button text for a link-style appearance using the <b>Underlined</b> parameter.</div>
+        
+        <br />
+        
+        <div class="example-content">
+            <BitActionButton Underlined IconName="@BitIconName.Link">
+                Link style
+            </BitActionButton>
+
+            <BitActionButton Underlined IconName="@BitIconName.OpenInNewTab" Href="https://github.com/bitfoundation/bitplatform" Target="_blank">
+                Open GitHub
+            </BitActionButton>
+
+            <BitActionButton Underlined Color="BitColor.Info" IconName="@BitIconName.Info">
+                More info
+            </BitActionButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
         <div>Preview the predefined colors of the BitActionButton for icon and text, from primary through warning/error, and the background/foreground/border sets.</div>
         
         <div>Using the <b>Color</b> parameter and its value of type <BitLink Href="#color-enum">BitColor</BitLink> enum:</div>
@@ -384,71 +449,6 @@
                     TertiaryBorder
                 </BitActionButton>
             </div>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Loading" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div>Show a loading spinner while an operation is in progress, indicating to users that the action is being processed.</div>
-        
-        <br />
-        
-        <BitToggle @bind-Value="isLoading" Label="Toggle loading" />
-        
-        <br />
-        
-        <div class="example-content">
-            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Save">
-                Save changes
-            </BitActionButton>
-
-            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.CloudUpload">
-                Upload file
-            </BitActionButton>
-            
-            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Send" Color="BitColor.Success">
-                Send message
-            </BitActionButton>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="LoadingTemplate" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <div>Use the <b>LoadingTemplate</b> parameter to design a custom loading experience inside the BitActionButton.</div>
-        
-        <br />
-
-        <BitToggle @bind-Value="templateIsLoading" Label="Toggle loading" />
-        
-        <br />
-
-        <div class="example-content">
-            <BitActionButton IsLoading="templateIsLoading" IconName="@BitIconName.Download">
-                <Body>
-                    Download
-                </Body>
-                <LoadingTemplate>
-                    <BitRingLoading CustomSize="20" Color="BitColor.Tertiary" /> Downloading...
-                </LoadingTemplate>
-            </BitActionButton>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Underlined" RazorCode="@example11RazorCode" Id="example11">
-        <div>Add an underline to the action button text for a link-style appearance using the <b>Underlined</b> parameter.</div>
-        
-        <br />
-        
-        <div class="example-content">
-            <BitActionButton Underlined IconName="@BitIconName.Link">
-                Link style
-            </BitActionButton>
-
-            <BitActionButton Underlined IconName="@BitIconName.OpenInNewTab" Href="https://github.com/bitfoundation/bitplatform" Target="_blank">
-                Open GitHub
-            </BitActionButton>
-
-            <BitActionButton Underlined Color="BitColor.Info" IconName="@BitIconName.Info">
-                More info
-            </BitActionButton>
         </div>
     </DemoExample>
 
