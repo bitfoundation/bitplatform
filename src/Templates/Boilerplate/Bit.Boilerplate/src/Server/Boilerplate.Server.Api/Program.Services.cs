@@ -5,7 +5,6 @@ using System.IO.Compression;
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 using System.ClientModel.Primitives;
 using Microsoft.SemanticKernel.Embeddings;
-using SmartComponents.LocalEmbeddings.SemanticKernel;
 //#endif
 //#if (database == "Sqlite")
 using Microsoft.Data.Sqlite;
@@ -496,14 +495,6 @@ public static partial class Program
                   httpClient: sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"), loggerFactory: sp.GetRequiredService<ILoggerFactory>()))
             .UseLogging()
             .UseOpenTelemetry();
-            // .UseDistributedCache()
-        }
-        else
-        {
-            services.AddEmbeddingGenerator(sp => new LocalTextEmbeddingGenerationService()
-                .AsEmbeddingGenerator())
-                .UseLogging()
-                .UseOpenTelemetry();
             // .UseDistributedCache()
         }
         //#endif

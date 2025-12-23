@@ -1,8 +1,9 @@
 {
+    "Comment": "This is a Keycloak realm configuration file for the 'dev' realm used in the Boilerplate application. It includes predefined users, groups, client scopes, and a client setup to facilitate development and testing.",
     "realm": "dev",
     "id": "dev-realm",
     "enabled": true,
-    "displayName": "Boilerplate Dev Realm",
+    "displayName": "Boilerplate Dev Key Realm",
     "sslRequired": "external",
     "supportedLocales": [
         "en",
