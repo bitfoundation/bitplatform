@@ -6,6 +6,9 @@ using System.IO.Compression;
 using System.ClientModel.Primitives;
 using Microsoft.SemanticKernel.Embeddings;
 //#endif
+//#if (database == "PostgreSQL")
+using Npgsql;
+//#endif
 //#if (database == "Sqlite")
 using Microsoft.Data.Sqlite;
 //#endif
@@ -43,7 +46,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Medallion.Threading;
 //#if (offlineDb == true)
 using CommunityToolkit.Datasync.Server;
-using Npgsql;
 //#endif
 
 namespace Boilerplate.Server.Api;
@@ -277,8 +279,8 @@ public static partial class Program
             });
             //#elif (database == "PostgreSQL")
             var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
-            dataSourceBuilder.EnableDynamicJson()
-                .UseVector();
+            dataSourceBuilder.UseVector();
+            dataSourceBuilder.EnableDynamicJson();
             options.UseNpgsql(dataSourceBuilder.Build(), dbOptions =>
             {
                 dbOptions.UseVector();
