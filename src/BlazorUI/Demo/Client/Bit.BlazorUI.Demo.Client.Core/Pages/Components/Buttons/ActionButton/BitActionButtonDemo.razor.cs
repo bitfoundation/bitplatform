@@ -134,15 +134,6 @@ public partial class BitActionButtonDemo
         },
         new()
         {
-            Name = "Styles",
-            Type = "BitActionButtonClassStyles?",
-            DefaultValue = "null",
-            Description = "Gets or sets the custom CSS inline styles to apply to the action button component.",
-            LinkType = LinkType.Link,
-            Href = "#class-styles",
-        },
-        new()
-        {
             Name = "Rel",
             Type = "BitLinkRels?",
             DefaultValue = "null",
@@ -158,6 +149,15 @@ public partial class BitActionButtonDemo
             Description = "Sets the preset size (Small, Medium, Large) for typography and padding of the action button.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitActionButtonClassStyles?",
+            DefaultValue = "null",
+            Description = "Gets or sets the custom CSS inline styles to apply to the action button component.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
         new()
         {

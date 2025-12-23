@@ -139,16 +139,6 @@ public partial class BitActionButton : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Gets or sets the custom CSS inline styles to apply to the action button component.
-    /// </summary>
-    /// <remarks>
-    /// Use this property to override the default styles of the action button.
-    /// If not set, the component uses its built-in styling. 
-    /// This property is typically used to provide additional visual customization.
-    /// </remarks>
-    [Parameter] public BitActionButtonClassStyles? Styles { get; set; }
-
-    /// <summary>
     /// Gets or sets the relationship type between the current element and the linked resource, as defined by the link's rel attribute.
     /// </summary>
     /// <remarks>
@@ -168,6 +158,16 @@ public partial class BitActionButton : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Gets or sets the custom CSS inline styles to apply to the action button component.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to override the default styles of the action button.
+    /// If not set, the component uses its built-in styling. 
+    /// This property is typically used to provide additional visual customization.
+    /// </remarks>
+    [Parameter] public BitActionButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the target frame or window for the navigation action when the action button renders as an anchor (by providing the Href parameter).
