@@ -19,4 +19,9 @@ public class BitActionButtonClassStyles
     /// Custom class or style applied to the content container.
     /// </summary>
     public string? Content { get; set; }
+
+    /// <summary>
+    /// Custom class or style applied to the loading spinner element.
+    /// </summary>
+    public string? Spinner { get; set; }
 }
