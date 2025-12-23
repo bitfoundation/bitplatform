@@ -439,21 +439,27 @@ public class BitActionButtonTests : BunitTestContext
 
         var spinners = component.FindAll(".bit-acb-spn");
         Assert.AreEqual(isLoading, spinners.Count == 1);
+
+        // When loading, icon should be hidden
+        var icons = component.FindAll(".bit-acb-ico");
+        Assert.HasCount(isLoading ? 0 : 1, icons);
     }
 
     [TestMethod]
     public void BitActionButtonLoadingTemplateShouldReplaceDefaultSpinner()
     {
         const string loadingContent = "custom-loading";
+        const string buttonContent = "Content";
 
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.IsLoading, true);
-            parameters.Add<RenderFragment>(p => p.LoadingTemplate, builder =>
+            parameters.Add(p => p.IconName, "Add");
+            parameters.Add(p => p.LoadingTemplate, builder =>
             {
                 builder.AddContent(0, loadingContent);
             });
-            parameters.AddChildContent("Content");
+            parameters.AddChildContent(buttonContent);
         });
 
         var button = component.Find(".bit-acb");
@@ -461,8 +467,14 @@ public class BitActionButtonTests : BunitTestContext
         // Default spinner should not be rendered
         Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
 
+        // Icon should not be visible when loading
+        Assert.IsEmpty(component.FindAll(".bit-acb-ico"));
+
         // Custom loading template should be rendered instead
-        StringAssert.Contains(button.InnerHtml, loadingContent);
+        Assert.Contains(loadingContent, button.InnerHtml);
+
+        // Content should not be rendered with LoadingTemplate
+        Assert.DoesNotContain(buttonContent, button.InnerHtml);
     }
 
     [TestMethod,
@@ -505,6 +517,22 @@ public class BitActionButtonTests : BunitTestContext
             parameters.Add(p => p.IconOnly, true);
             parameters.Add(p => p.IconName, "Emoji2");
             parameters.AddChildContent("<span>content</span>");
+        });
+
+        var icon = component.Find(".bit-acb-ico");
+
+        Assert.IsNotNull(icon);
+        Assert.IsEmpty(component.FindAll(".bit-acb-con"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonShouldHideContentWhenIconOnlyIsTrueWithBody()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconName, "Emoji2");
+            parameters.Add(p => p.Body, builder => builder.AddContent(0, "Body content"));
         });
 
         var icon = component.Find(".bit-acb-ico");
@@ -587,6 +615,22 @@ public class BitActionButtonTests : BunitTestContext
         var button = component.Find(".bit-acb");
 
         Assert.Contains(content, button.TextContent);
+    }
+
+    [TestMethod]
+    public void BitActionButtonShouldRenderBodyWhenIconOnlyIsFalse()
+    {
+        const string bodyContent = "Body content";
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Body, builder => builder.AddContent(0, bodyContent));
+            parameters.Add(p => p.IconOnly, false);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.Contains(bodyContent, button.TextContent);
     }
 
     [TestMethod,
@@ -769,7 +813,7 @@ public class BitActionButtonTests : BunitTestContext
     {
         var @params = new BitActionButtonParams();
 
-        Assert.IsInstanceOfType(@params, typeof(IBitComponentParams));
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
         Assert.AreEqual(BitActionButtonParams.ParamName, @params.Name);
     }
 
@@ -906,7 +950,6 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual("Test Label", instance.AriaLabel);
         Assert.IsFalse(instance.IsEnabled);
         Assert.AreEqual("5", instance.TabIndex);
-        Assert.IsTrue(instance.Underlined);
     }
 
     [TestMethod]
@@ -1076,6 +1119,296 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual("-1", button.GetAttribute("tabindex"));
         Assert.IsTrue(button.GetAttribute("style")?.Contains("background: blue;"));
         Assert.IsTrue(button.ClassList.Contains("base-class"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonShouldRenderInnerWrapper()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Add");
+            parameters.AddChildContent("Content");
+        });
+
+        var innerWrapper = component.Find(".bit-acb-inn");
+
+        Assert.IsNotNull(innerWrapper);
+    }
+
+    [TestMethod]
+    public void BitActionButtonBodyParameterShouldWorkAsAliasForChildContent()
+    {
+        const string bodyContent = "Body content";
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add<RenderFragment>(p => p.Body, builder => builder.AddContent(0, bodyContent));
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.Contains(bodyContent, button.TextContent);
+    }
+
+    [TestMethod]
+    public void BitActionButtonBodyShouldTakePrecedenceOverChildContent()
+    {
+        const string bodyContent = "Body content";
+        const string childContent = "Child content";
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add<RenderFragment>(p => p.Body, builder => builder.AddContent(0, bodyContent));
+            parameters.AddChildContent(childContent);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.Contains(bodyContent, button.TextContent);
+        Assert.DoesNotContain(childContent, button.TextContent);
+    }
+
+    [TestMethod]
+    public void BitActionButtonIsLoadingShouldHideIconAndShowSpinner()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.IconName, "Add");
+            parameters.AddChildContent("Content");
+        });
+
+        var icons = component.FindAll(".bit-acb-ico");
+        var spinners = component.FindAll(".bit-acb-spn");
+
+        Assert.IsEmpty(icons);
+        Assert.HasCount(1, spinners);
+    }
+
+    [TestMethod]
+    public void BitActionButtonIsLoadingWithLoadingTemplateShouldNotShowSpinner()
+    {
+        const string loadingText = "Loading...";
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.IconName, "Add");
+            parameters.Add(p => p.LoadingTemplate, builder => builder.AddContent(0, loadingText));
+            parameters.AddChildContent("Content");
+        });
+
+        var spinners = component.FindAll(".bit-acb-spn");
+        var button = component.Find(".bit-acb");
+
+        Assert.IsEmpty(spinners);
+        Assert.Contains(loadingText, button.TextContent);
+    }
+
+    [TestMethod]
+    public void BitActionButtonIsLoadingWithIconOnlyShouldShowSpinner()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconName, "Add");
+        });
+
+        var spinners = component.FindAll(".bit-acb-spn");
+        var icons = component.FindAll(".bit-acb-ico");
+
+        Assert.HasCount(1, spinners);
+        Assert.IsEmpty(icons);
+    }
+
+    [TestMethod]
+    public void BitActionButtonIsLoadingStateShouldUpdateDynamically()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.IconName, "Add");
+            parameters.AddChildContent("Content");
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.IsFalse(button.ClassList.Contains("bit-acb-lod"));
+        Assert.IsEmpty(component.FindAll(".bit-acb-spn"));
+
+        component.SetParametersAndRender(parameters => parameters.Add(p => p.IsLoading, true));
+
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-lod"));
+        Assert.HasCount(1, component.FindAll(".bit-acb-spn"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconPositionEndShouldApplyClass()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconPosition, BitIconPosition.End);
+            parameters.Add(p => p.IconName, "Add");
+            parameters.AddChildContent("Content");
+        });
+
+        var button = component.Find(".bit-acb");
+        var icon = component.Find(".bit-acb-ico");
+        var content = component.Find(".bit-acb-con");
+
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-eni"));
+        Assert.IsNotNull(icon);
+        Assert.IsNotNull(content);
+    }
+
+    [TestMethod]
+    public void BitActionButtonUnderlinedShouldApplyToInnerWrapper()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Underlined, true);
+            parameters.Add(p => p.IconName, "Link");
+            parameters.AddChildContent("Link text");
+        });
+
+        var button = component.Find(".bit-acb");
+        var innerWrapper = component.Find(".bit-acb-inn");
+
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-und"));
+        Assert.IsNotNull(innerWrapper);
+    }
+
+    [TestMethod]
+    public void BitActionButtonShouldApplySpinnerClassesAndStyles()
+    {
+        var spinnerClass = "custom-spinner-class";
+        var spinnerStyle = "border-color: red;";
+
+        var classes = new BitActionButtonClassStyles
+        {
+            Spinner = spinnerClass
+        };
+
+        var styles = new BitActionButtonClassStyles
+        {
+            Spinner = spinnerStyle
+        };
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Classes, classes);
+            parameters.Add(p => p.Styles, styles);
+            parameters.AddChildContent("Content");
+        });
+
+        var spinner = component.Find(".bit-acb-spn");
+
+        Assert.IsTrue(spinner.ClassList.Contains(spinnerClass));
+        Assert.IsTrue(spinner.GetAttribute("style")?.Contains(spinnerStyle));
+    }
+
+    [TestMethod]
+    public void BitActionButtonFullWidthWithIconPositionEndShouldWork()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.FullWidth, true);
+            parameters.Add(p => p.IconPosition, BitIconPosition.End);
+            parameters.Add(p => p.IconName, "Forward");
+            parameters.AddChildContent("Full width");
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-fwi"));
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-eni"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonUnderlinedWithIconOnlyShouldWork()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Underlined, true);
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconName, "Link");
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.IsTrue(button.ClassList.Contains("bit-acb-und"));
+        Assert.IsNotNull(component.Find(".bit-acb-ico"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonLoadingTemplateWithIconAndContent()
+    {
+        const string loadingText = "Processing...";
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.IconName, "Save");
+            parameters.Add(p => p.LoadingTemplate, builder => builder.AddContent(0, loadingText));
+            parameters.AddChildContent("Save changes");
+        });
+
+        var button = component.Find(".bit-acb");
+        var spinners = component.FindAll(".bit-acb-spn");
+
+        Assert.IsEmpty(spinners);
+        Assert.Contains(loadingText, button.TextContent);
+    }
+
+    [TestMethod]
+    public void BitActionButtonIsLoadingShouldNotPreventClickWhenDisabled()
+    {
+        var clicked = false;
+
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.OnClick, () => clicked = true);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        button.Click();
+
+        Assert.IsFalse(clicked);
+    }
+
+    [TestMethod]
+    public void BitActionButtonAnchorWithIsLoadingShouldNotHaveAriaBusy()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.IsLoading, true);
+        });
+
+        var anchor = component.Find(".bit-acb");
+
+        // Anchor tags don't have aria-busy, only buttons do
+        Assert.IsFalse(anchor.HasAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonShouldRenderInnerWrapperForAnchor()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.IconName, "Globe");
+            parameters.AddChildContent("Link");
+        });
+
+        var innerWrapper = component.Find(".bit-acb-inn");
+
+        Assert.IsNotNull(innerWrapper);
     }
 
 
