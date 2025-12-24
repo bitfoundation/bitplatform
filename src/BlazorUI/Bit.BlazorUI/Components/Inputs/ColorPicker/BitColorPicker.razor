@@ -1,5 +1,12 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
+
+@{
+    var thumbStyle = FormattableString.Invariant($"top:{_saturationPickerThumbPosition?.Top}px;left:{_saturationPickerThumbPosition?.Left}px;background-color:{Rgb}");
+
+    var alphaSliderBg = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==)";
+    var alphaSliderStyle = $"background:linear-gradient(to left,{Rgb} 0%, transparent 100%), {alphaSliderBg};";
+}
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -21,9 +28,7 @@
          style="@_saturationPickerStyle">
         <div class="bit-clp-light"></div>
         <div class="bit-clp-dark"></div>
-        <div class="bit-clp-thumb"
-             style="@(FormattableString.Invariant($"top:{_saturationPickerThumbPosition?.Top}px;left:{_saturationPickerThumbPosition?.Left}px;background-color:{Rgb}"))">
-    </div>
+        <div class="bit-clp-thumb" style="@thumbStyle"></div>
     </div>
 
     <div class="bit-clp-cnt">
@@ -46,8 +51,7 @@
 
             @if (ShowAlphaSlider)
             {
-                <div class="bit-clp-sld bit-clp-asd"
-                     style=@($"background:linear-gradient(to left,{Rgb} 0%, transparent 100%), url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==);")>
+                <div class="bit-clp-sld bit-clp-asd" style=@alphaSliderStyle>
                     <input @oninput="HandleOnAlphaInput"
                            step="0.01"
                            min="0"
@@ -59,9 +63,9 @@
                            aria-label="Alpha"
                            class="bit-clp-inp"
                            aria-valuemax="1"
-                           value="@_color.A"
-                           aria-valuenow="@_color.A"
-                           aria-valuetext="@_color.A">
+                           value="@(FormattableString.Invariant($"{_color.A}"))"
+                           aria-valuenow="@(FormattableString.Invariant($"{_color.A}"))"
+                           aria-valuetext="@(FormattableString.Invariant($"{_color.A}"))">
                 </div>
             }
         </div>
