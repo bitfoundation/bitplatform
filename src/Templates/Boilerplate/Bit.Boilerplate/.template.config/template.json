@@ -498,8 +498,7 @@
                 {
                     "condition": "(offlineDb != true)",
                     "exclude": [
-                        "src/Shared/Controllers/Todo/**",
-                        "src/Server/Boilerplate.Server.Api/Controllers/Todo/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController",
                         "src/Client/Boilerplate.Client.Core/Data/**",
                         "src/Client/Boilerplate.Client.Core/Services/SyncService.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/OfflineTodoPage*",
