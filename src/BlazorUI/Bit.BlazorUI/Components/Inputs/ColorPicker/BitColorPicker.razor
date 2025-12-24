@@ -22,7 +22,8 @@
         <div class="bit-clp-light"></div>
         <div class="bit-clp-dark"></div>
         <div class="bit-clp-thumb"
-             style=@($"top:{_saturationPickerThumbPosition?.Top}px;left:{_saturationPickerThumbPosition?.Left}px;background-color:{Rgb}")>        </div>
+             style="@(FormattableString.Invariant($"top:{_saturationPickerThumbPosition?.Top}px;left:{_saturationPickerThumbPosition?.Left}px;background-color:{Rgb}"))">
+    </div>
     </div>
 
     <div class="bit-clp-cnt">
