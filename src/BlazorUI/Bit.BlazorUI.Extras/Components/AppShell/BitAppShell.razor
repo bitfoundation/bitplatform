@@ -1,9 +1,11 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      id="@_Id"
+     tabindex="@TabIndex"
+     aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
@@ -14,7 +16,7 @@
         <div style="@Styles?.Left" class="bit-ash-left @Classes?.Left"></div>
         <div id="BitAppShell-container" @ref="_containerRef" style="@Styles?.Main" class="bit-ash-main @Classes?.Main">
             <CascadingValue Name="@BitAppShell.Container" Value="_containerRef">
-                <BitCascadingValueProvider Values="CascadingValues">
+                <BitCascadingValueProvider Values="Values" ValueList="ValueList">
                     @ChildContent
                 </BitCascadingValueProvider>
             </CascadingValue>
