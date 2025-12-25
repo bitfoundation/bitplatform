@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAppShell is an advanced container to handle the nuances of a cross-platform layout.
 /// </summary>
+[SuppressMessage("Trimming", "IL2110:Field with 'DynamicallyAccessedMembersAttribute' is accessed via reflection. Trimmer can't guarantee availability of the requirements of the field.", Justification = "<Pending>")]
 public partial class BitAppShell : BitComponentBase
 {
     public const string Container = "BitAppShell.Container";
@@ -12,7 +14,7 @@ public partial class BitAppShell : BitComponentBase
 
 
     private bool _locationChanged;
-    private ElementReference _containerRef = default!;
+    private ElementReference? _containerRef;
 
 
 
@@ -63,13 +65,15 @@ public partial class BitAppShell : BitComponentBase
     /// </summary>
     public async Task GoToTop(BitScrollBehavior? behavior = null)
     {
-        await _js.BitExtrasGoToTop(_containerRef, behavior);
+        if (_containerRef.HasValue is false) return;
+
+        await _js.BitExtrasGoToTop(_containerRef.Value, behavior);
     }
 
     /// <summary>
     /// The element reference to the main container of the app shell.
     /// </summary>
-    public ElementReference ContainerRef => _containerRef;
+    public ElementReference? ContainerRef => _containerRef;
 
 
 
@@ -99,7 +103,9 @@ public partial class BitAppShell : BitComponentBase
     {
         if (firstRender && PersistScroll)
         {
-            await _js.BitAppShellInitScroll(_containerRef, _navManager.Uri);
+            if (_containerRef.HasValue is false) return;
+
+            await _js.BitAppShellInitScroll(_containerRef.Value, _navManager.Uri);
         }
 
         if (_locationChanged && firstRender is false)
