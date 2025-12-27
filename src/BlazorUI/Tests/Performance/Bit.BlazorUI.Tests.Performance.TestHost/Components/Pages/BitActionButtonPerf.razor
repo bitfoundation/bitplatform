@@ -1,0 +1,108 @@
+@page "/perf/action-button"
+@page "/perf/action-button/{Count:int}"
+
+<PageTitle>BitActionButton Performance Test</PageTitle>
+
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitActionButton Performance Test</h3>
+    <div style="margin-bottom: 10px;">
+        <label>Component Count: </label>
+        <input type="number" @bind="Count" @bind:event="oninput" min="1" max="10000" style="width: 100px;" />
+        <button @onclick="Render" id="btn-render">Render</button>
+        <button @onclick="Clear" id="btn-clear">Clear</button>
+        <button @onclick="ReRender" id="btn-rerender">Re-render (Toggle IsEnabled)</button>
+    </div>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Render Time: <span id="render-time">@RenderTimeMs</span> ms</p>
+        <p>Re-render Time: <span id="rerender-time">@ReRenderTimeMs</span> ms</p>
+        <p>Component Count: <span id="component-count">@RenderedCount</span></p>
+        <p>Status: <span id="status">@Status</span></p>
+    </div>
+</div>
+
+<div id="test-container" style="display: flex; flex-wrap: wrap; gap: 4px;">
+    @if (_isRendered)
+    {
+        @for (int i = 0; i < RenderedCount; i++)
+        {
+            var index = i;
+            <BitActionButton IconName="@BitIconName.Add" 
+                             IsEnabled="@_isEnabled"
+                             Title="@($"Button {index}")"
+                             OnClick="@(() => OnButtonClick(index))">
+                Button @index
+            </BitActionButton>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Count { get; set; } = 100;
+
+    private int RenderedCount { get; set; }
+    private double RenderTimeMs { get; set; }
+    private double ReRenderTimeMs { get; set; }
+    private string Status { get; set; } = "Ready";
+    private bool _isRendered;
+    private bool _isEnabled = true;
+    private System.Diagnostics.Stopwatch _stopwatch = new();
+
+    protected override void OnInitialized()
+    {
+        if (Count > 0)
+        {
+            // Auto-render if count is provided via URL
+        }
+    }
+
+    private void Render()
+    {
+        _stopwatch.Restart();
+        _isRendered = true;
+        RenderedCount = Count;
+        Status = "Rendering...";
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_stopwatch.IsRunning && _isRendered)
+        {
+            _stopwatch.Stop();
+            if (Status == "Rendering...")
+            {
+                RenderTimeMs = _stopwatch.Elapsed.TotalMilliseconds;
+                Status = "Rendered";
+            }
+            else if (Status == "Re-rendering...")
+            {
+                ReRenderTimeMs = _stopwatch.Elapsed.TotalMilliseconds;
+                Status = "Re-rendered";
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void Clear()
+    {
+        _isRendered = false;
+        RenderedCount = 0;
+        RenderTimeMs = 0;
+        ReRenderTimeMs = 0;
+        Status = "Cleared";
+    }
+
+    private void ReRender()
+    {
+        if (!_isRendered) return;
+        
+        _stopwatch.Restart();
+        _isEnabled = !_isEnabled;
+        Status = "Re-rendering...";
+    }
+
+    private void OnButtonClick(int index)
+    {
+        // Click handler for testing
+    }
+}
