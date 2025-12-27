@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.BlazorUI.Tests.Components.Buttons;
+namespace Bit.BlazorUI.Tests.Components.Buttons.ActionButton;
 
 /// <summary>
 /// Performance tests for the BitActionButton component.
@@ -31,7 +31,6 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         // Force garbage collection before measurement
         ForceGarbageCollection();
 
-        //var memoryBefore = GC.GetTotalMemory(forceFullCollection: true);
         var memoryBefore = GC.GetAllocatedBytesForCurrentThread();
 
         var components = new List<IRenderedComponent<BitActionButton>>(count);
@@ -49,7 +48,6 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             components.Add(component);
         }
 
-        //var memoryAfter = GC.GetTotalMemory(forceFullCollection: false);
         var memoryAfter = GC.GetAllocatedBytesForCurrentThread();
 
         var memoryUsed = memoryAfter - memoryBefore;
@@ -76,7 +74,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
     {
         ForceGarbageCollection();
 
-        var memoryBefore = GC.GetTotalMemory(forceFullCollection: true);
+        var memoryBefore = GC.GetAllocatedBytesForCurrentThread();
 
         var components = new List<IRenderedComponent<BitActionButton>>(count);
 
@@ -99,7 +97,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             components.Add(component);
         }
 
-        var memoryAfter = GC.GetTotalMemory(forceFullCollection: false);
+        var memoryAfter = GC.GetAllocatedBytesForCurrentThread();
         var memoryUsed = memoryAfter - memoryBefore;
         var memoryPerComponent = memoryUsed / count;
 
@@ -121,7 +119,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
     {
         ForceGarbageCollection();
 
-        var memoryBefore = GC.GetTotalMemory(forceFullCollection: true);
+        var memoryBefore = GC.GetAllocatedBytesForCurrentThread();
 
         var components = new List<IRenderedComponent<BitActionButton>>(count);
 
@@ -140,7 +138,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             components.Add(component);
         }
 
-        var memoryAfter = GC.GetTotalMemory(forceFullCollection: false);
+        var memoryAfter = GC.GetAllocatedBytesForCurrentThread();
         var memoryUsed = memoryAfter - memoryBefore;
         var memoryPerComponent = memoryUsed / count;
 

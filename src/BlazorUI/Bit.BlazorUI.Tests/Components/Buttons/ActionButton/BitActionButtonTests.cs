@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.BlazorUI.Tests.Components.Buttons;
+namespace Bit.BlazorUI.Tests.Components.Buttons.ActionButton;
 
 [TestClass]
 public class BitActionButtonTests : BunitTestContext
