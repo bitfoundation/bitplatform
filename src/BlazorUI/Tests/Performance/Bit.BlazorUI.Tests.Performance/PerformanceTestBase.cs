@@ -136,44 +136,48 @@ public abstract class PerformanceTestBase : PageTest
     {
         // Navigate from test project to test host project
         var currentDir = Directory.GetCurrentDirectory();
+
+        var path = Path.GetFullPath(Path.Combine(currentDir, "..", "Bit.BlazorUI.Tests.Performance.TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj"));
+
+        return path;
         
         // Try to find the TestHost project
-        var possiblePaths = new[]
-        {
-            Path.Combine(currentDir, "..", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj"),
-            Path.Combine(currentDir, "..", "..", "..", "..", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj"),
-            Path.Combine(currentDir, "..", "..", "..", "..", "..", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj"),
-        };
+        //var possiblePaths = new[]
+        //{
+        //    Path.Combine(currentDir, "..", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj"),
+        //    Path.Combine(currentDir, "..", "..", "..", "..", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj"),
+        //    Path.Combine(currentDir, "..", "..", "..", "..", "..", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj"),
+        //};
 
-        foreach (var path in possiblePaths)
-        {
-            var fullPath = Path.GetFullPath(path);
-            if (File.Exists(fullPath))
-            {
-                return fullPath;
-            }
-        }
+        //foreach (var path in possiblePaths)
+        //{
+        //    var fullPath = Path.GetFullPath(path);
+        //    if (File.Exists(fullPath))
+        //    {
+        //        return fullPath;
+        //    }
+        //}
 
-        // Fallback: search upward for the project
-        var searchDir = currentDir;
-        while (!string.IsNullOrEmpty(searchDir))
-        {
-            var testHostPath = Path.Combine(searchDir, "Performance", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj");
-            if (File.Exists(testHostPath))
-            {
-                return testHostPath;
-            }
+        //// Fallback: search upward for the project
+        //var searchDir = currentDir;
+        //while (!string.IsNullOrEmpty(searchDir))
+        //{
+        //    var testHostPath = Path.Combine(searchDir, "Performance", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj");
+        //    if (File.Exists(testHostPath))
+        //    {
+        //        return testHostPath;
+        //    }
 
-            var testsDir = Path.Combine(searchDir, "Bit.BlazorUI.Tests", "Performance", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj");
-            if (File.Exists(testsDir))
-            {
-                return testsDir;
-            }
+        //    var testsDir = Path.Combine(searchDir, "Bit.BlazorUI.Tests", "Performance", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj");
+        //    if (File.Exists(testsDir))
+        //    {
+        //        return testsDir;
+        //    }
 
-            searchDir = Path.GetDirectoryName(searchDir);
-        }
+        //    searchDir = Path.GetDirectoryName(searchDir);
+        //}
 
-        throw new FileNotFoundException("Could not find Bit.BlazorUI.Tests.Performance.TestHost.csproj");
+        //throw new FileNotFoundException("Could not find Bit.BlazorUI.Tests.Performance.TestHost.csproj");
     }
 
     /// <summary>

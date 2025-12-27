@@ -12,9 +12,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Include="..\Bit.BlazorUI\Components\Inputs\ColorPicker\BitInternalColor.cs" Link="Components\Inputs\ColorPicker\BitInternalColor.cs" />
-      <Compile Include="..\Bit.BlazorUI\Extensions\EnumExtensions.cs" Link="Extensions\EnumExtensions.cs" />
-      <Compile Include="..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
+      <Compile Include="..\..\Bit.BlazorUI\Components\Inputs\ColorPicker\BitInternalColor.cs" Link="Components\Inputs\ColorPicker\BitInternalColor.cs" />
+      <Compile Include="..\..\Bit.BlazorUI\Extensions\EnumExtensions.cs" Link="Extensions\EnumExtensions.cs" />
+      <Compile Include="..\..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,8 +23,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
-        <ProjectReference Include="..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
     </ItemGroup>
 
 </Project>

@@ -33,11 +33,9 @@ Performance/
 
 ### Install Playwright Browsers
 
-After building the test project, install the required browsers:
+After building the Bit.BlazorUI.Tests.Performance project, install the required browsers:
 
 ```bash
-cd Tests
-dotnet build
 pwsh bin/Debug/net10.0/playwright.ps1 install
 ```
 
@@ -47,13 +45,41 @@ Or on Linux/macOS:
 ./bin/Debug/net10.0/playwright.sh install
 ```
 
-## Running Tests
+# Running Tests
 
-### Run All Performance Tests
+## Test Host
+
+The test host is a Blazor Server application that provides test pages for each component.
+
+### Running the Test Host Manually
 
 ```bash
-cd Tests
-dotnet test
+dotnet run --urls http://localhost:5280 -f net10.0
+```
+
+Then navigate to:
+- http://localhost:5280 - Home page with links to all test pages
+- http://localhost:5280/perf/action-button - BitActionButton performance test
+- http://localhost:5280/perf/action-button/100 - BitActionButton with 100 components
+
+### Test Page Controls
+
+Each test page exposes:
+- `#btn-render` - Button to trigger initial render
+- `#btn-clear` - Button to clear all components
+- `#btn-rerender` - Button to trigger re-render
+
+Metrics are exposed via DOM elements:
+- `#render-time` - Initial render time in milliseconds
+- `#rerender-time` - Re-render time in milliseconds
+- `#component-count` - Number of components rendered
+- `#status` - Current status (Ready, Rendering, Rendered, etc.)
+
+## Performance Tests
+
+Run the following command in the `Bit.BlazorUI.Tests.Performance` folder:
+```bash
+dotnet test -f net10.0 --output detailed
 ```
 
 ### Run Specific Test Categories
@@ -88,56 +114,6 @@ dotnet test -- Playwright.BrowserName=webkit
 dotnet test -- Playwright.LaunchOptions.Headless=false
 ```
 
-## Test Host
-
-The test host is a Blazor Server application that provides test pages for each component.
-
-### Running the Test Host Manually
-
-```bash
-cd TestHost
-dotnet run --urls http://localhost:5280
-```
-
-Then navigate to:
-- http://localhost:5280 - Home page with links to all test pages
-- http://localhost:5280/perf/action-button - BitActionButton performance test
-- http://localhost:5280/perf/action-button/100 - BitActionButton with 100 components
-
-### Test Page Controls
-
-Each test page exposes:
-- `#btn-render` - Button to trigger initial render
-- `#btn-clear` - Button to clear all components
-- `#btn-rerender` - Button to trigger re-render
-
-Metrics are exposed via DOM elements:
-- `#render-time` - Initial render time in milliseconds
-- `#rerender-time` - Re-render time in milliseconds
-- `#component-count` - Number of components rendered
-- `#status` - Current status (Ready, Rendering, Rendered, etc.)
-
-## Adding Tests for New Components
-
-1. Create a new test page in `TestHost/Components/Pages/`:
-   ```razor
-   @page "/perf/your-component"
-   @page "/perf/your-component/{Count:int}"
-   
-   <!-- Follow the pattern in BitActionButtonPerf.razor -->
-   ```
-
-2. Create a new test class in `Tests/`:
-   ```csharp
-   [TestClass]
-   [TestCategory("Performance")]
-   [TestCategory("Browser")]
-   public class YourComponentBrowserTests : PerformanceTestBase
-   {
-       // Follow the pattern in BitActionButtonBrowserTests.cs
-   }
-   ```
-
 ## Performance Thresholds
 
 Default thresholds are defined in `PerformanceTestBase.Thresholds`:
@@ -160,7 +136,7 @@ Adjust as needed based on your performance requirements.
 2. Verify the TestHost project builds successfully
 3. Check the test output for error messages
 
-### Memory Tests Show 0
+### Memory Tests Show
 
 Memory API (`performance.memory`) is only available in Chromium-based browsers.
 Run tests with Chromium browser for memory measurements.
@@ -177,3 +153,24 @@ Run the Playwright install script:
 ```bash
 pwsh bin/Debug/net10.0/playwright.ps1 install
 ```
+
+## Adding Tests for New Components
+
+1. Create a new test page in `Bit.BlazorUI.Tests.Performance.TestHost/Components/Pages/`:
+   ```razor
+   @page "/perf/your-component"
+   @page "/perf/your-component/{Count:int}"
+   
+   <!-- Follow the pattern in BitActionButtonPerf.razor -->
+   ```
+
+2. Create a new test class in `Bit.BlazorUI.Tests.Performance` project:
+   ```csharp
+   [TestClass]
+   [TestCategory("Performance")]
+   [TestCategory("Browser")]
+   public class YourComponentBrowserTests : PerformanceTestBase
+   {
+       // Follow the pattern in BitActionButtonBrowserTests.cs
+   }
+   ```
