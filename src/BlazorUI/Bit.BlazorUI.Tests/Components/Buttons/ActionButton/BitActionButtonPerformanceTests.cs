@@ -19,13 +19,12 @@ public class BitActionButtonPerformanceTests : BunitTestContext
     // Define component counts for different test scenarios
     private static readonly int[] ComponentCounts = [1, 10, 50, 100, 500];
 
-    #region Memory Footprint Tests
-
     [TestMethod]
     [DataRow(1)]
     [DataRow(10)]
     [DataRow(50)]
     [DataRow(100)]
+    [DataRow(500)]
     public void BitActionButton_MemoryFootprint_SingleComponent(int count)
     {
         // Force garbage collection before measurement
@@ -70,6 +69,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
     [DataRow(10)]
     [DataRow(50)]
     [DataRow(100)]
+    [DataRow(500)]
     public void BitActionButton_MemoryFootprint_WithAllFeatures(int count)
     {
         ForceGarbageCollection();
@@ -115,6 +115,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
     [DataRow(10)]
     [DataRow(50)]
     [DataRow(100)]
+    [DataRow(500)]
     public void BitActionButton_MemoryFootprint_AsLink(int count)
     {
         ForceGarbageCollection();
@@ -151,15 +152,12 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             $"Memory per component in link mode ({memoryPerComponent:N0} bytes) exceeds threshold of {threshold:N0} bytes");
     }
 
-    #endregion
-
-    #region Initial Render Speed Tests
-
     [TestMethod]
     [DataRow(1)]
     [DataRow(10)]
     [DataRow(50)]
     [DataRow(100)]
+    [DataRow(500)]
     public void BitActionButton_InitialRenderSpeed_Simple(int count)
     {
         // Warm-up render
@@ -197,6 +195,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
     [DataRow(10)]
     [DataRow(50)]
     [DataRow(100)]
+    [DataRow(500)]
     public void BitActionButton_InitialRenderSpeed_WithAllFeatures(int count)
     {
         // Warm-up render
@@ -238,6 +237,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
     [DataRow(10)]
     [DataRow(50)]
     [DataRow(100)]
+    [DataRow(500)]
     public void BitActionButton_InitialRenderSpeed_LoadingState(int count)
     {
         // Warm-up render
@@ -269,15 +269,12 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             $"Render time per component in loading state ({perComponentMs:F4}ms) exceeds threshold of 50ms");
     }
 
-    #endregion
-
-    #region Re-render Speed Tests
-
     [TestMethod]
     [DataRow(1)]
     [DataRow(10)]
     [DataRow(50)]
     [DataRow(100)]
+    [DataRow(500)]
     public void BitActionButton_ReRenderSpeed_ParameterChange(int count)
     {
         var components = new List<IRenderedComponent<BitActionButton>>(count);
@@ -324,6 +321,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
     [DataRow(10)]
     [DataRow(50)]
     [DataRow(100)]
+    [DataRow(500)]
     public void BitActionButton_ReRenderSpeed_IconChange(int count)
     {
         var components = new List<IRenderedComponent<BitActionButton>>(count);
@@ -369,6 +367,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
     [DataRow(10)]
     [DataRow(50)]
     [DataRow(100)]
+    [DataRow(500)]
     public void BitActionButton_ReRenderSpeed_LoadingStateToggle(int count)
     {
         var components = new List<IRenderedComponent<BitActionButton>>(count);
@@ -415,6 +414,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
     [DataRow(10)]
     [DataRow(50)]
     [DataRow(100)]
+    [DataRow(500)]
     public void BitActionButton_ReRenderSpeed_ContentChange(int count)
     {
         var components = new List<IRenderedComponent<BitActionButton>>(count);
@@ -465,6 +465,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
     [DataRow(10)]
     [DataRow(50)]
     [DataRow(100)]
+    [DataRow(500)]
     public void BitActionButton_ReRenderSpeed_MultipleParameterChanges(int count)
     {
         var components = new List<IRenderedComponent<BitActionButton>>(count);
@@ -516,10 +517,6 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         AssertPerformanceThreshold(perComponentMs, 35,
             $"Re-render time per component with multiple changes ({perComponentMs:F4}ms) exceeds threshold of 35ms");
     }
-
-    #endregion
-
-    #region Scalability Tests
 
     [TestMethod]
     public void BitActionButton_ScalabilityTest_RenderTimeGrowth()
@@ -607,6 +604,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
 
         // Log all results
         Debug.WriteLine("=== Memory Scalability Test Results ===");
+
         foreach (var kvp in memoryUsage)
         {
             Debug.WriteLine($"Count: {kvp.Key}, Avg Memory Per Component: {kvp.Value:N0} bytes");
@@ -623,10 +621,6 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             Assert.Fail($"Memory per component varies significantly at scale (min: {minMemory:N0}, max: {maxMemory:N0})");
         }
     }
-
-    #endregion
-
-    #region Stress Tests
 
     [TestMethod]
     public void BitActionButton_StressTest_RapidReRenders()
@@ -704,6 +698,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         {
             Assert.Fail($"Expected {componentCount} components but got {components.Count}");
         }
+
         AssertPerformanceThreshold(renderTime, 30000, "Rendering took too long");
     }
 
@@ -760,9 +755,7 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             $"Average operation time ({perOperationMs:F4}ms) exceeds threshold of 15ms");
     }
 
-    #endregion
 
-    #region Helper Methods
 
     private static void ForceGarbageCollection()
     {
@@ -771,10 +764,6 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         GC.Collect();
     }
 
-    /// <summary>
-    /// Helper method to assert that a value is less than a threshold.
-    /// Using this method avoids the analyzer warning about using Assert.IsTrue for comparisons.
-    /// </summary>
     private static void AssertPerformanceThreshold(double actual, double threshold, string message)
     {
         if (actual >= threshold)
@@ -783,10 +772,6 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         }
     }
 
-    /// <summary>
-    /// Helper method to assert that a value is less than a threshold.
-    /// Using this method avoids the analyzer warning about using Assert.IsTrue for comparisons.
-    /// </summary>
     private static void AssertPerformanceThreshold(long actual, long threshold, string message)
     {
         if (actual >= threshold)
@@ -794,6 +779,4 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             Assert.Fail(message);
         }
     }
-
-    #endregion
 }
