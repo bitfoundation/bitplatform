@@ -31,12 +31,12 @@
   <Folder Name="/BlazorUI/">
     <File Path="BlazorUI/Clean.bat" />
     <File Path="BlazorUI/README.md" />
+    <Project Path="BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.SourceGenerators/Bit.BlazorUI.SourceGenerators.csproj" />
-    <Project Path="BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
-    <Project Path="BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj" />
+    <Project Path="BlazorUI/Tests/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
   </Folder>
   <Folder Name="/Bswup/">
     <File Path="Bswup/README.md" />
