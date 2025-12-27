@@ -31,7 +31,8 @@ public class BitActionButtonPerformanceTests : BunitTestContext
         // Force garbage collection before measurement
         ForceGarbageCollection();
 
-        var memoryBefore = GC.GetTotalMemory(forceFullCollection: true);
+        //var memoryBefore = GC.GetTotalMemory(forceFullCollection: true);
+        var memoryBefore = GC.GetAllocatedBytesForCurrentThread();
 
         var components = new List<IRenderedComponent<BitActionButton>>(count);
 
@@ -48,7 +49,9 @@ public class BitActionButtonPerformanceTests : BunitTestContext
             components.Add(component);
         }
 
-        var memoryAfter = GC.GetTotalMemory(forceFullCollection: false);
+        //var memoryAfter = GC.GetTotalMemory(forceFullCollection: false);
+        var memoryAfter = GC.GetAllocatedBytesForCurrentThread();
+
         var memoryUsed = memoryAfter - memoryBefore;
         var memoryPerComponent = memoryUsed / count;
 
