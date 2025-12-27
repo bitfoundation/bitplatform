@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Tests.Components.Notifications.Message;
 [TestClass]
 public class BitMessageTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitColor.Info),
         DataRow(BitColor.Error),
         DataRow(BitColor.SevereWarning),
@@ -49,7 +49,7 @@ public class BitMessageTests : BunitTestContext
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconMap[type]}"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Emoji2"),
         DataRow("WordLogo")
     ]
@@ -64,7 +64,7 @@ public class BitMessageTests : BunitTestContext
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitMessageDismissButtonShouldWorkCorrect()
     {
         var currentCount = 0;
@@ -80,7 +80,7 @@ public class BitMessageTests : BunitTestContext
         Assert.AreEqual(1, currentCount);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Emoji2"),
         DataRow("WordLogo")
     ]
@@ -97,7 +97,7 @@ public class BitMessageTests : BunitTestContext
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("<div><button>Action</button></div>")
     ]
     public void BitMessageShouldRespectAction(string actions)
@@ -111,7 +111,7 @@ public class BitMessageTests : BunitTestContext
         actionsTemplate.MarkupMatches(actions);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("alert", BitColor.Info),
         DataRow("alert", BitColor.Success),
         DataRow("alert", BitColor.Warning),

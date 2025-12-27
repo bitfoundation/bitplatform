@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.DatePicker;
 [TestClass]
 public class BitDatePickerTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false),
     ]
@@ -31,7 +31,7 @@ public class BitDatePickerTests : BunitTestContext
         }
     }
 
-    [DataTestMethod, DataRow("<div>This is labelTemplate</div>")]
+    [TestMethod, DataRow("<div>This is labelTemplate</div>")]
     public void BitDatePickerShouldRenderLabelTemplate(string labelTemplate)
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
@@ -43,7 +43,7 @@ public class BitDatePickerTests : BunitTestContext
         bitDatePickerLabelChild.MarkupMatches(labelTemplate);
     }
 
-    [DataTestMethod, DataRow("go to today text")]
+    [TestMethod, DataRow("go to today text")]
     public void BitDatePickerShouldGiveValueToGoToToday(string goToToday)
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
@@ -57,7 +57,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(goToTodayButton.GetAttribute("title"), goToToday);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, 1),
         DataRow(false, 0)
     ]
@@ -77,7 +77,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(count, clickedValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, 1),
         DataRow(false, 0)
     ]
@@ -101,7 +101,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(count, changedDateValue);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitDatePickerCalendarSelectTodayDate()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -122,7 +122,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(component.Instance.Value.Value.Offset, DateTimeOffset.Now.Offset);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitDatePickerValidationFormTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -153,7 +153,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitDatePickerValidationInvalidHtmlAttributeTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -185,7 +185,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsFalse(inputDate.HasAttribute("aria-invalid"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitDatePickerValidationInvalidCssClassTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -215,7 +215,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsFalse(bitDatePicker.ClassList.Contains("bit-inv"));
     }
 
-    [DataTestMethod, DataRow("DatePicker")]
+    [TestMethod, DataRow("DatePicker")]
     public void BitDatePickerAriaLabelTest(string pickerAriaLabel)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -230,7 +230,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(pickerAriaLabel, calloutAriaLabel);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -254,7 +254,7 @@ public class BitDatePickerTests : BunitTestContext
         }
     }
 
-    //[DataTestMethod,
+    //[TestMethod,
     //    DataRow(false),
     //    DataRow(true)
     //]
@@ -278,7 +278,7 @@ public class BitDatePickerTests : BunitTestContext
     //    }
     //}
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -302,7 +302,7 @@ public class BitDatePickerTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -327,7 +327,7 @@ public class BitDatePickerTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitDatePickerCalloutHtmlAttributesTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

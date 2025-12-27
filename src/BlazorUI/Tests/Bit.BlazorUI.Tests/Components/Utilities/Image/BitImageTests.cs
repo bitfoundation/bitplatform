@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Image;
 [TestClass]
 public class BitImageTests : BunitTestContext
 {
-    [DataTestMethod]
+    [TestMethod]
     public void BitImageShouldRenderExpectedElement()
     {
         var component = RenderComponent<BitImage>();
@@ -17,7 +17,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -33,7 +33,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-img{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitImageShouldRespectIsEnabledChangingAfterRender()
     {
         var component = RenderComponent<BitImage>();
@@ -48,7 +48,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-img bit-dis"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("font-size: 14px; color: red;"),
         DataRow("padding: 1rem;"),
         DataRow(null)
@@ -70,7 +70,7 @@ public class BitImageTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitImageShouldRespectStyleChangingAfterRender()
     {
         var component = RenderComponent<BitImage>();
@@ -86,7 +86,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("margin: 14px;", "padding: 1rem;"),
         DataRow("background-color: #fff;", "border: 2px solid red"),
     ]
@@ -100,7 +100,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{rootStyle}"" class=""bit-img"" id:ignore><img style=""{imageStyle}"" class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod, Ignore]
+    [TestMethod, Ignore]
     public void BitImageShouldRespectStylesChangingAfterRender()
     {
         var component = RenderComponent<BitImage>();
@@ -117,7 +117,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{rootStyle}"" class=""bit-img"" id:ignore><img style=""{imageStyle}"" class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-class"),
         DataRow(null)
     ]
@@ -133,7 +133,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-img{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitImageShouldRespectClassChangingAfterRender()
     {
         var component = RenderComponent<BitImage>();
@@ -150,7 +150,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-img {cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-root-class", "test-image-class")
     ]
     public void BitImageShouldRespectClasses(string rootClass, string imageClass)
@@ -163,7 +163,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""{rootClass} bit-img"" id:ignore><img class=""{imageClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod, Ignore]
+    [TestMethod, Ignore]
     public void BitImageShouldRespectClassesChangingAfterRender()
     {
         var component = RenderComponent<BitImage>();
@@ -180,7 +180,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""{rootClass} bit-img"" id:ignore><img class=""{imageClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-id"),
         DataRow(null)
     ]
@@ -196,7 +196,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div id=""{expectedId}"" class=""bit-img""><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitDir.Rtl),
         DataRow(BitDir.Ltr),
         DataRow(BitDir.Auto),
@@ -220,7 +220,7 @@ public class BitImageTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitImageShouldRespectDirChangingAfterRender()
     {
         var component = RenderComponent<BitImage>();
@@ -235,7 +235,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@"<div dir=""ltr"" class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
         DataRow(BitVisibility.Hidden)
@@ -257,7 +257,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div {styleAttribute} class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitImageShouldRespectVisibilityChangingAfterRender()
     {
         var component = RenderComponent<BitImage>();
@@ -272,7 +272,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@"<div style=""display: none;"" class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitImageShouldRespectHtmlAttributes()
     {
         var component = RenderComponent<BitImageHtmlAttributesTest>();
@@ -280,7 +280,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@"<div data-val-test=""bit"" class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" src=""images/bit-logo-blue.png"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("BitBlazor"),
         DataRow("Bit Platform"),
         DataRow(null)
@@ -302,7 +302,7 @@ public class BitImageTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitImageCover.Landscape),
         DataRow(BitImageCover.Portrait),
         DataRow(null)
@@ -324,7 +324,7 @@ public class BitImageTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("85.69"),
         DataRow("69px"),
         DataRow("69rem"),
@@ -357,7 +357,7 @@ public class BitImageTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitImageShouldRespectHeightChangingAfterRender()
     {
         var component = RenderComponent<BitImage>();
@@ -372,7 +372,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@"<div style=""height:85px"" class=""bit-img"" id:ignore><img class=""bit-img-ihh bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("85.69"),
         DataRow("69px"),
         DataRow("69rem"),
@@ -405,7 +405,7 @@ public class BitImageTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitImageShouldRespectWidthChangingAfterRender()
     {
         var component = RenderComponent<BitImage>();
@@ -420,7 +420,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@"<div style=""width:85px"" class=""bit-img"" id:ignore><img class=""bit-img-ihw bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("85", "69"),
         DataRow("85rem", "69rem"),
         DataRow("85rem", "69px"),
@@ -456,7 +456,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{style}"" class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("dir", "ltr"),
          DataRow("foo", "bar")
     ]
@@ -473,7 +473,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img {attr} class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitImageFit.None),
         DataRow(BitImageFit.Center),
         DataRow(BitImageFit.Contain),
@@ -503,7 +503,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img class=""{cssClass} bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("85px", "69px", BitImageFit.Center),
         DataRow("85px", "69px", null),
         DataRow("85px", null, BitImageFit.Center),
@@ -560,7 +560,7 @@ public class BitImageTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitImageLoading.Lazy),
         DataRow(null)
     ]
@@ -581,7 +581,7 @@ public class BitImageTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -597,7 +597,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-img{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -617,7 +617,7 @@ public class BitImageTests : BunitTestContext
         Assert.AreEqual(expected, clickedValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -633,7 +633,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-img{cssClass}"" id:ignore><img class=""bit-img-img bit-img-por bit-img-hid"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -649,7 +649,7 @@ public class BitImageTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-img"" id:ignore><img class=""bit-img-img bit-img-por{cssClass}"" /></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("bit-logo-blue.png"),
         DataRow("https://blazorui.bitplatform.dev/bit-logo-blue.png"),
         DataRow(null)
@@ -671,7 +671,7 @@ public class BitImageTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit title"),
         DataRow(null)
     ]

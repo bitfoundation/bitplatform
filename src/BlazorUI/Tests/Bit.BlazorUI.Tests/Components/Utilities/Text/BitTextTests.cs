@@ -27,7 +27,7 @@ public class BitTextTests : BunitTestContext
         { BitTypography.Subtitle2, "h6" }
     };
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitTextShouldRenderExpectedElement()
     {
         var component = RenderComponent<BitText>();
@@ -35,7 +35,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(BitTypography.H1),
          DataRow(BitTypography.H2),
          DataRow(BitTypography.H3),
@@ -65,7 +65,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@$"<{el} class=""bit-txt {cssClass}"" id:ignore></{el}>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("h1"),
         DataRow("div"),
         DataRow(null)
@@ -84,7 +84,7 @@ public class BitTextTests : BunitTestContext
 
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -100,7 +100,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitTextShouldRespectNoWrapChangingAfterRender()
     {
         var component = RenderComponent<BitText>();
@@ -115,7 +115,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-nowrap"" id:ignore></h6>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -131,7 +131,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitTextShouldRespectGutterChangingAfterRender()
     {
         var component = RenderComponent<BitText>();
@@ -146,7 +146,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-txt-gutter"" id:ignore></h6>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -162,7 +162,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitTextShouldRespectIsEnabledChangingAfterRender()
     {
         var component = RenderComponent<BitText>();
@@ -177,7 +177,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 bit-dis"" id:ignore></h6>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("font-size: 14px; color: red;"),
         DataRow("padding: 1rem;"),
         DataRow(null)
@@ -199,7 +199,7 @@ public class BitTextTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitTextShouldRespectStyleChangingAfterRender()
     {
         var component = RenderComponent<BitText>();
@@ -215,7 +215,7 @@ public class BitTextTests : BunitTestContext
     }
 
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-class"),
         DataRow(null)
     ]
@@ -231,7 +231,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1{cssClass}"" id:ignore></h6>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitTextShouldRespectClassChangingAfterRender()
     {
         var component = RenderComponent<BitText>();
@@ -246,7 +246,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@"<h6 class=""bit-txt bit-txt-subtitle1 test-class"" id:ignore></h6>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-id"),
         DataRow(null)
     ]
@@ -262,7 +262,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@$"<h6 id=""{expectedId}"" class=""bit-txt bit-txt-subtitle1""></h6>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitDir.Rtl),
         DataRow(BitDir.Ltr),
         DataRow(BitDir.Auto),
@@ -286,7 +286,7 @@ public class BitTextTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitTextShouldRespectDirChangingAfterRender()
     {
         var component = RenderComponent<BitText>();
@@ -301,7 +301,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@"<h6 dir=""ltr"" class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
         DataRow(BitVisibility.Hidden)
@@ -327,7 +327,7 @@ public class BitTextTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitTextShouldRespectVisibilityChangingAfterRender()
     {
         var component = RenderComponent<BitText>();
@@ -342,7 +342,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@"<h6 style=""display: none;"" class=""bit-txt bit-txt-subtitle1"" id:ignore></h6>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow(null)
     ]
@@ -363,7 +363,7 @@ public class BitTextTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow("<span>Bit Blazor UI</span>"),
         DataRow(null)
@@ -378,7 +378,7 @@ public class BitTextTests : BunitTestContext
         component.MarkupMatches(@$"<h6 class=""bit-txt bit-txt-subtitle1"" id:ignore>{childContent}</h6>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitTextShouldRespectHtmlAttributes()
     {
         var component = RenderComponent<BitTextHtmlAttributesTest>();

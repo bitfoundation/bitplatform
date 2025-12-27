@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Tests.Components.Navs.Breadcrumb;
 [TestClass]
 public class BitBreadcrumbTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
       DataRow("Separator")
     ]
     public void BitBreadcrumbShouldTakeDividerIcon(string icon)
@@ -23,7 +23,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.IsTrue(breadcrumbDividerIcon.ClassList.Contains($"bit-icon--{icon}"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow((uint)0),
       DataRow((uint)3)
     ]
@@ -49,7 +49,7 @@ public class BitBreadcrumbTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("ChevronDown", (uint)2, (uint)0),
       DataRow("ChevronDown", (uint)3, (uint)1)
     ]
@@ -73,7 +73,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitBreadcrumbShouldTakeCorrectAriaCurrent()
     {
         var breadcrumbItems = GetBreadcrumbItems();
@@ -90,7 +90,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.IsTrue(breadcrumbElements?[lastIndex]?.GetAttribute("aria-current")?.Contains("page"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("Detailed label", (uint)3)
     ]
     public void BitBreadcrumbShouldTakeOverflowAriaLabel(string overflowAriaLabel, uint maxDisplayedItems)
@@ -109,7 +109,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.IsTrue(breadcrumbButton?.GetAttribute("aria-label")?.Contains(overflowAriaLabel));
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("color:red;")
     ]
     public void BitBreadcrumbShouldTakeCustomStyle(string customStyle)
@@ -125,7 +125,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.IsTrue(breadcrumb?.GetAttribute("style")?.Contains(customStyle));
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("custom-class")
     ]
     public void BitBreadcrumbShouldTakeCustomClass(string customClass)
@@ -141,7 +141,7 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.IsTrue(breadcrumb.ClassList.Contains($"{customClass}"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(BitVisibility.Visible),
       DataRow(BitVisibility.Hidden),
       DataRow(BitVisibility.Collapsed),

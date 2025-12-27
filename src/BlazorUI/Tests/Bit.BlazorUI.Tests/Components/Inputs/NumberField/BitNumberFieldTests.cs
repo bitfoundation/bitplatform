@@ -19,7 +19,7 @@ public class BitNumberFieldTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
-    [DataTestMethod, DataRow("The placeholder")]
+    [TestMethod, DataRow("The placeholder")]
     public void BitNumberFieldShouldHaveCorrectPlaceholder(string placeholder)
     {
         var component = RenderComponent<BitNumberField<byte>>(parameters =>
@@ -33,7 +33,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(numericTextFieldPlaceholder.GetAttribute("placeholder"), placeholder);
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(null),
          DataRow("The Label")
     ]
@@ -55,7 +55,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(null),
          DataRow(BitSpinButtonMode.Compact),
          DataRow(BitSpinButtonMode.Inline),
@@ -80,7 +80,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(null, null),
          DataRow("IncreaseIndentLegacy", null),
          DataRow("IncreaseIndentLegacy", "BitNumberFieldButtonIcon")
@@ -110,7 +110,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(null, null),
          DataRow("IncreaseIndentLegacy", null),
          DataRow("IncreaseIndentLegacy", "BitNumberFieldButtonIcon")
@@ -139,7 +139,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow("IncreaseIndentLegacy", null, true),
          DataRow("IncreaseIndentLegacy", null, false),
          DataRow("IncreaseIndentLegacy", "BitNumberFieldButtonIcon", true),
@@ -168,7 +168,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow("IncreaseIndentLegacy", null, true),
          DataRow("IncreaseIndentLegacy", null, false),
          DataRow("IncreaseIndentLegacy", "BitNumberFieldButtonIcon", true),
@@ -197,7 +197,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow("0", 11),
          DataRow("C2", 100),
          DataRow("0:00000", 1363)
@@ -217,7 +217,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(expectedValue, inputValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(null),
          DataRow(BitLabelPosition.Start),
          DataRow(BitLabelPosition.End),
@@ -244,7 +244,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.IsTrue(numberFieldButton.ClassList.Contains(lblClass));
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow("dir", "ltr"),
          DataRow("foo", "bar")
     ]
@@ -260,7 +260,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(attrValue, input.GetAttribute(attrKey));
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow("NtfWrapper", null, null, null),
          DataRow(null, "NftAriaLabel", null, null),
          DataRow("NtfWrapper", "NftAriaLabel", 5, 3),
@@ -295,7 +295,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(null, null),
          DataRow("0", null),
          DataRow("10", null),
@@ -333,7 +333,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [Ignore]
-    [DataTestMethod,
+    [TestMethod,
          DataRow(3),
          DataRow(5)
     ]
@@ -358,7 +358,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [Ignore]
-    [DataTestMethod,
+    [TestMethod,
          DataRow(3),
          DataRow(5)
     ]
@@ -382,7 +382,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(20 - countOfClicks, onDecrementEventCounter);
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(4),
          DataRow(12)
     ]
@@ -403,7 +403,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(onBlurEventCounter, countOfBlur);
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(4),
          DataRow(12)
     ]
@@ -424,7 +424,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(onFocusEventCounter, countOfFocus);
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(4),
          DataRow(12)
     ]
@@ -442,7 +442,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(onChangeEventValue, inputValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(null),
          DataRow("AriaDescription")
     ]
@@ -458,7 +458,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(ariaDescription, input.GetAttribute("aria-describedby"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(3, null),
          DataRow(3, "{0} cm"),
          DataRow(null, null)
@@ -488,7 +488,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow("3", null),
          DataRow(null, "00"),
          DataRow(null, null)
@@ -513,7 +513,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(expectedResult, input.GetAttribute("aria-valuetext"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(3, "1", "12"),
          DataRow(8, "2", "10"),
          DataRow(8, "1", "8"),
@@ -541,7 +541,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(inputValue, expectedResult.ToString());
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(3, "1", "12"),
          DataRow(8, "2", "10"),
          DataRow(8, "1", "8"),
@@ -571,7 +571,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(expectedResult.ToString(), inputValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(3, "1", "0"),
          DataRow(2, "2", "0"),
          DataRow(3, "4", "0"),
@@ -598,7 +598,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(inputValue, expectedResult.ToString());
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(3, "1", "0"),
          DataRow(2, "2", "0"),
          DataRow(3, "4", "0"),
@@ -627,7 +627,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(expectedResult.ToString(), inputValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(50.02, "0", "100", "25"),
          DataRow(50.02, "0", "100", "112.2"),
          DataRow(50.02, "0", "100", "62.72"),
@@ -672,7 +672,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(expectedResult, inputValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(5, "0", "100", "25"),
          DataRow(5, "0", "100", "112"),
          DataRow(5, "0", "100", "-5"),
@@ -713,7 +713,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(expectedResult, inputValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow("0", "100", "1", "25"),
          DataRow("0", "100", "2", "25"),
          DataRow("0", "100", "25", "12"),
@@ -744,7 +744,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [Ignore]
-    [DataTestMethod,
+    [TestMethod,
          DataRow(5, 2, "4"),
          DataRow(1, 15, "1")
     ]
@@ -773,7 +773,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(expectedValue, BitNumberFieldTwoWayBoundValue);
     }
 
-    [DataTestMethod, DataRow("<div>This is labelFragment</div>")]
+    [TestMethod, DataRow("<div>This is labelFragment</div>")]
     public void BitNumberFieldLabelFragmentTest(string labelFragment)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
@@ -786,7 +786,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [Ignore]
-    [DataTestMethod,
+    [TestMethod,
          DataRow(3, "1", "100", 475),
          DataRow(3, "1", "100", 550)
     ]
@@ -812,7 +812,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [Ignore]
-    [DataTestMethod,
+    [TestMethod,
          DataRow(50, "1", "0", 475),
          DataRow(50, "1", "0", 550)
     ]
@@ -837,7 +837,7 @@ public class BitNumberFieldTests : BunitTestContext
             TimeSpan.FromMilliseconds(timeout));
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(4),
          DataRow(10),
          DataRow(0),
@@ -878,7 +878,7 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(4),
          DataRow(10),
          DataRow(0),
@@ -920,7 +920,7 @@ public class BitNumberFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(2),
          DataRow(8)
     ]

@@ -19,7 +19,7 @@ public class BitSwiperTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-swp-rbt").Count);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)]
     public void BitSwiperShouldRespectIsEnabled(bool isEnabled)

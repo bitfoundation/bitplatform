@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Overlay;
 [TestClass]
 public class BitOverlayTests : BunitTestContext
 {
-    [DataTestMethod]
+    [TestMethod]
     public void BitOverlayShouldRenderExpectedElement()
     {
         var component = RenderComponent<BitOverlay>();
@@ -14,7 +14,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-ovl"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -30,7 +30,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-ovl{cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitOverlayShouldRespectIsEnabledChangingAfterRender()
     {
         var component = RenderComponent<BitOverlay>();
@@ -45,7 +45,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-ovl bit-dis"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("font-size: 14px; color: red;"),
         DataRow("padding: 1rem;"),
         DataRow(null)
@@ -67,7 +67,7 @@ public class BitOverlayTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitOverlayShouldRespectStyleChangingAfterRender()
     {
         var component = RenderComponent<BitOverlay>();
@@ -83,7 +83,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{style}"" class=""bit-ovl"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-class"),
         DataRow(null)
     ]
@@ -99,7 +99,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-ovl{cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitOverlayShouldRespectClassChangingAfterRender()
     {
         var component = RenderComponent<BitOverlay>();
@@ -116,7 +116,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-ovl {cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-id"),
         DataRow(null)
     ]
@@ -132,7 +132,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div id=""{expectedId}"" class=""bit-ovl""></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitDir.Rtl),
         DataRow(BitDir.Ltr),
         DataRow(BitDir.Auto),
@@ -156,7 +156,7 @@ public class BitOverlayTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitOverlayShouldRespectDirChangingAfterRender()
     {
         var component = RenderComponent<BitOverlay>();
@@ -171,7 +171,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@"<div dir=""ltr"" class=""bit-ovl"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
         DataRow(BitVisibility.Hidden)
@@ -193,7 +193,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div {styleAttribute} class=""bit-ovl"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitOverlayShouldRespectVisibilityChangingAfterRender()
     {
         var component = RenderComponent<BitOverlay>();
@@ -208,7 +208,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display: none;"" class=""bit-ovl"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow("<span>Bit Blazor UI</span>"),
         DataRow(null)
@@ -226,7 +226,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-ovl"" id:ignore>{childContent}</div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitOverlayShouldRespectHtmlAttributes()
     {
         var component = RenderComponent<BitOverlayHtmlAttributesTest>();
@@ -234,7 +234,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div data-val-test=""bit"" class=""bit-ovl"" id:ignore>I'm an overlay</div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -268,7 +268,7 @@ public class BitOverlayTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -295,7 +295,7 @@ public class BitOverlayTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -311,7 +311,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-ovl{cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitOverlayShouldRespectAbsolutePositionChangingAfterRender()
     {
         var component = RenderComponent<BitOverlay>();
@@ -326,7 +326,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-ovl bit-ovl-abs"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -352,7 +352,7 @@ public class BitOverlayTests : BunitTestContext
         Assert.IsFalse(isOpenBind);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitOverlayShouldRespectIsOpenChangingAfterRender()
     {
         var isOpen = false;
@@ -372,7 +372,7 @@ public class BitOverlayTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]

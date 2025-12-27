@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Labels;
 [TestClass]
 public class BitLabelTests : BunitTestContext
 {
-    [DataTestMethod]
+    [TestMethod]
     public void BitLabelShouldRenderExpectedElement()
     {
         var component = RenderComponent<BitLabel>();
@@ -14,7 +14,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -30,7 +30,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore></label>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitLabelShouldRespectIsEnabledChangingAfterRender()
     {
         var component = RenderComponent<BitLabel>();
@@ -45,7 +45,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@"<label class=""bit-lbl bit-dis"" id:ignore></label>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -61,7 +61,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore></label>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitLabelShouldRespectRequiredChangingAfterRender()
     {
         var component = RenderComponent<BitLabel>();
@@ -76,7 +76,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@"<label class=""bit-lbl bit-lbl-req"" id:ignore></label>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("font-size: 14px; color: red;"),
         DataRow("padding: 1rem;"),
         DataRow(null)
@@ -98,7 +98,7 @@ public class BitLabelTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitLabelShouldRespectStyleChangingAfterRender()
     {
         var component = RenderComponent<BitLabel>();
@@ -113,7 +113,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@"<label style=""padding: 1rem;"" class=""bit-lbl"" id:ignore></label>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-class"),
         DataRow(null)
     ]
@@ -129,7 +129,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore></label>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitLabelShouldRespectClassChangingAfterRender()
     {
         var component = RenderComponent<BitLabel>();
@@ -144,7 +144,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@"<label class=""bit-lbl test-class"" id:ignore></label>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-id"),
         DataRow(null)
     ]
@@ -160,7 +160,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@$"<label id=""{expectedId}"" class=""bit-lbl""></label>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-for"),
         DataRow(null)
     ]
@@ -181,7 +181,7 @@ public class BitLabelTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitDir.Rtl),
         DataRow(BitDir.Ltr),
         DataRow(BitDir.Auto),
@@ -205,7 +205,7 @@ public class BitLabelTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitLabelShouldRespectDirChangingAfterRender()
     {
         var component = RenderComponent<BitLabel>();
@@ -220,7 +220,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@"<label dir=""ltr"" class=""bit-lbl"" id:ignore></label>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
         DataRow(BitVisibility.Hidden)
@@ -246,7 +246,7 @@ public class BitLabelTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitLabelShouldRespectVisibilityChangingAfterRender()
     {
         var component = RenderComponent<BitLabel>();
@@ -261,7 +261,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@"<label style=""display: none;"" class=""bit-lbl"" id:ignore></label>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow("<span>Bit Blazor UI</span>"),
         DataRow(null)
@@ -276,7 +276,7 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@$"<label class=""bit-lbl"" id:ignore>{childContent}</label>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow(null)
     ]
@@ -297,7 +297,7 @@ public class BitLabelTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitLabelShouldRespectHtmlAttributes()
     {
         var component = RenderComponent<BitLabelHtmlAttributesTest>();

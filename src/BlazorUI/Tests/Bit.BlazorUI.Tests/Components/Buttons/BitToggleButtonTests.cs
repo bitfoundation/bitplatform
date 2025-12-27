@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Buttons;
 [TestClass]
 public class BitToggleButtonTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
        DataRow(true, true, "Button label", "Volume0", "title"),
        DataRow(true, false, "Button label", "Volume1", "title"),
        DataRow(false, true, "Button label", "Volume2", "title"),
@@ -43,7 +43,7 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.IsTrue(bitIconTag.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false),
     ]
@@ -63,7 +63,7 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.AreEqual(isEnabled, clicked);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, true),
         DataRow(true, false),
         DataRow(false, true),
@@ -86,7 +86,7 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.AreEqual(isEnabled ? !isChecked : isChecked, isCheckedBindingValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, true),
         DataRow(true, false),
         DataRow(false, true),
@@ -109,7 +109,7 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.AreEqual(isEnabled ? !isChecked : isChecked, isCheckedBindingValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(true, false),
       DataRow(true, true),
       DataRow(false, false),
@@ -134,7 +134,7 @@ public class BitToggleButtonTests : BunitTestContext
         }
     }
 
-    [DataTestMethod, DataRow("Detailed description")]
+    [TestMethod, DataRow("Detailed description")]
     public void BitToggleButtonAriaDescriptionTest(string ariaDescription)
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
@@ -149,7 +149,7 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.AreEqual(bitButton.GetAttribute("aria-describedby"), ariaDescription);
     }
 
-    [DataTestMethod, DataRow("Detailed label")]
+    [TestMethod, DataRow("Detailed label")]
     public void BitToggleButtonAriaLabelTest(string ariaLabel)
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
@@ -164,7 +164,7 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.AreEqual(bitButton.GetAttribute("aria-label"), ariaLabel);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false),
         DataRow(null)
@@ -181,7 +181,7 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.AreEqual(ariaHidden, bitButton.HasAttribute("aria-hidden"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false),
         DataRow(null)

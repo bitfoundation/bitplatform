@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Link;
 [TestClass]
 public class BitLinkTests : BunitTestContext
 {
-    [DataTestMethod]
+    [TestMethod]
     public void BitLinkShouldRenderExpectedElement()
     {
         var component = RenderComponent<BitLink>();
@@ -16,7 +16,7 @@ public class BitLinkTests : BunitTestContext
         component.MarkupMatches(@"<button class=""bit-lnk bit-lnk-pri"" type=""button"" id:ignore></button>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section"),
         DataRow(""),
@@ -51,7 +51,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, "_blank"),
         DataRow(null, null),
         DataRow(null, ""),
@@ -94,7 +94,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section")
@@ -119,7 +119,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section")
@@ -148,7 +148,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, "font-size: 14px; color: red;"),
         DataRow(null, null),
         DataRow("https://bitplatform.dev", "font-size: 14px; color: red;"),
@@ -176,7 +176,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section"),
@@ -205,7 +205,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, "test-class"),
         DataRow(null, null),
         DataRow("https://bitplatform.dev", "test-class"),
@@ -233,7 +233,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section")
@@ -262,7 +262,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, "test-id"),
         DataRow(null, null),
         DataRow("https://bitplatform.dev", "test-id"),
@@ -290,7 +290,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, BitDir.Rtl),
         DataRow(null, BitDir.Ltr),
         DataRow(null, BitDir.Auto),
@@ -325,7 +325,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section")
@@ -354,7 +354,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, BitVisibility.Visible),
         DataRow(null, BitVisibility.Collapsed),
         DataRow(null, BitVisibility.Hidden),
@@ -391,7 +391,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section")
@@ -420,7 +420,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, "Bit Blazor UI"),
         DataRow(null, "<span>Bit Blazor UI</span>"),
         DataRow(null, null),
@@ -449,7 +449,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, "Bit Blazor UI"),
         DataRow(null, null),
         DataRow("https://bitplatform.dev", "Bit Blazor UI"),
@@ -477,7 +477,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, true),
         DataRow(null, false),
         DataRow("https://bitplatform.dev", true),
@@ -505,7 +505,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section")
@@ -580,7 +580,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("https://bitplatform.dev"),
         DataRow("#go-to-section"),
         DataRow(""),
@@ -602,7 +602,7 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, null),
         DataRow(null, BitLinkRels.Bookmark),
         DataRow(null, BitLinkRels.Bookmark | BitLinkRels.Alternate),

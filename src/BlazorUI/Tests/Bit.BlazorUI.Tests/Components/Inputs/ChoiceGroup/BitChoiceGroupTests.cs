@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup;
 [TestClass]
 public class BitChoiceGroupTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
       DataRow(true),
       DataRow(false)
     ]
@@ -33,7 +33,7 @@ public class BitChoiceGroupTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitChoiceGroupShouldGenerateAllItems()
     {
         var choiceGroupItems = GetChoiceGroupItems();
@@ -48,7 +48,7 @@ public class BitChoiceGroupTests : BunitTestContext
         Assert.AreEqual(bitChoiceGroup.Count, choiceGroupItems.Count);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitChoiceGroupShouldTakeCorrectIconName()
     {
         var choiceGroupItems = GetChoiceGroupItems();
@@ -66,7 +66,7 @@ public class BitChoiceGroupTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(true),
       DataRow(false)
     ]
@@ -103,7 +103,7 @@ public class BitChoiceGroupTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitChoiceGroupShouldTakeCorrectImageName()
     {
         var choiceGroupItems = GetChoiceGroupItems();
@@ -130,7 +130,7 @@ public class BitChoiceGroupTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("Detailed label")
     ]
     public void BitChoiceGroupShouldTakeCorrectLabel(string label)
@@ -145,7 +145,7 @@ public class BitChoiceGroupTests : BunitTestContext
         Assert.IsTrue(bitChoiceGroupLabel.InnerHtml.Contains(label));
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("<span>I am a span</span>")
     ]
     public void BitChoiceGroupShouldTakeCorrectLabelContent(string labelContent)
@@ -160,7 +160,7 @@ public class BitChoiceGroupTests : BunitTestContext
         bitChoiceGroupLabelContent.MarkupMatches(labelContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("This is a AriaLabelledBy")
     ]
     public void BitChoiceGroupShouldTakeCorrectAria(string ariaLabelledBy)
@@ -175,7 +175,7 @@ public class BitChoiceGroupTests : BunitTestContext
         Assert.AreEqual(bitChoiceGroup.GetAttribute("aria-labelledby"), ariaLabelledBy);
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("color:red;")
     ]
     public void BitChoiceGroupShouldTakeCustomStyle(string customStyle)
@@ -190,7 +190,7 @@ public class BitChoiceGroupTests : BunitTestContext
         Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains(customStyle));
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("custom-class")
     ]
     public void BitChoiceGroupShouldTakeCustomClass(string customClass)
@@ -205,7 +205,7 @@ public class BitChoiceGroupTests : BunitTestContext
         Assert.IsTrue(bitChoiceGroup.ClassList.Contains(customClass));
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(BitVisibility.Visible),
       DataRow(BitVisibility.Hidden),
       DataRow(BitVisibility.Collapsed),

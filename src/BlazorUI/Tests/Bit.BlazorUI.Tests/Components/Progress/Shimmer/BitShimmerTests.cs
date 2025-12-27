@@ -26,7 +26,7 @@ public class BitShimmerTests : BunitTestContext
         Assert.IsTrue(compCircle.Find(".bit-smr").ClassList.Contains("bit-smr-crl"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("5rem", null)]
     [DataRow(null, "10rem")]
     [DataRow("3rem", "8rem")]
@@ -52,7 +52,7 @@ public class BitShimmerTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitColor.Primary, "bit-smr-pri")]
     [DataRow(BitColor.Secondary, "bit-smr-sec")]
     [DataRow(null, "bit-smr-tbg")]

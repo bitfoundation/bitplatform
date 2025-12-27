@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.ColorPicker;
 [TestClass]
 public class BitColorTests
 {
-    [DataTestMethod, DataRow("#5D0914")]
+    [TestMethod, DataRow("#5D0914")]
     public void BitColorHexToRgbTest(string color)
     {
         var bitColor = new BitInternalColor(color);
@@ -17,7 +17,7 @@ public class BitColorTests
         Assert.AreEqual(1, bitColor.A);
     }
 
-    [DataTestMethod, DataRow("#5D0914", 0.6)]
+    [TestMethod, DataRow("#5D0914", 0.6)]
     public void BitColorHexToRgbaTest(string color, double alpha)
     {
         var bitColor = new BitInternalColor(color, alpha);
@@ -28,7 +28,7 @@ public class BitColorTests
         Assert.AreEqual(bitColor.A, alpha);
     }
 
-    [DataTestMethod, DataRow("rgb(93,9,20)")]
+    [TestMethod, DataRow("rgb(93,9,20)")]
     public void BitColorRgbToHexTest(string color)
     {
         var bitColor = new BitInternalColor(color);
@@ -37,7 +37,7 @@ public class BitColorTests
         Assert.AreEqual(1, bitColor.A);
     }
 
-    [DataTestMethod, DataRow("rgb(93,9,20)", 0.6)]
+    [TestMethod, DataRow("rgb(93,9,20)", 0.6)]
     public void BitColorRgbaToHexTest(string color, double alpha)
     {
         var bitColor = new BitInternalColor(color, alpha);
@@ -46,7 +46,7 @@ public class BitColorTests
         Assert.AreEqual(alpha, bitColor.A);
     }
 
-    [DataTestMethod, DataRow((byte)93, (byte)9, (byte)20, 0.6)]
+    [TestMethod, DataRow((byte)93, (byte)9, (byte)20, 0.6)]
     public void BitColorSetRgbaTest(byte red, byte green, byte blue, double alpha)
     {
         var bitColor = new BitInternalColor(red, green, blue, alpha);
@@ -55,7 +55,7 @@ public class BitColorTests
         Assert.AreEqual(alpha, bitColor.A);
     }
 
-    [DataTestMethod, DataRow("#5d0914")]
+    [TestMethod, DataRow("#5d0914")]
     public void BitColorHexToHsvTest(string color)
     {
         var bitColor = new BitInternalColor(color);
@@ -66,7 +66,7 @@ public class BitColorTests
         Assert.AreEqual(1, bitColor.A);
     }
 
-    [DataTestMethod, DataRow(352.143, 0.903, 0.365, 0.9)]
+    [TestMethod, DataRow(352.143, 0.903, 0.365, 0.9)]
     public void BitColorHsvToHexTest(double hue, double saturation, double value, double alpha)
     {
         var bitColor = new BitInternalColor(hue, saturation, value, alpha);

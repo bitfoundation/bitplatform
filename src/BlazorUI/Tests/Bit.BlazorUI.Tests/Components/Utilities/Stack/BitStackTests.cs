@@ -23,7 +23,7 @@ public class BitStackTests : BunitTestContext
         { BitAlignment.Stretch, "stretch" },
     };
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRenderExpectedElement()
     {
         var component = RenderComponent<BitStack>();
@@ -31,7 +31,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -47,7 +47,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stc{cssClass}"" style=""{STYLE}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectIsEnabledChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -62,7 +62,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stc bit-dis"" style=""{STYLE}"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("font-size: 14px; color: red;"),
         DataRow("padding: 1rem;"),
         DataRow(null)
@@ -77,7 +77,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectStyleChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -93,7 +93,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-class"),
         DataRow(null)
     ]
@@ -109,7 +109,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stc{cssClass}"" style=""{STYLE}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectClassChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -126,7 +126,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stc {cssClass}"" style=""{STYLE}"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-id"),
         DataRow(null)
     ]
@@ -142,7 +142,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div id=""{expectedId}"" class=""bit-stc"" style=""{STYLE}""></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitDir.Rtl),
         DataRow(BitDir.Ltr),
         DataRow(BitDir.Auto),
@@ -166,7 +166,7 @@ public class BitStackTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectDirChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -181,7 +181,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div dir=""ltr"" class=""bit-stc"" style=""{STYLE}"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
         DataRow(BitVisibility.Hidden)
@@ -203,7 +203,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectVisibilityChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -218,7 +218,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}display: none;"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow("<span>Bit Blazor UI</span>"),
         DataRow(null)
@@ -236,7 +236,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore>{childContent}</div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectHtmlAttributes()
     {
         var component = RenderComponent<BitStackHtmlAttributesTest>();
@@ -244,7 +244,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div data-val-test=""bit"" style=""{STYLE}"" class=""bit-stc"" id:ignore>I'm a stack</div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("p"),
         DataRow("span"),
         DataRow(null)
@@ -260,7 +260,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<{el} class=""bit-stc"" style=""{STYLE}"" id:ignore></{el}>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, true),
         DataRow(false, true),
         DataRow(true, false),
@@ -280,7 +280,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stc{cssClass}"" style=""display:flex;flex-direction:{fd};gap:1rem"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)]
     public void BitStackShouldRespectFillContentChangingAfterRender(bool horizontal)
@@ -301,7 +301,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stc {cssClass}"" style=""display:flex;flex-direction:{fd};gap:1rem"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("10px"),
         DataRow("1rem"),
         DataRow(null)
@@ -318,7 +318,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectGapChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -334,7 +334,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:{gap};"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("3"),
         DataRow("initial"),
         DataRow("inherit"),
@@ -352,7 +352,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectGrowChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -368,7 +368,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}flex-grow:{grow};"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -384,7 +384,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectGrowsChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -399,7 +399,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}flex-grow:1;"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -415,7 +415,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectHorizontalChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -430,7 +430,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:row;gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(BitAlignment.Start),
         DataRow(BitAlignment.End),
@@ -461,7 +461,7 @@ public class BitStackTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectAlignmentChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -476,7 +476,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;align-items:space-between;justify-content:space-between"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitAlignment.Start),
         DataRow(BitAlignment.End),
         DataRow(BitAlignment.Center),
@@ -498,7 +498,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;align-items:{ai}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectHorizontalAlignChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -513,7 +513,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;align-items:space-between"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -529,7 +529,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectReversedChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -544,7 +544,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column-reverse;gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitAlignment.Start),
         DataRow(BitAlignment.End),
         DataRow(BitAlignment.Center),
@@ -566,7 +566,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;justify-content:{jc}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectVerticalAlignChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -581,7 +581,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;justify-content:space-between;"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -597,7 +597,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectWrapChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -612,7 +612,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}flex-wrap:wrap"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, null),
         DataRow(true, "2"),
         DataRow(false, null),
@@ -631,7 +631,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, true),
         DataRow(true, false),
         DataRow(false, true),
@@ -650,7 +650,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -678,7 +678,7 @@ public class BitStackTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -694,7 +694,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectAutoSizeChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -709,7 +709,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}width:auto;height:auto;"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -725,7 +725,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectAutoWidthChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -740,7 +740,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}width:auto;"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -756,7 +756,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectAutoHeightChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -771,7 +771,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}height:auto;"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, true, true),
         DataRow(true, true, false),
         DataRow(true, false, true),
@@ -805,7 +805,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -821,7 +821,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectFitHeightChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -836,7 +836,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}height:fit-content;"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -852,7 +852,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectFitWidthChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
@@ -867,7 +867,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}width:fit-content;"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -883,7 +883,7 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStackShouldRespectFitSizeChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();

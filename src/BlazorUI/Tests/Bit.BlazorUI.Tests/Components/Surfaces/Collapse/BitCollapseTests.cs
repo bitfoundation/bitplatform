@@ -19,7 +19,7 @@ public class BitCollapseTests : BunitTestContext
         Assert.IsTrue(collapse.ToMarkup().Contains("Hello Collapse"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public void BitCollapseExpandedStateShouldApplyCorrectClasses(bool expanded)

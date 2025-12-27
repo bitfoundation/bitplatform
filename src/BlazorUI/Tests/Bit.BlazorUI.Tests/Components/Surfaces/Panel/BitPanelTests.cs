@@ -9,7 +9,7 @@ public class BitPanelTests : BunitTestContext
 {
     private bool isPanelOpen = true;
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -39,7 +39,7 @@ public class BitPanelTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -55,7 +55,7 @@ public class BitPanelTests : BunitTestContext
         Assert.AreEqual(modeless ? 0 : 1, elementOverlay.Count);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -122,7 +122,7 @@ public class BitPanelTests : BunitTestContext
         Assert.AreEqual(1, currentCount);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitPanelPosition.End),
         DataRow(BitPanelPosition.Start),
         DataRow(BitPanelPosition.Top),

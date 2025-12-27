@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.OtpInput;
 [TestClass]
 public class BitOtpInputTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -29,7 +29,7 @@ public class BitOtpInputTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(4),
         DataRow(6)
     ]
@@ -45,7 +45,7 @@ public class BitOtpInputTests : BunitTestContext
         Assert.AreEqual(length, bitOtpInput.Children.Length);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -68,7 +68,7 @@ public class BitOtpInputTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -91,7 +91,7 @@ public class BitOtpInputTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitInputType.Text),
         DataRow(BitInputType.Number),
         DataRow(BitInputType.Password)

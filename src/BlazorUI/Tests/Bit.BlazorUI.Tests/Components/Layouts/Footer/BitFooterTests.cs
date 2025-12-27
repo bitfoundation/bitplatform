@@ -18,7 +18,7 @@ public class BitFooterTests : BunitTestContext
 </footer>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("<div>Footer Content</div>")]
     [DataRow("I'm a Footer")]
     public void BitFooterShouldRespectChildContent(string childContent)
@@ -36,7 +36,7 @@ public class BitFooterTests : BunitTestContext
 </footer>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(40)]
     [DataRow(100)]
     public void BitFooterShouldRespectHeight(int height)
@@ -66,7 +66,7 @@ public class BitFooterTests : BunitTestContext
         Assert.IsTrue(footer.ClassList.Contains("bit-ftr-fix"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("margin: 10px;")]
     [DataRow(null)]
     public void BitFooterShouldRespectStyle(string style)
@@ -94,7 +94,7 @@ public class BitFooterTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("footer-class")]
     [DataRow(null)]
     public void BitFooterShouldRespectClass(string @class)
@@ -113,7 +113,7 @@ public class BitFooterTests : BunitTestContext
 </footer>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("footer-id")]
     [DataRow(null)]
     public void BitFooterShouldRespectId(string id)
@@ -132,7 +132,7 @@ public class BitFooterTests : BunitTestContext
 </footer>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitDir.Rtl)]
     [DataRow(BitDir.Ltr)]
     [DataRow(BitDir.Auto)]

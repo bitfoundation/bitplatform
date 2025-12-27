@@ -13,7 +13,7 @@ public class BitDropdownTests : BunitTestContext
     private string? _bitDropdownValue;
     private IEnumerable<string?>? _bitDropdownValues;
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(true),
       DataRow(false)
     ]
@@ -38,7 +38,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(true),
       DataRow(false)
     ]
@@ -68,7 +68,7 @@ public class BitDropdownTests : BunitTestContext
         //}
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(null),
       DataRow("BitDrop")
     ]
@@ -92,7 +92,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(null),
       DataRow("<div>This is labelFragment</div>"),
     ]
@@ -121,7 +121,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(true),
       DataRow(false)
     ]
@@ -141,7 +141,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(isEnabled, clicked);
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(true),
       DataRow(false)
     ]
@@ -170,7 +170,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(true),
       DataRow(false)
     ]
@@ -200,7 +200,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("f-ban"),
       DataRow("f-app")
     ]
@@ -221,7 +221,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("f-ban"),
       DataRow("f-app,f-ban")
     ]
@@ -255,7 +255,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("f-ban", "f-app"),
       DataRow("f-app", null)
     ]
@@ -277,7 +277,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow("f-ban", "f-app,f-ban"),
       DataRow("f-app,f-ban", "f-ban")
     ]
@@ -311,7 +311,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(expectedText.ToString(), textSpan.InnerHtml);
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(null, "f-app,f-ban", true, "Select options"),
       DataRow(null, null, true, "Select options"),
       DataRow("f-ban", null, false, "Select option"),
@@ -370,7 +370,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(expectedText.ToString(), targetSpan.InnerHtml);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Drop down"),
         DataRow(null)
     ]
@@ -393,7 +393,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("<div>This is labelFragment</div>")
     ]
     public void BitDropdownLabelFragmentTest(string labelFragment)
@@ -409,7 +409,7 @@ public class BitDropdownTests : BunitTestContext
         drpLabelChild.MarkupMatches(labelFragment);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Drop Down"),
         DataRow(null)
     ]
@@ -427,7 +427,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(title, drpWrapper.GetAttribute("title"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, "f-app"),
         DataRow(false, "f-app"),
     ]
@@ -455,7 +455,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(notifyOnReselect, itemSelected);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, true),
         DataRow(false, true),
 
@@ -500,7 +500,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("f-ban"),
         DataRow("f-ora"),
         DataRow("v-bro")
@@ -530,7 +530,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(expectedValue, _bitDropdownValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("f-ban,v-bro"),
         DataRow("f-ora")
     ]
@@ -569,7 +569,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(expectedResult, _bitDropdownValues.Count());
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("f-ora")
     ]
@@ -612,7 +612,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("f-ban,v-bro"),
         DataRow("f-ora")
@@ -661,7 +661,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("f-ora")
     ]
@@ -706,7 +706,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("f-ban,v-bro"),
         DataRow("f-ora")
@@ -759,7 +759,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("f-ora")
     ]
@@ -800,7 +800,7 @@ public class BitDropdownTests : BunitTestContext
         Assert.IsFalse(bitDropdown.ClassList.Contains("bit-inv"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, null),
         DataRow(true, "Search items"),
         DataRow(false, null),
@@ -838,7 +838,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, false),
         DataRow("app", false),
         DataRow(null, true),
@@ -877,7 +877,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false, null, null, false),
         DataRow(false, 3_000_000, null, false),
         DataRow(false, null, 4, false),
@@ -964,7 +964,7 @@ public class BitDropdownTests : BunitTestContext
         AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", null);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("WindowsLogo"),
         DataRow("ChevronUp"),
         DataRow(null)
@@ -990,7 +990,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("<i>This is CaretDownTemplate</div>"),
         DataRow(null)
     ]
@@ -1016,7 +1016,7 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitDir.Rtl),
         DataRow(BitDir.Ltr)
     ]

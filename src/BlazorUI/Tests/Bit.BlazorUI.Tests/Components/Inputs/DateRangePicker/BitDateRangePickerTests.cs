@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.DateRangePicker;
 [TestClass]
 public class BitDateRangePickerTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false),
     ]
@@ -31,7 +31,7 @@ public class BitDateRangePickerTests : BunitTestContext
         }
     }
 
-    [DataTestMethod, DataRow("<div>This is labelFragment</div>")]
+    [TestMethod, DataRow("<div>This is labelFragment</div>")]
     public void BitDateRangePickerShouldRenderLabelFragment(string labelTemplate)
     {
         var component = RenderComponent<BitDateRangePicker>(parameters =>
@@ -43,7 +43,7 @@ public class BitDateRangePickerTests : BunitTestContext
         bitDateRangePickerLabelChild.MarkupMatches(labelTemplate);
     }
 
-    [DataTestMethod, DataRow("go to today text")]
+    [TestMethod, DataRow("go to today text")]
     public void BitDateRangePickerShouldGiveValueToGoToToday(string goToToday)
     {
         var component = RenderComponent<BitDateRangePicker>(parameters =>
@@ -57,7 +57,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual(goToToday, goToTodayButton.GetAttribute("title"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(true, 1),
       DataRow(false, 0)
     ]
@@ -77,7 +77,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual(count, clickedValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(true),
       DataRow(false)
     ]
@@ -101,7 +101,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual(isEnabled ? 1 : 0, changeValue);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitDateRangePickerCalendarSelectTodayDate()
     {
         var isOpen = true;
@@ -133,7 +133,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual(component.Instance.Value.EndDate.Value.Offset, DateTimeOffset.Now.Offset);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("DateRangePicker")
     ]
     public void BitDateRangePickerAriaLabelTest(string pickerAriaLabel)
@@ -150,7 +150,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual(pickerAriaLabel, calloutAriaLabel);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -174,7 +174,7 @@ public class BitDateRangePickerTests : BunitTestContext
         }
     }
 
-    //[DataTestMethod,
+    //[TestMethod,
     //    DataRow(false),
     //    DataRow(true)
     //]
@@ -198,7 +198,7 @@ public class BitDateRangePickerTests : BunitTestContext
     //    }
     //}
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -222,7 +222,7 @@ public class BitDateRangePickerTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -247,7 +247,7 @@ public class BitDateRangePickerTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitDateRangePickerCalloutHtmlAttributesTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

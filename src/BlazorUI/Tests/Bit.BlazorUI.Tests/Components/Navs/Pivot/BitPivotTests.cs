@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Navs.Pivot;
 [TestClass]
 public class BitPivotTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
          DataRow(BitPivotHeaderType.Link, BitSize.Large, BitPivotOverflowBehavior.None),
          DataRow(BitPivotHeaderType.Tab, BitSize.Medium, BitPivotOverflowBehavior.Scroll),
          DataRow(BitPivotHeaderType.Tab, BitSize.Small, BitPivotOverflowBehavior.Menu)
@@ -32,7 +32,7 @@ public class BitPivotTests : BunitTestContext
     }
 
     [Ignore("bypassed - BUnit 2-way bound parameters issue")]
-    [DataTestMethod,
+    [TestMethod,
          DataRow(false, false),
          DataRow(true, true)
      ]
@@ -51,7 +51,7 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual(component.FindAll(".bit-pvt > div:first-child > div")[1].ClassList.Contains("bit-pvti-sel"), expectedResult);
     }
 
-    [DataTestMethod, DataRow("Detailed label")]
+    [TestMethod, DataRow("Detailed label")]
     public void BitPivotAriaLabelTest(string ariaLabel)
     {
         var com = RenderComponent<BitPivot>(parameters =>
@@ -68,7 +68,7 @@ public class BitPivotTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(BitPivotPosition.Top),
          DataRow(BitPivotPosition.Bottom),
          DataRow(BitPivotPosition.Start),

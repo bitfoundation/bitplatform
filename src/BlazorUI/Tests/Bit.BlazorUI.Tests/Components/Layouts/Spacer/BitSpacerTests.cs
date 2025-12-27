@@ -28,7 +28,7 @@ public class BitSpacerTests : BunitTestContext
         Assert.IsTrue(style.Contains("flex-grow:1"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0)]
     [DataRow(10)]
     [DataRow(64)]

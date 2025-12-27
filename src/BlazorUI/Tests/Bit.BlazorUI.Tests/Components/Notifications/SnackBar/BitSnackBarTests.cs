@@ -10,16 +10,15 @@ namespace Bit.BlazorUI.Tests.Components.Notifications.SnackBar;
 [TestClass]
 public class BitSnackBarTests : BunitTestContext
 {
-    [DataTestMethod,
-     DataRow(BitSnackBarPosition.TopStart),
-     DataRow(BitSnackBarPosition.TopCenter),
-     DataRow(BitSnackBarPosition.TopEnd),
-     DataRow(BitSnackBarPosition.BottomStart),
-     DataRow(BitSnackBarPosition.BottomCenter),
-     DataRow(BitSnackBarPosition.BottomEnd),
-     DataRow(null)
+    [TestMethod,
+         DataRow(BitSnackBarPosition.TopStart),
+         DataRow(BitSnackBarPosition.TopCenter),
+         DataRow(BitSnackBarPosition.TopEnd),
+         DataRow(BitSnackBarPosition.BottomStart),
+         DataRow(BitSnackBarPosition.BottomCenter),
+         DataRow(BitSnackBarPosition.BottomEnd),
+         DataRow(null)
     ]
-    [TestMethod]
     public void BitSnackBarPositionTest(BitSnackBarPosition? position)
     {
         var com = RenderComponent<BitSnackBar>(parameters =>
@@ -43,11 +42,10 @@ public class BitSnackBarTests : BunitTestContext
         Assert.IsTrue(element.ClassList.Contains(positionClass));
     }
 
-    [DataTestMethod,
-     DataRow("title", "body"),
-     DataRow("title", "")
+    [TestMethod,
+         DataRow("title", "body"),
+         DataRow("title", "")
     ]
-    [TestMethod]
     public async Task BitSnackBarShowTest(string title, string body)
     {
         var com = RenderComponent<BitSnackBar>();
@@ -67,11 +65,10 @@ public class BitSnackBarTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
-     DataRow(true),
-     DataRow(false)
+    [TestMethod,
+         DataRow(true),
+         DataRow(false)
     ]
-    [TestMethod]
     public async Task BitSnackBarAutoDismissTest(bool autoDismiss)
     {
         var com = RenderComponent<BitSnackBar>(
@@ -91,15 +88,14 @@ public class BitSnackBarTests : BunitTestContext
         Assert.AreEqual(autoDismiss ? 0 : 1, items.Count);
     }
 
-    [DataTestMethod,
-     DataRow("title", BitColor.Info),
-     DataRow("title", BitColor.Warning),
-     DataRow("title", BitColor.Success),
-     DataRow("title", BitColor.Error),
-     DataRow("title", BitColor.SevereWarning),
-     DataRow("title", null)
+    [TestMethod,
+         DataRow("title", BitColor.Info),
+         DataRow("title", BitColor.Warning),
+         DataRow("title", BitColor.Success),
+         DataRow("title", BitColor.Error),
+         DataRow("title", BitColor.SevereWarning),
+         DataRow("title", null)
     ]
-    [TestMethod]
     public async Task BitColorTest(string title, BitColor? color)
     {
         var com = RenderComponent<BitSnackBar>();
@@ -135,10 +131,9 @@ public class BitSnackBarTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
-     DataRow("title")
+    [TestMethod,
+        DataRow("title")
     ]
-    [TestMethod]
     public async Task BitSnackBarCloseButtonTest(string title)
     {
         var com = RenderComponent<BitSnackBar>();
@@ -156,11 +151,10 @@ public class BitSnackBarTests : BunitTestContext
         Assert.AreEqual(0, itemsAfterClose.Count);
     }
 
-    [DataTestMethod,
-     DataRow("title", "Go"),
-     DataRow("title", "Cancel")
+    [TestMethod,
+         DataRow("title", "Go"),
+         DataRow("title", "Cancel")
     ]
-    [TestMethod]
     public async Task BitSnackBarDismissIconNameTest(string title, string iconName)
     {
         var com = RenderComponent<BitSnackBar>(
@@ -177,10 +171,9 @@ public class BitSnackBarTests : BunitTestContext
         Assert.IsTrue(closeButtonIcon.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
-    [DataTestMethod,
-     DataRow("title")
+    [TestMethod,
+        DataRow("title")
     ]
-    [TestMethod]
     public async Task BitSnackBarTitleTemplateTest(string title)
     {
         RenderFragment<string> titleTemplate = (text) => (builder) =>
@@ -201,10 +194,9 @@ public class BitSnackBarTests : BunitTestContext
         titleTemplateElement.InnerHtml.MarkupMatches(expectedHtml);
     }
 
-    [DataTestMethod,
-     DataRow("title", "body")
+    [TestMethod,
+        DataRow("title", "body")
     ]
-    [TestMethod]
     public async Task BitSnackBarBodyTemplateTest(string title, string body)
     {
         RenderFragment<string> bodyTemplate = (text) => (builder) =>

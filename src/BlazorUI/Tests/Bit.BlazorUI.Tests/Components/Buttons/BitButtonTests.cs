@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Components.Buttons;
 [TestClass]
 public class BitButtonTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, BitVariant.Fill, "title"),
         DataRow(true, BitVariant.Outline, "title"),
         DataRow(false, BitVariant.Fill, "title"),
@@ -55,7 +55,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual(isEnabled, clicked);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, BitVariant.Fill, false, false),
         DataRow(true, BitVariant.Outline, true, false),
         DataRow(false, BitVariant.Fill, false, true),
@@ -82,7 +82,7 @@ public class BitButtonTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(true, BitVariant.Fill, "https://github.com/bitfoundation", "bit", "_blank"),
          DataRow(true, BitVariant.Outline, "https://github.com/bitfoundation", "bit", "_blank"),
          DataRow(false, BitVariant.Fill, "https://github.com/bitfoundation", "bit", "_blank"),
@@ -115,7 +115,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual(bitButton.GetAttribute("title"), title);
     }
 
-    [DataTestMethod, DataRow("Detailed description")]
+    [TestMethod, DataRow("Detailed description")]
     public void BitButtonAriaDescriptionTest(string ariaDescription)
     {
         var com = RenderComponent<BitButton>(parameters =>
@@ -128,7 +128,7 @@ public class BitButtonTests : BunitTestContext
         Assert.IsTrue(bitButton.HasAttribute("aria-describedby"));
     }
 
-    [DataTestMethod, DataRow("Detailed label")]
+    [TestMethod, DataRow("Detailed label")]
     public void BitButtonAriaLabelTest(string ariaLabel)
     {
         var com = RenderComponent<BitButton>(parameters =>
@@ -141,7 +141,7 @@ public class BitButtonTests : BunitTestContext
         Assert.IsTrue(bitButton.HasAttribute("aria-label"));
     }
 
-    [DataTestMethod, DataRow(true, true), DataRow(false, false), DataRow(null, false)]
+    [TestMethod, DataRow(true, true), DataRow(false, false), DataRow(null, false)]
     public void BitButtonAriaHiddenTest(bool ariaHidden, bool expectedResult)
     {
         var com = RenderComponent<BitButton>(parameters =>
@@ -154,7 +154,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual(expectedResult, bitButton.HasAttribute("aria-hidden"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitButtonType.Button),
         DataRow(BitButtonType.Submit),
         DataRow(BitButtonType.Reset)
@@ -206,7 +206,7 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("button", bitButton.GetAttribute("type"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(BitColor.Info),
          DataRow(BitColor.Success),
          DataRow(BitColor.Warning),
@@ -214,7 +214,6 @@ public class BitButtonTests : BunitTestContext
          DataRow(BitColor.Error),
          DataRow(null),
     ]
-    [TestMethod]
     public void BitColorOfButtonTest(BitColor? color)
     {
         var com = RenderComponent<BitButton>(parameters =>
@@ -247,13 +246,12 @@ public class BitButtonTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow(BitSize.Small),
          DataRow(BitSize.Medium),
          DataRow(BitSize.Large),
          DataRow(null)
     ]
-    [TestMethod]
     public void BitSizeOfButtonTest(BitSize? size)
     {
         var com = RenderComponent<BitButton>(parameters =>
@@ -284,7 +282,7 @@ public class BitButtonTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false),
     ]
@@ -310,7 +308,7 @@ public class BitButtonTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitLabelPosition.Top),
         DataRow(BitLabelPosition.Top),
         DataRow(BitLabelPosition.Top),

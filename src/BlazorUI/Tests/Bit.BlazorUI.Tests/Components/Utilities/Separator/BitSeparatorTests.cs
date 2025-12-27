@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Separator;
 [TestClass]
 public class BitSeparatorTests : BunitTestContext
 {
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRenderExpectedElement()
     {
         var component = RenderComponent<BitSeparator>();
@@ -14,7 +14,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -30,7 +30,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-spr bit-spr-hrz bit-spr-ctr{cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRespectIsEnabledChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>();
@@ -45,7 +45,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-hrz bit-spr-ctr bit-dis"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("font-size: 14px; color: red;"),
         DataRow("padding: 1rem;"),
         DataRow(null)
@@ -67,7 +67,7 @@ public class BitSeparatorTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRespectStyleChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>();
@@ -83,7 +83,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{style}"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-class"),
         DataRow(null)
     ]
@@ -99,7 +99,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-spr bit-spr-hrz bit-spr-ctr{cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRespectClassChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>();
@@ -116,7 +116,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-spr bit-spr-hrz bit-spr-ctr {cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-id"),
         DataRow(null)
     ]
@@ -132,7 +132,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@$"<div id=""{expectedId}"" class=""bit-spr bit-spr-hrz bit-spr-ctr""></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitDir.Rtl),
         DataRow(BitDir.Ltr),
         DataRow(BitDir.Auto),
@@ -156,7 +156,7 @@ public class BitSeparatorTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRespectDirChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>();
@@ -171,7 +171,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@"<div dir=""ltr"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
         DataRow(BitVisibility.Hidden)
@@ -197,7 +197,7 @@ public class BitSeparatorTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRespectVisibilityChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>();
@@ -212,7 +212,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@"<div style=""display: none;"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow(null)
     ]
@@ -233,7 +233,7 @@ public class BitSeparatorTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow("<span>Bit Blazor UI</span>"),
         DataRow(null)
@@ -262,7 +262,7 @@ public class BitSeparatorTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRespectHtmlAttributes()
     {
         var component = RenderComponent<BitSeparatorHtmlAttributesTest>();
@@ -274,7 +274,7 @@ public class BitSeparatorTests : BunitTestContext
                                   </div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitSeparatorAlignContent.Start),
         DataRow(BitSeparatorAlignContent.Center),
         DataRow(BitSeparatorAlignContent.End)
@@ -296,7 +296,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-spr bit-spr-hrz {cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -318,7 +318,7 @@ public class BitSeparatorTests : BunitTestContext
                                     </div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRespectVerticalChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>(parameters =>
@@ -344,7 +344,7 @@ public class BitSeparatorTests : BunitTestContext
                                     </div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -365,7 +365,7 @@ public class BitSeparatorTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRespectAutoSizeChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>();
@@ -380,7 +380,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@"<div style=""width:auto"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(BitColorKind.Primary),
         DataRow(BitColorKind.Secondary),
@@ -406,7 +406,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""{cssClass} bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRespectBackgroundChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>();
@@ -421,7 +421,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-sbg bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(BitColorKind.Primary),
         DataRow(BitColorKind.Secondary),
@@ -447,7 +447,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""{cssClass} bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRespectBorderChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>();
@@ -462,7 +462,7 @@ public class BitSeparatorTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-spr bit-spr-sbr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -484,7 +484,7 @@ public class BitSeparatorTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitSeparatorShouldRespectAutoSizeChangingAfterRenderInVertical()
     {
         var component = RenderComponent<BitSeparator>(parameters =>

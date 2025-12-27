@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.Rating;
 [TestClass]
 public class BitRatingTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -60,7 +60,7 @@ public class BitRatingTests : BunitTestContext
 
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(5),
         DataRow(8)
     ]
@@ -76,7 +76,7 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual(max, button.Count);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Select {0} of {1} stars")]
     public void BitRatingShouldTakeCorrectAriaLabelFormat(string ariaLabelFormat)
     {
@@ -88,7 +88,7 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual(string.Format(ariaLabelFormat, 1, 5), span.TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(BitSize.Small),
         DataRow(BitSize.Large)
@@ -107,7 +107,7 @@ public class BitRatingTests : BunitTestContext
     }
 
     [Ignore("bypassed - BUnit 2-way bound parameters issue")]
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -150,7 +150,7 @@ public class BitRatingTests : BunitTestContext
     }
 
     [Ignore("bypassed - BUnit 2-way bound parameters issue")]
-    [DataTestMethod,
+    [TestMethod,
         DataRow(10, 3, true, false, 3),
         DataRow(10, 2, false, false, 1),
         DataRow(10, 0, true, true, 1),
@@ -187,7 +187,7 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual((!isEnabled || readOnly) ? max - 1 : max - clickedIndex, unselectedBitRatingIconCount);
     }
 
-    [DataTestMethod, DataRow("Detailed label")]
+    [TestMethod, DataRow("Detailed label")]
     public void BitRatingAriaLabelTest(string ariaLabel)
     {
         var com = RenderComponent<BitRating>(parameters =>
@@ -203,7 +203,7 @@ public class BitRatingTests : BunitTestContext
 
 
     [Ignore("bypassed - BUnit 2-way bound parameters issue")]
-    [DataTestMethod,
+    [TestMethod,
           DataRow(5, 2, "HeartFill", "Heart"),
           DataRow(5, 3, "HeartFill", "Heart"),
           DataRow(5, 1.25, "HeartFill", "Heart"),
@@ -228,7 +228,7 @@ public class BitRatingTests : BunitTestContext
     }
 
     [Ignore("bypassed - BUnit 2-way bound parameters issue")]
-    [DataTestMethod,
+    [TestMethod,
          DataRow(5, 0, 2, "HeartFill", "Heart"),
          DataRow(5, 0, 3, "HeartFill", "Heart"),
          DataRow(5, 0, 1.25, "HeartFill", "Heart"),

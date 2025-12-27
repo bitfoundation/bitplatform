@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Tests.Components.Navs.Nav;
 [TestClass]
 public class BitNavTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
       DataRow(false, true),
       DataRow(false, false),
       DataRow(true, true),
@@ -41,7 +41,7 @@ public class BitNavTests : BunitTestContext
         }
     }
 
-    [DataTestMethod, DataRow("Detailed label")]
+    [TestMethod, DataRow("Detailed label")]
     public void BitNavAriaLabelTest(string ariaLabel)
     {
         var component = RenderComponent<BitNavTest>(parameters =>
@@ -54,7 +54,7 @@ public class BitNavTests : BunitTestContext
         Assert.IsTrue(bitNav?.GetAttribute("aria-label")?.Equals(ariaLabel));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("collapseAriaLabel", "expandAriaLabel", false),
         DataRow("collapseAriaLabel", "expandAriaLabel", true)
     ]
@@ -87,7 +87,7 @@ public class BitNavTests : BunitTestContext
         Assert.AreEqual(expectedResult, button.GetAttribute("aria-label"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitNavRenderType.Grouped),
         DataRow(BitNavRenderType.Normal)
     ]
@@ -110,7 +110,7 @@ public class BitNavTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
      DataRow(0),
      DataRow(1),
      DataRow(2),
@@ -133,7 +133,7 @@ public class BitNavTests : BunitTestContext
         //Assert.AreEqual(expectedResult, selectedItemTxt.TextContent);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitNavOnLinkExpandClickTest()
     {
         var items = new List<BitNavItem>()
@@ -153,7 +153,7 @@ public class BitNavTests : BunitTestContext
         //Assert.AreEqual(items[0].Key, componenet.Instance.OnLinkExpandClickValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -184,7 +184,7 @@ public class BitNavTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null, "name"),
         DataRow("", "name"),
         DataRow("title", "name")

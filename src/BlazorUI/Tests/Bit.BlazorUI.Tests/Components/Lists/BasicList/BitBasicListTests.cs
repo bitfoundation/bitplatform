@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Components.Lists.BasicList;
 [TestClass]
 public class BitBasicListTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, 3_000_000, null),
         DataRow(true, 3_000_000, 5),
         DataRow(true, null, 5),
@@ -77,7 +77,7 @@ public class BitBasicListTests : BunitTestContext
         AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", null);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(100, "AssignedRole"),
         DataRow(100, null)
     ]
@@ -99,7 +99,7 @@ public class BitBasicListTests : BunitTestContext
         Assert.AreEqual(role.HasValue() ? role : "list", listRole);
     }
 
-    [DataTestMethod, DataRow(100)]
+    [TestMethod, DataRow(100)]
     public void BitBasicListShouldHaveCorrectClass(int itemCount)
     {
         var component = RenderComponent<BitBasicListTest>(parameters =>

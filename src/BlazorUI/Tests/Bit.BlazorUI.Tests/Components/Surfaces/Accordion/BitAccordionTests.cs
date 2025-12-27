@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Surfaces.Accordion;
 [TestClass]
 public class BitAccordionTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false),
     ]
@@ -29,7 +29,7 @@ public class BitAccordionTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitAccordionShouldBeSetTitleAndDescriptionAndText()
     {
         var title = "title-value";
@@ -52,7 +52,7 @@ public class BitAccordionTests : BunitTestContext
         Assert.AreEqual(bitAccordionText.TextContent, text);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitAccordionShouldBeExpandWhenClicked()
     {
         var com = RenderComponent<BitAccordion>();
@@ -69,7 +69,7 @@ public class BitAccordionTests : BunitTestContext
     }
 
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -87,7 +87,7 @@ public class BitAccordionTests : BunitTestContext
         Assert.AreEqual(defaultIsExpanded, content?.ClassName?.Contains("bit-acd-cex"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -109,7 +109,7 @@ public class BitAccordionTests : BunitTestContext
         Assert.AreEqual(isClick, isChanged);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -130,7 +130,7 @@ public class BitAccordionTests : BunitTestContext
         Assert.AreEqual(!defaultIsExpanded, header.InnerHtml.Equals(collapsedHeaderHtml));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitAccordionShouldBeSetContentTemplate()
     {
         var contentHtml = "<h1>ContentTemplate</h1>";

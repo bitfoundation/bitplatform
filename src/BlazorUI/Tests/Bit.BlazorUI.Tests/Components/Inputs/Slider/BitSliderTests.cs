@@ -13,7 +13,7 @@ public class BitSliderTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -28,7 +28,7 @@ public class BitSliderTests : BunitTestContext
         Assert.IsTrue(bitSlider.ClassList.Contains(isVertical ? "bit-sld-vrt" : "bit-sld-hrz"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -44,7 +44,7 @@ public class BitSliderTests : BunitTestContext
         Assert.IsTrue(bitSlider.ClassList.Contains($"bit-sld-rgd-{(vertical ? "vrt" : "hrz")}"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -68,7 +68,7 @@ public class BitSliderTests : BunitTestContext
 
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -85,7 +85,7 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(ranged ? 2 : 1, bitSlider.GetElementsByTagName("input").Length);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(-1000, 3D),
         DataRow(2, null),
         DataRow(2, 3D),
@@ -110,7 +110,7 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(expectedValue.GetValueOrDefault().ToString(), label.TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(-1000, 3D),
         DataRow(2, null),
         DataRow(2, 3D),
@@ -136,7 +136,7 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(expectedValue.GetValueOrDefault().ToString(), labels[^1].TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(2)
     ]
@@ -155,7 +155,7 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(lowerValue.ToString(), label.TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(2),
     ]
@@ -175,7 +175,7 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(defaultUpperValue.GetValueOrDefault().ToString(), labels[^1].TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(2, 6),
         DataRow(0, 10)
     ]
@@ -196,7 +196,7 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(upperValue.ToString(), labels[^1].TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(2)
     ]
@@ -214,7 +214,7 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(defaultValue.GetValueOrDefault().ToString(), label.TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(2)
     ]
@@ -233,7 +233,7 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(defaultValue.GetValueOrDefault().ToString(), label.TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(5),
         DataRow(2)
     ]
@@ -251,7 +251,7 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(value.ToString(), label.TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(5),
         DataRow(2)
     ]
@@ -270,7 +270,7 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(value.ToString(), label.TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false, null),
         DataRow(true, null),
         DataRow(false, 2D),
@@ -298,7 +298,7 @@ public class BitSliderTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false, 4, 8),
         DataRow(true, 4, 8)
     ]
@@ -321,7 +321,7 @@ public class BitSliderTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("Bit Title")
     ]
@@ -348,7 +348,7 @@ public class BitSliderTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false, false),
         DataRow(true, false),
         DataRow(false, true),
@@ -375,7 +375,7 @@ public class BitSliderTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false, false),
         DataRow(true, false),
         DataRow(false, true),
@@ -394,7 +394,7 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(originFromZero ? 1 : 0, spans.Count);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false, null),
         DataRow(true, null),
         DataRow(false, "P01"),

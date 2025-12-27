@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.TextField;
 [TestClass]
 public class BitTextFieldTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, true, true),
         DataRow(false, true, false),
         DataRow(true, false, true),
@@ -40,7 +40,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(required, bitTextField.ClassList.Contains("bit-tfl-req"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow(true, "hello world"),
        DataRow(false, "hello world")
     ]
@@ -57,7 +57,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(bitTextField.GetAttribute("value"), value);
     }
 
-    [DataTestMethod, DataRow("this is label")]
+    [TestMethod, DataRow("this is label")]
     public void BitTextFieldLabel(string label)
     {
         var com = RenderComponent<BitTextField>(parameters =>
@@ -70,7 +70,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(label, bitTextFieldLabel);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(15, true, "this is placeholder", true),
         DataRow(15, true, "this is placeholder", false),
         DataRow(15, false, "this is placeholder", true),
@@ -97,7 +97,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(readOnly, bitTextField.HasAttribute("readonly"));
     }
 
-    [DataTestMethod, DataRow("Emoji2")]
+    [TestMethod, DataRow("Emoji2")]
     public void BitTextFieldShouldAcceptIcon(string iconName)
     {
         var component = RenderComponent<BitTextField>(parameters =>
@@ -110,7 +110,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.IsTrue(bitTextFieldIcon.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false),
     ]
@@ -136,7 +136,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.IsTrue(revealPasswordIcon.ClassList.Contains($"bit-icon--Hide3"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitInputType.Password),
         DataRow(BitInputType.Number),
         DataRow(BitInputType.Tel)
@@ -153,7 +153,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(type.GetDisplayName(toLowerDisplayName: true), textField.GetAttribute("type"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, false),
         DataRow(true, true),
         DataRow(false, false),
@@ -176,7 +176,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(isEnabled ? 1 : 0, currentCount);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, false),
         DataRow(true, true),
         DataRow(false, false),
@@ -208,7 +208,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(isEnabled ? 1 : 0, focusedOutValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, false, "u", "d"),
         DataRow(true, true, "u", "d"),
         DataRow(false, false, "u", "d"),
@@ -235,7 +235,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(isEnabled ? keyDownValue : null, keyDownedValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow(true, false),
        DataRow(true, true),
        DataRow(false, false),
@@ -258,7 +258,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(isEnabled ? 1 : 0, currentCount);
     }
 
-    [DataTestMethod, DataRow("Prefix")]
+    [TestMethod, DataRow("Prefix")]
     public void BitTextFieldShowPrefix(string prefix)
     {
         var component = RenderComponent<BitTextField>(parameters =>
@@ -270,7 +270,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(prefix, bitTextFieldPrefix.TextContent);
     }
 
-    [DataTestMethod, DataRow("Suffix")]
+    [TestMethod, DataRow("Suffix")]
     public void BitTextFieldShowSuffix(string suffix)
     {
         var component = RenderComponent<BitTextField>(parameters =>
@@ -282,7 +282,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(suffix, bitTextFieldSuffix.TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, "hello world"),
         DataRow(false, "hello world"),
     ]
@@ -299,7 +299,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(defaultValue, bitTextField.GetAttribute("value"));
     }
 
-    [DataTestMethod, DataRow("test description")]
+    [TestMethod, DataRow("test description")]
     public void BitTextFieldShouldTakeDescription(string description)
     {
         var component = RenderComponent<BitTextField>(parameters =>
@@ -311,7 +311,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(description, bitTextFieldDescription.TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -326,7 +326,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(underlined, bitTextField.ClassList.Contains("bit-tfl-und"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow(true),
        DataRow(false)
     ]
@@ -341,7 +341,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(noBorder, bitTextField.ClassList.Contains("bit-tfl-nbd"));
     }
 
-    [DataTestMethod, DataRow(5)]
+    [TestMethod, DataRow(5)]
     public void BitTextFieldShouldRespectRowsNumberWhenItIsMultiline(int rows)
     {
         var component = RenderComponent<BitTextField>(parameters =>
@@ -354,7 +354,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(rows.ToString(), input.GetAttribute("rows"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -370,7 +370,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(!resizable, bitTextField.ClassList.Contains("bit-tfl-mlf"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Detailed label", true),
         DataRow("Detailed label", false)
     ]
@@ -389,7 +389,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(input.GetAttribute("aria-label"), ariaLabel);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, "this is label"),
         DataRow(false, "this is label"),
         DataRow(true, null),
@@ -407,7 +407,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(label.HasValue(), input.HasAttribute("aria-labelledby"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("off"),
         DataRow("email")
@@ -433,7 +433,7 @@ public class BitTextFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("abc123"),
         DataRow("test@bit-components.com"),
@@ -472,7 +472,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("abc123"),
         DataRow("test@bit-components.com"),
@@ -512,7 +512,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("abc123"),
         DataRow("test@bit-components.com"),
@@ -552,7 +552,7 @@ public class BitTextFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("abc123"),
         DataRow("test@bit-components.com"),
@@ -593,7 +593,7 @@ public class BitTextFieldTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("abc123"),
         DataRow("test@bit.com")
     ]
@@ -630,7 +630,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(isInvalid is false, bitTextField.ClassList.Contains("bit-inv"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("  bit"),
         DataRow("bit  "),
         DataRow(" bit component "),
@@ -650,7 +650,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(value.Trim(), trimmedValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("  bit"),
         DataRow("bit  "),
         DataRow(" bit component "),

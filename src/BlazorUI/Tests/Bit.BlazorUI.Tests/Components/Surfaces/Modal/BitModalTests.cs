@@ -8,7 +8,7 @@ public class BitModalTests : BunitTestContext
 {
     private bool isModalOpen = true;
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(false),
         DataRow(true)
@@ -25,7 +25,7 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual(element?.Attributes?["role"]?.Value, isAlert.HasValue && isAlert.Value ? "alertdialog" : "dialog");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -48,7 +48,7 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual(isBlocking ? 1 : 0, bitModal.Count);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -67,7 +67,7 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual(isModeless ? 0 : 1, elementOverlay.Count);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
@@ -82,7 +82,7 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual(isOpen ? 1 : 0, bitModel.Count);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(""),
         DataRow("Test-S-A-Id")
@@ -111,7 +111,7 @@ public class BitModalTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow(""),
         DataRow("Test-T-A-Id")
@@ -192,7 +192,7 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual(1, currentCount);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitPosition.Center),
         DataRow(BitPosition.TopLeft),
         DataRow(BitPosition.TopCenter),

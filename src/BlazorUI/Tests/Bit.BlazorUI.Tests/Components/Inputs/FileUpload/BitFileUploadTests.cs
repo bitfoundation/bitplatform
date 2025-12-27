@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.FileUpload;
 [TestClass]
 public class BitFileUploadTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
        DataRow(true),
        DataRow(false)
     ]
@@ -23,7 +23,7 @@ public class BitFileUploadTests : BunitTestContext
         Assert.IsNotNull(bitFileUpload);
     }
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow(true),
        DataRow(false)
     ]
@@ -52,7 +52,7 @@ public class BitFileUploadTests : BunitTestContext
         Assert.AreEqual(".mp4,.mp3", attribute);
     }
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow(true),
        DataRow(false)
     ]

@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.Toggle;
 [TestClass]
 public class BitToggleTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
        DataRow(true, true),
        DataRow(true, false),
        DataRow(false, true),
@@ -41,7 +41,7 @@ public class BitToggleTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
       DataRow(true),
       DataRow(false)
     ]
@@ -59,7 +59,7 @@ public class BitToggleTests : BunitTestContext
         }
     }
 
-    [DataTestMethod, DataRow("Detailed AriaLabel")]
+    [TestMethod, DataRow("Detailed AriaLabel")]
     public void BitToggleAriaLabelTest(string ariaLabel)
     {
         var com = RenderComponent<BitToggle>(parameters =>
@@ -71,7 +71,7 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(bitToggleButton.GetAttribute("aria-label"), ariaLabel);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, "on", "off", "This is the first defaultText", "This is the first label"),
         DataRow(false, "on", "off", "This is the second defaultText", "This is the second label"),
         DataRow(true, "on", "off", null, "This is the Third label"),
@@ -114,7 +114,7 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(button?.GetAttribute("aria-labelledby"), ariaLabelledById);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -130,7 +130,7 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(bitToggleButton.GetAttribute("aria-checked"), ariaChecked);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("Foo"),
         DataRow("Bar")
@@ -149,7 +149,7 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(bitToggleButton.GetAttribute("role"), role ?? "switch");
     }
 
-    [DataTestMethod, DataRow("This is label")]
+    [TestMethod, DataRow("This is label")]
     public void BitToggleLabel(string label)
     {
         var com = RenderComponent<BitToggle>(parameters =>
@@ -161,7 +161,7 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(bitToggleLabel.TextContent, label);
     }
 
-    [DataTestMethod, DataRow("<div>This is labelTemplate</div>")]
+    [TestMethod, DataRow("<div>This is labelTemplate</div>")]
     public void BitToggleMarkupLabelTest(string labelTemplate)
     {
         var com = RenderComponent<BitToggle>(parameters =>
@@ -173,7 +173,7 @@ public class BitToggleTests : BunitTestContext
         bitToggleLabelChild.MarkupMatches(labelTemplate);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -200,7 +200,7 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(com.Instance.ValidCount, com.Instance.InvalidCount);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -230,7 +230,7 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(value is false, checkBox.HasAttribute("aria-invalid"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]

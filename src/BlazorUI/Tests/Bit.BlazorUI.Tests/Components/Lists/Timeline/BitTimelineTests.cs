@@ -33,7 +33,7 @@ public class BitTimelineTests : BunitTestContext
         Assert.IsTrue(component.Markup.Contains("Second"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)]
     public void BitTimelineShouldRespectIsEnabled(bool isEnabled)

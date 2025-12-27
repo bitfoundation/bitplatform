@@ -16,7 +16,7 @@ public class BitNavBarTests : BunitTestContext
         Assert.IsNotNull(root);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true, "bit-nbr-ftw")]
     [DataRow(false, "")]
     public void BitNavBarShouldRespectFitWidth(bool fitWidth, string expectedClass)
@@ -38,7 +38,7 @@ public class BitNavBarTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true, "bit-nbr-flw")]
     [DataRow(false, "")]
     public void BitNavBarShouldRespectFullWidth(bool fullWidth, string expectedClass)
@@ -60,7 +60,7 @@ public class BitNavBarTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true, "bit-nbr-ion")]
     [DataRow(false, "")]
     public void BitNavBarShouldRespectIconOnly(bool iconOnly, string expectedClass)
@@ -82,7 +82,7 @@ public class BitNavBarTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitColor.Primary, "bit-nbr-pri")]
     [DataRow(BitColor.Secondary, "bit-nbr-sec")]
     [DataRow(null, "bit-nbr-pri")]

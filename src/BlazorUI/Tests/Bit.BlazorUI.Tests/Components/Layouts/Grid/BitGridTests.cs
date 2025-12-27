@@ -39,7 +39,7 @@ public class BitGridTests : BunitTestContext
         Assert.IsTrue(style.Contains("--columns:8"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitAlignment.Start, "flex-start")]
     [DataRow(BitAlignment.End, "flex-end")]
     [DataRow(BitAlignment.Center, "center")]

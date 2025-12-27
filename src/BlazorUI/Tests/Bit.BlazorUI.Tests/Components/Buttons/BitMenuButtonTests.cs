@@ -22,7 +22,7 @@ public class BitMenuButtonTests : BunitTestContext
         }
     };
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow(true, BitVariant.Fill),
        DataRow(true, BitVariant.Outline),
        DataRow(false, BitVariant.Fill),
@@ -61,7 +61,7 @@ public class BitMenuButtonTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("A", "Add"),
         DataRow("B", "Edit")
     ]
@@ -85,7 +85,7 @@ public class BitMenuButtonTests : BunitTestContext
         Assert.AreEqual(text, menuButtonText.TextContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("A", "Add"),
         DataRow("B", "Edit")
     ]
@@ -111,7 +111,7 @@ public class BitMenuButtonTests : BunitTestContext
         Assert.IsTrue(menuButtonItemIcon.ClassList.Contains(itemIconNameClass));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -142,7 +142,7 @@ public class BitMenuButtonTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -169,7 +169,7 @@ public class BitMenuButtonTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -200,7 +200,7 @@ public class BitMenuButtonTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true)
     ]
     public void BitMenuButtonSplitTest(bool isSplit)

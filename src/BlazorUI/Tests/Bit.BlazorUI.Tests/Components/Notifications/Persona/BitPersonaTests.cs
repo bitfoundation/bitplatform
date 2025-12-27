@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Notifications.Persona;
 [TestClass]
 public class BitPersonaTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
          DataRow(true),
          DataRow(false)
     ]
@@ -29,7 +29,7 @@ public class BitPersonaTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("PrimaryText", "SecondaryText", "TertiaryText", "OptionalText"),
         DataRow(null, null, null, null)
     ]
@@ -54,7 +54,7 @@ public class BitPersonaTests : BunitTestContext
         Assert.AreEqual(optionalText, optionalTextEl.TextContent.HasValue() ? optionalTextEl.TextContent : null);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitPersonaSize.Size8),
         DataRow(BitPersonaSize.Size32),
         DataRow(BitPersonaSize.Size40),
@@ -77,7 +77,7 @@ public class BitPersonaTests : BunitTestContext
         Assert.IsTrue(persona.ClassList.Contains(personaSizeClass));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Image url"),
         DataRow(null)
     ]
@@ -97,7 +97,7 @@ public class BitPersonaTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Presence Title", BitPersonaPresence.Blocked),
         DataRow("Presence Title", BitPersonaPresence.Away),
         DataRow("Presence Title", BitPersonaPresence.Offline),

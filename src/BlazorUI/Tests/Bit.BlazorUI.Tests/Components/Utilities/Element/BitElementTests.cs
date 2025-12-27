@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Element;
 [TestClass]
 public class BitElementTests : BunitTestContext
 {
-    [DataTestMethod]
+    [TestMethod]
     public void BitElementShouldRenderExpectedElement()
     {
         var component = RenderComponent<BitElement>();
@@ -14,7 +14,7 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
          DataRow("div"),
          DataRow("button"),
          DataRow("input"),
@@ -33,7 +33,7 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@$"<{el} class=""bit-elm"" id:ignore></{el}>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -49,7 +49,7 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-elm{cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitElementShouldRespectIsEnabledChangingAfterRender()
     {
         var component = RenderComponent<BitElement>();
@@ -64,7 +64,7 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-elm bit-dis"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("font-size: 14px; color: red;"),
         DataRow("padding: 1rem;"),
         DataRow(null)
@@ -86,7 +86,7 @@ public class BitElementTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitElementShouldRespectStyleChangingAfterRender()
     {
         var component = RenderComponent<BitElement>();
@@ -101,7 +101,7 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@"<div style=""padding: 1rem;"" class=""bit-elm"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-class"),
         DataRow(null)
     ]
@@ -117,7 +117,7 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-elm{cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitElementShouldRespectClassChangingAfterRender()
     {
         var component = RenderComponent<BitElement>();
@@ -132,7 +132,7 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-elm test-class"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-id"),
         DataRow(null)
     ]
@@ -148,7 +148,7 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@$"<div id=""{expectedId}"" class=""bit-elm""></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitDir.Rtl),
         DataRow(BitDir.Ltr),
         DataRow(BitDir.Auto),
@@ -172,7 +172,7 @@ public class BitElementTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitElementShouldRespectDirChangingAfterRender()
     {
         var component = RenderComponent<BitElement>();
@@ -187,7 +187,7 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@"<div dir=""ltr"" class=""bit-elm"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
         DataRow(BitVisibility.Hidden)
@@ -213,7 +213,7 @@ public class BitElementTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitElementShouldRespectVisibilityChangingAfterRender()
     {
         var component = RenderComponent<BitElement>();
@@ -228,7 +228,7 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@"<div style=""display: none;"" class=""bit-elm"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow(null)
     ]
@@ -249,7 +249,7 @@ public class BitElementTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow("<span>Bit Blazor UI</span>"),
         DataRow(null)
@@ -264,7 +264,7 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-elm"" id:ignore>{childContent}</label>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitElementShouldRespectHtmlAttributes()
     {
         var component = RenderComponent<BitElementHtmlAttributesTest>();

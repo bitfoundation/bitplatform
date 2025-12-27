@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Progress.Progress;
 [TestClass]
 public class BitProgressTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
         DataRow(3),
         DataRow(12)
     ]
@@ -23,7 +23,7 @@ public class BitProgressTests : BunitTestContext
         Assert.IsTrue(piWrapperStyle?.Contains(expectedValue));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(52),
         DataRow(43)
     ]
@@ -40,7 +40,7 @@ public class BitProgressTests : BunitTestContext
         Assert.IsTrue(piBarStyle?.Contains(expectedValue));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(520),
         DataRow(430)
     ]
@@ -57,7 +57,7 @@ public class BitProgressTests : BunitTestContext
         Assert.IsTrue(piBarStyle?.Contains(expectedValue));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(-5),
         DataRow(-265)
     ]
@@ -75,7 +75,7 @@ public class BitProgressTests : BunitTestContext
     }
 
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -90,7 +90,7 @@ public class BitProgressTests : BunitTestContext
         Assert.AreEqual(indeterminate, pin.ClassList.Contains("bit-prb-ind"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Label"),
         DataRow(null),
     ]
@@ -115,7 +115,7 @@ public class BitProgressTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Description"),
         DataRow(null),
     ]
@@ -140,7 +140,7 @@ public class BitProgressTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Aria Value Text"),
         DataRow(null),
     ]
@@ -162,7 +162,7 @@ public class BitProgressTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)]
     public void BitProgressShowPercentNumberTest(bool showPercentNumber)
@@ -184,7 +184,7 @@ public class BitProgressTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("<h1>this is a custom label</h1>")
     ]
     public void BitProgressLabelTemplateTest(string labelTemplate)
@@ -198,7 +198,7 @@ public class BitProgressTests : BunitTestContext
         labelChildNodes?.MarkupMatches(labelTemplate);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("<h1>this is a custom description</h1>"),
     ]
     public void BitProgressDescriptionTemplateTest(string descriptionTemplate)

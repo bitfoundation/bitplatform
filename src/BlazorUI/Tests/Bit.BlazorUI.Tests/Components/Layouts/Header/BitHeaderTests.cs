@@ -18,7 +18,7 @@ public class BitHeaderTests : BunitTestContext
 </header>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("<div>Title</div>")]
     [DataRow("I'm a Header")]
     public void BitHeaderShouldRespectChildContent(string childContent)
@@ -36,7 +36,7 @@ public class BitHeaderTests : BunitTestContext
 </header>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(50)]
     [DataRow(120)]
     public void BitHeaderShouldRespectHeight(int height)
@@ -66,7 +66,7 @@ public class BitHeaderTests : BunitTestContext
         Assert.IsTrue(header.ClassList.Contains("bit-hdr-fix"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("padding: 1rem;")]
     [DataRow(null)]
     public void BitHeaderShouldRespectStyle(string style)
@@ -94,7 +94,7 @@ public class BitHeaderTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("test-class")]
     [DataRow(null)]
     public void BitHeaderShouldRespectClass(string @class)
@@ -113,7 +113,7 @@ public class BitHeaderTests : BunitTestContext
 </header>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("test-id")]
     [DataRow(null)]
     public void BitHeaderShouldRespectId(string id)
@@ -132,7 +132,7 @@ public class BitHeaderTests : BunitTestContext
 </header>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitDir.Rtl)]
     [DataRow(BitDir.Ltr)]
     [DataRow(BitDir.Auto)]

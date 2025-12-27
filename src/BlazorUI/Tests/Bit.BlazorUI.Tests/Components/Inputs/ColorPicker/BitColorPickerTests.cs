@@ -13,7 +13,7 @@ public class BitColorPickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -41,7 +41,7 @@ public class BitColorPickerTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("#FC5603", "#FC5603", "rgb(252,86,3)", 1),
         DataRow("rgba(3,98,252,0.3)", "#0362FC", "rgb(3,98,252)", 0.3),
         DataRow("rgb(252,3,240)", "#FC03F0", "rgb(252,3,240)", 1)

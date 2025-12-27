@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Sticky;
 [TestClass]
 public class BitStickyTests : BunitTestContext
 {
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRenderExpectedElement()
     {
         var component = RenderComponent<BitSticky>();
@@ -14,7 +14,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -30,7 +30,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stk bit-stk-top{cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRespectIsEnabledChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();
@@ -45,7 +45,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top bit-dis"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("font-size: 14px; color: red;"),
         DataRow("padding: 1rem;"),
         DataRow(null)
@@ -67,7 +67,7 @@ public class BitStickyTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRespectStyleChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();
@@ -83,7 +83,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{style}"" class=""bit-stk bit-stk-top"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-class"),
         DataRow(null)
     ]
@@ -99,7 +99,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stk bit-stk-top{cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRespectClassChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();
@@ -116,7 +116,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stk bit-stk-top {cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("test-id"),
         DataRow(null)
     ]
@@ -132,7 +132,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div id=""{expectedId}"" class=""bit-stk bit-stk-top""></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitDir.Rtl),
         DataRow(BitDir.Ltr),
         DataRow(BitDir.Auto),
@@ -156,7 +156,7 @@ public class BitStickyTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRespectDirChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();
@@ -171,7 +171,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@"<div dir=""ltr"" class=""bit-stk bit-stk-top"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
         DataRow(BitVisibility.Hidden)
@@ -197,7 +197,7 @@ public class BitStickyTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRespectVisibilityChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();
@@ -212,7 +212,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@"<div style=""display: none;"" class=""bit-stk bit-stk-top"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow(null)
     ]
@@ -233,7 +233,7 @@ public class BitStickyTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow("<span>Bit Blazor UI</span>"),
         DataRow(null)
@@ -248,7 +248,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stk bit-stk-top"" id:ignore>{childContent}</label>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRespectHtmlAttributes()
     {
         var component = RenderComponent<BitStickyHtmlAttributesTest>();
@@ -256,7 +256,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@"<div data-val-test=""bit"" class=""bit-stk bit-stk-top"" id:ignore>I'm a sticky</div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow(null),
        DataRow(""),
        DataRow("14px"),
@@ -279,7 +279,7 @@ public class BitStickyTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRespectTopChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();
@@ -296,7 +296,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""top: {top};"" class=""bit-stk"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow(null),
        DataRow(""),
        DataRow("14px"),
@@ -319,7 +319,7 @@ public class BitStickyTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRespectBottomChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();
@@ -336,7 +336,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""bottom: {bottom};"" class=""bit-stk"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow(null),
        DataRow(""),
        DataRow("14px"),
@@ -359,7 +359,7 @@ public class BitStickyTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRespectLeftChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();
@@ -376,7 +376,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""left: {left};"" class=""bit-stk"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow(null),
        DataRow(""),
        DataRow("14px"),
@@ -399,7 +399,7 @@ public class BitStickyTests : BunitTestContext
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRespectRightChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();
@@ -416,7 +416,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""right: {right};"" class=""bit-stk"" id:ignore></div>");
     }
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow("14px", "15px", "16px", "17px"),
        DataRow("1.5rem", "2.5rem", "3.5rem", "4.5rem")
     ]
@@ -440,7 +440,7 @@ public class BitStickyTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
        DataRow(null),
        DataRow(BitStickyPosition.Top),
        DataRow(BitStickyPosition.Bottom),
@@ -470,7 +470,7 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stk{cssClass}"" id:ignore></div>");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitStickyShouldRespectPositionChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();

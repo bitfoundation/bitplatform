@@ -124,7 +124,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)]
     public void BitMarkdownViewerShouldRespectIsEnabled(bool isEnabled)

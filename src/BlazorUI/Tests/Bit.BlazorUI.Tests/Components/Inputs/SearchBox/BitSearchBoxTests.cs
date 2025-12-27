@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.SearchBox;
 [TestClass]
 public class BitSearchBoxTests : BunitTestContext
 {
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Search"),
         DataRow("Filter")]
     public void SearchBoxPlaceholderMeetEnteredValue(string componentPlaceholder)
@@ -19,7 +19,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(componentPlaceholder, inputPlaceholder);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Search"),
         DataRow("Closed Issue"),
         DataRow("fake value")]
@@ -33,7 +33,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(value, inputValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)]
     public void SearchBoxNoAnimationShouldHaveClassName(bool disableAnimation)
@@ -45,7 +45,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(disableAnimation, searchBox.ClassList.Contains("bit-srb-nan"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)]
     public void SearchBoxUnderlinedShouldHaveClassName(bool isUnderlined)
@@ -57,7 +57,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(isUnderlined, searchBox.ClassList.Contains("bit-srb-und"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Detailed label")]
     public void BitSearchBoxAriaLabelTest(string ariaLabel)
     {
@@ -68,7 +68,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.IsTrue(bitSearchBox?.GetAttribute("aria-label")?.Equals(ariaLabel));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("hello world", "hello bit"),
         DataRow(null, "hello bit"),
         DataRow("hello world", null)
@@ -87,7 +87,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(input.GetAttribute("value"), actualValue);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("hello world", true),
         DataRow("hello world", false)
     ]
@@ -105,7 +105,7 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [Ignore("bypassed - BUnit oninput event issue")]
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -125,7 +125,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(isEnabled ? 1 : 0, currentCount);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("off"),
         DataRow("email")
@@ -151,7 +151,7 @@ public class BitSearchBoxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("abc123"),
         DataRow("test@bit-components.com"),
@@ -191,7 +191,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(null),
         DataRow("abc123"),
         DataRow("test@bit-components.com"),
@@ -232,7 +232,7 @@ public class BitSearchBoxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("abc123"),
         DataRow("test@bit.com")
     ]

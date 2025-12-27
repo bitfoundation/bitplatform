@@ -9,7 +9,7 @@ public class BitCheckboxTests : BunitTestContext
     private bool BitCheckBoxIsChecked;
     private bool BitCheckBoxIsIndeterminate = true;
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, true),
         DataRow(false, true),
         DataRow(true, false),
@@ -47,7 +47,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual(isEnabled, changed);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(false),
         DataRow(true),
     ]
@@ -70,7 +70,7 @@ public class BitCheckboxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -94,7 +94,7 @@ public class BitCheckboxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Detailed label"),
         DataRow(null)
     ]
@@ -117,7 +117,7 @@ public class BitCheckboxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Detailed description"),
         DataRow(null)
     ]
@@ -140,7 +140,7 @@ public class BitCheckboxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Detailed label"),
         DataRow(null)
     ]
@@ -163,7 +163,7 @@ public class BitCheckboxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Title"),
         DataRow(null)
     ]
@@ -186,7 +186,7 @@ public class BitCheckboxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Name"),
         DataRow(null)
     ]
@@ -209,7 +209,7 @@ public class BitCheckboxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(3),
         DataRow(null)
     ]
@@ -232,7 +232,7 @@ public class BitCheckboxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(3),
         DataRow(null)
     ]
@@ -255,7 +255,7 @@ public class BitCheckboxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Emoji2"),
         DataRow("MicrosoftFlowLogo"),
     ]
@@ -271,7 +271,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName}"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Icon aria-label"),
         DataRow(null)
     ]
@@ -294,7 +294,7 @@ public class BitCheckboxTests : BunitTestContext
         }
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("Child with label tag <label>This is the label</label>"),
         DataRow("BitCheckBox (controlled)")
     ]
@@ -309,7 +309,7 @@ public class BitCheckboxTests : BunitTestContext
         chbChildContent.MarkupMatches(childContent);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -331,7 +331,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual(expectedValue, BitCheckBoxIsChecked);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     public void BitCheckBoxIsIndeterminateTwoWayBoundWithCustomHandlerTest()
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
@@ -346,7 +346,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.IsFalse(BitCheckBoxIsIndeterminate);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -373,7 +373,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -403,7 +403,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual(value is false, checkBoxInput.HasAttribute("aria-invalid"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true),
         DataRow(false),
     ]
