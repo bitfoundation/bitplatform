@@ -282,9 +282,9 @@ public partial class BitPersona : BitComponentBase
         if (CoinShape == BitPersonaCoinShape.Square)
         {
             var presentationPosition = presentationSize / 3D;
-            position = $"right:-{presentationPosition}px;bottom:-{presentationPosition}px;";
+            position = FormattableString.Invariant($"right:-{presentationPosition}px;bottom:-{presentationPosition}px;");
         }
-        return $"width:{presentationSize}px;height:{presentationSize}px;{position}{Styles?.Presence?.Trim(';')}";
+        return FormattableString.Invariant($"width:{presentationSize}px;height:{presentationSize}px;{position}{Styles?.Presence?.Trim(';')}");
     }
 
     private string? GetPresentationIcon()

@@ -254,7 +254,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
 
 
-    public Task OpenCallout() => HandleOnClick();
+    public Task OpenCallout()
+    {
+        return HandleOnClick();
+    }
 
 
 
@@ -382,14 +385,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _culture = Culture ?? CultureInfo.CurrentUICulture;
     }
 
-    private string GetTransformStyle(int index, double radius, double offsetX, double offsetY)
-    {
-        double angle = (6 - index) * 30 / 180d * Math.PI;
-        var x = Math.Sin(angle) * radius + offsetX;
-        var y = (Math.Cos(angle) + 1) * radius + offsetY;
-        return $"{x:F3}px, {y:F3}px";
-    }
-
     private string GetHoursMinutesClass(int hourMinute)
     {
         StringBuilder classes = new();
@@ -436,9 +431,19 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         return styles.ToString();
     }
 
-    private int GetClockHandHeightPercent() => (_showHourView && TimeFormat == BitTimeFormat.TwentyFourHours && _hour > 0 && _hour < 13) ? 26 : 40;
+    private int GetClockHandHeightPercent()
+    {
+        return (_showHourView && TimeFormat == BitTimeFormat.TwentyFourHours && _hour > 0 && _hour < 13)
+            ? 26
+            : 40;
+    }
 
-    private double GetPointerDegree() => _showHourView ? ((_hour.GetValueOrDefault() * 30) % 360) : ((_minute.GetValueOrDefault() * 6) % 360);
+    private double GetPointerDegree()
+    {
+        return _showHourView 
+            ? (_hour.GetValueOrDefault() * 30 % 360) 
+            : (_minute.GetValueOrDefault() * 6 % 360);
+    }
 
     private async Task HandleOnPointerDown(MouseEventArgs e)
     {
@@ -462,15 +467,15 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         return Math.Min(23, Math.Max(0, hours)).ToString(CultureInfo.InvariantCulture);
     }
 
-    private string GetMinuteString() => _minute.HasValue ? $"{Math.Min(59, Math.Max(0, _minute.Value)):D2}" : "--";
-
-    private int GetAmPmHours(int hours)
+    private string GetMinuteString()
     {
-        var result = hours % 12;
-        return result == 0 ? 12 : result;
+        return _minute.HasValue ? $"{Math.Min(59, Math.Max(0, _minute.Value)):D2}" : "--";
     }
 
-    private int GetHours() => TimeFormat == BitTimeFormat.TwelveHours ? GetAmPmHours(_hour.GetValueOrDefault()) : _hour.GetValueOrDefault();
+    private int GetHours()
+    {
+        return TimeFormat == BitTimeFormat.TwelveHours ? GetAmPmHours(_hour.GetValueOrDefault()) : _hour.GetValueOrDefault();
+    }
 
     private void HandleOnHourClick()
     {
@@ -515,7 +520,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _minute = CurrentValue?.Minutes;
     }
 
-    private bool IsAm() => _hour.GetValueOrDefault() >= 00 && _hour < 12; // am is 00:00 to 11:59 
+    private bool IsAm()
+    {
+        return _hour.GetValueOrDefault() >= 00 && _hour < 12; // am is 00:00 to 11:59 
+    }
 
     private string GetValueFormat()
     {
@@ -662,6 +670,22 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         }
 
         return string.Join(' ', classes).Trim();
+    }
+
+
+
+    private static string GetTransformStyle(int index, double radius, double offsetX, double offsetY)
+    {
+        double angle = (6 - index) * 30 / 180d * Math.PI;
+        var x = Math.Sin(angle) * radius + offsetX;
+        var y = (Math.Cos(angle) + 1) * radius + offsetY;
+        return FormattableString.Invariant($"{x:F3}px, {y:F3}px");
+    }
+
+    private static int GetAmPmHours(int hours)
+    {
+        var result = hours % 12;
+        return result == 0 ? 12 : result;
     }
 
 
