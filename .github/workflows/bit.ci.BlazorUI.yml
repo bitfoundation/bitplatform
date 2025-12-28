@@ -50,4 +50,4 @@ jobs:
       run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx
 
     - name: Test
-      run: cd src/BlazorUI/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal
+      run: cd src/BlazorUI/Tests/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal

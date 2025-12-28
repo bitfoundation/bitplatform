@@ -1,0 +1,33 @@
+@page "/"
+
+<PageTitle>Performance Test Host</PageTitle>
+
+<div style="padding: 20px;">
+    <h1>Bit.BlazorUI Performance Test Host</h1>
+    <p>This application hosts pages for browser-based performance testing of Bit.BlazorUI components.</p>
+    
+    <h2>Available Test Pages</h2>
+    <ul>
+        <li><a href="/perf/action-button">BitActionButton Performance Test</a></li>
+        <li><a href="/perf/action-button/10">BitActionButton - 10 components</a></li>
+        <li><a href="/perf/action-button/100">BitActionButton - 100 components</a></li>
+        <li><a href="/perf/action-button/500">BitActionButton - 500 components</a></li>
+        <li><a href="/perf/action-button/1000">BitActionButton - 1000 components</a></li>
+    </ul>
+    
+    <h2>API Endpoints</h2>
+    <p>For automated testing, the following metrics are exposed via DOM elements:</p>
+    <ul>
+        <li><code>#render-time</code> - Render time in milliseconds</li>
+        <li><code>#rerender-time</code> - Re-render time in milliseconds</li>
+        <li><code>#component-count</code> - Number of components rendered</li>
+        <li><code>#status</code> - Current status (Ready, Rendering, Rendered, etc.)</li>
+    </ul>
+    
+    <h2>Test Controls</h2>
+    <ul>
+        <li><code>#btn-render</code> - Button to trigger render</li>
+        <li><code>#btn-clear</code> - Button to clear components</li>
+        <li><code>#btn-rerender</code> - Button to trigger re-render</li>
+    </ul>
+</div>
