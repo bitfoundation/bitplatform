@@ -369,13 +369,20 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         return base.HandleOnStringValueChangeAsync(e);
     }
 
-    async Task HandleOnStringValueSet(string? value)
+
+
+    private async Task HandleOnStringValueSet(string? value)
     {
         var args = new ChangeEventArgs() { Value = value };
+
         if (Immediate)
+        {
             await HandleOnStringValueInputAsync(args);
+        }
         else
+        {
             await HandleOnStringValueChangeAsync(args);
+        }
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
