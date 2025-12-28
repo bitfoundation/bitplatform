@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitTextInputBase<string?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -6,7 +6,8 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <div style="@Styles?.InputWrapper" class="bit-tfl-wrp @Classes?.InputWrapper">
+    <div style="@Styles?.InputWrapper" 
+         class="bit-tfl-wrp @Classes?.InputWrapper">
         @if (LabelTemplate is not null)
         {
             <label id="@_labelId" for="@_inputId">
@@ -15,22 +16,24 @@
         }
         else if (Label.HasValue())
         {
-            <label style="@Styles?.Label"
-                   class="bit-tfl-lbl @Classes?.Label"
-                   id="@_labelId"
-                   for="@_inputId">
+            <label id="@_labelId"
+                   for="@_inputId"
+                   style="@Styles?.Label"
+                   class="bit-tfl-lbl @Classes?.Label">
                 @Label
             </label>
         }
 
-        <div style="@Styles?.FieldGroup" class="bit-tfl-fgp @Classes?.FieldGroup">
+        <div style="@Styles?.FieldGroup"
+             class="bit-tfl-fgp @Classes?.FieldGroup">
             @if (PrefixTemplate is not null)
             {
                 @PrefixTemplate
             }
             else if (Prefix.HasValue())
             {
-                <div style="@Styles?.PrefixContainer" class="bit-tfl-pre @Classes?.PrefixContainer">
+                <div style="@Styles?.PrefixContainer"
+                     class="bit-tfl-pre @Classes?.PrefixContainer">
                     <span style="@Styles?.Prefix" class="@Classes?.Prefix">
                         @Prefix
                     </span>
@@ -95,30 +98,45 @@
                        aria-label="@AriaLabel"
                        aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                        aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
+
+                @if (ShowClearButton && CurrentValue.HasValue())
+                {
+                    <button @onclick="HandleOnClearButtonClick"
+                            type="button"
+                            aria-hidden="true"
+                            aria-label="Clear text"
+                            disabled="@(IsEnabled is false)"
+                            style="@Styles?.ClearButton"
+                            class="bit-tfl-cbt @Classes?.ClearButton">
+                        <i aria-hidden="true" 
+                           style="@Styles?.ClearButtonIcon" 
+                           class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" />
+                    </button>
+                }
             }
 
             @if (CanRevealPassword && Type == BitInputType.Password)
             {
                 <button @onclick="ToggleRevealPassword"
+                        type="button"
                         style="@Styles?.RevealPassword"
                         class="bit-tfl-rpb @Classes?.RevealPassword"
-                        type="button"
                         aria-label="@RevealPasswordAriaLabel"
                         aria-pressed="@(_elementType == BitInputType.Text ? "true" : "false")">
                     <span style="@Styles?.RevealPasswordIconContainer"
                           class="bit-tfl-rpc @Classes?.RevealPasswordIconContainer">
-                        <i style="@Styles?.RevealPasswordIcon"
-                           class="bit-tfl-rpi bit-icon bit-icon--@(_elementType == BitInputType.Text ? "Hide3" : "View") @Classes?.RevealPasswordIcon"
-                           aria-hidden="true" />
+                        <i aria-hidden="true" 
+                           style="@Styles?.RevealPasswordIcon"
+                           class="bit-tfl-rpi bit-icon bit-icon--@(_elementType == BitInputType.Text ? "Hide3" : "View") @Classes?.RevealPasswordIcon" />
                     </span>
                 </button>
             }
 
             @if (IconName.HasValue())
             {
-                <i style="@Styles?.Icon"
-                   class="bit-tfl-ico bit-icon bit-icon--@IconName @Classes?.Icon"
-                   aria-hidden="true" />
+                <i aria-hidden="true" 
+                   style="@Styles?.Icon"
+                   class="bit-tfl-ico bit-icon bit-icon--@IconName @Classes?.Icon" />
             }
 
             @if (SuffixTemplate is not null)
@@ -127,8 +145,10 @@
             }
             else if (Suffix.HasValue())
             {
-                <div style="@Styles?.SuffixContainer" class="bit-tfl-suf @Classes?.SuffixContainer">
-                    <span style="@Styles?.Suffix" class="@Classes?.Suffix">
+                <div style="@Styles?.SuffixContainer" 
+                     class="bit-tfl-suf @Classes?.SuffixContainer">
+                    <span style="@Styles?.Suffix" 
+                          class="@Classes?.Suffix">
                         @Suffix
                     </span>
                 </div>
@@ -136,18 +156,20 @@
 
         </div>
     </div>
+
     @if (Description.HasValue() || DescriptionTemplate is not null)
     {
-        <span style="@Styles?.DescriptionContainer"
-              class="bit-tfl-des @Classes?.DescriptionContainer"
-              id="@_descriptionId">
+        <span id="@_descriptionId"
+              style="@Styles?.DescriptionContainer"
+              class="bit-tfl-des @Classes?.DescriptionContainer">
             @if (DescriptionTemplate is not null)
             {
                 @DescriptionTemplate
             }
             else if (Description.HasValue())
             {
-                <span style="@Styles?.Description" class="@Classes?.Description">
+                <span style="@Styles?.Description" 
+                      class="@Classes?.Description">
                     @Description
                 </span>
             }
