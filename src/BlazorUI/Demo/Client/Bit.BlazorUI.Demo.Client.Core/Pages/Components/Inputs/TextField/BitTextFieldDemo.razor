@@ -1,4 +1,4 @@
-﻿@page "/components/textfield"
+@page "/components/textfield"
 @page "/components/text-field"
 
 <PageOutlet Url="components/textfield"
@@ -142,7 +142,15 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="ShowClearButton" RazorCode="@example9RazorCode" Id="example9">
+        <div>Displays BitTextField with a clear button that appears when the field has a value.</div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Email" DefaultValue="example@email.com" ShowClearButton />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Binding" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>Demonstrates various binding scenarios with BitTextField, including one-way, two-way, on-change events, and immediate, debounce, and throttle options.</div>
         <br />
         <div class="example-box">
@@ -168,7 +176,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Trim" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Trim" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>Demonstrates various binding scenarios with BitTextField, including one-way, two-way, on-change events, and immediate, debounce, and throttle options.</div>
         <br />
         <div class="example-box">
@@ -182,7 +190,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>Demonstrates how validation can be applied to BitTextField, including required fields, numeric input, character constraints, email validation, and range validation.</div>
         <br />
         <div class="example-box">
@@ -219,7 +227,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Background" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Background" RazorCode="@example13RazorCode" Id="example13">
         <div>Providing a range of color kinds for the background of the text field.</div>
         <br />
         <div class="example-box" style="background:var(--bit-clr-bg-dis);padding:1rem">
@@ -233,7 +241,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Border" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Border" RazorCode="@example14RazorCode" Id="example14">
         <div>Providing a range of color kinds for the border of the text field.</div>
         <br />
         <div class="example-box" style="background:var(--bit-clr-bg-dis);padding:1rem">
@@ -247,7 +255,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accent" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Accent" RazorCode="@example15RazorCode" Id="example15">
         <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
         <br />
         <div class="example-box">
@@ -267,12 +275,12 @@
             <br />
             <BitTextField Label="Error" Accent="BitColor.Error" IconName="@BitIconName.Calendar" />
             <br />
-            <div style="background:var(--bit-clr-fg-sec);padding:1rem">
-                <BitTextField Label="PrimaryBackground" Accent="BitColor.PrimaryBackground" IconName="@BitIconName.Calendar" />
+            <div style="background:var(--bit-clr-fg-dis);padding:1rem">
+                <BitTextField Label="PrimaryBackground" Background="BitColorKind.Transparent" Accent="BitColor.PrimaryBackground" IconName="@BitIconName.Calendar" />
                 <br />
-                <BitTextField Label="SecondaryBackground" Accent="BitColor.SecondaryBackground" IconName="@BitIconName.Calendar" />
+                <BitTextField Label="SecondaryBackground" Background="BitColorKind.Transparent" Accent="BitColor.SecondaryBackground" IconName="@BitIconName.Calendar" />
                 <br />
-                <BitTextField Label="TertiaryBackground" Accent="BitColor.TertiaryBackground" IconName="@BitIconName.Calendar" />
+                <BitTextField Label="TertiaryBackground" Background="BitColorKind.Transparent" Accent="BitColor.TertiaryBackground" IconName="@BitIconName.Calendar" />
             </div>
             <br />
             <BitTextField Label="PrimaryForeground" Accent="BitColor.PrimaryForeground" IconName="@BitIconName.Calendar" />
@@ -289,7 +297,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>Explores styling and class customization for BitTextField, including component styles, custom classes, and detailed style options.</div>
         <br /><br />
         <div class="example-box">
@@ -318,7 +326,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
         <div>Use BitTextField in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

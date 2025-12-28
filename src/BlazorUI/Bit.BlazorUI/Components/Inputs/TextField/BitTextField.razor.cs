@@ -116,6 +116,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     public bool NoBorder { get; set; }
 
     /// <summary>
+    /// Callback executed when the user clears the text field by clicking the clear button.
+    /// </summary>
+    [Parameter] public EventCallback OnClear { get; set; }
+
+    /// <summary>
     /// Callback for when the input clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -186,6 +191,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// For multiline text, Number of rows.
     /// </summary>
     [Parameter] public int? Rows { get; set; }
+
+    /// <summary>
+    /// Whether to show the clear button when the text field has a value.
+    /// </summary>
+    [Parameter] public bool ShowClearButton { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitTextField.
@@ -423,6 +433,17 @@ public partial class BitTextField : BitTextInputBase<string?>
         if (IsEnabled is false) return;
 
         await OnClick.InvokeAsync(e);
+    }
+
+    private async Task HandleOnClearButtonClick()
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        await SetCurrentValueAsStringAsync(string.Empty, true);
+
+        await InputElement.FocusAsync();
+
+        await OnClear.InvokeAsync();
     }
 
 

@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-tfl {
     margin: 0;
@@ -32,6 +32,14 @@
             color: $clr-fg-dis;
         }
 
+        .bit-tfl-cbt {
+            cursor: default;
+            color: $clr-fg-dis;
+            pointer-events: none;
+            background: $clr-bg-dis;
+            border: $shp-border-width $shp-border-style $clr-brd-dis;
+        }
+
         &.bit-tfl-und {
             .bit-tfl-wrp {
                 width: 100%;
@@ -55,6 +63,7 @@
     }
 
     &.bit-inv {
+
         .bit-tfl-fgp,
         .bit-tfl-wrp {
             border-color: $clr-err;
@@ -160,6 +169,45 @@
 
 .bit-tfl-rpi {
     color: var(--bit-tfl-clr);
+}
+
+.bit-tfl-cbt {
+    height: auto;
+    border: none;
+    cursor: pointer;
+    font-weight: 400;
+    width: spacing(4);
+    user-select: none;
+    color: $clr-fg-sec;
+    position: relative;
+    text-align: center;
+    outline: transparent;
+    text-decoration: none;
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 0 spacing(0.5);
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+    background-color: transparent;
+    border-radius: 0 spacing(0.125) spacing(0.125) 0;
+    min-height: calc(var(--bit-spa-scaling-factor) * 3.75);
+
+    i {
+        width: unset;
+        flex-shrink: 0;
+        height: spacing(2);
+        text-align: center;
+        margin: 0 spacing(0.5);
+        font-size: spacing(1.5);
+        line-height: spacing(2);
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
+    }
 }
 
 .bit-tfl-ico {
