@@ -440,8 +440,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private double GetPointerDegree()
     {
-        return _showHourView 
-            ? (_hour.GetValueOrDefault() * 30 % 360) 
+        return _showHourView
+            ? (_hour.GetValueOrDefault() * 30 % 360)
             : (_minute.GetValueOrDefault() * 6 % 360);
     }
 
@@ -454,7 +454,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task UpdateCurrentValue()
     {
-        CurrentValue = (_hour.HasValue is false || _minute.HasValue is false) ? null : new TimeSpan(_hour.Value, _minute.Value, 0);
+        CurrentValue = _hour.HasValue is true && _minute.HasValue is true
+            ? new TimeSpan(_hour.Value, _minute.Value, 0)
+            : null;
 
         await OnSelectTime.InvokeAsync(CurrentValue);
     }
@@ -469,12 +471,16 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private string GetMinuteString()
     {
-        return _minute.HasValue ? $"{Math.Min(59, Math.Max(0, _minute.Value)):D2}" : "--";
+        return _minute.HasValue
+            ? $"{Math.Min(59, Math.Max(0, _minute.Value)):D2}"
+            : "--";
     }
 
     private int GetHours()
     {
-        return TimeFormat == BitTimeFormat.TwelveHours ? GetAmPmHours(_hour.GetValueOrDefault()) : _hour.GetValueOrDefault();
+        return TimeFormat == BitTimeFormat.TwelveHours
+            ? GetAmPmHours(_hour.GetValueOrDefault())
+            : _hour.GetValueOrDefault();
     }
 
     private void HandleOnHourClick()
