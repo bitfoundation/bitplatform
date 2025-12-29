@@ -70,7 +70,7 @@ jobs:
       run: cd src && dotnet workload install wasm-tools
 
     - name: Create project from template with PostgreSQL
-      run: dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR --aspire
+      run: dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR --aspire --redis
 
     - name: Create appsettings.json for Client.Web
       run: |
@@ -229,13 +229,13 @@ jobs:
 
     - name: Build sample configuration 1
       run: |
-        dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire
+        dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis
         dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging
         rm -r "TestProject"
 
     - name: Build sample configuration 2
       run: |
-        dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true
+        dotnet new bit-bp --name TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true --redis false
         dotnet build TestProject2/TestProject2.slnx -p:InvariantGlobalization=true -p:Environment=Development
         rm -r "TestProject2"
 

@@ -14,6 +14,7 @@
         <PackageReference Include="Aspire.Hosting.Keycloak" />
         <PackageReference Include="Aspire.Hosting.Maui" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Aspire.Hosting.MySql" />
+        <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" />
         <PackageReference Include="CommunityToolkit.Aspire.Hosting.MailPit" />
         <PackageReference Condition=" '$(database)' == 'Sqlite' OR '$(database)' == '' " Include="CommunityToolkit.Aspire.Hosting.Sqlite" />
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="Aspire.Hosting.SqlServer" />

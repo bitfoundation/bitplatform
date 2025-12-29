@@ -22,6 +22,9 @@ You will be working with the following key technologies:
 <!--#if (signalR == true)-->
 *   **SignalR**: Real-time communication
 <!--#endif-->
+<!--#if (redis == true)-->
+*   **Redis**: Distributed caching storage and backplane, hangfire job storage, signalr backplane and distributed lock. 
+<!--#endif-->
 *   **Hangfire**: Background job processing
 *   **OData**: Advanced querying capabilities
 *   **Bit.BlazorUI**: The primary UI component library

@@ -29,6 +29,10 @@ using FluentStorage;
 using FluentEmail.Core;
 using FluentStorage.Blobs;
 using Hangfire.EntityFrameworkCore;
+//#if (redis == true)
+using StackExchange.Redis;
+using Hangfire.Redis.StackExchange;
+//#endif
 //#if (notification == true)
 using AdsPush;
 using AdsPush.Abstraction;
@@ -161,10 +165,18 @@ public static partial class Program
         services.AddScoped<PushNotificationJobRunner>();
         //#endif
 
+        // Register distributed lock factory
+        //#if (redis == true)
+        services.AddTransient(sp => new Func<string, IDistributedLock>((string lockKey) =>
+        {
+            return new Medallion.Threading.Redis.RedisDistributedLock(lockKey, sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase());
+        }));
+        //#else
         services.AddTransient(sp => new Func<string, IDistributedLock>((string lockKey) =>
         {
             return new Medallion.Threading.FileSystem.FileDistributedLock(new(Path.Combine(Path.GetTempPath(), $"Boilerplate-{lockKey}.lock")));
         }));
+        //#endif
 
         services.AddSingleton<ServerExceptionHandler>();
         services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ServerExceptionHandler>());
@@ -240,6 +252,15 @@ public static partial class Program
                 options.PayloadSerializerOptions.TypeInfoResolverChain.Add(chain);
             }
         });
+
+        // Use Redis as SignalR backplane for scaling out across multiple server instances
+        //#if (redis == true)
+        signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
+        {
+            options.Configuration.ChannelPrefix = RedisChannel.Literal("signalr:");
+        });
+        //#endif
+
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
         {
             signalRBuilder.AddAzureSignalR(options =>
@@ -503,9 +524,17 @@ public static partial class Program
         }
         //#endif
 
-        builder.Services.AddHangfire(configuration =>
+        // Configure Hangfire to use Redis for persistent background job storage
+        builder.Services.AddHangfire((sp, hangfireConfiguration) =>
         {
-            var efCoreStorage = configuration.UseEFCoreStorage(optionsBuilder =>
+            //#if (redis == true)
+            hangfireConfiguration.UseRedisStorage(sp.GetRequiredService<IConnectionMultiplexer>(), new RedisStorageOptions
+            {
+                Prefix = "hangfire:",
+                Db = 1, // Use a dedicated Redis database for Hangfire
+            });
+            //#else
+            var efCoreStorage = hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
             {
                 if (appSettings.Hangfire?.UseIsolatedStorage is true)
                 {
@@ -529,11 +558,12 @@ public static partial class Program
             {
                 efCoreStorage.UseDatabaseCreator();
             }
+            //#endif
 
-            configuration.UseRecommendedSerializerSettings();
-            configuration.UseSimpleAssemblyNameTypeSerializer();
-            configuration.UseIgnoredAssemblyVersionTypeResolver();
-            configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
+            hangfireConfiguration.UseRecommendedSerializerSettings();
+            hangfireConfiguration.UseSimpleAssemblyNameTypeSerializer();
+            hangfireConfiguration.UseIgnoredAssemblyVersionTypeResolver();
+            hangfireConfiguration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
         });
 
         builder.Services.AddHangfireServer(options =>
@@ -552,7 +582,7 @@ public static partial class Program
         configuration.Bind(appSettings);
         var identityOptions = appSettings.Identity;
 
-        services.AddIdentity<User, Role>()
+        services.AddIdentity<User, Models.Identity.Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders()
             .AddErrorDescriber<AppIdentityErrorDescriber>()

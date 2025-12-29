@@ -494,6 +494,28 @@ The project uses the **FusionCache** library for server-side caching:
 
 ---
 
+## Redis Infrastructure
+
+The project uses **two separate Redis instances** for different purposes:
+
+### 1. redis-cache Ephemeral Cache
+- **No persistence** (data stored only in memory)
+- **Use Cases**: 
+  - **FusionCache** L2 distributed cache and backplane for multi-server cache synchronization
+  - **SignalR backplane** for real-time messaging across servers
+- **Why**: Cache data is regenerable, no need for disk I/O overhead
+
+### 2. redis-persistent - Persistent Storage
+- **AOF enabled** with synchronous disk writes for maximum durability
+- **Use Cases**: 
+  - **Hangfire** background job queues and state
+  - **Distributed locking** for coordinating operations
+- **Why**: Critical data that cannot be easily regenerated must survive restarts
+
+**Benefits**: Separation allows ephemeral cache to run faster while ensuring critical infrastructure data is never lost.
+
+---
+
 ### Monitor Cache Headers
 
 The system adds custom headers to help debug caching:
