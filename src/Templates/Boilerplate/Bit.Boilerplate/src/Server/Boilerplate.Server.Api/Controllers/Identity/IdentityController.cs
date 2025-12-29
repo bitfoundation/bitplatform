@@ -239,6 +239,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             if (refreshTicket?.Principal?.IsAuthenticated() is not true)
                 throw new UnauthorizedException();
 
+            HttpContext.Items[AppClaimTypes.METHOD] = refreshTicket.Principal.GetClaimValue<string?>(AppClaimTypes.METHOD);
+
             var securityStamp = refreshTicket.Principal.GetClaimValue<string?>("AspNet.Identity.SecurityStamp") ?? throw new UnauthorizedException();
 
             var currentSessionId = refreshTicket.Principal.GetSessionId();

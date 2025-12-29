@@ -6,7 +6,8 @@ namespace Boilerplate.Server.Api.Services.Identity;
 
 public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsService, UserManager<User> userManager, RoleManager<Role> roleManager,
         IOptions<IdentityOptions> optionsAccessor, IConfiguration configuration, IServiceProvider serviceProvider,
-        Func<string, IDistributedLock> distributedLockProvider)
+        Func<string, IDistributedLock> distributedLockProvider,
+        IHttpContextAccessor httpContextAccessor)
     : UserClaimsPrincipalFactory<User, Role>(userManager, roleManager, optionsAccessor)
 {
     /// <summary>
@@ -24,6 +25,12 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
                 result.AddClaim(sessionClaim);
         }
 
+        if (result.Claims.Any(c => c.Type == AppClaimTypes.METHOD) is false)
+        {
+            string? authenticationMethod = httpContextAccessor.HttpContext!.Items[AppClaimTypes.METHOD]?.ToString() ?? "Password";
+            result.AddClaim(new Claim(AppClaimTypes.METHOD, authenticationMethod));
+        }
+
         await RetrieveKeycloakClaims(user, result);
 
         return result;
@@ -35,6 +42,9 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
     /// </summary>
     private async Task RetrieveKeycloakClaims(User user, ClaimsIdentity aspnetCoreIdentityClaims)
     {
+        if (aspnetCoreIdentityClaims.HasClaim(AppClaimTypes.METHOD, "External") is false)
+            return; // User was not authenticated via Keycloak
+
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];
         if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
         {
