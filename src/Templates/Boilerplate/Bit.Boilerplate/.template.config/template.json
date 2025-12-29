@@ -173,6 +173,13 @@
             "defaultValue": "true",
             "description": "Adds aspire"
         },
+        "redis": {
+            "displayName": "Add redis?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Adds redis"
+        },
         "notification": {
             "displayName": "Add push notification?",
             "type": "parameter",

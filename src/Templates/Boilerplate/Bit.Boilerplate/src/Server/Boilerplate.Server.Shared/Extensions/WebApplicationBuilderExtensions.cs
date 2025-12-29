@@ -46,10 +46,33 @@ public static class WebApplicationBuilderExtensions
             }, excludeDefaultPolicy: true);
         });
 
+        //#if(redis == true)
+        // Add default Redis connection for Hangfire, SignalR backplane, and distributed locking (persistent Redis with AOF)
+        builder.AddRedisClient("redis-persistent", config => config.DisableTracing = true);
+
+        // Add optional Redis connection for caching (ephemeral Redis without persistent)
+        builder.AddKeyedRedisClient("redis-cache", config => config.DisableTracing = true /*FusionCache is already handling cache traces*/);
+        //#endif
+
         services.AddFusionCache()
             // Auto-clone cached objects to avoid further issues after scaling out and switching to distributed caching.
             .WithOptions(opt => opt.DefaultEntryOptions.EnableAutoClone = true)
+            //#if(redis == true)
+            // Use Redis backplane for cache synchronization across multiple server instances
+            .WithDistributedCache(sp =>
+               new Caching.StackExchangeRedis.RedisCache(new Caching.StackExchangeRedis.RedisCacheOptions
+               {
+                   ConnectionMultiplexerFactory = async () => sp.GetRequiredKeyedService<StackExchange.Redis.IConnectionMultiplexer>("redis-cache"),
+               })
+            )
+            .WithBackplane(sp => new ZiggyCreatures.Caching.Fusion.Backplane.StackExchangeRedis.RedisBackplane(
+                new ZiggyCreatures.Caching.Fusion.Backplane.StackExchangeRedis.RedisBackplaneOptions
+                {
+                    ConnectionMultiplexerFactory = async () => sp.GetRequiredKeyedService<StackExchange.Redis.IConnectionMultiplexer>("redis-cache"),
+                }))
+            //#endif
             .WithSerializer(new FusionCacheSystemTextJsonSerializer());
+
         services.AddFusionOutputCache(); // For ASP.NET Core Output Caching with FusionCache
 
         services.AddHttpContextAccessor();
