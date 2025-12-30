@@ -257,6 +257,7 @@ public static partial class Program
         //#if (redis == true)
         signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
         {
+            options.Configuration.Ssl = env.IsDevelopment() is false;
             options.Configuration.ChannelPrefix = RedisChannel.Literal("signalr:");
         });
         //#endif
@@ -344,6 +345,8 @@ public static partial class Program
 
         services.AddOpenApi(options =>
         {
+            options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
+
             options.AddOperationTransformer(async (operation, context, cancellationToken) =>
             {
                 var isAuthorizedAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is AuthorizeAttribute);
