@@ -65,6 +65,8 @@ public static partial class SignInManagerExtensions
             return (SignInResult.Failed, null);
         }
 
+        signInManager.Context.Items[AppClaimTypes.METHOD] = authenticationMethod;
+
         return (await SignInOrTwoFactorAsync(signInManager, user), authenticationMethod); // See SignInManager.SignInOrTwoFactorAsync in aspnetcore repo
     }
 
@@ -86,7 +88,7 @@ public static partial class SignInManagerExtensions
         if (updateResult.Succeeded is false)
             throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
 
-        await signInManager.SignInWithClaimsAsync(user!, isPersistent: false, [new Claim("amr", "otp")]);
+        await signInManager.SignInAsync(user!, isPersistent: false);
 
         return SignInResult.Success;
     }
