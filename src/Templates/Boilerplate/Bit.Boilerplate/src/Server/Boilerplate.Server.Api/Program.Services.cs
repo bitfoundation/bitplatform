@@ -257,7 +257,6 @@ public static partial class Program
         //#if (redis == true)
         signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
         {
-            options.Configuration.Ssl = env.IsDevelopment() is false;
             options.Configuration.ChannelPrefix = RedisChannel.Literal("signalr:");
         });
         //#endif
