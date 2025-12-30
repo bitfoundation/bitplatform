@@ -17,9 +17,9 @@ var redisPersistent = builder.AddRedis("redis-persistent")
     .WithRedisCommander()
     .WithDataVolume()
     .WithArgs(
-        "--appendonly", "yes",            // Enable AOF (Append only file) for data durability
-        "--appendfsync", "always",        // Sync to disk on every write for maximum durability. Temporarily disable it programmatically using C# code during bulk operations if needed.
-        "--save", "",                     // Disables RDB snapshots
+        "--appendonly", "yes",             // Enable AOF (Append only file) for data durability
+        "--appendfsync", "always",         // Sync to disk on every write for maximum durability. Temporarily disable it programmatically using C# code during bulk operations if needed.
+        "--save", "",                      // Disables RDB snapshots
         "--maxmemory-policy", "noeviction" // Raise error when memory limit is reached instead of evicting keys
     );
 //#endif

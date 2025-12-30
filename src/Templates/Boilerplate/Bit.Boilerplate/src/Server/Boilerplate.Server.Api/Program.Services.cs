@@ -527,13 +527,6 @@ public static partial class Program
         // Configure Hangfire to use Redis for persistent background job storage
         builder.Services.AddHangfire((sp, hangfireConfiguration) =>
         {
-            //#if (redis == true)
-            hangfireConfiguration.UseRedisStorage(sp.GetRequiredService<IConnectionMultiplexer>(), new RedisStorageOptions
-            {
-                Prefix = "hangfire:",
-                Db = 1, // Use a dedicated Redis database for Hangfire
-            });
-            //#else
             var efCoreStorage = hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
             {
                 if (appSettings.Hangfire?.UseIsolatedStorage is true)
@@ -546,7 +539,15 @@ public static partial class Program
                 }
                 else
                 {
+                    //#if (redis == true)
+                    hangfireConfiguration.UseRedisStorage(sp.GetRequiredService<IConnectionMultiplexer>(), new RedisStorageOptions
+                    {
+                        Prefix = "hangfire:",
+                        Db = 1, // Use a dedicated Redis database for Hangfire
+                    });
+                    //#else
                     AddDbContext(optionsBuilder);
+                    //#endif
                 }
             }, new()
             {
@@ -558,7 +559,6 @@ public static partial class Program
             {
                 efCoreStorage.UseDatabaseCreator();
             }
-            //#endif
 
             hangfireConfiguration.UseRecommendedSerializerSettings();
             hangfireConfiguration.UseSimpleAssemblyNameTypeSerializer();

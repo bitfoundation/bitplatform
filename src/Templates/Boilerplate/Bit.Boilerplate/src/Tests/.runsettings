@@ -13,6 +13,7 @@
 
             <!-- You can override the configuration from appsettings.json for tests here. -->
             <ConnectionStrings__sqlite>Data Source=BoilerplateDb.db;Mode=Memory;Cache=Shared;</ConnectionStrings__sqlite>
+            <Hangfire__UseIsolatedStorage>true</Hangfire__UseIsolatedStorage>
         </EnvironmentVariables>
     </RunConfiguration>
 
