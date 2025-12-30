@@ -344,6 +344,8 @@ public static partial class Program
 
         services.AddOpenApi(options =>
         {
+            options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
+
             options.AddOperationTransformer(async (operation, context, cancellationToken) =>
             {
                 var isAuthorizedAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is AuthorizeAttribute);
@@ -527,38 +529,36 @@ public static partial class Program
         // Configure Hangfire to use Redis for persistent background job storage
         builder.Services.AddHangfire((sp, hangfireConfiguration) =>
         {
-            //#if (redis == true)
-            hangfireConfiguration.UseRedisStorage(sp.GetRequiredService<IConnectionMultiplexer>(), new RedisStorageOptions
+            if (appSettings.Hangfire?.UseIsolatedStorage is true)
             {
-                Prefix = "hangfire:",
-                Db = 1, // Use a dedicated Redis database for Hangfire
-            });
-            //#else
-            var efCoreStorage = hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
-            {
-                if (appSettings.Hangfire?.UseIsolatedStorage is true)
+                hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
                 {
                     var connectionString = "Data Source=BoilerplateJobs.db;Mode=Memory;Cache=Shared;";
                     var connection = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
                     connection.Open();
                     AppContext.SetData("ReferenceTheKeepTheInMemorySQLiteDatabaseAlive", connection);
                     optionsBuilder.UseSqlite(connectionString);
-                }
-                else
+                }, new()
                 {
-                    AddDbContext(optionsBuilder);
-                }
-            }, new()
-            {
-                Schema = "jobs",
-                QueuePollInterval = new TimeSpan(0, 0, 1)
-            });
-
-            if (appSettings.Hangfire?.UseIsolatedStorage is true)
-            {
-                efCoreStorage.UseDatabaseCreator();
+                    Schema = "jobs",
+                    QueuePollInterval = new TimeSpan(0, 0, 1)
+                }).UseDatabaseCreator();
             }
-            //#endif
+            else
+            {
+                //#if (redis == true)
+                hangfireConfiguration.UseRedisStorage(sp.GetRequiredService<IConnectionMultiplexer>(), new RedisStorageOptions
+                {
+                    Db = 1, // Use a dedicated Redis database for Hangfire
+                });
+                //#else
+                hangfireConfiguration.UseEFCoreStorage(AddDbContext, new()
+                {
+                    Schema = "jobs",
+                    QueuePollInterval = new TimeSpan(0, 0, 1)
+                });
+                //#endif
+            }
 
             hangfireConfiguration.UseRecommendedSerializerSettings();
             hangfireConfiguration.UseSimpleAssemblyNameTypeSerializer();

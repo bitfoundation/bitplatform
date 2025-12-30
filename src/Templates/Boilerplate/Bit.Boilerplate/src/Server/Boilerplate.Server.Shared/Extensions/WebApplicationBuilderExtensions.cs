@@ -48,10 +48,10 @@ public static class WebApplicationBuilderExtensions
 
         //#if(redis == true)
         // Add default Redis connection for Hangfire, SignalR backplane, and distributed locking (persistence Redis with AOF)
-        builder.AddRedisClient("redis-persistent", config => config.DisableTracing = true);
+        builder.AddRedisClient("redis-persistent", settings => settings.DisableTracing = true);
 
         // Add optional Redis connection for caching (ephemeral Redis without persistence)
-        builder.AddKeyedRedisClient("redis-cache", config => config.DisableTracing = true /*FusionCache is already handling cache traces*/);
+        builder.AddKeyedRedisClient("redis-cache", settings => settings.DisableTracing = true /*FusionCache is already handling cache traces*/);
         //#endif
 
         services.AddFusionCache()
