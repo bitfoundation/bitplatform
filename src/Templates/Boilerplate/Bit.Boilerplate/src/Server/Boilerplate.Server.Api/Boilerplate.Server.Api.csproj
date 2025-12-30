@@ -22,7 +22,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="DistributedLock.FileSystem" />
         <PackageReference Include="Fido2.AspNet" />
         <PackageReference Include="Hangfire.AspNetCore" />
         <PackageReference Include="Hangfire.EntityFrameworkCore" />
@@ -71,6 +70,7 @@
         <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Connectors.HuggingFace" />
         <PackageReference Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="DistributedLock.Redis" />
+        <PackageReference Condition="'$(redis)' != 'true' OR '$(redis)' == ''" Include="DistributedLock.FileSystem" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Hangfire.Redis.StackExchange" />
         <PackageReference Condition=" ('$(redis)' == 'true' OR '$(redis)' == '') AND ('$(signalR)' == 'true' OR '$(signalR)' == '')" Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
