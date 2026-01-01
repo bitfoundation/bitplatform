@@ -126,6 +126,7 @@ public partial class AppDiagnosticModal
         try
         {
             await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
+            // RemoveWebAuthnConfiguredUserId would be deleted using StorageService.Clear below.
         }
         catch (Exception exp)
         {

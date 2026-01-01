@@ -81,9 +81,18 @@ public partial class PasswordlessTab
         }
         catch (Exception ex)
         {
-            // we can safely handle the exception thrown here since it mostly because of a timeout or user cancelling the native ui.
+            // The browser itself would show a message dialog if the passkey is no longer valid,
             ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
             return;
+        }
+        finally
+        {
+            // Regardless of whether the user actively cancelled the operation or the passkey credential is no longer valid,
+            // the browser reports the same generic error in both cases.
+            // As a result, we cannot reliably distinguish the root cause of the failure.
+            // To allow the user to attempt configuration again, we must clear the stored user ID here.
+            await webAuthnService.RemoveWebAuthnConfiguredUserId(User.Id);
+            isConfigured = false;
         }
 
         var verifyResult = await identityController
@@ -93,10 +102,6 @@ public partial class PasswordlessTab
         await userController
             .WithQueryIf(AppPlatform.IsBlazorHybrid, "origin", localHttpServer.Origin)
             .DeleteWebAuthnCredential(assertion, CurrentCancellationToken);
-
-        await webAuthnService.RemoveWebAuthnConfiguredUserId(User.Id);
-
-        isConfigured = false;
 
         SnackBarService.Success(Localizer[nameof(AppStrings.DisablePasswordlessSucsessMessage)]);
     }
