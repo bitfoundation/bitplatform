@@ -416,27 +416,17 @@ return dbContext.Products
 **Recommended Reranking Query:**
 
 ```csharp
-// Step 1: Approximate Search (fetch 50 candidates)
 var value = new Pgvector.Vector(embeddedSearchQuery.Vector);
-var candidates = dbContext.Products
+return dbContext.Products
+    // This would require the rest of the filters to be applied here instead of the method's returned IQueryable by the caller. For example Price > X etc.
     .Where(p => p.Embedding!.CosineDistance(value!) < DISTANCE_THRESHOLD)
     .OrderBy(p => p.Embedding!.CosineDistance(value!))
-    .Take(50)
-    .Select(p => new 
-    { 
-        Product = p, 
-        // Calculate exact distance for the candidates
-        Distance = p.Embedding!.CosineDistance(value!)
-    });
-
-// Step 2: Reranking (Refine to top 10)
-var finalResults = candidates
-    .OrderBy(x => x.Distance)
-    .Take(10)
-    .Select(x => x.Product);
-
-return finalResults;
+    .Take(CANDIDATE_COUNT) // Step 1: Approximate Search (fetch more candidates for better accuracy). This is especially important when using DiskANN indexes which may sacrifice some accuracy for speed
+    .OrderBy(p => p.Embedding!.CosineDistance(value!))
+    .Take(FINAL_RESULT_COUNT); // Step 2: Reranking (Refine to top results with exact distances)
 ```
+
+**Important**: The database execution plan should reflect the re-ranking strategy, ensuring that the DiskANN index is utilized effectively.
 
 **Why this matters:**
 
