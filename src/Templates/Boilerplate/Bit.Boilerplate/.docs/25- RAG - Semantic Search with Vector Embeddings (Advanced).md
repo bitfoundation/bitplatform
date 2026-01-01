@@ -350,5 +350,101 @@ A hybrid approach can offer a balance between speed and accuracy. You can first 
 
 ---
 
+## 7. Performance Optimization: Azure DiskANN index & Reranking
+
+When moving to production with large datasets (e.g., millions of vectors) in **SQL Server** or **PostgreSQL**, it is fully recommended to use the **DiskANN** index. DiskANN provides high-performance, disk-based approximate nearest neighbor (ANN) search.
+
+However, to utilize DiskANN efficiently and maintain high accuracy (recall), you should modify your query strategy. Instead of a simple "Order By & Take", use a **two-step Reranking** approach.
+
+### Steps to enable DiskANN
+
+#### Step A: Enable Extensions in `DbContext`
+
+In your `AppDbContext.cs` (Server.Api project), ensure the extensions are registered:
+Example instructions provided for PostgreSQL
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{    
+    // Enable pgvector extension for vector operations
+    modelBuilder.HasPostgresExtension("vector");
+    
+    // Enable Azure's high-performance DiskANN extension
+    modelBuilder.HasPostgresExtension("pg_diskann"); 
+}
+```
+
+#### Step B: Configure the Index (`EntityTypeConfiguration`)
+
+In your Entity Configuration file (e.g., `ProductConfiguration.cs`), define the DiskANN index. This tells EF Core to create the specialized index:
+
+```csharp
+public void Configure(EntityTypeBuilder<Product> builder)
+{
+    // Define the vector column
+    builder.Property(p => p.Embedding)
+           .HasColumnType("vector(384)"); // Adjust size based on your embedding model
+
+    // Define the DiskANN Index
+    builder.HasIndex(p => p.Embedding)
+           .HasMethod("diskann") // Explicitly use Azure's DiskANN
+           .HasOperators("vector_cosine_ops") // Use cosine similarity
+           .HasStorageParameter("product_quantized", true); // Enable `Product Quantization` to leverage high-dimensional support
+}
+```
+
+### The Query Strategy
+
+1. **Fetch Candidates**: Request more results than you need (e.g., 50) using the approximate index.
+2. **Rerank**: Re-sort those candidates by exact distance and return the top results (e.g., 10).
+
+https://learn.microsoft.com/en-us/azure/postgresql/extensions/how-to-use-pgdiskann#improve-accuracy-when-using-pq-with-vector-reranking
+
+Instead of the standard query, refactor your LINQ query to use a subquery structure. This encourages the database engine to use the index for coarse filtering before performing fine-grained sorting.
+
+**Standard Query (Less Optimized for DiskANN):**
+
+```csharp
+// Simple scan - might be slow or less accurate with heavily compressed indexes
+var value = new Pgvector.Vector(embeddedSearchQuery.Vector);
+return dbContext.Products
+    .Where(p => p.Embedding!.CosineDistance(value!) < DISTANCE_THRESHOLD)
+    .OrderBy(p => p.Embedding!.CosineDistance(value!))
+    .Take(10);
+```
+
+**Recommended Reranking Query:**
+
+```csharp
+// Step 1: Approximate Search (fetch 50 candidates)
+var value = new Pgvector.Vector(embeddedSearchQuery.Vector);
+var candidates = dbContext.Products
+    .Where(p => p.Embedding!.CosineDistance(value!) < DISTANCE_THRESHOLD)
+    .OrderBy(p => p.Embedding!.CosineDistance(value!))
+    .Take(50)
+    .Select(p => new 
+    { 
+        Product = p, 
+        // Calculate exact distance for the candidates
+        Distance = p.Embedding!.CosineDistance(value!)
+    });
+
+// Step 2: Reranking (Refine to top 10)
+var finalResults = candidates
+    .OrderBy(x => x.Distance)
+    .Take(10)
+    .Select(x => x.Product);
+
+return finalResults;
+```
+
+**Why this matters:**
+
+* **DiskANN** uses compression (quantization) to be fast.
+* By fetching a larger "candidate list" (50) first, you compensate for potential approximation errors.
+* Sorting the small list (50 items) by exact distance ensures your final Top 10 are highly accurate.
+
+---
+
 Happy coding! 🚀
 
