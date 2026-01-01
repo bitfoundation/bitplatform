@@ -81,7 +81,7 @@ public partial class PasswordlessTab
         }
         catch (Exception ex)
         {
-            // The browser itself would show a message dialog if the passkey is no longer valid,
+            // The browser itself would show a message dialog if the passkey is no longer valid.
             ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
             return;
         }
