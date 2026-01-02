@@ -23,9 +23,10 @@ public partial class AppClientCoordinator : AppComponentBase
 {
     //#if (signalR == true)
     [AutoInject] private Notification notification = default!;
-    [AutoInject] private HubConnection hubConnection = default!;
     [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private HubConnection hubConnection = default!;
     [AutoInject] private CultureService cultureService = default!;
+    [AutoInject] private SignInModalService signInModalService = default!;
     //#endif
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
@@ -291,6 +292,13 @@ public partial class AppClientCoordinator : AppComponentBase
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.UPLOAD_LAST_ERROR, async () =>
         {
             return DiagnosticLogger.Store.LastOrDefault(l => l.Level is LogLevel.Error or LogLevel.Critical);
+        }));
+
+        hubConnection.Remove(SharedAppMessages.SHOW_SIGN_IN_MODAL);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.SHOW_SIGN_IN_MODAL, async () =>
+        {
+            await signInModalService.SignIn();
+            return await StorageService.GetItem("access_token");
         }));
 
         hubConnection.Closed += HubConnectionStateChange;

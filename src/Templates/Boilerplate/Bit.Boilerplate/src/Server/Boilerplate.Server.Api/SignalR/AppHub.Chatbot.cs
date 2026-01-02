@@ -51,6 +51,7 @@ public partial class AppHub
                         generateFollowUpSuggestions: true,
                         incomingMessage,
                         request.ServerApiAddress,
+                        Context.GetHttpContext()!.User,
                         messageSpecificCancellationTokenSrc.Token);
                 }
             }

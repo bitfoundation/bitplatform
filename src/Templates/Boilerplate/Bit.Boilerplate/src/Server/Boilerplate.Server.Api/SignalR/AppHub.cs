@@ -82,6 +82,8 @@ public partial class AppHub : Hub
 
     private async Task ChangeAuthenticationStateImplementation(ClaimsPrincipal? user)
     {
+        Context.GetHttpContext()!.User = user ?? new ClaimsPrincipal(new ClaimsIdentity()) /*Anonymous*/;
+
         await using var scope = serviceProvider.CreateAsyncScope();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 

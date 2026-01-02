@@ -1140,7 +1140,7 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>AI-chatpaneel</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>Hallo! Ik ben hier om je app-ervaring geweldig te maken! Heb je een vraag of heb je hulp nodig?</value>
+    <value>Hallo{0}! Ik ben hier om je app-ervaring geweldig te maken! Heb je een vraag of heb je hulp nodig?</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>Open de reset-wachtwoordpagina en vertel me hoe het werkt</value>
