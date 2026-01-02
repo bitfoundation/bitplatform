@@ -123,16 +123,6 @@ public partial class AppDiagnosticModal
 
     private async Task ClearAppFiles()
     {
-        try
-        {
-            await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
-            // RemoveWebAuthnConfiguredUserId will be deleted using StorageService.Clear below.
-        }
-        catch (Exception exp)
-        {
-            logger.LogWarning(exp, "Failed to delete WebAuthn credentials during ClearAppStorage.");
-        }
-
         //#if (offlineDb == true)
         try
         {

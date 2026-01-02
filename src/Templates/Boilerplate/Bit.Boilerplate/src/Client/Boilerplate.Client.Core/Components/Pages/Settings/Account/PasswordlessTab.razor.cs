@@ -81,14 +81,15 @@ public partial class PasswordlessTab
         }
         catch (Exception ex)
         {
-            // The browser itself would show a message dialog if the passkey is no longer valid.
+            // we can safely ignore the exception thrown here since it mostly because of a timeout or user cancelling the native ui.
+            // In case passkey is no longer valid, the browser would show a message dialog itself.
             ExceptionHandler.Handle(ex, ExceptionDisplayKind.None);
             return;
         }
         finally
         {
-            // Regardless of whether the user actively cancelled the operation or the passkey credential is no longer valid,
-            // the browser reports the same generic error in both cases.
+            // Regardless of whether the user actively cancelled the operation, it has timed out or the passkey is no longer valid,
+            // the browser throws the same generic error.
             // As a result, we cannot reliably distinguish the root cause of the failure.
             // To allow the user to attempt configuration again, we must clear the stored user ID here.
             await webAuthnService.RemoveWebAuthnConfiguredUserId(User.Id);
@@ -105,16 +106,6 @@ public partial class PasswordlessTab
 
         SnackBarService.Success(Localizer[nameof(AppStrings.DisablePasswordlessSucsessMessage)]);
     }
-
-    // Only for debugging purposes, uncomment the following lines and the corresponding lines in the razor file.
-    //private async Task DeleteAll()
-    //{
-    //    await userController.DeleteAllWebAuthnCredentials(CurrentCancellationToken);
-
-    //    await webAuthnService.RemoveWebAuthnConfigured();
-
-    //    isConfigured = false;
-    //}
 
     protected override async Task OnAfterFirstRenderAsync()
     {
