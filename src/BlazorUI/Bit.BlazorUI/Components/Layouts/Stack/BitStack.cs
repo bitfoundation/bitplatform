@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
 
@@ -7,6 +8,19 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitStack : BitComponentBase
 {
+    /// <summary>
+    /// Gets or sets the cascading parameters for the stack component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple stack components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitStackParams.ParamName)]
+    public BitStackParams? CascadingParameters { get; set; }
+
+
+
     /// <summary>
     /// Defines whether to render Stack children both horizontally and vertically.
     /// </summary>
@@ -160,6 +174,16 @@ public partial class BitStack : BitComponentBase
         StyleBuilder.Register(() => (FitSize || FitWidth) ? "width:fit-content" : string.Empty);
         StyleBuilder.Register(() => (FitSize || FitHeight) ? "height:fit-content" : string.Empty);
     }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitStackParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
+    }
+
+
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {

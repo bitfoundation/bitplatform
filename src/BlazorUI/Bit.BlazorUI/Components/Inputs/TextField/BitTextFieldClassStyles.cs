@@ -58,6 +58,16 @@ public class BitTextFieldClassStyles
     public string? RevealPasswordIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's clear button.
+    /// </summary>
+    public string? ClearButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's clear button icon.
+    /// </summary>
+    public string? ClearButtonIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the BitTextField's icon.
     /// </summary>
     public string? Icon { get; set; }

@@ -173,6 +173,13 @@
             "defaultValue": "true",
             "description": "Adds aspire"
         },
+        "redis": {
+            "displayName": "Add redis?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Adds redis"
+        },
         "notification": {
             "displayName": "Add push notification?",
             "type": "parameter",
@@ -498,6 +505,7 @@
                 {
                     "condition": "(offlineDb != true)",
                     "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController",
                         "src/Client/Boilerplate.Client.Core/Data/**",
                         "src/Client/Boilerplate.Client.Core/Services/SyncService.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/OfflineTodoPage*",

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <Playwright>
+    <!-- Browser to use for testing: chromium, firefox, or webkit -->
+    <BrowserName>chromium</BrowserName>
+    <!-- Run tests in headless mode -->
+    <LaunchOptions>
+      <Headless>true</Headless>
+      <!-- Enable Chrome DevTools Protocol for memory measurements -->
+      <Args>["--enable-precise-memory-info"]</Args>
+    </LaunchOptions>
+    <!-- Timeout in milliseconds -->
+    <ExpectTimeout>30000</ExpectTimeout>
+  </Playwright>
+</RunSettings>

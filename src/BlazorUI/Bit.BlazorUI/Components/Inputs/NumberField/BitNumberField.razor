@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitTextInputBase<TValue>
 @typeparam TValue
 
@@ -110,9 +110,10 @@
                    @onkeydown="HandleOnKeyDown"
                    @onfocusin="HandleOnFocusIn"
                    @onfocusout="HandleOnFocusOut"
-                   @onchange="HandleOnStringValueChangeAsync"
-                   @oninput="HandleOnStringValueInputAsync"
                    @onwheel="HandleOnMouseWheel"
+                   @bind-value:get="@CurrentValueAsString"
+                   @bind-value:set="@HandleOnStringValueSet"
+                   @bind-value:event="@(Immediate ? "oninput" : "onchange")"
                    form=""
                    min="@_min"
                    max="@_max"
@@ -126,7 +127,6 @@
                    inputmode="@_inputMode"
                    placeholder="@Placeholder"
                    aria-labelledby="@_labelId"
-                   value="@CurrentValueAsString"
                    disabled="@(IsEnabled is false)"
                    class="bit-nfl-inp@(Mode == BitSpinButtonMode.Spread ? " bit-nfl-cin" : "") @Classes?.Input"
                    autocomplete="@(AutoComplete ?? "off")"

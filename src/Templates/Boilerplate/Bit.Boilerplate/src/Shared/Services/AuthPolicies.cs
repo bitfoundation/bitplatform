@@ -3,11 +3,6 @@
 public class AuthPolicies
 {
     /// <summary>
-    /// Having this policy means the user has enabled 2 factor authentication.
-    /// </summary>
-    public const string TFA_ENABLED = nameof(TFA_ENABLED);
-
-    /// <summary>
     /// Having this policy/claim in access token means the user is allowed to view pages that require privileged access.
     /// Currently, this policy applies only to the Todo and AdminPanel specific pages like dashboard page. 
     /// However, it can be extended to cover additional pages as needed. 

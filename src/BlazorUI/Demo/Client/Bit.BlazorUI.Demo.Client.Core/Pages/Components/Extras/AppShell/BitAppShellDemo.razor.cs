@@ -13,26 +13,17 @@ public partial class BitAppShellDemo
          },
          new()
          {
-            Name = "CascadingValues",
-            Type = "IEnumerable<BitCascadingValue>?",
-            DefaultValue = "null",
-            Description = "The cascading values to be provided for the children of the layout.",
-            LinkType = LinkType.Link,
-            Href = "#cascading-value"
-         },
-         new()
-         {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the layout.",
+            Description = "The content of the app shell.",
          },
          new()
          {
             Name = "Classes",
             Type = "BitAppShellClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the layout.",
+            Description = "Custom CSS classes for different parts of the app shell.",
             LinkType = LinkType.Link,
             Href = "#class-styles"
          },
@@ -41,9 +32,27 @@ public partial class BitAppShellDemo
             Name = "Styles",
             Type = "BitAppShellClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the layout.",
+            Description = "Custom CSS styles for different parts of the app shell.",
             LinkType = LinkType.Link,
             Href = "#class-styles"
+         },
+         new()
+         {
+            Name = "ValueList",
+            Type = "BitCascadingValueList?",
+            DefaultValue = "null",
+            Description = "The cascading value list to be provided for the children of the app shell.",
+            LinkType = LinkType.Link,
+            Href = "#cascading-value-list"
+         },
+         new()
+         {
+            Name = "Values",
+            Type = "IEnumerable<BitCascadingValue>?",
+            DefaultValue = "null",
+            Description = "The cascading values to be provided for the children of the app shell.",
+            LinkType = LinkType.Link,
+            Href = "#cascading-value"
          },
     ];
 
@@ -62,6 +71,22 @@ public partial class BitAppShellDemo
 
     private readonly List<ComponentSubClass> componentSubClasses =
     [
+        new()
+        {
+            Id = "cascading-value-list",
+            Title = "BitCascadingValueList",
+            Description = "A helper class to ease the using of a list of the BitCascadingValue.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Add<T>(T value, string? name = null, bool isFixed = false)",
+                    Type = "void",
+                    DefaultValue = "",
+                    Description = "Adds a typed BitCascadingValue to the list.",
+                }
+            ]
+        },
         new()
         {
             Id = "cascading-value",

@@ -55,10 +55,10 @@ public partial class BitActionButtonDemo
 
     private readonly string example5RazorCode = @"
 <BitActionButton IconName=""@BitIconName.AddFriend"">
-    <div style=""display:flex;gap:0.5rem;"">
+        <div style=""display:flex;gap:0.5rem;"">
         <b>This is a custom template</b>
-        <BitSpinnerLoading CustomSize=""20"" />
-    </div>
+            <BitSpinnerLoading CustomSize=""20"" />
+        </div>
 </BitActionButton>";
 
     private readonly string example6RazorCode = @"
@@ -114,6 +114,50 @@ private async Task HandleValidSubmit()
 </BitActionButton>";
 
     private readonly string example8RazorCode = @"
+<BitToggle @bind-Value=""isLoading"" Label=""Toggle loading"" />
+
+<BitActionButton IsLoading=""isLoading"" IconName=""@BitIconName.Save"">
+    Save changes
+</BitActionButton>
+
+<BitActionButton IsLoading=""isLoading"" IconName=""@BitIconName.CloudUpload"">
+    Upload file
+</BitActionButton>
+
+<BitActionButton IsLoading=""isLoading"" IconName=""@BitIconName.Send"" Color=""BitColor.Success"">
+    Send message
+</BitActionButton>";
+    private readonly string example8CsharpCode = @"
+private bool isLoading;";
+
+    private readonly string example9RazorCode = @"
+<BitToggle @bind-Value=""templateIsLoading"" Label=""Toggle loading"" />
+
+<BitActionButton IsLoading=""templateIsLoading"" IconName=""@BitIconName.Download"">
+    <Body>
+        Download
+    </Body>
+    <LoadingTemplate>
+        <BitRingLoading CustomSize=""20"" Color=""BitColor.Tertiary"" /> Downloading...
+    </LoadingTemplate>
+</BitActionButton>";
+    private readonly string example9CsharpCode = @"
+private bool templateIsLoading;";
+
+    private readonly string example10RazorCode = @"
+<BitActionButton Underlined IconName=""@BitIconName.Link"">
+    Link style
+</BitActionButton>
+
+<BitActionButton Underlined IconName=""@BitIconName.OpenInNewTab"" Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"">
+    Open GitHub
+</BitActionButton>
+
+<BitActionButton Underlined Color=""BitColor.Info"" IconName=""@BitIconName.Info"">
+    More info
+</BitActionButton>";
+
+    private readonly string example11RazorCode = @"
 <BitActionButton Color=""BitColor.Primary"" IconName=""@BitIconName.ColorSolid"">
     Primary
 </BitActionButton>
@@ -233,7 +277,7 @@ private async Task HandleValidSubmit()
     TertiaryBorder
 </BitActionButton>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitActionButton Size=""BitSize.Small"" IconName=""@BitIconName.FontSize"">
     Small
 </BitActionButton>
@@ -246,7 +290,7 @@ private async Task HandleValidSubmit()
     Large
 </BitActionButton>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .custom-icon {
         color: hotpink;
@@ -291,7 +335,7 @@ private async Task HandleValidSubmit()
     Action Button Classes (Hover me)
 </BitActionButton>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitActionButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.AddFriend"">
     ساخت حساب
 </BitActionButton>";

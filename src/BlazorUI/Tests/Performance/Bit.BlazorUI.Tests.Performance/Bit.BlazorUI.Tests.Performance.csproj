@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Sdk Name="Microsoft.NET.Sdk.Razor" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <IsPackable>false</IsPackable>
+        <LangVersion>14.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <RollForward>Major</RollForward>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+        <PackageReference Include="Microsoft.Playwright.MSTest" Version="1.52.0" />
+        <PackageReference Include="MSTest" Version="3.9.0" />
+        <PackageReference Include="MSTest.Analyzers" Version="3.9.0" />
+        <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+        <Using Include="Microsoft.Playwright" />
+        <Using Include="Microsoft.Playwright.MSTest" />
+    </ItemGroup>
+
+</Project>

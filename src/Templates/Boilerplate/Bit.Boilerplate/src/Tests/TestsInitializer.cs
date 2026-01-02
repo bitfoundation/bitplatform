@@ -57,25 +57,11 @@ public partial class TestsInitializer
 
         await aspireApp.StartAsync(testContext.CancellationToken);
 
-        //#if (database == "SqlServer")
-        Environment.SetEnvironmentVariable("ConnectionStrings__mssqldb", await aspireApp.GetConnectionStringAsync("mssqldb", testContext.CancellationToken));
-        await aspireApp.ResourceNotifications.WaitForResourceAsync("mssqldb", KnownResourceStates.Running, testContext.CancellationToken);
-        //#elif (database == "PostgreSql")
-        Environment.SetEnvironmentVariable("ConnectionStrings__postgresdb", await aspireApp.GetConnectionStringAsync("postgresdb", testContext.CancellationToken));
-        await aspireApp.ResourceNotifications.WaitForResourceAsync("postgresdb", KnownResourceStates.Running, testContext.CancellationToken);
-        //#elif (database == "MySql")
-        Environment.SetEnvironmentVariable("ConnectionStrings__mysqldb", await aspireApp.GetConnectionStringAsync("mysqldb", testContext.CancellationToken));
-        await aspireApp.ResourceNotifications.WaitForResourceAsync("mysqldb", KnownResourceStates.Running, testContext.CancellationToken);
-        //#endif
-        //#if (filesStorage == "AzureBlobStorage")
-        Environment.SetEnvironmentVariable("ConnectionStrings__azureblobstorage", await aspireApp.GetConnectionStringAsync("azureblobstorage", testContext.CancellationToken));
-        await aspireApp.ResourceNotifications.WaitForResourceAsync("azureblobstorage", KnownResourceStates.Running, testContext.CancellationToken);
-        //#elif (filesStorage == "S3")
-        Environment.SetEnvironmentVariable("ConnectionStrings__s3", await aspireApp.GetConnectionStringAsync("s3", testContext.CancellationToken));
-        await aspireApp.ResourceNotifications.WaitForResourceAsync("s3", KnownResourceStates.Running, testContext.CancellationToken);
-        //#endif
-        Environment.SetEnvironmentVariable("ConnectionStrings__smtp", await aspireApp.GetConnectionStringAsync("smtp", testContext.CancellationToken));
-        await aspireApp.ResourceNotifications.WaitForResourceAsync("smtp", KnownResourceStates.Running, testContext.CancellationToken);
+        foreach (var connectionString in aspireBuilder.Resources.OfType<IResourceWithConnectionString>())
+        {
+            Environment.SetEnvironmentVariable($"ConnectionStrings__{connectionString.Name}", await aspireApp.GetConnectionStringAsync(connectionString.Name, testContext.CancellationToken));
+            await aspireApp.ResourceNotifications.WaitForResourceAsync(connectionString.Name, [.. KnownResourceStates.TerminalStates, KnownResourceStates.Running], testContext.CancellationToken);
+        }
     }
     //#endif
 

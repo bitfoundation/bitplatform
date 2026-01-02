@@ -5,7 +5,9 @@ using System.IO.Compression;
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 using System.ClientModel.Primitives;
 using Microsoft.SemanticKernel.Embeddings;
-using SmartComponents.LocalEmbeddings.SemanticKernel;
+//#endif
+//#if (database == "PostgreSQL")
+using Npgsql;
 //#endif
 //#if (database == "Sqlite")
 using Microsoft.Data.Sqlite;
@@ -27,6 +29,10 @@ using FluentStorage;
 using FluentEmail.Core;
 using FluentStorage.Blobs;
 using Hangfire.EntityFrameworkCore;
+//#if (redis == true)
+using StackExchange.Redis;
+using Hangfire.Redis.StackExchange;
+//#endif
 //#if (notification == true)
 using AdsPush;
 using AdsPush.Abstraction;
@@ -159,10 +165,18 @@ public static partial class Program
         services.AddScoped<PushNotificationJobRunner>();
         //#endif
 
+        // Register distributed lock factory
+        //#if (redis == true)
+        services.AddTransient(sp => new Func<string, IDistributedLock>((string lockKey) =>
+        {
+            return new Medallion.Threading.Redis.RedisDistributedLock(lockKey, sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase());
+        }));
+        //#else
         services.AddTransient(sp => new Func<string, IDistributedLock>((string lockKey) =>
         {
             return new Medallion.Threading.FileSystem.FileDistributedLock(new(Path.Combine(Path.GetTempPath(), $"Boilerplate-{lockKey}.lock")));
         }));
+        //#endif
 
         services.AddSingleton<ServerExceptionHandler>();
         services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ServerExceptionHandler>());
@@ -238,6 +252,15 @@ public static partial class Program
                 options.PayloadSerializerOptions.TypeInfoResolverChain.Add(chain);
             }
         });
+
+        // Use Redis as SignalR backplane for scaling out across multiple server instances
+        //#if (redis == true)
+        signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
+        {
+            options.Configuration.ChannelPrefix = RedisChannel.Literal("signalr:");
+        });
+        //#endif
+
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
         {
             signalRBuilder.AddAzureSignalR(options =>
@@ -277,6 +300,7 @@ public static partial class Program
             });
             //#elif (database == "PostgreSQL")
             var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
+            dataSourceBuilder.UseVector();
             dataSourceBuilder.EnableDynamicJson();
             options.UseNpgsql(dataSourceBuilder.Build(), dbOptions =>
             {
@@ -320,6 +344,8 @@ public static partial class Program
 
         services.AddOpenApi(options =>
         {
+            options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
+
             options.AddOperationTransformer(async (operation, context, cancellationToken) =>
             {
                 var isAuthorizedAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is AuthorizeAttribute);
@@ -498,47 +524,46 @@ public static partial class Program
             .UseOpenTelemetry();
             // .UseDistributedCache()
         }
-        else
-        {
-            services.AddEmbeddingGenerator(sp => new LocalTextEmbeddingGenerationService()
-                .AsEmbeddingGenerator())
-                .UseLogging()
-                .UseOpenTelemetry();
-            // .UseDistributedCache()
-        }
         //#endif
 
-        builder.Services.AddHangfire(configuration =>
+        // Configure Hangfire to use Redis for persistent background job storage
+        builder.Services.AddHangfire((sp, hangfireConfiguration) =>
         {
-            var efCoreStorage = configuration.UseEFCoreStorage(optionsBuilder =>
+            if (appSettings.Hangfire?.UseIsolatedStorage is true)
             {
-                if (appSettings.Hangfire?.UseIsolatedStorage is true)
+                hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
                 {
                     var connectionString = "Data Source=BoilerplateJobs.db;Mode=Memory;Cache=Shared;";
                     var connection = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
                     connection.Open();
                     AppContext.SetData("ReferenceTheKeepTheInMemorySQLiteDatabaseAlive", connection);
                     optionsBuilder.UseSqlite(connectionString);
-                }
-                else
+                }, new()
                 {
-                    AddDbContext(optionsBuilder);
-                }
-            }, new()
+                    Schema = "jobs",
+                    QueuePollInterval = new TimeSpan(0, 0, 1)
+                }).UseDatabaseCreator();
+            }
+            else
             {
-                Schema = "jobs",
-                QueuePollInterval = new TimeSpan(0, 0, 1)
-            });
-
-            if (appSettings.Hangfire?.UseIsolatedStorage is true)
-            {
-                efCoreStorage.UseDatabaseCreator();
+                //#if (redis == true)
+                hangfireConfiguration.UseRedisStorage(sp.GetRequiredService<IConnectionMultiplexer>(), new RedisStorageOptions
+                {
+                    Db = 1, // Use a dedicated Redis database for Hangfire
+                });
+                //#else
+                hangfireConfiguration.UseEFCoreStorage(AddDbContext, new()
+                {
+                    Schema = "jobs",
+                    QueuePollInterval = new TimeSpan(0, 0, 1)
+                });
+                //#endif
             }
 
-            configuration.UseRecommendedSerializerSettings();
-            configuration.UseSimpleAssemblyNameTypeSerializer();
-            configuration.UseIgnoredAssemblyVersionTypeResolver();
-            configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
+            hangfireConfiguration.UseRecommendedSerializerSettings();
+            hangfireConfiguration.UseSimpleAssemblyNameTypeSerializer();
+            hangfireConfiguration.UseIgnoredAssemblyVersionTypeResolver();
+            hangfireConfiguration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
         });
 
         builder.Services.AddHangfireServer(options =>
@@ -557,7 +582,7 @@ public static partial class Program
         configuration.Bind(appSettings);
         var identityOptions = appSettings.Identity;
 
-        services.AddIdentity<User, Role>()
+        services.AddIdentity<User, Models.Identity.Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders()
             .AddErrorDescriber<AppIdentityErrorDescriber>()

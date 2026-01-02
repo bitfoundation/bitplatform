@@ -12,8 +12,9 @@ public partial class BitAppShell : BitComponentBase
     public const string Container = "BitAppShell.Container";
 
 
+
     private bool _locationChanged;
-    private ElementReference _containerRef = default!;
+    private ElementReference? _containerRef;
 
 
 
@@ -28,17 +29,12 @@ public partial class BitAppShell : BitComponentBase
     [Parameter] public bool AutoGoToTop { get; set; }
 
     /// <summary>
-    /// The cascading values to be provided for the children of the layout.
-    /// </summary>
-    [Parameter] public IEnumerable<BitCascadingValue>? CascadingValues { get; set; }
-
-    /// <summary>
-    /// The content of the layout.
+    /// The content of the app shell.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the layout.
+    /// Custom CSS classes for different parts of the app shell.
     /// </summary>
     [Parameter] public BitAppShellClassStyles? Classes { get; set; }
 
@@ -48,9 +44,19 @@ public partial class BitAppShell : BitComponentBase
     [Parameter] public bool PersistScroll { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the layout.
+    /// Custom CSS styles for different parts of the app shell.
     /// </summary>
     [Parameter] public BitAppShellClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The cascading value list to be provided for the children of the app shell.
+    /// </summary>
+    [Parameter] public BitCascadingValueList? ValueList { get; set; }
+
+    /// <summary>
+    /// The cascading values to be provided for the children of the app shell.
+    /// </summary>
+    [Parameter] public IEnumerable<BitCascadingValue>? Values { get; set; }
 
 
 
@@ -59,13 +65,15 @@ public partial class BitAppShell : BitComponentBase
     /// </summary>
     public async Task GoToTop(BitScrollBehavior? behavior = null)
     {
-        await _js.BitExtrasGoToTop(_containerRef, behavior);
+        if (_containerRef.HasValue is false) return;
+
+        await _js.BitExtrasGoToTop(_containerRef.Value, behavior);
     }
 
     /// <summary>
-    /// The element reference to the main container of the ap shell.
+    /// The element reference to the main container of the app shell.
     /// </summary>
-    public ElementReference ContainerRef => _containerRef;
+    public ElementReference? ContainerRef => _containerRef;
 
 
 
@@ -95,7 +103,9 @@ public partial class BitAppShell : BitComponentBase
     {
         if (firstRender && PersistScroll)
         {
-            await _js.BitAppShellInitScroll(_containerRef, _navManager.Uri);
+            if (_containerRef.HasValue is false) return;
+
+            await _js.BitAppShellInitScroll(_containerRef.Value, _navManager.Uri);
         }
 
         if (_locationChanged && firstRender is false)

@@ -1,7 +1,11 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Globalization;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
-/// The color picker (ColorPicker) is used to browse through and select colors. By default, it lets people navigate through colors on a color spectrum, or specify a color in either Red-Green-Blue (RGB), or alpha color code; or Hexadecimal textboxes.
+/// The color picker (ColorPicker) is used to browse through and select colors. 
+/// By default, it lets people navigate through colors on a color spectrum, 
+/// or specify a color in either Red-Green-Blue (RGB), or alpha color code; or Hexadecimal textboxes.
 /// </summary>
 public partial class BitColorPicker : BitComponentBase
 {
@@ -35,6 +39,7 @@ public partial class BitColorPicker : BitComponentBase
             if (_color.A == value) return;
 
             _color.A = value;
+
             AlphaChanged.InvokeAsync(value);
         }
     }
@@ -48,7 +53,7 @@ public partial class BitColorPicker : BitComponentBase
         get => _colorType == BitInternalColorType.Hex ? _color.Hex! : _color.Rgb!;
         set
         {
-            _colorType = value.HasValue() && value.StartsWith("#", StringComparison.InvariantCultureIgnoreCase)
+            _colorType = value.HasValue() && value.StartsWith('#')
                             ? BitInternalColorType.Hex
                             : BitInternalColorType.Rgb;
 
@@ -85,9 +90,14 @@ public partial class BitColorPicker : BitComponentBase
 
 
     public string? Hex => _color.Hex;
+
     public string? Rgb => FormattableString.Invariant($"rgb({_color.R},{_color.G},{_color.B})");
+    
     public string? Rgba => FormattableString.Invariant($"rgba({_color.R},{_color.G},{_color.B},{_color.A})");
+    
     public (double Hue, double Saturation, double Value) Hsv => _color.Hsv;
+
+
 
     [JSInvokable(nameof(HandlePointerUp))]
     public void HandlePointerUp(MouseEventArgs e)
@@ -132,6 +142,7 @@ public partial class BitColorPicker : BitComponentBase
     private async Task SetSaturationPickerThumbPositionAsync()
     {
         var (_, saturation, value) = _color.Hsv;
+
         var saturationPickerRect = await _js.BitUtilsGetBoundingClientRect(_saturationPickerRef);
 
         var width = saturationPickerRect?.Width ?? 0;
@@ -145,6 +156,7 @@ public partial class BitColorPicker : BitComponentBase
     private void SetSaturationPickerStyle()
     {
         var rgb = BitInternalColor.ToRgb(_selectedHue, 1, 1).ToString();
+
         _saturationPickerStyle = $"background-color:rgb{rgb}";
     }
 
@@ -153,14 +165,17 @@ public partial class BitColorPicker : BitComponentBase
         if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
 
         var pickerRect = await _js.BitUtilsGetBoundingClientRect(_saturationPickerRef);
-        var left = e.ClientX < pickerRect.Left ? 0
+
+        var left = e.ClientX < pickerRect.Left 
+                    ? 0
                     : e.ClientX > pickerRect.Left + pickerRect.Width
-                    ? pickerRect.Width
-                    : (e.ClientX - pickerRect.Left);
-        var top = e.ClientY < pickerRect.Top ? 0
+                        ? pickerRect.Width
+                        : (e.ClientX - pickerRect.Left);
+        var top = e.ClientY < pickerRect.Top 
+                    ? 0
                     : e.ClientY > pickerRect.Top + pickerRect.Height
-                    ? pickerRect.Height
-                    : (e.ClientY - pickerRect.Top);
+                        ? pickerRect.Height
+                        : (e.ClientY - pickerRect.Top);
 
         _saturationPickerThumbPosition = new(left, top);
 
@@ -168,6 +183,7 @@ public partial class BitColorPicker : BitComponentBase
         _selectedValue = Math.Clamp((pickerRect.Height - e.ClientY + pickerRect.Top) / pickerRect.Height, 0, 1);
 
         _color.Update(_selectedHue, _selectedSaturation, _selectedValue, _color.A);
+
         var colorValue = _colorType == BitInternalColorType.Hex ? _color.Hex : _color.Rgb;
 
         SetSaturationPickerStyle();
@@ -183,7 +199,8 @@ public partial class BitColorPicker : BitComponentBase
     {
         if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
 
-        _selectedHue = Convert.ToDouble(args.Value);
+        _selectedHue = Convert.ToDouble(args.Value, CultureInfo.InvariantCulture);
+
         _color.Update(_selectedHue, _selectedSaturation, _selectedValue, _color.A);
 
         var colorValue = _colorType == BitInternalColorType.Hex ? _color.Hex : _color.Rgb;
@@ -199,7 +216,8 @@ public partial class BitColorPicker : BitComponentBase
     {
         if (AlphaHasBeenSet && AlphaChanged.HasDelegate is false) return;
 
-        _color.A = Convert.ToDouble(args.Value);
+        _color.A = Convert.ToDouble(args.Value, CultureInfo.InvariantCulture);
+
         var colorValue = _colorType == BitInternalColorType.Hex ? _color.Hex : _color.Rgb;
 
         await ColorChanged.InvokeAsync(colorValue);
@@ -210,20 +228,20 @@ public partial class BitColorPicker : BitComponentBase
     private async Task HandleOnSaturationPickerPointerDown(MouseEventArgs e)
     {
         _saturationPickerPointerDown = true;
+
         await UpdateColor(e);
     }
 
     private string GetRootElAriaLabel()
     {
-        var ariaLabel = $"Color picker, Red {_color.R} Green {_color.G} Blue {_color.B} ";
+        var ariaLabel = $"Color picker, Red {_color.R} Green {_color.G} Blue {_color.B}";
+
         if (ShowAlphaSlider)
         {
-            ariaLabel += $"Alpha {_color.A * 100}% selected.";
+            ariaLabel += FormattableString.Invariant($" and Alpha {_color.A * 100}%");
         }
-        else
-        {
-            ariaLabel += "selected.";
-        }
+        
+        ariaLabel += " selected.";
 
         return ariaLabel;
     }

@@ -124,16 +124,6 @@ public partial class UserController
             throw new ResourceNotFoundException();
     }
 
-    [HttpDelete]
-    public async Task DeleteAllWebAuthnCredentials(CancellationToken cancellationToken)
-    {
-        var userId = User.GetUserId();
-        var user = await userManager.FindByIdAsync(userId.ToString())
-                    ?? throw new ResourceNotFoundException();
-
-        var affectedRows = await DbContext.WebAuthnCredential.Where(c => c.UserId == userId).ExecuteDeleteAsync(cancellationToken);
-    }
-
     private static string GetWebAuthnCacheKey(Guid userId) => $"WebAuthn_Options_{userId}";
 
     private async Task<bool> IsCredentialIdUniqueToUser(IsCredentialIdUniqueToUserParams args, CancellationToken cancellationToken)

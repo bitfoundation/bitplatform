@@ -134,6 +134,12 @@ public partial class BitTextFieldDemo
         },
         new()
         {
+            Name = "OnClear",
+            Type = "EventCallback",
+            Description = "Callback executed when the user clears the text field by clicking the clear button.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the input clicked.",
@@ -222,6 +228,13 @@ public partial class BitTextFieldDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "For multiline text, Number of rows.",
+        },
+        new()
+        {
+            Name = "ShowClearButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to show the clear button when the text field has a value.",
         },
         new()
         {
@@ -356,6 +369,20 @@ public partial class BitTextFieldDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the BitTextField's reveal password icon."
+                },
+                new()
+                {
+                    Name = "ClearButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's clear button."
+                },
+                new()
+                {
+                    Name = "ClearButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's clear button icon."
                 },
                 new()
                 {
@@ -768,6 +795,9 @@ public partial class BitTextFieldDemo
 <BitTextField Label=""Reveal Password"" Type=""BitInputType.Password"" CanRevealPassword />";
 
     private readonly string example9RazorCode = @"
+<BitTextField Label=""Email"" DefaultValue=""example@email.com"" ShowClearButton />";
+
+    private readonly string example10RazorCode = @"
 <BitTextField Label=""One-way"" Value=""@oneWayValue"" />
 <div>Value: [@oneWayValue]</div>
 <BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
@@ -787,7 +817,7 @@ public partial class BitTextFieldDemo
 
 <BitTextField Label=""Throttle"" @bind-Value=""@throttleValue"" Immediate ThrottleTime=""300"" />
 <div>Value: [@throttleValue]</div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private string oneWayValue;
 private string twoWayValue;
 private string onChangeValue;
@@ -795,17 +825,17 @@ private string? immediateValue;
 private string? debounceValue;
 private string? throttleValue;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitTextField Label=""Trimmed"" Trim @bind-Value=""trimmedValue"" />
 <pre>[@trimmedValue]</pre>
 
 <BitTextField Label=""Not Trimmed"" @bind-Value=""notTrimmedValue"" />
 <pre>[@notTrimmedValue]</pre>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private string trimmedValue;
 private string notTrimmedValue;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -833,7 +863,7 @@ private string notTrimmedValue;";
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 public class ValidationTextFieldModel
 {
     [Required(ErrorMessage = ""This field is required."")]
@@ -857,42 +887,42 @@ private ValidationTextFieldModel validationTextFieldModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitTextField Label=""Primary"" Background=""BitColorKind.Primary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Secondary"" Background=""BitColorKind.Secondary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Tertiary"" Background=""BitColorKind.Tertiary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Transparent"" Background=""BitColorKind.Transparent"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitTextField Label=""Primary"" Border=""BitColorKind.Primary"" />
 <BitTextField Label=""Secondary"" Border=""BitColorKind.Secondary"" />
 <BitTextField Label=""Tertiary"" Border=""BitColorKind.Tertiary"" />
 <BitTextField Label=""Transparent"" Border=""BitColorKind.Transparent"" />";
 
-    private readonly string example14RazorCode = @"
-<BitTextField Label=""Primary"" Color=""BitColor.Primary"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""Secondary"" Color=""BitColor.Secondary"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""Tertiary"" Color=""BitColor.Tertiary"" IconName=""@BitIconName.Calendar"" />
-
-<BitTextField Label=""Info"" Color=""BitColor.Info"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""Success"" Color=""BitColor.Success"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""Warning"" Color=""BitColor.Warning"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""SevereWarning"" Color=""BitColor.SevereWarning"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""Error"" Color=""BitColor.Error"" IconName=""@BitIconName.Calendar"" />
-
-<BitTextField Label=""PrimaryBackground"" Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""SecondaryBackground"" Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""TertiaryBackground"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Calendar"" />
-
-<BitTextField Label=""PrimaryForeground"" Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""SecondaryForeground"" Color=""BitColor.SecondaryForeground"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""TertiaryForeground"" Color=""BitColor.TertiaryForeground"" IconName=""@BitIconName.Calendar"" />
-
-<BitTextField Label=""PrimaryBorder"" Color=""BitColor.PrimaryBorder"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""SecondaryBorder"" Color=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Calendar"" />
-<BitTextField Label=""TertiaryBorder"" Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Calendar"" />";
-
     private readonly string example15RazorCode = @"
+<BitTextField Label=""Primary"" Accent=""BitColor.Primary"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Secondary"" Accent=""BitColor.Secondary"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Tertiary"" Accent=""BitColor.Tertiary"" IconName=""@BitIconName.Calendar"" />
+
+<BitTextField Label=""Info"" Accent=""BitColor.Info"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Success"" Accent=""BitColor.Success"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Warning"" Accent=""BitColor.Warning"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""SevereWarning"" Accent=""BitColor.SevereWarning"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""Error"" Accent=""BitColor.Error"" IconName=""@BitIconName.Calendar"" />
+
+<BitTextField Label=""PrimaryBackground"" Accent=""BitColor.PrimaryBackground"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""SecondaryBackground"" Accent=""BitColor.SecondaryBackground"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""TertiaryBackground"" Accent=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Calendar"" />
+
+<BitTextField Label=""PrimaryForeground"" Accent=""BitColor.PrimaryForeground"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""SecondaryForeground"" Accent=""BitColor.SecondaryForeground"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""TertiaryForeground"" Accent=""BitColor.TertiaryForeground"" IconName=""@BitIconName.Calendar"" />
+
+<BitTextField Label=""PrimaryBorder"" Accent=""BitColor.PrimaryBorder"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""SecondaryBorder"" Accent=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Calendar"" />
+<BitTextField Label=""TertiaryBorder"" Accent=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Calendar"" />";
+
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -1001,10 +1031,10 @@ private void HandleInvalidSubmit() { }";
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : "" custom-label-top"")}"" })"" />";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private string? classesValue;";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitTextField Dir=""BitDir.Rtl""
               Placeholder=""پست الکترونیکی""
               IconName=""@BitIconName.EditMail"" />

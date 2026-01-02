@@ -5,6 +5,25 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 // Check out appsettings.Development.json for credentials/passwords settings.
 
+//#if(redis == true)
+// Redis cache for FusionCache hybrid caching (L2 cache) and SignalR backplane - no persistence needed
+var redisCache = builder.AddRedis("redis-cache")
+    .WithRedisInsight()
+    .WithRedisCommander();
+
+// Redis for Hangfire background jobs, and distributed locking - persistent with AOF for durability
+var redisPersistent = builder.AddRedis("redis-persistent")
+    .WithRedisInsight()
+    .WithRedisCommander()
+    .WithDataVolume()
+    .WithArgs(
+        "--appendonly", "yes",             // Enable AOF (Append only file) for data durability
+        "--appendfsync", "always",         // Sync to disk on every write for maximum durability. Temporarily disable it programmatically using C# code during bulk operations if needed.
+        "--save", "",                      // Disables RDB snapshots
+        "--maxmemory-policy", "noeviction" // Raise error when memory limit is reached instead of evicting keys
+    );
+//#endif
+
 //#if (database == "SqlServer")
 var sqlDatabase = builder.AddSqlServer("sqlserver")
         .WithDbGate(config => config.WithDataVolume())
@@ -84,6 +103,10 @@ serverApiProject.WithReference(azureBlobStorage);
 serverApiProject.WithReference(s3Storage);
 //#endif
 serverApiProject.WithReference(keycloak);
+//#if (redis == true)
+serverApiProject.WithReference(redisCache).WaitFor(redisCache);
+serverApiProject.WithReference(redisPersistent).WaitFor(redisPersistent);
+//#endif
 //#else
 
 //#if (database == "SqlServer")
@@ -101,6 +124,10 @@ serverWebProject.WithReference(azureBlobStorage);
 serverWebProject.WithReference(s3Storage);
 //#endif
 serverWebProject.WithReference(keycloak);
+//#if (redis == true)
+serverWebProject.WithReference(redisCache).WaitFor(redisCache);
+serverWebProject.WithReference(redisPersistent).WaitFor(redisPersistent);
+//#endif
 //#endif
 
 if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.
@@ -121,12 +148,12 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     //#if (api == "Standalone")
     builder.AddDevTunnel("api-dev-tunnel")
         .WithAnonymousAccess()
-        .WithReference(serverApiProject.WithHttpEndpoint(name: "devTunnel").GetEndpoint("devTunnel"));
+        .WithReference(serverApiProject.WithHttpEndpoint(name: "devTunnel", port: 5031).GetEndpoint("devTunnel"));
     //#endif
 
     var tunnel = builder.AddDevTunnel("web-dev-tunnel")
         .WithAnonymousAccess()
-        .WithReference(serverWebProject.WithHttpEndpoint(name: "devTunnel").GetEndpoint("devTunnel"));
+        .WithReference(serverWebProject.WithHttpEndpoint(name: "devTunnel", port: 5000).GetEndpoint("devTunnel"));
 
     if (OperatingSystem.IsWindows())
     {

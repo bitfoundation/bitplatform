@@ -28,10 +28,17 @@
     <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Web/Bit.BlazorUI.Demo.Client.Web.csproj" />
     <Project Path="Demo/Client/Bit.BlazorUI.Demo.Client.Windows/Bit.BlazorUI.Demo.Client.Windows.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Performance/">
+    <File Path="Tests/Performance/README.md" />
+    <Project Path="Tests/Performance/Bit.BlazorUI.Tests.Performance.TestHost/Bit.BlazorUI.Tests.Performance.TestHost.csproj" />
+    <Project Path="Tests/Performance/Bit.BlazorUI.Tests.Performance/Bit.BlazorUI.Tests.Performance.csproj" />
+  </Folder>
   <Project Path="Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
   <Project Path="Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />
   <Project Path="Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />
   <Project Path="Bit.BlazorUI.SourceGenerators/Bit.BlazorUI.SourceGenerators.csproj" />
-  <Project Path="Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
   <Project Path="Bit.BlazorUI/Bit.BlazorUI.csproj" />
 </Solution>
