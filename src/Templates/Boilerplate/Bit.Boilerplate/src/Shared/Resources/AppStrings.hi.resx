@@ -1140,7 +1140,7 @@
     <value>एआई चैट पैनल</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>नमस्ते! मैं यहां आपके ऐप अनुभव को शानदार बनाने के लिए हूं! कोई प्रश्न है या मदद चाहिए?</value>
+    <value>नमस्ते{0}! मैं यहां आपके ऐप अनुभव को शानदार बनाने के लिए हूं! कोई प्रश्न है या मदद चाहिए?</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>रीसेट पासवर्ड पृष्ठ खोलें और बताएं कि यह कैसे काम करता है</value>

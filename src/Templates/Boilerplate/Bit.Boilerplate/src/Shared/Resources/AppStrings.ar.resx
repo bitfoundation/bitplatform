@@ -1140,7 +1140,7 @@
     <value>لوحة الدردشة بالذكاء الاصطناعي</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>مرحبًا! أنا هنا لجعل تجربة التطبيق رائعة! هل لديك سؤال أو تحتاج مساعدة؟</value>
+    <value>مرحبًا{0}! أنا هنا لجعل تجربة التطبيق رائعة! هل لديك سؤال أو تحتاج مساعدة؟</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>افتح صفحة إعادة تعيين كلمة المرور وأخبرني كيف تعمل</value>

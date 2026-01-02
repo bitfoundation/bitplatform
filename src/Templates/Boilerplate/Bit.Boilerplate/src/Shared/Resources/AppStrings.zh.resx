@@ -1140,7 +1140,7 @@
     <value>AI 聊天面板</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>您好！我是来让您的应用体验更棒的！有问题或需要帮助吗？</value>
+    <value>您好{0}！我是来让您的应用体验更棒的！有问题或需要帮助吗？</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>打开重置密码页面并告诉我它是如何工作的</value>
