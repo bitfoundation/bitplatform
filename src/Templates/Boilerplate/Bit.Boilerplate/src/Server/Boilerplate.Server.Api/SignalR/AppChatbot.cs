@@ -1,11 +1,13 @@
 ﻿//+:cnd:noEmit
-using System.Text;
 using System.ComponentModel;
+using System.Text;
 using System.Threading.Channels;
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Chatbot;
 using Boilerplate.Shared.Dtos.Diagnostic;
-using Boilerplate.Server.Api.Services;
+using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using ModelContextProtocol.Server;
 
 namespace Boilerplate.Server.Api.SignalR;
@@ -21,13 +23,14 @@ public partial class AppChatbot
 {
     private IChatClient? chatClient = default!;
 
-    [AutoInject] private AppDbContext dbContext = default!;
     [AutoInject] private IFusionCache cache = default!;
-    [AutoInject] private IConfiguration configuration = default!;
+    [AutoInject] private AppDbContext dbContext = default!;
     [AutoInject] private ILogger<AppChatbot> logger = default!;
+    [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
+    [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
-    private string? variablesPrompt;
+    private string? variablesDefault;
     private string? supportSystemPrompt;
     private List<ChatMessage> chatMessages = [];
 
@@ -66,8 +69,9 @@ public partial class AppChatbot
             },
             token: cancellationToken);
 
-        variablesPrompt = @$"
-### Variables:
+        // The following variables won't change unless SignalR connection restarts and StartChat gets called again, so setting variables once here is sufficient.
+        // For example, the user's culture won't change unless they restart the app.
+        variablesDefault = @$"
 {{{{UserCulture}}}}: ""{culture?.NativeName ?? "English"}""
 {{{{DeviceInfo}}}}: ""{request.DeviceInfo ?? "Generic Device"}""
 {{{{SignalRConnectionId}}}}: ""{signalRConnectionId ?? "Unknown"}""
@@ -92,6 +96,7 @@ public partial class AppChatbot
         bool generateFollowUpSuggestions,
         string incomingMessage,
         Uri? serverApiAddress,
+        ClaimsPrincipal? user,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(supportSystemPrompt))
@@ -105,6 +110,16 @@ public partial class AppChatbot
             chatMessages.Add(new(ChatRole.User, incomingMessage));
 
             var chatOptions = CreateChatOptions(serverApiAddress, cancellationToken);
+
+            // The following variables might change without SignalR connection restarts, so these should set here every time a new message is about to be processed.
+            // For example, user can sign-in/sign-out during chat without restarting the app or SignalR connection.
+            var variablesPrompt = @$"
+### Variables:
+{variablesDefault}
+{{{{IsAuthenticated}}}}: ""{user.IsAuthenticated()}""}} 
+{{{{UserId}}}}: ""{(user.IsAuthenticated() ? user!.GetUserId().ToString() : "null")}""
+{{{{UserEmail}}}}: ""{(user.IsAuthenticated() ? user!.GetEmail()?.ToString() : "null")}""
+";
 
             await foreach (var response in chatClient.GetStreamingResponseAsync([
                 new (ChatRole.System, variablesPrompt),
@@ -156,6 +171,7 @@ public partial class AppChatbot
             AIFunctionFactory.Create(GetCurrentDateTime),
             AIFunctionFactory.Create(SaveUserEmailAndConversationHistory),
             AIFunctionFactory.Create(NavigateToPage),
+            AIFunctionFactory.Create(ShowSignInModal),
             AIFunctionFactory.Create(SetCulture),
             AIFunctionFactory.Create(SetTheme),
             AIFunctionFactory.Create(CheckLastError),
@@ -196,7 +212,7 @@ public partial class AppChatbot
     /// <summary>
     /// Saves the user's email address and the conversation history for future reference.
     /// </summary>
-    [Description("Saves the user's email address and the conversation history for future reference. Use this tool when the user provides their email address during the conversation.")]
+    [Description("Saves the user's email address and the conversation history for future reference.")]
     [McpServerTool(Name = nameof(SaveUserEmailAndConversationHistory))]
     private async Task<string?> SaveUserEmailAndConversationHistory(
         [Required, Description("User's email address")] string emailAddress,
@@ -246,6 +262,34 @@ public partial class AppChatbot
         {
             serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
             return "Navigation failed";
+        }
+    }
+
+    [Description(@"Displays the sign-in modal to the user and waits for either successful sign-in or cancellation")]
+    [McpServerTool(Name = nameof(ShowSignInModal))]
+    public async Task<UserDto?> ShowSignInModal([Required, Description("SignalR connection id")] string signalRConnectionId)
+    {
+        await using var scope = serviceProvider.CreateAsyncScope();
+
+        try
+        {
+            var accessToken = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
+                .Clients.Client(signalRConnectionId)
+                .InvokeAsync<string>(SharedAppMessages.SHOW_SIGN_IN_MODAL, CancellationToken.None);
+
+            var bearerTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).BearerTokenProtector;
+            var accessTokenTicket = bearerTokenProtector.Unprotect(accessToken);
+            var user = accessTokenTicket!.Principal;
+
+            return await scope.ServiceProvider.GetRequiredService<AppDbContext>()
+                .Users
+                .Project()
+                .FirstOrDefaultAsync(u => u.Id == user.GetUserId());
+        }
+        catch (Exception exp)
+        {
+            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            return null;
         }
     }
 

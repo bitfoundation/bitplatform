@@ -56,6 +56,11 @@ public partial class SharedAppMessages
     /// </summary>
     public const string CLEAR_APP_FILES = nameof(CLEAR_APP_FILES);
 
+    /// <summary>
+    /// A publisher that sends this message announces that the subscriber should show the sign-in modal dialog and wait for user sign-in or cancellation.
+    /// </summary>
+    public const string SHOW_SIGN_IN_MODAL = nameof(SHOW_SIGN_IN_MODAL);
+
     #endregion
 
     #region Server announcements to client
