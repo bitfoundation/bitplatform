@@ -25,11 +25,6 @@ public partial class BitIcon : BitComponentBase
     /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
     /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
     /// </remarks>
-    /// <example>
-    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
-    /// Material: Icon="BitIconInfo.Material("home")"
-    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
-    /// </example>
     [Parameter, ResetClassBuilder]
     public BitIconInfo? Icon { get; set; }
 

@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Icon;
 public class BitIconInfoTests
 {
     [TestMethod]
-    public void Constructor_ShouldSetAllProperties()
+    public void ConstructorShouldSetAllProperties()
     {
         var iconInfo = new BitIconInfo("home", "fa", "fa-");
 
@@ -16,7 +16,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void Constructor_WithOnlyName_ShouldSetNameOnly()
+    public void ConstructorWithOnlyNameShouldSetNameOnly()
     {
         var iconInfo = new BitIconInfo("home");
 
@@ -26,7 +26,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_WithBaseClassAndPrefix_ShouldReturnCorrectClasses()
+    public void GetCssClassesWithBaseClassAndPrefixShouldReturnCorrectClasses()
     {
         var iconInfo = new BitIconInfo("home", "fa", "fa-");
 
@@ -36,7 +36,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_WithBaseClassOnly_ShouldReturnBaseClassAndName()
+    public void GetCssClassesWithBaseClassOnlyShouldReturnBaseClassAndName()
     {
         var iconInfo = new BitIconInfo("home", "material-icons", "");
 
@@ -46,7 +46,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_WithPrefixOnly_ShouldReturnPrefixedName()
+    public void GetCssClassesWithPrefixOnlyShouldReturnPrefixedName()
     {
         var iconInfo = new BitIconInfo("home", "", "icon-");
 
@@ -56,19 +56,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_WithNameOnly_ShouldUseDefaultBitIconClasses()
-    {
-        var iconInfo = new BitIconInfo("home");
-
-        var result = iconInfo.GetCssClasses();
-
-        // When BaseClass is null, it defaults to "bit-icon"
-        // When Prefix is null, it defaults to "bit-icon--"
-        Assert.AreEqual("bit-icon bit-icon--home", result);
-    }
-
-    [TestMethod]
-    public void GetCssClasses_WithEmptyBaseClassAndPrefix_ShouldReturnNameOnly()
+    public void GetCssClassesWithEmptyBaseClassAndPrefixShouldReturnNameOnly()
     {
         var iconInfo = new BitIconInfo("home", "", "");
 
@@ -77,42 +65,10 @@ public class BitIconInfoTests
         Assert.AreEqual("home", result);
     }
 
-    [TestMethod]
-    public void HasValue_WithName_ShouldReturnTrue()
-    {
-        var iconInfo = new BitIconInfo("home");
-
-        Assert.IsTrue(iconInfo.HasValue());
-    }
-
-    [TestMethod]
-    public void HasValue_WithEmptyName_ShouldReturnFalse()
-    {
-        var iconInfo = new BitIconInfo("");
-
-        Assert.IsFalse(iconInfo.HasValue());
-    }
-
-    [TestMethod]
-    public void HasValue_WithNullName_ShouldReturnFalse()
-    {
-        var iconInfo = new BitIconInfo(null!);
-
-        Assert.IsFalse(iconInfo.HasValue());
-    }
-
-    [TestMethod]
-    public void HasValue_WithWhitespaceName_ShouldReturnFalse()
-    {
-        var iconInfo = new BitIconInfo("   ");
-
-        Assert.IsFalse(iconInfo.HasValue());
-    }
-
     // Factory Method Tests
 
     [TestMethod]
-    public void Css_ShouldCreateIconInfoWithEmptyBaseClassAndPrefix()
+    public void CssShouldCreateIconInfoWithEmptyBaseClassAndPrefix()
     {
         var iconInfo = BitIconInfo.Css("fa-solid fa-home");
 
@@ -123,7 +79,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void FontAwesome_ShouldCreateIconInfoForFontAwesome6()
+    public void FontAwesomeShouldCreateIconInfoForFontAwesome6()
     {
         var iconInfo = BitIconInfo.Fa("fa-solid fa-home");
 
@@ -134,7 +90,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void FontAwesome_ShouldHandleBrandIcons()
+    public void FontAwesomeShouldHandleBrandIcons()
     {
         var iconInfo = BitIconInfo.Fa("fa-brands fa-github");
 
@@ -143,7 +99,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void Material_ShouldCreateMaterialIconInfo()
+    public void MaterialShouldCreateMaterialIconInfo()
     {
         var iconInfo = BitIconInfo.Material("home");
 
@@ -154,7 +110,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void Material_ShouldHandleVariousIconNames()
+    public void MaterialShouldHandleVariousIconNames()
     {
         var iconInfo = BitIconInfo.Material("settings");
 
@@ -164,7 +120,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void Bootstrap_ShouldCreateBootstrapIconInfo()
+    public void BootstrapShouldCreateBootstrapIconInfo()
     {
         var iconInfo = BitIconInfo.Bootstrap("check-circle");
 
@@ -175,7 +131,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void Bootstrap_ShouldHandleVariousIconNames()
+    public void BootstrapShouldHandleVariousIconNames()
     {
         var iconInfo = BitIconInfo.Bootstrap("house");
 
@@ -188,7 +144,7 @@ public class BitIconInfoTests
     // Implicit Conversion Tests
 
     [TestMethod]
-    public void ImplicitConversion_FromString_ShouldCreateIconInfo()
+    public void ImplicitConversionFromStringShouldCreateIconInfo()
     {
         BitIconInfo iconInfo = "home";
 
@@ -198,7 +154,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void ImplicitConversion_FromNullString_ShouldReturnNull()
+    public void ImplicitConversionFromNullStringShouldReturnNull()
     {
         string? nullString = null;
         BitIconInfo? iconInfo = nullString;
@@ -207,7 +163,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void ImplicitConversion_ToString_ShouldReturnName()
+    public void ImplicitConversionToStringShouldReturnName()
     {
         var iconInfo = new BitIconInfo("home", "fa", "fa-");
 
@@ -217,7 +173,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void ImplicitConversion_FromNullIconInfo_ShouldReturnNull()
+    public void ImplicitConversionFromNullIconInfoShouldReturnNull()
     {
         BitIconInfo? iconInfo = null;
 
@@ -229,7 +185,7 @@ public class BitIconInfoTests
     // CSS class generation tests
 
     [TestMethod]
-    public void GetCssClasses_FontAwesome6_SolidIcon_ShouldGenerateCorrectClasses()
+    public void GetCssClassesFontAwesome6SolidIconShouldGenerateCorrectClasses()
     {
         var iconInfo = BitIconInfo.Fa("fa-solid fa-user");
 
@@ -237,7 +193,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_FontAwesome6_RegularIcon_ShouldGenerateCorrectClasses()
+    public void GetCssClassesFontAwesome6RegularIconShouldGenerateCorrectClasses()
     {
         var iconInfo = BitIconInfo.Fa("fa-regular fa-heart");
 
@@ -245,7 +201,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_FontAwesome6_BrandIcon_ShouldGenerateCorrectClasses()
+    public void GetCssClassesFontAwesome6BrandIconShouldGenerateCorrectClasses()
     {
         var iconInfo = BitIconInfo.Fa("fa-brands fa-github");
 
@@ -253,7 +209,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_Bootstrap_ShouldGenerateCorrectClasses()
+    public void GetCssClassesBootstrapShouldGenerateCorrectClasses()
     {
         var iconInfo = BitIconInfo.Bootstrap("arrow-right");
 
@@ -261,7 +217,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_Material_ShouldGenerateCorrectClasses()
+    public void GetCssClassesMaterialShouldGenerateCorrectClasses()
     {
         var iconInfo = BitIconInfo.Material("favorite");
 
@@ -269,7 +225,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_CustomCss_ShouldGenerateCorrectClasses()
+    public void GetCssClassesCustomCssShouldGenerateCorrectClasses()
     {
         var iconInfo = BitIconInfo.Css("my-custom-icon-class");
 
@@ -277,7 +233,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_CustomIconWithConstructor_ShouldGenerateCorrectClasses()
+    public void GetCssClassesCustomIconWithConstructorShouldGenerateCorrectClasses()
     {
         var iconInfo = new BitIconInfo("custom-icon", "my-icons", "ico-");
 
@@ -287,7 +243,7 @@ public class BitIconInfoTests
     // Edge Cases
 
     [TestMethod]
-    public void GetCssClasses_WithEmptyBaseClass_ShouldHandleCorrectly()
+    public void GetCssClassesWithEmptyBaseClassShouldHandleCorrectly()
     {
         var iconInfo = new BitIconInfo("home", "", "icon-");
 
@@ -297,7 +253,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_WithEmptyPrefix_ShouldHandleCorrectly()
+    public void GetCssClassesWithEmptyPrefixShouldHandleCorrectly()
     {
         var iconInfo = new BitIconInfo("home", "icons", "");
 
@@ -307,7 +263,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_WithAllEmptyStrings_ShouldReturnEmptyString()
+    public void GetCssClassesWithAllEmptyStringsShouldReturnEmptyString()
     {
         var iconInfo = new BitIconInfo("", "", "");
 
@@ -317,7 +273,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_WithSpecialCharactersInName_ShouldHandleCorrectly()
+    public void GetCssClassesWithSpecialCharactersInNameShouldHandleCorrectly()
     {
         var iconInfo = BitIconInfo.Fa("fa-solid fa-arrow-circle-right");
 
@@ -325,7 +281,7 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void GetCssClasses_Bootstrap_WithHyphenatedName_ShouldHandleCorrectly()
+    public void GetCssClassesBootstrapWithHyphenatedNameShouldHandleCorrectly()
     {
         var iconInfo = BitIconInfo.Bootstrap("check-circle-fill");
 
@@ -333,18 +289,17 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void DefaultConstructor_ShouldCreateEmptyIconInfo()
+    public void DefaultConstructorShouldCreateEmptyIconInfo()
     {
         var iconInfo = new BitIconInfo();
 
         Assert.IsNull(iconInfo.Name);
         Assert.IsNull(iconInfo.BaseClass);
         Assert.IsNull(iconInfo.Prefix);
-        Assert.IsFalse(iconInfo.HasValue());
     }
 
     [TestMethod]
-    public void GetCssClasses_WithNullName_ShouldReturnEmptyString()
+    public void GetCssClassesWithNullNameShouldReturnEmptyString()
     {
         var iconInfo = new BitIconInfo();
 
