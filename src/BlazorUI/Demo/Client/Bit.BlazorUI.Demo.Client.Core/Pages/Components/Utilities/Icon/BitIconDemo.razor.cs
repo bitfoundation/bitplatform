@@ -271,11 +271,19 @@ public partial class BitIconDemo
 
     private readonly string example4RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-        
+
 <BitIcon Icon=""@(""fa-solid fa-house"")"" Size=""BitSize.Large"" />
 <BitIcon Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" Color=""BitColor.Error"" />
 <BitIcon Icon=""@BitIconInfo.Fa(""fa-brands fa-github"")"" Size=""BitSize.Large"" />
-<BitIcon Icon=""@BitIconInfo.Fa(""solid rocket"")"" Color=""BitColor.Secondary"" />";
+<BitIcon Icon=""@BitIconInfo.Fa(""solid rocket"")"" Color=""BitColor.Secondary"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitIcon Icon=""@(""bi bi-house-fill"")"" Size=""BitSize.Large"" />
+<BitIcon Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"" Color=""BitColor.Error"" />
+<BitIcon Icon=""@BitIconInfo.Bi(""github"")"" Size=""BitSize.Large"" />
+<BitIcon Icon=""@BitIconInfo.Bi(""gear-fill"")"" Color=""BitColor.Secondary"" />";
 
     private readonly string example5RazorCode = @"
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Accept"" />
@@ -300,7 +308,10 @@ public partial class BitIconDemo
     }
 </style>
 
-<BitIcon IconName=""@BitIconName.Accept"" Size=""BitSize.Large""
+<BitIcon Size=""BitSize.Large""
+         IconName=""@BitIconName.Accept"" 
          Style=""background-color: brown; border-radius: 4px"" />
-<BitIcon IconName=""@BitIconName.Accept"" Class=""icon-class"" />";
+
+<BitIcon Class=""icon-class""
+         IconName=""@BitIconName.Accept"" />";
 }

@@ -18,7 +18,7 @@ public partial class BitIcon : BitComponentBase
     /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
     /// <remarks>
-    /// Use this property for external icon libraries such as FontAwesome, Material Icons, or Bootstrap Icons.
+    /// Use this property for external icon libraries such as FontAwesome, or Bootstrap Icons.
     /// For built-in Fluent UI icons, use the <see cref="IconName"/> property instead.
     /// </remarks>
     [Parameter, ResetClassBuilder]

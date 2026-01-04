@@ -160,20 +160,6 @@ public class BitIconInfo
     }
 
     /// <summary>
-    /// Creates a <see cref="BitIconInfo"/> for a Material Icons icon.
-    /// </summary>
-    /// <param name="iconName">
-    /// The Material Icon name (e.g., "home", "search", "menu").
-    /// </param>
-    /// <returns>
-    /// A new <see cref="BitIconInfo"/> instance configured for Material Icons.
-    /// </returns>
-    public static BitIconInfo Material(string iconName)
-    {
-        return new BitIconInfo(iconName, baseClass: "material-icons", prefix: "");
-    }
-
-    /// <summary>
     /// Creates a <see cref="BitIconInfo"/> for a Bootstrap Icons icon.
     /// </summary>
     /// <param name="iconName">
@@ -182,7 +168,7 @@ public class BitIconInfo
     /// <returns>
     /// A new <see cref="BitIconInfo"/> instance configured for Bootstrap Icons.
     /// </returns>
-    public static BitIconInfo Bootstrap(string iconName)
+    public static BitIconInfo Bi(string iconName)
     {
         return new BitIconInfo(iconName, baseClass: "bi", prefix: "bi-");
     }

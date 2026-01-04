@@ -16,8 +16,11 @@
         <BitIcon IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon IconName="@BitIconName.Pinned" />
+
         <br /><br /><br /><br />
-        <div>Disabled</div><br />
+
+        <div>Disabled</div>
+        <br />
         <BitIcon IconName="@BitIconName.Accept" IsEnabled="false" />
         &nbsp;
         <BitIcon IconName="@BitIconName.Bus" IsEnabled="false" />
@@ -26,69 +29,100 @@
     </DemoExample>
 
     <DemoExample Title="Variant" RazorCode="@example2RazorCode" Id="example2">
-        <div>Fill</div><br />
+        <div>Fill</div>
+        <br />
         <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" />
+
         <br /><br /><br /><br />
-        <div>Outline</div><br />
+
+        <div>Outline</div>
+        <br />
         <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Outline" />
+
         <br /><br /><br /><br />
-        <div>Text (default)</div><br />
+
+        <div>Text (default)</div>
+        <br />
         <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Text" />
     </DemoExample>
 
     <DemoExample Title="Color" RazorCode="@example3RazorCode" Id="example3">
         <div>Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.</div>
+        
         <br /><br /><br />
-        <div>Primary</div><br />
+
+        <div>Primary</div>
+        <br />
         <BitIcon Color="BitColor.Primary" IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon Color="BitColor.Primary" IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon Color="BitColor.Primary" IconName="@BitIconName.Pinned" />
+
         <br /><br /><br /><br />
-        <div>Secondary</div><br />
+        
+        <div>Secondary</div>
+        <br />
         <BitIcon Color="BitColor.Secondary" IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon Color="BitColor.Secondary" IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon Color="BitColor.Secondary" IconName="@BitIconName.Pinned" />
+        
         <br /><br /><br /><br />
-        <div>Tertiary</div><br />
+
+        <div>Tertiary</div>
+        <br />
         <BitIcon Color="BitColor.Tertiary" IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon Color="BitColor.Tertiary" IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon Color="BitColor.Tertiary" IconName="@BitIconName.Pinned" />
+        
         <br /><br /><br /><br />
-        <div>Info</div><br />
+
+        <div>Info</div>
+        <br />
         <BitIcon Color="BitColor.Info" IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon Color="BitColor.Info" IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon Color="BitColor.Info" IconName="@BitIconName.Pinned" />
+        
         <br /><br /><br /><br />
-        <div>Success</div><br />
+
+        <div>Success</div>
+        <br />
         <BitIcon Color="BitColor.Success" IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon Color="BitColor.Success" IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon Color="BitColor.Success" IconName="@BitIconName.Pinned" />
+        
         <br /><br /><br /><br />
-        <div>Warning</div><br />
+        
+        <div>Warning</div>
+        <br />
         <BitIcon Color="BitColor.Warning" IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon Color="BitColor.Warning" IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon Color="BitColor.Warning" IconName="@BitIconName.Pinned" />
+        
         <br /><br /><br /><br />
-        <div>SevereWarning</div><br />
+        
+        <div>SevereWarning</div>
+        <br />
         <BitIcon Color="BitColor.SevereWarning" IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon Color="BitColor.SevereWarning" IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon Color="BitColor.SevereWarning" IconName="@BitIconName.Pinned" />
+        
         <br /><br /><br /><br />
-        <div>Error</div><br />
+        
+        <div>Error</div>
+        <br />
         <BitIcon Color="BitColor.Error" IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon Color="BitColor.Error" IconName="@BitIconName.Bus" />
@@ -97,13 +131,14 @@
     </DemoExample>
 
     <DemoExample Title="External Icons" RazorCode="@example4RazorCode" Id="example4">
-        <div>Use icons from external libraries like FontAwesome with the <b>Icon</b> parameter.</div>
+        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
 
-        <br />
-        <br />
+        <br /><br />
         
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
         
+        <div>FontAwesome</div>
+        <br />
         <BitIcon Icon="@("fa-solid fa-house")" Size="BitSize.Large" />
         &nbsp;
         <BitIcon Icon="@BitIconInfo.Css("fa-solid fa-heart")" Color="BitColor.Error" />
@@ -111,24 +146,45 @@
         <BitIcon Icon="@BitIconInfo.Fa("fa-brands fa-github")" Size="BitSize.Large" />
         &nbsp;
         <BitIcon Icon="@BitIconInfo.Fa("solid rocket")" Color="BitColor.Secondary" />
+        
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap Icons</div>
+        <br />
+        <BitIcon Icon="@("bi bi-house-fill")" Size="BitSize.Large" />
+        &nbsp;
+        <BitIcon Icon="@BitIconInfo.Css("bi bi-heart-fill")" Color="BitColor.Error" />
+        &nbsp;
+        <BitIcon Icon="@BitIconInfo.Bi("github")" Size="BitSize.Large" />
+        &nbsp;
+        <BitIcon Icon="@BitIconInfo.Bi("gear-fill")" Color="BitColor.Secondary" />
     </DemoExample>
 
     <DemoExample Title="Size" RazorCode="@example5RazorCode" Id="example5">
-        <div>Small</div><br />
+        <div>Small</div>
+        <br />
         <BitIcon Size="BitSize.Small" IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon Size="BitSize.Small" IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon Size="BitSize.Small" IconName="@BitIconName.Pinned" />
+        
         <br /><br /><br /><br />
-        <div>Medium</div><br />
+
+        <div>Medium</div>
+        <br />
         <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Bus" />
         &nbsp;
         <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Pinned" />
+        
         <br /><br /><br /><br />
-        <div>Large</div><br />
+        
+        <div>Large</div>
+        <br />
         <BitIcon Size="BitSize.Large" IconName="@BitIconName.Accept" />
         &nbsp;
         <BitIcon Size="BitSize.Large" IconName="@BitIconName.Bus" />
@@ -138,9 +194,12 @@
 
     <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <div>
-            <BitIcon IconName="@BitIconName.Accept" Size="BitSize.Large"
+            <BitIcon Size="BitSize.Large"
+                     IconName="@BitIconName.Accept" 
                      Style="background-color: brown; border-radius: 4px" />
-            <BitIcon IconName="@BitIconName.Accept" Class="icon-class" />
+
+            <BitIcon Class="icon-class"
+                     IconName="@BitIconName.Accept" />
         </div>
     </DemoExample>
 </DemoPage>

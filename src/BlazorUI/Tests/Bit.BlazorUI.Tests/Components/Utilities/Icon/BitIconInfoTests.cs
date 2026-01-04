@@ -99,30 +99,9 @@ public class BitIconInfoTests
     }
 
     [TestMethod]
-    public void MaterialShouldCreateMaterialIconInfo()
-    {
-        var iconInfo = BitIconInfo.Material("home");
-
-        Assert.AreEqual("home", iconInfo.Name);
-        Assert.AreEqual("material-icons", iconInfo.BaseClass);
-        Assert.AreEqual("", iconInfo.Prefix);
-        Assert.AreEqual("material-icons home", iconInfo.GetCssClasses());
-    }
-
-    [TestMethod]
-    public void MaterialShouldHandleVariousIconNames()
-    {
-        var iconInfo = BitIconInfo.Material("settings");
-
-        Assert.AreEqual("settings", iconInfo.Name);
-        Assert.AreEqual("material-icons", iconInfo.BaseClass);
-        Assert.AreEqual("material-icons settings", iconInfo.GetCssClasses());
-    }
-
-    [TestMethod]
     public void BootstrapShouldCreateBootstrapIconInfo()
     {
-        var iconInfo = BitIconInfo.Bootstrap("check-circle");
+        var iconInfo = BitIconInfo.Bi("check-circle");
 
         Assert.AreEqual("check-circle", iconInfo.Name);
         Assert.AreEqual("bi", iconInfo.BaseClass);
@@ -133,7 +112,7 @@ public class BitIconInfoTests
     [TestMethod]
     public void BootstrapShouldHandleVariousIconNames()
     {
-        var iconInfo = BitIconInfo.Bootstrap("house");
+        var iconInfo = BitIconInfo.Bi("house");
 
         Assert.AreEqual("house", iconInfo.Name);
         Assert.AreEqual("bi", iconInfo.BaseClass);
@@ -211,17 +190,9 @@ public class BitIconInfoTests
     [TestMethod]
     public void GetCssClassesBootstrapShouldGenerateCorrectClasses()
     {
-        var iconInfo = BitIconInfo.Bootstrap("arrow-right");
+        var iconInfo = BitIconInfo.Bi("arrow-right");
 
         Assert.AreEqual("bi bi-arrow-right", iconInfo.GetCssClasses());
-    }
-
-    [TestMethod]
-    public void GetCssClassesMaterialShouldGenerateCorrectClasses()
-    {
-        var iconInfo = BitIconInfo.Material("favorite");
-
-        Assert.AreEqual("material-icons favorite", iconInfo.GetCssClasses());
     }
 
     [TestMethod]
@@ -283,7 +254,7 @@ public class BitIconInfoTests
     [TestMethod]
     public void GetCssClassesBootstrapWithHyphenatedNameShouldHandleCorrectly()
     {
-        var iconInfo = BitIconInfo.Bootstrap("check-circle-fill");
+        var iconInfo = BitIconInfo.Bi("check-circle-fill");
 
         Assert.AreEqual("bi bi-check-circle-fill", iconInfo.GetCssClasses());
     }
