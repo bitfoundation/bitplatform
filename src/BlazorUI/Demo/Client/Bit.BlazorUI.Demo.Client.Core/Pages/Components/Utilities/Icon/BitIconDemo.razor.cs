@@ -15,10 +15,17 @@ public partial class BitIconDemo
         },
         new()
         {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string",
             DefaultValue = "",
-            Description = "The icon name for the icon shown",
+            Description = "The icon name for the icon shown from built-in Fluent UI icons.",
             LinkType = LinkType.Link,
             Href = "/iconography",
         },
@@ -230,19 +237,6 @@ public partial class BitIconDemo
 <BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />";
 
     private readonly string example3RazorCode = @"
-<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Accept"" />
-<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Bus"" />
-<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Accept"" />
-<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Bus"" />
-<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Pinned"" />
-
-<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Accept"" />
-<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Bus"" />
-<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Pinned"" />";
-
-    private readonly string example4RazorCode = @"
 <BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Accept"" />
 <BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Bus"" />
 <BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Pinned"" />
@@ -275,7 +269,28 @@ public partial class BitIconDemo
 <BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Bus"" />
 <BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Pinned"" />";
 
+    private readonly string example4RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+        
+<BitIcon Icon=""@(""fa-solid fa-house"")"" Size=""BitSize.Large"" />
+<BitIcon Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" Color=""BitColor.Error"" />
+<BitIcon Icon=""@BitIconInfo.Fa(""fa-brands fa-github"")"" Size=""BitSize.Large"" />
+<BitIcon Icon=""@BitIconInfo.Fa(""solid rocket"")"" Color=""BitColor.Secondary"" />";
+
     private readonly string example5RazorCode = @"
+<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Accept"" />
+<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Bus"" />
+<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Accept"" />
+<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Bus"" />
+<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Accept"" />
+<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Bus"" />
+<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Pinned"" />";
+
+    private readonly string example6RazorCode = @"
 <style>
     .icon-class {
         padding: 4px;

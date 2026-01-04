@@ -12,10 +12,26 @@ public partial class BitIcon : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The icon name for the icon shown.
+    /// The icon name for the icon shown from the built-in Fluent UI icons.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public string? IconName { get; set; }
+
+    /// <summary>
+    /// The icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
+    /// Material: Icon="BitIconInfo.Material("home")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter, ResetClassBuilder]
+    public BitIconInfo? Icon { get; set; }
 
     /// <summary>
     /// The size of the icon.
@@ -57,7 +73,7 @@ public partial class BitIcon : BitComponentBase
             _ => "bit-ico-pri"
         });
 
-        ClassBuilder.Register(() => IconName.HasValue() ? $"bit-icon bit-icon--{IconName}" : string.Empty);
+        ClassBuilder.Register(() => BitIconInfo.From(Icon, IconName)?.GetCssClasses());
 
         ClassBuilder.Register(() => Size switch
         {

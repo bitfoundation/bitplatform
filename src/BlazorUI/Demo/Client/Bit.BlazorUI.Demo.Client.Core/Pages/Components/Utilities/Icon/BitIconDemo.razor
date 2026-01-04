@@ -1,4 +1,4 @@
-﻿@page "/components/icon"
+@page "/components/icon"
 
 <PageOutlet Url="components/icon"
             Title="Icon"
@@ -36,30 +36,7 @@
         <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Text" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example3RazorCode" Id="example3">
-        <div>Small</div><br />
-        <BitIcon Size="BitSize.Small" IconName="@BitIconName.Accept" />
-        &nbsp;
-        <BitIcon Size="BitSize.Small" IconName="@BitIconName.Bus" />
-        &nbsp;
-        <BitIcon Size="BitSize.Small" IconName="@BitIconName.Pinned" />
-        <br /><br /><br /><br />
-        <div>Medium</div><br />
-        <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Accept" />
-        &nbsp;
-        <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Bus" />
-        &nbsp;
-        <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Pinned" />
-        <br /><br /><br /><br />
-        <div>Large</div><br />
-        <BitIcon Size="BitSize.Large" IconName="@BitIconName.Accept" />
-        &nbsp;
-        <BitIcon Size="BitSize.Large" IconName="@BitIconName.Bus" />
-        &nbsp;
-        <BitIcon Size="BitSize.Large" IconName="@BitIconName.Pinned" />
-    </DemoExample>
-
-    <DemoExample Title="Color" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Color" RazorCode="@example3RazorCode" Id="example3">
         <div>Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.</div>
         <br /><br /><br />
         <div>Primary</div><br />
@@ -119,7 +96,47 @@
         <BitIcon Color="BitColor.Error" IconName="@BitIconName.Pinned" />
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="External Icons" RazorCode="@example4RazorCode" Id="example4">
+        <div>Use icons from external libraries like FontAwesome with the <b>Icon</b> parameter.</div>
+
+        <br />
+        <br />
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        
+        <BitIcon Icon="@("fa-solid fa-house")" Size="BitSize.Large" />
+        &nbsp;
+        <BitIcon Icon="@BitIconInfo.Css("fa-solid fa-heart")" Color="BitColor.Error" />
+        &nbsp;
+        <BitIcon Icon="@BitIconInfo.Fa("fa-brands fa-github")" Size="BitSize.Large" />
+        &nbsp;
+        <BitIcon Icon="@BitIconInfo.Fa("solid rocket")" Color="BitColor.Secondary" />
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example5RazorCode" Id="example5">
+        <div>Small</div><br />
+        <BitIcon Size="BitSize.Small" IconName="@BitIconName.Accept" />
+        &nbsp;
+        <BitIcon Size="BitSize.Small" IconName="@BitIconName.Bus" />
+        &nbsp;
+        <BitIcon Size="BitSize.Small" IconName="@BitIconName.Pinned" />
+        <br /><br /><br /><br />
+        <div>Medium</div><br />
+        <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Accept" />
+        &nbsp;
+        <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Bus" />
+        &nbsp;
+        <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Pinned" />
+        <br /><br /><br /><br />
+        <div>Large</div><br />
+        <BitIcon Size="BitSize.Large" IconName="@BitIconName.Accept" />
+        &nbsp;
+        <BitIcon Size="BitSize.Large" IconName="@BitIconName.Bus" />
+        &nbsp;
+        <BitIcon Size="BitSize.Large" IconName="@BitIconName.Pinned" />
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <div>
             <BitIcon IconName="@BitIconName.Accept" Size="BitSize.Large"
                      Style="background-color: brown; border-radius: 4px" />
