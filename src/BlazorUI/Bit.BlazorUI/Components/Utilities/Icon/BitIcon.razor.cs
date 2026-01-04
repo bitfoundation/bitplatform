@@ -1,41 +1,46 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// An icon represents concept or meaning for the user. It's used to make better user experience (UX) and user-friendly applications.
+/// A component for displaying icons that enhance visual communication and user experience.
+/// Supports both built-in Fluent UI icons and external icon libraries.
 /// </summary>
 public partial class BitIcon : BitComponentBase
 {
     /// <summary>
-    /// The general color of the icon.
+    /// Specifies the color theme of the icon.
+    /// Default value is <see cref="BitColor.Primary"/>.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The icon name for the icon shown from the built-in Fluent UI icons.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public string? IconName { get; set; }
-
-    /// <summary>
-    /// The icon to display using custom CSS classes for external icon libraries.
+    /// Specifies the icon configuration for rendering icons from external icon libraries using custom CSS classes.
     /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
     /// <remarks>
-    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
-    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// Use this property for external icon libraries such as FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use the <see cref="IconName"/> property instead.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitIconInfo? Icon { get; set; }
 
     /// <summary>
-    /// The size of the icon.
+    /// Specifies the name of the icon from the built-in Fluent UI icon library.
+    /// This property is ignored when <see cref="Icon"/> is set.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public string? IconName { get; set; }
+
+    /// <summary>
+    /// Specifies the size of the icon.
+    /// Default value is <see cref="BitSize.Medium"/>.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
-    /// The visual variant of the icon.
+    /// Specifies the visual styling variant of the icon.
+    /// Default value is <see cref="BitVariant.Text"/>.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
