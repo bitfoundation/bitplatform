@@ -154,7 +154,8 @@ public class BitIconInfo
     /// </returns>
     public static BitIconInfo Fa(string icons)
     {
-        var cssClasses = string.Join(' ', icons.Split(' ').Select(i => i.StartsWith("fa-") ? i : $"fa-{i}"));
+        var cssClasses = string.Join(' ', icons.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                                               .Select(i => i.StartsWith("fa-") ? i : $"fa-{i}"));
 
         return new BitIconInfo(cssClasses, baseClass: "", prefix: "");
     }
@@ -187,10 +188,10 @@ public class BitIconInfo
     /// A <see cref="BitIconInfo"/> instance if either parameter has a value; otherwise, <c>null</c>.
     /// </returns>
     /// <remarks>
-    /// This method is intended for internal use by components to unify the handling of
+    /// This method is useful for components to unify the handling of
     /// the <c>Icon</c> and <c>IconName</c> parameters.
     /// </remarks>
-    internal static BitIconInfo? From(BitIconInfo? icon, string? iconName)
+    public static BitIconInfo? From(BitIconInfo? icon, string? iconName)
     {
         if (icon is not null) return icon;
 
