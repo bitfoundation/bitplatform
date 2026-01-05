@@ -1,0 +1,56 @@
+@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="@RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @if (LabelTemplate is not null)
+    {
+        @LabelTemplate
+    }
+    else if (Label.HasValue())
+    {
+        <button @onclick="Browse"
+                type="button"
+                class="bit-fin-lbl">
+            @Label
+        </button>
+    }
+
+    <input @ref="_inputRef" 
+           @onchange="HandleOnChange"
+           type="file"
+           id="@InputId"
+           class="bit-fin-fi"
+           multiple="@Multiple"
+           disabled="@(IsEnabled is false)"
+           aria-labelledby="@(Label.HasValue() ? Label : null)"
+           accept="@(Accept ?? string.Join(",", AllowedExtensions))" />
+
+    @if (Files is not null)
+    {
+        <div class="bit-fin-fl">
+            @for (var i = 0; i < Files.Count; i++)
+            {
+                var index = i;
+                var file = Files[index];
+                file.Index = index;
+
+                if (HideFileList is false)
+                {
+                    if (FileViewTemplate is not null)
+                    {
+                        @FileViewTemplate(file)
+                    }
+                    else
+                    {
+                        <_BitFileInputItem FileInput="this" Item="file" />
+                    }
+                }
+            }
+        </div>
+    }
+</div>
