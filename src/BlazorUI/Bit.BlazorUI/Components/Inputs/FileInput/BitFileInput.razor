@@ -11,7 +11,7 @@
     {
         @LabelTemplate
     }
-    else
+    else if (HideLabel is false)
     {
         <button @onclick="Browse"
                 type="button"
@@ -30,7 +30,7 @@
            aria-labelledby="@(Label.HasValue() ? Label : null)"
            accept="@(Accept ?? string.Join(",", AllowedExtensions))" />
 
-    @if (Files is not null)
+    @if (Files is not null && HideFileList is false)
     {
         <div class="bit-fin-fl">
             @for (var i = 0; i < Files.Count; i++)

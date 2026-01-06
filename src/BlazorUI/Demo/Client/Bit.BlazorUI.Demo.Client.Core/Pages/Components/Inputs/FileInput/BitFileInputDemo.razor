@@ -12,144 +12,87 @@
           PublicMembers="componentPublicMembers"
           GitHubUrl="Inputs/FileInput/BitFileInput.razor"
           GitHubDemoUrl="Inputs/FileInput/BitFileInputDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <div>Select file(s) to see them in the component.</div><br />
-        <BitFileInput Label="Select or drag and drop files" OnChange="@HandleOnChange1" />
-        @if (selectedFiles1.Any())
-        {
-            <div class="files-info">
-                <strong>Selected files:</strong>
-                @foreach (var file in selectedFiles1)
-                {
-                    <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
-                }
-            </div>
-        }
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <div>Select file(s) to see them in the component.</div>
+
+        <br />
+
+        <BitFileInput Label="Browse or drop a file" />
     </DemoExample>
 
-    <DemoExample Title="Multiple" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div>Multiple files can be selected.</div><br />
-        <BitFileInput Label="Select or drag and drop files" Multiple OnChange="@HandleOnChange2" />
-        @if (selectedFiles2.Any())
-        {
-            <div class="files-info">
-                <strong>Selected @selectedFiles2.Count file(s):</strong>
-                @foreach (var file in selectedFiles2)
-                {
-                    <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
-                }
-            </div>
-        }
+    <DemoExample Title="Multiple" RazorCode="@example2RazorCode" Id="example2">
+        <div>Multiple files can be selected.</div>
+
+        <br />
+
+        <BitFileInput Label="Browse or drop files" Multiple />
     </DemoExample>
 
-    <DemoExample Title="AutoReset" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div>Automatically resets the BitFileInput state each time before browsing files.</div><br />
-        <BitFileInput Label="Select or drag and drop files" AutoReset OnChange="@HandleOnChange3" />
-        @if (selectedFiles3.Any())
-        {
-            <div class="files-info">
-                <strong>Selected files (count will reset to 1):</strong>
-                @foreach (var file in selectedFiles3)
-                {
-                    <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
-                }
-            </div>
-        }
+    <DemoExample Title="AutoReset" RazorCode="@example3RazorCode" Id="example3">
+        <div>Automatically resets the BitFileInput state each time before browsing files.</div>
+
+        <br />
+
+        <BitFileInput Label="Browse or drop a file" AutoReset />
     </DemoExample>
 
-    <DemoExample Title="Append" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>When selected, additional files will be appended to the existing list without overwriting previous selections.</div><br />
-        <BitFileInput Label="Select or drag and drop files" Append OnChange="@HandleOnChange4" />
-        @if (selectedFiles4.Any())
-        {
-            <div class="files-info">
-                <strong>Total @selectedFiles4.Count file(s) selected:</strong>
-                @foreach (var file in selectedFiles4)
-                {
-                    <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
-                }
-            </div>
-        }
+    <DemoExample Title="Append" RazorCode="@example4RazorCode" Id="example4">
+        <div>When selected, additional files will be appended to the existing list without overwriting previous selections.</div>
+
+        <br />
+
+        <BitFileInput Label="Browse or drop a file" Append />
     </DemoExample>
 
-    <DemoExample Title="MaxSize" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div>The file size can be limited using the MaxSize parameter (1 MB in this example).</div><br />
-        <BitFileInput Label="Select or drag and drop files" MaxSize="1024 * 1024 * 1" OnChange="@HandleOnChange5" />
-        @if (selectedFiles5.Any())
-        {
-            <div class="files-info">
-                <strong>Selected files:</strong>
-                @foreach (var file in selectedFiles5)
-                {
-                    <div class="@(file.IsValid ? "" : "invalid-file")">
-                        @file.Name (@FileSizeHumanizer.Humanize(file.Size))
-                        @if (!file.IsValid)
-                        {
-                            <span> - @file.Message</span>
-                        }
-                    </div>
-                }
-            </div>
-        }
+    <DemoExample Title="MaxSize" RazorCode="@example5RazorCode" Id="example5">
+        <div>The file size can be limited using the MaxSize parameter (1 MB in this example).</div>
+
+        <br />
+
+        <BitFileInput Label="Browse or drop a file" MaxSize="1024 * 1024 * 1" />
     </DemoExample>
 
-    <DemoExample Title="AllowedExtensions" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <div>Limits file browsing by the provided file extensions.</div><br />
-        <BitFileInput Label="Select or drag and drop files"
-                      AllowedExtensions="@(new List<string> { ".gif",".jpg",".png",".bmp" })"
-                      OnChange="@HandleOnChange6" />
-        @if (selectedFiles6.Any())
-        {
-            <div class="files-info">
-                <strong>Selected files:</strong>
-                @foreach (var file in selectedFiles6)
-                {
-                    <div class="@(file.IsValid ? "" : "invalid-file")">
-                        @file.Name (@FileSizeHumanizer.Humanize(file.Size))
-                        @if (!file.IsValid)
-                        {
-                            <span> - @file.Message</span>
-                        }
-                    </div>
-                }
-            </div>
-        }
+    <DemoExample Title="AllowedExtensions" RazorCode="@example6RazorCode" Id="example6">
+        <div>Limits file browsing by the provided file extensions.</div>
+
+        <br />
+
+        <BitFileInput Label="Browse or drop a file" AllowedExtensions="@([".gif", ".jpg", ".png", ".bmp"])" />
     </DemoExample>
 
-    <DemoExample Title="Removable" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>Enables the remove functionality of the BitFileInput.</div><br />
-        <BitFileInput Label="Select or drag and drop files" ShowRemoveButton OnChange="@HandleOnChange7" />
-        @if (selectedFiles7.Any())
-        {
-            <div class="files-info">
-                <strong>@selectedFiles7.Count file(s) selected</strong>
-            </div>
-        }
+    <DemoExample Title="Removable" RazorCode="@example7RazorCode" Id="example7">
+        <div>Enables the remove functionality of the BitFileInput.</div>
+
+        <br />
+
+        <BitFileInput Label="Browse or drop a file" ShowRemoveButton />
     </DemoExample>
 
     <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>Different events can be configured for file selection.</div><br />
-        <BitFileInput Label="Select or drag and drop files"
-                      OnChange="@HandleOnChange8"
-                      OnSelectComplete="@(() => selectCompleteText = "File selection completed")" />
-        <div class="event-log">@selectCompleteText</div>
-        @if (selectedFiles8.Any())
+        <div>Different events can be configured for file selection.</div>
+
+        <br />
+
+        <BitFileInput Label="Select or drag and drop files" OnChange="@HandleOnChange" />
+
+        <div>Selected files:</div>
+        <br />
+        @foreach (var file in selectedFiles)
         {
-            <div class="files-info">
-                <strong>Selected files:</strong>
-                @foreach (var file in selectedFiles8)
-                {
-                    <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
-                }
-            </div>
+            <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
         }
     </DemoExample>
 
     <DemoExample Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div>The BitFileInput can be further customized using templates.</div><br />
-        <BitFileInput @ref="bitFileInput" OnChange="@HandleOnChange9">
+        <div>The BitFileInput can be further customized using templates.</div>
+
+        <br />
+
+        <BitFileInput @ref="bitFileInput" Multiple
+                      MaxSize="1024 * 1024 * 2"
+                      AllowedExtensions="@([".jpg", ".jpeg", ".png", ".bmp"])">
             <LabelTemplate>
-                @if (FileInputIsEmpty())
+                @if (bitFileInput.Files?.Any() is not true)
                 {
                     <div class="browse-file" @onclick="() => bitFileInput.Browse()">
                         <div class="browse-file-header">
@@ -159,18 +102,14 @@
                             </div>
                             <div>
                                 <strong>
-                                    Browse file
+                                    Browse files
                                 </strong>
                             </div>
                         </div>
 
                         <div class="browse-file-footer">
-                            <div>
-                                Max file size: 2 MB
-                            </div>
-                            <div>
-                                Supported file types: jpg, jpeg, png, bmp
-                            </div>
+                            <div>Max file size: 2 MB</div>
+                            <div>Supported file types: jpg, jpeg, png, bmp</div>
                         </div>
                     </div>
                 }
@@ -206,12 +145,8 @@
                         </div>
 
                         <div class="file-list-footer">
-                            <div>
-                                Max file size: 2 MB
-                            </div>
-                            <div>
-                                Supported file types: jpg, jpeg, png, bpm
-                            </div>
+                            <div>Max file size: 2 MB</div>
+                            <div>Supported file types: jpg, jpeg, png, bmp</div>
                         </div>
                     </div>
                 }
@@ -220,25 +155,18 @@
     </DemoExample>
 
     <DemoExample Title="Public API" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <div>Use custom methods to interact with the file input.</div><br />
-        <BitFileInput @ref="bitFileInputWithBrowse"
-                      Label=""
-                      OnChange="@HandleOnChange10" />
+        <div>Use custom methods to interact with the file input.</div>
+
         <br />
+
+        <BitFileInput @ref="publicApiFileInput" HideLabel />
+
+        <br />
+
         <div class="api-buttons">
-            <BitButton OnClick="HandleBrowseClick">Browse file</BitButton>
-            <BitButton OnClick="HandleResetClick">Reset</BitButton>
+            <BitButton OnClick="() => publicApiFileInput.Browse()">Browse file</BitButton>
+            <BitButton OnClick="() => publicApiFileInput.Reset()">Reset</BitButton>
         </div>
-        @if (selectedFiles10.Any())
-        {
-            <div class="files-info">
-                <strong>Selected files:</strong>
-                @foreach (var file in selectedFiles10)
-                {
-                    <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
-                }
-            </div>
-        }
     </DemoExample>
 
 </DemoPage>

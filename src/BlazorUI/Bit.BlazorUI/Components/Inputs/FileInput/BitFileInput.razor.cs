@@ -8,7 +8,6 @@ public partial class BitFileInput : BitComponentBase
     private ElementReference _inputRef;
     private List<BitFileInputInfo> _files = [];
     private IJSObjectReference _dropZoneRef = default!;
-    private DotNetObjectReference<BitFileInput> _dotnetObj = default!;
 
 
 
@@ -27,7 +26,7 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public IReadOnlyCollection<string> AllowedExtensions { get; set; } = ["*"];
 
     /// <summary>
-    /// Enables the append mode that appends any additional selected file(s) to the current file list.
+    /// Enables the append mode that adds any additional selected file(s) to the current file list.
     /// </summary>
     [Parameter] public bool Append { get; set; }
 
@@ -42,6 +41,11 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public bool HideFileList { get; set; }
 
     /// <summary>
+    /// Hides the label of the file input.
+    /// </summary>
+    [Parameter] public bool HideLabel { get; set; }
+
+    /// <summary>
     /// The text of select file button.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -52,7 +56,7 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Specifies the maximum size (byte) of the file (0 for unlimited).
+    /// Specifies the maximum allowed file size in bytes (0 for unlimited).
     /// </summary>
     [Parameter] public long MaxSize { get; set; }
 
@@ -77,7 +81,7 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public EventCallback<BitFileInputInfo[]> OnChange { get; set; }
 
     /// <summary>
-    /// Show/Hide remove button.
+    /// Shows the remove button for each selected file.
     /// </summary>
     [Parameter] public bool ShowRemoveButton { get; set; }
 
@@ -123,6 +127,8 @@ public partial class BitFileInput : BitComponentBase
         _files.Clear();
 
         await _js.BitFileInputReset(UniqueId, _inputRef);
+
+        StateHasChanged();
     }
 
     /// <summary>
@@ -162,8 +168,6 @@ public partial class BitFileInput : BitComponentBase
     {
         if (firstRender is false) return;
 
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         _dropZoneRef = await _js.BitFileInputSetupDragDrop(RootElement, _inputRef);
     }
 
@@ -190,7 +194,7 @@ public partial class BitFileInput : BitComponentBase
 
         if (IsDisposed) return;
 
-        var newFiles = await _js.BitFileInputSetup(UniqueId, _dotnetObj, _inputRef, Append);
+        var newFiles = await _js.BitFileInputSetup(UniqueId, _inputRef, Append);
 
         foreach (var file in newFiles)
         {
@@ -242,15 +246,10 @@ public partial class BitFileInput : BitComponentBase
             }
         }
 
-        if (_dotnetObj is not null)
+        try
         {
-            _dotnetObj.Dispose();
-
-            try
-            {
-                await _js.BitFileInputClear(UniqueId);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            await _js.BitFileInputClear(UniqueId);
         }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 }

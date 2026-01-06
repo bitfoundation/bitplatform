@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.FileInput;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.FileInput;
 
 public partial class BitFileInputDemo
 {
@@ -23,7 +23,7 @@ public partial class BitFileInputDemo
             Name = "Append",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables the append mode that appends any additional selected file(s) to the current file list."
+            Description = "Enables the append mode that adds any additional selected file(s) to the current file list."
         },
         new()
         {
@@ -38,6 +38,13 @@ public partial class BitFileInputDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Hides the file list section of the file input."
+        },
+        new()
+        {
+            Name = "HideLabel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hides the label of the file input."
         },
         new()
         {
@@ -58,7 +65,14 @@ public partial class BitFileInputDemo
             Name = "MaxSize",
             Type = "long",
             DefaultValue = "0",
-            Description = "Specifies the maximum size (byte) of the file (0 for unlimited)."
+            Description = "Specifies the maximum allowed file size in bytes (0 for unlimited)."
+        },
+        new()
+        {
+            Name = "MaxSizeErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Specifies the message for the failed validation due to exceeding the maximum size."
         },
         new()
         {
@@ -72,23 +86,15 @@ public partial class BitFileInputDemo
             Name = "NotAllowedExtensionErrorMessage",
             Type = "string",
             DefaultValue = "File type not allowed",
-            Description = "The message shown for files with not allowed extensions."
+            Description = "Specifies the message for the failed validation due to the allowed extensions."
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<BitFileInputInfo[]>",
-            Description = "Callback for when file or files change.",
+            Description = "Callback for when file or files selection changes.",
             LinkType = LinkType.Link,
-            Href = "#file-info"
-        },
-        new()
-        {
-            Name = "OnSelectComplete",
-            Type = "EventCallback<BitFileInputInfo[]>",
-            Description = "Callback for when file selection is completed.",
-            LinkType = LinkType.Link,
-            Href = "#file-info"
+            Href = "#file-input-info"
         },
         new()
         {
@@ -99,17 +105,55 @@ public partial class BitFileInputDemo
         },
         new()
         {
-            Name = "SizeTooLargeErrorMessage",
-            Type = "string",
-            DefaultValue = "File size is too large",
-            Description = "The message shown for files that exceed the max size."
-        },
-        new()
-        {
             Name = "FileViewTemplate",
             Type = "RenderFragment<BitFileInputInfo>?",
             DefaultValue = "null",
-            Description = "The custom file view template."
+            Description = "The custom file view template.",
+            LinkType = LinkType.Link,
+            Href = "#file-input-info"
+        }
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "Files",
+            Type = "BitFileInputInfo[]?",
+            DefaultValue = "null",
+            Description = "A list of all of the selected files.",
+            LinkType = LinkType.Link,
+            Href = "#file-input-info"
+        },
+        new()
+        {
+            Name = "InputId",
+            Type = "string?",
+            DefaultValue = "",
+            Description = "The id of the file input element.",
+        },
+        new()
+        {
+            Name = "RemoveFile",
+            Type = "(BitFileInputInfo? fileInfo = null) => void",
+            DefaultValue = "",
+            Description = "Removes a file from the selected files list.",
+            LinkType = LinkType.Link,
+            Href = "#file-input-info"
+        },
+        new()
+        {
+            Name = "Browse",
+            Type = "Task",
+            DefaultValue = "",
+            Description = "Opens a file selection dialog.",
+        },
+        new()
+        {
+            Name = "Reset",
+            Type = "Task",
+            DefaultValue = "",
+            Description = "Resets the file input.",
         }
     ];
 
@@ -117,7 +161,7 @@ public partial class BitFileInputDemo
     [
         new()
         {
-            Id = "file-info",
+            Id = "file-input-info",
             Title = "BitFileInputInfo",
             Parameters =
             [
@@ -172,255 +216,56 @@ public partial class BitFileInputDemo
         }
     ];
 
-    private readonly List<ComponentParameter> componentPublicMembers =
-    [
-        new()
-        {
-            Name = "Files",
-            Type = "BitFileInputInfo[]?",
-            DefaultValue = "null",
-            Description = "A list of all of the selected files.",
-            LinkType = LinkType.Link,
-            Href = "#file-info"
-        },
-        new()
-        {
-            Name = "InputId",
-            Type = "string?",
-            DefaultValue = "",
-            Description = "The id of the file input element.",
-        },
-        new()
-        {
-            Name = "RemoveFile",
-            Type = "(BitFileInputInfo? fileInfo = null) => void",
-            DefaultValue = "",
-            Description = "Removes a file from the selected files list.",
-            LinkType = LinkType.Link,
-            Href = "#file-info"
-        },
-        new()
-        {
-            Name = "Browse",
-            Type = "Task",
-            DefaultValue = "",
-            Description = "Opens a file selection dialog.",
-        },
-        new()
-        {
-            Name = "Reset",
-            Type = "Task",
-            DefaultValue = "",
-            Description = "Resets the file input.",
-        }
-    ];
-
 
 
     private BitFileInput bitFileInput = default!;
-    private BitFileInput bitFileInputWithBrowse = default!;
 
-    private List<BitFileInputInfo> selectedFiles1 = [];
-    private List<BitFileInputInfo> selectedFiles2 = [];
-    private List<BitFileInputInfo> selectedFiles3 = [];
-    private List<BitFileInputInfo> selectedFiles4 = [];
-    private List<BitFileInputInfo> selectedFiles5 = [];
-    private List<BitFileInputInfo> selectedFiles6 = [];
-    private List<BitFileInputInfo> selectedFiles7 = [];
-    private List<BitFileInputInfo> selectedFiles8 = [];
-    private List<BitFileInputInfo> selectedFiles9 = [];
-    private List<BitFileInputInfo> selectedFiles10 = [];
-
-    private string selectCompleteText = "";
-
-    private bool FileInputIsEmpty() => bitFileInput.Files?.Any() is not true;
-
-    private void HandleOnChange1(BitFileInputInfo[] files)
+    private BitFileInputInfo[] selectedFiles = [];
+    private void HandleOnChange(BitFileInputInfo[] files)
     {
-        selectedFiles1 = files.ToList();
+        selectedFiles = files;
     }
 
-    private void HandleOnChange2(BitFileInputInfo[] files)
-    {
-        selectedFiles2 = files.ToList();
-    }
 
-    private void HandleOnChange3(BitFileInputInfo[] files)
-    {
-        selectedFiles3 = files.ToList();
-    }
-
-    private void HandleOnChange4(BitFileInputInfo[] files)
-    {
-        selectedFiles4 = files.ToList();
-    }
-
-    private void HandleOnChange5(BitFileInputInfo[] files)
-    {
-        selectedFiles5 = files.ToList();
-    }
-
-    private void HandleOnChange6(BitFileInputInfo[] files)
-    {
-        selectedFiles6 = files.ToList();
-    }
-
-    private void HandleOnChange7(BitFileInputInfo[] files)
-    {
-        selectedFiles7 = files.ToList();
-    }
-
-    private void HandleOnChange8(BitFileInputInfo[] files)
-    {
-        selectedFiles8 = files.ToList();
-    }
-
-    private void HandleOnChange9(BitFileInputInfo[] files)
-    {
-        selectedFiles9 = files.ToList();
-    }
-
-    private void HandleOnChange10(BitFileInputInfo[] files)
-    {
-        selectedFiles10 = files.ToList();
-    }
-
-    private async Task HandleBrowseClick()
-    {
-        await bitFileInputWithBrowse.Browse();
-    }
-
-    private async Task HandleResetClick()
-    {
-        await bitFileInputWithBrowse.Reset();
-    }
+    private BitFileInput publicApiFileInput = default!;
 
 
 
     private readonly string example1RazorCode = @"
-<BitFileInput Label=""Select or drag and drop files"" OnChange=""@HandleOnChange1"" />
-
-@if (selectedFiles1.Any())
-{
-    <div>
-        <strong>Selected files:</strong>
-        @foreach (var file in selectedFiles1)
-        {
-            <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
-        }
-    </div>
-}";
-    private readonly string example1CsharpCode = @"
-private List<BitFileInputInfo> selectedFiles1 = [];
-
-private void HandleOnChange1(BitFileInputInfo[] files)
-{
-    selectedFiles1 = files.ToList();
-}";
+<BitFileInput Label=""Browse or drop a file"" />";
 
     private readonly string example2RazorCode = @"
-<BitFileInput Label=""Select or drag and drop files"" Multiple OnChange=""@HandleOnChange2"" />
-
-@if (selectedFiles2.Any())
-{
-    <div>
-        <strong>Selected @selectedFiles2.Count file(s):</strong>
-        @foreach (var file in selectedFiles2)
-        {
-            <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
-        }
-    </div>
-}";
-    private readonly string example2CsharpCode = @"
-private List<BitFileInputInfo> selectedFiles2 = [];
-
-private void HandleOnChange2(BitFileInputInfo[] files)
-{
-    selectedFiles2 = files.ToList();
-}";
+<BitFileInput Label=""Browse or drop files"" Multiple />";
 
     private readonly string example3RazorCode = @"
-<BitFileInput Label=""Select or drag and drop files"" AutoReset OnChange=""@HandleOnChange3"" />";
-    private readonly string example3CsharpCode = @"
-private List<BitFileInputInfo> selectedFiles3 = [];
-
-private void HandleOnChange3(BitFileInputInfo[] files)
-{
-    selectedFiles3 = files.ToList();
-}";
+<BitFileInput Label=""Browse or drop a file"" AutoReset />";
 
     private readonly string example4RazorCode = @"
-<BitFileInput Label=""Select or drag and drop files"" Append OnChange=""@HandleOnChange4"" />";
-    private readonly string example4CsharpCode = @"
-private List<BitFileInputInfo> selectedFiles4 = [];
-
-private void HandleOnChange4(BitFileInputInfo[] files)
-{
-    selectedFiles4 = files.ToList();
-}";
+<BitFileInput Label=""Browse or drop a file"" Append />";
 
     private readonly string example5RazorCode = @"
-<BitFileInput Label=""Select or drag and drop files"" MaxSize=""1024 * 1024 * 1"" OnChange=""@HandleOnChange5"" />
-
-@if (selectedFiles5.Any())
-{
-    <div>
-        <strong>Selected files:</strong>
-        @foreach (var file in selectedFiles5)
-        {
-            <div class=""@(file.IsValid ? """" : ""invalid-file"")"">
-                @file.Name (@FileSizeHumanizer.Humanize(file.Size))
-                @if (!file.IsValid)
-                {
-                    <span> - @file.Message</span>
-                }
-            </div>
-        }
-    </div>
-}";
-    private readonly string example5CsharpCode = @"
-private List<BitFileInputInfo> selectedFiles5 = [];
-
-private void HandleOnChange5(BitFileInputInfo[] files)
-{
-    selectedFiles5 = files.ToList();
-}";
+<BitFileInput Label=""Browse or drop a file"" MaxSize=""1024 * 1024 * 1"" />";
 
     private readonly string example6RazorCode = @"
-<BitFileInput Label=""Select or drag and drop files""
-              AllowedExtensions=""@(new List<string> { "".gif"","".jpg"","".png"","".bmp"" })""
-              OnChange=""@HandleOnChange6"" />";
-    private readonly string example6CsharpCode = @"
-private List<BitFileInputInfo> selectedFiles6 = [];
-
-private void HandleOnChange6(BitFileInputInfo[] files)
-{
-    selectedFiles6 = files.ToList();
-}";
+<BitFileInput Label=""Browse or drop a file"" AllowedExtensions=""@(["".gif"","".jpg"","".png"","".bmp""])"" />";
 
     private readonly string example7RazorCode = @"
-<BitFileInput Label=""Select or drag and drop files"" ShowRemoveButton OnChange=""@HandleOnChange7"" />";
-    private readonly string example7CsharpCode = @"
-private List<BitFileInputInfo> selectedFiles7 = [];
-
-private void HandleOnChange7(BitFileInputInfo[] files)
-{
-    selectedFiles7 = files.ToList();
-}";
+<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton />";
 
     private readonly string example8RazorCode = @"
-<BitFileInput Label=""Select or drag and drop files""
-              OnChange=""@HandleOnChange8""
-              OnSelectComplete=""@(() => selectCompleteText = ""File selection completed"")"" />
+<BitFileInput Label=""Select or drag and drop files"" OnChange=""@HandleOnChange"" />
 
-<div>@selectCompleteText</div>";
-    private readonly string example8CsharpCode = @"
-private List<BitFileInputInfo> selectedFiles8 = [];
-private string selectCompleteText = """";
-
-private void HandleOnChange8(BitFileInputInfo[] files)
+<div>Selected files:</div>
+@foreach (var file in selectedFiles)
 {
-    selectedFiles8 = files.ToList();
+    <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
+}";
+    private readonly string example8CsharpCode = @"
+private BitFileInputInfo[] selectedFiles = [];
+
+private void HandleOnChange(BitFileInputInfo[] files)
+{
+    selectedFiles = files;
 }";
 
     private readonly string example9RazorCode = @"
@@ -530,9 +375,11 @@ private void HandleOnChange8(BitFileInputInfo[] files)
     }
 </style>
 
-<BitFileInput @ref=""bitFileInput"" OnChange=""@HandleOnChange9"">
+<BitFileInput @ref=""bitFileInput"" Multiple
+              MaxSize=""1024 * 1024 * 2""
+              AllowedExtensions=""@(["".jpg"", "".jpeg"", "".png"", "".bmp""])"">
     <LabelTemplate>
-        @if (FileInputIsEmpty())
+        @if (bitFileInput.Files?.Any() is not true)
         {
             <div class=""browse-file"" @onclick=""() => bitFileInput.Browse()"">
                 <div class=""browse-file-header"">
@@ -542,18 +389,14 @@ private void HandleOnChange8(BitFileInputInfo[] files)
                     </div>
                     <div>
                         <strong>
-                            Browse file
+                            Browse files
                         </strong>
                     </div>
                 </div>
 
                 <div class=""browse-file-footer"">
-                    <div>
-                        Max file size: 2 MB
-                    </div>
-                    <div>
-                        Supported file types: jpg, jpeg, png, bpm
-                    </div>
+                    <div>Max file size: 2 MB</div>
+                    <div>Supported file types: jpg, jpeg, png, bmp</div>
                 </div>
             </div>
         }
@@ -578,7 +421,7 @@ private void HandleOnChange8(BitFileInputInfo[] files)
 
                         <div class=""file-info-btns"">
                             <i class=""bit-icon bit-icon--Cancel remove-ico""
-                               @onclick=""() => bitFileInput.RemoveFile(file)"" />
+                                @onclick=""() => bitFileInput.RemoveFile(file)"" />
                         </div>
                     </div>
 
@@ -589,51 +432,21 @@ private void HandleOnChange8(BitFileInputInfo[] files)
                 </div>
 
                 <div class=""file-list-footer"">
-                    <div>
-                        Max file size: 2 MB
-                    </div>
-                    <div>
-                        Supported file types: jpg, jpeg, png, bpm
-                    </div>
+                    <div>Max file size: 2 MB</div>
+                    <div>Supported file types: jpg, jpeg, png, bmp</div>
                 </div>
             </div>
         }
     </FileViewTemplate>
 </BitFileInput>";
     private readonly string example9CsharpCode = @"
-private BitFileInput bitFileInput = default!;
-private List<BitFileInputInfo> selectedFiles9 = [];
-
-private bool FileInputIsEmpty() => bitFileInput.Files?.Any() is not true;
-
-private void HandleOnChange9(BitFileInputInfo[] files)
-{
-    selectedFiles9 = files.ToList();
-}";
+private BitFileInput bitFileInput = default!;";
 
     private readonly string example10RazorCode = @"
-<BitFileInput @ref=""bitFileInputWithBrowse""
-              Label=""""
-              OnChange=""@HandleOnChange10"" />
-<br />
-<BitButton OnClick=""HandleBrowseClick"">Browse file</BitButton>
-<BitButton OnClick=""HandleResetClick"">Reset</BitButton>";
+<BitFileInput @ref=""publicApiFileInput"" HideLabel />
+
+<BitButton OnClick=""() => publicApiFileInput.Browse()"">Browse file</BitButton>
+<BitButton OnClick=""() => publicApiFileInput.Reset()"">Reset</BitButton>";
     private readonly string example10CsharpCode = @"
-private BitFileInput bitFileInputWithBrowse = default!;
-private List<BitFileInputInfo> selectedFiles10 = [];
-
-private void HandleOnChange10(BitFileInputInfo[] files)
-{
-    selectedFiles10 = files.ToList();
-}
-
-private async Task HandleBrowseClick()
-{
-    await bitFileInputWithBrowse.Browse();
-}
-
-private async Task HandleResetClick()
-{
-    await bitFileInputWithBrowse.Reset();
-}";
+private BitFileInput publicApiFileInput = default!;";
 }

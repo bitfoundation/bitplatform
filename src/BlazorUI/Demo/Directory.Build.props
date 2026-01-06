@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1998;CS1591;BL0007</NoWarn>
         <WarningsAsErrors>$(WarningsAsErrors);CS0114;RZ10012</WarningsAsErrors>
 
         <Version>1.0.0</Version>
