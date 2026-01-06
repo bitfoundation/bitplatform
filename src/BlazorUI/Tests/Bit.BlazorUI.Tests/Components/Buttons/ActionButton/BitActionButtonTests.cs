@@ -51,6 +51,88 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow("fa-solid fa-house"),
+        DataRow("bi bi-heart-fill")
+    ]
+    public void BitActionButtonIconParameterWithCssClassesTest(string cssClasses)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Icon, (BitIconInfo)cssClasses!);
+        });
+
+        var icon = component.Find(".bit-acb-ico");
+
+        var classes = cssClasses.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var cls in classes)
+        {
+            Assert.IsTrue(icon.ClassList.Contains(cls), $"Icon should contain class '{cls}'");
+        }
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconInfoCssHelperTest()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Css("fa-solid fa-heart"));
+        });
+
+        var icon = component.Find(".bit-acb-ico");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-heart"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconInfoFaHelperTest()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("solid rocket"));
+        });
+
+        var icon = component.Find(".bit-acb-ico");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-rocket"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconInfoBiHelperTest()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Bi("github"));
+        });
+
+        var icon = component.Find(".bit-acb-ico");
+
+        Assert.IsTrue(icon.ClassList.Contains("bi"));
+        Assert.IsTrue(icon.ClassList.Contains("bi-github"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconTakesPrecedenceOverIconNameTest()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("solid house"));
+            parameters.Add(p => p.IconName, "AddFriend");
+        });
+
+        var icon = component.Find(".bit-acb-ico");
+
+        // Icon parameter should take precedence
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-house"));
+        
+        // Should not contain IconName classes
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--AddFriend"));
+    }
+
+    [TestMethod,
         DataRow("title1"),
         DataRow("title2")
     ]

@@ -63,7 +63,17 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     public string? Href { get; set; }
 
     /// <summary>
-    /// Gets or sets the name of the icon to display.
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display from the built-in Fluent UI icons.
     /// </summary>
     /// <remarks>
     /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.AddFriend</c>).
@@ -73,6 +83,8 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     /// <br />
     /// The value is case-sensitive and must match a valid icon identifier. 
     /// If not set or set to <c>null</c>, no icon will be rendered.
+    /// <br />
+    /// For external icon libraries, use <see cref="Icon"/> instead.
     /// </remarks>
     public string? IconName { get; set; }
 
@@ -211,6 +223,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.Href = Href;
             
             hrefWasSet = true;
+        }
+
+        if (Icon is not null && bitActionButton.HasNotBeenSet(nameof(Icon)))
+        {
+            bitActionButton.Icon = Icon;
         }
 
         if (IconName.HasValue() && bitActionButton.HasNotBeenSet(nameof(IconName)))
