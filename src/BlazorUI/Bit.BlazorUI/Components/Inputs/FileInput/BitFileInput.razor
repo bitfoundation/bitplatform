@@ -15,6 +15,7 @@
     {
         <button @onclick="Browse"
                 type="button"
+                id="@_buttonId"
                 class="bit-fin-lbl">
             @(Label ?? "Browse")
         </button>
@@ -27,7 +28,7 @@
            class="bit-fin-fi"
            multiple="@Multiple"
            disabled="@(IsEnabled is false)"
-           aria-labelledby="@(Label.HasValue() ? Label : null)"
+           aria-labelledby="@(HideLabel ? null : _buttonId)"
            accept="@(Accept ?? string.Join(",", AllowedExtensions))" />
 
     @if (Files is not null && HideFileList is false)
@@ -68,9 +69,9 @@
                             </div>
                             @if (ShowRemoveButton)
                             {
-                                <div class="bit-fin-usi" @onclick="() => RemoveFile(file)">
+                                <button class="bit-fin-usi" @onclick="() => RemoveFile(file)">
                                     <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true" />
-                                </div>
+                                </button>
                             }
                         </div>
                     }

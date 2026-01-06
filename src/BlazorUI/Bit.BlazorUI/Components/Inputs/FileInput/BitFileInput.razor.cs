@@ -6,6 +6,7 @@
 public partial class BitFileInput : BitComponentBase
 {
     private ElementReference _inputRef;
+    private string _buttonId = default!;
     private List<BitFileInputInfo> _files = [];
     private IJSObjectReference _dropZoneRef = default!;
 
@@ -160,6 +161,7 @@ public partial class BitFileInput : BitComponentBase
     protected override Task OnInitializedAsync()
     {
         InputId = $"FileInput-{UniqueId}-input";
+        _buttonId = $"FileInput-{UniqueId}-label";
 
         return base.OnInitializedAsync();
     }
@@ -175,14 +177,19 @@ public partial class BitFileInput : BitComponentBase
 
     private bool IsFileTypeNotAllowed(BitFileInputInfo file)
     {
-        if (Accept.HasNoValue()) return false;
+        //if (Accept.HasNoValue()) return false;
+
+        // If AllowedExtensions only contains "*", all files are allowed
+        if (AllowedExtensions.Count == 0 || AllowedExtensions.All(ext => ext == "*")) return false;
 
         var fileSections = file.Name.Split('.');
+
+        // Handle files without an extension
+        if (fileSections.Length < 2) return true; // No extension, not in allowed list
+
         var extension = $".{fileSections?.Last()}";
 
-        return AllowedExtensions.Count > 0 &&
-               AllowedExtensions.All(ext => ext != "*") &&
-               AllowedExtensions.All(ext => ext != extension);
+        return AllowedExtensions.All(ext => ext.Equals(extension, StringComparison.OrdinalIgnoreCase) is false);
     }
 
     private async Task HandleOnChange()
