@@ -11,16 +11,16 @@
     {
         @LabelTemplate
     }
-    else if (Label.HasValue())
+    else
     {
         <button @onclick="Browse"
                 type="button"
                 class="bit-fin-lbl">
-            @Label
+            @(Label ?? "Browse")
         </button>
     }
 
-    <input @ref="_inputRef" 
+    <input @ref="_inputRef"
            @onchange="HandleOnChange"
            type="file"
            id="@InputId"
@@ -47,7 +47,32 @@
                     }
                     else
                     {
-                        <_BitFileInputItem FileInput="this" Item="file" />
+                        <div class="bit-fin-itm @GetFileElClass(file.IsValid)">
+                            <div class="bit-fin-fic">
+                                <div title="@file.Name" class="bit-fin-fnc">
+                                    <div class="bit-fin-fn">
+                                        @file.Name
+                                    </div>
+                                </div>
+                                <div class="bit-fin-fsc">
+                                    <span class="bit-fin-fs">
+                                        @FileSizeHumanizer.Humanize(file.Size)
+                                    </span>
+                                </div>
+                                @if (file.IsValid is false)
+                                {
+                                    <div class="bit-fin-us">
+                                        @file.Message
+                                    </div>
+                                }
+                            </div>
+                            @if (ShowRemoveButton)
+                            {
+                                <div class="bit-fin-usi" @onclick="() => RemoveFile(file)">
+                                    <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true" />
+                                </div>
+                            }
+                        </div>
                     }
                 }
             }

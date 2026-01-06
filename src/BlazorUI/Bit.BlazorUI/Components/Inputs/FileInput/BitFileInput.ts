@@ -4,7 +4,6 @@ namespace BitBlazorUI {
 
         public static setup(
             id: string,
-            dotnetReference: DotNetObject,
             inputElement: HTMLInputElement,
             append: boolean) {
 

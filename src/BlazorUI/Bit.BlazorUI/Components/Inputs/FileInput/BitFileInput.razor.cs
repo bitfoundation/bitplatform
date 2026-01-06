@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitFileInput component wraps the HTML file input element(s) and allows file selection. The selected files can be accessed from the C# context for further processing.
@@ -44,7 +44,7 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// The text of select file button.
     /// </summary>
-    [Parameter] public string Label { get; set; } = "Browse";
+    [Parameter] public string? Label { get; set; }
 
     /// <summary>
     /// A custom razor template for select button.
@@ -59,7 +59,7 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// Specifies the message for the failed validation due to exceeding the maximum size.
     /// </summary>
-    [Parameter] public string MaxSizeErrorMessage { get; set; } = "The file size is larger than the max size";
+    [Parameter] public string? MaxSizeErrorMessage { get; set; }
 
     /// <summary>
     /// Enables multi-file selection.
@@ -69,17 +69,12 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// Specifies the message for the failed validation due to the allowed extensions.
     /// </summary>
-    [Parameter] public string NotAllowedExtensionErrorMessage { get; set; } = "The file type is not allowed";
+    [Parameter] public string? NotAllowedExtensionErrorMessage { get; set; }
 
     /// <summary>
     /// Callback for when file or files selection changes.
     /// </summary>
     [Parameter] public EventCallback<BitFileInputInfo[]> OnChange { get; set; }
-
-    /// <summary>
-    /// Callback for when files are selected and validated.
-    /// </summary>
-    [Parameter] public EventCallback<BitFileInputInfo[]> OnSelectComplete { get; set; }
 
     /// <summary>
     /// Show/Hide remove button.
@@ -126,6 +121,7 @@ public partial class BitFileInput : BitComponentBase
     public async Task Reset()
     {
         _files.Clear();
+
         await _js.BitFileInputReset(UniqueId, _inputRef);
     }
 
@@ -173,13 +169,16 @@ public partial class BitFileInput : BitComponentBase
 
 
 
-    internal bool IsFileTypeNotAllowed(BitFileInputInfo file)
+    private bool IsFileTypeNotAllowed(BitFileInputInfo file)
     {
         if (Accept.HasNoValue()) return false;
 
         var fileSections = file.Name.Split('.');
         var extension = $".{fileSections?.Last()}";
-        return AllowedExtensions.Count > 0 && AllowedExtensions.All(ext => ext != "*") && AllowedExtensions.All(ext => ext != extension);
+
+        return AllowedExtensions.Count > 0 &&
+               AllowedExtensions.All(ext => ext != "*") &&
+               AllowedExtensions.All(ext => ext != extension);
     }
 
     private async Task HandleOnChange()
@@ -199,22 +198,24 @@ public partial class BitFileInput : BitComponentBase
             if (MaxSize > 0 && file.Size > MaxSize)
             {
                 file.IsValid = false;
-                file.Message = MaxSizeErrorMessage;
+                file.Message = MaxSizeErrorMessage ?? "The file size is larger than the max size";
             }
             // Validate file extension
             else if (IsFileTypeNotAllowed(file))
             {
                 file.IsValid = false;
-                file.Message = NotAllowedExtensionErrorMessage;
+                file.Message = NotAllowedExtensionErrorMessage ?? "The file type is not allowed";
             }
         }
 
         _files.AddRange(newFiles);
 
-        if (_files.Any() is false) return;
-
         await OnChange.InvokeAsync([.. _files]);
-        await OnSelectComplete.InvokeAsync([.. _files]);
+    }
+
+    private string GetFileElClass(bool isValid)
+    {
+        return isValid ? $"bit-fin-vld" : $"bit-fin-inv";
     }
 
 
