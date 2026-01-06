@@ -901,7 +901,7 @@
     <value>استفاده از رمز</value>
   </data>
     <data name="SignInByOtp" xml:space="preserve">
-    <value>استفاده از رمز بک بار مصرف</value>
+    <value>استفاده از رمز یکبار مصرف</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>رمز عبور اصلی یا یک‌بار مصرف را وارد کنید</value>
