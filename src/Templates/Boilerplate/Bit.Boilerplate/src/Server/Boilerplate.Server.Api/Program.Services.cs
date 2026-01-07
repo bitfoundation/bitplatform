@@ -417,7 +417,7 @@ public static partial class Program
 
         services.AddHttpClient<NugetStatisticsService>(c =>
         {
-            c.Timeout = TimeSpan.FromSeconds(3);
+            c.Timeout = TimeSpan.FromSeconds(20);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
             c.DefaultRequestVersion = HttpVersion.Version11;
         });
