@@ -296,6 +296,7 @@ public static partial class Program
             //#if (database == "SqlServer")
             options.UseSqlServer(configuration.GetRequiredConnectionString("mssqldb"), dbOptions =>
             {
+                dbOptions.UseCompatibilityLevel(170); // SQL Server 2025
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "PostgreSQL")
@@ -305,6 +306,7 @@ public static partial class Program
             options.UseNpgsql(dataSourceBuilder.Build(), dbOptions =>
             {
                 dbOptions.UseVector();
+                dbOptions.SetPostgresVersion(18, 0);
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
             //#elif (database == "MySql")

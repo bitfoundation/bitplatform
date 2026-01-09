@@ -19,7 +19,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Jint" Version="4.4.2" />
+        <PackageReference Include="Jint" Version="4.5.0" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.1" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.1.1-preview.1.25612.2" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
