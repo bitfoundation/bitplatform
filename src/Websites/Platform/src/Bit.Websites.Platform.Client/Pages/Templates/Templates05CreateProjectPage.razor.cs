@@ -14,6 +14,7 @@ public partial class Templates05CreateProjectPage
     private Parameter<bool> appInsight = new() { Value = false, Default = false };
     private Parameter<bool> signalR = new() { Value = false, Default = false };
     private Parameter<bool> googleAds = new() { Value = false, Default = false };
+    private Parameter<bool> redis = new() { Value = false, Default = false };
     private Parameter<bool> aspire = new() { Value = true, Default = true };
 
     private Parameter<string> captcha = new()
@@ -138,6 +139,11 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetGoogleAdsCommand());
         }
 
+        if (redis.IsModified)
+        {
+            finalCommand.Append(GetRedisCommand());
+        }
+
         if (aspire.IsModified)
         {
             finalCommand.Append(GetAspireCommand());
@@ -244,6 +250,11 @@ public partial class Templates05CreateProjectPage
     private string GetGoogleAdsCommand()
     {
         return $"--ads{(googleAds.Value ? string.Empty : " false")} ";
+    }
+
+    private string GetRedisCommand()
+    {
+        return $"--redis{(redis.Value ? string.Empty : " false")} ";
     }
 
     private string GetAspireCommand()
