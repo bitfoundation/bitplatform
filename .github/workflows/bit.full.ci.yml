@@ -152,7 +152,7 @@ jobs:
         dotnet ef migrations add Initial --verbose
 
     - name: Install sql server
-      uses: potatoqualitee/mssqlsuite@v1.11
+      uses: potatoqualitee/mssqlsuite@main
       with:
         version: 2025
         install: sqlengine
