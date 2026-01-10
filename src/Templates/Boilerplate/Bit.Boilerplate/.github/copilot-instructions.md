@@ -33,11 +33,11 @@ You will be working with the following key technologies:
 *   **SCSS**: Advanced CSS preprocessing
 *   **Mapperly**: High-performance object mapping
 <!--#if (database == "SqlServer")-->
-*   **SQL Server**: Primary database
+*   **SQL Server 2025**: Primary database
 <!--#elif (database == "Sqlite")-->
 *   **SQLite**: Primary database
 <!--#elif (database == "PostgreSQL")-->
-*   **PostgreSQL**: Primary database
+*   **PostgreSQL 18**: Primary database
 <!--#elif (database == "MySql")-->
     **MySQL**: Primary database
 <!--#endif-->
