@@ -260,14 +260,10 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     }
 
     //#if (database == "PostgreSQL" || database == "SqlServer")
-    //#if (database == "PostgreSQL")
+    //#if (database == "PostgreSQL" && aspire == false)
     // In order to enable embedding, the `pgvector` extension must be installed in your PostgreSQL.
-    //#if (aspire == false)
     // The following command runs the postgreSQL container with the `pgvector` extension:
     // docker run -d --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=BoilerplateDb -p 5432:5432 -v pgdata:/var/lib/postgresql --restart unless-stopped pgvector/pgvector:pg18
-    //#endif
-    //#elif (database == "SqlServer")
-    // This requires SQL Server 2025+
     //#endif
     public static readonly bool IsEmbeddingEnabled = false;
     //#endif
