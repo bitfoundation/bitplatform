@@ -1,4 +1,4 @@
-﻿@page "/templates/create-project"
+@page "/templates/create-project"
 @page "/boilerplate/create-project"
 @inherits AppComponentBase
 
@@ -158,33 +158,51 @@
             }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item md" ColumnSpan="2">
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Redis</BitText>
+                <BitToggle @bind-Value="redis.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <BitText Typography="BitTypography.Body1" Gutter>
+                bit Boilerplate handles most of your scalability requirements using Redis:
+                <ul>
+                    <li>Hybrid (In-memory + Redis) caching with FusionCache</li>
+                    <li>Background job processing for Hangfire</li>
+                    <li>SignalR backplane (Azure SignalR Service is also pre-configured)</li>
+                    <li>Distributed locking</li>
+                </ul>
+                If Redis integration is disabled:
+                <ul>
+                    <li>In-memory caching will be used instead of hybrid caching</li>
+                    <li>Background jobs will be persisted in the database (significantly slower)</li>
+                </ul>
+                In production, You may not scale out the application without addressing distributed locking and SignalR scale out concerns.
+            </BitText>
+            <CodeBox>
+                @GetRedisCommand()
+            </CodeBox>
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Aspire</BitText>
                 <BitToggle @bind-Value="aspire.Value" OnText="true" OffText="false" />
             </div>
-            <br />
             <BitText Typography="BitTypography.Body1" Gutter>
                 Aspire helps you publish your project not only on Azure, AWS, and Kubernetes, but also on a simple Linux VPS running a basic Docker Compose setup, automatically building the database, API projects, and more.
             </BitText>
-            <br />
+            <BitText>
+                In the Bit Boilerplate, .NET Aspire automatically provisions Redis, a database, file storage (Azure Blob Storage or S3), a test SMTP server, Keycloak, and Dev Tunnels for you!
+            </BitText>
             <CodeBox>
                 @GetAspireCommand()
             </CodeBox>
-            <br />
             <BitText Typography="BitTypography.Body2">
-     Aspire helps you build, test, and deploy distributed applications with ease. Learn more at <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank">ASP.NET Core Aspire</a>.
-                <div class="video-container">
-                        <iframe width="800" height="450"
-                                allowfullscreen frameborder="0"
-                                title="Aspire"
-                                src="https://www.youtube.com/embed/-vd7quVCP1k?si=mf4GZrdqRYK6zZ25"
-                                referrerpolicy="strict-origin-when-cross-origin"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                </div>
+                Aspire helps you build, test, and deploy distributed applications with ease. Learn more at <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank">ASP.NET Core Aspire</a>.
                 <CodeBox>dotnet tool install -g Aspire.Cli</CodeBox>
                 Aspire requires Docker Desktop to be installed and running. Download and install Docker Desktop from <a href="https://www.docker.com/products/docker-desktop/" target="_blank">here</a>.
-  </BitText>
+            </BitText>
         </BitGridItem>
 
         <BitGridItem Class="grid-item md" ColumnSpan="2">
