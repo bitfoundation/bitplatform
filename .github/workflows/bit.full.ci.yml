@@ -154,6 +154,7 @@ jobs:
     - name: Install sql server
       uses: potatoqualitee/mssqlsuite@v1.11
       with:
+        version: 2025
         install: sqlengine
         sa-password: P@ssw0rdP@ssw0rd
         show-log: true
