@@ -35,6 +35,7 @@ var sqlDatabase = builder.AddSqlServer("sqlserver")
 var postgresDatabase = builder.AddPostgres("postgresserver")
         .WithPgAdmin(config => config.WithVolume("/var/lib/pgadmin/Boilerplate/data"))
         .WithV18DataVolume()
+        .WithOptimizedSetup()
         .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
         .AddDatabase("postgresdb");
 
