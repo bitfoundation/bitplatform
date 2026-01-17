@@ -39,8 +39,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.20" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.30" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3650.58" />
         <PackageReference Include="Velopack" Version="0.0.1298" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
