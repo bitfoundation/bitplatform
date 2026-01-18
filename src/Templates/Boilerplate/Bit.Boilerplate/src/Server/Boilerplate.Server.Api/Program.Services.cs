@@ -551,6 +551,7 @@ public static partial class Program
                 //#if (redis == true)
                 hangfireConfiguration.UseRedisStorage(sp.GetRequiredService<IConnectionMultiplexer>(), new RedisStorageOptions
                 {
+                    Prefix = "Boilerplate:Hangfire:",
                     Db = 1, // Use a dedicated Redis database for Hangfire
                 });
                 //#else

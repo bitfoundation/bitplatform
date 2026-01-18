@@ -76,7 +76,7 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
         if (DateTimeOffset.UtcNow < keycloakTokenExpiryDate)
             return (await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "access_token"))!;
 
-        await using var distributedLock = await distributedLockProvider($"KeycloakTokenRefresh-{user.Id}").AcquireAsync(TimeSpan.FromSeconds(10));
+        await using var distributedLock = await distributedLockProvider($"Boilerplate:Locks:KeycloakTokenRefresh-{user.Id}").AcquireAsync(TimeSpan.FromSeconds(10));
 
         keycloakTokenExpiryDate = DateTimeOffset.Parse(await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "expires_at") ?? throw new InvalidOperationException("expires_at token is missing"));
 
