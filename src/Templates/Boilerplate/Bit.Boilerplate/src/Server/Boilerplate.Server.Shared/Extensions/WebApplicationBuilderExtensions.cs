@@ -71,7 +71,8 @@ public static class WebApplicationBuilderExtensions
                     ConnectionMultiplexerFactory = async () => sp.GetRequiredKeyedService<StackExchange.Redis.IConnectionMultiplexer>("redis-cache"),
                 }))
             //#endif
-            .WithSerializer(new FusionCacheSystemTextJsonSerializer());
+            .WithSerializer(new FusionCacheSystemTextJsonSerializer())
+            .WithCacheKeyPrefix("Boilerplate:Cache:");
 
         services.AddFusionOutputCache(); // For ASP.NET Core Output Caching with FusionCache
 

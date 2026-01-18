@@ -257,7 +257,7 @@ public static partial class Program
         //#if (redis == true)
         signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
         {
-            options.Configuration.ChannelPrefix = RedisChannel.Literal("signalr:");
+            options.Configuration.ChannelPrefix = RedisChannel.Literal("Boilerplate:SignalR:");
         });
         //#endif
 
@@ -551,6 +551,7 @@ public static partial class Program
                 //#if (redis == true)
                 hangfireConfiguration.UseRedisStorage(sp.GetRequiredService<IConnectionMultiplexer>(), new RedisStorageOptions
                 {
+                    Prefix = "Boilerplate:Hangfire:",
                     Db = 1, // Use a dedicated Redis database for Hangfire
                 });
                 //#else
