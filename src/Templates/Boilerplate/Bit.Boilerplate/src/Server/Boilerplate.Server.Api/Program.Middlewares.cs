@@ -40,9 +40,9 @@ public static partial class Program
             app.UseDirectoryBrowser();
         }
 
-        app.UseCors();
-
         app.UseStaticFiles();
+
+        app.UseCors();
 
         app.UseMiddleware<ForceUpdateMiddleware>();
 
