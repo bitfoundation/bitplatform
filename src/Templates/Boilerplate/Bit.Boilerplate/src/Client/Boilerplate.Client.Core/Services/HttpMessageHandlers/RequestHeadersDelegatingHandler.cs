@@ -38,7 +38,7 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
 
         request.SetBrowserRequestCredentials(request.Options.GetValueOrDefault(RequestOptionNames.ActionName)?.ToString() is nameof(IUserController.UpdateSession) or nameof(IUserController.SignOut)
             ? BrowserRequestCredentials.Include : BrowserRequestCredentials.Omit);
-        // `BrowserRequestCredentials.Omit` would prevents server Set-Cookie or Delete-Cookie headers from being processed by the browser.
+        // `BrowserRequestCredentials.Omit` would prevent server Set-Cookie or Delete-Cookie headers from being processed by the browser.
         // Setting and removing cookies is crucial for pre-rendering scenarios.
 
         return await base.SendAsync(request, cancellationToken);
