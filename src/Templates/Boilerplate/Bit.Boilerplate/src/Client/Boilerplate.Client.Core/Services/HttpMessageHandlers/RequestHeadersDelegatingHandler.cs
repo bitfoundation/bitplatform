@@ -36,10 +36,10 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
             request.Headers.Remove("X-Origin"); // It gets added by default in Program.Services.cs of Client projects and it might be rejected by some external APIs due to CORS limitations.
         }
 
-        request.SetBrowserRequestCredentials(request.Options.GetValueOrDefault(RequestOptionNames.ActionName)?.ToString() is nameof(IUserController.UpdateSession) 
+        request.SetBrowserRequestCredentials(request.Options.GetValueOrDefault(RequestOptionNames.ActionName)?.ToString() is nameof(IUserController.UpdateSession) or nameof(IUserController.SignOut)
             ? BrowserRequestCredentials.Include : BrowserRequestCredentials.Omit);
-        // `BrowserRequestCredentials.Omit` would prevent from sending/receiving cookies to/from the server.
-        // To figure out why we need to set it to `Include` for `UpdateSession` action, check comments in `UserController.UpdateSession` action in the Server.Api project.
+        // `BrowserRequestCredentials.Omit` would prevents server Set-Cookie or Delete-Cookie headers from being processed by the browser.
+        // Setting and removing cookies is crucial for pre-rendering scenarios.
 
         return await base.SendAsync(request, cancellationToken);
     }

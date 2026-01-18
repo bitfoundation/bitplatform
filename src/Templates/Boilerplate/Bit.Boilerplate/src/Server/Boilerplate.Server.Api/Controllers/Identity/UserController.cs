@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using QRCoder;
 using Humanizer;
+using Microsoft.AspNetCore.Cors;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
@@ -56,7 +57,7 @@ public partial class UserController : AppControllerBase, IUserController
             .OrderByDescending(us => us.RenewedOn);
     }
 
-    [HttpPost]
+    [HttpPost, EnableCors("CorsWithCredentials" /* Required for Cookies.Delete */)]
     public async Task SignOut(CancellationToken cancellationToken)
     {
         var currentSessionId = User.GetSessionId();
@@ -68,6 +69,20 @@ public partial class UserController : AppControllerBase, IUserController
         await DbContext.SaveChangesAsync(cancellationToken);
 
         await signInManager.SignOutAsync();
+
+        var appPlatformType = Enum.Parse<AppPlatformType>(HttpContext.Request.Headers["X-App-Platform"].Single()!);
+        if (appPlatformType is not AppPlatformType.Web)
+            return;
+
+        HttpContext.Response.Cookies.Delete("access_token", new()
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Strict,
+            Secure = hostEnvironment.IsDevelopment() is false,
+            Path = "/",
+            Domain = HttpContext.Request.GetWebAppUrl().Host,
+            IsEssential = true
+        });
     }
 
     [HttpPost("{id}"), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
@@ -96,7 +111,7 @@ public partial class UserController : AppControllerBase, IUserController
         //#endif
     }
 
-    [HttpPost]
+    [HttpPost, EnableCors("CorsWithCredentials" /* Required for Cookies.Append */)]
     public async Task UpdateSession(UpdateUserSessionRequestDto request, CancellationToken cancellationToken)
     {
         // UpdateSession gets called after SignIn, Refresh and client app initialization to update user session info,
@@ -130,7 +145,7 @@ public partial class UserController : AppControllerBase, IUserController
             Secure = hostEnvironment.IsDevelopment() is false,
             Path = "/",
             Expires = expirationTime,
-            Domain = HttpContext.Request.Host.Host,
+            Domain = HttpContext.Request.GetWebAppUrl().Host,
             IsEssential = true
         });
     }

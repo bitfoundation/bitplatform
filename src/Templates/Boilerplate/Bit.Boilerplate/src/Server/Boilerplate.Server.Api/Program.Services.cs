@@ -19,6 +19,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.ResponseCompression;
 using Twilio;
 using Ganss.Xss;
@@ -184,7 +185,7 @@ public static partial class Program
 
         services.AddCors(builder =>
         {
-            builder.AddDefaultPolicy(policy =>
+            CorsPolicyBuilder ApplyPolicyDefaults(CorsPolicyBuilder policy)
             {
                 if (env.IsDevelopment() is false)
                 {
@@ -199,6 +200,20 @@ public static partial class Program
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId,
                             HeaderNames.Age, "App-Cache-Response", "X-App-Platform", "X-App-Version", "X-Origin");
+
+                return policy;
+            }
+
+            builder.AddDefaultPolicy(policy =>
+            {
+                ApplyPolicyDefaults(policy);
+            });
+
+            // Required for Cookies.Delete & Cookies.Append to work.
+            builder.AddPolicy("CorsWithCredentials", policy =>
+            {
+                ApplyPolicyDefaults(policy)
+                    .AllowCredentials();
             });
         });
 

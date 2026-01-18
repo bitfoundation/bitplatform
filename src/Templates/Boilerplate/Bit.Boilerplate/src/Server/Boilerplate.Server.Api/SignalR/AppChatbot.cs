@@ -441,9 +441,7 @@ public partial class AppChatbot
         var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
         var context = httpContextAccessor?.HttpContext;
         var request = context?.Request;
-        Uri? serverApiAddress = request != null
-            ? new Uri($"{request.Scheme}://{request.Host}")
-            : null;
+        Uri? serverApiAddress = request?.GetBaseUrl();
 
         var recommendedProducts = await (await productEmbeddingService.SearchProducts(searchQuery, context?.RequestAborted ?? default))
             .WhereIf(maxPrice.HasValue, p => p.Price <= maxPrice!.Value)

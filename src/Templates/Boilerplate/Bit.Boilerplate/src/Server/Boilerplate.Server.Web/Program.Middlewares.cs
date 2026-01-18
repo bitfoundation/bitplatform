@@ -84,6 +84,9 @@ public static partial class Program
 
             await next.Invoke();
         });
+
+        app.UseCors();
+
         app.UseStaticFiles();
 
         if (string.IsNullOrEmpty(env.WebRootPath) is false && Path.Exists(Path.Combine(env.WebRootPath, @".well-known")))
@@ -99,8 +102,6 @@ public static partial class Program
         }
 
         //#if (api == "Integrated")
-        app.UseCors();
-
         app.UseMiddleware<ForceUpdateMiddleware>();
         //#endif
 
