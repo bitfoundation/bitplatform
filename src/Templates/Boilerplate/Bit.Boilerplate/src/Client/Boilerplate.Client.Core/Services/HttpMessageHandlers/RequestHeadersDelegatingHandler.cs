@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using Boilerplate.Shared.Controllers.Identity;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
@@ -9,7 +10,6 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Omit);
         request.SetBrowserResponseStreamingEnabled(true);
 
         request.Version = HttpVersion.Version30;
@@ -35,6 +35,11 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
         {
             request.Headers.Remove("X-Origin"); // It gets added by default in Program.Services.cs of Client projects and it might be rejected by some external APIs due to CORS limitations.
         }
+
+        request.SetBrowserRequestCredentials(request.Options.GetValueOrDefault(RequestOptionNames.ActionName)?.ToString() is nameof(IUserController.UpdateSession) 
+            ? BrowserRequestCredentials.Include : BrowserRequestCredentials.Omit);
+        // `BrowserRequestCredentials.Omit` would prevent from sending/receiving cookies to/from the server.
+        // To figure out why we need to set it to `Include` for `UpdateSession` action, check comments in `UserController.UpdateSession` action in the Server.Api project.
 
         return await base.SendAsync(request, cancellationToken);
     }

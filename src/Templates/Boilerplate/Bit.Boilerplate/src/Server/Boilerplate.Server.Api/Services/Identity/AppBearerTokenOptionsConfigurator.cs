@@ -15,7 +15,7 @@ public class AppBearerTokenOptionsConfigurator(IConfiguration configuration,
             OnMessageReceived = async context =>
             {
                 // The server accepts the accessToken from either the authorization header, the cookie, or the request URL query string
-                context.Token ??= context.Request.Query.ContainsKey("access_token") ? context.Request.Query["access_token"] : context.Request.Cookies["access_token"];
+                context.Token ??= context.HttpContext.GetAccessToken();
             }
         };
 
