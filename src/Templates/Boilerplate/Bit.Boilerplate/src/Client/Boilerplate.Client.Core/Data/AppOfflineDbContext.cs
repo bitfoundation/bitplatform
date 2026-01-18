@@ -18,6 +18,9 @@ public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> o
         configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
         configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
 
+        configurationBuilder.Properties<decimal>().HavePrecision(18, 3);
+        configurationBuilder.Properties<decimal?>().HavePrecision(18, 3);
+
         base.ConfigureConventions(configurationBuilder);
     }
 

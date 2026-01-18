@@ -187,6 +187,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         }
         //#endif
 
+        configurationBuilder.Properties<decimal>().HavePrecision(18, 3);
+        configurationBuilder.Properties<decimal?>().HavePrecision(18, 3);
+
         base.ConfigureConventions(configurationBuilder);
     }
 
