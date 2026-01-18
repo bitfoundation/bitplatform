@@ -8,8 +8,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 {
     private Action? unsubscribe;
 
-    [AutoInject] private Cookie cookie = default!;
-    [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private PromptService promptService = default!;
     [AutoInject] private IStorageService storageService = default!;
@@ -207,14 +205,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         await storageService.RemoveItem("access_token");
         await storageService.RemoveItem("refresh_token");
-        await cookie.Remove(new ButilCookie()
-        {
-            Name = "access_token",
-            Path = "/",
-            Domain = absoluteServerAddress.GetAddress().Host,
-            SameSite = SameSite.Strict,
-            Secure = AppEnvironment.IsDevelopment() is false
-        });
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
