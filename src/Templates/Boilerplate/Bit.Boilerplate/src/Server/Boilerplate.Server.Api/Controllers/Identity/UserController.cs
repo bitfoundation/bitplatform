@@ -22,6 +22,7 @@ public partial class UserController : AppControllerBase, IUserController
     [AutoInject] private EmailService emailService = default!;
     [AutoInject] private IUserStore<User> userStore = default!;
     [AutoInject] private UserManager<User> userManager = default!;
+    [AutoInject] private IHostEnvironment hostEnvironment = default!;
     [AutoInject] private SignInManager<User> signInManager = default;
     [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
 
@@ -98,6 +99,10 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpPost]
     public async Task UpdateSession(UpdateUserSessionRequestDto request, CancellationToken cancellationToken)
     {
+        // UpdateSession gets called after SignIn, Refresh and client app initialization to update user session info,
+        // example scenario would be when user restarts the app after an update or after changing device settings like language.
+        // so in server side, we always have the latest info about the user session.
+
         var affectedRows = await DbContext.UserSessions.Where(us => us.Id == User.GetSessionId()).ExecuteUpdateAsync(us =>
             us.SetProperty(x => x.AppVersion, request.AppVersion)
                 .SetProperty(x => x.DeviceInfo, request.DeviceInfo)
@@ -106,6 +111,28 @@ public partial class UserController : AppControllerBase, IUserController
 
         if (affectedRows == 0)
             throw new ResourceNotFoundException();
+
+        // access_token's value must be set to cookies for pre-rendering scenarios.
+        // But during SignIn/Refresh calls, the cookie can't be set because the access_token value is not available yet.
+        // UpdateSession is a good place to set the access token cookie for web clients.
+
+        var appPlatformType = Enum.Parse<AppPlatformType>(HttpContext.Request.Headers["X-App-Platform"].Single()!);
+        if (appPlatformType is not AppPlatformType.Web)
+            return;
+
+        var accessToken = HttpContext.GetAccessToken() ?? throw new InvalidOperationException();
+        DateTimeOffset expirationTime = DateTimeOffset.FromUnixTimeSeconds(User.GetClaimValue<long>("exp"));
+
+        Response.Cookies.Append("access_token", accessToken, new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Strict,
+            Secure = hostEnvironment.IsDevelopment() is false,
+            Path = "/",
+            Expires = expirationTime,
+            Domain = HttpContext.Request.Host.Host,
+            IsEssential = true
+        });
     }
 
     [HttpPut]

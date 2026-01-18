@@ -53,20 +53,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         await storageService.SetItem("access_token", response!.AccessToken);
         await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
 
-        if (AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized())
-        {
-            await cookie.Set(new()
-            {
-                Name = "access_token",
-                Value = response.AccessToken,
-                MaxAge = response.ExpiresIn,
-                Path = "/",
-                Domain = absoluteServerAddress.GetAddress().Host,
-                SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDevelopment() is false
-            });
-        }
-
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 

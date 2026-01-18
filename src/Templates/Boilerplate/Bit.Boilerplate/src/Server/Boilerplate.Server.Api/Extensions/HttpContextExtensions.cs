@@ -27,5 +27,13 @@ internal static class HttpContextExtensions
     {
         return context.User.IsAuthenticated() is false && context.Request.Headers.Authorization.Any() is true;
     }
+
+    public static string? GetAccessToken(this HttpContext context)
+    {
+        return context.Request.Query.ContainsKey("access_token") ? context.Request.Query["access_token"]
+            : context.Request.Cookies.ContainsKey("access_token") ? context.Request.Cookies["access_token"]
+            : context.Request.Headers.TryGetValue("Authorization", out var value) ? value.ToString().Replace("Bearer ", "")
+            : null;
+    }
 }
 
