@@ -253,14 +253,6 @@ public static partial class Program
             }
         });
 
-        // Use Redis as SignalR backplane for scaling out across multiple server instances
-        //#if (redis == true)
-        signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
-        {
-            options.Configuration.ChannelPrefix = RedisChannel.Literal("Boilerplate:SignalR:");
-        });
-        //#endif
-
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
         {
             signalRBuilder.AddAzureSignalR(options =>
@@ -268,6 +260,16 @@ public static partial class Program
                 configuration.GetRequiredSection("Azure:SignalR").Bind(options);
             });
         }
+        //#if (redis == true)
+        else
+        {
+            // Use Redis as SignalR backplane for scaling out across multiple server instances
+            signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
+            {
+                options.Configuration.ChannelPrefix = RedisChannel.Literal("Boilerplate:SignalR:");
+            });
+        }
+        //#endif
         //#endif
 
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
