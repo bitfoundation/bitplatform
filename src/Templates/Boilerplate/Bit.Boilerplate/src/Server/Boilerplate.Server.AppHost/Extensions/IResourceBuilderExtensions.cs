@@ -41,12 +41,13 @@ public static class IResourceBuilderExtensions
         // 4. WAL Settings
         int maxWalSizeGb = Math.Clamp(availableForPostgres / 1024, 1, 4);
 
-        builder
-            // --- RUNTIME RESOURCES ---
-            // Ensures the container actually gets the RAM we are tuning for.
-            .WithContainerRuntimeArgs("--memory-reservation", $"{totalContainerMemoryMB}m");
 
         return builder
+
+            // --- RUNTIME RESOURCES ---
+            // Ensures the container actually gets the RAM we are tuning for.
+            .WithContainerRuntimeArgs("--memory-reservation", $"{totalContainerMemoryMB}m")
+
             // --- MEMORY TUNING ---
             .WithArgs("-c", $"shared_buffers={sharedBuffersMB}MB")
             .WithArgs("-c", $"effective_cache_size={effectiveCacheSizeMB}MB")
