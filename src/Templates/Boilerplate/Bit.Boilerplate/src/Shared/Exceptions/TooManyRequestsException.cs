@@ -5,7 +5,7 @@ namespace Boilerplate.Shared.Exceptions;
 public partial class TooManyRequestsException : RestException
 {
     public TooManyRequestsException()
-        : base(nameof(AppStrings.TooManyRequestExceptions))
+        : base(nameof(AppStrings.TooManyRequestsException))
     {
     }
 

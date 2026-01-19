@@ -171,7 +171,7 @@
   <data name="ResourceNotFoundException" xml:space="preserve">
     <value>Ressource nicht gefunden</value>
   </data>
-  <data name="TooManyRequestExceptions" xml:space="preserve">
+  <data name="TooManyRequestsException" xml:space="preserve">
     <value>Zu viele Anfragen</value>
   </data>
   <data name="ServerConnectionException" xml:space="preserve">

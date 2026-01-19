@@ -3,6 +3,7 @@ using AdsPush;
 using AdsPush.Abstraction;
 using System.Collections.Concurrent;
 using Hangfire.Server;
+using System.Net;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
@@ -44,9 +45,9 @@ public partial class PushNotificationJobRunner
             payload.Parameters.Add("pageUrl", request.PageUrl);
         }
 
-        //#if (signalR == true)
-        int failedItems = 0;
         int succeededItems = 0;
+        int failedItems = 0;
+        //#if (signalR == true)
         string? signalRConnectionId = null;
         if (request.RequesterUserSessionId != null) // Instead of passing SignalRConnectionId directly, we get it from UserSessionId to have latest value at the time of job execution
         {
@@ -57,8 +58,7 @@ public partial class PushNotificationJobRunner
         }
         //#endif
 
-        ConcurrentBag<Exception> exceptions = [];
-        ConcurrentBag<int> problematicSubscriptionIds = [];
+        ConcurrentBag<(int problematicSubscriptionId, AdsPushErrorType? errorType, HttpStatusCode? responseStatusCode, Exception exp)> problems = [];
 
         await Parallel.ForEachAsync(subscriptions, parallelOptions: new()
         {
@@ -75,17 +75,13 @@ public partial class PushNotificationJobRunner
 
                 await adsPushSender.BasicSendAsync(target, subscription.PushChannel, payload, default);
 
-                //#if (signalR == true)
                 Interlocked.Increment(ref succeededItems); // Inside Parallel.ForEachAsync simple ++ wouldn't work
-                //#endif
             }
             catch (Exception exp)
             {
-                //#if (signalR == true)
                 Interlocked.Increment(ref failedItems);
-                //#endif
-                exceptions.Add(exp);
-                problematicSubscriptionIds.Add(subscription.Id);
+                var adsPushException = exp as AdsPushException;
+                problems.Add((subscription.Id, adsPushException?.ErrorType, adsPushException?.HttpResponse?.StatusCode, exp));
             }
             //#if (signalR == true)
             finally
@@ -109,15 +105,23 @@ public partial class PushNotificationJobRunner
             //#endif
         });
 
-        if (exceptions.IsEmpty is false)
+        if (problems.IsEmpty is false)
         {
-            serverExceptionHandler.Handle(new AggregateException("Failed to send push notifications", exceptions)
-                .WithData(new()
-                {
-                    { "UserRelatedPush", request.UserRelatedPush },
-                    { "JobId", context.BackgroundJob.Id  },
-                    { "ProblematicSubscriptionIds", problematicSubscriptionIds }
-                }));
+            var errorData = new Dictionary<string, object?>()
+            {
+                { "UserRelatedPush", request.UserRelatedPush },
+                { "JobId", context.BackgroundJob.Id },
+                { "TotalSubscriptions", pushNotificationSubscriptionIds.Length },
+                { "SucceededItems", succeededItems },
+                { "FailedItems", failedItems }
+            };
+
+            foreach (var (problematicSubscriptionId, errorType, responseStatusCode, exp) in problems.DistinctBy(p => new { p.errorType, p.responseStatusCode })) // DistinctBy to avoid huge error data in case of many same errors
+            {
+                errorData[$"Subscription_{problematicSubscriptionId}"] = $"ErrorType: {errorType}, ResponseStatusCode: {responseStatusCode}";
+            }
+
+            serverExceptionHandler.Handle(new AggregateException("Failed to send push notifications").WithData(errorData));
         }
     }
 }

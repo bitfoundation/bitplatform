@@ -50,6 +50,10 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 {
                     throw new ForbiddenException(localizer[nameof(AppStrings.ForbiddenException)]);
                 }
+                if (response.StatusCode is HttpStatusCode.TooManyRequests)
+                {
+                    throw new TooManyRequestsException(localizer[nameof(AppStrings.TooManyRequestsException)]);
+                }
 
                 response.EnsureSuccessStatusCode();
 

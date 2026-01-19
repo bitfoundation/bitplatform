@@ -7,33 +7,48 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;
-        var delays = GetDelaySequence(scaleFirstTry: TimeSpan.FromSeconds(3)).Take(3).ToArray();
+        const int maxRetries = 3;
+        var delays = GetDelaySequence(scaleFirstTry: TimeSpan.FromSeconds(3)).Take(maxRetries - 1).ToArray();
 
         Exception? lastExp = null;
 
-        int retryCount = 0;
-        foreach (var delay in delays)
+        for (int attempt = 0; attempt < maxRetries; attempt++)
         {
             try
             {
                 return await base.SendAsync(request, cancellationToken);
             }
-            catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException) // If the exception is either unknown or a server connection issue, let's retry once more.
+            catch (Exception exp)
             {
-                if (request.HasNoRetryPolicyAttribute() || AppEnvironment.IsDevelopment())
+                if (request.HasNoRetryPolicyAttribute())
                     throw;
+
+                if (AppEnvironment.IsDevelopment())
+                    throw;
+
                 if (AppPlatform.IsBlazorHybrid is false && AppPlatform.IsBrowser is false)
                     throw; // Disable retry-policy during pre-rendering and Blazor Server.
-                retryCount++;
-                logScopeData["RetryCount"] = retryCount;
+
+                if (exp is KnownException)
+                    throw; // There's no benefit in retrying known exceptions, for example when the Category's name is excepted to be unique, retying won't help.
+
                 lastExp = exp;
-                await Task.Delay(delay, cancellationToken);
+
+                // Only wait if there are retries left
+                if (attempt < maxRetries - 1)
+                {
+                    logScopeData["RetryCount"] = attempt + 1;
+                    await Task.Delay(delays[attempt], cancellationToken);
+                }
             }
         }
 
         throw lastExp!;
     }
 
+    /// <summary>
+    /// Generates an infinite sequence of exponentially increasing delays with jitter for retry attempts.
+    /// </summary>
     private static IEnumerable<TimeSpan> GetDelaySequence(TimeSpan scaleFirstTry)
     {
         TimeSpan maxValue = TimeSpan.MaxValue;

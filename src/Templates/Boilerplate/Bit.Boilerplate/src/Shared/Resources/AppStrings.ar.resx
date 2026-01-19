@@ -171,7 +171,7 @@
   <data name="ResourceNotFoundException" xml:space="preserve">
     <value>المورد غير موجود</value>
   </data>
-  <data name="TooManyRequestExceptions" xml:space="preserve">
+  <data name="TooManyRequestsException" xml:space="preserve">
     <value>طلبات كثيرة جدًا</value>
   </data>
   <data name="ServerConnectionException" xml:space="preserve">

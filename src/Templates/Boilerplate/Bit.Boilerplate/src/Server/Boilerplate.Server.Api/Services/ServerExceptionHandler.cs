@@ -1,5 +1,6 @@
-﻿using System.Net;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.Net;
+using Polly.CircuitBreaker;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Authentication;
 
@@ -88,7 +89,9 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 
         var knownException = exception as KnownException;
 
-        statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
+        statusCode = (int)(exception is RestException restExp ? restExp.StatusCode :
+            exception is BrokenCircuitException ? HttpStatusCode.ServiceUnavailable :
+            HttpStatusCode.InternalServerError);
 
         // The details of all of the exceptions are returned only in dev mode. in any other modes like production, only the details of the known exceptions are returned.
         var message = GetExceptionMessageToShow(exception);
