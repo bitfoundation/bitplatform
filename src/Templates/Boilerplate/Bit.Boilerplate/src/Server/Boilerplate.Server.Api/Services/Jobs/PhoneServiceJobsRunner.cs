@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using Hangfire.Server;
+using Twilio.Exceptions;
 using Twilio.Rest.Api.V2010.Account;
 
 namespace Boilerplate.Server.Api.Services.Jobs;
@@ -32,7 +33,8 @@ public partial class PhoneServiceJobsRunner
             serverExceptionHandler.Handle(exp, new()
             {
                 { "PhoneNumber", phoneNumber },
-                { "JobId", context.BackgroundJob.Id }
+                { "JobId", context.BackgroundJob.Id },
+                { "TwilioErrorCode", (exp as ApiException)?.Code }
             });
             if (exp is not KnownException && cancellationToken.IsCancellationRequested is false)
                 throw; // To retry the job

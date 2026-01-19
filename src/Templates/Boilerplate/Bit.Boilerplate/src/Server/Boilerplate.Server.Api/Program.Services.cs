@@ -291,7 +291,7 @@ public static partial class Program
         services.AddDbContextPool<AppDbContext>(AddDbContext);
 
         void AddDbContext(DbContextOptionsBuilder options)
-        {
+        {            
             options.EnableSensitiveDataLogging(env.IsDevelopment())
                 .EnableDetailedErrors(env.IsDevelopment());
 
@@ -315,6 +315,10 @@ public static partial class Program
             {
                 dbOptions.UseCompatibilityLevel(170); // SQL Server 2025
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                dbOptions.EnableRetryOnFailure(
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null);
             });
             //#elif (database == "PostgreSQL")
             var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
@@ -325,11 +329,19 @@ public static partial class Program
                 dbOptions.UseVector();
                 dbOptions.SetPostgresVersion(18, 0);
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                dbOptions.EnableRetryOnFailure(
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorCodesToAdd: null);
             });
             //#elif (database == "MySql")
             options.UseMySql(configuration.GetRequiredConnectionString("mysqldb"), ServerVersion.AutoDetect(configuration.GetRequiredConnectionString("mysqldb")), dbOptions =>
             {
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                dbOptions.EnableRetryOnFailure(
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null);
             });
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
@@ -728,6 +740,8 @@ public static partial class Program
                 }
             });
         }
+
+        services.ConfigureHttpClientFactoryForExternalIdentityProviders();
     }
 
     private static string GetConnectionStringValue(string connectionString, string key, string? defaultValue = null)
