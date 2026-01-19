@@ -71,7 +71,7 @@ public static class RemoteAuthenticationOptionsExtensions
     {
         services.AddHttpClient("GitHub", httpClient =>
         {
-
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Boilerplate-Client");
         });
 
         services.AddHttpClient("Apple", httpClient =>
