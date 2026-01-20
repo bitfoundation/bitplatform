@@ -6,7 +6,9 @@ using Boilerplate.Server.Api.Infrastructure.SignalR;
 //#endif
 using Boilerplate.Server.Api.Features.Identity.Models;
 using Boilerplate.Shared.Features.Diagnostics;
+//#if (signalR == true || notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
+//#endif
 
 namespace Boilerplate.Server.Api.Features.Diagnostics;
 
