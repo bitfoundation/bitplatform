@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 using System.Reflection;
-using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 

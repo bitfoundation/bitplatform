@@ -23,20 +23,23 @@ This is a pragmatic testing approach where tests are written as Integration Test
 The test project is located at [`src/Tests/Boilerplate.Tests.csproj`](/src/Tests/Boilerplate.Tests.csproj) and contains:
 
 ### Key Files:
-- **[`TestsInitializer.cs`](/src/Tests/TestsInitializer.cs)**: Assembly-level setup that runs once before all tests
-- **[`AppTestServer.cs`](/src/Tests/AppTestServer.cs)**: Core test infrastructure that spins up the web application
-- **[`IdentityApiTests.cs`](/src/Tests/IdentityApiTests.cs)**: Example of API/backend testing
-- **[`IdentityPagesTests.cs`](/src/Tests/IdentityPagesTests.cs)**: Example of UI testing with Playwright
-- **[`TestData.cs`](/src/Tests/TestData.cs)**: Shared test data constants
+- **[`TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs)**: Assembly-level setup that runs once before all tests
+- **[`AppTestServer.cs`](/src/Tests/Infrastructure/AppTestServer.cs)**: Core test infrastructure that spins up the web application
+- **[`IntegrationTests.cs`](/src/Tests/Features/Identity/IntegrationTests.cs)**: Example of API/backend testing
+- **[`UITests.cs`](/src/Tests/Features/Identity/UITests.cs)**: Example of UI testing with Playwright
+- **[`TestData.cs`](/src/Tests/Features/Identity/TestData.cs)**: Shared test data constants
 - **[`.runsettings`](/src/Tests/.runsettings)**: Test configuration (Playwright settings, parallel execution, environment variables)
 
 ### Supporting Folders:
-- **`Services/`**: Test-specific service implementations
-  - [`TestAuthTokenProvider.cs`](/src/Tests/Services/TestAuthTokenProvider.cs): In-memory token provider for API tests
-  - [`TestStorageService.cs`](/src/Tests/Services/TestStorageService.cs): In-memory storage for API tests
-- **`Extensions/`**: Helper extensions
-  - [`WebApplicationBuilderExtensions.cs`](/src/Tests/Extensions/WebApplicationBuilderExtensions.cs): Test service registration
-  - [`PlaywrightVideoRecordingExtensions.cs`](/src/Tests/Extensions/PlaywrightVideoRecordingExtensions.cs): Video recording for failed tests
+- **`Infrastructure/`**: Core test infrastructure
+  - **`Services/`**: Test-specific service implementations
+    - [`TestAuthTokenProvider.cs`](/src/Tests/Infrastructure/Services/TestAuthTokenProvider.cs): In-memory token provider for API tests
+    - [`TestStorageService.cs`](/src/Tests/Infrastructure/Services/TestStorageService.cs): In-memory storage for API tests
+  - **`Extensions/`**: Helper extensions
+    - [`WebApplicationBuilderExtensions.cs`](/src/Tests/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs): Test service registration
+    - [`PlaywrightVideoRecordingExtensions.cs`](/src/Tests/Infrastructure/Extensions/PlaywrightVideoRecordingExtensions.cs): Video recording for failed tests
+- **`Features/`**: Feature-specific tests organized by domain
+  - **`Identity/`**: Identity/authentication tests
 
 ---
 
@@ -89,13 +92,13 @@ public partial class AppTestServer : IAsyncDisposable
 - **Configuration Overriding**: Modify appsettings for test scenarios
 - **Full Application Stack**: All middleware, authentication, authorization, etc. work exactly as in production
 
-### 2. TestsInitializer - Assembly Setup
+### 2. TestsAssemblyInitializer - Assembly Setup
 
-The [`TestsInitializer`](/src/Tests/TestsInitializer.cs) runs **once** before all tests using `[AssemblyInitialize]`:
+The [`TestsAssemblyInitializer`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs) runs **once** before all tests using `[AssemblyInitialize]`:
 
 ```csharp
 [TestClass]
-public partial class TestsInitializer
+public partial class TestsAssemblyInitializer
 {
     [AssemblyInitialize]
     public static async Task Initialize(TestContext testContext)
@@ -120,11 +123,11 @@ public partial class TestsInitializer
 
 ## API Testing Example
 
-Let's examine [`IdentityApiTests.cs`](/src/Tests/IdentityApiTests.cs) to understand API testing:
+Let's examine [`IntegrationTests.cs`](/src/Tests/Features/Identity/IntegrationTests.cs) to understand API testing:
 
 ```csharp
 [TestClass]
-public partial class IdentityApiTests
+public partial class IntegrationTests
 {
     [TestMethod]
     public async Task SignInTest()
@@ -190,11 +193,11 @@ public const string DefaultTestPassword = "123456";
 
 ## UI Testing Example (Playwright)
 
-Let's examine [`IdentityPagesTests.cs`](/src/Tests/IdentityPagesTests.cs) for end-to-end UI testing:
+Let's examine [`UITests.cs`](/src/Tests/Features/Identity/UITests.cs) for end-to-end UI testing:
 
 ```csharp
 [TestClass]
-public partial class IdentityPagesTests : PageTest
+public partial class UITests : PageTest
 {
     [TestMethod]
     public async Task SignIn_Should_WorkAsExpected()

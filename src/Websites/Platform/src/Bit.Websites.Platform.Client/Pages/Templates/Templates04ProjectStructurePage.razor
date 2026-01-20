@@ -1,4 +1,4 @@
-﻿@page "/templates/project-structure"
+@page "/templates/project-structure"
 @page "/boilerplate/project-structure"
 @inherits AppComponentBase
 
@@ -9,6 +9,7 @@
 <div class="page-container">
     <BitText Typography="BitTypography.H3" Gutter>Project structure</BitText>
     <br />
+
     <section class="section-card">
         <div class="section-card-txt">
             To explore the structure of your project, start by creating a new project using the following command in the command line:
@@ -92,8 +93,22 @@
                     <br />
                 </div>
             </div>
-         
+
             <img class="image" alt="Boilerplate solution" src="/images/templates/project-structure.webp" />
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Feature-based structure</BitText>
+            The project follows a feature-based folder structure. In Blazor projects, component parts naturally group together (.razor, .razor.cs, .razor.scss).
+            In Server.Api, each feature folder contains its Controller, Service, Model, and Entity Type Configuration side by side.
+            <br />
+            <ul>
+                <li><b>Features:</b> Business-related code organized by domain (e.g., Identity, Products, Dashboard).</li>
+                <li><b>Components:</b> Features Client-side UI & Logic, implemented by razor, razor.csss and razor.cs (e.g., DashboardPage).</li>
+                <li><b>Infrastructure:</b> Technical cross-cutting concerns not tied to a specific business domain (e.g., DbContext, Services, Middleware).</li>
+            </ul>
         </div>
     </section>
 

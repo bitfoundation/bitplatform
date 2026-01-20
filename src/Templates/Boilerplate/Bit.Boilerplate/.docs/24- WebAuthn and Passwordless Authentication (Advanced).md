@@ -109,7 +109,7 @@ When a user wants to **enable passwordless authentication**, here's what happens
    Client → Server: GET /api/User/GetWebAuthnCredentialOptions
    ```
 
-**3. Server Generates Challenge** (`UserController.WebAuthn.cs`)
+**3. Server Generates Challenge** (`src/Server/Boilerplate.Server.Api/Features/Identity/UserController.WebAuthn.cs`)
    - Creates a cryptographic challenge (random bytes)
    - Retrieves user information (ID, display name)
    - Generates credential creation options using Fido2NetLib
@@ -118,11 +118,11 @@ When a user wants to **enable passwordless authentication**, here's what happens
 
 **4. Platform-Specific Credential Creation**
 
-   **Web Platform** (`WebAuthnService.cs`):
+   **Web Platform** (`src/Client/Boilerplate.Client.Core/Infrastructure/Services/WebAuthnService.cs`):
    - Directly calls browser's WebAuthn API via Bit.Butil
    - Browser shows native biometric prompt
    
-   **Blazor Hybrid** (`MauiWebAuthnService.cs`, `WindowsWebAuthnService.cs`):
+   **Blazor Hybrid** (`src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiWebAuthnService.cs`, `src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsWebAuthnService.cs`):
    - **Challenge**: WebView has IP-based origin (`http://0.0.0.1`) - WebAuthn requires **valid origin**
    - **Solution**: Use Local HTTP Server + In-App Browser
      1. Start local HTTP server on available port on user's device (e.g., `http://localhost:54321`)
@@ -140,7 +140,7 @@ When a user wants to **enable passwordless authentication**, here's what happens
    Client → Server: PUT /api/User/CreateWebAuthnCredential
    ```
 
-**6. Server Validates and Stores** (`UserController.WebAuthn.cs`)
+**6. Server Validates and Stores** (`src/Server/Boilerplate.Server.Api/Features/Identity/UserController.WebAuthn.cs`)
    - Retrieves cached options using challenge
    - Validates attestation response using Fido2NetLib
    - Verifies credential is unique
@@ -173,7 +173,7 @@ When a user signs in with passwordless authentication:
    Body: { "UserIds": [<guid>, ...] }
    ```
 
-**3. Server Generates Assertion Options** (`IdentityController.WebAuthn.cs`)
+**3. Server Generates Assertion Options** (`src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.WebAuthn.cs`)
    - Queries database for credentials belonging to user IDs
    - Creates list of allowed credentials (credential IDs + transports)
    - Generates assertion options with challenge
@@ -214,7 +214,7 @@ When a user signs in with passwordless authentication:
    - Sends 2FA code via configured method
    - User then signs in with the code
 
-**6. Server Verifies Assertion** (`IdentityController.WebAuthn.cs`)
+**6. Server Verifies Assertion** (`src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.WebAuthn.cs`)
    - Retrieves cached options using challenge
    - Finds credential in database by credential ID
    - Validates assertion using Fido2NetLib:
@@ -236,7 +236,7 @@ When a user signs in with passwordless authentication:
 
 ### 1. WebAuthn Data Model
 
-**`WebAuthnCredential` Entity** (`Boilerplate.Server.Api/Models/Identity/WebAuthnCredential.cs`):
+**`WebAuthnCredential` Entity** (`src/Server/Boilerplate.Server.Api/Features/Identity/Models/WebAuthnCredential.cs`):
 
 Stores credential information in the database:
 
@@ -257,7 +257,7 @@ public class WebAuthnCredential
 
 ### 2. Client-Side Service Hierarchy
 
-**`WebAuthnServiceBase`** (`Boilerplate.Client.Core/Services/WebAuthnServiceBase.cs`):
+**`WebAuthnServiceBase`** (`src/Client/Boilerplate.Client.Core/Infrastructure/Services/WebAuthnServiceBase.cs`):
 
 Abstract base class managing user IDs in local storage:
 
@@ -291,7 +291,7 @@ WebView in Blazor Hybrid uses an IP-based origin like `http://0.0.0.1`. WebAuthn
 
 **How it works:**
 
-**`ILocalHttpServer`** Interface (`Boilerplate.Client.Core/Services/Contracts/ILocalHttpServer.cs`):
+**`ILocalHttpServer`** Interface (`src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/ILocalHttpServer.cs`):
 
 ```csharp
 public interface ILocalHttpServer : IAsyncDisposable
@@ -330,7 +330,7 @@ Platform implementations:
 
 ### 4. web-interop-app.html
 
-**Location**: `Boilerplate.Client.Web/wwwroot/web-interop-app.html`
+**Location**: `src/Client/Boilerplate.Client.Web/wwwroot/web-interop-app.html`
 
 A lightweight HTML page that:
 
@@ -342,7 +342,7 @@ A lightweight HTML page that:
    - Posts results back to local server
    - Closes automatically
 
-**Key Script** (`WebInteropApp.ts`):
+**Key Script** (`src/Client/Boilerplate.Client.Core/Scripts/WebInteropApp.ts`):
 
 ```typescript
 export class WebInteropApp {
@@ -381,14 +381,14 @@ export class WebInteropApp {
 
 ### 5. Server-Side Controllers
 
-**`UserController.WebAuthn.cs`** - Credential Management:
+**`UserController.WebAuthn.cs`** (`src/Server/Boilerplate.Server.Api/Features/Identity/UserController.WebAuthn.cs`) - Credential Management:
 
 - `GetWebAuthnCredentialOptions()` - Generate credential creation options
 - `CreateWebAuthnCredential()` - Validate and store new credential
 - `DeleteWebAuthnCredential()` - Remove a specific credential
 - `DeleteAllWebAuthnCredentials()` - Remove all user's credentials
 
-**`IdentityController.WebAuthn.cs`** - Authentication:
+**`IdentityController.WebAuthn.cs`** (`src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.WebAuthn.cs`) - Authentication:
 
 - `GetWebAuthnAssertionOptions()` - Generate assertion options for sign-in
 - `VerifyWebAuthAndSignIn()` - Verify assertion and complete sign-in

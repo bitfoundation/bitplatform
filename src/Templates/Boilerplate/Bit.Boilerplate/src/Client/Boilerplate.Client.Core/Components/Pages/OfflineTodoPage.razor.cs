@@ -1,5 +1,5 @@
-﻿using Boilerplate.Client.Core.Data;
-using Boilerplate.Shared.Dtos.Todo;
+﻿using Boilerplate.Shared.Features.Todo;
+using Boilerplate.Client.Core.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Boilerplate.Client.Core.Components.Pages;

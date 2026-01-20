@@ -446,13 +446,12 @@
                 {
                     "condition": "(module != Admin)",
                     "exclude": [
-                        "src/Shared/Dtos/Dashboard/**",
-                        "src/Server/Boilerplate.Server.Api/Controllers/Dashboard/**",
-                        "src/Server/Boilerplate.Server.Api/Controllers/Categories/**",
-                        "src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs",
-                        "src/Shared/Controllers/Dashboard/**",
-                        "src/Shared/Controllers/Categories/**",
-                        "src/Shared/Controllers/Products/IProductController.cs",
+                        "src/Shared/Features/Dashboard/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Dashboard/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Categories/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Products/ProductController.cs",
+                        "src/Shared/Features/Categories/**",
+                        "src/Shared/Features/Products/IProductController.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"
@@ -461,8 +460,8 @@
                 {
                     "condition": "(module != Sales)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Controllers/Products/ProductViewController.cs",
-                        "src/Shared/Controllers/Products/IProductViewController.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Products/ProductViewController.cs",
+                        "src/Shared/Features/Products/IProductViewController.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Home/ProductsCarousel.*",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Home/ProductsSection.*",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/ProductPage.*"
@@ -471,27 +470,18 @@
                 {
                     "condition": "(module != Admin && module != Sales)",
                     "exclude": [
-                        "src/Shared/Dtos/Categories/**",
-                        "src/Shared/Dtos/Products/**",
-                        "src/Server/Boilerplate.Server.Api/Data/Configurations/Category/**",
-                        "src/Server/Boilerplate.Server.Api/Data/Configurations/Product/**",
-                        "src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs",
-                        "src/Server/Boilerplate.Server.Api/Mappers/ProductsMapper.cs",
-                        "src/Server/Boilerplate.Server.Api/Models/Categories/**",
-                        "src/Server/Boilerplate.Server.Api/Models/Products/**",
-                        "src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs",
+                        "src/Shared/Features/Categories/**",
+                        "src/Shared/Features/Products/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Categories/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Products/**",
                         "src/Client/Boilerplate.Client.Core/wwwroot/images/car_placeholder*"
                     ]
                 },
                 {
                     "condition": "(sample != true && offlineDb != true)",
                     "exclude": [
-                        "src/Shared/Dtos/Todo/**",
-                        "src/Server/Boilerplate.Server.Api/Controllers/Todo/**",
-                        "src/Server/Boilerplate.Server.Api/Mappers/TodoMapper.cs",
-                        "src/Server/Boilerplate.Server.Api/Models/Todo/**",
-                        "src/Server/Boilerplate.Server.Api/Data/Configurations/Todo/**",
-                        "src/Shared/Controllers/Todo/**",
+                        "src/Shared/Features/Todo/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Todo/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*",
                         "src/Client/Boilerplate.Client.Core/images/backgrounds/empty-todo-list-bg.svg"
                     ]
@@ -505,49 +495,44 @@
                 {
                     "condition": "(offlineDb != true)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController",
-                        "src/Client/Boilerplate.Client.Core/Data/**",
-                        "src/Client/Boilerplate.Client.Core/Services/SyncService.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs",
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Data/**",
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SyncService.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/OfflineTodoPage*",
-                        "src/Shared/Dtos/BaseDtoTableData.cs"
+                        "src/Shared/Infrastructure/Dtos/BaseDtoTableData.cs"
                     ]
                 },
                 {
                     "condition": "(filesStorage != S3)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Services/S3HttpClientFactory.cs"
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/Services/S3HttpClientFactory.cs"
                     ]
                 },
                 {
                     "condition": "(signalR != true)",
                     "exclude": [
-                        "src/Shared/Dtos/Chatbot/**",
-                        "src/Shared/Enums/PromptKind.cs",
-                        "src/Shared/Controllers/Chatbot/**",
-                        "src/Shared/Services/SharedAppMessages.cs",
-                        "src/Server/Boilerplate.Server.Api/SignalR/**",
-                        "src/Server/Boilerplate.Server.Api/Models/Chatbot/**",
-                        "src/Server/Boilerplate.Server.Api/Extensions/IClientProxyExtensions.cs",
-                        "src/Server/Boilerplate.Server.Api/Controllers/Chatbot/**",
-                        "src/Server/Boilerplate.Server.Api/Mappers/ChatbotMapper.cs",
-                        "src/Server/Boilerplate.Server.Api/Data/Configurations/Chatbot/**",
+                        "src/Shared/Features/Chatbot/**",
+                        "src/Shared/Infrastructure/Services/SharedAppMessages.cs",
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/SignalR/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Chatbot/**",
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/Extensions/IClientProxyExtensions.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/SystemPromptsPage.*",
-                        "src/Client/Boilerplate.Client.Core/Services/SignalRInfiniteRetryPolicy.cs"
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SignalRInfiniteRetryPolicy.cs"
                     ]
                 },
                 {
                     "condition": "(database != PostgreSQL && database != SqlServer)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Products/ProductEmbeddingService.cs",
                         ".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md"
                     ]
                 },
                 {
                     "condition": "(notification != true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Services/Contracts/IPushNotificationService.cs",
-                        "src/Client/Boilerplate.Client.Core/Services/PushNotificationServiceBase.cs",
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/PushNotificationServiceBase.cs",
                         "src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/AndroidPushNotificationService.cs",
                         "src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/PushNotificationFirebaseMessagingService.cs",
                         "src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Extensions/NSDataExtensions.cs",
@@ -557,52 +542,44 @@
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Extensions/NSDataExtensions.cs",
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/AppUNUserNotificationCenterDelegate.cs",
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs",
-                        "src/Client/Boilerplate.Client.Web/Services/WebPushNotificationService.cs",
-                        "src/Client/Boilerplate.Client.Windows/Services/WindowsPushNotificationService.cs",
-                        "src/Server/Boilerplate.Server.Api/Models/PushNotification/**",
-                        "src/Server/Boilerplate.Server.Api/Controllers/PushNotification/**",
-                        "src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs",
-                        "src/Server/Boilerplate.Server.Api/Services/Jobs/PushNotificationJobRunner.cs",
-                        "src/Shared/Controllers/PushNotification/**",
-                        "src/Shared/Dtos/PushNotification/**",
-                        "src/Server/Boilerplate.Server.Api/Mappers/PushNotificationMapper.cs",
-                        "src/Server/Boilerplate.Server.Api/Data/Configurations/PushNotification/**"
+                        "src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsPushNotificationService.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/PushNotification/**",
+                        "src/Shared/Features/PushNotification/**"
                     ]
                 },
                 {
                     "condition": "(signalR != true && notification != true)",
                     "exclude": [
-                        "src/Shared/Boilerplate.Shared/Dtos/Identity/SendNotificationToRoleDto.cs"
+                        "src/Shared/Features/Identity/Dtos/SendNotificationToRoleDto.cs"
                     ]
                 },
                 {
                     "condition": "(captcha != reCaptcha)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaService.cs",
-                        "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaVerificationResponse.cs",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignUp/GoogleRecaptcha.razor",
-                        "src/Tests/Services/FakeGoogleRecaptchaService.cs"
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Services/GoogleRecaptchaService.cs",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignUp/GoogleRecaptcha.razor"
                     ]
                 },
                 {
                     "condition": "(appInsights != true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Maui/Services/MauiAppInsightsTelemetryInitializer.cs",
-                        "src/Client/Boilerplate.Client.Windows/Services/WindowsAppInsightsTelemetryInitializer.cs",
-                        "src/Client/Boilerplate.Client.Core/Services/AppInsightsJsSdkService.cs"
+                        "src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiAppInsightsTelemetryInitializer.cs",
+                        "src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsAppInsightsTelemetryInitializer.cs",
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs"
                     ]
                 },
                 {
                     "condition": "(database != PostgreSQL)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Data/Configurations/PostgresDateTimeOffsetConverter.cs",
-                        "src/Server/Boilerplate.Server.AppHost/Extensions/IResourceBuilderExtensions.cs"
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/Data/Configurations/PostgresDateTimeOffsetConverter.cs",
+                        "src/Server/Boilerplate.Server.AppHost/Infrastructure/Extensions/IResourceBuilderExtensions.cs"
                     ]
                 },
                 {
                     "condition": "(database != SqlServer)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Data/Configurations/SqlServerPrimaryKeySequentialGuidDefaultValueConvention.cs"
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/Data/Configurations/SqlServerPrimaryKeySequentialGuidDefaultValueConvention.cs"
                     ]
                 },
                 {
@@ -623,8 +600,8 @@
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Settings/UpgradeAccountSection*.*",
                         "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
-                        "src/Client/Boilerplate.Client.Core/Services/Contracts/IAdsService.cs",
-                        "src/Client/Boilerplate.Client.Core/Services/AdsService.cs"
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IAdsService.cs",
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AdsService.cs"
                     ]
                 }
             ]

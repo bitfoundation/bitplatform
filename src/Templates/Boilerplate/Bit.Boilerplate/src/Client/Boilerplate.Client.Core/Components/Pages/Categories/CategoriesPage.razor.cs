@@ -1,6 +1,5 @@
 ﻿//-:cnd:noEmit
-using Boilerplate.Shared.Dtos.Categories;
-using Boilerplate.Shared.Controllers.Categories;
+using Boilerplate.Shared.Features.Categories;
 
 namespace Boilerplate.Client.Core.Components.Pages.Categories;
 

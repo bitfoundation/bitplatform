@@ -15,9 +15,9 @@ At the heart of the Boilerplate messaging architecture is **AppMessages** - a ce
 - From JavaScript to C# code
 - From web service workers to the C# code
 
-**Location**: [`src/Shared/Services/SharedAppMessages.cs`](/src/Shared/Services/SharedAppMessages.cs)
+**Location**: [`src/Shared/Infrastructure/Services/SharedAppMessages.cs`](/src/Shared/Infrastructure/Services/SharedAppMessages.cs)
 
-**Location**: [`src/Shared/Services/ClientAppMessages.cs`](/src/Client/Boilerplate.Client.Core/Services/ClientAppMessages.cs)
+**Location**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs)
 
 ### Message Structure
 
@@ -46,7 +46,7 @@ public partial class SharedAppMessages
 
 **ClientAppMessages** (Client-Only):
 
-**Location**: [`src/Client/Boilerplate.Client.Core/Services/ClientAppMessages.cs`](/src/Client/Boilerplate.Client.Core/Services/ClientAppMessages.cs)
+**Location**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs)
 
 ```csharp
 public partial class ClientAppMessages : SharedAppMessages
@@ -74,7 +74,7 @@ The Boilerplate project provides multiple communication channels that all work w
 
 **PubSubService** is the foundation for client-side messaging. It implements a publish/subscribe pattern for decoupled communication between components.
 
-**Location**: [`src/Client/Boilerplate.Client.Core/Services/PubSubService.cs`](/src/Client/Boilerplate.Client.Core/Services/PubSubService.cs)
+**Location**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/PubSubService.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/PubSubService.cs)
 
 **When to use**:
 - Communication between Blazor components
@@ -123,7 +123,7 @@ PubSubService.Publish(ClientAppMessages.PROFILE_UPDATED, user, persistent: true)
 
 **SignalR** enables the server to send messages to clients in real-time. In the Boilerplate project, SignalR messages are automatically bridged to PubSubService, creating a seamless experience.
 
-**Server-Side Hub**: [`src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs`](/src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs)
+**Server-Side Hub**: [`src/Server/Boilerplate.Server.Api/Infrastructure/SignalR/AppHub.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/SignalR/AppHub.cs)
 
 **When to use**:
 - Notifying clients of data changes

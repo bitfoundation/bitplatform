@@ -31,8 +31,8 @@
     <ItemGroup>
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Components.Pages" />
-        <Using Include="Boilerplate.Client.Core.Services.Contracts" />
-        <Using Include="Boilerplate.Client.Core.Services" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services.Contracts" />
         <Using Include="Boilerplate.Shared" />
 
         <PackageReference Include="EmbedIO" />

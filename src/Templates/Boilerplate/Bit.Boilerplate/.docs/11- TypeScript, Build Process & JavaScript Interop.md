@@ -165,7 +165,7 @@ export class App {
 
 ### The C# Side: IJSRuntimeExtensions.cs
 
-**Location:** [`/src/Client/Boilerplate.Client.Core/Extensions/IJSRuntimeExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IJSRuntimeExtensions.cs)
+**Location:** [`/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IJSRuntimeExtensions.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IJSRuntimeExtensions.cs)
 
 This file defines C# extension methods that call the JavaScript functions in `App.ts`:
 

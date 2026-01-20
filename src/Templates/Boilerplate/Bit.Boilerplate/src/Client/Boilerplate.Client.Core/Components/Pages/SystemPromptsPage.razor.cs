@@ -1,6 +1,5 @@
 ﻿
-using Boilerplate.Shared.Dtos.Chatbot;
-using Boilerplate.Shared.Controllers.Chatbot;
+using Boilerplate.Shared.Features.Chatbot;
 
 namespace Boilerplate.Client.Core.Components.Pages;
 

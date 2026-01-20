@@ -1,0 +1,40 @@
+﻿using Riok.Mapperly.Abstractions;
+using Boilerplate.Shared.Features.Identity.Dtos;
+using Boilerplate.Server.Api.Features.Identity.Models;
+
+namespace Boilerplate.Server.Api.Features.Identity;
+
+/// <summary>
+/// More info at Server/Mappers/README.md
+/// </summary>
+[Mapper]
+public static partial class IdentityMapper
+{
+    public static partial RoleDto Map(this Role source);
+    public static partial Role Map(this RoleDto source);
+    public static partial void Patch(this RoleDto source, Role destination);
+    public static partial IQueryable<RoleDto> Project(this IQueryable<Role> query);
+
+
+
+    [MapProperty(nameof(@User.ConcurrencyStamp), nameof(@UserDto.Version))]
+    public static partial UserDto Map(this User source);
+    public static partial User Map(this UserDto source);
+    public static partial void Patch(this UserDto source, User destination);
+    public static partial void Patch(this EditUserRequestDto source, User destination);
+    public static partial IQueryable<UserDto> Project(this IQueryable<User> query);
+
+
+
+    [MapPropertyFromSource(nameof(@UserSessionDto.RenewedOn), Use = nameof(MapRenewedOn))]
+    public static partial UserSessionDto Map(this UserSession source);
+    public static partial IQueryable<UserSessionDto> Project(this IQueryable<UserSession> source);
+
+    [UserMapping]
+    private static long MapRenewedOn(UserSession us) => us.RenewedOn ?? us.StartedOn;
+
+
+
+    public static partial ClaimDto Map(this RoleClaim source);
+    public static partial IQueryable<ClaimDto> Project(this IQueryable<RoleClaim> query);
+}

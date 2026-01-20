@@ -1,7 +1,8 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Client.Web.Services;
+
+using Boilerplate.Client.Web.Infrastructure.Services;
+using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Web;
 

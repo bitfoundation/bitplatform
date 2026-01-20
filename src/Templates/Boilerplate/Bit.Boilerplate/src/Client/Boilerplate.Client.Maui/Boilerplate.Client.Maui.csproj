@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
@@ -123,11 +123,11 @@
         </Content>
         
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
-        <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Components.Pages" />
-        <Using Include="Boilerplate.Client.Core.Services.Contracts" />
-        <Using Include="Boilerplate.Client.Core.Services" />
+        <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Shared" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services.Contracts" />
     </ItemGroup>
 
     <ItemGroup>

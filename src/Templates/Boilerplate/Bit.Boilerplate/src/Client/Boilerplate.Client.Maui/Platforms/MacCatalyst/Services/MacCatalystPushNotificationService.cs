@@ -2,7 +2,6 @@
 using UserNotifications;
 using Plugin.LocalNotification;
 using Microsoft.Extensions.Logging;
-using Boilerplate.Shared.Dtos.PushNotification;
 
 namespace Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
 

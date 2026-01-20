@@ -22,8 +22,8 @@
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
-        <Using Include="Boilerplate.Shared.Attributes" />
-        <Using Include="Boilerplate.Shared.Services.Contracts" />
+        <Using Include="Riok.Mapperly.Abstractions" />
+        <Using Include="Boilerplate.Shared.Infrastructure.Attributes" />
         <Using Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Server" />
     </ItemGroup>
 
@@ -61,8 +61,8 @@
         <EmbeddedResource Update="appsettings.*.json">
             <DependentUpon>appsettings.json</DependentUpon>
         </EmbeddedResource>
-        <Compile Update="Urls.*.cs">
-            <DependentUpon>Urls.cs</DependentUpon>
+        <Compile Update="PageUrls.*.cs">
+            <DependentUpon>PageUrls.cs</DependentUpon>
         </Compile>
     </ItemGroup>
 

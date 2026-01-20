@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 
 using Scalar.AspNetCore;
-using Microsoft.AspNetCore.Localization.Routing;
+using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 
 namespace Boilerplate.Server.Api;
 
@@ -73,7 +73,7 @@ public static partial class Program
         }).WithTags("Test").CacheOutput("AppResponseCachePolicy").ExcludeFromDescription();
 
         //#if (signalR == true)
-        app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
+        app.MapHub<Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
         app.MapMcp("/mcp")/*.RequireAuthorization()*/; // Map MCP endpoints for chatbot tool
         //#endif
 

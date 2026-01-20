@@ -65,7 +65,7 @@ var s3Storage = builder.AddMinioContainer("s3")
 // https://aspire.dev/integrations/security/keycloak/
 var keycloak = builder.AddKeycloak("keycloak", 8080)
     .WithDataVolume()
-    .WithRealmImport("./Realms");
+    .WithRealmImport("./Infrastructure/Realms");
 
 var serverWebProject = builder.AddProject("serverweb", "../Boilerplate.Server.Web/Boilerplate.Server.Web.csproj")
     .WithExternalHttpEndpoints();
