@@ -215,27 +215,27 @@ jobs:
     - name: Install Android Sdk platform tools
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
-    # - name: Build backend setup options
-    #   run: |
-    #     dotnet new bit-bp --name TestStandalone --api Standalone
-    #     cd TestStandalone/src/Server/TestStandalone.Server.Api/
-    #     dotnet build
-    #     cd ../
-    #     cd TestStandalone.Server.Web/
-    #     dotnet build
-    #     cd ../../../../
-    #     rm -r "TestStandalone"
-    #     dotnet new bit-bp --name TestIntegrated --api Integrated
-    #     cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
-    #     dotnet build
-    #     cd ../../../../
-    #     rm -r "TestIntegrated"
+    - name: Build backend setup options
+      run: |
+        dotnet new bit-bp --name TestStandalone --api Standalone
+        cd TestStandalone/src/Server/TestStandalone.Server.Api/
+        dotnet build
+        cd ../
+        cd TestStandalone.Server.Web/
+        dotnet build
+        cd ../../../../
+        rm -r "TestStandalone"
+        dotnet new bit-bp --name TestIntegrated --api Integrated
+        cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
+        dotnet build
+        cd ../../../../
+        rm -r "TestIntegrated"
 
-    # - name: Build sample configuration 1
-    #   run: |
-    #     dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis
-    #     dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging
-    #     rm -r "TestProject"
+    - name: Build sample configuration 1
+      run: |
+        dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis
+        dotnet build TestProject/TestProject.sln -p:InvariantGlobalization=false -p:Environment=Staging
+        rm -r "TestProject"
 
     - name: Build sample configuration 2
       run: |
