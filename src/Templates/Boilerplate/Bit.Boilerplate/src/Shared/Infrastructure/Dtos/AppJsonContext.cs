@@ -3,11 +3,11 @@
 using Boilerplate.Shared.Features.Todo;
 //#endif
 //#if (module == "Admin")
+using Boilerplate.Shared.Features.Dashboard;
 //#endif
 //#if (module == "Admin" || module == "Sales")
-using Boilerplate.Shared.Features.Categories;
 using Boilerplate.Shared.Features.Products;
-using Boilerplate.Shared.Features.Dashboard;
+using Boilerplate.Shared.Features.Categories;
 //#endif
 //#if (notification == true)
 //#endif
