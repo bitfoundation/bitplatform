@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 //#if (api == "Integrated")
-//#endif
 using Boilerplate.Server.Api.Infrastructure.Data;
+//#endif
 using Boilerplate.Server.Web.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
