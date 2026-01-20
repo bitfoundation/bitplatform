@@ -7,7 +7,9 @@ using Boilerplate.Server.Api.Features.Categories;
 using Boilerplate.Server.Api.Features.Todo;
 //#endif
 using Boilerplate.Server.Api.Features.Identity.Models;
+//#if (database == "PostgreSQL" || database == "SqlServer")
 using Boilerplate.Server.Api.Infrastructure.Data.Configurations;
+//#endif
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;

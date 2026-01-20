@@ -450,7 +450,7 @@
                         "src/Server/Boilerplate.Server.Api/Features/Dashboard/**",
                         "src/Server/Boilerplate.Server.Api/Features/Categories/**",
                         "src/Server/Boilerplate.Server.Api/Features/Products/ProductController.cs",
-                        "src/Shared/Features/Categories/**",
+                        "src/Shared/Features/Categories/ICategoryController.cs",
                         "src/Shared/Features/Products/IProductController.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
