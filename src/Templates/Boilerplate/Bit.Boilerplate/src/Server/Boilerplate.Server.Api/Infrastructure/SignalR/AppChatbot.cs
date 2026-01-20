@@ -3,7 +3,9 @@ using System.Text;
 using System.ComponentModel;
 using System.Threading.Channels;
 using Boilerplate.Shared.Features.Chatbot;
+//#if (module == "Sales")
 using Boilerplate.Server.Api.Features.Products;
+//#endif
 using Boilerplate.Shared.Features.Identity.Dtos;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authentication.BearerToken;
