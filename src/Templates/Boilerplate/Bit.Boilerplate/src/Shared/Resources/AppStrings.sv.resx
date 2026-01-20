@@ -171,7 +171,7 @@
   <data name="ResourceNotFoundException" xml:space="preserve">
     <value>Resursen hittades inte</value>
   </data>
-  <data name="TooManyRequestExceptions" xml:space="preserve">
+  <data name="TooManyRequestsException" xml:space="preserve">
     <value>För många förfrågningar</value>
   </data>
   <data name="ServerConnectionException" xml:space="preserve">
@@ -1140,7 +1140,7 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>AI-chattpanel</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>Hej! Jag är här för att göra din app-upplevelse fantastisk! Har du en fråga eller behöver du hjälp?</value>
+    <value>Hej{0}! Jag är här för att göra din app-upplevelse fantastisk! Har du en fråga eller behöver du hjälp?</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>Öppna sidan för lösenordsåterställning och berätta hur det fungerar</value>

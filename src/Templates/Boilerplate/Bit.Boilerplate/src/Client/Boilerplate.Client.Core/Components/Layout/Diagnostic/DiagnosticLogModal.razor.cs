@@ -1,6 +1,4 @@
-using Boilerplate.Shared.Dtos.Diagnostic;
-
-namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
+﻿namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 
 public partial class DiagnosticLogModal
 {

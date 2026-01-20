@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using System.Threading.Channels;
-using Boilerplate.Shared.Dtos.Chatbot;
+using Boilerplate.Shared.Features.Chatbot;
+using Boilerplate.Shared.Features.Identity.Dtos;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -11,6 +12,8 @@ public partial class AppAiChatPanel
     [CascadingParameter] public BitDir? CurrentDir { get; set; }
 
     [CascadingParameter] public AppThemeType? CurrentTheme { get; set; }
+
+    [CascadingParameter] public UserDto? CurrentUser { get; set; }
 
 
     [AutoInject] private HubConnection hubConnection = default!;
@@ -137,7 +140,7 @@ public partial class AppAiChatPanel
             new()
             {
                 Role = AiChatMessageRole.Assistant,
-                Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse)],
+                Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse), string.IsNullOrEmpty(CurrentUser?.DisplayName) ? string.Empty : $" {CurrentUser.DisplayName}"],
             }
         ];
     }

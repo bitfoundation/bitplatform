@@ -33,7 +33,7 @@ The project implements a sophisticated caching strategy that spans **four distin
 
 ### 1. AppResponseCacheAttribute
 
-The `AppResponseCacheAttribute` is the primary interface for configuring caching behavior. Located in `src/Shared/Attributes/AppResponseCacheAttribute.cs`, it can be applied to:
+The `AppResponseCacheAttribute` is the primary interface for configuring caching behavior. Located in `/src/Shared/Infrastructure/Attributes/AppResponseCacheAttribute.cs`, it can be applied to:
 - **Blazor pages** (e.g., `HomePage.razor`, `AboutPage.razor`)
 - **Web API controller actions** (e.g., methods in controllers)
 - **Minimal API endpoints** (e.g., sitemap endpoints)
@@ -129,7 +129,7 @@ app.MapGet("/api/minimal-api-sample/{routeParameter}",
 
 ### 2. AppResponseCachePolicy
 
-The `AppResponseCachePolicy` class (located in `src/Server/Boilerplate.Server.Shared/Services/AppResponseCachePolicy.cs`) implements the actual caching logic. It's an implementation of ASP.NET Core's `IOutputCachePolicy` interface.
+The `AppResponseCachePolicy` class (located in `/src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppResponseCachePolicy.cs`) implements the actual caching logic. It's an implementation of ASP.NET Core's `IOutputCachePolicy` interface.
 
 **Key Features:**
 
@@ -194,7 +194,7 @@ The `UserAgnostic` property is critical for security. If a response contains use
 
 ### 3. ResponseCacheService
 
-The `ResponseCacheService` (located in `src/Server/Boilerplate.Server.Api/Services/ResponseCacheService.cs`) provides methods to **purge/invalidate cached responses** when data changes.
+The `ResponseCacheService` (located in `/src/Server/Boilerplate.Server.Api/Infrastructure/Services/ResponseCacheService.cs`) provides methods to **purge/invalidate cached responses** when data changes.
 
 **Purpose**: When you update data on the server (e.g., edit a product in the admin panel), you need to invalidate the cached versions of pages/APIs that display that data. Otherwise, users will continue to see stale/outdated information until the cache expires naturally.
 
@@ -299,7 +299,7 @@ This pattern is ideal for assets like images, documents, or any content where yo
 
 ### 4. Client-Side In-Memory Cache (CacheDelegatingHandler)
 
-The `CacheDelegatingHandler` (located in `src/Client/Boilerplate.Client.Core/Services/HttpMessageHandlers/CacheDelegatingHandler.cs`) implements client-side in-memory caching for HTTP responses.
+The `CacheDelegatingHandler` (located in `/src/Client/Boilerplate.Client.Core/Infrastructure/Services/HttpMessageHandlers/CacheDelegatingHandler.cs`) implements client-side in-memory caching for HTTP responses.
 
 **How It Works:**
 

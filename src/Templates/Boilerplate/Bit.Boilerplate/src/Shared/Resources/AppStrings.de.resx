@@ -171,7 +171,7 @@
   <data name="ResourceNotFoundException" xml:space="preserve">
     <value>Ressource nicht gefunden</value>
   </data>
-  <data name="TooManyRequestExceptions" xml:space="preserve">
+  <data name="TooManyRequestsException" xml:space="preserve">
     <value>Zu viele Anfragen</value>
   </data>
   <data name="ServerConnectionException" xml:space="preserve">
@@ -1140,7 +1140,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>AI-Chat-Panel</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>Hallo! Ich bin hier, um Ihr App-Erlebnis fantastisch zu machen! Haben Sie eine Frage oder brauchen Sie Hilfe?</value>
+    <value>Hallo{0}! Ich bin hier, um Ihr App-Erlebnis fantastisch zu machen! Haben Sie eine Frage oder brauchen Sie Hilfe?</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>Öffnen Sie die Passwort-Reset-Seite und erklären Sie mir, wie sie funktioniert</value>

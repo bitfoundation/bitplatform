@@ -206,7 +206,7 @@ For **live support scenarios**, support staff can request diagnostic logs from a
 4. The device uploads its in-memory logs to the server
 5. Support staff can view the logs in real-time
 
-This is implemented in [`src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs`](/src/Server/Boilerplate.Server.Api/SignalR/AppHub.cs):
+This is implemented in [`src/Server/Boilerplate.Server.Api/Infrastructure/SignalR/AppHub.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/SignalR/AppHub.cs):
 
 ```csharp
 /// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
@@ -250,10 +250,9 @@ The project is **pre-configured** for easy integration with popular logging prov
 
 ### How It Works
 
-1- The OpenTelemetry configuration automatically exports to Application Insights if a connection string is provided:
+1- The OpenTelemetry configuration automatically exports to Application Insights if a connection string is provided.
 
-From [`src/Server/Boilerplate.Server.Shared/Extensions/IOpenTelemetryExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Extensions/IOpenTelemetryExtensions.cs):
-
+From [`src/Server/Boilerplate.Server.Shared/Extensions/Infrastructure/WebApplicationBuilderExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs):
 2- The Azure Application Insights JavaScript SDK added by `BlazorApplicationInsights` nuget in Client.Core project would collect JavaScript errors and more from
 Browser and Blazor Hybrid's WebView
 
@@ -317,7 +316,7 @@ The project includes **health check endpoints** to monitor application health.
 
 ### Health Check Implementation
 
-From [`src/Server/Boilerplate.Server.Shared/Extensions/WebApplicationExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Extensions/WebApplicationExtensions.cs):
+From [`src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationExtensions.cs):
 
 ```csharp
 public static WebApplication MapAppHealthChecks(this WebApplication app)
@@ -353,7 +352,7 @@ public static WebApplication MapAppHealthChecks(this WebApplication app)
 
 ### Default Health Checks
 
-From [`src/Server/Boilerplate.Server.Shared/Extensions/WebApplicationBuilderExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Extensions/WebApplicationBuilderExtensions.cs):
+From [`src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs`](/src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs):
 
 ```csharp
 public static IHealthChecksBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
@@ -371,7 +370,7 @@ This checks that at least **5GB of free disk space** is available.
 
 ### Custom Health Check Example
 
-The project includes a custom health check for storage in [`src/Server/Boilerplate.Server.Api/Services/AppStorageHealthCheck.cs`](/src/Server/Boilerplate.Server.Api/Services/AppStorageHealthCheck.cs):
+The project includes a custom health check for storage in [`src/Server/Boilerplate.Server.Api/Infrastructure/Services/AppStorageHealthCheck.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Services/AppStorageHealthCheck.cs):
 
 ```csharp
 /// <summary>

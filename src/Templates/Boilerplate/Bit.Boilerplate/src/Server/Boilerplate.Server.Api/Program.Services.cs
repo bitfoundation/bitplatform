@@ -1,10 +1,8 @@
 ﻿//+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
-using System.IO.Compression;
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 using System.ClientModel.Primitives;
-using Microsoft.SemanticKernel.Embeddings;
 //#endif
 //#if (database == "PostgreSQL")
 using Npgsql;
@@ -16,13 +14,11 @@ using Microsoft.OpenApi;
 using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Twilio;
 using Ganss.Xss;
-using System.Text;
 using Fido2NetLib;
 using PhoneNumbers;
 using FluentStorage;
@@ -40,16 +36,21 @@ using AdsPush.Abstraction;
 //#if (filesStorage == "AzureBlobStorage")
 using Azure.Storage.Blobs;
 //#endif
-using Boilerplate.Server.Api.Services;
-using Boilerplate.Server.Api.Controllers;
-using Boilerplate.Server.Shared.Services;
-using Boilerplate.Server.Api.Services.Jobs;
-using Boilerplate.Server.Api.Models.Identity;
-using Boilerplate.Server.Api.Services.Identity;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Boilerplate.Server.Api.Features.Identity.Models;
+using Boilerplate.Server.Api.Features.Identity.Services;
 using Medallion.Threading;
 //#if (offlineDb == true)
 using CommunityToolkit.Datasync.Server;
+//#endif
+using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Server.Api.Features.Statistics;
+using Boilerplate.Shared.Infrastructure.Resources;
+//#if (notification == true)
+using Boilerplate.Server.Api.Features.PushNotification;
+//#endif
+using Boilerplate.Server.Api.Infrastructure.Services;
+//#if (module == "Sales" || module == "Admin")
+using Boilerplate.Server.Api.Features.Products;
 //#endif
 
 namespace Boilerplate.Server.Api;
@@ -74,7 +75,7 @@ public static partial class Program
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
 
-        services.AddScoped<EmailService>();
+        services.AddScoped<IdentityEmailService>();
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
@@ -83,7 +84,7 @@ public static partial class Program
         services.AddMcpServer()
             .WithHttpTransport()
             .WithToolsFromAssembly();
-        services.AddScoped<SignalR.AppChatbot>();
+        services.AddScoped<Infrastructure.SignalR.AppChatbot>();
         //#endif
         //#if (module == "Sales" || module == "Admin")
         //#if (database == "PostgreSQL" || database == "SqlServer")
@@ -184,7 +185,7 @@ public static partial class Program
 
         services.AddCors(builder =>
         {
-            builder.AddDefaultPolicy(policy =>
+            CorsPolicyBuilder ApplyPolicyDefaults(CorsPolicyBuilder policy)
             {
                 if (env.IsDevelopment() is false)
                 {
@@ -199,6 +200,20 @@ public static partial class Program
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId,
                             HeaderNames.Age, "App-Cache-Response", "X-App-Platform", "X-App-Version", "X-Origin");
+
+                return policy;
+            }
+
+            builder.AddDefaultPolicy(policy =>
+            {
+                ApplyPolicyDefaults(policy);
+            });
+
+            // Required for Cookies.Delete & Cookies.Append to work.
+            builder.AddPolicy("CorsWithCredentials", policy =>
+            {
+                ApplyPolicyDefaults(policy)
+                    .AllowCredentials();
             });
         });
 
@@ -253,14 +268,6 @@ public static partial class Program
             }
         });
 
-        // Use Redis as SignalR backplane for scaling out across multiple server instances
-        //#if (redis == true)
-        signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
-        {
-            options.Configuration.ChannelPrefix = RedisChannel.Literal("signalr:");
-        });
-        //#endif
-
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
         {
             signalRBuilder.AddAzureSignalR(options =>
@@ -268,13 +275,23 @@ public static partial class Program
                 configuration.GetRequiredSection("Azure:SignalR").Bind(options);
             });
         }
+        //#if (redis == true)
+        else
+        {
+            // Use Redis as SignalR backplane for scaling out across multiple server instances
+            signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
+            {
+                options.Configuration.ChannelPrefix = RedisChannel.Literal("Boilerplate:SignalR:");
+            });
+        }
+        //#endif
         //#endif
 
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
         services.AddDbContextPool<AppDbContext>(AddDbContext);
 
         void AddDbContext(DbContextOptionsBuilder options)
-        {
+        {            
             options.EnableSensitiveDataLogging(env.IsDevelopment())
                 .EnableDetailedErrors(env.IsDevelopment());
 
@@ -296,7 +313,12 @@ public static partial class Program
             //#if (database == "SqlServer")
             options.UseSqlServer(configuration.GetRequiredConnectionString("mssqldb"), dbOptions =>
             {
+                dbOptions.UseCompatibilityLevel(170); // SQL Server 2025
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                dbOptions.EnableRetryOnFailure(
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null);
             });
             //#elif (database == "PostgreSQL")
             var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
@@ -305,12 +327,21 @@ public static partial class Program
             options.UseNpgsql(dataSourceBuilder.Build(), dbOptions =>
             {
                 dbOptions.UseVector();
+                dbOptions.SetPostgresVersion(18, 0);
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                dbOptions.EnableRetryOnFailure(
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorCodesToAdd: null);
             });
             //#elif (database == "MySql")
             options.UseMySql(configuration.GetRequiredConnectionString("mysqldb"), ServerVersion.AutoDetect(configuration.GetRequiredConnectionString("mysqldb")), dbOptions =>
             {
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                dbOptions.EnableRetryOnFailure(
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null);
             });
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
@@ -320,7 +351,7 @@ public static partial class Program
         //#if (offlineDb == true)
         // Register CommunityToolkit.Datasync services and repositories
         services.AddDatasyncServices();
-        services.AddScoped<Controllers.Todo.TodoItemTableRepository>();
+        services.AddScoped<Features.Todo.TodoItemTableRepository>();
         //#endif
 
         services.AddOptions<IdentityOptions>()
@@ -417,7 +448,7 @@ public static partial class Program
 
         services.AddHttpClient<NugetStatisticsService>(c =>
         {
-            c.Timeout = TimeSpan.FromSeconds(3);
+            c.Timeout = TimeSpan.FromSeconds(20);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
             c.DefaultRequestVersion = HttpVersion.Version11;
         });
@@ -549,6 +580,7 @@ public static partial class Program
                 //#if (redis == true)
                 hangfireConfiguration.UseRedisStorage(sp.GetRequiredService<IConnectionMultiplexer>(), new RedisStorageOptions
                 {
+                    Prefix = "Boilerplate:Hangfire:",
                     Db = 1, // Use a dedicated Redis database for Hangfire
                 });
                 //#else
@@ -582,7 +614,7 @@ public static partial class Program
         configuration.Bind(appSettings);
         var identityOptions = appSettings.Identity;
 
-        services.AddIdentity<User, Models.Identity.Role>()
+        services.AddIdentity<User, Features.Identity.Models.Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders()
             .AddErrorDescriber<AppIdentityErrorDescriber>()
@@ -708,6 +740,8 @@ public static partial class Program
                 }
             });
         }
+
+        services.ConfigureHttpClientFactoryForExternalIdentityProviders();
     }
 
     private static string GetConnectionStringValue(string connectionString, string key, string? defaultValue = null)

@@ -24,10 +24,8 @@
         <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" />
         <ProjectReference Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''" Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
         <ProjectReference Include="..\..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="Boilerplate.Shared.Enums" />
+        <ProjectReference Include="..\..\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
+        <!-- By referencing Client.Core in Server.Web project, you can build the Client.Web project just once and then unload it during development with Blazor Server, which significantly speeds up build times. -->
     </ItemGroup>
 
     <ItemGroup Condition="'$(Environment)' == 'Development'">
@@ -35,7 +33,7 @@
         <PackageReference Include="Meziantou.Framework.Win32.Jobs" />
     </ItemGroup>
     <ItemGroup Condition="'$(Environment)' != 'Development'">
-        <Compile Remove="Services\ScssCompilerService.cs" />
+        <Compile Remove="Infrastructure\Services\ScssCompilerService.cs" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''">

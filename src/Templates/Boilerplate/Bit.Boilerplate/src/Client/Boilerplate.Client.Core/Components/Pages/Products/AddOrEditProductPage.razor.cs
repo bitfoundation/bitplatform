@@ -1,8 +1,6 @@
-﻿using System.IO;
-using Boilerplate.Shared.Controllers;
-using Boilerplate.Shared.Controllers.Categories;
-using Boilerplate.Shared.Controllers.Products;
-using Boilerplate.Shared.Dtos.Products;
+﻿using Boilerplate.Shared.Features.Products;
+using Boilerplate.Shared.Features.Categories;
+using Boilerplate.Shared.Features.Attachments;
 
 namespace Boilerplate.Client.Core.Components.Pages.Products;
 

@@ -35,6 +35,7 @@ var sqlDatabase = builder.AddSqlServer("sqlserver")
 var postgresDatabase = builder.AddPostgres("postgresserver")
         .WithPgAdmin(config => config.WithVolume("/var/lib/pgadmin/Boilerplate/data"))
         .WithV18DataVolume()
+        .WithOptimizedSetup()
         .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
         .AddDatabase("postgresdb");
 
@@ -64,7 +65,7 @@ var s3Storage = builder.AddMinioContainer("s3")
 // https://aspire.dev/integrations/security/keycloak/
 var keycloak = builder.AddKeycloak("keycloak", 8080)
     .WithDataVolume()
-    .WithRealmImport("./Realms");
+    .WithRealmImport("./Infrastructure/Realms");
 
 var serverWebProject = builder.AddProject("serverweb", "../Boilerplate.Server.Web/Boilerplate.Server.Web.csproj")
     .WithExternalHttpEndpoints();

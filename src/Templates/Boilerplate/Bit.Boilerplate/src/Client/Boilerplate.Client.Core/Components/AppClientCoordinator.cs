@@ -2,15 +2,14 @@
 using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Shared.Dtos.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights.Interfaces;
 //#endif
 using Microsoft.AspNetCore.Components.Routing;
-using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Client.Core.Services.DiagnosticLog;
+using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components;
 
@@ -23,9 +22,10 @@ public partial class AppClientCoordinator : AppComponentBase
 {
     //#if (signalR == true)
     [AutoInject] private Notification notification = default!;
-    [AutoInject] private HubConnection hubConnection = default!;
     [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private HubConnection hubConnection = default!;
     [AutoInject] private CultureService cultureService = default!;
+    [AutoInject] private SignInModalService signInModalService = default!;
     //#endif
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
@@ -291,6 +291,13 @@ public partial class AppClientCoordinator : AppComponentBase
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.UPLOAD_LAST_ERROR, async () =>
         {
             return DiagnosticLogger.Store.LastOrDefault(l => l.Level is LogLevel.Error or LogLevel.Critical);
+        }));
+
+        hubConnection.Remove(SharedAppMessages.SHOW_SIGN_IN_MODAL);
+        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.SHOW_SIGN_IN_MODAL, async () =>
+        {
+            await signInModalService.SignIn();
+            return await StorageService.GetItem("access_token");
         }));
 
         hubConnection.Closed += HubConnectionStateChange;

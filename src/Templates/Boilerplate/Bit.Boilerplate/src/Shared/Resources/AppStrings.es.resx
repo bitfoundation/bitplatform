@@ -171,7 +171,7 @@
   <data name="ResourceNotFoundException" xml:space="preserve">
     <value>Recurso no encontrado</value>
   </data>
-  <data name="TooManyRequestExceptions" xml:space="preserve">
+  <data name="TooManyRequestsException" xml:space="preserve">
     <value>Demasiadas solicitudes</value>
   </data>
   <data name="ServerConnectionException" xml:space="preserve">
@@ -1140,7 +1140,7 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Panel de chat con IA</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>¡Saludos! Estoy aquí para hacer que tu experiencia en la app sea genial. ¿Tienes una pregunta o necesitas ayuda?</value>
+    <value>¡Saludos{0}! Estoy aquí para hacer que tu experiencia en la app sea genial. ¿Tienes una pregunta o necesitas ayuda?</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>Abrir página de restablecimiento de contraseña y dime cómo funciona</value>

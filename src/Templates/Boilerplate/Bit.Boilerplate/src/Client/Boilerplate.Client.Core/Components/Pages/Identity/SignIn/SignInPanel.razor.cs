@@ -1,5 +1,5 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Shared.Controllers.Identity;
+﻿using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Shared.Features.Identity.Dtos;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;

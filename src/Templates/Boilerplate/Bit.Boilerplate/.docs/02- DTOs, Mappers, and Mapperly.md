@@ -21,7 +21,7 @@ Welcome to **Stage 2** of the Boilerplate project tutorial! In this stage, you'l
 
 ### Example: CategoryDto
 
-Let's look at a real DTO from the project: [`CategoryDto`](/src/Shared/Dtos/Categories/CategoryDto.cs)
+Let's look at a real DTO from the project: [`CategoryDto`](/src/Shared/Features/Categories/CategoryDto.cs)
 
 ```csharp
 namespace Boilerplate.Shared.Dtos.Categories;
@@ -59,7 +59,7 @@ public partial class CategoryDto
 
 ### Example: UserDto
 
-Another example is [`UserDto`](/src/Shared/Dtos/Identity/UserDto.cs):
+Another example is [`UserDto`](/src/Shared/Features/Identity/Dtos/UserDto.cs):
 
 ```csharp
 [DtoResourceType(typeof(AppStrings))]
@@ -91,7 +91,7 @@ public partial class UserDto : IValidatableObject
 
 ## 2. AppJsonContext - Efficient JSON Serialization
 
-**Location**: [`src/Shared/Dtos/AppJsonContext.cs`](/src/Shared/Dtos/AppJsonContext.cs)
+**Location**: [`src/Shared/Infrastructure/Dtos/AppJsonContext.cs`](/src/Shared/Infrastructure/Dtos/AppJsonContext.cs)
 
 The project uses **System.Text.Json Source Generator** for high-performance JSON serialization. Every DTO used in API/SignalR communication must be registered in `AppJsonContext`.
 
@@ -126,7 +126,7 @@ public partial class AppJsonContext : JsonSerializerContext
 
 **Mapperly** is a high-performance object mapping library that generates mapping code at compile time (no reflection!).
 
-**More info**: [Server/Mappers/README.md](/src/Server/Boilerplate.Server.Api/Mappers/Readme.md)
+**More info**: [Server/Features/Mappers.md](/src/Server/Boilerplate.Server.Api/Features/Mappers.md)
 
 ### The Three Core Methods
 
@@ -136,7 +136,7 @@ public partial class AppJsonContext : JsonSerializerContext
 
 ### Example: CategoriesMapper
 
-**Location**: [`src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs`](/src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs)
+**Location**: [`src/Server/Boilerplate.Server.Api/Features/Categories/CategoriesMapper.cs`](/src/Server/Boilerplate.Server.Api/Features/Categories/CategoriesMapper.cs)
 
 ```csharp
 [Mapper]
@@ -155,7 +155,7 @@ public static partial class CategoriesMapper
 
 ### The Category Entity
 
-For reference, here's the entity model: [`Category.cs`](/src/Server/Boilerplate.Server.Api/Models/Categories/Category.cs)
+For reference, here's the entity model: [`Category.cs`](/src/Server/Boilerplate.Server.Api/Features/Categories/Category.cs)
 
 ```csharp
 public partial class Category
@@ -195,7 +195,7 @@ In the mapper above, notice:
 - You have an `IQueryable<Entity>` and want `IQueryable<DTO>`
 - You want efficient SQL generation
 
-**Example from [`CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs):**
+**Example from [`CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs):**
 
 ```csharp
 [HttpGet, EnableQuery]
@@ -303,9 +303,9 @@ public async Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancell
 
 ### Client-Side Patch Usage
 
-**Location**: [`src/Shared/Mapper.cs`](/src/Shared/Mapper.cs)
+**Location**: [`src/Shared/Features/[Feature]/[Feature]Mapper.cs`](/src/Shared/Features/)
 
-On the client side, the project defines additional `Patch()` methods for updating UI-bound DTOs:
+On the client side, the project defines additional `Patch()` methods in feature-specific mapper files for updating UI-bound DTOs:
 
 ```csharp
 [Mapper(UseDeepCloning = true)]

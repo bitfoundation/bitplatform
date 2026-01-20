@@ -153,7 +153,7 @@ By default, embeddings are **disabled** in the project. To enable them:
 
 ### Step 1: Open AppDbContext.cs
 
-**File Location**: [`src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs`](/src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs)
+**File Location**: [`src/Server/Boilerplate.Server.Api/Infrastructure/Data/AppDbContext.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Data/AppDbContext.cs)
 
 **Current State**:
 ```csharp
@@ -184,7 +184,7 @@ If you're using an older version of SQL Server:
 
 ### 5.1 The Product Entity
 
-**File**: [`src/Server/Boilerplate.Server.Api/Models/Products/Product.cs`](/src/Server/Boilerplate.Server.Api/Models/Products/Product.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Products/Product.cs`](/src/Server/Boilerplate.Server.Api/Features/Products/Product.cs)
 
 The `Product` model includes an `Embedding` property:
 
@@ -196,7 +196,7 @@ This property stores the 384-dimensional vector representation of the product's 
 
 ### 5.2 Product Configuration
 
-**File**: [`src/Server/Boilerplate.Server.Api/Data/Configurations/Product/ProductConfiguration.cs`](/src/Server/Boilerplate.Server.Api/Data/Configurations/Product/ProductConfiguration.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Products/ProductConfiguration.cs`](/src/Server/Boilerplate.Server.Api/Features/Products/ProductConfiguration.cs)
 
 ```csharp
 if (AppDbContext.IsEmbeddingEnabled)
@@ -215,7 +215,7 @@ else
 
 ### 5.3 ProductEmbeddingService
 
-**File**: [`src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs`](/src/Server/Boilerplate.Server.Api/Services/ProductEmbeddingService.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Products/ProductEmbeddingService.cs`](/src/Server/Boilerplate.Server.Api/Features/Products/ProductEmbeddingService.cs)
 
 This service handles embedding generation and semantic search:
 
@@ -286,7 +286,7 @@ public async Task<IQueryable<Product>> SearchProducts(string searchQuery, Cancel
 
 ### 5.4 Usage in ProductController
 
-**File**: [`src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Products/ProductController.cs`](/src/Server/Boilerplate.Server.Api/Features/Products/ProductController.cs)
 
 The controller calls the `productEmbeddingService.Embed()` method when creating or updating a product.
 

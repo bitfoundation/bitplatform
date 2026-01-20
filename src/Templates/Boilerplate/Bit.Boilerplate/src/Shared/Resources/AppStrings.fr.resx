@@ -171,7 +171,7 @@
   <data name="ResourceNotFoundException" xml:space="preserve">
     <value>Ressource non trouvée</value>
   </data>
-  <data name="TooManyRequestExceptions" xml:space="preserve">
+  <data name="TooManyRequestsException" xml:space="preserve">
     <value>Trop de requêtes</value>
   </data>
   <data name="ServerConnectionException" xml:space="preserve">
@@ -1140,7 +1140,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Panneau de chat IA</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>Salutations ! Je suis là pour rendre votre expérience d'application géniale ! Une question ou besoin d'aide ?</value>
+    <value>Salutations{0}! Je suis là pour rendre votre expérience d'application géniale ! Une question ou besoin d'aide ?</value>
   </data>
   <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>Ouvrir la page de réinitialisation du mot de passe et me dire comment ça marche</value>

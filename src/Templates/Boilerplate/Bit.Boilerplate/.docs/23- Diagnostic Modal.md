@@ -85,7 +85,7 @@ The modal provides several powerful diagnostic and maintenance actions:
 - **Use Case**: Testing error boundaries, exception handlers, and logging infrastructure
 
 #### 🔬 **Call Diagnostics API**
-- Sends a request to [`DiagnosticsController.PerformDiagnostics`](/src/Server/Boilerplate.Server.Api/Controllers/Diagnostics/DiagnosticsController.cs)
+- Sends a request to [`DiagnosticsController.PerformDiagnostics`](/src/Server/Boilerplate.Server.Api/Features/Diagnostics/DiagnosticsController.cs)
 - Returns comprehensive server-side diagnostics including:
   - Client IP address
   - HTTP trace identifier

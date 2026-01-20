@@ -237,7 +237,7 @@ public interface IAppUpdateService
 
 ### Web Platform: Auto-Update via Service Worker
 
-**File**: [`src/Client/Boilerplate.Client.Web/Services/WebAppUpdateService.cs`](/src/Client/Boilerplate.Client.Web/Services/WebAppUpdateService.cs)
+**File**: [`src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebAppUpdateService.cs`](/src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebAppUpdateService.cs)
 
 ```csharp
 public partial class WebAppUpdateService : IAppUpdateService

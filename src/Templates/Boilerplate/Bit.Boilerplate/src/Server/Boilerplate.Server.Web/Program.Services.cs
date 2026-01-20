@@ -4,10 +4,10 @@ using Microsoft.Net.Http.Headers;
 using Boilerplate.Server.Api;
 //#endif
 using Boilerplate.Client.Web;
-using Boilerplate.Server.Web.Services;
 using Microsoft.AspNetCore.Antiforgery;
-using Boilerplate.Client.Core.Services.Contracts;
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+using Boilerplate.Server.Web.Infrastructure.Services;
+using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
+using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Server.Web;
 

@@ -278,6 +278,44 @@ private bool templateIsLoading;";
 </BitActionButton>";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitActionButton Icon=""@(""fa-solid fa-house"")"">
+    House (Icon=@@(""fa-solid fa-house""))
+</BitActionButton>
+        
+<BitActionButton Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" Color=""BitColor.Secondary"">
+    Heart (Icon=""@@BitIconInfo.Css(""fa-solid fa-heart"")"")
+</BitActionButton>
+        
+<BitActionButton Icon=""@BitIconInfo.Fa(""fa-brands fa-github"")"" Color=""BitColor.Tertiary"">
+    GitHub (Icon=""@@BitIconInfo.Fa(""fa-brands fa-github"")"")
+</BitActionButton>
+        
+<BitActionButton Icon=""@BitIconInfo.Fa(""solid rocket"")"" Color=""BitColor.Error"">
+    Rocket (Icon=""@@BitIconInfo.Fa(""solid rocket"")"")
+</BitActionButton>
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitActionButton Icon=""@(""bi bi-house-fill"")"">
+    House (Icon=@@(""bi bi-house-fill""))
+</BitActionButton>
+        
+<BitActionButton Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"" Color=""BitColor.Secondary"">
+    Heart (Icon=""@@BitIconInfo.Css(""bi bi-heart-fill"")"")
+</BitActionButton>
+        
+<BitActionButton Icon=""@BitIconInfo.Bi(""github"")"" Color=""BitColor.Tertiary"">
+    GitHub (Icon=""@@BitIconInfo.Bi(""github"")"")
+</BitActionButton>
+        
+<BitActionButton Icon=""@BitIconInfo.Bi(""gear-fill"")"" Color=""BitColor.Error"">
+    Gear (Icon=""@@BitIconInfo.Bi(""gear-fill"")"")
+</BitActionButton>";
+
+    private readonly string example13RazorCode = @"
 <BitActionButton Size=""BitSize.Small"" IconName=""@BitIconName.FontSize"">
     Small
 </BitActionButton>
@@ -290,7 +328,7 @@ private bool templateIsLoading;";
     Large
 </BitActionButton>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-icon {
         color: hotpink;
@@ -335,7 +373,7 @@ private bool templateIsLoading;";
     Action Button Classes (Hover me)
 </BitActionButton>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitActionButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.AddFriend"">
     ساخت حساب
 </BitActionButton>";

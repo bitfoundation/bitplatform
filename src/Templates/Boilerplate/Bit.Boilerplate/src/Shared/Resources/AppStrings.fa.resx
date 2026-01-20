@@ -171,7 +171,7 @@
     <data name="ResourceNotFoundException" xml:space="preserve">
     <value>منبع یافت نشد</value>
   </data>
-    <data name="TooManyRequestExceptions" xml:space="preserve">
+    <data name="TooManyRequestsException" xml:space="preserve">
     <value>درخواست های بیش از حد</value>
   </data>
     <data name="ServerConnectionException" xml:space="preserve">
@@ -227,26 +227,26 @@
     <value>توکن برای شما ارسال شد</value>
   </data>
     <data name="SessionsTitle" xml:space="preserve">
-    <value>جلسات - سشن‌ها</value>
+    <value>نشست‌ها</value>
   </data>
     <data name="SessionsSubtitle" xml:space="preserve">
-    <value>جلسه (سشن) های فعال شما در دستگاههای مختلف</value>
+    <value>نشست‌های فعال شما در دستگاههای مختلف</value>
   </data>
     <data name="CurrentSession" xml:space="preserve">
-    <value>جلسه - سشن جاری</value>
+    <value>نشست جاری</value>
   </data>
     <data name="PrivilegedDeviceLimitMessage" xml:space="preserve">
     <value>از مجموع {0} دستگاه با دسترسی کامل، شما {1} دستگاه را استفاده کرده‌اید.
 پس از رسیدن به {0} دستگاه، دستگاه‌های اضافی با امکانات محدود خواهد بود.</value>
   </data>
     <data name="OtherSessions" xml:space="preserve">
-    <value>سایر جلسات (سشن‌ها)</value>
+    <value>سایر نشست‌ها</value>
   </data>
     <data name="TryRemovingOtherSessions" xml:space="preserve">
-    <value>حذف سایر جلسات (سشن)</value>
+    <value>حذف سایر نشست‌ها</value>
   </data>
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
-    <value>حذف جلسه - سشن با موفقیت انجام شد</value>
+    <value>حذف نشست با موفقیت انجام شد</value>
   </data>
     <data name="NotFoundPageTitle" xml:space="preserve">
     <value>404</value>
@@ -901,7 +901,7 @@
     <value>استفاده از رمز</value>
   </data>
     <data name="SignInByOtp" xml:space="preserve">
-    <value>استفاده از رمز بک بار مصرف</value>
+    <value>استفاده از رمز یکبار مصرف</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>رمز عبور اصلی یا یک‌بار مصرف را وارد کنید</value>
@@ -1140,7 +1140,7 @@
     <value>پنل هوش مصنوعی</value>
   </data>
     <data name="AiChatPanelInitialResponse" xml:space="preserve">
-    <value>سلام! من اینجا هستم تا تجربه اپلیکیشن شما رو فوق‌العاده کنم! سؤالی دارید یا به کمک نیاز دارید؟</value>
+    <value>سلام{0}! من اینجا هستم تا تجربه اپلیکیشن شما رو فوق‌العاده کنم! سؤالی دارید یا به کمک نیاز دارید؟</value>
   </data>
     <data name="AiChatPanelPrompt1" xml:space="preserve">
     <value>صفحه ریست کردن پسورد رو باز کن و بگو چطوری کار میکنه</value>
@@ -1228,7 +1228,7 @@
     <value>برای محدود کردن استفاده از ویژگی‌ها، می‌توانید سهمیه‌هایی را در این تب تعیین کنید که می‌تواند برای هر نقش متفاوت باشد. به عنوان مثال، تعداد دستگاه‌هایی که یک کاربر می‌تواند وارد آن‌ها شود یا تعداد دفعاتی که می‌تواند از یک ویژگی خاص اپلیکیشن استفاده کند.</value>
   </data>
     <data name="MaxPrevilegedSessions" xml:space="preserve">
-    <value>حداکثر جلسات امتیازدار</value>
+    <value>حداکثر نشست‌های امتیازدار</value>
   </data>
     <data name="General" xml:space="preserve">
     <value>عمومی</value>
@@ -1247,7 +1247,7 @@
     <value>فعال‌سازی اعلان‌ها</value>
   </data>
     <data name="DisableNotifications" xml:space="preserve">
-    <value>فیر فعال‌سازی اعلان‌ها</value>
+    <value>غیرفعال‌سازی اعلان‌ها</value>
   </data>
     <data name="TestNotificationMessage1" xml:space="preserve">
     <value>پیام تستی ۱</value>
@@ -1263,7 +1263,7 @@
     <value>حذف گروه کاربران</value>
   </data>
     <data name="Sessions" xml:space="preserve">
-    <value>سشن‌ها {0}</value>
+    <value>نشست‌ها {0}</value>
   </data>
     <data name="DeleteUser" xml:space="preserve">
     <value>حذف کاربر</value>
@@ -1290,22 +1290,22 @@
     <value>کاربران آنلاین: {0}</value>
   </data>
     <data name="DeleteSession" xml:space="preserve">
-    <value>حذف سشن</value>
+    <value>حذف نشست</value>
   </data>
     <data name="NoUserMessage" xml:space="preserve">
     <value>کاربری وجود ندارد</value>
   </data>
     <data name="NoUserSessionMessage" xml:space="preserve">
-    <value>سشنی وجود ندارد</value>
+    <value>نشستی وجود ندارد</value>
   </data>
     <data name="NoUserSelectedMessage" xml:space="preserve">
     <value>لطفا ابتدا کاربری را انتخاب کنید</value>
   </data>
     <data name="RevokeAllSessions" xml:space="preserve">
-    <value>حذف تمام سشن‌ها</value>
+    <value>حذف تمام نشست‌ها</value>
   </data>
     <data name="RevokeAllSessionsConfrimMessage" xml:space="preserve">
-    <value>آیا برای حذف تمام سشنهای کاربر {0} مطمئن هستید?</value>
+    <value>آیا برای حذف تمام نشست‌های کاربر {0} مطمئن هستید?</value>
   </data>
     <data name="UserCantRemoveItselfErrorMessage" xml:space="preserve">
     <value>شما نمیتوانید کاربر خود را حذف کنید</value>
@@ -1323,7 +1323,7 @@
     <value>شما نمیتوانید این کاربر SuperAdmin را حذف کنید</value>
   </data>
     <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
-    <value>شما نمیتوانید سشن جاری خود را حذف کنید</value>
+    <value>شما نمیتوانید نشست جاری خود را حذف کنید</value>
   </data>
     <data name="SearchRolesPlaceholder" xml:space="preserve">
     <value>جستجوی گروه‌های کاربری</value>
@@ -1335,7 +1335,7 @@
     <value>جستجوی کاربران</value>
   </data>
     <data name="SearchUserSessionsPlaceholder" xml:space="preserve">
-    <value>جستجوی سشن کاربران</value>
+    <value>جستجوی نشست کاربران</value>
   </data>
     <data name="RemoveRoleFromAllUsers" xml:space="preserve">
     <value>حذف تمام کاربران از گروه کاربران</value>

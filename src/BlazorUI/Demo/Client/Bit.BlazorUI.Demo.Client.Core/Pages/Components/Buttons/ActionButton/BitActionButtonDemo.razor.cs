@@ -89,10 +89,19 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the name of the icon to display.",
+            Description = "Gets or sets the name of the icon to display from the built-in Fluent UI icons.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography",
         },
@@ -220,7 +229,36 @@ public partial class BitActionButtonDemo
                     Description = "Custom class or style applied to the loading spinner element of the BitActionButton."
                 }
             ]
-        }
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =

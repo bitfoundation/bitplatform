@@ -4,6 +4,7 @@
 @{
     RenderFragment b = @<div style="@Styles?.Content" class="bit-acb-con @Classes?.Content">@(Body ?? ChildContent)</div>;
     var body = ((Body ?? ChildContent) is not null && IconOnly is false) ? b : null;
+    var icon = BitIconInfo.From(Icon, IconName);
 }
 
 @if (Href.HasNoValue())
@@ -37,9 +38,9 @@
             }
             else
             {
-                if (IconName is not null)
+                @if (icon is not null)
                 {
-                    <i style="@Styles?.Icon" class="bit-acb-ico bit-icon bit-icon--@IconName @Classes?.Icon" />
+                    <i style="@Styles?.Icon" class="bit-acb-ico @icon.GetCssClasses() @Classes?.Icon" />
                 }
 
                 @body
@@ -64,11 +65,11 @@ else
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
         <span class="bit-acb-inn">
-            @if (IconName is not null)
+            @if (icon is not null)
             {
-                <i style="@Styles?.Icon" class="bit-acb-ico bit-icon bit-icon--@IconName @Classes?.Icon" />
+                <i style="@Styles?.Icon" class="bit-acb-ico @icon.GetCssClasses() @Classes?.Icon" />
             }
-        
+
             @body
         </span>
     </a>

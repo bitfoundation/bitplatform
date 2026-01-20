@@ -16,9 +16,23 @@
     <ItemGroup>
         <Using Include="Microsoft.Extensions.Options" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
-        <Using Include="Boilerplate.Shared.Enums" />
-        <Using Include="Boilerplate.Server.Api.Components" />
-        <Using Include="Boilerplate.Server.Api.Resources" />
+        <Using Include="Boilerplate.Server.Api.Infrastructure.Data" />
+        <Using Include="Boilerplate.Server.Api.Infrastructure.Controllers" />
+        <Using Include="Boilerplate.Server.Api.Features.Identity.Resources" />
+        <Using Include="Boilerplate.Server.Api.Features.Identity.Components" />
+        <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
+        <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
+        <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+        <Using Include="Hangfire" />
+        <Using Include="Boilerplate.Shared.Infrastructure" />
+        <Using Include="Boilerplate.Shared.Infrastructure.Attributes" />
+        <Using Include="Microsoft.AspNetCore.Identity" />
+        <Using Include="Microsoft.EntityFrameworkCore" />
+        <Using Include="Microsoft.AspNetCore.OData.Query" />
+        <Using Include="Microsoft.AspNetCore.Mvc" />
+        <Using Include="ZiggyCreatures.Caching.Fusion" />
+        <Using Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
+        <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Features.Chatbot" />
     </ItemGroup>
 
     <ItemGroup>
@@ -73,39 +87,21 @@
         <PackageReference Condition="'$(redis)' != 'true' OR '$(redis)' == ''" Include="DistributedLock.FileSystem" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Hangfire.Redis.StackExchange" />
         <PackageReference Condition=" ('$(redis)' == 'true' OR '$(redis)' == '') AND ('$(signalR)' == 'true' OR '$(signalR)' == '')" Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
-        <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
-        <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
-        <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-        <Using Include="Hangfire" />
-        <Using Include="Boilerplate.Shared" />
-        <Using Include="Boilerplate.Shared.Attributes" />
-        <Using Include="Boilerplate.Server.Api.Data" />
-        <Using Include="Boilerplate.Server.Api.Mappers" />
-        <Using Include="Boilerplate.Server.Api.RequestPipeline" />
-        <Using Include="Microsoft.AspNetCore.Identity" />
-        <Using Include="Microsoft.EntityFrameworkCore" />
-        <Using Include="Microsoft.AspNetCore.OData.Query" />
-        <Using Include="Microsoft.AspNetCore.Mvc" />
-        <Using Include="ZiggyCreatures.Caching.Fusion" />
-
-        <Using Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" />
-        <Using Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Boilerplate.Server.Api.Models.Chatbot" />
-        <Content Include="..\..\..\Bit.ResxTranslator.json" Link="Resources\Bit.ResxTranslator.json" />
-
-        <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
     <ItemGroup>
+        <Content Include=".config\dotnet-tools.json" />
+        <Content Include="..\..\..\Bit.ResxTranslator.json" Link="Features\Identity\Resources\Bit.ResxTranslator.json" />
         <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Update="Resources\EmailStrings.resx">
+        <EmbeddedResource Update="Features\Identity\Resources\EmailStrings.resx">
             <Generator>MSBuild:Compile</Generator>
-            <LastGenOutput>Resources\EmailStrings.Designer.cs</LastGenOutput>
+            <LastGenOutput>Features\Identity\Resources\EmailStrings.Designer.cs</LastGenOutput>
             <StronglyTypedFileName>$(IntermediateOutputPath)\EmailStrings.Designer.cs</StronglyTypedFileName>
             <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
-            <StronglyTypedNamespace>Boilerplate.Server.Api.Resources</StronglyTypedNamespace>
+            <StronglyTypedNamespace>Boilerplate.Server.Api.Features.Identity.Resources</StronglyTypedNamespace>
             <StronglyTypedClassName>EmailStrings</StronglyTypedClassName>
             <PublicClass>true</PublicClass>
         </EmbeddedResource>
