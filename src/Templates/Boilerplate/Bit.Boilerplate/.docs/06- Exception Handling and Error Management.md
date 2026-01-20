@@ -22,7 +22,7 @@ The project distinguishes between two types of exceptions:
 
 ### Known Exceptions
 
-**Known Exceptions** are exceptions that inherit from the `KnownException` base class, located in [`src/Shared/Exceptions/KnownException.cs`](/src/Shared/Exceptions/KnownException.cs).
+**Known Exceptions** are exceptions that inherit from the `KnownException` base class, located in [`src/Shared/Infrastructure/Exceptions/KnownException.cs`](/src/Shared/Infrastructure/Exceptions/KnownException.cs).
 
 These are **expected, business-logic exceptions** that represent predictable error scenarios.
 
@@ -34,27 +34,27 @@ These are **expected, business-logic exceptions** that represent predictable err
 
 **Examples of Known Exceptions in the project:**
 
-1. **`DomainLogicException`** ([`src/Shared/Exceptions/DomainLogicException.cs`](/src/Shared/Exceptions/DomainLogicException.cs))
-   - Used for business rule violations
-   - Example: "Cannot delete a category that has products"
+1. **`DomainLogicException`** ([`src/Shared/Infrastructure/Exceptions/DomainLogicException.cs`](/src/Shared/Infrastructure/Exceptions/DomainLogicException.cs))
+- Used for business rule violations
+- Example: "Cannot delete a category that has products"
 
-2. **`ResourceNotFoundException`** ([`src/Shared/Exceptions/ResourceNotFoundException.cs`](/src/Shared/Exceptions/ResourceNotFoundException.cs))
-   - Thrown when a requested resource doesn't exist
-   - HTTP Status Code: 404 (Not Found)
+2. **`ResourceNotFoundException`** ([`src/Shared/Infrastructure/Exceptions/ResourceNotFoundException.cs`](/src/Shared/Infrastructure/Exceptions/ResourceNotFoundException.cs))
+- Thrown when a requested resource doesn't exist
+- HTTP Status Code: 404 (Not Found)
 
-3. **`BadRequestException`** ([`src/Shared/Exceptions/BadRequestException.cs`](/src/Shared/Exceptions/BadRequestException.cs))
-   - Used for invalid client requests
-   - HTTP Status Code: 400 (Bad Request)
+3. **`BadRequestException`** ([`src/Shared/Infrastructure/Exceptions/BadRequestException.cs`](/src/Shared/Infrastructure/Exceptions/BadRequestException.cs))
+- Used for invalid client requests
+- HTTP Status Code: 400 (Bad Request)
 
-4. **`UnauthorizedException`** ([`src/Shared/Exceptions/UnauthorizedException.cs`](/src/Shared/Exceptions/UnauthorizedException.cs))
-   - Thrown when authentication is required
-   - HTTP Status Code: 401 (Unauthorized)
+4. **`UnauthorizedException`** ([`src/Shared/Infrastructure/Exceptions/UnauthorizedException.cs`](/src/Shared/Infrastructure/Exceptions/UnauthorizedException.cs))
+- Thrown when authentication is required
+- HTTP Status Code: 401 (Unauthorized)
 
-5. **`ServerConnectionException`** ([`src/Shared/Exceptions/ServerConnectionException.cs`](/src/Shared/Exceptions/ServerConnectionException.cs))
-   - Indicates connectivity issues between client and server
+5. **`ServerConnectionException`** ([`src/Shared/Infrastructure/Exceptions/ServerConnectionException.cs`](/src/Shared/Infrastructure/Exceptions/ServerConnectionException.cs))
+- Indicates connectivity issues between client and server
 
 **Exception Inheritance:**
-- Exceptions that map to HTTP status codes (like `BadRequestException`, `UnauthorizedException`, `ResourceNotFoundException`) inherit from **`RestException`** ([`src/Shared/Exceptions/RestException.cs`](/src/Shared/Exceptions/RestException.cs)), which inherits from `KnownException` and provides HTTP status code mapping for REST APIs.
+- Exceptions that map to HTTP status codes (like `BadRequestException`, `UnauthorizedException`, `ResourceNotFoundException`) inherit from **`RestException`** ([`src/Shared/Infrastructure/Exceptions/RestException.cs`](/src/Shared/Infrastructure/Exceptions/RestException.cs)), which inherits from `KnownException` and provides HTTP status code mapping for REST APIs.
 - Exceptions that don't require HTTP status codes (like `DomainLogicException`, `ServerConnectionException`) inherit directly from **`KnownException`**.
 
 ---
@@ -86,7 +86,7 @@ In Development, the user would see:
 **This behavior is controlled by the `SharedExceptionHandler`:**
 
 ```csharp
-// From src/Shared/Services/SharedExceptionHandler.cs
+// From src/Shared/Infrastructure/Services/SharedExceptionHandler.cs
 protected string GetExceptionMessageToShow(Exception exception)
 {
     if (exception is KnownException)
@@ -135,7 +135,7 @@ The exception is automatically:
 
 The `WithData()` extension method allows developers to attach **additional contextual information** to exceptions for better logging and debugging.
 
-**Location:** [`src/Shared/Extensions/ExceptionExtensions.cs`](/src/Shared/Extensions/ExceptionExtensions.cs)
+**Location:** [`src/Shared/Infrastructure/Extensions/ExceptionExtensions.cs`](/src/Shared/Infrastructure/Extensions/ExceptionExtensions.cs)
 
 ### Syntax
 
@@ -154,7 +154,7 @@ exception.WithData(new()
 
 ### Real Example from the Project
 
-From [`src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.EmailConfirmation.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.EmailConfirmation.cs):
+From [`src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.EmailConfirmation.cs`](/src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.EmailConfirmation.cs):
 
 ```csharp
 var user = await userManager.FindByEmailAsync(request.Email!)
@@ -179,7 +179,7 @@ if (await userManager.IsEmailConfirmedAsync(user))
 
 The `WithExtensionData()` extension method allows you to send **additional contextual data to the client** along with the error response. This is useful when the client needs specific information to handle the error appropriately.
 
-**Location:** [`src/Server/Boilerplate.Server.Api/Extensions/KnownExceptionExtensions.cs`](/src/Server/Boilerplate.Server.Api/Extensions/KnownExceptionExtensions.cs)
+**Location:** [`src/Server/Boilerplate.Server.Api/Infrastructure/Extensions/KnownExceptionExtensions.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Extensions/KnownExceptionExtensions.cs)
 
 ### Important: Only Works with Known Exceptions
 
@@ -219,7 +219,7 @@ exception.WithExtensionData(new Dictionary<string, object?>
 
 ### Real Example from the Project
 
-From [`src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Identity/IdentityController.cs):
+From [`src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.cs`](/src/Server/Boilerplate.Server.Api/Features/Identity/IdentityController.cs):
 
 ```csharp
 if (signInResult.IsLockedOut)
@@ -480,7 +480,7 @@ The project includes multiple exception handlers for different platforms, all in
 
 ### 1. ServerExceptionHandler
 
-**Location:** [`src/Server/Boilerplate.Server.Api/Services/ServerExceptionHandler.cs`](/src/Server/Boilerplate.Server.Api/Services/ServerExceptionHandler.cs)
+**Location:** [`src/Server/Boilerplate.Server.Api/Infrastructure/Services/ServerExceptionHandler.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Services/ServerExceptionHandler.cs)
 
 **Purpose:** Handles exceptions on the **server-side** (API controllers).
 
@@ -510,7 +510,7 @@ The project includes multiple exception handlers for different platforms, all in
 
 ### 2. SharedExceptionHandler
 
-**Location:** [`src/Shared/Services/SharedExceptionHandler.cs`](/src/Shared/Services/SharedExceptionHandler.cs)
+**Location:** [`src/Shared/Infrastructure/Services/SharedExceptionHandler.cs`](/src/Shared/Infrastructure/Services/SharedExceptionHandler.cs)
 
 **Purpose:** Provides **shared exception handling logic** used by both server and client.
 

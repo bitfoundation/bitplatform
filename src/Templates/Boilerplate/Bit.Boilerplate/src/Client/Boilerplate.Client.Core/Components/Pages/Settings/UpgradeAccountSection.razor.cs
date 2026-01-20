@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace Boilerplate.Client.Core.Components.Pages.Settings;
+﻿namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class UpgradeAccountSection
 {

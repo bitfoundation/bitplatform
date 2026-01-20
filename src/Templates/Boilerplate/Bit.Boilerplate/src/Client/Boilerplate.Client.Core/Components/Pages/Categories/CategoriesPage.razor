@@ -1,3 +1,5 @@
+@using Boilerplate.Shared.Features.Categories
+
 @attribute [Route(PageUrls.Categories)]
 @attribute [Route("{culture?}" + PageUrls.Categories)]
 @attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]

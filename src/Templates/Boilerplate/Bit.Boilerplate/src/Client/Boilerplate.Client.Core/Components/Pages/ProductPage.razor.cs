@@ -1,5 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.Products;
-using Boilerplate.Shared.Controllers.Products;
+﻿using Boilerplate.Shared.Features.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages;
 

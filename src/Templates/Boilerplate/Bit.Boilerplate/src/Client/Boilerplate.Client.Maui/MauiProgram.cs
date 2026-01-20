@@ -5,7 +5,7 @@ using Microsoft.Maui.LifecycleEvents;
 using Plugin.LocalNotification;
 //#endif
 using Boilerplate.Client.Core.Styles;
-using Boilerplate.Client.Maui.Services;
+using Boilerplate.Client.Maui.Infrastructure.Services;
 using Maui.AppStores;
 //-:cnd:noEmit
 #if iOS || Mac

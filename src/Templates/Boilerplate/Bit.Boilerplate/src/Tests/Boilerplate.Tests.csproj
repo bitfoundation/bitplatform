@@ -27,7 +27,7 @@
         <Using Include="System.Net.Http.Json" />
         <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Server.Web" />
-        <Using Include="Boilerplate.Shared.Enums" />
+        <Using Include="Boilerplate.Tests.Infrastructure" />
         <Using Include="Microsoft.AspNetCore.Http" />
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />

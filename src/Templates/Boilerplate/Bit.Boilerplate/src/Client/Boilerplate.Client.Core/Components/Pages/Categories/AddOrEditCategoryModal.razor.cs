@@ -1,5 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.Categories;
-using Boilerplate.Shared.Controllers.Categories;
+﻿using Boilerplate.Shared.Features.Categories;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Routing;
 

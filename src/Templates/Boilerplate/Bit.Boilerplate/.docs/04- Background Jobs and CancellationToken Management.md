@@ -35,7 +35,7 @@ This ensures that server resources are not wasted processing requests that the u
 
 #### Server-Side Example
 
-Let's look at a real controller from the project - [`TodoItemController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemController.cs):
+Let's look at a real controller from the project - [`TodoItemController.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemController.cs):
 
 ```csharp
 [HttpPost]
@@ -308,7 +308,7 @@ Let's examine how SMS sending is implemented as a background job.
 
 #### Step 1: The Service Enqueues the Job
 
-In [`PhoneService.cs`](/src/Server/Boilerplate.Server.Api/Services/PhoneService.cs):
+In [`PhoneService.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Services/PhoneService.cs):
 
 ```csharp
 [AutoInject] private readonly IBackgroundJobClient backgroundJobClient = default!;
@@ -336,7 +336,7 @@ public virtual async Task SendSms(string messageText, string phoneNumber)
 
 #### Step 2: The Job Runner Executes the Task
 
-In [`PhoneServiceJobsRunner.cs`](/src/Server/Boilerplate.Server.Api/Services/Jobs/PhoneServiceJobsRunner.cs):
+In [`PhoneServiceJobsRunner.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Services/PhoneServiceJobsRunner.cs):
 
 ```csharp
 public partial class PhoneServiceJobsRunner

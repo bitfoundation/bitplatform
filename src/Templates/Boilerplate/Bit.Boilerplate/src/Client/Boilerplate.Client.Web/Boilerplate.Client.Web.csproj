@@ -46,9 +46,9 @@
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />
         <Using Include="Microsoft.JSInterop" />
-        <Using Include="Boilerplate.Client.Core.Services" />
         <Using Include="Boilerplate.Client.Core.Components" />
-        <Using Include="Boilerplate.Client.Core.Services.Contracts" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services.Contracts" />
     </ItemGroup>
 
     <!--/+:msbuild-conditional:noEmit -->

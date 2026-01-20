@@ -2,7 +2,6 @@
 using UIKit;
 using Foundation;
 //#if (notification == true)
-using UserNotifications;
 using Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
 //#endif
 

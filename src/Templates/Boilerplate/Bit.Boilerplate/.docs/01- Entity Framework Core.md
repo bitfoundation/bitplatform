@@ -24,7 +24,7 @@ In this stage, you'll learn about:
 
 ### Location
 The main database context is located at:
-[`/src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs`](/src/Server/Boilerplate.Server.Api/Data/AppDbContext.cs)
+[`/src/Server/Boilerplate.Server.Api/Infrastructure/Data/AppDbContext.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Data/AppDbContext.cs)
 
 ### What is AppDbContext?
 
@@ -58,19 +58,25 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
 ### Location
 Entity models are organized by domain in:
-[`/src/Server/Boilerplate.Server.Api/Models/`](/src/Server/Boilerplate.Server.Api/Models/)
+[`/src/Server/Boilerplate.Server.Api/Features/`](/src/Server/Boilerplate.Server.Api/Features/)
 
 The folder structure is:
 ```
-Models/
+Features/
 ├── Categories/
-│   └── Category.cs
+│   ├── Category.cs
+│   └── CategoryConfiguration.cs
 ├── Products/
-│   └── Product.cs
+│   ├── Product.cs
+│   └── ProductConfiguration.cs
 ├── Todo/
-│   └── TodoItem.cs
+│   ├── TodoItem.cs
+│   └── TodoConfiguration.cs
 ├── Identity/
-│   └── User.cs, Role.cs, etc.
+│   ├── Models/
+│   │   ├── User.cs, Role.cs, etc.
+│   └── Configurations/
+│       ├── UserConfiguration.cs, RoleConfiguration.cs, etc.
 └── ... other domains
 ```
 
@@ -78,12 +84,12 @@ Models/
 
 Let's examine the `Category` entity from the project:
 
-**File:** [`/src/Server/Boilerplate.Server.Api/Models/Categories/Category.cs`](/src/Server/Boilerplate.Server.Api/Models/Categories/Category.cs)
+**File:** [`/src/Server/Boilerplate.Server.Api/Features/Categories/Category.cs`](/src/Server/Boilerplate.Server.Api/Features/Categories/Category.cs)
 
 ```csharp
-using Boilerplate.Server.Api.Models.Products;
+using Boilerplate.Server.Api.Features.Products;
 
-namespace Boilerplate.Server.Api.Models.Categories;
+namespace Boilerplate.Server.Api.Features.Categories;
 
 public partial class Category
 {
@@ -188,33 +194,38 @@ public IList<Product> Products { get; set; } = [];
 ## 3. Entity Type Configurations - The Professional Approach
 
 ### Location
-Entity configurations are located at:
-[`/src/Server/Boilerplate.Server.Api/Data/Configurations/`](/src/Server/Boilerplate.Server.Api/Data/Configurations/)
+Entity configurations are colocated with their entities in:
+[`/src/Server/Boilerplate.Server.Api/Features/`](/src/Server/Boilerplate.Server.Api/Features/)
 
-The folder structure mirrors the Models folder:
+For the Identity domain, configurations are organized in a dedicated Configurations folder:
 ```
-Configurations/
-├── Category/
+Features/
+├── Categories/
+│   ├── Category.cs
 │   └── CategoryConfiguration.cs
-├── Product/
+├── Products/
+│   ├── Product.cs
 │   └── ProductConfiguration.cs
 ├── Identity/
-│   └── UserConfiguration.cs, RoleConfiguration.cs
-└── ... other configurations
+│   ├── Models/
+│   │   ├── User.cs, Role.cs, etc.
+│   └── Configurations/
+│       ├── UserConfiguration.cs, RoleConfiguration.cs, etc.
+└── ... other features
 ```
 
 ### Example: CategoryConfiguration
 
-**File:** [`/src/Server/Boilerplate.Server.Api/Data/Configurations/Category/CategoryConfiguration.cs`](/src/Server/Boilerplate.Server.Api/Data/Configurations/Category/CategoryConfiguration.cs)
+**File:** [`/src/Server/Boilerplate.Server.Api/Features/Categories/CategoryConfiguration.cs`](/src/Server/Boilerplate.Server.Api/Features/Categories/CategoryConfiguration.cs)
 
 ```csharp
-using Boilerplate.Server.Api.Models.Categories;
+using Boilerplate.Server.Api.Features.Categories;
 
-namespace Boilerplate.Server.Api.Data.Configurations.Category;
+namespace Boilerplate.Server.Api.Features.Categories;
 
-public partial class CategoryConfiguration : IEntityTypeConfiguration<Models.Categories.Category>
+public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
 {
-    public void Configure(EntityTypeBuilder<Models.Categories.Category> builder)
+    public void Configure(EntityTypeBuilder<Category> builder)
     {
         // Configure unique index on Name
         builder.HasIndex(p => p.Name).IsUnique();
@@ -311,7 +322,7 @@ If you decide to use migrations, follow these steps:
 Replace `EnsureCreatedAsync()` with `MigrateAsync()` in these 3 files:
 1. [`/src/Server/Boilerplate.Server.Api/Program.cs`](/src/Server/Boilerplate.Server.Api/Program.cs)
 2. [`/src/Server/Boilerplate.Server.Web/Program.cs`](/src/Server/Boilerplate.Server.Web/Program.cs)
-3. [`/src/Tests/TestsInitializer.cs`](/src/Tests/TestsInitializer.cs)
+3. [`/src/Tests/Infrastructure/TestsAssemblyInitializer.cs`](/src/Tests/Infrastructure/TestsAssemblyInitializer.cs)
 
 **Before:**
 ```csharp
@@ -335,10 +346,10 @@ await dbContext.Database.MigrateAsync();
 Open a terminal in the `Boilerplate.Server.Api` project directory and run:
 
 ```bash
-dotnet tool restore && dotnet ef migrations add Initial --output-dir Data/Migrations --verbose
+dotnet tool restore && dotnet ef migrations add Initial --output-dir Infrastructure/Data/Migrations --verbose
 ```
 
-This creates migration files in the `/Data/Migrations/` folder.
+This creates migration files in the `/Infrastructure/Data/Migrations/` folder.
 
 #### Step 4: Apply the Migration
 
@@ -351,7 +362,7 @@ The migration will be **automatically applied** when the application starts (tha
 When you modify entities or configurations, create a new migration:
 
 ```bash
-dotnet tool restore && dotnet ef migrations add <MigrationName> --output-dir Data/Migrations --verbose
+dotnet tool restore && dotnet ef migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose
 ```
 
 ---
@@ -382,7 +393,7 @@ For client-side databases:
 
 ### Location and Technology
 
-**DbContext Location:** [`/src/Client/Boilerplate.Client.Core/Data/AppOfflineDbContext.cs`](/src/Client/Boilerplate.Client.Core/Data/AppOfflineDbContext.cs)
+**DbContext Location:** [`/src/Client/Boilerplate.Client.Core/Infrastructure/Data/AppOfflineDbContext.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Data/AppOfflineDbContext.cs)
 
 **Technology:** [bit Besql](https://bitplatform.dev/besql) - EF Core SQLite for Blazor
 
@@ -397,7 +408,7 @@ public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> o
 
 Migrations are **automatically applied** when the application starts on the client:
 
-**File:** [`/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs)
+**File:** [`/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs)
 ```csharp
 dbContextInitializer: async (sp, dbContext) => 
     await Task.Run(async () => await dbContext.Database.MigrateAsync())
@@ -418,7 +429,7 @@ To add a migration for `AppOfflineDbContext`, follow these steps:
 2. Set `Boilerplate.Client.Core` as the **Default Project** in Package Manager Console
 3. Run:
 ```powershell
-Add-Migration YourMigrationName -OutputDir Data\Migrations -Context AppOfflineDbContext -Verbose
+Add-Migration YourMigrationName -OutputDir Infrastructure\Data\Migrations -Context AppOfflineDbContext -Verbose
 ```
 
 #### Option 2: Using dotnet CLI
@@ -426,7 +437,7 @@ Add-Migration YourMigrationName -OutputDir Data\Migrations -Context AppOfflineDb
 Open a terminal in the `Boilerplate.Server.Web` project directory and run:
 ```bash
 dotnet tool restore
-dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 **Important Notes:**
@@ -439,10 +450,10 @@ dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --outpu
 `SyncService` uses `CommunityToolkit.DataSync` to synchronize data between the client-side offline database and the server database.
 Conventions:
 
-- Entity must inherit from `BaseEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Models/Todo/TodoItem.cs)
+- Entity must inherit from `BaseEntityTableData` Example: [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItem.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItem.cs)
 - DTO must inherit from `BaseDtoTableData` Example: [`/src/Shared/Dtos/Todo/TodoItemDto.cs`](/src/Shared/Dtos/Todo/TodoItemDto.cs)
-- TableController: A controller inheriting from `TableController` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs)
-- Repository: A repository inheriting from `EntityTableRepository` Example: [`/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Todo/TodoItemTableController.cs)
+- TableController: A controller inheriting from `TableController` Example: [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs)
+- Repository: A repository inheriting from `EntityTableRepository` Example: [`/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs`](/src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs)
 
 ### Additional Resources
 
@@ -452,7 +463,7 @@ For comprehensive information about the client-side offline database, including:
 - Debugging SQLite databases in the browser
 - Downloading the database file for inspection
 
-**See:** [`/src/Client/Boilerplate.Client.Core/Data/README.md`](/src/Client/Boilerplate.Client.Core/Data/README.md)
+**See:** [`/src/Client/Boilerplate.Client.Core/Infrastructure/Data/README.md`](/src/Client/Boilerplate.Client.Core/Infrastructure/Data/README.md)
 
 ---
 

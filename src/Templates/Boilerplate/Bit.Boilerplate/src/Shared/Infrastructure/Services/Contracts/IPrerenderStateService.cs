@@ -1,0 +1,36 @@
+﻿using System.Runtime.CompilerServices;
+
+namespace Boilerplate.Shared.Infrastructure.Services.Contracts;
+
+/// <summary>
+/// Hint: Generally, this service is intended for internal use within `IAppController`,
+/// and you can simply ignore understanding its details unless you are working on advanced scenarios involving pre-rendering.
+/// 
+/// The Client.Core codebase is designed to support various Blazor hosting models, including Hybrid and WebAssembly, 
+/// which may or may not enable pre-rendering. To ensure expected behavior across all scenarios, 
+/// the `IPrerenderStateService` interface is introduced. This service provides the `GetValue` method for data retrieval, 
+/// such as during the `OnInitAsync` method in components like SettingsPage.
+///
+/// The `WebServerPrerenderStateService` and `WebClientPrerenderStateService` implementation of `IPrerenderStateService` facilitates pre-rendering by using 
+/// PersistentComponentState to persist data across renders, simplifies the process of managing application state in pre-rendering scenarios outlined in 
+/// the documentation: https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration#persist-prerendered-state.
+/// 
+/// For cases where pre-rendering is unnecessary, such as in Blazor Hybrid, a `NoOpPrerenderStateService` is provided. This implementation simply executes the provided 
+/// function and returns its result without persisting any state.
+///
+/// </summary>
+public interface IPrerenderStateService : IAsyncDisposable
+{
+    /// <summary>
+    /// <inheritdoc cref="IPrerenderStateService"/>
+    /// </summary>
+    Task<T?> GetValue<T>(Func<Task<T?>> factory,
+        [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "");
+
+    /// <summary>
+    /// <inheritdoc cref="IPrerenderStateService"/>
+    /// </summary>
+    Task<T?> GetValue<T>(string key, Func<Task<T?>> factory);
+}

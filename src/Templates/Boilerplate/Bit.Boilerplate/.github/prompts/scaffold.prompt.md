@@ -19,7 +19,8 @@ Generate a complete CRUD implementation for an entity including:
 12. **PageUrls.cs**, **NavBar.razor** and **MainLayout.razor.items.cs** integration
 
 ### Entity (Model)
-- **Location**: `Boilerplate.Server.Api's Models folder`
+- **Location**: `src/Server/Boilerplate.Server.Api/Features/{FeatureName}/`
+- **File**: `{EntityName}.cs`
 - **Requirements**:
   - Include `Id`, `Version` properties
   - Add appropriate navigation properties
@@ -27,23 +28,28 @@ Generate a complete CRUD implementation for an entity including:
   - Add data annotations as needed
 
 ### Entity Configuration, AppDbContext DbSet and Migration
-- **Location**: `Boilerplate.Server.Api's Data/Configurations folder`
-- **Requirements**:
-  - Implement `IEntityTypeConfiguration<{EntityName}>`
-  - Configure unique indexes, relationships
+- **Location**: `src/Server/Boilerplate.Server.Api/Features/{FeatureName}/`
+- **Files**:
+  - `{EntityName}Configuration.cs` - Implement `IEntityTypeConfiguration<{EntityName}>`
+  - Configure unique indexes and relationships
+  - Automatically registered in `AppDbContext` via `modelBuilder.ApplyConfigurationsFromAssembly()`
+- **Migration**: 
+  - Run: `dotnet ef migrations add {MigrationName} --output-dir Infrastructure/Data/Migrations --verbose` in `Boilerplate.Server.Api` project
 
 ### DTO
-- **Location**: `Boilerplate.Shared's Dtos folder`
+- **Location**: `src/Shared/Boilerplate.Shared/Features/{FeatureName}/`
+- **File**: `{EntityName}Dto.cs`
 - **Requirements**:
   - Use `[DtoResourceType(typeof(AppStrings))]` attribute
   - Add validation attributes: `[Required]`, `[MaxLength]`, `[Display]`
   - Use `nameof(AppStrings.PropertyName)` for error messages and display names
   - Include `Id`, `Version` properties
   - Add calculated properties if needed (e.g., `ProductsCount`)
-  - Add `[JsonSerializable(typeof({DtoName}))]` to AppJsonContext.cs
+  - Add `[JsonSerializable(typeof({DtoName}))]` to `AppJsonContext.cs`
 
 ### Mapper
-- **Location**: `Boilerplate.Server.Api's Mappers folder`
+- **Location**: `src/Server/Boilerplate.Server.Api/Features/{FeatureName}/`
+- **File**: `{EntityName}Mapper.cs` (or `{FeatureName}Mapper.cs` if multiple entities)
 - **Requirements**:
   - Use `[Mapper]` attribute from Mapperly
   - Create `static partial class {MapperName}Mapper`
@@ -52,27 +58,29 @@ Generate a complete CRUD implementation for an entity including:
   - Use `[MapProperty]` for complex mappings if needed
 
 ### API Controller
-- **Location**: `Boilerplate.Server.Api's Controllers folder`
+- **Location**: `src/Server/Boilerplate.Server.Api/Features/{FeatureName}/`
+- **File**: `{EntityName}Controller.cs`
 - **Requirements**:
   - Inherit from `AppControllerBase`
-  - Implement the corresponding IAppController interface
+  - Implement the corresponding `IAppController` interface
   - Add appropriate authorization attributes
   - Use `[EnableQuery]` for GET endpoints with OData support
   - Implement validation in private methods
   - Use `Project()` for querying and mapping
-  - Handle resource not found scenarios using ResourceNotFoundException
+  - Handle resource not found scenarios using `ResourceNotFoundException`
 
 ### IAppController Interface
-- **Location**: `Boilerplate.Shared project's Controllers folder`
+- **Location**: `src/Shared/Boilerplate.Shared/Features/{FeatureName}/`
+- **File**: `I{EntityName}Controller.cs`
 - **Requirements**:
   - Inherit from `IAppController`
   - Add `[Route("api/[controller]/[action]/")]` attribute
   - Add `[AuthorizedApi]` if authentication required
-  - Always Use `CancellationToken` parameters
+  - Always use `CancellationToken` parameters
   - The return type should be `Task<T>` or `Task<T>` where T is JSON Serializable type like DTO, int, or List<Dto>
   - If Backend API's action returns `IQueryable<T>`, use `Task<List<T>>` as return type with `=> default!`
   - If Backend API's action returns `IActionResult`, use `Produces<T>` attribute to specify the response type with `=> default!`
-  - If Backend API accepts ODataQueryOptions, simply ignore it
+  - If Backend API accepts `ODataQueryOptions`, simply ignore it
 
 ### Pages
 
@@ -80,6 +88,11 @@ Every Blazor page follows a three-file structure:
 - `PageName.razor` - UI markup with Razor syntax
 - `PageName.razor.cs` - Code-behind with C# logic
 - `PageName.razor.scss` - Scoped styles
+
+**Location**: `src/Client/Boilerplate.Client.Core/Components/Pages/{FeatureName}/`
+
+- **Grid/List Page**: `{FeatureName}Page.razor` + `.razor.cs` + `.razor.scss`
+- **Add/Edit Modal or Page**: `AddOrEdit{EntityName}Page.razor` or `AddOrEdit{EntityName}Modal.razor`
 
 Use SCSS variables from `_bit-css-variables.scss` for theming:
 ```scss

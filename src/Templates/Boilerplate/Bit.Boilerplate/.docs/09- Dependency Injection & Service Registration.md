@@ -56,11 +56,11 @@ Service registration is organized through `*ServiceCollectionExtensions.cs` and 
    
    | File | Purpose |
    |------|---------|
-   | [`Boilerplate.Server.Api/Program.Services.cs`](/src/Server/Boilerplate.Server.Api/Program.Services.cs) | API server services (DbContext, Identity, Email, SMS, Push Notifications, AI, Hangfire) |
-   | [`Boilerplate.Server.Web/Program.Services.cs`](/src/Server/Boilerplate.Server.Web/Program.Services.cs) | Blazor Server/SSR services (combines API + Client services) |
-   | [`Boilerplate.Client.Web/Program.Services.cs`](/src/Client/Boilerplate.Client.Web/Program.Services.cs) | Blazor WebAssembly-specific services |
-   | [`Boilerplate.Client.Maui/MauiProgram.Services.cs`](/src/Client/Boilerplate.Client.Maui/MauiProgram.Services.cs) | MAUI services (Android, iOS, macOS, Windows via MAUI) |
-   | [`Boilerplate.Client.Windows/Program.Services.cs`](/src/Client/Boilerplate.Client.Windows/Program.Services.cs) | Windows Forms Blazor Hybrid services |
+   | `Boilerplate.Server.Api/Program.Services.cs` | API server services (DbContext, Identity, Email, SMS, Push Notifications, AI, Hangfire) |
+   | `Boilerplate.Server.Web/Program.Services.cs` | Blazor Server/SSR services (combines API + Client services) |
+   | `Boilerplate.Client.Web/Program.Services.cs` | Blazor WebAssembly-specific services |
+   | `Boilerplate.Client.Maui/MauiProgram.Services.cs` | MAUI services (Android, iOS, macOS, Windows via MAUI) |
+   | `Boilerplate.Client.Windows/Program.Services.cs` | Windows Forms Blazor Hybrid services |
 
 4. **Platform-specific extensions** (MAUI only)
    - Each mobile/desktop platform can register its own specialized services

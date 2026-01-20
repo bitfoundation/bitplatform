@@ -21,7 +21,7 @@
         <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
         <Configurations>Debug;Release;DebugBlazorServer;</Configurations>
 
-        <!-- See Boilerplate.Shared.AppEnvironment for more info. -->
+        <!-- See Boilerplate.Shared.Infrastructure.Services.AppEnvironment for more info. -->
         <Environment Condition="'$(Environment)' == '' AND '$(Configuration)' == 'Release'">Production</Environment>
         <Environment Condition="'$(Environment)' == '' AND  $(Configuration.Contains('Debug'))">Development</Environment>
 
@@ -64,12 +64,13 @@
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="Microsoft.Extensions.DependencyInjection.Extensions" />
         <Using Include="Boilerplate" />
-        <Using Include="Boilerplate.Shared.Dtos" />
-        <Using Include="Boilerplate.Shared.Enums" />
+        <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Shared.Resources" />
-        <Using Include="Boilerplate.Shared.Exceptions" />
-        <Using Include="Boilerplate.Shared.Services" />
-        <Using Include="Boilerplate.Shared.Services.Contracts" />
+        <Using Include="Boilerplate.Shared.Infrastructure.Dtos" />
+        <Using Include="Boilerplate.Shared.Infrastructure.Services" />
+        <Using Include="Boilerplate.Shared.Infrastructure.Exceptions" />
+        <Using Include="Boilerplate.Shared.Infrastructure.Attributes" />
+        <Using Include="Boilerplate.Shared.Infrastructure.Services.Contracts" />
         <Using Include="System.Diagnostics" />
 
         <PackageReference Include="Bit.CodeAnalyzers" />

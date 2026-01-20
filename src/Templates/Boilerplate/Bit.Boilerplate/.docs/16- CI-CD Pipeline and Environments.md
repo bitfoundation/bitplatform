@@ -10,7 +10,7 @@ Welcome to Stage 16! In this stage, you'll learn about the comprehensive CI/CD p
 
 The project uses a unified environment configuration system that works consistently across all platforms - from ASP.NET Core backend to native mobile apps.
 
-**Location**: [`/src/Shared/Services/AppEnvironment.cs`](/src/Shared/Services/AppEnvironment.cs)
+**Location**: [`/src/Shared/Infrastructure/Services/AppEnvironment.cs`](/src/Shared/Infrastructure/Services/AppEnvironment.cs)
 
 **Why This Matters**:
 Unlike ASP.NET Core which uses environment variables (that can be set at runtime), Android, iOS, Windows, and macOS don't support the exact same concept. `AppEnvironment` provides a unified abstraction that works everywhere.

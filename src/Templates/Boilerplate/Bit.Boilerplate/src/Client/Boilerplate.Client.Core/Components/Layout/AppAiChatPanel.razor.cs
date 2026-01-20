@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 using System.Threading.Channels;
-using Boilerplate.Shared.Dtos.Chatbot;
-using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Features.Chatbot;
+using Boilerplate.Shared.Features.Identity.Dtos;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 

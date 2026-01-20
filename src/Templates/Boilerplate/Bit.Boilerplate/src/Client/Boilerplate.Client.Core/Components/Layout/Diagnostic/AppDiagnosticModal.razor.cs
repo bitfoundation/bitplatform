@@ -1,10 +1,10 @@
 ﻿//#if (signalR == true)
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
-using Boilerplate.Shared.Controllers.Diagnostics;
-using Boilerplate.Client.Core.Services.DiagnosticLog;
 using System.Text.RegularExpressions;
-using Boilerplate.Shared.Dtos.Diagnostic;
+using Boilerplate.Shared.Features.Diagnostics;
+using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
+using Boilerplate.Shared.Features.Diagnostic;
 
 namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 

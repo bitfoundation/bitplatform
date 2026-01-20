@@ -65,7 +65,7 @@ jobs:
 
     - name: Configure text embedding
       run: |
-          sed -i 's/IsEmbeddingEnabled = false/IsEmbeddingEnabled = true/' SalesModule/src/Server/SalesModule.Server.Api/Data/AppDbContext.cs
+          sed -i 's/IsEmbeddingEnabled = false/IsEmbeddingEnabled = true/' SalesModule/src/Server/SalesModule.Server.Api/Infrastructure/Data/AppDbContext.cs
 
     - name: Generate CSS/JS files
       run: |

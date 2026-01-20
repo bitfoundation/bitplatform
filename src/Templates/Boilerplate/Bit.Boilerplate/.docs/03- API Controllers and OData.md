@@ -26,7 +26,7 @@ This stage provides a comprehensive exploration of the backend API architecture,
 
 All API controllers in this project inherit from `AppControllerBase`, which is located at:
 
-**File**: [`src/Server/Boilerplate.Server.Api/Controllers/AppControllerBase.cs`](/src/Server/Boilerplate.Server.Api/Controllers/AppControllerBase.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Infrastructure/Controllers/AppControllerBase.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Controllers/AppControllerBase.cs)
 
 ```csharp
 namespace Boilerplate.Server.Api.Controllers;
@@ -102,7 +102,7 @@ public partial class ProductController : AppControllerBase
 
 ### Example from CategoryController
 
-**File**: [`src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs)
 
 ```csharp
 public partial class CategoryController : AppControllerBase, ICategoryController
@@ -140,7 +140,7 @@ This means the client can query the API flexibly without requiring new endpoints
 
 ### Example: Simple Get Method
 
-**File**: [`src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs)
 
 ```csharp
 [HttpGet, EnableQuery]
@@ -222,7 +222,7 @@ Returns the first 20 products with price greater than 50, sorted by name.
 
 The project includes an `ODataQuery` helper class for building queries programmatically.
 
-**File**: [`src/Client/Boilerplate.Client.Core/Services/ODataQuery.cs`](/src/Client/Boilerplate.Client.Core/Services/ODataQuery.cs)
+**File**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/ODataQuery.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ODataQuery.cs)
 
 ```csharp
 public partial class ODataQuery
@@ -290,7 +290,7 @@ When a client (like a data grid) needs to know both the **page data** AND the **
 
 ### The PagedResponse Class
 
-**File**: [`src/Shared/Dtos/PagedResponse.cs`](/src/Shared/Dtos/PagedResponse.cs)
+**File**: [`src/Shared/Infrastructure/Dtos/PagedResponse.cs`](/src/Shared/Infrastructure/Dtos/PagedResponse.cs)
 
 ```csharp
 public partial class PagedResponse<T>
@@ -316,7 +316,7 @@ Without total count, the client doesn't know:
 
 ### Server-Side Implementation
 
-**File**: [`src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs)
 
 ```csharp
 [HttpGet]
@@ -357,7 +357,7 @@ public async Task<PagedResponse<CategoryDto>> GetCategories(
 
 ### Authorization Example
 
-**File**: [`src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs)
 
 ```csharp
 [ApiController, Route("api/[controller]/[action]"),
@@ -467,7 +467,7 @@ OFFSET 10 ROWS
 
 ### Example: Efficient Product Query
 
-**File**: [`src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Products/ProductController.cs`](/src/Server/Boilerplate.Server.Api/Features/Products/ProductController.cs)
 
 ```csharp
 [HttpGet, EnableQuery]
@@ -509,7 +509,7 @@ Let's examine real controllers from the project to see these patterns in action.
 
 ### Example 1: CategoryController
 
-**File**: [`src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs)
 
 This controller demonstrates:
 
@@ -639,7 +639,7 @@ private async Task Validate(Category category, CancellationToken cancellationTok
 
 ### Example 2: ProductController
 
-**File**: [`src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Products/ProductController.cs`](/src/Server/Boilerplate.Server.Api/Features/Products/ProductController.cs)
 
 This controller shows more advanced features:
 
@@ -699,7 +699,7 @@ The pattern involves:
 
 ### Step 1: Define the Interface
 
-**File**: [`src/Shared/Controllers/Categories/ICategoryController.cs`](/src/Shared/Controllers/Categories/ICategoryController.cs)
+**File**: [`src/Shared/Features/Categories/ICategoryController.cs`](/src/Shared/Features/Categories/ICategoryController.cs)
 
 ```csharp
 [Route("api/[controller]/[action]/")]
@@ -728,7 +728,7 @@ public interface ICategoryController : IAppController
 
 ### Step 2: Implement on Server
 
-**File**: [`src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Controllers/Categories/CategoryController.cs)
+**File**: [`src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs`](/src/Server/Boilerplate.Server.Api/Features/Categories/CategoryController.cs)
 
 ```csharp
 [ApiController, Route("api/[controller]/[action]")]
@@ -833,7 +833,7 @@ public interface IStatisticsController : IAppController
 
 For comprehensive details about the proxy interface pattern, see:
 
-**File**: [`src/Shared/Controllers/Readme.md`](/src/Shared/Controllers/Readme.md)
+**File**: [`src/Shared/Features/Readme.md`](/src/Shared/Features/Readme.md)
 
 ---
 

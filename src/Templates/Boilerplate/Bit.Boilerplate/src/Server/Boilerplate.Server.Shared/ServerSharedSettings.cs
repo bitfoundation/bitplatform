@@ -1,6 +1,5 @@
 ﻿//+:cnd:noEmit
 using System.Text.RegularExpressions;
-using Boilerplate.Shared;
 using Microsoft.AspNetCore.Builder;
 
 namespace Boilerplate.Server.Shared;

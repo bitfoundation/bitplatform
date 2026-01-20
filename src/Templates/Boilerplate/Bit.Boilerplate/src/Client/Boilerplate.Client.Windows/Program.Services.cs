@@ -1,11 +1,11 @@
 ﻿//+:cnd:noEmit
 using OpenTelemetry.Logs;
 using Microsoft.Extensions.Logging;
-using Boilerplate.Client.Windows.Services;
 //#if (appInsights == true)
 using Azure.Monitor.OpenTelemetry.Exporter;
 //#endif
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+using Boilerplate.Client.Windows.Infrastructure.Services;
+using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Windows;
 

@@ -1,10 +1,8 @@
 ﻿//+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
-using System.IO.Compression;
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 using System.ClientModel.Primitives;
-using Microsoft.SemanticKernel.Embeddings;
 //#endif
 //#if (database == "PostgreSQL")
 using Npgsql;
@@ -16,14 +14,11 @@ using Microsoft.OpenApi;
 using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.AspNetCore.ResponseCompression;
 using Twilio;
 using Ganss.Xss;
-using System.Text;
 using Fido2NetLib;
 using PhoneNumbers;
 using FluentStorage;
@@ -41,16 +36,21 @@ using AdsPush.Abstraction;
 //#if (filesStorage == "AzureBlobStorage")
 using Azure.Storage.Blobs;
 //#endif
-using Boilerplate.Server.Api.Services;
-using Boilerplate.Server.Api.Controllers;
-using Boilerplate.Server.Shared.Services;
-using Boilerplate.Server.Api.Services.Jobs;
-using Boilerplate.Server.Api.Models.Identity;
-using Boilerplate.Server.Api.Services.Identity;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Boilerplate.Server.Api.Features.Identity.Models;
+using Boilerplate.Server.Api.Features.Identity.Services;
 using Medallion.Threading;
 //#if (offlineDb == true)
 using CommunityToolkit.Datasync.Server;
+//#endif
+using Boilerplate.Shared.Features.Identity;
+using Boilerplate.Server.Api.Features.Statistics;
+using Boilerplate.Shared.Infrastructure.Resources;
+//#if (notification == true)
+using Boilerplate.Server.Api.Features.PushNotification;
+//#endif
+using Boilerplate.Server.Api.Infrastructure.Services;
+//#if (module == "Sales" || module == "Admin")
+using Boilerplate.Server.Api.Features.Products;
 //#endif
 
 namespace Boilerplate.Server.Api;
@@ -75,7 +75,7 @@ public static partial class Program
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
 
-        services.AddScoped<EmailService>();
+        services.AddScoped<IdentityEmailService>();
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
@@ -84,7 +84,7 @@ public static partial class Program
         services.AddMcpServer()
             .WithHttpTransport()
             .WithToolsFromAssembly();
-        services.AddScoped<SignalR.AppChatbot>();
+        services.AddScoped<Infrastructure.SignalR.AppChatbot>();
         //#endif
         //#if (module == "Sales" || module == "Admin")
         //#if (database == "PostgreSQL" || database == "SqlServer")
@@ -351,7 +351,7 @@ public static partial class Program
         //#if (offlineDb == true)
         // Register CommunityToolkit.Datasync services and repositories
         services.AddDatasyncServices();
-        services.AddScoped<Controllers.Todo.TodoItemTableRepository>();
+        services.AddScoped<Features.Todo.TodoItemTableRepository>();
         //#endif
 
         services.AddOptions<IdentityOptions>()
@@ -614,7 +614,7 @@ public static partial class Program
         configuration.Bind(appSettings);
         var identityOptions = appSettings.Identity;
 
-        services.AddIdentity<User, Models.Identity.Role>()
+        services.AddIdentity<User, Features.Identity.Models.Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders()
             .AddErrorDescriber<AppIdentityErrorDescriber>()

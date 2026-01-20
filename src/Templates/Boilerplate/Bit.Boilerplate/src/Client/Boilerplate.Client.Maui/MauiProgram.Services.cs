@@ -1,10 +1,10 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Extensions.Logging;
-using Boilerplate.Client.Maui.Services;
 //#if (appInsights == true)
 using Azure.Monitor.OpenTelemetry.Exporter;
 //#endif
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+using Boilerplate.Client.Maui.Infrastructure.Services;
+using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Maui;
 

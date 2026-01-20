@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Boilerplate.Client.Core.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Rendering;
+using Boilerplate.Client.Core.Infrastructure.Services;
 
 namespace Boilerplate.Server.Web.Components;
 

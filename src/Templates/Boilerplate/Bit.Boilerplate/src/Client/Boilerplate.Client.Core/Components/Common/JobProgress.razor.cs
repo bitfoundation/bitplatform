@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.SignalR;
+﻿using Boilerplate.Shared.Infrastructure.Dtos.SignalR;
 
 namespace Boilerplate.Client.Core.Components.Common;
 

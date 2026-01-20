@@ -5,15 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
-using Microsoft.AspNetCore.Localization.Routing;
-using Boilerplate.Shared;
-using Boilerplate.Shared.Attributes;
 //#if (api == "Integrated")
 using Hangfire;
 using Scalar.AspNetCore;
-using Boilerplate.Server.Api;
-using Boilerplate.Server.Api.RequestPipeline;
-using Boilerplate.Server.Api.Services;
+using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 //#endif
 
 namespace Boilerplate.Server.Web;
@@ -145,7 +140,7 @@ public static partial class Program
             //    and use the Server.Web project solely as a Blazor Server or pre-rendering service provider.
             throw new InvalidOperationException("Azure SignalR is not supported with Blazor Server and Auto");
         }
-        app.MapHub<Api.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
+        app.MapHub<Api.Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
         app.MapMcp("/mcp")/*.RequireAuthorization()*/; // Map MCP endpoints for chatbot tool
         //#endif
 
