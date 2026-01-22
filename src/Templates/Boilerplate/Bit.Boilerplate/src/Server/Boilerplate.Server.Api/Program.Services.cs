@@ -168,12 +168,12 @@ public static partial class Program
 
         // Register distributed lock factory
         //#if (redis == true)
-        services.AddTransient(sp => new Func<string, IDistributedLock>((string lockKey) =>
+        services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
         {
             return new Medallion.Threading.Redis.RedisDistributedLock(lockKey, sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase());
         }));
         //#else
-        services.AddTransient(sp => new Func<string, IDistributedLock>((string lockKey) =>
+        services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
         {
             return new Medallion.Threading.FileSystem.FileDistributedLock(new(Path.Combine(Path.GetTempPath(), $"Boilerplate-{lockKey}.lock")));
         }));

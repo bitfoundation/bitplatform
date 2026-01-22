@@ -1,12 +1,12 @@
-using Medallion.Threading;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
+using Boilerplate.Server.Api.Infrastructure.Services;
 using Boilerplate.Server.Api.Features.Identity.Models;
 
 namespace Boilerplate.Server.Api.Features.Identity.Services;
 
 public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsService, UserManager<User> userManager, RoleManager<Role> roleManager,
         IOptions<IdentityOptions> optionsAccessor, IConfiguration configuration, IServiceProvider serviceProvider,
-        Func<string, IDistributedLock> distributedLockProvider,
+        DistributedLockFactory distributedLockProvider,
         IHttpContextAccessor httpContextAccessor)
     : UserClaimsPrincipalFactory<User, Role>(userManager, roleManager, optionsAccessor)
 {
@@ -76,7 +76,7 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
         if (DateTimeOffset.UtcNow < keycloakTokenExpiryDate)
             return (await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "access_token"))!;
 
-        await using var distributedLock = await distributedLockProvider($"Boilerplate:Locks:KeycloakTokenRefresh-{user.Id}").AcquireAsync(TimeSpan.FromSeconds(10));
+        await using var distributedLock = await distributedLockProvider($"Boilerplate-Locks-KeycloakTokenRefresh-{user.Id}").AcquireAsync(TimeSpan.FromSeconds(10));
 
         keycloakTokenExpiryDate = DateTimeOffset.Parse(await UserManager.GetAuthenticationTokenAsync(user, "Keycloak", "expires_at") ?? throw new InvalidOperationException("expires_at token is missing"));
 
