@@ -38,17 +38,17 @@
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3650.58" />
         <PackageVersion Include="MSTest" Version="4.0.2" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.14.0-beta.2" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.Hangfire" Version="1.14.0-beta.2" />
-        <PackageVersion Include="OpenTelemetry.Resources.Azure" Version="1.14.0-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Resources.Container" Version="1.14.0-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Resources.Host" Version="1.14.0-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Resources.OperatingSystem" Version="1.14.0-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Resources.Process" Version="1.14.0-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Resources.ProcessRuntime" Version="1.14.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.15.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Hangfire" Version="1.15.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.Azure" Version="1.15.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.Container" Version="1.15.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.Host" Version="1.15.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.OperatingSystem" Version="1.15.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.Process" Version="1.15.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Resources.ProcessRuntime" Version="1.15.0-beta.1" />
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.3.1" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.2.3" />
-        <PackageVersion Include="Scalar.AspNetCore" Version="2.12.11" />
+        <PackageVersion Include="Scalar.AspNetCore" Version="2.12.14" />
         <PackageVersion Include="Velopack" Version="0.0.1298" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.2" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.2" />
@@ -72,13 +72,13 @@
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '')" Include="Aspire.Hosting.Keycloak" Version="13.1.0-preview.1.25616.3" />
         <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
         <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.2.0" />
-        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
-        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
+        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.0" />
+        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
         <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.22" />
-        <PackageVersion Include="Hangfire.EntityFrameworkCore" Version="0.8.0" />
+        <PackageVersion Include="Hangfire.EntityFrameworkCore" Version="0.9.0" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="6.0.0" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="6.0.0" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="6.0.0" />
@@ -135,7 +135,7 @@
         <PackageVersion Include="AspNet.Security.OAuth.Apple" Version="10.0.0" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="10.0.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
-        <PackageVersion Include="Twilio" Version="7.14.1" />
+        <PackageVersion Include="Twilio" Version="7.14.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.2" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
