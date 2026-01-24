@@ -24,5 +24,5 @@ public interface IProductController : IAppController
     Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken);
 
     [HttpDelete("{id}/{version}")]
-    Task Delete(Guid id, string version, CancellationToken cancellationToken);
+    Task Delete(Guid id, long version, CancellationToken cancellationToken);
 }

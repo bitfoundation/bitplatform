@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Boilerplate.Server.Api.Features.Categories;
 
 namespace Boilerplate.Server.Api.Features.Products;
@@ -35,7 +35,7 @@ public partial class Product
 
     public Guid CategoryId { get; set; }
 
-    public byte[] Version { get; set; } = [];
+    public long Version { get; set; }
 
     public bool HasPrimaryImage { get; set; } = false;
 

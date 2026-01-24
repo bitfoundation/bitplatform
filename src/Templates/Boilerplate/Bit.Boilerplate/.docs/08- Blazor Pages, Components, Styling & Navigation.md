@@ -113,7 +113,7 @@ public partial class ProductsPage
         if (deletingProduct is null) return;
 
         await productController.Delete(deletingProduct.Id, 
-            deletingProduct.Version.ToStampString(), 
+            deletingProduct.Version, 
             CurrentCancellationToken);
 
         await RefreshData();
@@ -690,7 +690,7 @@ public partial class ProductsPage
     private async Task DeleteProduct()
     {
         await productController.Delete(deletingProduct.Id, 
-            deletingProduct.Version.ToStampString(), 
+            deletingProduct.Version, 
             CurrentCancellationToken);
     }
 }
