@@ -112,7 +112,7 @@ public partial class ProductsPage
 
         try
         {
-            await productController.Delete(deletingProduct.Id, deletingProduct.Version.ToStampString(), CurrentCancellationToken);
+            await productController.Delete(deletingProduct.Id, deletingProduct.Version, CurrentCancellationToken);
 
             await RefreshData();
         }

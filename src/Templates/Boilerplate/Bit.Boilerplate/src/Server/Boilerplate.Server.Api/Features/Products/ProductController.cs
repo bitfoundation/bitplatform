@@ -138,12 +138,12 @@ public partial class ProductController : AppControllerBase, IProductController
     }
 
     [HttpDelete("{id}/{version}")]
-    public async Task Delete(Guid id, string version, CancellationToken cancellationToken)
+    public async Task Delete(Guid id, long version, CancellationToken cancellationToken)
     {
         var entityToDelete = await DbContext.Products.FindAsync([id], cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
-        entityToDelete.Version = Convert.FromHexString(version);
+        entityToDelete.Version = version;
 
         DbContext.Remove(entityToDelete);
 

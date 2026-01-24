@@ -288,8 +288,7 @@ public string? GetPrimaryMediumImageUrl(Uri absoluteServerAddress)
 ```
 
 **How it works:**
-- The `Version` property (a `byte[]` used for optimistic concurrency) changes every time the entity is updated
-- `Version.ToStampString()` converts this to a query string parameter (e.g., `?v=AAAAAAB1Z2c=`)
+- The `Version` property (a `long` used for optimistic concurrency) changes every time the entity is updated
 - When the product is updated, the version changes, creating a **new URL** that bypasses all cached versions
 - The browser/Client In-Memory Cache treats this as a completely new resource and fetches fresh data
 

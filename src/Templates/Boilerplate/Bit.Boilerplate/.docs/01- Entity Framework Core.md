@@ -100,7 +100,7 @@ public partial class Category
 
     public string? Color { get; set; }
 
-    public byte[] Version { get; set; } = [];
+    public long Version { get; set; }
 
     public IList<Product> Products { get; set; } = [];
 }
@@ -108,7 +108,7 @@ public partial class Category
 
 ### **Version** Concurrency Stamp
 ```csharp
-public byte[] Version { get; set; } = [];
+public long Version { get; set; }
 ```
 - **Critical for optimistic concurrency control**
 - Configured as a **row version** in SQL Server
@@ -231,7 +231,7 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.HasIndex(p => p.Name).IsUnique();
 
         // Seed initial data
-        var defaultVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+        var defaultVersion = 1;
         builder.HasData(
             new () { 
                 Id = Guid.Parse("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"), 

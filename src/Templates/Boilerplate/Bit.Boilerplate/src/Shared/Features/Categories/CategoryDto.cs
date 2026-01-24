@@ -15,5 +15,5 @@ public partial class CategoryDto
 
     public int ProductsCount { get; set; }
 
-    public byte[] Version { get; set; } = [];
+    public long Version { get; set; }
 }
