@@ -135,4 +135,4 @@ Example 1: `OnClick="WrapHandled(MyMethod)"` instead of `OnClick="MyMethod"`.
 Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnClick="async () => await MyMethod()"`.
 16. **Use OData Query Options**: Leverage `[EnableQuery]` and `ODataQueryOptions` for efficient data filtering and pagination.
 17. **Follow Mapperly Conventions**: Use **partial static classes and extensions methods** with Mapperly for high-performance object mapping.
-18. **Handle Concurrency**: Always use `byte[] Version` for optimistic concurrency control in update and delete operations.
+18. **Handle Concurrency**: Always use `long Version` for optimistic concurrency control in update and delete operations.

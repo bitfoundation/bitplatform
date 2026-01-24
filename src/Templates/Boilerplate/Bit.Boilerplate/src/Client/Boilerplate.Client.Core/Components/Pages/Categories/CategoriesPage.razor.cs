@@ -98,7 +98,7 @@ public partial class CategoriesPage
 
         try
         {
-            await categoryController.Delete(deletingCategory.Id, deletingCategory.Version.ToStampString(), CurrentCancellationToken);
+            await categoryController.Delete(deletingCategory.Id, deletingCategory.Version, CurrentCancellationToken);
 
             await RefreshData();
         }

@@ -17,13 +17,14 @@ public partial class ProductEmbeddingService
 {
     private const float DISTANCE_THRESHOLD = 0.65f;
 
+    [AutoInject] private IHostEnvironment env = default!;
     [AutoInject] private AppDbContext dbContext = default!;
     [AutoInject] private IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = default!;
 
     public async Task<IQueryable<Product>> SearchProducts(string searchQuery, CancellationToken cancellationToken)
     {
-        if (AppDbContext.IsEmbeddingEnabled is false)
-            throw new InvalidOperationException("Embeddings are not enabled. Please enable them to use this feature.");
+        if (AppDbContext.IsEmbeddingEnabled is false && env.IsDevelopment())
+            return dbContext.Products.Where(p => EF.Functions.Like(p.Name, searchQuery));
 
         // It would be a good idea to try finding products using full-text search first, and if not enough results are found, then use the vector-based search.
         // Note that test products data that have been seeded do not have embeddings, so searching for them will not return any results.
@@ -57,8 +58,8 @@ public partial class ProductEmbeddingService
 
     public async Task Embed(Product product, CancellationToken cancellationToken)
     {
-        if (AppDbContext.IsEmbeddingEnabled is false)
-            throw new InvalidOperationException("Embeddings are not enabled. Please enable them to use this feature.");
+        if (AppDbContext.IsEmbeddingEnabled is false && env.IsDevelopment())
+            return;
 
         List<(string text, float weight)> inputs = [];
 

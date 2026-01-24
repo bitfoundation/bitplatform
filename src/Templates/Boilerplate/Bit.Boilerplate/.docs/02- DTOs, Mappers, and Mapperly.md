@@ -40,7 +40,7 @@ public partial class CategoryDto
 
     public int ProductsCount { get; set; }
 
-    public byte[] Version { get; set; } = [];
+    public long Version { get; set; }
 }
 ```
 
@@ -166,7 +166,7 @@ public partial class Category
 
     public string? Color { get; set; }
 
-    public byte[] Version { get; set; } = [];
+    public long Version { get; set; }
 
     public IList<Product> Products { get; set; } = [];
 }
