@@ -282,7 +282,7 @@ public string? GetPrimaryMediumImageUrl(Uri absoluteServerAddress)
     return HasPrimaryImage is false
         ? null
         : new Uri(absoluteServerAddress, 
-            $"/api/Attachment/GetAttachment/{Id}/{AttachmentKind.ProductPrimaryImageMedium}?v={Version.ToStampString()}")
+            $"/api/Attachment/GetAttachment/{Id}/{AttachmentKind.ProductPrimaryImageMedium}?v={Version}")
             .ToString();
 }
 ```
