@@ -12,7 +12,9 @@ Free, open-source, full-stack, cross-platform, cloud-ready, and battle-tested pr
 - **Blazor WebAssembly standalone** For Azure Static Pages, GitHub Pages, Cloudflare Pages etc. [Demo](https://adminpanel.bitplatform.cc)
 
 ### Cross-Platform Native Apps
-Generate production-ready **Android**, **iOS**, **Windows**, and **macOS** applications from a single codebase using .NET MAUI Blazor Hybrid. [Demos on Google Play, Apple Store & Windows EXE](https://bitplatform.dev/demos#adminpanel)
+Generate production-ready **Android**, **iOS**, **Windows**, and **macOS** applications from a single codebase using .NET MAUI Blazor Hybrid.
+
+[Demos on Google Play, Apple Store & Windows EXE](https://bitplatform.dev/demos#adminpanel)
 
 ### Client-Side Offline Database
 Full **Entity Framework Core + SQLite** support on the client side with data synchronization across Web, Android, iOS, Windows, and macOS platforms.
