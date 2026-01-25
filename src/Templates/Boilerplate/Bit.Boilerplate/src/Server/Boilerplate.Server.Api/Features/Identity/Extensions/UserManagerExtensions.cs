@@ -51,12 +51,12 @@ public static partial class UserManagerExtensions
     {
         if (string.IsNullOrEmpty(password))
         {
-            password = Guid.NewGuid().ToString("N"); // Users can reset their password later.
+            password = Guid.CreateVersion7().ToString("N"); // Users can reset their password later.
         }
 
         if (string.IsNullOrEmpty(userToAdd.UserName))
         {
-            userToAdd.UserName = userToAdd.Email ?? userToAdd.PhoneNumber ?? Guid.NewGuid().ToString("N");
+            userToAdd.UserName = userToAdd.Email ?? userToAdd.PhoneNumber ?? Guid.CreateVersion7().ToString("N");
         }
 
         var result = await userManager.CreateAsync(userToAdd, password);
