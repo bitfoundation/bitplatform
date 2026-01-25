@@ -189,7 +189,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         var userSession = new UserSession
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             UserId = userId,
             StartedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             IP = HttpContext.Connection.RemoteIpAddress?.ToString(),

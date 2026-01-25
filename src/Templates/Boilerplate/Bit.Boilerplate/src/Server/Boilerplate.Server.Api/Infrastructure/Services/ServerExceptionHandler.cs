@@ -12,7 +12,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
-    private static readonly Guid appSessionId = Guid.NewGuid();
+    private static readonly Guid appSessionId = Guid.CreateVersion7();
 
     public bool CanWrite(ProblemDetailsContext context) => true;
 
