@@ -573,6 +573,7 @@
                     "condition": "(database != PostgreSQL)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Data/Configurations/PostgresDateTimeOffsetConverter.cs",
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/Data/Configurations/PostgreSQLPrimaryKeySequentialGuidDefaultValueConvention.cs",
                         "src/Server/Boilerplate.Server.AppHost/Infrastructure/Extensions/IResourceBuilderExtensions.cs"
                     ]
                 },

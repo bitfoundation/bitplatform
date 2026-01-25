@@ -13,7 +13,7 @@ public partial class AddOrEditProductPage
     private bool isSaving;
     private bool isManagingFile;
     private bool isLoading = true;
-    private ProductDto product = new() { Id = Guid.NewGuid() };
+    private ProductDto product = new() { Id = Guid.CreateVersion7() };
     private BitFileUpload fileUploadRef = default!;
     private string selectedCategoryId = string.Empty;
     private BitRichTextEditor richTextEditorRef = default!;

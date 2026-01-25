@@ -11,7 +11,7 @@ public partial class SignUpPage
 
     private bool isWaiting;
     private Action? pubSubUnsubscribe;
-    private readonly SignUpRequestDto signUpModel = new() { UserName = Guid.NewGuid().ToString() };
+    private readonly SignUpRequestDto signUpModel = new() { UserName = Guid.CreateVersion7().ToString() };
 
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IIdentityController identityController = default!;

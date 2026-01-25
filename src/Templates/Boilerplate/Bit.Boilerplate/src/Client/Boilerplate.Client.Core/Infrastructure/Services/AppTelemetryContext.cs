@@ -9,7 +9,7 @@ public class AppTelemetryContext : ITelemetryContext
 
     public virtual Guid? UserSessionId { get; set; }
 
-    public Guid AppSessionId { get; set; } = Guid.NewGuid();
+    public Guid AppSessionId { get; set; } = Guid.CreateVersion7();
 
     public virtual string? Platform { get; set; } = RuntimeInformation.OSDescription;
 

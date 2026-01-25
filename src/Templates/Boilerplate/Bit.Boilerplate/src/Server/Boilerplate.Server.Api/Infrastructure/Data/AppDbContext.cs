@@ -171,6 +171,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             //#endif
             //#if (database == "PostgreSQL")
+            configurationBuilder.Conventions.Add(_ => new PostgreSQLPrimaryKeySequentialGuidDefaultValueConvention());
             // PostgreSQL does not support DateTimeOffset with offset other than Utc.
             configurationBuilder.Properties<DateTimeOffset>().HaveConversion<PostgresDateTimeOffsetConverter>();
             configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<NullablePostgresDateTimeOffsetConverter>();
