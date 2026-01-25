@@ -50,7 +50,7 @@ Comprehensive **Data and Response caching**:
 - Flexible file storage (Local, S3, Azure Blob Storage)
 - CI/CD pipelines for GitHub Actions and Azure DevOps
 
-### ✨ And more...
+### And more...
 All features can be **selectively chosen during project creation** to match your specific requirements!
 
 ## Demos
