@@ -16,7 +16,7 @@
         <PackageVersion Include="Fido2.Models" Version="4.0.0" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.889" />
         <PackageVersion Include="libphonenumber-csharp" Version="9.0.22" />
-        <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.5.3" />
+        <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.5.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.2" />
@@ -48,7 +48,7 @@
         <PackageVersion Include="OpenTelemetry.Resources.ProcessRuntime" Version="1.15.0-beta.1" />
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.3.1" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.2.3" />
-        <PackageVersion Include="Scalar.AspNetCore" Version="2.12.14" />
+        <PackageVersion Include="Scalar.AspNetCore" Version="2.12.18" />
         <PackageVersion Include="Velopack" Version="0.0.1298" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.2" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.2" />
@@ -96,7 +96,7 @@
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" Version="10.2.0-preview.1.26063.2" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.AzureAIInference" Version="10.0.0-preview.1.25559.3" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Connectors.HuggingFace" Version="1.69.0-preview" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Core" Version="1.69.0" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Core" Version="1.70.0" />
         <PackageVersion Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
         <PackageVersion Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.5.0" />
@@ -104,8 +104,8 @@
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
         <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
         <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
-        <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="6.0.0" />
-        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" Version="6.0.1" />
+        <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="6.0.2" />
+        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" Version="6.0.2" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.4.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Profiler" Version="1.0.0-beta7" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" Version="13.1.0" />
@@ -120,7 +120,7 @@
         <PackageVersion Include="QRCoder" Version="1.7.0" />
         <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.10.2" />
         <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
-        <PackageVersion Include="FluentStorage" Version="6.0.0" />
+        <PackageVersion Include="FluentStorage" Version="6.0.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.2" />
         <PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.4.1" />
@@ -143,7 +143,7 @@
         <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
         <PackageVersion Include="System.Text.Json" Version="10.0.0" />
-        <PackageVersion Include="FakeItEasy" Version="9.0.0" />
+        <PackageVersion Include="FakeItEasy" Version="9.0.1" />
         <PackageVersion Include="Microsoft.Playwright.MSTest.v4" Version="1.57.0" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.AspNetCore.OutputCaching" Version="2.5.0" />
         <PackageVersion Include="ZiggyCreatures.FusionCache.OpenTelemetry" Version="2.5.0" />

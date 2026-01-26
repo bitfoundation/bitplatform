@@ -30,9 +30,8 @@ public static class GuidExtensions
         /// 
         /// <para>
         /// <b>Handling Offline/Sync Scenarios</b>
-        /// In offline-capable applications, using application-side GUIDs as a Clustered Index is problematic. 
-        /// Regardless of sequentiality, "Late-Arriving Data" (records arriving out of chronological order 
-        /// relative to the server) will inevitably cause index fragmentation.
+        /// In offline-capable applications, using application-side GUIDs is useful when inserting parent and child records before syncing them to the server. 
+        /// But regardless of sequentiality, "Late-Arriving Data" (records arriving out of chronological order relative to the server) will inevitably cause index fragmentation.
         /// For high-scale offline scenarios, it is recommended to use a server-generated <c>ServerCreatedAtUtc</c> 
         /// column as the Clustered Index and move the GUID <c>Id</c> and <c>IsArchived</c> to a Non-Clustered filtered index.
         /// </para>
