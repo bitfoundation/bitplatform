@@ -17,7 +17,8 @@ import { App } from './App';
 
     function handleMessage(e: MessageEvent) {
         // Enable publishing messages from JavaScript's `window.postMessage` or `client.postMessage` to the C# `PubSubService`.
-        if (e.origin !== window.location.origin) return;
+        const isWindowMessage = e.currentTarget === window;
+        if (isWindowMessage && e.origin !== window.location.origin) return;
 
         if (e.data?.key === 'PUBLISH_MESSAGE') {
             App.publishMessage(e.data?.message, e.data?.payload);
