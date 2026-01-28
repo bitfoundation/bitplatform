@@ -19,4 +19,15 @@ public static class HttpContextExtensions
     {
         return context.GetEndpoint()?.Metadata?.OfType<ComponentTypeMetadata>()?.Any() is true;
     }
+
+    /// <summary>
+    /// Is CDN Edge or ASP.NET Core Output cache enabled for this response.
+    /// </summary>
+    public static bool IsSharedResponseCacheEnabled(this HttpContext context)
+    {
+        if (context.Items.TryGetValue("AppResponseCachePolicy__SharedCacheEnabled", out var val) && val is true)
+            return true;
+
+        return false;
+    }
 }

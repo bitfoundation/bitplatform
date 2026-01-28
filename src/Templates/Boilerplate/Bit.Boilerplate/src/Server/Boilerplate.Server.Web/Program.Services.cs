@@ -76,13 +76,7 @@ public static partial class Program
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
-        ServerSharedSettings settings = new();
-        configuration.Bind(settings);
 
-        if (settings.ResponseCaching?.EnableCdnEdgeCaching is true)
-        {
-            services.AddTransient<IAntiforgery, NoOpAntiforgery>();
-        }
         services.AddTransient<IPrerenderStateService, WebServerPrerenderStateService>();
         services.AddScoped<IExceptionHandler, WebServerExceptionHandler>();
         services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();

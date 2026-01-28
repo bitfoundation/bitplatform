@@ -4,7 +4,7 @@ public static partial class HttpRequestExtensions
 {
     public static bool IsStreamPrerenderingSuppressed(this HttpRequest request)
     {
-        if (request.HttpContext.IsSharedCacheEnabled())
+        if (request.HttpContext.IsSharedResponseCacheEnabled())
             return true; // The response from streaming pre-rendering is not suitable for caching in ASP.NET Core's output caching mechanism or on CDN edge servers.
 
         return request.IsCrawlerClient();
