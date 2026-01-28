@@ -4,6 +4,7 @@ using Microsoft.Net.Http.Headers;
 using Boilerplate.Server.Api;
 //#endif
 using Boilerplate.Client.Web;
+using Boilerplate.Server.Shared;
 using Microsoft.AspNetCore.Antiforgery;
 using Boilerplate.Server.Web.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
@@ -75,8 +76,13 @@ public static partial class Program
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
+        ServerSharedSettings settings = new();
+        configuration.Bind(settings);
 
-        services.AddTransient<IAntiforgery, NoOpAntiforgery>();
+        if (settings.ResponseCaching?.EnableCdnEdgeCaching is true)
+        {
+            services.AddTransient<IAntiforgery, NoOpAntiforgery>();
+        }
         services.AddTransient<IPrerenderStateService, WebServerPrerenderStateService>();
         services.AddScoped<IExceptionHandler, WebServerExceptionHandler>();
         services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();

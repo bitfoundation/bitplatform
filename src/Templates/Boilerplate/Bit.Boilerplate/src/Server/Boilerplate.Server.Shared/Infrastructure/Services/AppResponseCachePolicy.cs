@@ -98,7 +98,9 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
             context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(outputCacheTtl);
         }
 
-        context.HttpContext.Items["AppResponseCachePolicy__DisableStreamPrerendering"] = outputCacheTtl > 0 || edgeCacheTtl > 0;
+        var sharedCache = outputCacheTtl > 0 || edgeCacheTtl > 0;
+
+        context.HttpContext.Items["AppResponseCachePolicy__SharedCacheEnabled"] = sharedCache;
         context.HttpContext.Response.Headers.TryAdd("App-Cache-Response", FormattableString.Invariant($"Output:{outputCacheTtl},Edge:{edgeCacheTtl},Client:{clientCacheTtl}"));
     }
 
