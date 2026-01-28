@@ -120,7 +120,12 @@ public static class WebApplicationExtensions
             // 7. Cross-Origin-Resource-Policy (CORP)
             // Set to 'cross-origin' to explicitly allow resources (images, fonts, etc.) to be loaded by 
             // clients on different origins/domains and Blazor Hybrid (WebView).
-            // Using 'same-site' or 'same-origin' would block rendering in these multi-origin scenarios.
+            // NOTE: Using 'same-site' or 'same-origin' would block rendering in these multi-origin scenarios,
+            // but they also help prevent hotlinking and bandwidth theft from untrusted third-party sites.
+            // By choosing 'cross-origin', you allow *any* external site to embed your static assets, which can
+            // increase bandwidth costs and enable unauthorized re-use of your images/assets.
+            // Consider compensating controls such as CDN-level hotlink protection, WAF rules, rate limiting,
+            // and/or caching policies to mitigate potential abuse while still supporting hybrid/multi-origin clients.
             context.Response.Headers.Append("Cross-Origin-Resource-Policy", "cross-origin");
 
             // 8. Content-Security-Policy (CSP) - Mini Version
