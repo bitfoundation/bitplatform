@@ -31,10 +31,10 @@ public static class WebApplicationBuilderExtensions
 
         builder.AddServiceDefaults();
 
+        ServerSharedSettings settings = new();
+        configuration.Bind(settings);
         services.AddSingleton(sp =>
         {
-            ServerSharedSettings settings = new();
-            configuration.Bind(settings);
             return settings;
         });
 
@@ -45,6 +45,10 @@ public static class WebApplicationBuilderExtensions
                 var builder = policy.AddPolicy<AppResponseCachePolicy>();
             }, excludeDefaultPolicy: true);
         });
+        if (settings.ResponseCaching?.SharedCachingEnabled is true)
+        {
+            services.AddSingleton<AspNetCore.Antiforgery.IAntiforgery, SharedResponseCacheCompatibleAntiforgery>();
+        }
 
         //#if(redis == true)
         // Add default Redis connection for Hangfire, SignalR backplane, and distributed locking (persistence Redis with AOF)

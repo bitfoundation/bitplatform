@@ -43,7 +43,6 @@
         <PackageReference Include="libphonenumber-csharp" />
         <PackageReference Include="Humanizer" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
-        <PackageReference Include="NWebsec.AspNetCore.Middleware" />
         <PackageReference Include="QRCoder" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" />
         <PackageReference Include="FluentEmail.Smtp" />
