@@ -118,9 +118,10 @@ public static class WebApplicationExtensions
             context.Response.Headers.Append("Permissions-Policy", "geolocation=(), camera=(), microphone=(), payment=(), usb=(), display-capture=()");
 
             // 7. Cross-Origin-Resource-Policy (CORP)
-            // Prevents other sites from embedding your resources (Images, Scripts, etc.).
-            // 'same-site' blocks Hotlinking (Bandwidth theft) from external domains but allows your subdomains.
-            context.Response.Headers.Append("Cross-Origin-Resource-Policy", "same-site");
+            // Set to 'cross-origin' to explicitly allow resources (images, fonts, etc.) to be loaded by 
+            // clients on different origins/domains and Blazor Hybrid (WebView).
+            // Using 'same-site' or 'same-origin' would block rendering in these multi-origin scenarios.
+            context.Response.Headers.Append("Cross-Origin-Resource-Policy", "cross-origin");
 
             // 8. Content-Security-Policy (CSP) - Mini Version
             // 'object-src none': Blocks legacy plugins like Flash.
