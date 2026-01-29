@@ -4,6 +4,7 @@
 @{
     var hasPrimary = (PrimaryTemplate ?? ChildContent) is not null;
     var hasSecondary = SecondaryText.HasValue() || SecondaryTemplate is not null;
+    var icon = BitIconInfo.From(Icon, IconName);
 }
 
 @if (Href.HasNoValue())
@@ -22,9 +23,9 @@
             aria-describedby="@AriaDescription">
         @if (IsLoading is false)
         {
-            @if (IconName.HasValue())
+            @if (icon is not null)
             {
-                <i style="@Styles?.Icon" class="bit-btn-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
+                <i style="@Styles?.Icon" class="bit-btn-icn @icon.GetCssClasses() @Classes?.Icon" />
             }
             else if (IconUrl.HasValue())
             {
@@ -94,9 +95,9 @@ else
        aria-label="@AriaLabel"
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
-        @if (IconName.HasValue())
+        @if (icon is not null)
         {
-            <i style="@Styles?.Icon" class="bit-btn-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
+            <i style="@Styles?.Icon" class="bit-btn-icn @icon.GetCssClasses() @Classes?.Icon" />
         }
         else if (IconUrl.HasValue())
         {

@@ -518,6 +518,44 @@ private int clickCounter;";
 <BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"">TertiaryBorder</BitButton>";
 
     private readonly string example17RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitButton Icon=""@(""fa-solid fa-house"")"" Variant=""BitVariant.Fill"">
+    House (Icon=""@@(""fa-solid fa-house"")"")
+</BitButton>
+        
+<BitButton Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"">
+    Heart (Icon=""@@BitIconInfo.Css(""fa-solid fa-heart"")"")
+</BitButton>
+        
+<BitButton Icon=""@BitIconInfo.Fa(""fa-brands fa-github"")"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"">
+    GitHub (Icon=""@@BitIconInfo.Fa(""brands github"")"")
+</BitButton>
+        
+<BitButton Icon=""@BitIconInfo.Fa(""solid rocket"")"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"">
+    Rocket (Icon=""@@BitIconInfo.Fa(""solid rocket"")"")
+</BitButton>
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitButton Icon=""@(""bi bi-house-fill"")"" Variant=""BitVariant.Fill"">
+    House (Icon=""@@(""bi bi-house-fill"")"")
+</BitButton>
+        
+<BitButton Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"">
+    Heart (Icon=""@@BitIconInfo.Css(""bi bi-heart-fill"")"")
+</BitButton>
+        
+<BitButton Icon=""@BitIconInfo.Bi(""github"")"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"">
+    GitHub (Icon=""@@BitIconInfo.Bi(""github"")"")
+</BitButton>
+        
+<BitButton Icon=""@BitIconInfo.Bi(""gear-fill"")"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"">
+    Gear (Icon=""@@BitIconInfo.Bi(""gear-fill"")"")
+</BitButton>";
+
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -591,7 +629,7 @@ private int clickCounter;";
                               Spinner = ""custom-spinner"" })"">
     Click me
 </BitButton>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private bool stylesIsLoading;
 private bool classesIsLoading;
 
@@ -609,7 +647,7 @@ private async Task LoadingClassesClick()
     classesIsLoading = false;
 }";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Fill"">
     دکمه با آیکن
 </BitButton>
