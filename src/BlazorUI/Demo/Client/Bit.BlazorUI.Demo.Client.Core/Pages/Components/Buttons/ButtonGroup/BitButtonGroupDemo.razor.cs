@@ -161,6 +161,15 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon to render next to the item text. Takes precedence over IconName.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "IconName",
                    Type = "string?",
                    DefaultValue = "null",
@@ -182,6 +191,15 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
+                   Name = "OffIcon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon of the item when it is not checked in toggle mode. Takes precedence over OffIconName.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "OffIconName",
                    Type = "string?",
                    DefaultValue = "null",
@@ -200,6 +218,15 @@ public partial class BitButtonGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The title of the item when it is not checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OnIcon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon of the item when it is checked in toggle mode. Takes precedence over OnIconName.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
                },
                new()
                {
@@ -281,6 +308,15 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon to render next to the option text. Takes precedence over IconName.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "IconName",
                    Type = "string?",
                    DefaultValue = "null",
@@ -302,6 +338,15 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
+                   Name = "OffIcon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon of the option when it is not checked in toggle mode. Takes precedence over OffIconName.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "OffIconName",
                    Type = "string?",
                    DefaultValue = "null",
@@ -320,6 +365,15 @@ public partial class BitButtonGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The title of the option when it is not checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OnIcon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon of the option when it is checked in toggle mode. Takes precedence over OnIconName.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
                },
                new()
                {
@@ -441,8 +495,17 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.Class))",
                     Description = "The CSS Class field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "BitNameSelectorPair<TItem, BitIconInfo?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.Icon))",
+                    Description = "Icon field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -450,8 +513,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.IconName))",
                     Description = "IconName field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -459,8 +522,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, bool>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.IsEnabled))",
                     Description = "IsEnabled field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -468,8 +531,17 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.Key))",
                     Description = "Key field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
+                },
+                new()
+                {
+                    Name = "OffIcon",
+                    Type = "BitNameSelectorPair<TItem, BitIconInfo?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.OffIcon))",
+                    Description = "OffIcon field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -477,8 +549,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.OffIconName))",
                     Description = "OffIconName field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -486,8 +558,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.OffText))",
                     Description = "OffText field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -495,8 +567,17 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.OffTitle))",
                     Description = "OffTitle field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
+                },
+                new()
+                {
+                    Name = "OnIcon",
+                    Type = "BitNameSelectorPair<TItem, BitIconInfo?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.OnIcon))",
+                    Description = "OnIcon field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -504,8 +585,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.OnIconName))",
                     Description = "OnIconName field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -513,8 +594,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.OnText))",
                     Description = "OnText field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -522,8 +603,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.OnTitle))",
                     Description = "OnTitle field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -531,8 +612,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, Action<TItem>?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.OnClick))",
                     Description = "OnClick field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -540,8 +621,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, bool>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.ReversedIcon))",
                     Description = "ReversedIcon field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -549,8 +630,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.Style))",
                     Description = "Style field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -558,8 +639,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, RenderFragment?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.Template))",
                     Description = "Template field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -567,8 +648,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.Text))",
                     Description = "Text field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 },
                 new()
                 {
@@ -576,8 +657,8 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.Title))",
                     Description = "Title field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 }
             ]
         },
@@ -599,6 +680,35 @@ public partial class BitButtonGroupDemo
                    Type = "Func<TItem, TProp?>?",
                    Description = "Custom class property selector."
                }
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
             ]
         },
     ];

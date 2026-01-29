@@ -60,6 +60,13 @@ public partial class _BitButtonGroupItemDemo
         new() { Text = "Decrease", IconName = BitIconName.Remove }
     ];
 
+    private List<BitButtonGroupItem> externalIconItems =
+    [
+        new() { Text = "Add", Icon = "fa-solid fa-plus" },
+        new() { Text = "Edit", Icon = BitIconInfo.Css("fa-solid fa-pen") },
+        new() { Text = "Delete", Icon = BitIconInfo.Fa("solid trash") }
+    ];
+
     private List<BitButtonGroupItem> styleClassItems =
     [
         new()

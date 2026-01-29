@@ -34,10 +34,10 @@
             }
             else
             {
-                var iconName = GetItemIconName(item);
-                @if (iconName.HasValue())
+                var icon = GetItemIcon(item);
+                @if (icon is not null)
                 {
-                    <i style="@Styles?.Icon" class="bit-icon bit-icon--@iconName @Classes?.Icon" />
+                    <i style="@Styles?.Icon" class="@icon.GetCssClasses() @Classes?.Icon" />
                 }
 
                 var text = GetItemText(item);

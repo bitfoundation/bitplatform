@@ -9,6 +9,21 @@ public class BitButtonGroupItem
     public string? Class { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// FontAwesome: Icon = BitIconInfo.Fa("solid house")
+    /// Material: Icon = BitIconInfo.Material("home")
+    /// Custom CSS: Icon = BitIconInfo.Css("my-icon-class")
+    /// </example>
+    public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
     /// Name of an icon to render next to the item text.
     /// </summary>
     public string? IconName { get; set; }
@@ -24,6 +39,21 @@ public class BitButtonGroupItem
     public string? Key { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to display when the item is not checked using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="OffIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="OffIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// FontAwesome: OffIcon = BitIconInfo.Fa("solid house")
+    /// Material: OffIcon = BitIconInfo.Material("home")
+    /// Custom CSS: OffIcon = BitIconInfo.Css("my-icon-class")
+    /// </example>
+    public BitIconInfo? OffIcon { get; set; }
+
+    /// <summary>
     /// The icon of the item when it is not checked in toggle mode.
     /// </summary>
     [Parameter] public string? OffIconName { get; set; }
@@ -37,6 +67,21 @@ public class BitButtonGroupItem
     /// The title of the item when it is not checked in toggle mode.
     /// </summary>
     [Parameter] public string? OffTitle { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to display when the item is checked using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="OnIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="OnIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// FontAwesome: OnIcon = BitIconInfo.Fa("solid house")
+    /// Material: OnIcon = BitIconInfo.Material("home")
+    /// Custom CSS: OnIcon = BitIconInfo.Css("my-icon-class")
+    /// </example>
+    public BitIconInfo? OnIcon { get; set; }
 
     /// <summary>
     /// The icon of the item when it is checked in toggle mode.

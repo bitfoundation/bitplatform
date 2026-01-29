@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>The buttons can be grouped by putting them in a ButtonGroup component.</div>
     <br />
     <BitButtonGroup Items="basicCustoms" NameSelectors="nameSelector" />
@@ -36,21 +36,21 @@
         <div>Fill (default)</div>
         <BitButtonGroup Variant="BitVariant.Fill" Items="iconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                 IconName = { Selector = i => i.Image } })" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Outline</div>
         <BitButtonGroup Variant="BitVariant.Outline" Items="iconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                 IconName = { Selector = i => i.Image } })" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Text</div>
         <BitButtonGroup Variant="BitVariant.Text" Items="iconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                 IconName = { Selector = i => i.Image } })" />
     </div>
 </DemoExample>
 
@@ -61,21 +61,21 @@
         <div>Fill (default)</div>
         <BitButtonGroup Variant="BitVariant.Fill" Items="iconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" IconOnly />
+                                                 IconName = { Selector = i => i.Image } })" IconOnly />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Outline</div>
         <BitButtonGroup Variant="BitVariant.Outline" Items="iconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" IconOnly />
+                                                 IconName = { Selector = i => i.Image } })" IconOnly />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Text</div>
         <BitButtonGroup Variant="BitVariant.Text" Items="iconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" IconOnly />
+                                                 IconName = { Selector = i => i.Image } })" IconOnly />
     </div>
     <br /><br />
     <div>Alternatively, each button can be set to IconOnly by simply leaving the text field empty.</div>
@@ -84,21 +84,21 @@
         <div>Fill (default)</div>
         <BitButtonGroup Variant="BitVariant.Fill" Items="onlyIconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                 IconName = { Selector = i => i.Image } })" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Outline</div>
         <BitButtonGroup Variant="BitVariant.Outline" Items="onlyIconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                 IconName = { Selector = i => i.Image } })" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Text</div>
         <BitButtonGroup Variant="BitVariant.Text" Items="onlyIconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                 IconName = { Selector = i => i.Image } })" />
     </div>
 </DemoExample>
 
@@ -109,7 +109,7 @@
         <div>Fill (default)</div>
         <BitButtonGroup Variant="BitVariant.Fill" Items="reversedIconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon },
+                                                 IconName = { Selector = i => i.Image },
                                                  ReversedIcon = { Selector = i => i.ReversedIcon } })" />
     </div>
     <br /><br />
@@ -117,7 +117,7 @@
         <div>Outline</div>
         <BitButtonGroup Variant="BitVariant.Outline" Items="reversedIconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon },
+                                                 IconName = { Selector = i => i.Image },
                                                  ReversedIcon = { Selector = i => i.ReversedIcon } })" />
     </div>
     <br /><br />
@@ -125,7 +125,7 @@
         <div>Text</div>
         <BitButtonGroup Variant="BitVariant.Text" Items="reversedIconCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon },
+                                                 IconName = { Selector = i => i.Image },
                                                  ReversedIcon = { Selector = i => i.ReversedIcon } })" />
     </div>
 </DemoExample>
@@ -194,7 +194,7 @@
         <div>Item's Click event:</div>
         <BitButtonGroup Items="eventsCustoms"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon },
+                                                 IconName = { Selector = i => i.Image },
                                                  OnClick = { Selector = i => i.Clicked } })" />
         <div>Click count: <b>@clickCounter</b></div>
     </div>
@@ -360,7 +360,34 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <div>Use icons from external libraries like FontAwesome with the Icon parameter.</div>
+    
+    <br />
+    <br />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    
+    <BitButtonGroup Variant="BitVariant.Fill" Items="externalIconCustoms"
+                    NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                             Icon = { Selector = i => i.IconInfo } })" />
+    
+    <br />
+    <br />
+    
+    <BitButtonGroup Variant="BitVariant.Outline" Color="BitColor.Secondary" Items="externalIconCustoms"
+                    NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                             Icon = { Selector = i => i.IconInfo } })" />
+    
+    <br />
+    <br />
+
+    <BitButtonGroup Variant="BitVariant.Text" Color="BitColor.Tertiary" Items="externalIconCustoms"
+                    NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                             Icon = { Selector = i => i.IconInfo } })" />
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div class="example-content">
@@ -374,7 +401,7 @@
         <BitButtonGroup Items="styleClassCustoms"
                         Variant="BitVariant.Text"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                 IconName = { Selector = i => i.Image } })" />
     </div>
     <br /><br />
     <div class="example-content">
@@ -391,7 +418,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>Use BitButtonGroup in right-to-left (RTL).</div>
     <br />
     <div dir="rtl">
@@ -399,18 +426,18 @@
                         Items="rtlCustoms"
                         Variant="BitVariant.Fill"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                 IconName = { Selector = i => i.Image } })" />
         <br /><br />
         <BitButtonGroup Dir="BitDir.Rtl"
                         Items="rtlCustoms"
                         Variant="BitVariant.Outline"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                 IconName = { Selector = i => i.Image } })" />
         <br /><br />
         <BitButtonGroup Dir="BitDir.Rtl"
                         Items="rtlCustoms"
                         Variant="BitVariant.Text"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                 IconName = { Selector = i => i.Image } })" />
     </div>
 </DemoExample>

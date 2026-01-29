@@ -248,6 +248,22 @@ private List<BitButtonGroupItem> basicItems =
 ];";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+    
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""externalIconItems"" />
+    
+<BitButtonGroup Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"" Items=""externalIconItems"" />
+
+<BitButtonGroup Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" Items=""externalIconItems"" />";
+    private readonly string example12CsharpCode = @"
+private List<BitButtonGroupItem> externalIconItems =
+[
+    new() { Text = ""Add"", Icon = ""fa-solid fa-plus"" },
+    new() { Text = ""Edit"", Icon = BitIconInfo.Css(""fa-solid fa-pen"") },
+    new() { Text = ""Delete"", Icon = BitIconInfo.Fa(""solid trash"") }
+];";
+
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -291,7 +307,7 @@ private List<BitButtonGroupItem> basicItems =
 <BitButtonGroup Items=""basicItems""
                 Variant=""BitVariant.Text""
                 Classes=""@(new() { Button = ""custom-btn"" })"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private List<BitButtonGroupItem> basicItems =
 [
     new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
@@ -313,11 +329,13 @@ private List<BitButtonGroupItem> styleClassItems =
     }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Fill"" Items=""rtlItems"" />
+
 <BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Outline"" Items=""rtlItems"" />
+
 <BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Text"" Items=""rtlItems"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private List<BitButtonGroupItem> rtlItems =
 [
     new() { Text = ""اضافه کردن"", IconName = BitIconName.Add },

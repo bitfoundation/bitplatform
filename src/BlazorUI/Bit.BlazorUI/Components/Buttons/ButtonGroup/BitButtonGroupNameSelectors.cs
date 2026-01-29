@@ -8,6 +8,11 @@ public class BitButtonGroupNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitButtonGroupItem.Class));
 
     /// <summary>
+    /// Icon field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitIconInfo?> Icon { get; set; } = new(nameof(BitButtonGroupItem.Icon));
+
+    /// <summary>
     /// IconName field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitButtonGroupItem.IconName));
@@ -23,6 +28,11 @@ public class BitButtonGroupNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> Key { get; set; } = new(nameof(BitButtonGroupItem.Key));
 
     /// <summary>
+    /// OffIcon field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitIconInfo?> OffIcon { get; set; } = new(nameof(BitButtonGroupItem.OffIcon));
+
+    /// <summary>
     /// OffIconName field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> OffIconName { get; set; } = new(nameof(BitButtonGroupItem.OffIconName));
@@ -36,6 +46,11 @@ public class BitButtonGroupNameSelectors<TItem>
     /// OffTitle field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> OffTitle { get; set; } = new(nameof(BitButtonGroupItem.OffTitle));
+
+    /// <summary>
+    /// OnIcon field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitIconInfo?> OnIcon { get; set; } = new(nameof(BitButtonGroupItem.OnIcon));
 
     /// <summary>
     /// OnIconName field name and selector of the custom input class.
