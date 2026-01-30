@@ -296,7 +296,7 @@
     <br />
     <div class="example-content">
         <BitMenuButton Text="IconName" Items="basicItemsIcon" IconName="@BitIconName.Edit" />
-        <BitMenuButton Text="ChevronDownIcon" Items="basicItemsIcon" ChevronDownIcon="@BitIconName.DoubleChevronDown" Split />
+        <BitMenuButton Text="ChevronDownIcon" Items="basicItemsIcon" ChevronDownIconName="@BitIconName.DoubleChevronDown" Split />
     </div>
 </DemoExample>
 
@@ -426,12 +426,65 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
+    
+    <br />
+    <br />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+    <div class="example-content">
+        <BitMenuButton Text="Actions" 
+                       Items="externalIconItems" 
+                       Icon="@("fa-solid fa-house")" />
+        <BitMenuButton Split 
+                       Text="Actions" 
+                       Items="externalIconItems" 
+                       Icon="@("fa-brands fa-github")" />
+    </div>
+    
+    <br />
+    <br />
+    
+    <div class="example-content">
+        <BitMenuButton Text="Actions" 
+                       Items="externalIconItems" 
+                       Color="BitColor.Secondary"
+                       Variant="BitVariant.Outline" 
+                       Icon="@BitIconInfo.Css("fa-solid fa-house")" />
+        <BitMenuButton Split 
+                       Text="Actions" 
+                       Items="externalIconItems" 
+                       Color="BitColor.Secondary"
+                       Variant="BitVariant.Outline" 
+                       Icon="@BitIconInfo.Css("fa-brands fa-github")" />
+    </div>
+    
+    <br />
+    <br />
+    
+    <div class="example-content">
+        <BitMenuButton Text="Actions" 
+                       Items="externalIconItems" 
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Text" 
+                       Icon="@BitIconInfo.Fa("solid house")" />
+        <BitMenuButton Split 
+                       Text="Actions" 
+                       Items="externalIconItems" 
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Text" 
+                       Icon="@BitIconInfo.Fa("brands github")" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>Use BitMenuButton in right-to-left (RTL).</div>
     <br />
     <div class="example-content" dir="rtl">
         <BitMenuButton Text="گزینه ها" Dir="BitDir.Rtl" Items="rtlItemsIcon" IconName="@BitIconName.Edit" />
-        <BitMenuButton Text="گزینه ها" Dir="BitDir.Rtl" Items="rtlItemsIcon" ChevronDownIcon="@BitIconName.DoubleChevronDown" Split />
+        <BitMenuButton Text="گزینه ها" Dir="BitDir.Rtl" Items="rtlItemsIcon" ChevronDownIconName="@BitIconName.DoubleChevronDown" Split />
     </div>
 </DemoExample>
 

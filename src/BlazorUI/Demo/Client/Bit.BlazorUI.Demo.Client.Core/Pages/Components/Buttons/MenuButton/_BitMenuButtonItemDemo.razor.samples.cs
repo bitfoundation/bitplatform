@@ -497,9 +497,58 @@ protected override void OnInitialized()
 }";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitMenuButton Text=""Actions"" 
+               Items=""externalIconItems"" 
+               Icon=""@(""fa-solid fa-house"")"" />
+
+<BitMenuButton Split 
+               Text=""Actions"" 
+               Items=""externalIconItems"" 
+               Icon=""@(""fa-brands fa-github"")"" />
+
+
+
+<BitMenuButton Text=""Actions"" 
+               Items=""externalIconItems"" 
+               Color=""BitColor.Secondary""
+               Variant=""BitVariant.Outline"" 
+               Icon=""@BitIconInfo.Css(""fa-solid fa-house"")"" />
+
+<BitMenuButton Split 
+               Text=""Actions"" 
+               Items=""externalIconItems"" 
+               Color=""BitColor.Secondary""
+               Variant=""BitVariant.Outline"" 
+               Icon=""@BitIconInfo.Css(""fa-brands fa-github"")"" />
+
+
+
+<BitMenuButton Text=""Actions"" 
+               Items=""externalIconItems"" 
+               Color=""BitColor.Tertiary""
+               Variant=""BitVariant.Text"" 
+               Icon=""@BitIconInfo.Fa(""solid house"")"" />
+
+<BitMenuButton Split 
+               Text=""Actions"" 
+               Items=""externalIconItems"" 
+               Color=""BitColor.Tertiary""
+               Variant=""BitVariant.Text"" 
+               Icon=""@BitIconInfo.Fa(""brands github"")"" />";
+    private readonly string example12CsharpCode = @"
+private static List<BitMenuButtonItem> externalIconItems =
+[
+    new() { Text = ""Add"", Icon = ""fa-solid fa-plus"" },
+    new() { Text = ""Edit"", Icon = BitIconInfo.Css(""fa-solid fa-pen"") },
+    new() { Text = ""Delete"", Icon = BitIconInfo.Fa(""solid trash"") }
+];";
+
+    private readonly string example13RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlItemsIcon"" IconName=""@BitIconName.Edit"" />
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlItemsIcon"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"" Split />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
  private static List<BitMenuButtonItem> rtlItemsIcon =
 [
     new() { Text = ""گزینه الف"", Key = ""A"", IconName = BitIconName.Emoji },
