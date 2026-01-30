@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <div>The buttons can be grouped by putting them in a ButtonGroup component.</div>
     <br />
     <BitButtonGroup TItem="BitButtonGroupOption">
@@ -559,7 +559,40 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
+    <div>Use icons from external libraries like FontAwesome with the Icon parameter.</div>
+    
+    <br />
+    <br />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    
+    <BitButtonGroup Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
+        <BitButtonGroupOption Text="Add" Icon="@("fa-solid fa-plus")" />
+        <BitButtonGroupOption Text="Edit" Icon="@("fa-solid fa-pen")" />
+        <BitButtonGroupOption Text="Delete" Icon="@("fa-solid fa-trash")" />
+    </BitButtonGroup>
+    
+    <br />
+    <br />
+    
+    <BitButtonGroup Variant="BitVariant.Outline" Color="BitColor.Secondary" TItem="BitButtonGroupOption">
+        <BitButtonGroupOption Text="Add" Icon="@BitIconInfo.Css("fa-solid fa-plus")" />
+        <BitButtonGroupOption Text="Edit" Icon="@BitIconInfo.Css("fa-solid fa-pen")" />
+        <BitButtonGroupOption Text="Delete" Icon="@BitIconInfo.Css("fa-solid fa-trash")" />
+    </BitButtonGroup>
+    
+    <br />
+    <br />
+
+    <BitButtonGroup Variant="BitVariant.Text" Color="BitColor.Tertiary" TItem="BitButtonGroupOption">
+        <BitButtonGroupOption Text="Add" Icon="@BitIconInfo.Fa("solid plus")" />
+        <BitButtonGroupOption Text="Edit" Icon="@BitIconInfo.Fa("solid pen")" />
+        <BitButtonGroupOption Text="Delete" Icon="@BitIconInfo.Fa("solid trash")" />
+    </BitButtonGroup>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div class="example-content">
@@ -597,7 +630,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+<DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
     <div>Use BitButtonGroup in right-to-left (RTL).</div>
     <br />
     <div dir="rtl">
