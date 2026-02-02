@@ -1,0 +1,153 @@
+.files-info {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+
+    strong {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    div {
+        padding: 4px 0;
+    }
+
+    .invalid-file {
+        color: #F9423A;
+        font-weight: 500;
+    }
+}
+
+.event-log {
+    margin-top: 8px;
+    padding: 8px;
+    background-color: #e8f5e9;
+    border-radius: 4px;
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+.api-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.browse-file {
+    border: 1px solid #D2D2D7;
+    border-radius: 2px;
+    padding: 24px;
+    width: 420px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    cursor: pointer;
+
+    &:hover {
+        border-color: #0072CE;
+        background-color: #f8f9fa;
+    }
+}
+
+.browse-file-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+
+    i {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0072CE;
+    }
+
+    strong {
+        color: #0072CE;
+    }
+}
+
+.browse-file-footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    color: #78787D;
+}
+
+.file-list {
+    border: 1px solid #D2D2D7;
+    border-radius: 2px;
+    padding: 24px;
+    width: 420px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.file-list-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-info-main {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+
+    i {
+        font-size: 24px;
+    }
+}
+
+.file-info-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.file-info-data {
+    width: 275px;
+}
+
+.file-info-btns {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+
+    i {
+        display: block;
+        cursor: pointer;
+    }
+
+    .remove-ico {
+        color: #F9423A;
+
+        &:hover {
+            color: #d32f2f;
+        }
+    }
+}
+
+.file-info-e-msg {
+    margin-top: 12px;
+    color: #F9423A;
+}
+
+.file-list-footer {
+    font-size: 12px;
+    color: #78787D;
+}

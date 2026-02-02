@@ -4,17 +4,17 @@ using System.Text;
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.Infrastructure.SignalR;
 //#endif
+using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Identity.Models;
-using Boilerplate.Shared.Features.Diagnostics;
 //#if (signalR == true || notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
 
-namespace Boilerplate.Server.Api.Features.Diagnostics;
+namespace Boilerplate.Server.Api.Features.Diagnostic;
 
 [ApiController, AllowAnonymous]
 [Route("api/[controller]/[action]")]
-public partial class DiagnosticsController : AppControllerBase, IDiagnosticsController
+public partial class DiagnosticController : AppControllerBase, IDiagnosticController
 {
     [AutoInject] private IHostEnvironment env = default!;
     //#if (notification == true)
@@ -25,7 +25,7 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
     //#endif
 
     [HttpGet]
-    public async Task<string> PerformDiagnostics([FromQuery] string? signalRConnectionId, [FromQuery] string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken)
+    public async Task<string> PerformDiagnostic([FromQuery] string? signalRConnectionId, [FromQuery] string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken)
     {
         StringBuilder result = new();
 

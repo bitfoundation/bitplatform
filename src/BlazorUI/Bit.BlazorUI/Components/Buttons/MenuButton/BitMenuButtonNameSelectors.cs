@@ -8,6 +8,11 @@ public class BitMenuButtonNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitMenuButtonItem.Class));
 
     /// <summary>
+    /// Icon field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitIconInfo?> Icon { get; set; } = new(nameof(BitMenuButtonItem.Icon));
+
+    /// <summary>
     /// IconName field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitMenuButtonItem.IconName));

@@ -2,9 +2,8 @@
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
 using System.Text.RegularExpressions;
-using Boilerplate.Shared.Features.Diagnostics;
-using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 using Boilerplate.Shared.Features.Diagnostic;
+using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 
@@ -23,7 +22,7 @@ public partial class AppDiagnosticModal
     //#endif
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private BitMessageBoxService messageBoxService = default!;
-    [AutoInject] private IDiagnosticsController diagnosticsController = default!;
+    [AutoInject] private IDiagnosticController diagnosticController = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif

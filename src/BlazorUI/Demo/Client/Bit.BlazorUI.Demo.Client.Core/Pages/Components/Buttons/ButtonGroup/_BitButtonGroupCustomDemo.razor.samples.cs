@@ -390,6 +390,35 @@ private List<Operation> basicCustoms =
 ];";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+    
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""externalIconCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name },
+                                         Icon = { Selector = i => i.IconInfo } })"" />
+    
+<BitButtonGroup Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"" Items=""externalIconCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name },
+                                         Icon = { Selector = i => i.IconInfo } })"" />
+
+<BitButtonGroup Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" Items=""externalIconCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name },
+                                         Icon = { Selector = i => i.IconInfo } })"" />";
+    private readonly string example12CsharpCode = @"
+public class Operation
+{
+    public string? Name { get; set; }
+    public BitIconInfo? IconInfo { get; set; }
+}
+
+private List<Operation> externalIconCustoms =
+[
+    new() { Name = ""Add"", IconInfo = ""fa-solid fa-plus"" },
+    new() { Name = ""Edit"", IconInfo = BitIconInfo.Css(""fa-solid fa-pen"") },
+    new() { Name = ""Delete"", IconInfo = BitIconInfo.Fa(""solid trash"") }
+];";
+
+
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -438,7 +467,7 @@ private List<Operation> basicCustoms =
                 Variant=""BitVariant.Text""
                 NameSelectors=""nameSelector""
                 Classes=""@(new() { Button = ""custom-btn"" })"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
 public class Operation
@@ -470,7 +499,7 @@ private List<Operation> styleClassCustoms =
     }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitButtonGroup Dir=""BitDir.Rtl""
                 Items=""rtlCustoms""
                 Variant=""BitVariant.Fill""
@@ -488,7 +517,7 @@ private List<Operation> styleClassCustoms =
                 Variant=""BitVariant.Text""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          IconName = { Selector = i => i.Icon } })"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 public class Operation
 {
     public string? Name { get; set; }

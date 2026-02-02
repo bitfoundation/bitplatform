@@ -13,6 +13,21 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
+    /// Material: Icon="BitIconInfo.Material("home")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
     /// Name of an icon to render next to the option text.
     /// </summary>
     [Parameter] public string? IconName { get; set; }

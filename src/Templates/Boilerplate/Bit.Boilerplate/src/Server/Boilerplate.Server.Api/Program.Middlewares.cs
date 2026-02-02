@@ -29,10 +29,7 @@ public static partial class Program
             app.UseHttpsRedirection();
             app.UseResponseCompression();
 
-            app.UseHsts();
-            app.UseXContentTypeOptions();
-            app.UseXXssProtection(options => options.EnabledWithBlockMode());
-            app.UseXfo(options => options.SameOrigin());
+            app.UseSecurityHeaders();
         }
 
         if (env.IsDevelopment())

@@ -6,7 +6,9 @@ public class Operation
 
     public string? Name { get; set; }
 
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
+
+    public BitIconInfo? IconInfo { get; set; }
 
     public bool ReversedIcon { get; set; }
 
@@ -18,9 +20,13 @@ public class Operation
 
     public Action<Operation>? Clicked { get; set; }
 
-    public string? OnIcon { get; set; }
+    public string? OnImage { get; set; }
 
-    public string? OffIcon { get; set; }
+    public BitIconInfo? OnIconInfo { get; set; }
+
+    public string? OffImage { get; set; }
+
+    public BitIconInfo? OffIconInfo { get; set; }
 
     public string? OnName { get; set; }
 

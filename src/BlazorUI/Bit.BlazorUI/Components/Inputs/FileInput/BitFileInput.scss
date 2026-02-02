@@ -1,0 +1,162 @@
+@import "../../../Styles/functions.scss";
+
+.bit-fin {
+    display: flex;
+    flex-flow: column nowrap;
+    max-width: spacing(43.75);
+    font-family: $tg-font-family;
+
+    &.bit-dis {
+        color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+
+        @media (hover: hover) {
+            &:hover {
+                border-color: $clr-brd-dis;
+            }
+        }
+
+        &:active {
+            background-color: $clr-bg-dis;
+        }
+    }
+}
+
+.bit-fin-fi {
+    display: none;
+}
+
+.bit-fin-lbl {
+    outline: 0;
+    display: flex;
+    cursor: pointer;
+    font-weight: 300;
+    user-select: none;
+    color: $clr-fg-pri;
+    align-items: center;
+    font-size: spacing(2);
+    justify-content: center;
+    min-height: spacing(4.5);
+    border-radius: spacing(0.5);
+    padding: spacing(0.5) spacing(2);
+    background-color: $clr-bg-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: $clr-brd-pri-hover;
+        }
+    }
+
+    &:active {
+        background-color: $clr-bg-pri-active;
+    }
+
+    i {
+        padding-right: spacing(0.625);
+    }
+}
+
+.bit-fin-fl {
+    margin: 0;
+    padding: 0;
+}
+
+.bit-fin-itm {
+    display: flex;
+    overflow: hidden;
+    font-weight: 100;
+    color: $clr-fg-pri;
+    align-items: center;
+    flex-flow: row nowrap;
+    font-size: spacing(1.75);
+    margin-top: spacing(0.375);
+    border-radius: spacing(0.625);
+    justify-content: space-between;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: $clr-brd-pri-hover;
+        }
+    }
+
+    .bit-fin-us {
+        width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+.bit-fin-vld {
+    background-color: $clr-bg-sec;
+}
+
+.bit-fin-inv {
+    .bit-fin-us {
+        color: $clr-err;
+    }
+}
+
+.bit-fin-fic {
+    flex-grow: 1;
+    display: flex;
+    overflow: hidden;
+    padding: spacing(1);
+    flex-flow: column nowrap;
+}
+
+.bit-fin-fnc {
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    flex-flow: row nowrap;
+}
+
+.bit-fin-fn {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-fin-fsc {
+    display: flex;
+    overflow: hidden;
+    color: $clr-fg-sec;
+    align-items: center;
+    flex-flow: row nowrap;
+    font-size: spacing(1.625);
+    margin-top: spacing(0.25);
+}
+
+.bit-fin-fs {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-fin-usi {
+    display: flex;
+    cursor: pointer;
+    color: $clr-fg-pri;
+    width: spacing(4.5);
+    align-items: center;
+    height: spacing(4.5);
+    justify-content: center;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:active {
+        background-color: $clr-bg-pri-active;
+    }
+
+    i {
+        font-size: spacing(2);
+    }
+}
