@@ -4,7 +4,8 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
+    public BitIconInfo? IconInfo { get; set; }
     public bool Disabled { get; set; }
     public bool IsSelected { get; set; }
     public string? Class { get; set; }

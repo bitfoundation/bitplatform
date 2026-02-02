@@ -35,10 +35,10 @@
             }
             else
             {
-                var iconName = GetIconName(_selectedItem);
-                @if (iconName.HasValue())
+                var icon = GetIcon(_selectedItem);
+                @if (icon is not null)
                 {
-                    <i style="@Styles?.OperatorButtonIcon" class="bit-icon bit-icon--@iconName @Classes?.OperatorButtonIcon" />
+                    <i style="@Styles?.OperatorButtonIcon" class="@icon.GetCssClasses() @Classes?.OperatorButtonIcon" />
                 }
                 <span style="@Styles?.OperatorButtonText" class="bit-mnb-btx @Classes?.OperatorButtonText">
                     @GetText(_selectedItem)
@@ -47,15 +47,16 @@
         }
         else
         {
+            var headerIcon = BitIconInfo.From(Icon, IconName);
             @if (HeaderTemplate is not null)
             {
                 @HeaderTemplate
             }
             else
             {
-                @if (IconName.HasValue())
+                @if (headerIcon is not null)
                 {
-                    <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+                    <i style="@Styles?.Icon" class="@headerIcon.GetCssClasses() @Classes?.Icon" />
                 }
 
                 @if (Text.HasValue())
@@ -67,7 +68,8 @@
 
         @if (Split is false)
         {
-            <i style="@Styles?.ChevronDown" class="bit-icon bit-icon--@(ChevronDownIcon ?? "ChevronRight bit-ico-r90") @Classes?.ChevronDown" />
+            var chevronIcon = BitIconInfo.From(ChevronDownIcon, ChevronDownIconName ?? "ChevronRight bit-ico-r90");
+            <i style="@Styles?.ChevronDown" class="@chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
         }
     </button>
 
@@ -80,7 +82,10 @@
                 tabindex="@(IsEnabled ? 0 : -1)"
                 style="@Styles?.ChevronDownButton"
                 class="bit-mnb-chb @Classes?.ChevronDownButton">
-            <i style="@Styles?.ChevronDown" class="bit-icon bit-icon--@(ChevronDownIcon ?? "ChevronRight bit-ico-r90") @Classes?.ChevronDown" />
+            @{
+                var chevronIcon = BitIconInfo.From(ChevronDownIcon, ChevronDownIconName ?? "ChevronRight bit-ico-r90");
+            }
+            <i style="@Styles?.ChevronDown" class="@chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
         </button>
     }
 
@@ -117,10 +122,10 @@
                         }
                         else
                         {
-                            var iconName = GetIconName(item);
-                            @if (iconName.HasValue())
+                            var itemIcon = GetIcon(item);
+                            @if (itemIcon is not null)
                             {
-                                <i style="@Styles?.ItemIcon" class="bit-mnb-iic bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                                <i style="@Styles?.ItemIcon" class="bit-mnb-iic @itemIcon.GetCssClasses() @Classes?.ItemIcon" />
                             }
                             <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
                                 @GetText(item)
