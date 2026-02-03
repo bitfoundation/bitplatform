@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.BearerToken;
+﻿using Microsoft.AspNetCore.Authentication.BearerToken;
 
 namespace Boilerplate.Server.Api.Features.Identity.Services;
 
@@ -14,7 +14,7 @@ public class AppBearerTokenOptionsConfigurator(IConfiguration configuration,
         {
             OnMessageReceived = async context =>
             {
-                // The server accepts the accessToken from either the authorization header, the cookie, or the request URL query string
+                // The server accepts the accessToken from either the authorization header or the cookie.
                 context.Token ??= context.HttpContext.GetAccessToken();
             }
         };
