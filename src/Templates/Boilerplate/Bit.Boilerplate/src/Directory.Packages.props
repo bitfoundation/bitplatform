@@ -15,7 +15,7 @@
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0" />
         <PackageVersion Include="Fido2.Models" Version="4.0.0" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.889" />
-        <PackageVersion Include="libphonenumber-csharp" Version="9.0.22" />
+        <PackageVersion Include="libphonenumber-csharp" Version="9.0.23" />
         <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.5.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.2" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.2" />
@@ -35,7 +35,7 @@
         <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.30" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.30" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.30" />
-        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3650.58" />
+        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3719.77" />
         <PackageVersion Include="MSTest" Version="4.0.2" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.15.0-beta.1" />
@@ -48,7 +48,7 @@
         <PackageVersion Include="OpenTelemetry.Resources.ProcessRuntime" Version="1.15.0-beta.1" />
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.3.1" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.2.3" />
-        <PackageVersion Include="Scalar.AspNetCore" Version="2.12.18" />
+        <PackageVersion Include="Scalar.AspNetCore" Version="2.12.27" />
         <PackageVersion Include="Velopack" Version="0.0.1298" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.2" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.2" />
@@ -99,7 +99,7 @@
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Core" Version="1.70.0" />
         <PackageVersion Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
         <PackageVersion Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" Version="13.0.4" />
-        <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.5.0" />
+        <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.6.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.3.0" />
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
         <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
