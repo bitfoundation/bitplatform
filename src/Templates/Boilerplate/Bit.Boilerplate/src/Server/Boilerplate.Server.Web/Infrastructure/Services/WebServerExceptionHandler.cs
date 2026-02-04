@@ -20,7 +20,7 @@ public partial class WebServerExceptionHandler : ClientExceptionHandlerBase
             // This method is invoked for exceptions occurring in Blazor Server and during pre-rendering.
             // While setting a status code is not meaningful in Blazor Server or streaming pre-rendering 
             // (since the response has already started), we can still set response codes for non-streaming pre-rendering scenarios.  
-            // A key factor that disables streaming during pre-rendering is response caching (see AppResponseCachePolicy.cs's AppResponseCachePolicy__DisableStreamPrerendering).  
+            // A key factor that disables streaming during pre-rendering is response caching (see AppResponseCachePolicy.cs's AppResponseCachePolicy__SharedCacheEnabled).  
             // By setting the status code here, we ensure that a faulted response is not cached.
             var statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
             httpContextAccessor.HttpContext.Response.StatusCode = statusCode;

@@ -137,7 +137,7 @@ public partial class OfflineTodoPage
 
         var addedTodoItem = (await dbContext.TodoItems.AddAsync(new()
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = Guid.CreateVersion7().ToString(),
             Title = newTodoTitle
         }, CurrentCancellationToken)).Entity;
 

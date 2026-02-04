@@ -419,29 +419,29 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return GetTitle(item);
     }
 
-    private string? GetItemIconName(TItem item)
+    private BitIconInfo? GetItemIcon(TItem item)
     {
         if (Toggle)
         {
             if (IsItemToggled(item))
             {
+                var onIcon = GetOnIcon(item);
+                if (onIcon is not null) return onIcon;
+
                 var onIconName = GetOnIconName(item);
-                if (onIconName.HasValue())
-                {
-                    return onIconName;
-                }
+                if (onIconName.HasValue()) return new BitIconInfo(onIconName!);
             }
             else
             {
+                var offIcon = GetOffIcon(item);
+                if (offIcon is not null) return offIcon;
+
                 var offIconName = GetOffIconName(item);
-                if (offIconName.HasValue())
-                {
-                    return offIconName;
-                }
+                if (offIconName.HasValue()) return new BitIconInfo(offIconName!);
             }
         }
 
-        return GetIconName(item);
+        return BitIconInfo.From(GetIcon(item), GetIconName(item));
     }
 
     private async Task UpdateItemToggle(TItem? item, bool isToggled = true)
@@ -564,6 +564,30 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
+    private BitIconInfo? GetIcon(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            return buttonGroupItem.Icon;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            return buttonGroupOption.Icon;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Icon.Selector is not null)
+        {
+            return NameSelectors.Icon.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
+    }
+
     private string? GetIconName(TItem? item)
     {
         if (item is null) return null;
@@ -588,6 +612,30 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
     }
 
+    private BitIconInfo? GetOnIcon(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            return buttonGroupItem.OnIcon;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            return buttonGroupOption.OnIcon;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.OnIcon.Selector is not null)
+        {
+            return NameSelectors.OnIcon.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitIconInfo?>(NameSelectors.OnIcon.Name);
+    }
+
     private string? GetOnIconName(TItem? item)
     {
         if (item is null) return null;
@@ -610,6 +658,30 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.OnIconName.Name);
+    }
+
+    private BitIconInfo? GetOffIcon(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            return buttonGroupItem.OffIcon;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            return buttonGroupOption.OffIcon;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.OffIcon.Selector is not null)
+        {
+            return NameSelectors.OffIcon.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitIconInfo?>(NameSelectors.OffIcon.Name);
     }
 
     private string? GetOffIconName(TItem? item)

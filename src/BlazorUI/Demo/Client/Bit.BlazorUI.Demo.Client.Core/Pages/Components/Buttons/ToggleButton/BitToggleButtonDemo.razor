@@ -1,4 +1,4 @@
-﻿@page "/components/togglebutton"
+@page "/components/togglebutton"
 @page "/components/toggle-button"
 
 <PageOutlet Url="components/togglebutton"
@@ -286,7 +286,39 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="External Icons" RazorCode="@example11RazorCode" Id="example11">
+        <div>Use icons from external libraries like FontAwesome with the <b>Icon</b>, <b>OnIcon</b>, and <b>OffIcon</b> parameters.</div>
+
+        <br />
+        <br />
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        
+        <BitToggleButton Icon="@("fa-solid fa-microphone")" Text="Microphone" />
+        
+        <br/>
+        <br/>
+        
+        <BitToggleButton OnIcon="@BitIconInfo.Css("fa-solid fa-microphone-slash")" OnText="Muted"
+                         OffIcon="@BitIconInfo.Css("fa-solid fa-microphone")" OffText="Unmuted"
+                         Color="BitColor.Secondary" />
+        
+        <br/>
+        <br/>
+        
+        <BitToggleButton OnIcon="@BitIconInfo.Fa("solid volume-xmark")" OnText="Muted"
+                         OffIcon="@BitIconInfo.Fa("solid volume-high")" OffText="Unmuted"
+                         Color="BitColor.Tertiary" />
+        
+        <br/>
+        <br/>
+        
+        <BitToggleButton OnIcon="@BitIconInfo.Fa("fa-regular fa-circle-pause")" OnText="Paused"
+                         OffIcon="@BitIconInfo.Fa("fa-regular fa-circle-play")" OffText="Playing"
+                         Color="BitColor.Success" />
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div><br />
         <div>Component's Style & Class:</div><br />
         <div class="example-box">
@@ -319,7 +351,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div>Use BitToggleButton in right-to-left (RTL).</div>
         <br />
         <div class="example-box" dir="rtl">

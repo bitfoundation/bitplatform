@@ -18,11 +18,11 @@
     }
     else
     {
-        var iconName = GetIconName();
+        var icon = GetIcon();
         var text = GetText();
-        if (iconName.HasValue())
+        if (icon is not null)
         {
-            <i style="@Styles?.Icon" class="bit-tgb-ico bit-icon bit-icon--@iconName @Classes?.Icon" />
+            <i style="@Styles?.Icon" class="bit-tgb-ico @icon.GetCssClasses() @Classes?.Icon" />
         }
 
         if (IconOnly is false && text.HasValue())

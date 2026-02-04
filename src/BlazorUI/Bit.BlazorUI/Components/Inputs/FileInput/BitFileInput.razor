@@ -1,0 +1,82 @@
+@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="@RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @if (LabelTemplate is not null)
+    {
+        @LabelTemplate
+    }
+    else if (HideLabel is false)
+    {
+        <button @onclick="Browse"
+                type="button"
+                id="@_buttonId"
+                class="bit-fin-lbl">
+            @(Label ?? "Browse")
+        </button>
+    }
+
+    <input @ref="_inputRef"
+           @onchange="HandleOnChange"
+           type="file"
+           id="@InputId"
+           class="bit-fin-fi"
+           multiple="@Multiple"
+           disabled="@(IsEnabled is false)"
+           aria-labelledby="@(HideLabel ? null : _buttonId)"
+           accept="@(Accept ?? string.Join(",", AllowedExtensions))" />
+
+    @if (Files is not null && HideFileList is false)
+    {
+        <div class="bit-fin-fl">
+            @for (var i = 0; i < Files.Count; i++)
+            {
+                var index = i;
+                var file = Files[index];
+                file.Index = index;
+
+                if (HideFileList is false)
+                {
+                    if (FileViewTemplate is not null)
+                    {
+                        @FileViewTemplate(file)
+                    }
+                    else
+                    {
+                        <div class="bit-fin-itm @GetFileElClass(file.IsValid)">
+                            <div class="bit-fin-fic">
+                                <div title="@file.Name" class="bit-fin-fnc">
+                                    <div class="bit-fin-fn">
+                                        @file.Name
+                                    </div>
+                                </div>
+                                <div class="bit-fin-fsc">
+                                    <span class="bit-fin-fs">
+                                        @FileSizeHumanizer.Humanize(file.Size)
+                                    </span>
+                                </div>
+                                @if (file.IsValid is false)
+                                {
+                                    <div class="bit-fin-us">
+                                        @file.Message
+                                    </div>
+                                }
+                            </div>
+                            @if (ShowRemoveButton)
+                            {
+                                <button class="bit-fin-usi" @onclick="() => RemoveFile(file)">
+                                    <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true" />
+                                </button>
+                            }
+                        </div>
+                    }
+                }
+            }
+        </div>
+    }
+</div>

@@ -783,7 +783,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
-<BitMenuButton Text=""ChevronDownIcon"" TItem=""BitMenuButtonOption"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"" Split>
+<BitMenuButton Text=""ChevronDownIconName"" TItem=""BitMenuButtonOption"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
@@ -1024,13 +1024,79 @@ private bool oneWayIsOpen;
 private bool twoWayIsOpen;";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitMenuButton Text=""Actions"" 
+               TItem=""BitMenuButtonOption""
+               Icon=""@(""fa-solid fa-house"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@(""fa-solid fa-plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@(""fa-solid fa-pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@(""fa-solid fa-trash"")"" />
+</BitMenuButton>
+
+<BitMenuButton Split 
+               Text=""Actions"" 
+               TItem=""BitMenuButtonOption""
+               Icon=""@(""fa-brands fa-github"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@(""fa-solid fa-plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@(""fa-solid fa-pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@(""fa-solid fa-trash"")"" />
+</BitMenuButton>
+
+
+
+<BitMenuButton Text=""Actions"" 
+               Color=""BitColor.Secondary""
+               TItem=""BitMenuButtonOption"" 
+               Variant=""BitVariant.Outline""
+               Icon=""@BitIconInfo.Css(""fa-solid fa-house"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Css(""fa-solid fa-plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Css(""fa-solid fa-pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Css(""fa-solid fa-trash"")"" />
+</BitMenuButton>
+
+<BitMenuButton Split 
+               Text=""Actions"" 
+               Color=""BitColor.Secondary""
+               TItem=""BitMenuButtonOption"" 
+               Variant=""BitVariant.Outline""
+               Icon=""@BitIconInfo.Css(""fa-brands fa-github"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Css(""fa-solid fa-plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Css(""fa-solid fa-pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Css(""fa-solid fa-trash"")"" />
+</BitMenuButton>
+
+
+
+<BitMenuButton Text=""Actions"" 
+               Variant=""BitVariant.Text""
+               Color=""BitColor.Tertiary""
+               TItem=""BitMenuButtonOption"" 
+               Icon=""@BitIconInfo.Fa(""solid house"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Fa(""solid plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Fa(""solid pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
+</BitMenuButton>
+
+<BitMenuButton Split 
+               Text=""Actions""
+               Color=""BitColor.Tertiary""
+               Variant=""BitVariant.Text""
+               TItem=""BitMenuButtonOption"" 
+               Icon=""@BitIconInfo.Fa(""brands github"")"">
+    <BitMenuButtonOption Text=""Add"" Icon=""@BitIconInfo.Fa(""solid plus"")"" />
+    <BitMenuButtonOption Text=""Edit"" Icon=""@BitIconInfo.Fa(""solid pen"")"" />
+    <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
+</BitMenuButton>";
+
+    private readonly string example13RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Edit"">
     <BitMenuButtonOption Text=""گزینه الف"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""گزینه ب"" Key=""B"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""گزینه ج"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
-<BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" TItem=""BitMenuButtonOption"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"">
+<BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" TItem=""BitMenuButtonOption"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"">
     <BitMenuButtonOption Text=""گزینه الف"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""گزینه ب"" Key=""B"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""گزینه ج"" Key=""C"" IconName=""@BitIconName.Emoji2"" />

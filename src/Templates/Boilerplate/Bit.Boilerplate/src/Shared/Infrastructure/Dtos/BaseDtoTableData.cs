@@ -13,7 +13,7 @@ public partial class BaseDtoTableData : ITableData
 
     public byte[] Version { get; set; } = [];
 
-    public bool Equals(ITableData? other) => other is not null 
-        && Id == other.Id 
+    public bool Equals(ITableData? other) => other is not null
+        && Id == other.Id
         && other.Version?.SequenceEqual(Version) is true;
 }

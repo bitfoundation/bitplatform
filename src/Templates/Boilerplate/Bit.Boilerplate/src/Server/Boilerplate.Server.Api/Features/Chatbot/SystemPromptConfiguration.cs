@@ -11,7 +11,7 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
         builder.HasIndex(sp => sp.PromptKind)
             .IsUnique();
 
-        var defaultVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+        var defaultVersion = 1;
 
         builder.HasData(new SystemPrompt
         {

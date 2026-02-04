@@ -296,7 +296,7 @@
     <br />
     <div class="example-content">
         <BitMenuButton Text="IconName" Items="basicIconCustoms" NameSelectors="nameSelectors" IconName="@BitIconName.Edit" />
-        <BitMenuButton Text="ChevronDownIcon" Items="basicIconCustoms" NameSelectors="nameSelectors" ChevronDownIcon="@BitIconName.DoubleChevronDown" Split />
+        <BitMenuButton Text="ChevronDownIconName" Items="basicIconCustoms" NameSelectors="nameSelectors" ChevronDownIconName="@BitIconName.DoubleChevronDown" Split />
     </div>
 </DemoExample>
 
@@ -430,10 +430,71 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
+    
+    <br />
+    <br />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+    <div class="example-content">
+        <BitMenuButton Text="Actions"
+                       Items="externalIconCustoms"
+                       Icon="@("fa-solid fa-house")"
+                       NameSelectors="nameSelectors2" />
+        <BitMenuButton Split 
+                       Text="Actions"
+                       Items="externalIconCustoms"
+                       Icon="@("fa-brands fa-github")"
+                       NameSelectors="nameSelectors2" />
+    </div>
+    
+    <br />
+    <br />
+    
+    <div class="example-content">
+        <BitMenuButton Text="Actions"
+                       Color="BitColor.Secondary"
+                       Items="externalIconCustoms"
+                       Variant="BitVariant.Outline"
+                       NameSelectors="nameSelectors2"
+                       Icon="@BitIconInfo.Css("fa-solid fa-house")" />
+        <BitMenuButton Split 
+                       Text="Actions"
+                       Color="BitColor.Secondary"
+                       Items="externalIconCustoms"
+                       Variant="BitVariant.Outline"
+                       NameSelectors="nameSelectors2"
+                       Icon="@BitIconInfo.Css("fa-brands fa-github")" />
+    </div>
+    
+    <br />
+    <br />
+    
+    <div class="example-content">
+        <BitMenuButton Text="Actions" 
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Text" 
+                       Items="externalIconCustoms" 
+                       NameSelectors="nameSelectors2" 
+                       Icon="@BitIconInfo.Fa("solid house")" />
+        <BitMenuButton Split 
+                       Text="Actions"
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Text"
+                       Items="externalIconCustoms"
+                       NameSelectors="nameSelectors2"
+                       Icon="@BitIconInfo.Fa("brands github")" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <div>Use BitMenuButton in right-to-left (RTL).</div>
+    <br />
     <div class="example-content" dir="rtl">
         <BitMenuButton Text="گزینه ها" Dir="BitDir.Rtl" Items="rtlCustoms" IconName="@BitIconName.Edit" NameSelectors="nameSelectors" />
-        <BitMenuButton Text="گرینه ها" Dir="BitDir.Rtl" Items="rtlCustoms" ChevronDownIcon="@BitIconName.DoubleChevronDown" NameSelectors="nameSelectors" Split />
+        <BitMenuButton Text="گرینه ها" Dir="BitDir.Rtl" Items="rtlCustoms" ChevronDownIconName="@BitIconName.DoubleChevronDown" NameSelectors="nameSelectors" Split />
     </div>
 </DemoExample>
 
@@ -442,17 +503,17 @@
         [
         new()
         {
-            Name = "Add", Id = "add-key", Icon = BitIconName.Add,
+            Name = "Add", Id = "add-key", Image = BitIconName.Add,
             Fragment = (item => @<div class="item-template-box" style="color:green">@item.Name (@item.Id)</div>)
         },
         new()
         {
-            Name = "Edit", Id = "edit-key", Icon = BitIconName.Edit,
+            Name = "Edit", Id = "edit-key", Image = BitIconName.Edit,
             Fragment = (item => @<div class="item-template-box" style="color:yellow">@item.Name (@item.Id)</div>)
         },
         new()
         {
-            Name = "Delete", Id = "delete-key", Icon = BitIconName.Delete,
+            Name = "Delete", Id = "delete-key", Image = BitIconName.Delete,
             Fragment = (item => @<div class="item-template-box" style="color:red">@item.Name (@item.Id)</div>)
         }
     ];

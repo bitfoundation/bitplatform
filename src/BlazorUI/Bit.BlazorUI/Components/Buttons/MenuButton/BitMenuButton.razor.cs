@@ -42,9 +42,14 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
+    /// The icon for the chevron down part of the menu button.
+    /// </summary>
+    [Parameter] public BitIconInfo? ChevronDownIcon { get; set; }
+
+    /// <summary>
     /// The icon name of the chevron down part of the menu button.
     /// </summary>
-    [Parameter] public string? ChevronDownIcon { get; set; }
+    [Parameter] public string? ChevronDownIconName { get; set; }
 
     /// <summary>
     /// The content of the menu button, that are BitMenuButtonOption components.
@@ -71,6 +76,16 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// The content inside the header of menu button can be customized.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? Icon { get; set; }
 
     /// <summary>
     /// The icon to show inside the header of menu button.
@@ -329,28 +344,43 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
-    private string? GetIconName(TItem? item)
+    private BitIconInfo? GetIcon(TItem? item)
     {
         if (item is null) return null;
 
         if (item is BitMenuButtonItem menuButtonItem)
         {
-            return menuButtonItem.IconName;
+            return BitIconInfo.From(menuButtonItem.Icon, menuButtonItem.IconName);
         }
 
         if (item is BitMenuButtonOption menuButtonOption)
         {
-            return menuButtonOption.IconName;
+            return BitIconInfo.From(menuButtonOption.Icon, menuButtonOption.IconName);
         }
 
         if (NameSelectors is null) return null;
 
-        if (NameSelectors.IconName.Selector is not null)
+        BitIconInfo? icon = null;
+        if (NameSelectors.Icon.Selector is not null)
         {
-            return NameSelectors.IconName.Selector!(item);
+            icon = NameSelectors.Icon.Selector!(item);
+        }
+        else
+        {
+            icon = item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
         }
 
-        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+        string? iconName = null;
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            iconName = NameSelectors.IconName.Selector!(item);
+        }
+        else
+        {
+            iconName = item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+        }
+
+        return BitIconInfo.From(icon, iconName);
     }
 
     private bool GetIsEnabled(TItem? item)

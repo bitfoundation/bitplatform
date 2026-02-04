@@ -19,23 +19,23 @@ public partial class _BitButtonGroupCustomDemo
 
     private List<Operation> iconCustoms =
     [
-        new() { Name = "Add", Icon = BitIconName.Add },
-        new() { Name = "Edit", Icon = BitIconName.Edit },
-        new() { Name = "Delete", Icon = BitIconName.Delete }
+        new() { Name = "Add", Image = BitIconName.Add },
+        new() { Name = "Edit", Image = BitIconName.Edit },
+        new() { Name = "Delete", Image = BitIconName.Delete }
     ];
 
     private List<Operation> onlyIconCustoms =
     [
-        new() { Name = "Add", Icon = BitIconName.Add },
-        new() { Icon = BitIconName.Edit },
-        new() { Name = "Delete", Icon = BitIconName.Delete }
+        new() { Name = "Add", Image = BitIconName.Add },
+        new() { Image = BitIconName.Edit },
+        new() { Name = "Delete", Image = BitIconName.Delete }
     ];
 
     private List<Operation> reversedIconCustoms =
     [
-        new() { Name = "Add", Icon = BitIconName.Add, ReversedIcon = true },
-        new() { Name = "Edit", Icon = BitIconName.Edit, ReversedIcon = true },
-        new() { Name = "Delete", Icon = BitIconName.Delete, ReversedIcon = true }
+        new() { Name = "Add", Image = BitIconName.Add, ReversedIcon = true },
+        new() { Name = "Edit", Image = BitIconName.Edit, ReversedIcon = true },
+        new() { Name = "Delete", Image = BitIconName.Delete, ReversedIcon = true }
     ];
 
     private BitButtonGroupNameSelectors<Operation> toggledNameSelectors = new()
@@ -45,8 +45,8 @@ public partial class _BitButtonGroupCustomDemo
         OffText = { Selector = i => i.OffName },
         OnTitle = { Selector = i => i.OnTitle },
         OffTitle = { Selector = i => i.OffTitle },
-        OnIconName = { Selector = i => i.OnIcon },
-        OffIconName = { Selector = i => i.OffIcon },
+        OnIconName = { Selector = i => i.OnImage },
+        OffIconName = { Selector = i => i.OffImage },
         ReversedIcon = { Selector = i => i.ReversedIcon },
         IsToggled = { Name = nameof(Operation.IsSelected) }
     };
@@ -54,24 +54,31 @@ public partial class _BitButtonGroupCustomDemo
     private string? toggleKey = "play";
     private List<Operation> toggledCustoms =
     [
-        new() { Id = "back", OnName = "Back (2X)", OffName = "Back (1X)", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
-        new() { Id = "play", OnTitle = "Resume", OffTitle = "Play", OnIcon = BitIconName.PlayResume, OffIcon = BitIconName.Play },
-        new() { Id = "forward", OnName = "Forward (2X)", OffName = "Forward (1X)", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
+        new() { Id = "back", OnName = "Back (2X)", OffName = "Back (1X)", OnImage = BitIconName.RewindTwoX, OffImage = BitIconName.Rewind },
+        new() { Id = "play", OnTitle = "Resume", OffTitle = "Play", OnImage = BitIconName.PlayResume, OffImage = BitIconName.Play },
+        new() { Id = "forward", OnName = "Forward (2X)", OffName = "Forward (1X)", OnImage = BitIconName.FastForwardTwoX, OffImage = BitIconName.FastForward, ReversedIcon = true }
     ];
 
     private Operation? onChangeToggleCustom;
     private List<Operation> changeToggledCustoms =
     [
-        new() { Id = "back", OnName = "Back (2X)", OffName = "Back (1X)", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
-        new() { Id = "play", OnTitle = "Resume", OffTitle = "Play", OnIcon = BitIconName.PlayResume, OffIcon = BitIconName.Play },
-        new() { Id = "forward", OnName = "Forward (2X)", OffName = "Forward (1X)", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
+        new() { Id = "back", OnName = "Back (2X)", OffName = "Back (1X)", OnImage = BitIconName.RewindTwoX, OffImage = BitIconName.Rewind },
+        new() { Id = "play", OnTitle = "Resume", OffTitle = "Play", OnImage = BitIconName.PlayResume, OffImage = BitIconName.Play },
+        new() { Id = "forward", OnName = "Forward (2X)", OffName = "Forward (1X)", OnImage = BitIconName.FastForwardTwoX, OffImage = BitIconName.FastForward, ReversedIcon = true }
     ];
 
     private List<Operation> eventsCustoms =
     [
-        new() { Name = "Increase", Icon = BitIconName.Add },
-        new() { Name = "Reset", Icon = BitIconName.Reset },
-        new() { Name = "Decrease", Icon = BitIconName.Remove }
+        new() { Name = "Increase", Image = BitIconName.Add },
+        new() { Name = "Reset", Image = BitIconName.Reset },
+        new() { Name = "Decrease", Image = BitIconName.Remove }
+    ];
+
+    private List<Operation> externalIconCustoms =
+    [
+        new() { Name = "Add", IconInfo = "fa-solid fa-plus" },
+        new() { Name = "Edit", IconInfo = BitIconInfo.Css("fa-solid fa-pen") },
+        new() { Name = "Delete", IconInfo = BitIconInfo.Fa("solid trash") }
     ];
 
     private List<Operation> styleClassCustoms =
@@ -80,21 +87,21 @@ public partial class _BitButtonGroupCustomDemo
         {
             Name = "Styled",
             Style = "color: tomato; border-color: brown; background-color: peachpuff;",
-            Icon = BitIconName.Brush,
+            Image = BitIconName.Brush,
         },
         new()
         {
             Name = "Classed",
             Class = "custom-item",
-            Icon = BitIconName.FormatPainter,
+            Image = BitIconName.FormatPainter,
         }
     ];
 
     private List<Operation> rtlCustoms =
     [
-        new() { Name = "اضافه کردن", Icon = BitIconName.Add },
-        new() { Name = "ویرایش", Icon = BitIconName.Edit },
-        new() { Name = "حذف", Icon = BitIconName.Delete }
+        new() { Name = "اضافه کردن", Image = BitIconName.Add },
+        new() { Name = "ویرایش", Image = BitIconName.Edit },
+        new() { Name = "حذف", Image = BitIconName.Delete }
     ];
 
     protected override void OnInitialized()

@@ -193,7 +193,23 @@ private int clickCounter;";
                  OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />";
 
     private readonly string example11RazorCode = @"
-<style>
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+        
+<BitToggleButton Icon=""@(""fa-solid fa-microphone"")"" Text=""Microphone"" />
+
+<BitToggleButton OnIcon=""@BitIconInfo.Css(""fa-solid fa-microphone-slash"")"" OnText=""Muted""
+                 OffIcon=""@BitIconInfo.Css(""fa-solid fa-microphone"")"" OffText=""Unmuted""
+                 Color=""BitColor.Secondary"" />
+
+<BitToggleButton OnIcon=""@BitIconInfo.Fa(""solid volume-xmark"")"" OnText=""Muted""
+                 OffIcon=""@BitIconInfo.Fa(""solid volume-high"")"" OffText=""Unmuted""
+                 Color=""BitColor.Tertiary"" />
+
+<BitToggleButton OnIcon=""@BitIconInfo.Fa(""fa-regular fa-circle-pause"")"" OnText=""Paused""
+                 OffIcon=""@BitIconInfo.Fa(""fa-regular fa-circle-play"")"" OffText=""Playing""
+                 Color=""BitColor.Success"" />";
+
+    private readonly string example12RazorCode = @"<style>
     .custom-class {
         border-radius: 1rem;
         border-color: blueviolet;
@@ -277,7 +293,7 @@ private int clickCounter;";
                                     Icon = ""custom-icon"",
                                     Text = ""custom-text"" })"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitToggleButton Dir=""BitDir.Rtl"" Variant=""BitVariant.Fill""
                  OnText=""صدا قطع"" OnIconName=""@BitIconName.MicOff""
                  OffText=""صدا وصل"" OffIconName=""@BitIconName.Microphone"" />

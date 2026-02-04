@@ -403,6 +403,33 @@ private string? clickedOption;";
 </BitButtonGroup>";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+    
+    <BitButtonGroup Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" Icon=""@(""fa-solid fa-plus"")"" />
+        <BitButtonGroupOption Text=""Edit"" Icon=""@(""fa-solid fa-pen"")"" />
+        <BitButtonGroupOption Text=""Delete"" Icon=""@(""fa-solid fa-trash"")"" />
+    </BitButtonGroup>
+    
+    <br />
+    <br />
+    
+    <BitButtonGroup Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" Icon=""@BitIconInfo.Css(""fa-solid fa-plus"")"" />
+        <BitButtonGroupOption Text=""Edit"" Icon=""@BitIconInfo.Css(""fa-solid fa-pen"")"" />
+        <BitButtonGroupOption Text=""Delete"" Icon=""@BitIconInfo.Css(""fa-solid fa-trash"")"" />
+    </BitButtonGroup>
+    
+    <br />
+    <br />
+
+    <BitButtonGroup Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" Icon=""@BitIconInfo.Fa(""solid plus"")"" />
+        <BitButtonGroupOption Text=""Edit"" Icon=""@BitIconInfo.Fa(""solid pen"")"" />
+        <BitButtonGroupOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
+    </BitButtonGroup>";
+
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -460,7 +487,7 @@ private string? clickedOption;";
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""اضافه کردن"" IconName=""@BitIconName.Add"" />
     <BitButtonGroupOption Text=""ویرایش"" IconName=""@BitIconName.Edit"" />

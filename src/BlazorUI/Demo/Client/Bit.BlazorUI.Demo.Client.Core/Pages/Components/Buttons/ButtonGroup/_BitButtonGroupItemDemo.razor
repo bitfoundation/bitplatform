@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>The buttons can be grouped by putting them in a ButtonGroup component.</div>
     <br />
     <BitButtonGroup Items="basicItems" />
@@ -328,7 +328,28 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <div>Use icons from external libraries like FontAwesome with the Icon parameter.</div>
+    
+    <br />
+    <br />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    
+    <BitButtonGroup Variant="BitVariant.Fill" Items="externalIconItems" />
+    
+    <br />
+    <br />
+    
+    <BitButtonGroup Variant="BitVariant.Outline" Color="BitColor.Secondary" Items="externalIconItems" />
+    
+    <br />
+    <br />
+
+    <BitButtonGroup Variant="BitVariant.Text" Color="BitColor.Tertiary" Items="externalIconItems" />
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div class="example-content">
@@ -354,7 +375,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>Use BitButtonGroup in right-to-left (RTL).</div>
     <br />
     <div dir="rtl">

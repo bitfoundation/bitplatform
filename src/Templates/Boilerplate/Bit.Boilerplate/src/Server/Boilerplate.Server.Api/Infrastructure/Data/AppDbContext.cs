@@ -96,7 +96,11 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
         ConfigureIdentityTableNames(modelBuilder);
 
-        ConfigureConcurrencyStamp(modelBuilder);
+        ConfigureConcurrencyToken(modelBuilder);
+
+        //#if (database != "SQLite")
+        ConfigureRowVersion(modelBuilder);
+        //#endif
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -141,12 +145,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
         foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified or EntityState.Deleted))
         {
-            if (entityEntry.CurrentValues.TryGetValue<object>("Version", out var currentVersion) is false
-                || currentVersion is not byte[])
-                continue;
-
             // https://github.com/dotnet/efcore/issues/35443
-            entityEntry.OriginalValues["Version"] = currentVersion;
+            if (entityEntry.Properties.Any(p => p.Metadata.Name == "Version") && entityEntry.CurrentValues["Version"] is long currentVersion)
+                entityEntry.OriginalValues["Version"] = currentVersion;
         }
     }
 
@@ -170,6 +171,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             //#endif
             //#if (database == "PostgreSQL")
+            configurationBuilder.Conventions.Add(_ => new PostgreSQLPrimaryKeySequentialGuidDefaultValueConvention());
             // PostgreSQL does not support DateTimeOffset with offset other than Utc.
             configurationBuilder.Properties<DateTimeOffset>().HaveConversion<PostgresDateTimeOffsetConverter>();
             configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<NullablePostgresDateTimeOffsetConverter>();
@@ -219,7 +221,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
             .ToTable("UserTokens");
     }
 
-    private void ConfigureConcurrencyStamp(ModelBuilder modelBuilder)
+    private void ConfigureConcurrencyToken(ModelBuilder modelBuilder)
     {
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
@@ -229,40 +231,51 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
             //#endif
 
             foreach (var property in entityType.GetProperties()
-                .Where(p => p.Name is "Version" && p.PropertyInfo?.PropertyType == typeof(byte[])))
+                .Where(p => p.Name is "Version" && p.PropertyInfo?.PropertyType == typeof(long)))
+            {
+                var builder = new PropertyBuilder(property);
+                builder.IsConcurrencyToken();
+            }
+        }
+    }
+
+    //#if (database != "SQLite")
+    private void ConfigureRowVersion(ModelBuilder modelBuilder)
+    {
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+            return;
+        //#endif
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            //#if (offlineDb == true)
+            if (typeof(BaseEntityTableData).IsAssignableFrom(entityType.ClrType))
+                continue; // No concurrency check for client side offline database sync entities
+            //#endif
+
+            foreach (var property in entityType.GetProperties()
+                .Where(p => p.Name is "Version" && p.PropertyInfo?.PropertyType == typeof(long)))
             {
                 var builder = new PropertyBuilder(property);
 
-                //#if (database == "Sqlite")
-                //#if (IsInsideProjectTemplate == true)
-                if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
-                {
-                    //#endif
-                    builder.IsConcurrencyToken();
-                    //#if (IsInsideProjectTemplate == true)
-                    continue;
-                }
-                //#endif
-                //#else
-                builder.IsConcurrencyToken()
-                    .IsRowVersion();
+                builder.IsRowVersion();
 
+                //#if (database == "PostgreSQL")
                 //#if (IsInsideProjectTemplate == true)
                 if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
-                {
-                    //#endif
-                    //#if (database == "PostgreSQL")
-                    builder.HasConversion(new ValueConverter<byte[], uint>(
-                        v => BitConverter.ToUInt32(v, 0),
-                        v => BitConverter.GetBytes(v)));
-                    //#endif
-                    //#if (IsInsideProjectTemplate == true)
-                }
                 //#endif
+                builder.HasConversion<uint>();
+                //#else
+                //#if (IsInsideProjectTemplate == true)
+                if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false) // SQL Server & MySQL
+                //#endif
+                builder.HasConversion<byte[]>();
                 //#endif
             }
         }
     }
+    //#endif
 
     //#if (database == "PostgreSQL" || database == "SqlServer")
     //#if (database == "PostgreSQL" && aspire == false)

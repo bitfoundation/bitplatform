@@ -38,7 +38,7 @@ public partial class ProductDto
     [Display(Name = nameof(AppStrings.Category))]
     public string? CategoryName { get; set; }
 
-    public byte[] Version { get; set; } = [];
+    public long Version { get; set; }
 
     public bool HasPrimaryImage { get; set; } = false;
 
@@ -49,7 +49,7 @@ public partial class ProductDto
     {
         return HasPrimaryImage is false
             ? null
-            : new Uri(absoluteServerAddress, $"/api/Attachment/GetAttachment/{Id}/{AttachmentKind.ProductPrimaryImageMedium}?v={Version.ToStampString()}").ToString();
+            : new Uri(absoluteServerAddress, $"/api/Attachment/GetAttachment/{Id}/{AttachmentKind.ProductPrimaryImageMedium}?v={Version}").ToString();
     }
 
     public string FormattedPrice => FormatPrice();

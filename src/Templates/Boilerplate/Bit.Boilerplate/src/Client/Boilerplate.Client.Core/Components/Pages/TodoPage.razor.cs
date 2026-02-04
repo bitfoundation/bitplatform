@@ -128,7 +128,7 @@ public partial class TodoPage
 
         var addedTodoItem = await todoItemController.Create(new()
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = Guid.CreateVersion7().ToString(),
             Title = newTodoTitle
         }, CurrentCancellationToken);
 

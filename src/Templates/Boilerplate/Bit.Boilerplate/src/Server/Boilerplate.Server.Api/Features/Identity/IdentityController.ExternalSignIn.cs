@@ -58,7 +58,7 @@ public partial class IdentityController
                     LockoutEnabled = true
                 };
 
-                await userStore.SetUserNameAsync(user, Guid.NewGuid().ToString(), cancellationToken);
+                await userStore.SetUserNameAsync(user, Guid.CreateVersion7().ToString(), cancellationToken);
 
                 if (string.IsNullOrEmpty(email) is false)
                 {

@@ -11,5 +11,5 @@ public class SystemPrompt
     [Required]
     public string? Markdown { get; set; }
 
-    public byte[] Version { get; set; } = [];
+    public long Version { get; set; }
 }

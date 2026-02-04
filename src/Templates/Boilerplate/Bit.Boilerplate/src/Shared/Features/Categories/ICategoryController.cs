@@ -24,6 +24,6 @@ public interface ICategoryController : IAppController
     Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancellationToken);
 
     [HttpDelete("{id}/{version}")]
-    Task Delete(Guid id, string version, CancellationToken cancellationToken);
+    Task Delete(Guid id, long version, CancellationToken cancellationToken);
     //#endif
 }

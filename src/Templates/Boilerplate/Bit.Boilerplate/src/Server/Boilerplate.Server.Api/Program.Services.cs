@@ -45,6 +45,7 @@ using CommunityToolkit.Datasync.Server;
 using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Server.Api.Features.Statistics;
 using Boilerplate.Shared.Infrastructure.Resources;
+using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
@@ -168,12 +169,12 @@ public static partial class Program
 
         // Register distributed lock factory
         //#if (redis == true)
-        services.AddTransient(sp => new Func<string, IDistributedLock>((string lockKey) =>
+        services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
         {
             return new Medallion.Threading.Redis.RedisDistributedLock(lockKey, sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase());
         }));
         //#else
-        services.AddTransient(sp => new Func<string, IDistributedLock>((string lockKey) =>
+        services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
         {
             return new Medallion.Threading.FileSystem.FileDistributedLock(new(Path.Combine(Path.GetTempPath(), $"Boilerplate-{lockKey}.lock")));
         }));
@@ -232,7 +233,7 @@ public static partial class Program
         services.AddSingleton<HtmlSanitizer>();
 
         services
-            .AddControllers()
+            .AddControllers(options => options.Filters.Add<AutoCsrfProtectionFilter>())
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;

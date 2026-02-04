@@ -85,14 +85,14 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     }
 
     [HttpDelete("{id}/{version}")]
-    public async Task Delete(Guid id, string version, CancellationToken cancellationToken)
+    public async Task Delete(Guid id, long version, CancellationToken cancellationToken)
     {
         if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))
         {
             throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
         }
 
-        DbContext.Categories.Remove(new() { Id = id, Version = Convert.FromHexString(version) });
+        DbContext.Categories.Remove(new() { Id = id, Version = version });
 
         await DbContext.SaveChangesAsync(cancellationToken);
 

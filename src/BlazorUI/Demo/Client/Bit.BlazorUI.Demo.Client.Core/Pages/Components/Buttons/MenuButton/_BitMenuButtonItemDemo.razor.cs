@@ -52,6 +52,13 @@ public partial class _BitMenuButtonItemDemo
         new() { Text = "Item C", Key = "C", IconName = BitIconName.Emoji2, IsSelected = true }
     ];
 
+    private static List<BitMenuButtonItem> externalIconItems =
+    [
+        new() { Text = "Add", Icon = "fa-solid fa-plus" },
+        new() { Text = "Edit", Icon = BitIconInfo.Css("fa-solid fa-pen") },
+        new() { Text = "Delete", Icon = BitIconInfo.Fa("solid trash") }
+    ];
+
     private static List<BitMenuButtonItem> rtlItemsIcon =
     [
         new() { Text = "گزینه الف", Key = "A", IconName = BitIconName.Emoji },
