@@ -52,6 +52,21 @@ public partial class BitToggleButton : BitComponentBase
     public bool FixedColor { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
+    /// Material: Icon="BitIconInfo.Material("home")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
     /// The icon name that renders inside the toggle button.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
@@ -79,6 +94,21 @@ public partial class BitToggleButton : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to display when the toggle button is not checked using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="OffIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="OffIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// FontAwesome: OffIcon="BitIconInfo.Fa("solid house")"
+    /// Material: OffIcon="BitIconInfo.Material("home")"
+    /// Custom CSS: OffIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? OffIcon { get; set; }
+
+    /// <summary>
     /// The icon of the toggle button when it is not checked.
     /// </summary>
     [Parameter] public string? OffIconName { get; set; }
@@ -92,6 +122,21 @@ public partial class BitToggleButton : BitComponentBase
     /// The title of the toggle button when it is not checked.
     /// </summary>
     [Parameter] public string? OffTitle { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to display when the toggle button is checked using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="OnIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="OnIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// FontAwesome: OnIcon="BitIconInfo.Fa("solid house")"
+    /// Material: OnIcon="BitIconInfo.Material("home")"
+    /// Custom CSS: OnIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? OnIcon { get; set; }
 
     /// <summary>
     /// The icon of the toggle button when it is checked.
@@ -223,13 +268,22 @@ public partial class BitToggleButton : BitComponentBase
 
 
 
-    private string? GetIconName()
+    private BitIconInfo? GetIcon()
     {
-        if (IsChecked && OnIconName.HasValue()) return OnIconName;
+        if (IsChecked)
+        {
+            var icon = BitIconInfo.From(OnIcon, OnIconName);
 
-        if (IsChecked is false && OffIconName.HasValue()) return OffIconName;
+            if (icon is not null) return icon;
+        }
+        else
+        {
+            var icon = BitIconInfo.From(OffIcon, OffIconName);
 
-        return IconName;
+            if (icon is not null) return icon;
+        }
+
+        return BitIconInfo.From(Icon, IconName);
     }
 
     private string? GetText()
