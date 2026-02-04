@@ -66,10 +66,17 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name that renders inside the toggle button.",
+            Description = "The icon name from built-in Fluent UI icons that renders inside the toggle button.",
         },
         new()
         {
@@ -99,9 +106,16 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
+            Name = "OffIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display when the toggle button is not checked, using custom CSS classes for external icon libraries. Takes precedence over OffIconName.",
+        },
+        new()
+        {
             Name = "OffIconName",
             Type = "string?",
-            Description = "The icon of the toggle button when it is not checked.",
+            Description = "The icon from built-in Fluent UI icons when the toggle button is not checked.",
         },
         new()
         {
@@ -117,9 +131,16 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
+            Name = "OnIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display when the toggle button is checked, using custom CSS classes for external icon libraries. Takes precedence over OnIconName.",
+        },
+        new()
+        {
             Name = "OnIconName",
             Type = "string?",
-            Description = "The icon of the toggle button when it is checked.",
+            Description = "The icon from built-in Fluent UI icons when the toggle button is checked.",
         },
         new()
         {
