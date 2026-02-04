@@ -245,7 +245,7 @@ private List<BitMenuButtonItem> basicItems =
 
     private readonly string example7RazorCode = @"
 <BitMenuButton Text=""IconName"" Items=""basicItemsIcon"" IconName=""@BitIconName.Edit"" />
-<BitMenuButton Text=""ChevronDownIcon"" Items=""basicItemsIcon"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"" Split />";
+<BitMenuButton Text=""ChevronDownIconName"" Items=""basicItemsIcon"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split />";
     private readonly string example7CsharpCode = @"
 private List<BitMenuButtonItem> basicItemsIcon =
 [
@@ -547,7 +547,7 @@ private static List<BitMenuButtonItem> externalIconItems =
 
     private readonly string example13RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlItemsIcon"" IconName=""@BitIconName.Edit"" />
-<BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlItemsIcon"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"" Split />";
+<BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlItemsIcon"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split />";
     private readonly string example13CsharpCode = @"
  private static List<BitMenuButtonItem> rtlItemsIcon =
 [
