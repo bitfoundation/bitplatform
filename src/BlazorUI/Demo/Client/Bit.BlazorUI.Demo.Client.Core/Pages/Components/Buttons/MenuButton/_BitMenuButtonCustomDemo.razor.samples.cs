@@ -9,7 +9,7 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
 }
 
@@ -24,7 +24,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
@@ -35,7 +35,7 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
 }
 
@@ -50,7 +50,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
@@ -75,7 +75,7 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
 }
 
@@ -90,7 +90,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
@@ -251,7 +251,7 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
 }
 
@@ -266,7 +266,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
@@ -287,7 +287,7 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
 }
 
@@ -302,7 +302,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
@@ -320,7 +320,7 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
 }
 
@@ -335,19 +335,19 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
     private readonly string example7RazorCode = @"
 <BitMenuButton Text=""IconName"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" IconName=""@BitIconName.Edit"" />
-<BitMenuButton Text=""ChevronDownIcon"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"" Split />";
+<BitMenuButton Text=""ChevronDownIconName"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split />";
     private readonly string example7CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
 }
 
@@ -362,7 +362,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
@@ -448,7 +448,7 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
 }
 
@@ -463,7 +463,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
@@ -498,7 +498,7 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
     public RenderFragment<Operation>? Fragment { get; set; }
 }
@@ -540,7 +540,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false },
     Template = { Name = nameof(Operation.Fragment) }
 };";
@@ -569,7 +569,7 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
 }
 
@@ -591,7 +591,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
@@ -617,7 +617,7 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
 }
 
@@ -639,7 +639,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
@@ -695,7 +695,7 @@ public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public BitIconInfo? IconInfo { get; set; }
     public bool Disabled { get; set; }
 }
@@ -717,13 +717,13 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors2 = new()
 
     private readonly string example13RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlCustoms"" IconName=""@BitIconName.Edit"" NameSelectors=""nameSelectors"" />
-<BitMenuButton Text=""گرینه ها"" Dir=""BitDir.Rtl"" Items=""rtlCustoms"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"" NameSelectors=""nameSelectors"" Split />";
+<BitMenuButton Text=""گرینه ها"" Dir=""BitDir.Rtl"" Items=""rtlCustoms"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" NameSelectors=""nameSelectors"" Split />";
     private readonly string example13CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool Disabled { get; set; }
     public string? Class { get; set; }
     public string? Style { get; set; }
@@ -747,7 +747,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 {
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Icon) },
+    IconName = { Name = nameof(Operation.Image) },
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 }

@@ -633,35 +633,6 @@ public partial class BitMenuButtonDemo
                },
             ]
         },
-        new()
-        {
-            Id = "bit-icon-info",
-            Title = "BitIconInfo",
-            Parameters =
-            [
-               new()
-               {
-                   Name = "Name",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Gets or sets the name of the icon."
-               },
-               new()
-               {
-                   Name = "BaseClass",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
-               },
-               new()
-               {
-                   Name = "Prefix",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
-               },
-            ]
-        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =

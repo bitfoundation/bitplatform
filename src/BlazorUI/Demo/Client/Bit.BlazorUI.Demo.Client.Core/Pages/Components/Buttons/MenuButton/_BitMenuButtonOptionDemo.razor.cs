@@ -783,7 +783,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
-<BitMenuButton Text=""ChevronDownIcon"" TItem=""BitMenuButtonOption"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"" Split>
+<BitMenuButton Text=""ChevronDownIconName"" TItem=""BitMenuButtonOption"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
@@ -1096,7 +1096,7 @@ private bool twoWayIsOpen;";
     <BitMenuButtonOption Text=""گزینه ج"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
-<BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" TItem=""BitMenuButtonOption"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"">
+<BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" TItem=""BitMenuButtonOption"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"">
     <BitMenuButtonOption Text=""گزینه الف"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""گزینه ب"" Key=""B"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""گزینه ج"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
