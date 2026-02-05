@@ -5,7 +5,7 @@ namespace Boilerplate.Server.Shared.Infrastructure.Services;
 
 /// <summary>
 /// <para>
-/// By default, the anti-forgery mechanism generates a validation cookie and sends a <c>Set-Cookie</c> header
+/// By design, the anti-forgery mechanism generates a validation cookie and sends a <c>Set-Cookie</c> header
 /// for <strong>EVERY</strong> request, even for <strong>Anonymous (unauthenticated)</strong> users.
 /// </para>
 /// <para>

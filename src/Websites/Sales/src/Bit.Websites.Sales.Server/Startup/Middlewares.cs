@@ -53,9 +53,12 @@ public class Middlewares
         app.UseAntiforgery();
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
-        app.UseSwagger();
 
-        app.UseSwaggerUI();
+        if (env.IsProduction() is false)
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
         app.MapControllers();
 

@@ -18,7 +18,6 @@ public static class Services
 
         configuration.GetSection(nameof(AppSettings)).Bind(appSettings);
 
-        services.AddTransient<IAntiforgery, NullAntiforgery>();
         services.AddHttpClient<TelegramBotApiClient>();
         services.AddScoped<TelegramBotService>();
 
