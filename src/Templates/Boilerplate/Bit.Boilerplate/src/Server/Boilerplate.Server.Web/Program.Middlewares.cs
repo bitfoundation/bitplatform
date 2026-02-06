@@ -106,9 +106,12 @@ public static partial class Program
         app.MapAppHealthChecks();
 
         //#if (api == "Integrated")
-        app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
-        app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");
-        app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
+        if (env.IsProduction() is false)
+        {
+            app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
+            app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");
+            app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
+        }
 
         app.UseHangfireDashboard(options: new()
         {

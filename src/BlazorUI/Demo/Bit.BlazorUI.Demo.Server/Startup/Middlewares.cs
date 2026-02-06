@@ -24,6 +24,8 @@ public class Middlewares
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();
+
+            app.UseSecurityHeaders();
         }
 
         Configure_401_403_404_Pages(app);
@@ -58,9 +60,11 @@ public class Middlewares
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
 
-        app.UseSwagger();
-
-        app.UseSwaggerUI();
+        if (env.IsProduction() is false)
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
         app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
 
