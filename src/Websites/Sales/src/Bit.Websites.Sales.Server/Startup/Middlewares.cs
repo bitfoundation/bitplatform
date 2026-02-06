@@ -23,6 +23,8 @@ public class Middlewares
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();
+            
+            app.UseSecurityHeaders();
         }
 
         Configure_404_Page(app);
