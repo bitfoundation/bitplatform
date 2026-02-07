@@ -56,7 +56,7 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.2" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.2" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="ModelContextProtocol.AspNetCore" Version="0.6.0-preview.1" />
+        <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="ModelContextProtocol.AspNetCore" Version="0.8.0-preview.1" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Maui" Version="13.1.0-preview.1.25616.3" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="13.1.0" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="CommunityToolkit.Aspire.Hosting.MailPit" Version="13.1.1" />

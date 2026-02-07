@@ -36,6 +36,7 @@ public partial class AppChatbot
 
     private string? variablesDefault;
     private string? supportSystemPrompt;
+    private string? signalRConnectionId;
     private List<ChatMessage> chatMessages = [];
 
     /// <summary>
@@ -78,9 +79,10 @@ public partial class AppChatbot
         variablesDefault = @$"
 {{{{UserCulture}}}}: ""{culture?.NativeName ?? "English"}""
 {{{{DeviceInfo}}}}: ""{request.DeviceInfo ?? "Generic Device"}""
-{{{{SignalRConnectionId}}}}: ""{signalRConnectionId ?? "Unknown"}""
 {{{{UserTimeZoneId}}}}: ""{request.TimeZoneId ?? "Unknown"}""
 ";
+
+        this.signalRConnectionId = signalRConnectionId;
     }
 
     /// <summary>
@@ -113,7 +115,7 @@ public partial class AppChatbot
         {
             chatMessages.Add(new(ChatRole.User, incomingMessage));
 
-            var chatOptions = CreateChatOptions(serverApiAddress, cancellationToken);
+            var chatOptions = CreateChatOptions();
 
             // The following variables might change without SignalR connection restarts, so these should set here every time a new message is about to be processed.
             // For example, user can sign-in/sign-out during chat without restarting the app or SignalR connection.
@@ -121,7 +123,6 @@ public partial class AppChatbot
 ### Variables:
 {variablesDefault}
 {{{{IsAuthenticated}}}}: ""{user.IsAuthenticated()}""}} 
-{{{{UserId}}}}: ""{(user.IsAuthenticated() ? user!.GetUserId().ToString() : "null")}""
 {{{{UserEmail}}}}: ""{(user.IsAuthenticated() ? user!.GetEmail()?.ToString() : "null")}""
 ";
 
@@ -168,7 +169,7 @@ public partial class AppChatbot
     /// <summary>
     /// Create chat options with AI tools
     /// </summary>
-    private ChatOptions CreateChatOptions(Uri? serverApiAddress, CancellationToken cancellationToken)
+    private ChatOptions CreateChatOptions()
     {
         var tools = new List<AIFunction>
         {
@@ -246,18 +247,16 @@ public partial class AppChatbot
     [Description("Navigates the user to a specific page within the application. Use this tool when the user requests to go to a particular section or feature of the app.")]
     [McpServerTool(Name = nameof(NavigateToPage))]
     private async Task<string?> NavigateToPage(
-        [Required, Description("Page URL to navigate to")] string pageUrl,
-        [Required, Description("SignalR connection id")] string signalRConnectionId)
+        [Required, Description("Page URL to navigate to")] string pageUrl)
     {
-        if (string.IsNullOrEmpty(signalRConnectionId))
-            return "There's no access to your app on your device";
+        await EnsureSignalRConnectionIdIsPresent();
 
         await using var scope = serviceProvider.CreateAsyncScope();
 
         try
         {
             _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                .Clients.Client(signalRConnectionId)
+                .Clients.Client(signalRConnectionId!)
                 .InvokeAsync<bool>(SharedAppMessages.NAVIGATE_TO, pageUrl, CancellationToken.None);
 
             return "Navigation completed";
@@ -271,14 +270,16 @@ public partial class AppChatbot
 
     [Description(@"Displays the sign-in modal to the user and waits for either successful sign-in or cancellation")]
     [McpServerTool(Name = nameof(ShowSignInModal))]
-    public async Task<UserDto?> ShowSignInModal([Required, Description("SignalR connection id")] string signalRConnectionId)
+    public async Task<UserDto?> ShowSignInModal()
     {
         await using var scope = serviceProvider.CreateAsyncScope();
 
         try
         {
+            await EnsureSignalRConnectionIdIsPresent();
+
             var accessToken = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                .Clients.Client(signalRConnectionId)
+                .Clients.Client(signalRConnectionId!)
                 .InvokeAsync<string>(SharedAppMessages.SHOW_SIGN_IN_MODAL, CancellationToken.None);
 
             var bearerTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).BearerTokenProtector;
@@ -303,11 +304,9 @@ public partial class AppChatbot
     [Description("Changes the user's culture/language setting. Use this tool when the user requests to change the app language. Common LCIDs: 1033=en-US, 1065=fa-IR, 1053=sv-SE, 2057=en-GB, 1043=nl-NL, 1081=hi-IN, 2052=zh-CN, 3082=es-ES, 1036=fr-FR, 1025=ar-SA, 1031=de-DE.")]
     [McpServerTool(Name = nameof(SetCulture))]
     private async Task<string?> SetCulture(
-        [Required, Description("Culture LCID (e.g., 1033 for en-US, 1065 for fa-IR)")] int cultureLcid,
-        [Required, Description("SignalR connection id")] string signalRConnectionId)
+        [Required, Description("Culture LCID (e.g., 1033 for en-US, 1065 for fa-IR)")] int cultureLcid)
     {
-        if (string.IsNullOrEmpty(signalRConnectionId))
-            return "There's no access to your app on your device";
+        await EnsureSignalRConnectionIdIsPresent();
 
         await using var scope = serviceProvider.CreateAsyncScope();
 
@@ -319,7 +318,7 @@ public partial class AppChatbot
                 return $"The requested culture is not supported. Available cultures: {string.Join(", ", CultureInfoManager.SupportedCultures.Select(c => c.Culture.NativeName))}";
 
             _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                .Clients.Client(signalRConnectionId)
+                .Clients.Client(signalRConnectionId!)
                 .InvokeAsync<bool>(SharedAppMessages.CHANGE_CULTURE, cultureLcid, CancellationToken.None);
 
             return "Culture/Language changed successfully";
@@ -337,11 +336,9 @@ public partial class AppChatbot
     [Description("Changes the user's theme preference between light and dark mode. Use this tool when the user requests to change the app theme or appearance.")]
     [McpServerTool(Name = nameof(SetTheme))]
     private async Task<string?> SetTheme(
-        [Required, Description("Theme name: 'light' or 'dark'")] string theme,
-        [Required, Description("SignalR connection id")] string signalRConnectionId)
+        [Required, Description("Theme name: 'light' or 'dark'")] string theme)
     {
-        if (string.IsNullOrEmpty(signalRConnectionId))
-            return "There's no access to your app on your device";
+        await EnsureSignalRConnectionIdIsPresent();
 
         if (theme != "light" && theme != "dark")
             return "Invalid theme. Use 'light' or 'dark'.";
@@ -351,7 +348,7 @@ public partial class AppChatbot
         try
         {
             _ = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                .Clients.Client(signalRConnectionId)
+                .Clients.Client(signalRConnectionId!)
                 .InvokeAsync<bool>(SharedAppMessages.CHANGE_THEME, theme, CancellationToken.None);
 
             return $"Theme changed to {theme} successfully";
@@ -368,18 +365,16 @@ public partial class AppChatbot
     /// </summary>
     [Description("Retrieves the last error that occurred on the user's device from the diagnostic logs. Use this tool when troubleshooting user-reported issues, investigating application crashes, or when the user mentions something isn't working.")]
     [McpServerTool(Name = nameof(CheckLastError))]
-    private async Task<string?> CheckLastError(
-        [Required, Description("SignalR connection id")] string signalRConnectionId)
+    private async Task<string?> CheckLastError()
     {
-        if (string.IsNullOrEmpty(signalRConnectionId))
-            return "There's no access to your app on your device";
+        await EnsureSignalRConnectionIdIsPresent();
 
         await using var scope = serviceProvider.CreateAsyncScope();
 
         try
         {
             var lastError = await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                .Clients.Client(signalRConnectionId)
+                .Clients.Client(signalRConnectionId!)
                 .InvokeAsync<DiagnosticLogDto?>(SharedAppMessages.UPLOAD_LAST_ERROR, CancellationToken.None);
 
             if (lastError is null)
@@ -399,18 +394,16 @@ public partial class AppChatbot
     /// </summary>
     [Description("Clears application files on the user's device to fix issues.")]
     [McpServerTool(Name = nameof(ClearAppFiles))]
-    private async Task<string?> ClearAppFiles(
-        [Required, Description("SignalR connection id")] string signalRConnectionId)
+    private async Task<string?> ClearAppFiles()
     {
-        if (string.IsNullOrEmpty(signalRConnectionId))
-            return "There's no access to your app on your device";
+        await EnsureSignalRConnectionIdIsPresent();
 
         await using var scope = serviceProvider.CreateAsyncScope();
 
         try
         {
             await scope.ServiceProvider.GetRequiredService<IHubContext<AppHub>>()
-                .Clients.Client(signalRConnectionId)
+                .Clients.Client(signalRConnectionId!)
                 .InvokeAsync<DiagnosticLogDto?>(SharedAppMessages.CLEAR_APP_FILES, CancellationToken.None);
 
             return "App files cleared successfully on the device.";
@@ -501,5 +494,37 @@ public partial class AppChatbot
             chatOptions, cancellationToken: cancellationToken);
 
         return followUpItems.Result ?? new AiChatFollowUpList();
+    }
+
+    private async Task EnsureSignalRConnectionIdIsPresent()
+    {
+        // If the AIFunction tool is getting called by the IChatClient, the signalRConnectionId is already set in the AppChatbot instance using
+        // StartChat method, so we can return it directly without querying the database again.
+
+        // The SignalRConnectionId gives access to the currently exposed SignalR Client methods (e.g., NavigateToPage, ShowSignInModal)
+        // that are essential for some of the AI tools to work properly, so it's important to ensure that we have it available when processing AI tool calls.
+
+        // If the AIFunction tool is getting called by an external MCP client, then the signalRConnectionId won't be set,
+        // so we need to query the database to get the active SignalR connection id for the current user session, assuming that the external MCP client is using authentication headers.
+
+        if (string.IsNullOrEmpty(signalRConnectionId) is false)
+            return;
+
+        await using var scope = serviceProvider.CreateAsyncScope();
+        var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
+
+        if (httpContextAccessor?.HttpContext?.User?.IsAuthenticated() is false)
+            throw new UnauthorizedException("User must be authenticated to use this tool when calling from an external MCP client.");
+        // While these tools can be called internally even for unauthenticated users,
+        // we require authentication for external MCP clients to ensure we can associate the request with a user session and retrieve the correct SignalR connection id.
+        // accepting SignalR connection id from external MCP clients would not be secure as it can be easily manipulated using prompt injection in external LLM that's calling the MCP tool.
+
+        var userSessionId = httpContextAccessor?.HttpContext?.User.GetSessionId();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        signalRConnectionId = await dbContext.UserSessions
+            .Where(s => s.Id == userSessionId)
+            .Select(s => s.SignalRConnectionId)
+            .FirstOrDefaultAsync() ?? throw new InvalidOperationException("There's no access to your app on your device.");
     }
 }
