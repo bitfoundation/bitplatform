@@ -23,6 +23,8 @@ public class Middlewares
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();
+            
+            app.UseSecurityHeaders();
         }
 
         Configure_404_Page(app);
@@ -53,9 +55,12 @@ public class Middlewares
         app.UseAntiforgery();
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
-        app.UseSwagger();
 
-        app.UseSwaggerUI();
+        if (env.IsProduction() is false)
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
         app.MapControllers();
 
