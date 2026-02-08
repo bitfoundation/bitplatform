@@ -22,7 +22,7 @@ namespace BitBlazorUI {
             }));
 
             files.forEach((f) => {
-                const inputItem = new BitFileInputItem(id, f.file, f.index);
+                const inputItem = new BitFileInputItem(id, f.fileId, f.file, f.index);
                 FileInput._fileInputs.push(inputItem);
             });
 
@@ -80,6 +80,16 @@ namespace BitBlazorUI {
             FileInput._fileInputs = FileInput._fileInputs.filter(f => f.id !== id);
         }
 
+        public static async readContent(id: string, fileId: string): Promise<Uint8Array> {
+            const item = FileInput._fileInputs.find(f => f.id === id && f.fileId === fileId);
+            if (!item) {
+                throw new Error(`File not found: ${fileId}`);
+            }
+
+            const buffer = await item.file.arrayBuffer();
+            return new Uint8Array(buffer);
+        }
+
         public static reset(id: string, inputElement: HTMLInputElement) {
             FileInput.clear(id);
             inputElement.value = '';
@@ -88,11 +98,13 @@ namespace BitBlazorUI {
 
     class BitFileInputItem {
         id: string;
+        fileId: string;
         file: File;
         index: number;
 
-        constructor(id: string, file: File, index: number) {
+        constructor(id: string, fileId: string, file: File, index: number) {
             this.id = id;
+            this.fileId = fileId;
             this.file = file;
             this.index = index;
         }

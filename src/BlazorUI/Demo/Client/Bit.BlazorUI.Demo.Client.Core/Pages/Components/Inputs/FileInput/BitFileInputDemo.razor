@@ -69,17 +69,26 @@
     </DemoExample>
 
     <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>Different events can be configured for file selection.</div>
+        <div>Use OnChange to handle file selection and ReadContentAsync to access the file's byte array content.</div>
 
         <br />
 
-        <BitFileInput Label="Select or drag and drop files" OnChange="@HandleOnChange" />
+        <BitFileInput @ref="eventsFileInput" Label="Select or drag and drop files" OnChange="@HandleOnChange" />
+        
+        <br />
+        <br />
 
         <div>Selected files:</div>
         <br />
         @foreach (var file in selectedFiles)
         {
-            <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
+            <div>
+                @file.Name (@FileSizeHumanizer.Humanize(file.Size))
+                @if (file.Content is not null)
+                {
+                    <span> - @file.Content.Length bytes loaded</span>
+                }
+            </div>
         }
     </DemoExample>
 
