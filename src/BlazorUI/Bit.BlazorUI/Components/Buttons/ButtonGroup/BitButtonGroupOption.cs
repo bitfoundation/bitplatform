@@ -22,7 +22,7 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
     /// </remarks>
     /// <example>
-    /// Bootstrap: OnIcon="BitIconInfo.Bi("gear-fill")"
+    /// Bootstrap: Icon="BitIconInfo.Bi("gear-fill")"
     /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
     /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
     /// </example>
@@ -52,7 +52,7 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     /// For built-in Fluent UI icons, use <see cref="OffIconName"/> instead.
     /// </remarks>
     /// <example>
-    /// Bootstrap: OnIcon="BitIconInfo.Bi("gear-fill")"
+    /// Bootstrap: OffIcon="BitIconInfo.Bi("gear-fill")"
     /// FontAwesome: OffIcon="BitIconInfo.Fa("solid house")"
     /// Custom CSS: OffIcon="BitIconInfo.Css("my-icon-class")"
     /// </example>
