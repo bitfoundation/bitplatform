@@ -21,6 +21,12 @@ namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 /// and handling AI interactions including getting user feedbacks, describing app's features and pages etc.
 /// This service is exposed over SignalR's AppHub.Chat.cs, so it can accept stream of user messages and return stream of AI responses using AiChatPanel.razor
 /// Every tool method is decorated with [McpServerTool] attribute, so it can be also be used by other external MCP-Client if needed.
+/// 
+/// Microsoft.Agents.Ai:
+/// Workflows are not implemented in this project, but with AIAgent, achieving them is now easier compared to using IChatClient directly.
+/// For example, it would be better to have separate Agents: one for product search, one for support, and one for app guidance.
+/// A coordinator Agent could determine which specialized Agent to delegate the task to based on the user's message,
+/// rather than having a single Agent with a very long System Prompt and many Tools.
 /// </summary>
 [McpServerToolType]
 public partial class AppChatbot
@@ -110,6 +116,11 @@ public partial class AppChatbot
 
         chatClient ??= serviceProvider.GetRequiredService<IChatClient>();
 
+        var supportAgent = chatClient.AsAIAgent(
+            instructions: supportSystemPrompt,
+            name: "SupportAgent",
+            description: "Provides user support, answers questions, and assists with app features and troubleshooting");
+
         StringBuilder assistantResponse = new();
         try
         {
@@ -126,12 +137,11 @@ public partial class AppChatbot
 {{{{UserEmail}}}}: ""{(user.IsAuthenticated() ? user!.GetEmail()?.ToString() : "null")}""
 ";
 
-            await foreach (var response in chatClient.GetStreamingResponseAsync([
+            await foreach (var response in supportAgent.RunStreamingAsync([
                 new (ChatRole.System, variablesPrompt),
-                new (ChatRole.System, supportSystemPrompt),
                     .. chatMessages,
                     new (ChatRole.User, incomingMessage)
-                ], options: chatOptions, cancellationToken: cancellationToken))
+                ], options: new Microsoft.Agents.AI.ChatClientAgentRunOptions(chatOptions), cancellationToken: cancellationToken))
             {
                 if (cancellationToken.IsCancellationRequested)
                     break;
@@ -473,25 +483,45 @@ public partial class AppChatbot
         // This would generate a list of follow-up questions/suggestions to keep the conversation going.
         // You could instead generate that list in previous chat completion call:
         // 1: Using "tools" or "functions" feature of the model, that would not consider the latest assistant response.
-        // 2: Returning a json object containing the response and follow-up suggestions all together, losing IAsyncEnumerable streaming capability.  
+        // 2: Returning a json object containing the response and follow-up suggestions all together, losing IAsyncEnumerable streaming capability.
+
+        var followUpAgent = chatClient!.AsAIAgent(
+            instructions: """
+            You are a Follow-Up Suggestion Agent. Your role is to generate natural, contextual follow-up questions or actions for users.
+
+            ANALYSIS PROCESS:
+            1. Review the conversation context carefully
+            2. Identify logical next steps or questions the user might ask
+            3. Ensure suggestions are within the assistant's capabilities
+            4. Make suggestions actionable and user-centric
+
+            RESPONSE FORMAT:
+            Return ONLY a JSON object with:
+            - "FollowUpSuggestions": array of exactly 3 strings
+
+            VALIDATION RULES:
+            - Only suggest follow-up actions/questions that are within the assistant's scope and knowledge
+            - Do not suggest questions that require access to data or functionality that is unavailable or out of scope
+            - Avoid suggesting questions that the assistant would not be able to answer
+            - Written from the user's perspective (never from the assistant)
+            - Direct, natural, clickable actions/questions
+            - Keep each suggestion concise (under 60 characters)
+            """,
+            name: "FollowUpSuggestionAgent",
+            description: "Generates contextual follow-up suggestions to keep conversations flowing naturally");
+
         chatOptions.ResponseFormat = ChatResponseFormat.Json;
         chatOptions.AdditionalProperties = new() { ["response_format"] = new { type = "json_object" } };
 
-        var followUpItems = await chatClient!.GetResponseAsync<AiChatFollowUpList>([
-            new(ChatRole.System, supportSystemPrompt),
-            new(ChatRole.User, incomingMessage),
-            new(ChatRole.Assistant, assistantResponse),
-            new(ChatRole.System, """
-        Generate exactly 3 short suggested replies that the user would naturally type next.
-        Rules:
-        - Only suggest follow-up actions/questions that are within the assistant's scope and knowledge.
-        - Do not suggest questions that require access to data or functionality that is unavailable or out of scope for this assistant.
-        - Avoid suggesting questions that the assistant would not be able to answer.
-        - Written from the user's perspective (never from the assistant)
-        - Direct, natural, clickable actions/questions
-        - Return JSON object containing string[] named FollowUpSuggestions
-        """),],
-            chatOptions, cancellationToken: cancellationToken);
+        var followUpItems = await followUpAgent.RunAsync<AiChatFollowUpList>(
+            messages: [
+                new(ChatRole.System, supportSystemPrompt),
+                new(ChatRole.User, incomingMessage),
+                new(ChatRole.Assistant, assistantResponse),
+                new(ChatRole.User, "Generate 3 short follow-up suggestions for what I might want to ask or do next.")
+            ],
+            cancellationToken: cancellationToken,
+            options: new Microsoft.Agents.AI.ChatClientAgentRunOptions(chatOptions));
 
         return followUpItems.Result ?? new AiChatFollowUpList();
     }
