@@ -96,7 +96,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         if (iconName.HasValue())
         {
-            var icon = component.FindAll(".bit-icon")[0];
+            var icon = component.FindAll(".bit-nfl-lic")[0];
             Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
 
             if (string.IsNullOrEmpty(iconAriaLabel) is false)

@@ -249,8 +249,8 @@
             <i style="@Styles?.Icon"
                class="bit-nfl-lic bit-icon bit-icon--@IconName @Classes?.Icon"
                role="@(IconAriaLabel.HasValue() ? "img" : null)"
-               aria-hidden="true"
-               aria-label="@IconAriaLabel" />
+               aria-label="@IconAriaLabel" 
+               aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")" />
         }
 
         @if (SuffixTemplate is not null)
