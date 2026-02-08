@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitFileInput is a file input component that wraps the HTML file input element and enables file selection
@@ -242,7 +242,7 @@ public partial class BitFileInput : BitComponentBase
 
         _files.AddRange(newFiles);
 
-        await OnChange.InvokeAsync([.. _files]);
+        _ = OnChange.InvokeAsync([.. _files]);
     }
 
     private string GetFileElClass(bool isValid)
