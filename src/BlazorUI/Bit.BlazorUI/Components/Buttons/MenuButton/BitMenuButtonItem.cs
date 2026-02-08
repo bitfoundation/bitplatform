@@ -16,8 +16,8 @@ public class BitMenuButtonItem
     /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
     /// </remarks>
     /// <example>
+    /// Bootstrap: Icon="BitIconInfo.Bi("gear-fill")"
     /// FontAwesome: Icon = BitIconInfo.Fa("solid house")
-    /// Material: Icon = BitIconInfo.Material("home")
     /// Custom CSS: Icon = BitIconInfo.Css("my-icon-class")
     /// </example>
     public BitIconInfo? Icon { get; set; }
