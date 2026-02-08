@@ -1,8 +1,9 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 /// <summary>
-/// A file input component that wraps the HTML file input element, enabling file selection with support for validation, drag-and-drop, and customization.
-/// The selected files can be accessed and processed from the C# context.
+/// BitFileInput is a file input component that wraps the HTML file input element and enables file selection
+/// with support for validation, drag-and-drop, and customization.
+/// The selected files' metadata and content can be accessed and processed from C# code.
 /// </summary>
 public partial class BitFileInput : BitComponentBase
 {
@@ -18,85 +19,83 @@ public partial class BitFileInput : BitComponentBase
 
 
     /// <summary>
-    /// Specifies the accepted file types using MIME types or file extensions (e.g., "image/*", ".pdf,.doc").
-    /// This value is applied to the HTML input element's accept attribute.
+    /// Accepted file types for the file browser using MIME types or file extensions (e.g., "image/*", ".pdf,.doc").
+    /// Applied to the underlying HTML input element's accept attribute.
     /// </summary>
     [Parameter] public string? Accept { get; set; }
 
     /// <summary>
-    /// Specifies the allowed file extensions for validation (e.g., [".jpg", ".png", ".pdf"]).
+    /// Allowed file extensions for validation purposes (e.g., [".jpg", ".png", ".pdf"]).
     /// Use ["*"] to allow all file types. Files not matching these extensions will be marked as invalid.
     /// </summary>
     [Parameter] public IReadOnlyCollection<string> AllowedExtensions { get; set; } = ["*"];
 
     /// <summary>
-    /// When enabled, newly selected files are appended to the existing file list instead of replacing it.
+    /// Whether to append newly selected files to the existing file list instead of replacing it.
     /// </summary>
     [Parameter] public bool Append { get; set; }
 
     /// <summary>
-    /// When enabled, the file input is automatically reset (cleared) before opening the file browser dialog.
-    /// This allows selecting the same file multiple times consecutively.
+    /// Whether the file input is automatically reset (cleared) before opening the file browser dialog,
+    /// allowing the same file to be selected multiple times consecutively.
     /// </summary>
     [Parameter] public bool AutoReset { get; set; }
 
     /// <summary>
-    /// When enabled, the file list displaying selected files is hidden from the UI.
+    /// Whether to hide the file list that displays the selected files in the UI.
     /// </summary>
     [Parameter] public bool HideFileList { get; set; }
 
     /// <summary>
-    /// When enabled, the default browse button label is hidden from the UI.
+    /// Whether to hide the default browse button label from the UI.
     /// </summary>
     [Parameter] public bool HideLabel { get; set; }
 
     /// <summary>
-    /// The text displayed on the browse button. Defaults to "Browse" if not specified.
+    /// The text displayed on the browse button. Defaults to "Browse".
     /// </summary>
     [Parameter] public string? Label { get; set; }
 
     /// <summary>
-    /// A custom Razor template for the browse button area, allowing full customization of the file selection UI.
+    /// Custom Razor template for the browse button area, allowing full customization of the file selection trigger UI.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// The maximum allowed file size in bytes for validation. 
+    /// Maximum allowed file size in bytes for validation.
     /// Files exceeding this size will be marked as invalid. Set to 0 for no size limit.
     /// </summary>
     [Parameter] public long MaxSize { get; set; }
 
     /// <summary>
-    /// The error message displayed when a file exceeds the maximum size limit.
-    /// Defaults to "The file size is larger than the max size" if not specified.
+    /// Custom error message displayed when a file exceeds the maximum size limit.
+    /// Defaults to "The file size is larger than the max size".
     /// </summary>
     [Parameter] public string? MaxSizeErrorMessage { get; set; }
 
     /// <summary>
-    /// When enabled, allows selecting multiple files simultaneously through the file browser dialog.
+    /// Whether to allow selecting multiple files simultaneously through the file browser dialog.
     /// </summary>
     [Parameter] public bool Multiple { get; set; }
 
     /// <summary>
-    /// The error message displayed when a file's extension is not in the allowed extensions list.
-    /// Defaults to "The file type is not allowed" if not specified.
+    /// Custom error message displayed when a file's extension is not in the allowed extensions list.
+    /// Defaults to "The file type is not allowed".
     /// </summary>
     [Parameter] public string? NotAllowedExtensionErrorMessage { get; set; }
 
     /// <summary>
-    /// Callback invoked when the file selection changes.
-    /// Receives an array of <see cref="BitFileInputInfo"/> objects representing all selected files.
+    /// Callback invoked when the file selection changes, providing an array of <see cref="BitFileInputInfo"/> representing all selected files.
     /// </summary>
     [Parameter] public EventCallback<BitFileInputInfo[]> OnChange { get; set; }
 
     /// <summary>
-    /// When enabled, displays a remove button next to each file in the file list,
-    /// allowing users to individually remove files from the selection.
+    /// Whether to display a remove button next to each file in the file list, allowing individual file removal.
     /// </summary>
     [Parameter] public bool ShowRemoveButton { get; set; }
 
     /// <summary>
-    /// A custom Razor template for rendering individual file items in the file list.
+    /// Custom Razor template for rendering individual file items in the file list.
     /// Receives a <see cref="BitFileInputInfo"/> context for each file.
     /// </summary>
     [Parameter] public RenderFragment<BitFileInputInfo>? FileViewTemplate { get; set; }
@@ -104,22 +103,21 @@ public partial class BitFileInput : BitComponentBase
 
 
     /// <summary>
-    /// Gets a read-only list of all currently selected files with their metadata and validation status.
+    /// A read-only list of all currently selected files with their metadata, validation status, and content.
     /// </summary>
     public IReadOnlyList<BitFileInputInfo> Files => _files;
 
     /// <summary>
-    /// Gets the unique identifier of the underlying HTML file input element.
+    /// The unique identifier of the underlying HTML file input element.
     /// </summary>
     public string? InputId { get; private set; }
 
 
 
     /// <summary>
-    /// Programmatically opens the file browser dialog, allowing users to select files.
-    /// If <see cref="AutoReset"/> is enabled, the input is reset before opening the dialog.
+    /// Opens the file browser dialog programmatically, allowing users to select files.
+    /// If <see cref="AutoReset"/> is enabled, the input is reset before opening.
     /// </summary>
-    /// <returns>A task that completes when the browser dialog is opened.</returns>
     public async Task Browse()
     {
         if (IsEnabled is false) return;
@@ -135,7 +133,6 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// Clears all selected files and resets the file input to its initial state.
     /// </summary>
-    /// <returns>A task that completes when the reset operation finishes.</returns>
     public async Task Reset()
     {
         _files.Clear();
@@ -146,11 +143,22 @@ public partial class BitFileInput : BitComponentBase
     }
 
     /// <summary>
-    /// Removes one or more files from the selected files list.
+    /// Reads the content of the specified file from the browser and populates its <see cref="BitFileInputInfo.Content"/> property
+    /// with the byte array. Only reads valid and enabled files.
     /// </summary>
-    /// <param name="fileInfo">
-    /// The specific file to remove. If null, all files will be removed from the list.
-    /// </param>
+    /// <param name="fileInfo">The file info whose content should be loaded.</param>
+    public async Task ReadContentAsync(BitFileInputInfo fileInfo)
+    {
+        if (IsEnabled is false) return;
+        if (fileInfo.IsValid is false) return;
+
+        fileInfo.Content = await _js.BitFileInputReadContent(UniqueId, fileInfo.FileId);
+    }
+
+    /// <summary>
+    /// Removes a specific file from the selected files list, or clears all files when no file is specified.
+    /// </summary>
+    /// <param name="fileInfo">The file to remove, or null to remove all files.</param>
     public void RemoveFile(BitFileInputInfo? fileInfo = null)
     {
         if (_files.Any() is false) return;

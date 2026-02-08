@@ -1,46 +1,52 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Represents metadata and validation information for a file selected through <see cref="BitFileInput"/>.
+/// Represents metadata, validation state, and content of a file selected through <see cref="BitFileInput"/>.
+/// Provides access to file properties such as name, size, and content type, as well as the file's byte array content.
 /// </summary>
 public class BitFileInputInfo
 {
     /// <summary>
-    /// Gets or sets the MIME content type of the selected file (e.g., "image/png", "application/pdf").
+    /// The MIME content type of the file (e.g., "image/png", "application/pdf").
     /// </summary>
     [JsonPropertyName("type")] public string ContentType { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the name of the selected file, including its extension.
+    /// The name of the file including its extension (e.g., "document.pdf").
     /// </summary>
     [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the size of the selected file in bytes.
+    /// The size of the file in bytes.
     /// </summary>
     [JsonPropertyName("size")] public long Size { get; set; }
 
     /// <summary>
-    /// Gets or sets the unique identifier (GUID) assigned to the selected file.
+    /// A unique identifier (GUID) assigned to the file upon selection, used to reference the file in JavaScript interop.
     /// </summary>
     [JsonPropertyName("fileId")] public string FileId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the zero-based index of the file in the selection list.
+    /// The zero-based index of the file in the current selection list.
     /// </summary>
     [JsonPropertyName("index")] public int Index { get; set; }
 
     /// <summary>
-    /// Gets or sets the validation error message if the file failed validation.
-    /// This property is null when the file is valid.
+    /// The validation error message when the file has failed a validation check (e.g., size or extension).
+    /// This is null when the file is valid.
     /// </summary>
     [JsonIgnore] public string? Message { get; internal set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the file passed all validation checks
-    /// (size constraints and allowed extensions).
+    /// Whether the file has passed all validation checks including size constraints and allowed extensions.
     /// </summary>
     [JsonIgnore] public bool IsValid { get; internal set; } = true;
+
+    /// <summary>
+    /// The file content as a byte array, populated by calling <see cref="BitFileInput.ReadContentAsync(BitFileInputInfo)"/>.
+    /// This is null by default and only loaded on demand to avoid unnecessary memory usage.
+    /// </summary>
+    [JsonIgnore] public byte[]? Content { get; internal set; }
 }

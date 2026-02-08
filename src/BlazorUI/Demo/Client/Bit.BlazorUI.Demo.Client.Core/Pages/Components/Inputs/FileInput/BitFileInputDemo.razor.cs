@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.FileInput;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.FileInput;
 
 public partial class BitFileInputDemo
 {
@@ -9,90 +9,90 @@ public partial class BitFileInputDemo
             Name = "Accept",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Specifies the accepted file types using MIME types or file extensions (e.g., \"image/*\", \".pdf,.doc\"). This value is applied to the HTML input element's accept attribute.",
+            Description = "Accepted file types for the file browser using MIME types or file extensions (e.g., \"image/*\", \".pdf,.doc\"). Applied to the underlying HTML input element's accept attribute.",
         },
         new()
         {
             Name = "AllowedExtensions",
             Type = "IReadOnlyCollection<string>",
             DefaultValue = "[\"*\"]",
-            Description = "Specifies the allowed file extensions for validation (e.g., [\".jpg\", \".png\", \".pdf\"]). Use [\"*\"] to allow all file types. Files not matching these extensions will be marked as invalid.",
+            Description = "Allowed file extensions for validation purposes (e.g., [\".jpg\", \".png\", \".pdf\"]). Use [\"*\"] to allow all file types. Files not matching these extensions will be marked as invalid.",
         },
         new()
         {
             Name = "Append",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When enabled, newly selected files are appended to the existing file list instead of replacing it."
+            Description = "Whether to append newly selected files to the existing file list instead of replacing it."
         },
         new()
         {
             Name = "AutoReset",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When enabled, the file input is automatically reset (cleared) before opening the file browser dialog. This allows selecting the same file multiple times consecutively."
+            Description = "Whether the file input is automatically reset (cleared) before opening the file browser dialog, allowing the same file to be selected multiple times consecutively."
         },
         new()
         {
             Name = "HideFileList",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When enabled, the file list displaying selected files is hidden from the UI."
+            Description = "Whether to hide the file list that displays the selected files in the UI."
         },
         new()
         {
             Name = "HideLabel",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When enabled, the default browse button label is hidden from the UI."
+            Description = "Whether to hide the default browse button label from the UI."
         },
         new()
         {
             Name = "Label",
             Type = "string",
             DefaultValue = "Browse",
-            Description = "The text displayed on the browse button. Defaults to \"Browse\" if not specified."
+            Description = "The text displayed on the browse button. Defaults to \"Browse\"."
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "A custom Razor template for the browse button area, allowing full customization of the file selection UI."
+            Description = "Custom Razor template for the browse button area, allowing full customization of the file selection trigger UI."
         },
         new()
         {
             Name = "MaxSize",
             Type = "long",
             DefaultValue = "0",
-            Description = "The maximum allowed file size in bytes for validation. Files exceeding this size will be marked as invalid. Set to 0 for no size limit."
+            Description = "Maximum allowed file size in bytes for validation. Files exceeding this size will be marked as invalid. Set to 0 for no size limit."
         },
         new()
         {
             Name = "MaxSizeErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The error message displayed when a file exceeds the maximum size limit. Defaults to \"The file size is larger than the max size\" if not specified."
+            Description = "Custom error message displayed when a file exceeds the maximum size limit. Defaults to \"The file size is larger than the max size\"."
         },
         new()
         {
             Name = "Multiple",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When enabled, allows selecting multiple files simultaneously through the file browser dialog."
+            Description = "Whether to allow selecting multiple files simultaneously through the file browser dialog."
         },
         new()
         {
             Name = "NotAllowedExtensionErrorMessage",
             Type = "string",
             DefaultValue = "File type not allowed",
-            Description = "The error message displayed when a file's extension is not in the allowed extensions list. Defaults to \"The file type is not allowed\" if not specified."
+            Description = "Custom error message displayed when a file's extension is not in the allowed extensions list. Defaults to \"The file type is not allowed\"."
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<BitFileInputInfo[]>",
-            Description = "Callback invoked when the file selection changes. Receives an array of BitFileInputInfo objects representing all selected files.",
+            Description = "Callback invoked when the file selection changes, providing an array of BitFileInputInfo representing all selected files.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
         },
@@ -101,14 +101,14 @@ public partial class BitFileInputDemo
             Name = "ShowRemoveButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When enabled, displays a remove button next to each file in the file list, allowing users to individually remove files from the selection."
+            Description = "Whether to display a remove button next to each file in the file list, allowing individual file removal."
         },
         new()
         {
             Name = "FileViewTemplate",
             Type = "RenderFragment<BitFileInputInfo>?",
             DefaultValue = "null",
-            Description = "A custom Razor template for rendering individual file items in the file list. Receives a BitFileInputInfo context for each file.",
+            Description = "Custom Razor template for rendering individual file items in the file list. Receives a BitFileInputInfo context for each file.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
         }
@@ -121,7 +121,7 @@ public partial class BitFileInputDemo
             Name = "Files",
             Type = "BitFileInputInfo[]?",
             DefaultValue = "null",
-            Description = "Gets a read-only list of all currently selected files with their metadata and validation status.",
+            Description = "A read-only list of all currently selected files with their metadata, validation status, and content.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
         },
@@ -130,14 +130,14 @@ public partial class BitFileInputDemo
             Name = "InputId",
             Type = "string?",
             DefaultValue = "",
-            Description = "Gets the unique identifier of the underlying HTML file input element.",
+            Description = "The unique identifier of the underlying HTML file input element.",
         },
         new()
         {
             Name = "RemoveFile",
             Type = "(BitFileInputInfo? fileInfo = null) => void",
             DefaultValue = "",
-            Description = "Removes one or more files from the selected files list. If fileInfo is null, all files will be removed.",
+            Description = "Removes a specific file from the selected files list, or clears all files when no file is specified.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
         },
@@ -146,7 +146,16 @@ public partial class BitFileInputDemo
             Name = "Browse",
             Type = "Task",
             DefaultValue = "",
-            Description = "Programmatically opens the file browser dialog, allowing users to select files. If AutoReset is enabled, the input is reset before opening the dialog.",
+            Description = "Opens the file browser dialog programmatically, allowing users to select files. If AutoReset is enabled, the input is reset before opening.",
+        },
+        new()
+        {
+            Name = "ReadContentAsync",
+            Type = "(BitFileInputInfo fileInfo) => Task",
+            DefaultValue = "",
+            Description = "Reads the content of the specified file from the browser and populates its Content property with the byte array. Only reads valid and enabled files.",
+            LinkType = LinkType.Link,
+            Href = "#file-input-info"
         },
         new()
         {
@@ -163,7 +172,7 @@ public partial class BitFileInputDemo
         {
             Id = "file-input-info",
             Title = "BitFileInputInfo",
-            Description = "Represents metadata and validation information for a file selected through BitFileInput.",
+            Description = "Represents metadata, validation state, and content of a file selected through BitFileInput.",
             Parameters =
             [
                new()
@@ -171,47 +180,54 @@ public partial class BitFileInputDemo
                    Name = "ContentType",
                    Type = "String",
                    DefaultValue = "string.Empty",
-                   Description = "Gets or sets the MIME content type of the selected file (e.g., \"image/png\", \"application/pdf\")."
+                   Description = "The MIME content type of the file (e.g., \"image/png\", \"application/pdf\")."
                },
                new()
                {
                    Name = "Name",
                    Type = "String",
                    DefaultValue = "string.Empty",
-                   Description = "Gets or sets the name of the selected file, including its extension."
+                   Description = "The name of the file including its extension (e.g., \"document.pdf\")."
                },
                new()
                {
                    Name = "Size",
                    Type = "long",
-                   Description = "Gets or sets the size of the selected file in bytes."
+                   Description = "The size of the file in bytes."
                },
                new()
                {
                    Name = "FileId",
                    Type = "String",
                    DefaultValue = "string.Empty",
-                   Description = "Gets or sets the unique identifier (GUID) assigned to the selected file."
+                   Description = "A unique identifier (GUID) assigned to the file upon selection, used to reference the file in JavaScript interop."
                },
                new()
                {
                    Name = "Index",
                    Type = "int",
-                   Description = "Gets or sets the zero-based index of the file in the selection list."
+                   Description = "The zero-based index of the file in the current selection list."
                },
                new()
                {
                    Name = "IsValid",
                    Type = "bool",
                    DefaultValue = "true",
-                   Description = "Gets or sets a value indicating whether the file passed all validation checks (size constraints and allowed extensions)."
+                   Description = "Whether the file has passed all validation checks including size constraints and allowed extensions."
                },
                new()
                {
                    Name = "Message",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Gets or sets the validation error message if the file failed validation. This property is null when the file is valid."
+                   Description = "The validation error message when the file has failed a validation check (e.g., size or extension). This is null when the file is valid."
+               },
+               new()
+               {
+                   Name = "Content",
+                   Type = "byte[]?",
+                   DefaultValue = "null",
+                   Description = "The file content as a byte array, populated by calling ReadContentAsync. This is null by default and only loaded on demand."
                }
             ]
         }
@@ -221,10 +237,19 @@ public partial class BitFileInputDemo
 
     private BitFileInput bitFileInput = default!;
 
+    private BitFileInput eventsFileInput = default!;
     private BitFileInputInfo[] selectedFiles = [];
-    private void HandleOnChange(BitFileInputInfo[] files)
+    private async Task HandleOnChange(BitFileInputInfo[] files)
     {
         selectedFiles = files;
+
+        foreach (var file in files)
+        {
+            if (file.IsValid && file.Content is null)
+            {
+                await eventsFileInput.ReadContentAsync(file);
+            }
+        }
     }
 
 
@@ -254,19 +279,34 @@ public partial class BitFileInputDemo
 <BitFileInput Label=""Browse or drop a file"" ShowRemoveButton />";
 
     private readonly string example8RazorCode = @"
-<BitFileInput Label=""Select or drag and drop files"" OnChange=""@HandleOnChange"" />
+<BitFileInput @ref=""eventsFileInput"" Label=""Select or drag and drop files"" OnChange=""@HandleOnChange"" />
 
 <div>Selected files:</div>
 @foreach (var file in selectedFiles)
 {
-    <div>@file.Name (@FileSizeHumanizer.Humanize(file.Size))</div>
+    <div>
+        @file.Name (@FileSizeHumanizer.Humanize(file.Size))
+        @if (file.Content is not null)
+        {
+            <span> - @file.Content.Length bytes loaded</span>
+        }
+    </div>
 }";
     private readonly string example8CsharpCode = @"
+private BitFileInput eventsFileInput = default!;
 private BitFileInputInfo[] selectedFiles = [];
 
-private void HandleOnChange(BitFileInputInfo[] files)
+private async Task HandleOnChange(BitFileInputInfo[] files)
 {
     selectedFiles = files;
+
+    foreach (var file in files)
+    {
+        if (file.IsValid && file.Content is null)
+        {
+            await eventsFileInput.ReadContentAsync(file);
+        }
+    }
 }";
 
     private readonly string example9RazorCode = @"
