@@ -17,8 +17,8 @@ public class BitButtonGroupItem
     /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
     /// </remarks>
     /// <example>
+    /// Bootstrap: OnIcon="BitIconInfo.Bi("gear-fill")"
     /// FontAwesome: Icon = BitIconInfo.Fa("solid house")
-    /// Material: Icon = BitIconInfo.Material("home")
     /// Custom CSS: Icon = BitIconInfo.Css("my-icon-class")
     /// </example>
     public BitIconInfo? Icon { get; set; }
@@ -47,8 +47,8 @@ public class BitButtonGroupItem
     /// For built-in Fluent UI icons, use <see cref="OffIconName"/> instead.
     /// </remarks>
     /// <example>
+    /// Bootstrap: OnIcon="BitIconInfo.Bi("gear-fill")"
     /// FontAwesome: OffIcon = BitIconInfo.Fa("solid house")
-    /// Material: OffIcon = BitIconInfo.Material("home")
     /// Custom CSS: OffIcon = BitIconInfo.Css("my-icon-class")
     /// </example>
     public BitIconInfo? OffIcon { get; set; }
@@ -77,8 +77,8 @@ public class BitButtonGroupItem
     /// For built-in Fluent UI icons, use <see cref="OnIconName"/> instead.
     /// </remarks>
     /// <example>
+    /// Bootstrap: OnIcon="BitIconInfo.Bi("gear-fill")"
     /// FontAwesome: OnIcon = BitIconInfo.Fa("solid house")
-    /// Material: OnIcon = BitIconInfo.Material("home")
     /// Custom CSS: OnIcon = BitIconInfo.Css("my-icon-class")
     /// </example>
     public BitIconInfo? OnIcon { get; set; }

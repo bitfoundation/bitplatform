@@ -125,8 +125,8 @@ public partial class BitButton : BitComponentBase
     /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
     /// </remarks>
     /// <example>
+    /// Bootstrap: OnIcon="BitIconInfo.Bi("gear-fill")"
     /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
-    /// Material: Icon="BitIconInfo.Material("home")"
     /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
     /// </example>
     [Parameter] public BitIconInfo? Icon { get; set; }
