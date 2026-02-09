@@ -116,7 +116,7 @@ public partial class ProfileSection
 
     private async Task<string> GetUploadUrl()
     {
-        var uploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadUserProfilePicture").ToString();
+        var uploadUrl = new Uri(AbsoluteServerAddress, $"/api/v1/Attachment/UploadUserProfilePicture").ToString();
 
         if (CultureInfoManager.InvariantGlobalization is false)
         {

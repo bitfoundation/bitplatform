@@ -24,7 +24,7 @@ public interface IIdentityController : IAppController
     [HttpPost]
     Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken);
 
-    public const string RefreshUri = "api/Identity/Refresh";
+    public const string RefreshUri = "api/v1/Identity/Refresh";
     [HttpPost]
     Task<TokenResponseDto> Refresh(RefreshTokenRequestDto request, CancellationToken cancellationToken) => default!;
 
