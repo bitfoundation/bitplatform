@@ -15,8 +15,9 @@ using Boilerplate.Server.Api.Features.PushNotification;
 
 namespace Boilerplate.Server.Api.Features.Identity;
 
+[ApiVersion(1)]
 [ApiController, AllowAnonymous]
-[Route("api/[controller]/[action]")]
+[Route("api/v{v:apiVersion}/[controller]/[action]")]
 public partial class IdentityController : AppControllerBase, IIdentityController
 {
     [AutoInject] private IUserStore<User> userStore = default!;

@@ -3,7 +3,7 @@ using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Shared.Features.Identity;
 
-[Route("api/[controller]/[action]/"), AuthorizedApi]
+[Route("api/v1/[controller]/[action]/"), AuthorizedApi]
 public interface IUserManagementController : IAppController
 {
     [HttpGet]

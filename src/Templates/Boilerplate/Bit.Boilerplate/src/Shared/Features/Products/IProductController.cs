@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 namespace Boilerplate.Shared.Features.Products;
 
-[Route("api/[controller]/[action]/")]
+[Route("api/v1/[controller]/[action]/")]
 [AuthorizedApi]
 public interface IProductController : IAppController
 {

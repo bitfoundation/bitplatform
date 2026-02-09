@@ -2,8 +2,9 @@
 
 namespace Boilerplate.Server.Api.Features.Products;
 
-[ApiController, Route("api/[controller]/[action]")]
+[ApiVersion(1)]
 [AllowAnonymous]
+[ApiController, Route("api/v{v:apiVersion}/[controller]/[action]")]
 public partial class ProductViewController : AppControllerBase, IProductViewController
 {
     [HttpGet, EnableQuery, AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]

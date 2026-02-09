@@ -12,8 +12,9 @@ using Boilerplate.Server.Api.Features.PushNotification;
 
 namespace Boilerplate.Server.Api.Features.Diagnostic;
 
+[ApiVersion(1)]
 [ApiController, AllowAnonymous]
-[Route("api/[controller]/[action]")]
+[Route("api/v{v:apiVersion}/[controller]/[action]")]
 public partial class DiagnosticController : AppControllerBase, IDiagnosticController
 {
     [AutoInject] private IHostEnvironment env = default!;

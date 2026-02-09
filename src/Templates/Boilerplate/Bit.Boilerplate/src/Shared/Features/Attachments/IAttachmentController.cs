@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 namespace Boilerplate.Shared.Features.Attachments;
 
-[Route("api/[controller]/[action]/"), AuthorizedApi]
+[Route("api/v1/[controller]/[action]/"), AuthorizedApi]
 public interface IAttachmentController : IAppController
 {
     [HttpDelete]

@@ -3,7 +3,8 @@ using Boilerplate.Shared.Features.Chatbot;
 
 namespace Boilerplate.Server.Api.Features.Chatbot;
 
-[ApiController, Route("api/[controller]/[action]"),
+[ApiVersion(1)]
+[ApiController, Route("api/v{v:apiVersion}/[controller]/[action]"),
     Authorize(Policy = AppFeatures.Management.ManageAiPrompt)]
 public partial class ChatbotController : AppControllerBase, IChatbotController
 {

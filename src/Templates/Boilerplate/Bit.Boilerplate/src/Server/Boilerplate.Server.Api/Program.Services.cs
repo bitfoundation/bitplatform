@@ -253,6 +253,18 @@ public static partial class Program
                 };
             });
 
+        services.AddApiVersioning(options =>
+        {
+            options.ReportApiVersions = true;
+            options.ApiVersionReader = new UrlSegmentApiVersionReader();
+        })
+        .AddMvc() // For API Controllers
+        .AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'V";
+            options.SubstituteApiVersionInUrl = true;
+        });
+
         //#if (signalR == true)
         var signalRBuilder = services.AddSignalR(options =>
         {
@@ -292,7 +304,7 @@ public static partial class Program
         services.AddDbContextPool<AppDbContext>(AddDbContext);
 
         void AddDbContext(DbContextOptionsBuilder options)
-        {            
+        {
             options.EnableSensitiveDataLogging(env.IsDevelopment())
                 .EnableDetailedErrors(env.IsDevelopment());
 
