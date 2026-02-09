@@ -573,7 +573,7 @@ public static partial class Program
         // Configure Hangfire to use Redis for persistent background job storage
         builder.Services.AddHangfire((sp, hangfireConfiguration) =>
         {
-            if (appSettings.Hangfire?.UseIsolatedStorage is false)
+            if (appSettings.Hangfire?.UseIsolatedStorage is not true)
             {
                 //#if (redis == true)
                 hangfireConfiguration.UseRedisStorage(sp.GetRequiredService<IConnectionMultiplexer>(), new RedisStorageOptions
