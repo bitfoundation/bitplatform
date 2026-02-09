@@ -9,7 +9,8 @@ using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Features.Products;
 
-[ApiController, Route("api/[controller]/[action]")]
+[ApiVersion(1)]
+[ApiController, Route("api/v{v:apiVersion}/[controller]/[action]")]
 [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 [Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
 public partial class ProductController : AppControllerBase, IProductController

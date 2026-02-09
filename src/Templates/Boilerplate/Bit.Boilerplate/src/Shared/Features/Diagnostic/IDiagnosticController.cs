@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Features.Diagnostic;
 
-[Route("api/[controller]/[action]/")]
+[Route("api/v1/[controller]/[action]/")]
 public interface IDiagnosticController : IAppController
 {
     [HttpGet("{?signalRConnectionId,pushNotificationSubscriptionDeviceId}")]

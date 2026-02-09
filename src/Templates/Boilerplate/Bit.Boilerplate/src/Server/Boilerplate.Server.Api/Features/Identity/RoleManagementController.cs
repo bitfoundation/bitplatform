@@ -12,7 +12,8 @@ using Boilerplate.Server.Api.Features.PushNotification;
 
 namespace Boilerplate.Server.Api.Features.Identity;
 
-[ApiController, Route("api/[controller]/[action]")]
+[ApiVersion(1)]
+[ApiController, Route("api/v{v:apiVersion}/[controller]/[action]")]
 [Authorize(Policy = AppFeatures.Management.ManageRoles)]
 public partial class RoleManagementController : AppControllerBase, IRoleManagementController
 {

@@ -2,7 +2,8 @@
 
 namespace Boilerplate.Server.Api.Features.Dashboard;
 
-[ApiController, Route("api/[controller]/[action]"), 
+[ApiVersion(1)]
+[ApiController, Route("api/v{v:apiVersion}/[controller]/[action]"), 
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
     Authorize(Policy = AppFeatures.AdminPanel.Dashboard)]
 public partial class DashboardController : AppControllerBase, IDashboardController

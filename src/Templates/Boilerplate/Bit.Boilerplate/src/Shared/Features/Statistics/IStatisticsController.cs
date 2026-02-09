@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Features.Statistics;
 
-[Route("api/[controller]/[action]/")]
+[Route("api/v1/[controller]/[action]/")]
 public interface IStatisticsController : IAppController
 {
     [HttpGet("{packageId}")]

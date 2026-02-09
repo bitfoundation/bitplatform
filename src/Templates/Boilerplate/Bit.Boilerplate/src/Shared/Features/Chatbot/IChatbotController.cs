@@ -1,7 +1,7 @@
 ﻿namespace Boilerplate.Shared.Features.Chatbot;
 
 [AuthorizedApi]
-[Route("api/[controller]/[action]/")]
+[Route("api/v1/[controller]/[action]/")]
 public interface IChatbotController : IAppController
 {
     [HttpGet]

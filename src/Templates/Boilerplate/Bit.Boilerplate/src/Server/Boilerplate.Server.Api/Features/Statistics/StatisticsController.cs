@@ -2,7 +2,8 @@
 
 namespace Boilerplate.Server.Api.Features.Statistics;
 
-[ApiController, Route("api/[controller]/[action]")]
+[ApiVersion(1)]
+[ApiController, Route("api/v{v:apiVersion}/[controller]/[action]")]
 public partial class StatisticsController : AppControllerBase, IStatisticsController
 {
     [AutoInject] private NugetStatisticsService nugetHttpClient = default!;

@@ -13,8 +13,9 @@ using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Features.Attachments;
 
-[Route("api/[controller]/[action]")]
 [ApiController]
+[ApiVersion(1)]
+[Route("api/v{v:apiVersion}/[controller]/[action]")]
 public partial class AttachmentController : AppControllerBase, IAttachmentController
 {
     [AutoInject] private IBlobStorage blobStorage = default!;

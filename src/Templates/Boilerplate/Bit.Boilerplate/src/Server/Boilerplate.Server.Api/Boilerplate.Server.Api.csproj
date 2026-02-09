@@ -24,6 +24,7 @@
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <Using Include="Hangfire" />
+        <Using Include="Asp.Versioning" />
         <Using Include="Boilerplate.Shared.Infrastructure" />
         <Using Include="Boilerplate.Shared.Infrastructure.Attributes" />
         <Using Include="Microsoft.AspNetCore.Identity" />
@@ -36,6 +37,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Asp.Versioning.Mvc" />
+        <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
         <PackageReference Include="Fido2.AspNet" />
         <PackageReference Include="Hangfire.AspNetCore" />
         <PackageReference Include="Hangfire.EntityFrameworkCore" />

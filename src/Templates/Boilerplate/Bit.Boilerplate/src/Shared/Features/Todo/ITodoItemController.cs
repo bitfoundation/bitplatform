@@ -6,7 +6,7 @@ namespace Boilerplate.Shared.Features.Todo;
 // The controller that works with the offline database is implemented in TodoItemTableController.cs
 //#endif
 
-[Route("api/[controller]/[action]/"), AuthorizedApi]
+[Route("api/v1/[controller]/[action]/"), AuthorizedApi]
 public interface ITodoItemController : IAppController
 {
     [HttpGet("{id}")]

@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Features.Identity;
 
-[Route("api/[controller]/[action]/"), AuthorizedApi]
+[Route("api/v1/[controller]/[action]/"), AuthorizedApi]
 public interface IUserController : IAppController
 {
     [HttpGet]
@@ -45,7 +45,7 @@ public interface IUserController : IAppController
     Task Delete(CancellationToken cancellationToken);
 
     [HttpPost]
-    [Route("~/api/[controller]/2fa")]
+    [Route("~/api/v1/[controller]/2fa")]
     Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
