@@ -123,7 +123,7 @@ public partial class AddOrEditProductPage
 
     private async Task<string> GetUploadUrl()
     {
-        var uploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProductPrimaryImage/{Id ?? product.Id}").ToString();
+        var uploadUrl = new Uri(AbsoluteServerAddress, $"/api/v1/Attachment/UploadProductPrimaryImage/{Id ?? product.Id}").ToString();
 
         if (CultureInfoManager.InvariantGlobalization is false)
         {

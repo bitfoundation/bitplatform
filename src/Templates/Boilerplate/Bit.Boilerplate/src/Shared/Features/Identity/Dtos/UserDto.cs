@@ -44,7 +44,7 @@ public partial class UserDto : IValidatableObject
     {
         return HasProfilePicture is false
             ? null
-            : new Uri(absoluteServerAddress, $"/api/Attachment/GetAttachment/{Id}/{AttachmentKind.UserProfileImageSmall}?v={Version}").ToString();
+            : new Uri(absoluteServerAddress, $"/api/v1/Attachment/GetAttachment/{Id}/{AttachmentKind.UserProfileImageSmall}?v={Version}").ToString();
     }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
