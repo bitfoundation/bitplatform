@@ -26,7 +26,7 @@
                                 TItem="(int RowIndex, TGridItem Data)"
                                 ItemsProvider="@ProvideVirtualizedItems"
                                 ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
-                    Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
+                                Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
                 }
                 else
                 {
@@ -71,6 +71,24 @@
     }
 
     private void RenderRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
+    {
+        if (RowTemplate is null)
+        {
+            RenderOriginalRow(__builder, rowIndex, item);
+        }
+        else
+        {
+            var args = new BitDataGridRowTemplateArgs<TGridItem>
+            {
+                RowIndex = rowIndex,
+                RowItem = item,
+                OriginalRow = (builder) => RenderOriginalRow(builder, rowIndex, item)
+            };
+            __builder.AddContent(0, RowTemplate(args));
+        }
+    }
+
+    private void RenderOriginalRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
     {
         <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex" class="@GetRowClass(item)" style="@GetRowStyle(item)">
             @foreach (var col in _columns)
