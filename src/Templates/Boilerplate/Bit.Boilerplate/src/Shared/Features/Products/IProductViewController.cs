@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Features.Products;
 
-[Route("api/[controller]/[action]/")]
+[Route("api/v1/[controller]/[action]/")]
 public interface IProductViewController : IAppController
 {
     [HttpGet]

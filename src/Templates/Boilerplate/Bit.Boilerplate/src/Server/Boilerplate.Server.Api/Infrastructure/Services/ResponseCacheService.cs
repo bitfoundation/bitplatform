@@ -41,7 +41,7 @@ public partial class ResponseCacheService
     //#if (module == "Sales" || module == "Admin")
     public async Task PurgeProductCache(int shortId)
     {
-        await PurgeCache("/", $"/product/{shortId}", $"/api/ProductView/Get/{shortId}");
+        await PurgeCache("/", $"/product/{shortId}", $"/api/v1/ProductView/Get/{shortId}");
     }
     //#endif
 

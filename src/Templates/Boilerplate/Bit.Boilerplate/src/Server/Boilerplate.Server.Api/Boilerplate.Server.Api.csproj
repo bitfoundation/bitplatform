@@ -24,6 +24,7 @@
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <Using Include="Hangfire" />
+        <Using Include="Asp.Versioning" />
         <Using Include="Boilerplate.Shared.Infrastructure" />
         <Using Include="Boilerplate.Shared.Infrastructure.Attributes" />
         <Using Include="Microsoft.AspNetCore.Identity" />
@@ -36,6 +37,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Asp.Versioning.Mvc" />
+        <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
         <PackageReference Include="Fido2.AspNet" />
         <PackageReference Include="Hangfire.AspNetCore" />
         <PackageReference Include="Hangfire.EntityFrameworkCore" />
@@ -81,6 +84,7 @@
         <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" />
         <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Core" />
         <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Connectors.HuggingFace" />
+        <PackageReference Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Agents.AI" />
         <PackageReference Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="DistributedLock.Redis" />
         <PackageReference Condition="'$(redis)' != 'true' OR '$(redis)' == ''" Include="DistributedLock.FileSystem" />

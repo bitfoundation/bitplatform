@@ -52,10 +52,13 @@ public static partial class Program
 
         app.MapAppHealthChecks();
 
-        app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
-        app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");
-        app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
-        app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
+        if (env.IsProduction() is false)
+        {
+            app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
+            app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");
+            app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
+            app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
+        }
 
         app.UseHangfireDashboard(options: new()
         {
@@ -71,7 +74,7 @@ public static partial class Program
 
         //#if (signalR == true)
         app.MapHub<Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
-        app.MapMcp("/mcp")/*.RequireAuthorization()*/; // Map MCP endpoints for chatbot tool
+        app.MapMcp("/mcp").RequireAuthorization(); // Map MCP endpoints for chatbot tool
         //#endif
 
         app.MapControllers()

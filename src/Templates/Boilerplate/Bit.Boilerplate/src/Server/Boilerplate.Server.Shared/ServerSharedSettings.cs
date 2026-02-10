@@ -62,6 +62,4 @@ public class ResponseCachingOptions
     /// Enables CDN's edge servers caching
     /// </summary>
     public bool EnableCdnEdgeCaching { get; set; }
-
-    public bool SharedCachingEnabled => EnableOutputCaching || EnableCdnEdgeCaching;
 }

@@ -106,9 +106,12 @@ public static partial class Program
         app.MapAppHealthChecks();
 
         //#if (api == "Integrated")
-        app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
-        app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");
-        app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
+        if (env.IsProduction() is false)
+        {
+            app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
+            app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");
+            app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
+        }
 
         app.UseHangfireDashboard(options: new()
         {
@@ -138,7 +141,7 @@ public static partial class Program
             throw new InvalidOperationException("Azure SignalR is not supported with Blazor Server and Auto");
         }
         app.MapHub<Api.Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
-        app.MapMcp("/mcp")/*.RequireAuthorization()*/; // Map MCP endpoints for chatbot tool
+        app.MapMcp("/mcp").RequireAuthorization(); // Map MCP endpoints for chatbot tool
         //#endif
 
         app.MapControllers()

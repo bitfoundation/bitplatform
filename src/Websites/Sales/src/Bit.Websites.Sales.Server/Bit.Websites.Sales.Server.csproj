@@ -11,19 +11,20 @@
     <ItemGroup>
         <ProjectReference Include="..\Bit.Websites.Sales.Shared\Bit.Websites.Sales.Shared.csproj" />
         <ProjectReference Include="..\Bit.Websites.Sales.Client\Bit.Websites.Sales.Client.csproj" />
-        <PackageReference Include="Bit.BlazorES2019" Version="10.4.1" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.4.1">
+        <PackageReference Include="Bit.BlazorES2019" Version="10.4.2" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.4.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.4.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.4.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.2" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.1" />
+        <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.2" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />

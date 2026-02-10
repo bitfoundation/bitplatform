@@ -84,6 +84,8 @@ public partial class BitDataGridDemo : AppComponentBase
                              causing the grid to fetch and render only the current page of data.
                              This is normally used in conjunction with a Paginator component or some other UI logic
                              that displays and updates the supplied BitDataGridPaginationState instance.",
+             LinkType = LinkType.Link,
+             Href = "#pagination-state",
          },
          new()
          {
@@ -123,6 +125,16 @@ public partial class BitDataGridDemo : AppComponentBase
          },
          new()
          {
+            Name = "RowTemplate",
+            Type = "RenderFragment<BitDataGridRowTemplateArgs<TGridItem>>?",
+            DefaultValue = "null",
+            Description = @"Optional template to customize row rendering. Receives BitDataGridRowTemplateArgs with OriginalRow 
+                            set to the default row content; render it to include the original row, or omit to replace entirely.",
+            LinkType = LinkType.Link,
+            Href = "#row-template-args",
+         },
+         new()
+         {
             Name = "Theme",
             Type = "string?",
             DefaultValue = "default",
@@ -142,7 +154,7 @@ public partial class BitDataGridDemo : AppComponentBase
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
-         {
+        {
             Id = "BitDataGridColumnBase",
             Title = "BitDataGridColumnBase",
             Description = "BitDataGrid has two built-in column types, BitDataGridPropertyColumn and BitDataGridTemplateColumn. You can also create your own column types by subclassing ColumnBase he BitDataGridColumnBase type, which all column must derive from, offers some common parameters",
@@ -385,6 +397,36 @@ public partial class BitDataGridDemo : AppComponentBase
             ],
 
         },
+        new()
+        {
+            Id = "row-template-args",
+            Title = "BitDataGridRowTemplateArgs<TGridItem>",
+            Description = "Arguments passed to the RowTemplate render fragment.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "OriginalRow",
+                    Type = "RenderFragment?",
+                    DefaultValue = "null",
+                    Description = "A render fragment that produces the original row markup (the default <tr> with all column cells). Render this to include the default row, or omit to replace entirely.",
+                },
+                new()
+                {
+                    Name = "RowIndex",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "The 1-based row index used for accessibility (e.g. aria-rowindex).",
+                },
+                new()
+                {
+                    Name = "RowItem",
+                    Type = "TGridItem",
+                    DefaultValue = "",
+                    Description = "The data item for this row.",
+                },
+            ],
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -518,6 +560,16 @@ public partial class BitDataGridDemo : AppComponentBase
     private BitDataGridPaginationState pagination2 = new() { ItemsPerPage = 7 };
     private BitDataGridPaginationState pagination3 = new() { ItemsPerPage = 7 };
     private BitDataGridPaginationState pagination6 = new() { ItemsPerPage = 7 };
+    private BitDataGridPaginationState pagination7 = new() { ItemsPerPage = 7 };
+
+    private HashSet<string> expandedRowTemplateCodes = [];
+
+    private void ToggleRowRendererExpand(string code)
+    {
+        if (expandedRowTemplateCodes.Remove(code)) return;
+        
+        expandedRowTemplateCodes.Add(code);
+    }
 
     private IQueryable<CountryModel>? FilteredItems1 => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter1 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
     private IQueryable<CountryModel>? FilteredItems2 => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter2 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));

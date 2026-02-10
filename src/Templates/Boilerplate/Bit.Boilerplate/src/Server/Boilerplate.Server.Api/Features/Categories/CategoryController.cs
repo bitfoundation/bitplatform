@@ -7,7 +7,8 @@ using Boilerplate.Shared.Features.Categories;
 
 namespace Boilerplate.Server.Api.Features.Categories;
 
-[ApiController, Route("api/[controller]/[action]"),
+[ApiVersion(1)]
+[ApiController, Route("api/v{v:apiVersion}/[controller]/[action]"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
     Authorize(Policy = AppFeatures.AdminPanel.ManageProductCatalog)]
 public partial class CategoryController : AppControllerBase, ICategoryController

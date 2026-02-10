@@ -8,7 +8,8 @@ namespace Boilerplate.Server.Api.Features.Todo;
 /// Leverages CommunityToolkit.Datasync.Server to provide a TableController for TodoItem entities,
 /// that provides standard CRUD operations for Client Offline Database Sync.
 /// </summary>
-[Route("api/[controller]/"),
+[ApiVersion(1)]
+[Route("api/v{v:apiVersion}/[controller]/"),
     Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS),
     Authorize(Policy = AppFeatures.Todo.ManageTodo)]
 public class TodoItemTableController : TableController<TodoItemDto>

@@ -951,26 +951,189 @@ protected override async Task OnInitializedAsync()
         }
     }
 </style>
+
 <div class=""responsive-grid"">
-    <BitDataGrid Items=""@allCountries"" Pagination=""@pagination6"">
+    <BitDataGrid Items=""@allCountries"" Pagination=""@pagination"">
         <BitDataGridPropertyColumn Property=""@(c => c.Name)"" />
         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" />
         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" />
         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" />
         <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" />
     </BitDataGrid>
-    <BitDataGridPaginator Value=""@pagination6"" />
+    <BitDataGridPaginator Value=""@pagination"" />
 </div>";
     private readonly string example6CsharpCode = @"
 private IQueryable<CountryModel> allCountries;
-private string typicalSampleNameFilter = string.Empty;
 private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
-private IQueryable<CountryModel> FilteredItems => 
-    allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
 
 protected override async Task OnInitializedAsync()
 {
     allCountries = _countries.AsQueryable();
+}
+
+private static readonly CountryModel[] _countries =
+[
+    new CountryModel { Code = ""AR"", Name = ""Argentina"", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },
+    new CountryModel { Code = ""AM"", Name = ""Armenia"", Medals = new MedalsModel { Gold = 0, Silver = 2, Bronze = 2 } },
+    new CountryModel { Code = ""AU"", Name = ""Australia"", Medals = new MedalsModel { Gold = 17, Silver = 7, Bronze = 22 } },
+    new CountryModel { Code = ""AT"", Name = ""Austria"", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 5 } },
+    new CountryModel { Code = ""AZ"", Name = ""Azerbaijan"", Medals = new MedalsModel { Gold = 0, Silver = 3, Bronze = 4 } },
+    new CountryModel { Code = ""BS"", Name = ""Bahamas"", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 0 } },
+    new CountryModel { Code = ""BH"", Name = ""Bahrain"", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+    new CountryModel { Code = ""BY"", Name = ""Belarus"", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 3 } },
+    new CountryModel { Code = ""BE"", Name = ""Belgium"", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 3 } },
+    new CountryModel { Code = ""BM"", Name = ""Bermuda"", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
+    new CountryModel { Code = ""BW"", Name = ""Botswana"", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""BR"", Name = ""Brazil"", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 8 } },
+    new CountryModel { Code = ""BF"", Name = ""Burkina Faso"", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""CA"", Name = ""Canada"", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 11 } },
+    new CountryModel { Code = ""TW"", Name = ""Chinese Taipei"", Medals = new MedalsModel { Gold = 2, Silver = 4, Bronze = 6 } },
+    new CountryModel { Code = ""CO"", Name = ""Colombia"", Medals = new MedalsModel { Gold = 0, Silver = 4, Bronze = 1 } },
+    new CountryModel { Code = ""CI"", Name = ""Côte d'Ivoire"", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""HR"", Name = ""Croatia"", Medals = new MedalsModel { Gold = 3, Silver = 3, Bronze = 2 } },
+    new CountryModel { Code = ""CU"", Name = ""Cuba"", Medals = new MedalsModel { Gold = 7, Silver = 3, Bronze = 5 } },
+    new CountryModel { Code = ""CZ"", Name = ""Czech Republic"", Medals = new MedalsModel { Gold = 4, Silver = 4, Bronze = 3 } },
+    new CountryModel { Code = ""DK"", Name = ""Denmark"", Medals = new MedalsModel { Gold = 3, Silver = 4, Bronze = 4 } },
+    new CountryModel { Code = ""DO"", Name = ""Dominican Republic"", Medals = new MedalsModel { Gold = 0, Silver = 3, Bronze = 2 } },
+    new CountryModel { Code = ""EC"", Name = ""Ecuador"", Medals = new MedalsModel { Gold = 2, Silver = 1, Bronze = 0 } },
+    new CountryModel { Code = ""EE"", Name = ""Estonia"", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""ET"", Name = ""Ethiopia"", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 2 } },
+    new CountryModel { Code = ""FJ"", Name = ""Fiji"", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""FI"", Name = ""Finland"", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 2 } },
+    new CountryModel { Code = ""FR"", Name = ""France"", Medals = new MedalsModel { Gold = 10, Silver = 12, Bronze = 11 } },
+    new CountryModel { Code = ""GE"", Name = ""Georgia"", Medals = new MedalsModel { Gold = 2, Silver = 5, Bronze = 1 } },
+    new CountryModel { Code = ""DE"", Name = ""Germany"", Medals = new MedalsModel { Gold = 10, Silver = 11, Bronze = 16 } },
+    new CountryModel { Code = ""GH"", Name = ""Ghana"", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""GB"", Name = ""Great Britain"", Medals = new MedalsModel { Gold = 22, Silver = 21, Bronze = 22 } },
+    new CountryModel { Code = ""GR"", Name = ""Greece"", Medals = new MedalsModel { Gold = 2, Silver = 1, Bronze = 1 } },
+    new CountryModel { Code = ""GD"", Name = ""Grenada"", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""HK"", Name = ""Hong Kong, China"", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 3 } },
+    new CountryModel { Code = ""HU"", Name = ""Hungary"", Medals = new MedalsModel { Gold = 6, Silver = 7, Bronze = 7 } },
+    new CountryModel { Code = ""ID"", Name = ""Indonesia"", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 3 } },
+    new CountryModel { Code = ""IE"", Name = ""Ireland"", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 2 } },
+    new CountryModel { Code = ""IR"", Name = ""Iran"", Medals = new MedalsModel { Gold = 3, Silver = 2, Bronze = 2 } },
+    new CountryModel { Code = ""IL"", Name = ""Israel"", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 2 } },
+    new CountryModel { Code = ""IT"", Name = ""Italy"", Medals = new MedalsModel { Gold = 10, Silver = 10, Bronze = 20 } },
+    new CountryModel { Code = ""JM"", Name = ""Jamaica"", Medals = new MedalsModel { Gold = 4, Silver = 1, Bronze = 4 } },
+    new CountryModel { Code = ""JO"", Name = ""Jordan"", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 1 } },
+    new CountryModel { Code = ""KZ"", Name = ""Kazakhstan"", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 8 } },
+    new CountryModel { Code = ""KE"", Name = ""Kenya"", Medals = new MedalsModel { Gold = 4, Silver = 4, Bronze = 2 } },
+    new CountryModel { Code = ""XK"", Name = ""Kosovo"", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 0 } },
+    new CountryModel { Code = ""KW"", Name = ""Kuwait"", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""LV"", Name = ""Latvia"", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""LT"", Name = ""Lithuania"", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+    new CountryModel { Code = ""MY"", Name = ""Malaysia"", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 1 } },
+    new CountryModel { Code = ""MX"", Name = ""Mexico"", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 4 } },
+    new CountryModel { Code = ""MA"", Name = ""Morocco"", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
+    new CountryModel { Code = ""NA"", Name = ""Namibia"", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+    new CountryModel { Code = ""NL"", Name = ""Netherlands"", Medals = new MedalsModel { Gold = 10, Silver = 12, Bronze = 14 } },
+    new CountryModel { Code = ""NZ"", Name = ""New Zealand"", Medals = new MedalsModel { Gold = 7, Silver = 6, Bronze = 7 } },
+    new CountryModel { Code = ""MK"", Name = ""North Macedonia"", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+    new CountryModel { Code = ""NO"", Name = ""Norway"", Medals = new MedalsModel { Gold = 4, Silver = 2, Bronze = 2 } },
+    new CountryModel { Code = ""PH"", Name = ""Philippines"", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 1 } },
+    new CountryModel { Code = ""PL"", Name = ""Poland"", Medals = new MedalsModel { Gold = 4, Silver = 5, Bronze = 5 } },
+    new CountryModel { Code = ""PT"", Name = ""Portugal"", Medals = new MedalsModel { Gold = 1, Silver = 1, Bronze = 2 } },
+    new CountryModel { Code = ""PR"", Name = ""Puerto Rico"", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 0 } },
+    new CountryModel { Code = ""QA"", Name = ""Qatar"", Medals = new MedalsModel { Gold = 2, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""KR"", Name = ""Republic of Korea"", Medals = new MedalsModel { Gold = 6, Silver = 4, Bronze = 10 } },
+    new CountryModel { Code = ""MD"", Name = ""Republic of Moldova"", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""RO"", Name = ""Romania"", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
+    new CountryModel { Code = ""SM"", Name = ""San Marino"", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },
+    new CountryModel { Code = ""SA"", Name = ""Saudi Arabia"", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+    new CountryModel { Code = ""RS"", Name = ""Serbia"", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 5 } },
+    new CountryModel { Code = ""SK"", Name = ""Slovakia"", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 1 } },
+    new CountryModel { Code = ""SI"", Name = ""Slovenia"", Medals = new MedalsModel { Gold = 3, Silver = 1, Bronze = 1 } },
+    new CountryModel { Code = ""ZA"", Name = ""South Africa"", Medals = new MedalsModel { Gold = 1, Silver = 2, Bronze = 0 } },
+    new CountryModel { Code = ""ES"", Name = ""Spain"", Medals = new MedalsModel { Gold = 3, Silver = 8, Bronze = 6 } },
+    new CountryModel { Code = ""SE"", Name = ""Sweden"", Medals = new MedalsModel { Gold = 3, Silver = 6, Bronze = 0 } },
+    new CountryModel { Code = ""CH"", Name = ""Switzerland"", Medals = new MedalsModel { Gold = 3, Silver = 4, Bronze = 6 } },
+    new CountryModel { Code = ""SY"", Name = ""Syrian Arab Republic"", Medals = new MedalsModel { Gold = 0, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""TH"", Name = ""Thailand"", Medals = new MedalsModel { Gold = 1, Silver = 0, Bronze = 1 } },
+    new CountryModel { Code = ""TR"", Name = ""Turkey"", Medals = new MedalsModel { Gold = 2, Silver = 2, Bronze = 9 } },
+    new CountryModel { Code = ""TM"", Name = ""Turkmenistan"", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+    new CountryModel { Code = ""UA"", Name = ""Ukraine"", Medals = new MedalsModel { Gold = 1, Silver = 6, Bronze = 12 } },
+    new CountryModel { Code = ""US"", Name = ""United States of America"", Medals = new MedalsModel { Gold = 39, Silver = 41, Bronze = 33 } },
+    new CountryModel { Code = ""UZ"", Name = ""Uzbekistan"", Medals = new MedalsModel { Gold = 3, Silver = 0, Bronze = 2 } },
+    new CountryModel { Code = ""VE"", Name = ""Venezuela"", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
+];
+
+public class CountryModel
+{
+    public string Code { get; set; }
+    public string Name { get; set; }
+    public MedalsModel Medals { get; set; }
+}
+
+public class MedalsModel
+{
+    public int Gold { get; set; }
+    public int Silver { get; set; }
+    public int Bronze { get; set; }
+    public int Total => Gold + Silver + Bronze;
+}";
+
+    private readonly string example7RazorCode = @"
+<style>
+    .row-template-grid .row-template-expand-col {
+        width: 2rem;
+    }
+
+    .row-template-grid .row-template-detail {
+        padding: 0.5rem;
+    }
+</style>
+
+<div class=""row-template-grid"">
+    <BitDataGrid Items=""@allCountries"" Pagination=""@pagination"">
+        <Columns>
+            <BitDataGridTemplateColumn Class=""row-template-expand-col"">
+                <BitButton Variant=""BitVariant.Text"" Size=""BitSize.Small""
+                            IconName=""@(expandedRowTemplateCodes.Contains(context.Code) ? BitIconName.ChevronDown : BitIconName.ChevronRight)""
+                            OnClick=""@(() => ToggleRowRendererExpand(context.Code))"" />
+            </BitDataGridTemplateColumn>
+            <BitDataGridPropertyColumn Property=""@(c => c.Name)"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" />
+        </Columns>
+        <RowTemplate Context=""args"">
+            @args.OriginalRow
+            @if (expandedRowTemplateCodes.Contains(args.RowItem.Code))
+            {
+                <tr>
+                    <td colspan=""6"">
+                        <div class=""row-template-detail"">
+                            <strong>Additional data:</strong> 
+                            Code: [@args.RowItem.Code] — 
+                            Gold: [@args.RowItem.Medals.Gold], 
+                            Silver: [@args.RowItem.Medals.Silver], 
+                            Bronze: [@args.RowItem.Medals.Bronze] 
+                            (Total: @args.RowItem.Medals.Total)
+                        </div>
+                    </td>
+                </tr>
+            }
+        </RowTemplate>
+    </BitDataGrid>
+    <BitDataGridPaginator Value=""@pagination"" />
+</div>";
+    private readonly string example7CsharpCode = @"
+private IQueryable<CountryModel> allCountries;
+private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
+
+protected override async Task OnInitializedAsync()
+{
+    allCountries = _countries.AsQueryable();
+}
+
+private HashSet<string> expandedRowTemplateCodes = [];
+
+private void ToggleRowRendererExpand(string code)
+{
+    if (expandedRowTemplateCodes.Remove(code)) return;
+        
+    expandedRowTemplateCodes.Add(code);
 }
 
 private static readonly CountryModel[] _countries =

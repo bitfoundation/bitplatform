@@ -98,13 +98,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.BlazorES2019" Version="10.4.1" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.4.1">
+        <PackageReference Include="Bit.BlazorES2019" Version="10.4.2" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.4.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.7" />
-        <PackageReference Include="Bit.SourceGenerators" Version="10.4.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.4.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -117,8 +117,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.30" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.30" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.31" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.31" />
     </ItemGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing

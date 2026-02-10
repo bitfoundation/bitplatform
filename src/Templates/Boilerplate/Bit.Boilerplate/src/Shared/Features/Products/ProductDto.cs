@@ -49,7 +49,7 @@ public partial class ProductDto
     {
         return HasPrimaryImage is false
             ? null
-            : new Uri(absoluteServerAddress, $"/api/Attachment/GetAttachment/{Id}/{AttachmentKind.ProductPrimaryImageMedium}?v={Version}").ToString();
+            : new Uri(absoluteServerAddress, $"/api/v1/Attachment/GetAttachment/{Id}/{AttachmentKind.ProductPrimaryImageMedium}?v={Version}").ToString();
     }
 
     public string FormattedPrice => FormatPrice();

@@ -1,4 +1,4 @@
-﻿.custom-grid {
+.custom-grid {
     border: 1px solid;
 
     .container {
@@ -114,6 +114,18 @@
                 font-weight: bold;
                 content: attr(data-title) " : ";
             }
+        }
+    }
+}
+
+.row-template-grid {
+    ::deep {
+        .row-template-expand-col {
+            width: 2rem;
+        }
+
+        .row-template-detail {
+            padding: 0.5rem;
         }
     }
 }

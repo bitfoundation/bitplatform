@@ -3,7 +3,8 @@ using Boilerplate.Shared.Features.PushNotification;
 
 namespace Boilerplate.Server.Api.Features.PushNotification;
 
-[Route("api/[controller]/[action]")]
+[ApiVersion(1)]
+[Route("api/v{v:apiVersion}/[controller]/[action]")]
 [ApiController, AllowAnonymous]
 public partial class PushNotificationController : AppControllerBase, IPushNotificationController
 {

@@ -19,7 +19,8 @@ using Boilerplate.Server.Api.Features.PushNotification;
 
 namespace Boilerplate.Server.Api.Features.Identity;
 
-[ApiController, Route("api/[controller]/[action]")]
+[ApiVersion(1)]
+[ApiController, Route("api/v{v:apiVersion}/[controller]/[action]")]
 public partial class UserController : AppControllerBase, IUserController
 {
     [AutoInject] private UrlEncoder urlEncoder = default!;
@@ -350,7 +351,9 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
     }
 
-    [HttpPost, Route("~/api/[controller]/2fa")]
+#pragma warning disable ASP0018
+    [HttpPost, Route("~/api/v{v:apiVersion}/[controller]/2fa")]
+#pragma warning restore ASP0018
     public async Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

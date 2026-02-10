@@ -52,7 +52,7 @@ public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> o
             .UseHttpClientOptions(clientOptions)
             .Entity<TodoItemDto>(options =>
             {
-                options.Endpoint = new Uri("/api/TodoItemTable", UriKind.Relative);
+                options.Endpoint = new Uri("/api/v1/TodoItemTable", UriKind.Relative);
             });
     }
 }
