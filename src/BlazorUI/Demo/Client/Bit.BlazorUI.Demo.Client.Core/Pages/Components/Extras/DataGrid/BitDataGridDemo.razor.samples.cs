@@ -1127,6 +1127,15 @@ protected override async Task OnInitializedAsync()
     allCountries = _countries.AsQueryable();
 }
 
+private HashSet<string> expandedRowTemplateCodes = [];
+
+private void ToggleRowRendererExpand(string code)
+{
+    if (expandedRowTemplateCodes.Remove(code)) return;
+        
+    expandedRowTemplateCodes.Add(code);
+}
+
 private static readonly CountryModel[] _countries =
 [
     new CountryModel { Code = ""AR"", Name = ""Argentina"", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },

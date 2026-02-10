@@ -566,12 +566,9 @@ public partial class BitDataGridDemo : AppComponentBase
 
     private void ToggleRowRendererExpand(string code)
     {
-        if (expandedRowTemplateCodes.Remove(code) is false)
-        {
-            expandedRowTemplateCodes.Add(code);
-        }
-
-        StateHasChanged();
+        if (expandedRowTemplateCodes.Remove(code)) return;
+        
+        expandedRowTemplateCodes.Add(code);
     }
 
     private IQueryable<CountryModel>? FilteredItems1 => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter1 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
