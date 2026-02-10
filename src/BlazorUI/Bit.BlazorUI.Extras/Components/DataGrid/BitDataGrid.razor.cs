@@ -174,6 +174,12 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     [Parameter] public Func<TGridItem, string>? RowStyleSelector { get; set; }
 
     /// <summary>
+    /// Optional template to customize row rendering. Receives <see cref="BitDataGridRowTemplateArgs{TGridItem}"/> with
+    /// <see cref="BitDataGridRowTemplateArgs{T}.OriginalRow"/> set to the default row content; call it to render the original cells or replace with custom content.
+    /// </summary>
+    [Parameter] public RenderFragment<BitDataGridRowTemplateArgs<TGridItem>>? RowTemplate { get; set; }
+
+    /// <summary>
     /// A theme name, with default value "default". This affects which styling rules match the table.
     /// </summary>
     [Parameter] public string? Theme { get; set; } = "default";

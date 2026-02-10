@@ -1,4 +1,4 @@
-﻿@page "/components/datagrid"
+@page "/components/datagrid"
 @page "/components/data-grid"
 @inherits AppComponentBase
 @using Demo.Shared.Dtos.DataGridDemo
@@ -135,8 +135,11 @@
         <DemoExample Title="Responsive" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 The BitDataGrid does not have the Responsive feature built-in, 
-                but you can achieve some level of responsiveness like what we did in this sample:</div>
+                but you can achieve some level of responsiveness like what we did in this sample:
+            </div>
+            
             <br />
+            
             <div class="responsive-grid">
                 <BitDataGrid Items="@allCountries" Pagination="@pagination6">
                     <BitDataGridPropertyColumn Property="@(c => c.Name)" />
@@ -146,6 +149,48 @@
                     <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" />
                 </BitDataGrid>
                 <BitDataGridPaginator Value="@pagination6" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RowTemplate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>See the RowTemplate parameter in action:</div>
+            
+            <br />
+
+            <div class="row-template-grid">
+                <BitDataGrid Items="@allCountries" Pagination="@pagination7">
+                    <Columns>
+                        <BitDataGridTemplateColumn Class="row-template-expand-col">
+                            <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
+                                       IconName="@(expandedRowTemplateCodes.Contains(context.Code) ? BitIconName.ChevronDown : BitIconName.ChevronRight)"
+                                       OnClick="@(() => ToggleRowRendererExpand(context.Code))" />
+                        </BitDataGridTemplateColumn>
+                        <BitDataGridPropertyColumn Property="@(c => c.Name)" />
+                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Gold)" />
+                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" />
+                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" />
+                        <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" />
+                    </Columns>
+                    <RowTemplate Context="args">
+                        @args.OriginalRow
+                        @if (expandedRowTemplateCodes.Contains(args.RowItem.Code))
+                        {
+                            <tr>
+                                <td colspan="6">
+                                    <div class="row-template-detail">
+                                        <strong>Additional data:</strong> 
+                                        Code: [@args.RowItem.Code] — 
+                                        Gold: [@args.RowItem.Medals.Gold], 
+                                        Silver: [@args.RowItem.Medals.Silver], 
+                                        Bronze: [@args.RowItem.Medals.Bronze] 
+                                        (Total: @args.RowItem.Medals.Total)
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </RowTemplate>
+                </BitDataGrid>
+                <BitDataGridPaginator Value="@pagination7" />
             </div>
         </DemoExample>
 
