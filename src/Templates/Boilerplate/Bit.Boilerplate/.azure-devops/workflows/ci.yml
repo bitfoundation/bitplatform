@@ -41,12 +41,6 @@ jobs:
       script: 'pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install --with-deps'
 
   - task: Bash@3
-    displayName: 'Trust dotnet cert'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet dev-certs https --trust' # Necessary for aspire related resources
-
-  - task: Bash@3
     name: test
     displayName: 'Test'
     inputs:
