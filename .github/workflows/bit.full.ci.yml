@@ -72,6 +72,9 @@ jobs:
     - name: Create project from template with PostgreSQL
       run: dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR --aspire --redis
 
+    - name: Trust dotnet cert
+      run: sudo dotnet dev-certs https --trust # Necessary for aspire related resources
+
     - name: Create appsettings.json for Client.Web
       run: |
         echo '{"ServerAddress":"/"}' > TestPostgreSQL/src/Client/TestPostgreSQL.Client.Web/wwwroot/appsettings.json
