@@ -20,7 +20,7 @@
         "ghcr.io/devcontainers/features/node:1": { "version": "24" }
     },
     "image": "mcr.microsoft.com/dotnet/sdk:10.0.103",
-    "postStartCommand": "dotnet workload install wasm-tools",
+    "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
     "waitFor": "onCreateCommand",
     "customizations": {
         "codespaces": {
