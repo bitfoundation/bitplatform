@@ -1,10 +1,10 @@
 {
     "name": "Boilerplate",
-    "image": "mcr.microsoft.com/dotnet/sdk:10.0.103",
+    "image": "mcr.microsoft.com/dotnet/nightly/sdk:10.0.103",
     "hostRequirements": {
         "cpus": 8
     },
-    "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
+    "onCreateCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
     "waitFor": "onCreateCommand",
     "customizations": {
         "codespaces": {
@@ -36,10 +36,6 @@
         5031
     ],
     "features": {
-        "ghcr.io/devcontainers/features/common-utils:1": {
-            "installZsh": true,
-            "upgradePackages": false
-        },
         "ghcr.io/devcontainers/features/python": {},
         "ghcr.io/devcontainers/features/powershell:1": {},
         "ghcr.io/devcontainers/features/docker-in-docker:2": {},

@@ -4,10 +4,6 @@
         "cpus": 4
     },
     "features": {
-        "ghcr.io/devcontainers/features/common-utils:1": {
-            "installZsh": true,
-            "upgradePackages": false
-        },
         "ghcr.io/devcontainers/features/python": {},
         "ghcr.io/devcontainers/features/powershell:1": {},
         "ghcr.io/devcontainers/features/docker-in-docker:2": {},
@@ -18,7 +14,7 @@
         },
         "ghcr.io/devcontainers/features/node:1": { "version": "24" }
     },
-    "image": "mcr.microsoft.com/dotnet/sdk:10.0.103",
+    "image": "mcr.microsoft.com/dotnet/nightly/sdk:10.0.103",
     "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
     "waitFor": "onCreateCommand",
     "customizations": {
