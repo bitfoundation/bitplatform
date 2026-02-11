@@ -1,60 +1,60 @@
 {
-  "name": "bit platform",
-  "hostRequirements": {
-    "cpus": 4
-  },
-  "features": {
-    "ghcr.io/devcontainers/features/python": {},
-    "ghcr.io/devcontainers/features/powershell:1": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-      "version": "latest",
-      "helm": "latest",
-      "minikube": "latest"
+    "name": "bit platform",
+    "hostRequirements": {
+        "cpus": 4
     },
-    "ghcr.io/devcontainers/features/node:1": { "version": "24" }
-  },
-  "image": "mcr.microsoft.com/dotnet/nightly/sdk:10.0.102",
-  "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
-  "waitFor": "onCreateCommand",
-  "customizations": {
-    "codespaces": {
-      "openFiles": [
-        "CONTRIBUTING.md"
-      ]
+    "features": {
+        "ghcr.io/devcontainers/features/python": {},
+        "ghcr.io/devcontainers/features/powershell:1": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+            "version": "latest",
+            "helm": "latest",
+            "minikube": "latest"
+        },
+        "ghcr.io/devcontainers/features/node:1": { "version": "24" }
     },
-    "vscode": {
-      "extensions": [
-        "GitHub.copilot",
-        "glenn2223.live-sass",
-        "GitHub.copilot-chat",
-        "ms-dotnettools.csharp",
-        "ms-dotnettools.csdevkit",
-        "ms-azuretools.vscode-docker",
-        "ms-vscode-remote.remote-containers",
-        "ms-dotnettools.blazorwasm-companion",
-        "ms-dotnettools.vscode-dotnet-runtime"
-      ]
+    "image": "mcr.microsoft.com/dotnet/sdk:10.0.103",
+    "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
+    "waitFor": "onCreateCommand",
+    "customizations": {
+        "codespaces": {
+            "openFiles": [
+                "CONTRIBUTING.md"
+            ]
+        },
+        "vscode": {
+            "extensions": [
+                "GitHub.copilot",
+                "glenn2223.live-sass",
+                "GitHub.copilot-chat",
+                "ms-dotnettools.csharp",
+                "ms-dotnettools.csdevkit",
+                "ms-azuretools.vscode-docker",
+                "ms-vscode-remote.remote-containers",
+                "ms-dotnettools.blazorwasm-companion",
+                "ms-dotnettools.vscode-dotnet-runtime"
+            ]
+        }
+    },
+    "forwardPorts": [
+        2030,
+        2031,
+        2032,
+        4000,
+        4001,
+        5000,
+        5001,
+        4030,
+        4031,
+        4040,
+        4041,
+        5030,
+        5031,
+        5040,
+        5041
+    ],
+    "remoteEnv": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
     }
-  },
-  "forwardPorts": [
-    2030,
-    2031,
-    2032,
-    4000,
-    4001,
-    5000,
-    5001,
-    4030,
-    4031,
-    4040,
-    4041,
-    5030,
-    5031,
-    5040,
-    5041
-  ],
-  "remoteEnv": {
-    "ASPNETCORE_ENVIRONMENT": "Development"
-  }
 }
