@@ -4,6 +4,10 @@
         "cpus": 4
     },
     "features": {
+        "ghcr.io/devcontainers/features/common-utils:1": {
+            "installZsh": true,
+            "upgradePackages": false
+        },
         "ghcr.io/devcontainers/features/python": {},
         "ghcr.io/devcontainers/features/powershell:1": {},
         "ghcr.io/devcontainers/features/docker-in-docker:2": {},
