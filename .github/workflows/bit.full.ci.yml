@@ -41,7 +41,7 @@ jobs:
 
   test-boilerplate-postgres:
     name: Create project from template with PostgreSQL and test it
-    runs-on: ubuntu-24.04
+    runs-on: windows-2025
 
     steps:
     - name: Checkout source code
@@ -73,7 +73,7 @@ jobs:
       run: dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --module Sales --signalR --aspire --redis
 
     - name: Trust dotnet cert
-      run: dotnet tool update -g linux-dev-certs && dotnet linux-dev-certs install # Necessary for aspire related resources
+      run: dotnet dev-certs https --trust # Necessary for aspire related resources
 
     - name: Create appsettings.json for Client.Web
       run: |
