@@ -34,9 +34,9 @@
         <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.3" />
         <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.3" />
         <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.3" />
-        <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.31" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.31" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.31" />
+        <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.40" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.40" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.40" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3719.77" />
         <PackageVersion Include="MSTest" Version="4.1.0" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
@@ -59,7 +59,7 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.3" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="ModelContextProtocol.AspNetCore" Version="0.8.0-preview.1" />
-        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Maui" Version="13.1.0-preview.1.25616.3" />
+        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Maui" Version="13.1.1-preview.1.26105.8" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="13.1.1" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="CommunityToolkit.Aspire.Hosting.MailPit" Version="13.1.1" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.DevTunnels" Version="13.1.1" />
@@ -71,7 +71,7 @@
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="13.1.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="13.1.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'S3' OR '$(filesStorage)' == '') " Include="CommunityToolkit.Aspire.Hosting.Minio" Version="13.1.1" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '')" Include="Aspire.Hosting.Keycloak" Version="13.1.0-preview.1.25616.3" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '')" Include="Aspire.Hosting.Keycloak" Version="13.1.1-preview.1.26105.8" />
         <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.3.0" />
         <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.3.0" />
         <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.0" />
