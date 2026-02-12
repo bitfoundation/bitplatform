@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Checkbox;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Checkbox;
 
 public partial class BitCheckboxDemo
 {
@@ -34,10 +34,17 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "CheckIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The check icon using custom CSS classes for external icon libraries. Takes precedence over CheckIconName when both are set. Use BitIconInfo.Bi(), BitIconInfo.Fa(), or BitIconInfo.Css() for Bootstrap Icons, FontAwesome, or custom CSS.",
+        },
+        new()
+        {
             Name = "CheckIconName",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "Accept",
-            Description = "Custom icon for the check mark rendered by the checkbox instead of default check mark icon.",
+            Description = "The name of the built-in icon to render as the check mark inside the checkbox.",
         },
         new()
         {

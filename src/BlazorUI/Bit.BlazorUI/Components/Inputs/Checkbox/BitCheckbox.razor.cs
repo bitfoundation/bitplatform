@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -36,12 +36,27 @@ public partial class BitCheckbox : BitInputBase<bool>
     [Parameter] public int? AriaSetSize { get; set; }
 
     /// <summary>
-    /// Custom icon for the check mark rendered by the checkbox instead of default check mark icon
+    /// Gets or sets the check icon using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="CheckIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string CheckIconName { get; set; } = "Accept";
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="CheckIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: CheckIcon="BitIconInfo.Bi("gear-fill")"
+    /// FontAwesome: CheckIcon="BitIconInfo.Fa("solid house")"
+    /// Custom CSS: CheckIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? CheckIcon { get; set; }
 
     /// <summary>
-    /// he aria label of the icon for the benefit of screen readers
+    /// The name of the built-in icon to render as the check mark inside the checkbox.
+    /// </summary>
+    [Parameter] public string? CheckIconName { get; set; }
+
+    /// <summary>
+    /// The aria label of the icon for the benefit of screen readers.
     /// </summary>
     [Parameter] public string? CheckIconAriaLabel { get; set; }
 

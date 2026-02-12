@@ -1,4 +1,4 @@
-﻿@page "/components/checkbox"
+@page "/components/checkbox"
 @page "/components/check-box"
 
 <PageOutlet Url="components/checkbox"
@@ -275,7 +275,32 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="External Icons" RazorCode="@example11RazorCode" Id="example11">
+        <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>CheckIcon</b> parameter.</div>
+        <br />
+        <br />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        <div>FontAwesome:</div>
+        <br />
+        <BitCheckbox Label="House (CheckIcon string)" CheckIcon="@("fa-solid fa-house")" />
+        <br />
+        <BitCheckbox Label="Heart (BitIconInfo.Css)" CheckIcon="@BitIconInfo.Css("fa-solid fa-heart")" Color="BitColor.Secondary" />
+        <br />
+        <BitCheckbox Label="Rocket (BitIconInfo.Fa)" CheckIcon="@BitIconInfo.Fa("solid rocket")" Color="BitColor.Error" />
+        
+        <br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        <div>Bootstrap Icons:</div>
+        <br />
+        <BitCheckbox Label="House (CheckIcon string)" CheckIcon="@("bi bi-house-fill")" />
+        <br />
+        <BitCheckbox Label="Heart (BitIconInfo.Css)" CheckIcon="@BitIconInfo.Css("bi bi-heart-fill")" Color="BitColor.Secondary" />
+        <br />
+        <BitCheckbox Label="Gear (BitIconInfo.Bi)" CheckIcon="@BitIconInfo.Bi("gear-fill")" Color="BitColor.Error" />
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
         <div>Explore styling and class customization for BitCheckbox, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -303,7 +328,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div>Use BitCheckbox in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

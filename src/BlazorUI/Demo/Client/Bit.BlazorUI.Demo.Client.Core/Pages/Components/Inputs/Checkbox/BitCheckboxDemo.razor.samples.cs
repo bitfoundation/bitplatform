@@ -184,6 +184,24 @@ private bool customContentIndeterminate = true;";
 <BitCheckbox Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Value />";
 
     private readonly string example11RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitCheckbox Label=""House (CheckIcon string)"" CheckIcon=""@(""fa-solid fa-house"")"" />
+
+<BitCheckbox Label=""Heart (BitIconInfo.Css)"" CheckIcon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" Color=""BitColor.Secondary"" />
+
+<BitCheckbox Label=""Rocket (BitIconInfo.Fa)"" CheckIcon=""@BitIconInfo.Fa(""solid rocket"")"" Color=""BitColor.Error"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitCheckbox Label=""House (CheckIcon string)"" CheckIcon=""@(""bi bi-house-fill"")"" />
+
+<BitCheckbox Label=""Heart (BitIconInfo.Css)"" CheckIcon=""@BitIconInfo.Css(""bi bi-heart-fill"")"" Color=""BitColor.Secondary"" />
+
+<BitCheckbox Label=""Gear (BitIconInfo.Bi)"" CheckIcon=""@BitIconInfo.Bi(""gear-fill"")"" Color=""BitColor.Error"" />";
+
+    private readonly string example12RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -242,7 +260,7 @@ private bool customContentIndeterminate = true;";
                                 Label=""custom-label"",
                                 Box=""custom-box"" })"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس راست به چپ"" />
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال"" IsEnabled=""false"" />
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال چک شده"" IsEnabled=""false"" Value=""true"" />";

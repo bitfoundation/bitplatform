@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitInputBase<bool>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -17,11 +17,12 @@
         }
         else
         {
+            var icon = BitIconInfo.From(CheckIcon, CheckIconName ?? "Accept");
             <div style="@Styles?.Box" class="bit-chb-box @Classes?.Box">
                 <i aria-hidden="true"
                    aria-label="@CheckIconAriaLabel"
                    style="@Styles?.Icon"
-                   class="bit-chb-ico bit-icon bit-icon--@CheckIconName @Classes?.Icon" />
+                   class="bit-chb-ico @icon?.GetCssClasses() @Classes?.Icon" />
             </div>
 
             @if (LabelTemplate is not null)
