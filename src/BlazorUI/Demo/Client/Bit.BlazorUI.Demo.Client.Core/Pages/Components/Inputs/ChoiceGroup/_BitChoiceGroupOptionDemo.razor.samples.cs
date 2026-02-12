@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
 
 public partial class _BitChoiceGroupOptionDemo
 {
@@ -526,6 +526,28 @@ private void HandleInvalidSubmit() { }";
 </BitChoiceGroup>";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitChoiceGroup Label=""External Icons"" DefaultValue=""@(""Day"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" Icon=""@BitIconInfo.Fa(""solid sun"")"" />
+    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" Icon=""@BitIconInfo.Css(""fa-solid fa-calendar-week"")"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" Icon=""@BitIconInfo.Bi(""calendar-month"")"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""External Icons (Inline)"" DefaultValue=""@(""Day"")"" Inline TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" Icon=""@BitIconInfo.Fa(""solid sun"")"" />
+    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" Icon=""@BitIconInfo.Css(""fa-solid fa-calendar-week"")"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" Icon=""@BitIconInfo.Bi(""calendar-month"")"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""External Icons (Horizontal)"" DefaultValue=""@(""Day"")"" Horizontal TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" Icon=""@BitIconInfo.Fa(""solid sun"")"" />
+    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" Icon=""@BitIconInfo.Css(""fa-solid fa-calendar-week"")"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" Icon=""@BitIconInfo.Bi(""calendar-month"")"" />
+</BitChoiceGroup>";
+
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -622,7 +644,7 @@ private void HandleInvalidSubmit() { }";
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitChoiceGroup Label=""ساده"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"">
     <BitChoiceGroupOption Text=""گزینه آ"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""گزینه ب"" Value=""@(""B"")"" />

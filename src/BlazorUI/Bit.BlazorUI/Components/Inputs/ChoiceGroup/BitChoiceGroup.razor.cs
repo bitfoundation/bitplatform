@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -339,7 +339,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             cssClass.Append(' ').Append("bit-chg-ids");
         }
 
-        if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue())
+        if (GetImageSrc(item).HasValue() || GetIcon(item) is not null)
         {
             cssClass.Append(' ').Append("bit-chg-ihi");
         }
@@ -349,7 +349,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     internal string GetItemLabelCssClasses(TItem item)
     {
-        var hasImageOrIcon = GetImageSrc(item).HasValue() || GetIconName(item).HasValue();
+        var hasImageOrIcon = GetImageSrc(item).HasValue() || GetIcon(item) is not null;
         return hasImageOrIcon && ItemLabelTemplate is null && Inline is false
                 ? "bit-chg-ili"
                 : string.Empty;
@@ -402,6 +402,43 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         }
 
         return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+    }
+
+    internal BitIconInfo? GetIcon(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return BitIconInfo.From(choiceGroupItem.Icon, choiceGroupItem.IconName);
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return BitIconInfo.From(choiceGroupOption.Icon, choiceGroupOption.IconName);
+        }
+
+        if (NameSelectors is null) return null;
+
+        BitIconInfo? icon = null;
+        if (NameSelectors.Icon.Selector is not null)
+        {
+            icon = NameSelectors.Icon.Selector!(item);
+        }
+        else
+        {
+            icon = item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
+        }
+
+        string? iconName = null;
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            iconName = NameSelectors.IconName.Selector!(item);
+        }
+        else
+        {
+            iconName = item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+        }
+
+        return BitIconInfo.From(icon, iconName);
     }
 
     internal string? GetIconName(TItem item)

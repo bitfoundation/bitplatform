@@ -342,10 +342,19 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon to show as content of the BitChoiceGroup item. Takes precedence over IconName when both are set.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "IconName",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "The icon to show as content of the BitChoiceGroup item.",
+                   Description = "The icon name (built-in Fluent UI) to show as content of the BitChoiceGroup item.",
                },
                new()
                {
@@ -462,10 +471,19 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon to show as content of the BitChoiceGroup option. Takes precedence over IconName when both are set.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "IconName",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "The icon to show as content of the BitChoiceGroup option.",
+                   Description = "The icon name (built-in Fluent UI) to show as content of the BitChoiceGroup option.",
                },
                new()
                {
@@ -582,10 +600,19 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitNameSelectorPair<TItem, BitIconInfo?>",
+                   DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.Icon))",
+                   Description = "Icon field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "IconName",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.IconName))",
-                   Description = "The icon to show as content of the BitChoiceGroup option.",
+                   Description = "IconName field name and selector of the custom input class.",
                },
                new()
                {
@@ -776,6 +803,35 @@ public partial class BitChoiceGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the text of each item of the BitChoiceGroup.",
+               },
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
                },
             ]
         }

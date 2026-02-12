@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <div class="example-content">
         <BitChoiceGroup Label="Basic Options" DefaultValue="@("B")" TItem="BitChoiceGroupOption<string>" TValue="string">
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
@@ -569,7 +569,32 @@
         </div>
     </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
+    <div>Use icons from external libraries like FontAwesome or Bootstrap Icons with the Icon parameter.</div>
+    <br />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <br />
+    <div class="example-content column">
+        <BitChoiceGroup Label="External Icons" DefaultValue="@("Day")" TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroupOption Text="Day" Value="@("Day")" Icon="@BitIconInfo.Fa("solid sun")" />
+            <BitChoiceGroupOption Text="Week" Value="@("Week")" Icon="@BitIconInfo.Css("fa-solid fa-calendar-week")" />
+            <BitChoiceGroupOption Text="Month" Value="@("Month")" Icon="@BitIconInfo.Bi("calendar-month")" />
+        </BitChoiceGroup>
+        <BitChoiceGroup Label="External Icons (Inline)" DefaultValue="@("Day")" Inline TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroupOption Text="Day" Value="@("Day")" Icon="@BitIconInfo.Fa("solid sun")" />
+            <BitChoiceGroupOption Text="Week" Value="@("Week")" Icon="@BitIconInfo.Css("fa-solid fa-calendar-week")" />
+            <BitChoiceGroupOption Text="Month" Value="@("Month")" Icon="@BitIconInfo.Bi("calendar-month")" />
+        </BitChoiceGroup>
+        <BitChoiceGroup Label="External Icons (Horizontal)" DefaultValue="@("Day")" Horizontal TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroupOption Text="Day" Value="@("Day")" Icon="@BitIconInfo.Fa("solid sun")" />
+            <BitChoiceGroupOption Text="Week" Value="@("Week")" Icon="@BitIconInfo.Css("fa-solid fa-calendar-week")" />
+            <BitChoiceGroupOption Text="Month" Value="@("Month")" Icon="@BitIconInfo.Bi("calendar-month")" />
+        </BitChoiceGroup>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
     <div>Explores styling and class customization for BitChoiceGroup, including component styles, custom classes, and detailed style items.</div>
     <br /><br />
     <div>Component's Style & Class:</div>
@@ -634,7 +659,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+<DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
     <div>Use BitChoiceGroup in right-to-left (RTL).</div>
     <br />
     <div dir="rtl" class="example-content">

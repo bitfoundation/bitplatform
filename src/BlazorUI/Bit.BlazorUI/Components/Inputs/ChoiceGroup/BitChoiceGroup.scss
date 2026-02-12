@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-chg {
     display: flex;
@@ -99,8 +99,8 @@
         box-sizing: border-box;
         transform: translateY(-50%);
         width: var(--bit-chg-circle-size);
-        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
         border: $shp-border-width $shp-border-style $clr-brd-pri;
+        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
     }
 
     &::after {
@@ -111,12 +111,12 @@
         position: absolute;
         border-radius: 50%;
         box-sizing: border-box;
-        transform: translateY(-50%);
+        inset-inline-start: 50%;
+        transform: translate(-50%, -50%);
         background-color: $clr-fg-sec-hover;
         transition-property: background-color;
         width: calc(var(--bit-chg-circle-size) / 2);
         transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        inset-inline-start: calc(var(--bit-chg-circle-size) / 4);
     }
 
     @media (hover: hover) {
@@ -226,11 +226,12 @@
     height: var(--bit-chg-ico-size);
     font-size: var(--bit-chg-ico-size);
     line-height: var(--bit-chg-ico-size);
+}
 
-    i {
-        speak: none;
-        display: inline-block;
-    }
+.bit-chg-ico {
+    speak: none;
+    display: inline-block;
+    //width: var(--bit-chg-ico-size);
 }
 
 .bit-chg-inl {
@@ -247,6 +248,10 @@
     .bit-chg-icw {
         padding: 0;
         font-size: calc(var(--bit-chg-fontsize) + spacing(0.25));
+    }
+
+    .bit-chg-ico {
+        //width: unset;
     }
 }
 
@@ -329,10 +334,10 @@
 
     .bit-chg-icw {
         color: $clr-fg-dis;
+    }
 
-        i {
-            color: $clr-fg-dis;
-        }
+    .bit-chg-ico {
+        color: $clr-fg-dis;
     }
 }
 

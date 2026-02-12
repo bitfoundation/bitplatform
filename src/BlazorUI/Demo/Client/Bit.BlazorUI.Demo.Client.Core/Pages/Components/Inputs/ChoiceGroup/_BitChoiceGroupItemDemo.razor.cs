@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
 
 public partial class _BitChoiceGroupItemDemo
 {
@@ -78,6 +78,13 @@ public partial class _BitChoiceGroupItemDemo
         new() { Text = "Day", Value = "Day", IconName = BitIconName.CalendarDay },
         new() { Text = "Week", Value = "Week", IconName = BitIconName.CalendarWeek },
         new() { Text = "Month", Value = "Month", IconName = BitIconName.Calendar, IsEnabled = false }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> externalIconItems =
+    [
+        new() { Text = "Day", Value = "Day", Icon = BitIconInfo.Fa("solid sun") },
+        new() { Text = "Week", Value = "Week", Icon = BitIconInfo.Css("fa-solid fa-calendar-week") },
+        new() { Text = "Month", Value = "Month", Icon = BitIconInfo.Bi("calendar-month") }
     ];
 
     private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems =
