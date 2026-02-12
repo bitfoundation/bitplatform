@@ -50,7 +50,7 @@
         <PackageVersion Include="OpenTelemetry.Resources.ProcessRuntime" Version="1.15.0-beta.1" />
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.3.1" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.2.3" />
-        <PackageVersion Include="Scalar.AspNetCore" Version="2.12.37" />
+        <PackageVersion Include="Scalar.AspNetCore" Version="2.12.38" />
         <PackageVersion Include="Velopack" Version="0.0.1298" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.3" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
@@ -60,16 +60,16 @@
         <!--/+:msbuild-conditional:noEmit -->
         <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="ModelContextProtocol.AspNetCore" Version="0.8.0-preview.1" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Maui" Version="13.1.0-preview.1.25616.3" />
-        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="13.1.0" />
+        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.Testing" Version="13.1.1" />
         <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="CommunityToolkit.Aspire.Hosting.MailPit" Version="13.1.1" />
-        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.DevTunnels" Version="13.1.0" />
-        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.AppHost" Version="13.1.0" />
+        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.DevTunnels" Version="13.1.1" />
+        <PackageVersion Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="Aspire.Hosting.AppHost" Version="13.1.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'Sqlite' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.Sqlite" Version="13.1.1" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.SqlServer" Version="13.1.0" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.SqlServer" Version="13.1.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" Version="13.1.1" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Aspire.Hosting.PostgreSQL" Version="13.1.0" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="13.1.0" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="13.1.0" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Aspire.Hosting.PostgreSQL" Version="13.1.1" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="13.1.1" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="13.1.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'S3' OR '$(filesStorage)' == '') " Include="CommunityToolkit.Aspire.Hosting.Minio" Version="13.1.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '')" Include="Aspire.Hosting.Keycloak" Version="13.1.0-preview.1.25616.3" />
         <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.3.0" />
@@ -93,7 +93,7 @@
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="10.4.2" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Client" Version="9.0.5" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.3" />
-        <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.32.0" />
+        <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.33.0" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" Version="10.3.0" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" Version="10.3.0" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.AzureAIInference" Version="10.0.0-preview.1.25559.3" />
@@ -111,8 +111,8 @@
         <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" Version="6.0.2" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.4.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Profiler" Version="1.0.0-beta7" />
-        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" Version="13.1.0" />
-        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.StackExchange.Redis" Version="13.1.0" />
+        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" Version="13.1.1" />
+        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.StackExchange.Redis" Version="13.1.1" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="ZiggyCreatures.FusionCache.Backplane.StackExchangeRedis" Version="2.5.0" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="DistributedLock.Redis" Version="1.1.1" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Hangfire.Redis.StackExchange" Version="1.12.0" />
