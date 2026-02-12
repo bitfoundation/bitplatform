@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
 
 public partial class _BitChoiceGroupCustomDemo
 {
@@ -787,14 +787,26 @@ private readonly List<Order> basicCustoms =
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
-<BitChoiceGroup Label=""External Icons"" Items=""externalIconCustoms"" DefaultValue=""@(""Day"")""
-                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) }, Icon = { Name = nameof(Order.Icon) } })"" />
+<BitChoiceGroup Label=""External Icons"" 
+                Items=""externalIconCustoms"" 
+                DefaultValue=""@(""Day"")""
+                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, 
+                                         Value = { Name = nameof(Order.ItemValue) }, 
+                                         Icon = { Name = nameof(Order.Icon) } })"" />
 
-<BitChoiceGroup Label=""External Icons (Inline)"" Items=""externalIconCustoms"" DefaultValue=""@(""Day"")"" Inline
-                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) }, Icon = { Name = nameof(Order.Icon) } })"" />
+<BitChoiceGroup Label=""External Icons (Inline)"" 
+                Items=""externalIconCustoms"" 
+                DefaultValue=""@(""Day"")"" Inline
+                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, 
+                                         Value = { Name = nameof(Order.ItemValue) }, 
+                                         Icon = { Name = nameof(Order.Icon) } })"" />
 
-<BitChoiceGroup Label=""External Icons (Horizontal)"" Items=""externalIconCustoms"" DefaultValue=""@(""Day"")"" Horizontal
-                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) }, Icon = { Name = nameof(Order.Icon) } })"" />";
+<BitChoiceGroup Label=""External Icons (Horizontal)"" 
+                Items=""externalIconCustoms"" 
+                DefaultValue=""@(""Day"")"" Horizontal
+                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, 
+                                         Value = { Name = nameof(Order.ItemValue) }, 
+                                         Icon = { Name = nameof(Order.Icon) } })"" />";
     private readonly string example12CsharpCode = @"
 public class Order
 {
