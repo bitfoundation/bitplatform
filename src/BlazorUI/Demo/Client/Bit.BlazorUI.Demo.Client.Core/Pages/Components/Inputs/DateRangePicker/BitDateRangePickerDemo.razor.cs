@@ -2,8 +2,8 @@
 
 public partial class BitDateRangePickerDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AllowTextInput",
@@ -164,10 +164,19 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display. Takes precedence over IconName when both are set. Use for external libraries (e.g. BitIconInfo.Fa(\"solid calendar\"), BitIconInfo.Bi(\"calendar3\"), BitIconInfo.Css(\"my-class\")).",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "IconName",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "CalendarMirrored",
-            Description = "The name of the DateRangePicker's icon."
+            Description = "The name of the icon from the built-in Fluent UI icon set. For external icon libraries, use Icon instead."
         },
         new()
         {
@@ -428,16 +437,16 @@ public partial class BitDateRangePickerDemo
             DefaultValue = "1",
             Description = "Determines increment/decrement steps for DateRangePicker's minute.",
         }
-    };
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "date-range-picker-value",
             Title = "BitDateRangePickerValue",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "StartDate",
@@ -452,14 +461,14 @@ public partial class BitDateRangePickerDemo
                    DefaultValue = "null",
                    Description = "Indicates the end of the date range.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "daterangepicker-class-styles",
             Title = "BitDateRangePickerClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Root",
@@ -936,19 +945,48 @@ public partial class BitDateRangePickerDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for each year button of the BitDateRangePicker."
                 }
-            }
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Name",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the name of the icon."
+                },
+                new()
+                {
+                    Name = "BaseClass",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+                },
+            ]
         }
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "icon-location-enum",
             Name = "BitIconLocation",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Left",
@@ -961,15 +999,15 @@ public partial class BitDateRangePickerDemo
                     Description="Show the icon at the right side.",
                     Value="1",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "time-format-enum",
             Name = "BitTimeFormat",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "TwentyFourHours",
@@ -982,9 +1020,9 @@ public partial class BitDateRangePickerDemo
                     Description="Show time pickers in 12 hours format.",
                     Value="1",
                 }
-            }
+            ]
         }
-    };
+    ];
 
 
 

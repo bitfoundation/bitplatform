@@ -1,4 +1,4 @@
-﻿@page "/components/daterangepicker"
+@page "/components/daterangepicker"
 @page "/components/date-range-picker"
 @using Bit.BlazorUI.Demo.Client.Core.Helpers
 
@@ -251,7 +251,39 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
+        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
+        
+        <br /><br />
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        
+        <div>FontAwesome:</div>
+        <br />
+        <div class="example-content">
+            <BitDateRangePicker Label="FontAwesome (string)" Icon="@("fa-solid fa-calendar-days")" />
+            <br />
+            <BitDateRangePicker Label="FontAwesome (Css)" Icon="@BitIconInfo.Css("fa-solid fa-calendar-week")" />
+            <br />
+            <BitDateRangePicker Label="FontAwesome (Fa)" Icon="@BitIconInfo.Fa("solid calendar")" />
+        </div>
+
+        <br /><br /><br />
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        
+        <div>Bootstrap:</div>
+        <br />
+        <div class="example-content">
+            <BitDateRangePicker Label="Bootstrap (string)" Icon="@("bi bi-calendar3")" />
+            <br />
+            <BitDateRangePicker Label="Bootstrap (Css)" Icon="@BitIconInfo.Css("bi bi-calendar-range")" />
+            <br />
+            <BitDateRangePicker Label="Bootstrap (Bi)" Icon="@BitIconInfo.Bi("calendar3")" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>Explore styling and class customization for BitDateRangePicker, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -308,7 +340,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
         <div>Use BitDateRangePicker in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

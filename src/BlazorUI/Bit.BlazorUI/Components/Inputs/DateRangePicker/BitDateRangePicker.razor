@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitInputBase<BitDateRangePickerValue?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -65,7 +65,8 @@
                 }
                 else
                 {
-                    <i style="@Styles?.Icon" class="bit-dtrp-ico bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
+                    var icon = BitIconInfo.From(Icon, IconName ?? "CalendarMirrored");
+                    <i style="@Styles?.Icon" class="bit-dtrp-ico @icon?.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
                 }
             </div>
         </div>
