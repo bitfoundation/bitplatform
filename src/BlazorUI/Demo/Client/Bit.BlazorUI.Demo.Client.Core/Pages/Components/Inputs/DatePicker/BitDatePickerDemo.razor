@@ -306,7 +306,38 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
+
+        <br />
+        <br />
+
+        <div class="example-content">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+            <div>FontAwesome:</div>
+            <br />
+            <BitDatePicker Label="Icon (string)" Icon="@("fa-solid fa-calendar-days")" />
+            <br />
+            <BitDatePicker Label="BitIconInfo.Css" Icon="@BitIconInfo.Css("fa-solid fa-calendar-days")" />
+            <br />
+            <BitDatePicker Label="BitIconInfo.Fa" Icon="@BitIconInfo.Fa("solid calendar")" />
+
+            <br /><br /><br />
+
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+            <div>Bootstrap:</div>
+            <br />
+            <BitDatePicker Label="Icon (string)" Icon="@("bi bi-calendar3")" />
+            <br />
+            <BitDatePicker Label="BitIconInfo.Css" Icon="@BitIconInfo.Css("bi bi-calendar3-event")" />
+            <br />
+            <BitDatePicker Label="BitIconInfo.Bi" Icon="@BitIconInfo.Bi("calendar3")" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>Explore styling and class customization for BitDatePicker, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div><br />
@@ -353,7 +384,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
         <div>Use BitDatePicker in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

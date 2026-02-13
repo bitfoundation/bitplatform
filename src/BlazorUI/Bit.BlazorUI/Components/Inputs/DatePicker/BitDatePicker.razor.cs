@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 
@@ -234,9 +234,29 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     public BitIconLocation IconLocation { get; set; } = BitIconLocation.Right;
 
     /// <summary>
-    /// The name of the DatePicker's icon.
+    /// The icon to display in the DatePicker input.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
-    [Parameter] public string IconName { get; set; } = "CalendarMirrored";
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: Icon="BitIconInfo.Bi("calendar3")"
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid calendar")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// The name of the DatePicker's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.CalendarMirrored</c>).
+    /// Defaults to "CalendarMirrored" when not set.
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </remarks>
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// The custom validation error message for the invalid value.

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DatePicker;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DatePicker;
 
 public partial class BitDatePickerDemo
 {
@@ -150,10 +150,19 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display in the DatePicker input using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "IconName",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "CalendarMirrored",
-            Description = "The name of the DatePicker's icon."
+            Description = "The name of the DatePicker's icon from the built-in Fluent UI icon set. For external icon libraries, use Icon instead."
         },
         new()
         {
