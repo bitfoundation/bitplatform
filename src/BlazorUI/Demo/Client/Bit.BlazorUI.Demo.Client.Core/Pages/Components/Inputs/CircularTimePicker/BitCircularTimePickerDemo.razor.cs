@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.CircularTimePicker;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.CircularTimePicker;
 
 public partial class BitCircularTimePickerDemo
 {
@@ -43,6 +43,20 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "CloseButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon for the close button using external icon libraries. Takes precedence over CloseButtonIconName when both are set."
+        },
+        new()
+        {
+            Name = "CloseButtonIconName",
+            Type = "string?",
+            DefaultValue = "Cancel",
+            Description = "The name of the icon for the close button from the built-in Fluent UI icons. For external icon libraries, use CloseButtonIcon instead."
+        },
+        new()
+        {
             Name = "CloseButtonTitle",
             Type = "string",
             DefaultValue = "Close time picker",
@@ -82,10 +96,17 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display using custom CSS classes for external icon libraries (e.g., FontAwesome, Bootstrap Icons). Takes precedence over IconName when both are set."
+        },
+        new()
+        {
             Name = "IconName",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "Clock",
-            Description = "Optional TimePicker icon."
+            Description = "The name of the icon from the built-in Fluent UI icons. For external icon libraries, use Icon instead."
         },
         new()
         {

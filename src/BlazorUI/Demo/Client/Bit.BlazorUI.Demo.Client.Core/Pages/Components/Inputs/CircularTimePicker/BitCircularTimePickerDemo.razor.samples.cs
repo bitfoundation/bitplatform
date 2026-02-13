@@ -137,6 +137,24 @@ private async Task HandleValidSubmit()
 }";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitCircularTimePicker Label=""FontAwesome"" Icon=""@(""fa-solid fa-clock"")"" />
+
+<BitCircularTimePicker Label=""FontAwesome (Css)"" Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" />
+
+<BitCircularTimePicker Label=""FontAwesome (Fa)"" Icon=""@BitIconInfo.Fa(""solid clock"")"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitCircularTimePicker Label=""Bootstrap"" Icon=""@(""bi bi-clock-fill"")"" />
+
+<BitCircularTimePicker Label=""Bootstrap (Css)"" Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"" />
+
+<BitCircularTimePicker Label=""Bootstrap (Bi)"" Icon=""@BitIconInfo.Bi(""clock-fill"")"" />";
+
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -266,9 +284,9 @@ private async Task HandleValidSubmit()
                                           ClockPointerThumb = ""custom-clock-pointer-thumb"",
                                           ClockSelectedNumber = ""custom-clock-selected-number"",
                                           ClockPointerThumbMinute = ""custom-clock-pointer-thumb-minute"" })"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private TimeSpan? classesValue;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitCircularTimePicker Dir=""BitDir.Rtl"" />";
 }

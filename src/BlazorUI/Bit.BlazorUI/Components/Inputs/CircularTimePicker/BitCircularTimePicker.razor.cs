@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 
@@ -55,6 +55,24 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public BitCircularTimePickerClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The icon to display on the close button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="CloseButtonIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="CloseButtonIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? CloseButtonIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon to display on the close button from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// For external icon libraries, use <see cref="CloseButtonIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? CloseButtonIconName { get; set; }
+
+    /// <summary>
     /// The title of the close button (tooltip).
     /// </summary>
     [Parameter] public string CloseButtonTitle { get; set; } = "Close time picker";
@@ -84,9 +102,30 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public BitIconLocation IconLocation { get; set; } = BitIconLocation.Right;
 
     /// <summary>
-    /// Optional TimePicker icon
+    /// The icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
-    [Parameter] public string IconName { get; set; } = "Clock";
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: Icon="BitIconInfo.Bi("gear-fill")"
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// The name of the icon to display from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Clock</c>).
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery:
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </remarks>
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Custom TimePicker icon template
