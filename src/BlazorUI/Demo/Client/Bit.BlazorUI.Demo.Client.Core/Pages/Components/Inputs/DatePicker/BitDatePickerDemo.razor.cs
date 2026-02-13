@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DatePicker;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DatePicker;
 
 public partial class BitDatePickerDemo
 {
@@ -413,108 +413,14 @@ public partial class BitDatePickerDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
-        new()
-        {
-            Id = "component-visibility-enum",
-            Name = "BitVisibility",
-            Description = "",
-            Items = new()
-            {
-                new()
-                {
-                    Name = "Visible",
-                    Description = "Show content of the component.",
-                    Value = "0"
-                },
-                new()
-                {
-                    Name = "Hidden",
-                    Description = "Hide content of the component,though the space it takes on the page remains.",
-                    Value = "1"
-                },
-                new()
-                {
-                    Name = "Collapsed",
-                    Description = "Hide content of the component,though the space it takes on the page gone.",
-                    Value = "2"
-                }
-            }
-        },
-        new()
-        {
-            Id = "icon-location-enum",
-            Name = "BitIconLocation",
-            Description = "",
-            Items = new()
-            {
-                new()
-                {
-                    Name = "Left",
-                    Description = "Show the icon at the left side.",
-                    Value = "0"
-                },
-                new()
-                {
-                    Name = "Right",
-                    Description = "Show the icon at the right side.",
-                    Value = "1"
-                }
-            }
-        },
-        new()
-        {
-            Id = "time-format-enum",
-            Name = "BitTimeFormat",
-            Description = "",
-            Items = new()
-            {
-                new()
-                {
-                    Name= "TwentyFourHours",
-                    Description="Show time pickers in 24 hours format.",
-                    Value="0"
-                },
-                new()
-                {
-                    Name= "TwelveHours",
-                    Description="Show time pickers in 12 hours format.",
-                    Value="1"
-                }
-            }
-        },
-        new()
-        {
-            Id = "datepicker-mode-enum",
-            Name = "BitDatePickerMode",
-            Description = "",
-            Items = new()
-            {
-                new()
-                {
-                    Name = "DatePicker",
-                    Description = "Standard date picker mode allowing selection of a specific day.",
-                    Value = "0"
-                },
-                new()
-                {
-                    Name = "MonthPicker",
-                    Description = "Month picker mode allowing selection of only month and year. The day is automatically set to the 1st of the selected month.",
-                    Value = "1"
-                }
-            }
-        }
-    };
-
     private readonly List<ComponentSubClass> componentSubClasses = new()
     {
         new()
         {
             Id = "datepicker-class-styles",
             Title = "BitDatePickerClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Root",
@@ -942,7 +848,130 @@ public partial class BitDatePickerDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for each year button of the BitDatePicker."
                 }
-            }
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
+    };
+
+    private readonly List<ComponentSubEnum> componentSubEnums = new()
+    {
+        new()
+        {
+            Id = "component-visibility-enum",
+            Name = "BitVisibility",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "Visible",
+                    Description = "Show content of the component.",
+                    Value = "0"
+                },
+                new()
+                {
+                    Name = "Hidden",
+                    Description = "Hide content of the component,though the space it takes on the page remains.",
+                    Value = "1"
+                },
+                new()
+                {
+                    Name = "Collapsed",
+                    Description = "Hide content of the component,though the space it takes on the page gone.",
+                    Value = "2"
+                }
+            ]
+        },
+        new()
+        {
+            Id = "icon-location-enum",
+            Name = "BitIconLocation",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "Left",
+                    Description = "Show the icon at the left side.",
+                    Value = "0"
+                },
+                new()
+                {
+                    Name = "Right",
+                    Description = "Show the icon at the right side.",
+                    Value = "1"
+                }
+            ]
+        },
+        new()
+        {
+            Id = "time-format-enum",
+            Name = "BitTimeFormat",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "TwentyFourHours",
+                    Description="Show time pickers in 24 hours format.",
+                    Value="0"
+                },
+                new()
+                {
+                    Name= "TwelveHours",
+                    Description="Show time pickers in 12 hours format.",
+                    Value="1"
+                }
+            ]
+        },
+        new()
+        {
+            Id = "datepicker-mode-enum",
+            Name = "BitDatePickerMode",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "DatePicker",
+                    Description = "Standard date picker mode allowing selection of a specific day.",
+                    Value = "0"
+                },
+                new()
+                {
+                    Name = "MonthPicker",
+                    Description = "Month picker mode allowing selection of only month and year. The day is automatically set to the 1st of the selected month.",
+                    Value = "1"
+                }
+            ]
         }
     };
 
