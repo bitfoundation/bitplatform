@@ -2,8 +2,8 @@
 
 public partial class BitDatePickerDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AllowTextInput",
@@ -411,10 +411,10 @@ public partial class BitDatePickerDemo
             DefaultValue = "1",
             Description = "Determines increment/decrement steps for date-picker's minute.",
         }
-    };
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "datepicker-class-styles",
@@ -879,10 +879,10 @@ public partial class BitDatePickerDemo
                },
             ]
         },
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "component-visibility-enum",
@@ -973,7 +973,7 @@ public partial class BitDatePickerDemo
                 }
             ]
         }
-    };
+    ];
 
 
 
