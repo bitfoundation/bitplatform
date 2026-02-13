@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
 public partial class _BitDropdownOptionDemo
 {
@@ -882,9 +882,9 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Fruits"" Value=""@string.Empty"" />
     <BitDropdownOption Text=""Apple"" Value=""@(""f-app"")"" Icon=""@BitIconInfo.Css(""fa-solid fa-apple-whole"")"" />
-    <BitDropdownOption Text=""Banana"" Value=""@(""f-ban"")"" Icon=""@BitIconInfo.Css(""fa-solid fa-lemon"")"" />
-    <BitDropdownOption Text=""Orange"" Value=""@(""f-ora"")"" Icon=""@BitIconInfo.Fa(""solid orange"")"" IsEnabled=""false"" />
-    <BitDropdownOption Text=""Grape"" Value=""@(""f-gra"")"" Icon=""@BitIconInfo.Css(""fa-solid fa-grapes"")"" />
+    <BitDropdownOption Text=""Banana"" Value=""@(""f-ban"")"" Icon=""@BitIconInfo.Css(""fa-solid fa-moon"")"" />
+    <BitDropdownOption Text=""Orange"" Value=""@(""f-ora"")"" Icon=""@BitIconInfo.Fa(""solid lemon"")"" IsEnabled=""false"" />
+    <BitDropdownOption Text=""Grape"" Value=""@(""f-gra"")"" Icon=""@BitIconInfo.Css(""fa-solid fa-droplet"")"" />
     <BitDropdownOption ItemType=""BitDropdownItemType.Divider"" Value=""@string.Empty"" />
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Vegetables"" Value=""@string.Empty"" />
     <BitDropdownOption Text=""Broccoli"" Value=""@(""v-bro"")"" Icon=""@BitIconInfo.Css(""fa-solid fa-seedling"")"" />
@@ -899,12 +899,12 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
     <BitDropdownOption Text=""Apple"" Value=""@(""f-app"")"" Icon=""@BitIconInfo.Bi(""apple"")"" />
     <BitDropdownOption Text=""Banana"" Value=""@(""f-ban"")"" Icon=""@BitIconInfo.Bi(""flower1"")"" />
     <BitDropdownOption Text=""Orange"" Value=""@(""f-ora"")"" Icon=""@BitIconInfo.Css(""bi bi-sun"")"" IsEnabled=""false"" />
-    <BitDropdownOption Text=""Grape"" Value=""@(""f-gra"")"" Icon=""@BitIconInfo.Bi(""grape"")"" />
+    <BitDropdownOption Text=""Grape"" Value=""@(""f-gra"")"" Icon=""@BitIconInfo.Bi(""droplet-fill"")"" />
     <BitDropdownOption ItemType=""BitDropdownItemType.Divider"" Value=""@string.Empty"" />
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Vegetables"" Value=""@string.Empty"" />
     <BitDropdownOption Text=""Broccoli"" Value=""@(""v-bro"")"" Icon=""@BitIconInfo.Bi(""tree-fill"")"" />
-    <BitDropdownOption Text=""Carrot"" Value=""@(""v-car"")"" Icon=""@BitIconInfo.Bi(""carrot"")"" />
-    <BitDropdownOption Text=""Lettuce"" Value=""@(""v-let"")"" Icon=""@BitIconInfo.Bi(""leaf"")"" />
+    <BitDropdownOption Text=""Carrot"" Value=""@(""v-car"")"" Icon=""@BitIconInfo.Bi(""egg"")"" />
+    <BitDropdownOption Text=""Lettuce"" Value=""@(""v-let"")"" Icon=""@BitIconInfo.Bi(""flower2"")"" />
 </BitDropdown>";
     private readonly string example15CsharpCode = @"
 private readonly List<BitDropdownItem<string>> basicItems =

@@ -91,9 +91,9 @@ public partial class _BitDropdownCustomDemo
     [
         new() { Type = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app", Icon = BitIconInfo.Css("fa-solid fa-apple-whole") },
-        new() { Text = "Banana", Value = "f-ban", Icon = BitIconInfo.Css("fa-solid fa-lemon") },
-        new() { Text = "Orange", Value = "f-ora", Icon = BitIconInfo.Fa("solid orange"), Disabled = true },
-        new() { Text = "Grape", Value = "f-gra", Icon = BitIconInfo.Css("fa-solid fa-grapes") },
+        new() { Text = "Banana", Value = "f-ban", Icon = BitIconInfo.Css("fa-solid fa-moon") },
+        new() { Text = "Orange", Value = "f-ora", Icon = BitIconInfo.Fa("solid lemon"), Disabled = true },
+        new() { Text = "Grape", Value = "f-gra", Icon = BitIconInfo.Css("fa-solid fa-droplet") },
         new() { Type = BitDropdownItemType.Divider },
         new() { Type = BitDropdownItemType.Header, Text = "Vegetables" },
         new() { Text = "Broccoli", Value = "v-bro", Icon = BitIconInfo.Css("fa-solid fa-seedling") },
@@ -107,12 +107,12 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "Apple", Value = "f-app", Icon = BitIconInfo.Bi("apple") },
         new() { Text = "Banana", Value = "f-ban", Icon = BitIconInfo.Bi("flower1") },
         new() { Text = "Orange", Value = "f-ora", Icon = BitIconInfo.Css("bi bi-sun"), Disabled = true },
-        new() { Text = "Grape", Value = "f-gra", Icon = BitIconInfo.Bi("grape") },
+        new() { Text = "Grape", Value = "f-gra", Icon = BitIconInfo.Bi("droplet-fill") },
         new() { Type = BitDropdownItemType.Divider },
         new() { Type = BitDropdownItemType.Header, Text = "Vegetables" },
         new() { Text = "Broccoli", Value = "v-bro", Icon = BitIconInfo.Bi("tree-fill") },
-        new() { Text = "Carrot", Value = "v-car", Icon = BitIconInfo.Bi("carrot") },
-        new() { Text = "Lettuce", Value = "v-let", Icon = BitIconInfo.Bi("leaf") }
+        new() { Text = "Carrot", Value = "v-car", Icon = BitIconInfo.Bi("egg") },
+        new() { Text = "Lettuce", Value = "v-let", Icon = BitIconInfo.Bi("flower2") }
     ];
 
     private List<Product> GetRtlCustoms() =>
