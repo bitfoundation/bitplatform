@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DateRangePicker;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DateRangePicker;
 
 public partial class BitDateRangePickerDemo
 {
@@ -149,6 +149,24 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
                     Placeholder=""Select a date range"" />";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitDateRangePicker Label=""FontAwesome (string)"" Icon=""@(""fa-solid fa-calendar-days"")"" />
+
+<BitDateRangePicker Label=""FontAwesome (Css)"" Icon=""@BitIconInfo.Css(""fa-solid fa-calendar-week"")"" />
+
+<BitDateRangePicker Label=""FontAwesome (Fa)"" Icon=""@BitIconInfo.Fa(""solid calendar"")"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitDateRangePicker Label=""Bootstrap (string)"" Icon=""@(""bi bi-calendar3"")"" />
+
+<BitDateRangePicker Label=""Bootstrap (Css)"" Icon=""@BitIconInfo.Css(""bi bi-calendar-range"")"" />
+
+<BitDateRangePicker Label=""Bootstrap (Bi)"" Icon=""@BitIconInfo.Bi(""calendar3"")"" />";
+
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -333,9 +351,9 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
                                        DayPickerHeader = ""custom-day-header"",
                                        WeekNumbersHeader = ""custom-week-header"",
                                        YearMonthPickerWrapper = ""custom-year-picker"" })"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private BitDateRangePickerValue? classesValue;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitDateRangePicker Dir=""BitDir.Rtl"" />";
 }
