@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Linq.Expressions;
 using System.Diagnostics.CodeAnalysis;
 
@@ -52,7 +52,21 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public RenderFragment? CalloutFooterTemplate { get; set; }
 
     /// <summary>
-    /// The icon name of the chevron down element of the dropdown.
+    /// The icon of the chevron down element of the dropdown.
+    /// Takes precedence over <see cref="CaretDownIconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="CaretDownIconName"/> instead.
+    /// </summary>
+    /// <example>
+    /// Bootstrap: CaretDownIcon="BitIconInfo.Bi("chevron-down")"
+    /// FontAwesome: CaretDownIcon="BitIconInfo.Fa("solid chevron-down")"
+    /// Custom CSS: CaretDownIcon="BitIconInfo.Css("my-chevron-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? CaretDownIcon { get; set; }
+
+    /// <summary>
+    /// The icon name of the chevron down element of the dropdown from the Fluent UI icon set.
+    /// For external icon libraries, use <see cref="CaretDownIcon"/> instead.
     /// </summary>
     [Parameter] public string? CaretDownIconName { get; set; }
 
@@ -735,6 +749,43 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
+    }
+
+    internal BitIconInfo? GetIcon(TItem item)
+    {
+        if (item is BitDropdownItem<TValue> dropdownItem)
+        {
+            return BitIconInfo.From(dropdownItem.Icon, dropdownItem.IconName);
+        }
+
+        if (item is BitDropdownOption<TValue> dropdownOption)
+        {
+            return BitIconInfo.From(dropdownOption.Icon, dropdownOption.IconName);
+        }
+
+        if (NameSelectors is null) return null;
+
+        BitIconInfo? icon = null;
+        if (NameSelectors.Icon.Selector is not null)
+        {
+            icon = NameSelectors.Icon.Selector!(item);
+        }
+        else
+        {
+            icon = item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
+        }
+
+        string? iconName = null;
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            iconName = NameSelectors.IconName.Selector!(item);
+        }
+        else
+        {
+            iconName = item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+        }
+
+        return BitIconInfo.From(icon, iconName);
     }
 
     internal TValue? GetValue(TItem? item)

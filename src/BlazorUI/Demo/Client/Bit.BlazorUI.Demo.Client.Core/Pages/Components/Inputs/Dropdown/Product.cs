@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
 public class Product
 {
@@ -23,4 +23,14 @@ public class Product
     public string? Title { get; set; }
 
     public string? Value { get; set; }
+
+    /// <summary>
+    /// Icon (BitIconInfo) for external icon libraries. Used with BitDropdown NameSelectors.
+    /// </summary>
+    public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// Icon name for Fluent UI icons. Used with BitDropdown NameSelectors.
+    /// </summary>
+    public string? IconName { get; set; }
 }

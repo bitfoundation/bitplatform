@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
 {
@@ -16,6 +16,20 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     /// Custom CSS class for the dropdown option.
     /// </summary>
     [Parameter] public string? Class { get; set; }
+
+    /// <summary>
+    /// The icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </summary>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// The icon name from the Fluent UI icon set to display for the dropdown option.
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </summary>
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// The id for the dropdown option.

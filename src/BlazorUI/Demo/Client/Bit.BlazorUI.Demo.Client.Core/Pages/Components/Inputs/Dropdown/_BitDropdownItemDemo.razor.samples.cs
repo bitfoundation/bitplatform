@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
 public partial class _BitDropdownItemDemo
 {
@@ -530,7 +530,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitDropdown Label=""Single select""
              Virtualize
              Items=""virtualizeItems1""
@@ -572,7 +572,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Placeholder=""Select items""
              InitialSelectedItems=""initialSelectedItems""
              TItem=""BitDropdownItem<string>"" TValue=""string"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private ICollection<BitDropdownItem<string>>? virtualizeItems1;
 private ICollection<BitDropdownItem<string>>? virtualizeItems2;
 
@@ -672,7 +672,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>>
     }
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample1""
              Combo
              Responsive
@@ -689,7 +689,7 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>>
              Label=""Multi select combo box""
              Placeholder=""Select an option"" />
 <div>Values: @string.Join(',', comboBoxValues1)</div>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string comboBoxValueSample1 = default!;
 private ICollection<string?> comboBoxValues1 = [];
 
@@ -707,7 +707,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
              Responsive
@@ -724,7 +724,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
              Placeholder=""Select an option""
              Label=""Multi select combo box & chips"" />
 <div>Values: @string.Join(',', comboBoxValues2)</div>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private string comboBoxValueSample2 = default!;
 private ICollection<string?> comboBoxValues2 = [];
 
@@ -742,7 +742,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
              Responsive
@@ -773,7 +773,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
              DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
 <div>Values: @string.Join(',', comboBoxValues3)</div>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private string comboBoxValueSample3 = default!;
 private string comboBoxValueSample4 = default!;
 private ICollection<string?> comboBoxValues3 = [];
@@ -790,6 +790,91 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
     new() { Text = ""Broccoli"", Value = ""v-bro"" },
     new() { Text = ""Carrot"", Value = ""v-car"" },
     new() { Text = ""Lettuce"", Value = ""v-let"" }
+};";
+
+    private readonly string example15RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitDropdown Label=""Caret down icon (external)""
+             CaretDownIcon=""@BitIconInfo.Css(""fa-solid fa-circle-chevron-down"")""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownItem<string>"" TValue=""string"" />
+
+<BitDropdown Label=""Item icons (IconName - Fluent UI)""
+             Items=""GetExternalIconItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownItem<string>"" TValue=""string"" />
+
+<BitDropdown Label=""Item icons (Icon - FontAwesome)""
+             Items=""GetExternalIconFaItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownItem<string>"" TValue=""string"" />
+
+<BitDropdown Label=""Item icons (Icon - Bootstrap Icons)""
+             Items=""GetExternalIconBiItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownItem<string>"" TValue=""string"" />";
+    private readonly string example15CsharpCode = @"
+private List<BitDropdownItem<string>> GetBasicItems() => new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};
+
+private List<BitDropdownItem<string>> GetExternalIconItems() => new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"", IconName = nameof(BitIconName.AllApps) },
+    new() { Text = ""Banana"", Value = ""f-ban"", IconName = nameof(BitIconName.Calculator) },
+    new() { Text = ""Orange"", Value = ""f-ora"", IconName = nameof(BitIconName.FavoriteStar), IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"", IconName = nameof(BitIconName.Edit) },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"", IconName = nameof(BitIconName.Health) },
+    new() { Text = ""Carrot"", Value = ""v-car"", IconName = nameof(BitIconName.Add) },
+    new() { Text = ""Lettuce"", Value = ""v-let"", IconName = nameof(BitIconName.ChevronDown) }
+};
+
+private List<BitDropdownItem<string>> GetExternalIconFaItems() => new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"", Icon = BitIconInfo.Css(""fa-solid fa-apple-whole"") },
+    new() { Text = ""Banana"", Value = ""f-ban"", Icon = BitIconInfo.Css(""fa-solid fa-lemon"") },
+    new() { Text = ""Orange"", Value = ""f-ora"", Icon = BitIconInfo.Fa(""solid orange""), IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"", Icon = BitIconInfo.Css(""fa-solid fa-grapes"") },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"", Icon = BitIconInfo.Css(""fa-solid fa-seedling"") },
+    new() { Text = ""Carrot"", Value = ""v-car"", Icon = BitIconInfo.Css(""fa-solid fa-carrot"") },
+    new() { Text = ""Lettuce"", Value = ""v-let"", Icon = BitIconInfo.Css(""fa-solid fa-leaf"") }
+};
+
+private List<BitDropdownItem<string>> GetExternalIconBiItems() => new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"", Icon = BitIconInfo.Bi(""apple"") },
+    new() { Text = ""Banana"", Value = ""f-ban"", Icon = BitIconInfo.Bi(""flower1"") },
+    new() { Text = ""Orange"", Value = ""f-ora"", Icon = BitIconInfo.Css(""bi bi-sun""), IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"", Icon = BitIconInfo.Bi(""grape"") },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"", Icon = BitIconInfo.Bi(""tree-fill"") },
+    new() { Text = ""Carrot"", Value = ""v-car"", Icon = BitIconInfo.Bi(""carrot"") },
+    new() { Text = ""Lettuce"", Value = ""v-let"", Icon = BitIconInfo.Bi(""leaf"") }
 };";
 
     private readonly string example16RazorCode = @"

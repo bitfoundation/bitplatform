@@ -53,6 +53,11 @@
                     }
                     else
                     {
+                        var itemIcon = Dropdown.GetIcon(Item);
+                        @if (itemIcon is not null)
+                        {
+                            <i style="@Dropdown.Styles?.ItemIcon" class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
+                        }
                         <span style="@Dropdown.Styles?.ItemText"
                               class="bit-drp-itx @Dropdown.Classes?.ItemText">
                             @text
@@ -83,6 +88,11 @@
                 }
                 else
                 {
+                    var itemIcon = Dropdown.GetIcon(Item);
+                    @if (itemIcon is not null)
+                    {
+                        <i style="@Dropdown.Styles?.ItemIcon" class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
+                    }
                     <span style="@Dropdown.Styles?.ItemText"
                           class="@Dropdown.Classes?.ItemText">
                         @text

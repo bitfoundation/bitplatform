@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
 public partial class BitDropdownDemo
 {
@@ -27,10 +27,19 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "CaretDownIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the chevron down element. Takes precedence over CaretDownIconName when both are set. Use for external icon libraries (e.g. BitIconInfo.Fa(\"solid chevron-down\"), BitIconInfo.Bi(\"chevron-down\"), BitIconInfo.Css(\"my-class\")).",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "CaretDownIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name of the chevron down element of the dropdown.",
+            Description = "The icon name of the chevron down element of the dropdown from the Fluent UI icon set.",
         },
         new()
         {
@@ -436,6 +445,22 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon to display using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
+                   Name = "IconName",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The icon name from the Fluent UI icon set. For external icon libraries, use Icon instead."
+               },
+               new()
+               {
                    Name = "Data",
                    Type = "object?",
                    DefaultValue = "null",
@@ -558,6 +583,22 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon to display using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
+                   Name = "IconName",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The icon name from the Fluent UI icon set. For external icon libraries, use Icon instead."
+               },
+               new()
+               {
                    Name = "ItemType",
                    Type = "BitDropdownItemType",
                    DefaultValue = "BitDropdownItemType.Normal",
@@ -673,6 +714,24 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitNameSelectorPair<TItem, BitIconInfo?>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.Icon))",
+                   Description = "The Icon field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info"
+               },
+               new()
+               {
+                   Name = "IconName",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.IconName))",
+                   Description = "The IconName field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitDropdownItem<TValue>.Style))",
@@ -745,6 +804,35 @@ public partial class BitDropdownDemo
                    Type = "Func<TItem, TProp?>?",
                    Description = "Custom class property selector."
                }
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
             ]
         },
         new()
@@ -927,6 +1015,13 @@ public partial class BitDropdownDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item check icon of the multi-select BitDropdown."
+               },
+               new()
+               {
+                   Name = "ItemIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item icon of the BitDropdown."
                },
                new()
                {

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
 public partial class _BitDropdownItemDemo
 {
@@ -64,6 +64,48 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Broccoli", Value = "v-bro", Class = "custom-veg" },
         new() { Text = "Carrot", Value = "v-car", Class = "custom-veg" },
         new() { Text = "Lettuce", Value = "v-let", Class = "custom-veg" }
+    ];
+
+    private List<BitDropdownItem<string>> GetExternalIconItems() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app", IconName = nameof(BitIconName.AllApps) },
+        new() { Text = "Banana", Value = "f-ban", IconName = nameof(BitIconName.Calculator) },
+        new() { Text = "Orange", Value = "f-ora", IconName = nameof(BitIconName.FavoriteStar), IsEnabled = false },
+        new() { Text = "Grape", Value = "f-gra", IconName = nameof(BitIconName.Edit) },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro", IconName = nameof(BitIconName.Health) },
+        new() { Text = "Carrot", Value = "v-car", IconName = nameof(BitIconName.Add) },
+        new() { Text = "Lettuce", Value = "v-let", IconName = nameof(BitIconName.ChevronDown) }
+    ];
+
+    private List<BitDropdownItem<string>> GetExternalIconFaItems() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app", Icon = BitIconInfo.Css("fa-solid fa-apple-whole") },
+        new() { Text = "Banana", Value = "f-ban", Icon = BitIconInfo.Css("fa-solid fa-lemon") },
+        new() { Text = "Orange", Value = "f-ora", Icon = BitIconInfo.Fa("solid orange"), IsEnabled = false },
+        new() { Text = "Grape", Value = "f-gra", Icon = BitIconInfo.Css("fa-solid fa-grapes") },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro", Icon = BitIconInfo.Css("fa-solid fa-seedling") },
+        new() { Text = "Carrot", Value = "v-car", Icon = BitIconInfo.Css("fa-solid fa-carrot") },
+        new() { Text = "Lettuce", Value = "v-let", Icon = BitIconInfo.Css("fa-solid fa-leaf") }
+    ];
+
+    private List<BitDropdownItem<string>> GetExternalIconBiItems() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app", Icon = BitIconInfo.Bi("apple") },
+        new() { Text = "Banana", Value = "f-ban", Icon = BitIconInfo.Bi("flower1") },
+        new() { Text = "Orange", Value = "f-ora", Icon = BitIconInfo.Css("bi bi-sun"), IsEnabled = false },
+        new() { Text = "Grape", Value = "f-gra", Icon = BitIconInfo.Bi("grape") },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro", Icon = BitIconInfo.Bi("tree-fill") },
+        new() { Text = "Carrot", Value = "v-car", Icon = BitIconInfo.Bi("carrot") },
+        new() { Text = "Lettuce", Value = "v-let", Icon = BitIconInfo.Bi("leaf") }
     ];
 
     private List<BitDropdownItem<string>> comboBoxItems =

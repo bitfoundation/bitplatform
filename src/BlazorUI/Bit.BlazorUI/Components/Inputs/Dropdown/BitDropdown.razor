@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitInputBase<TValue>
 @typeparam TItem
 @typeparam TValue
@@ -131,9 +131,10 @@
             }
             else
             {
+                var icon = BitIconInfo.From(CaretDownIcon, CaretDownIconName ?? "ChevronRight bit-ico-r90");
                 <i aria-hidden="true"
                    style="@Styles?.CaretDownIcon"
-                   class="bit-icon bit-icon--@(CaretDownIconName ?? "ChevronRight bit-ico-r90") @Classes?.CaretDownIcon" />
+                   class="@icon?.GetCssClasses() @Classes?.CaretDownIcon" />
             }
         </span>
 

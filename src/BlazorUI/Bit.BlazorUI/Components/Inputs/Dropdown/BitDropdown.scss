@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 
 .bit-drp {
@@ -661,12 +661,14 @@
 .bit-drp-itm {
     width: 100%;
     display: flex;
+    gap: spacing(1);
     cursor: pointer;
     overflow: hidden;
     font-weight: 400;
     text-align: start;
     user-select: none;
     position: relative;
+    color: $clr-fg-pri;
     white-space: nowrap;
     align-items: center;
     height: spacing(4.5);
@@ -678,7 +680,6 @@
     font-size: spacing(1.875);
     line-height: spacing(2.5);
     background-color: transparent;
-    color: $clr-fg-pri;
     border: $shp-border-width $shp-border-style transparent;
 
     @media (hover: hover) {

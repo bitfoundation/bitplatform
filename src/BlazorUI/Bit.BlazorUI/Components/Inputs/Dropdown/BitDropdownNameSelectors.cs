@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitDropdownNameSelectors<TItem, TValue>
 {
@@ -11,6 +11,16 @@ public class BitDropdownNameSelectors<TItem, TValue>
     /// The CSS Class field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitDropdownItem<TValue>.Class));
+
+    /// <summary>
+    /// The Icon field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitIconInfo?> Icon { get; set; } = new(nameof(BitDropdownItem<TValue>.Icon));
+
+    /// <summary>
+    /// The IconName field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitDropdownItem<TValue>.IconName));
 
     /// <summary>
     /// The Id field name and selector of the custom input class.
