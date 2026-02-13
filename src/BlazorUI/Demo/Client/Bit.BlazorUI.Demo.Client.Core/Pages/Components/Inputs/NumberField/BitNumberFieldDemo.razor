@@ -1,4 +1,4 @@
-﻿@page "/components/numberfield"
+@page "/components/numberfield"
 @page "/components/numerictextfield"
 @page "/components/numeric-text-field"
 @page "/components/spinbutton"
@@ -220,7 +220,54 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
+        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b>, <b>IncrementIcon</b>, and <b>DecrementIcon</b> parameters.</div>
+
+        <br />
+        <br />
+
+        <div class="example-box">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+            <div>Component Icon (FontAwesome):</div>
+            <br />
+            <BitNumberField Label="Label & Icon" TValue="int" Icon="@("fa-solid fa-calculator")" />
+
+            <br />
+
+            <BitNumberField Label="Icon with BitIconInfo.Css" TValue="int" Icon="@BitIconInfo.Css("fa-solid fa-lightbulb")" />
+
+            <br />
+
+            <BitNumberField Label="Icon with BitIconInfo.Fa" TValue="int" Icon="@BitIconInfo.Fa("solid calculator")" />
+
+            <br /><br /><br /><br />
+
+            <div>Increment & Decrement Icons (FontAwesome):</div>
+            <br />
+            <BitNumberField Label="Compact mode" TValue="int" Mode="BitSpinButtonMode.Compact"
+                            IncrementIcon="@BitIconInfo.Fa("solid plus")"
+                            DecrementIcon="@BitIconInfo.Fa("solid minus")" />
+
+            <br /><br /><br /><br />
+
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+            <div>Component Icon (Bootstrap):</div>
+            <br />
+            <BitNumberField Label="Icon with BitIconInfo.Bi" TValue="int" Icon="@BitIconInfo.Bi("calculator")" />
+
+            <br /><br /><br /><br />
+
+            <div>Increment & Decrement Icons (Bootstrap):</div>
+            <br />
+            <BitNumberField Label="Spread mode" TValue="int" Mode="BitSpinButtonMode.Spread"
+                            IncrementIcon="@BitIconInfo.Bi("plus-circle-fill")"
+                            DecrementIcon="@BitIconInfo.Bi("dash-circle-fill")" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
         <div>Explores styling and class customization for BitNumberField, including component styles, custom classes, and detailed style options.</div>
         <br /><br />
         <div class="example-box">
@@ -251,7 +298,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
         <div>Use BitNumberField in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
 
 public partial class BitNumberFieldDemo
 {
@@ -57,10 +57,21 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "DecrementIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display on the decrement button using custom CSS classes for external icon libraries. Takes precedence over DecrementIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "DecrementIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Custom icon name for the decrement button.",
+            Description = "Gets or sets the name of the icon for the decrement button from the built-in Fluent UI icons. For external icon libraries, use DecrementIcon instead.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -92,10 +103,21 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display alongside the number field using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Icon name for an icon to display alongside the number field's label.",
+            Description = "Gets or sets the name of the icon to display alongside the number field from the built-in Fluent UI icons. For external icon libraries, use Icon instead.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -106,10 +128,21 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "IncrementIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display on the increment button using custom CSS classes for external icon libraries. Takes precedence over IncrementIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "IncrementIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Custom icon name for the increment button.",
+            Description = "Gets or sets the name of the icon for the increment button from the built-in Fluent UI icons. For external icon libraries, use IncrementIcon instead.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -264,6 +297,24 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "ClearButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display on the clear button using custom CSS classes for external icon libraries. Takes precedence over ClearButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ClearButtonIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon for the clear button from the built-in Fluent UI icons. For external icon libraries, use ClearButtonIcon instead.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
@@ -309,6 +360,36 @@ public partial class BitNumberFieldDemo
     ];
     private readonly List<ComponentSubClass> componentSubClasses =
     [
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Description = "Represents icon information for rendering icons in Bit BlazorUI components. Supports both built-in Fluent UI icons and custom/external icon libraries (e.g. FontAwesome, Bootstrap Icons). Use BitIconInfo.Css(string), BitIconInfo.Fa(string), or BitIconInfo.Bi(string) for external icons.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Name",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the name of the icon. For external icons, this can be the full CSS class name if BaseClass and Prefix are empty."
+                },
+                new()
+                {
+                    Name = "BaseClass",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+                },
+            ]
+        },
         new()
         {
             Id = "class-styles",

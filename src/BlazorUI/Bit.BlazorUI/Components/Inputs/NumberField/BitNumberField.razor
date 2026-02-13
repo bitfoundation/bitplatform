@@ -2,6 +2,13 @@
 @inherits BitTextInputBase<TValue>
 @typeparam TValue
 
+@{
+    var icon = BitIconInfo.From(Icon, IconName);
+    var incrementIcon = BitIconInfo.From(IncrementIcon, IncrementIconName ?? "ChevronDownSmall bit-ico-r180");
+    var decrementIcon = BitIconInfo.From(DecrementIcon, DecrementIconName ?? "ChevronDownSmall");
+    var clearButtonIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
+}
+
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
@@ -63,7 +70,7 @@
                     aria-label="@DecrementAriaLabel">
                 <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                     <i style="@Styles?.DecrementIcon"
-                       class="bit-nfl-bic bit-nfl-sbi bit-icon bit-icon--@(DecrementIconName ?? "ChevronDownSmall") @Classes?.DecrementIcon" />
+                       class="bit-nfl-bic bit-nfl-sbi @decrementIcon.GetCssClasses() @Classes?.DecrementIcon" />
                 </span>
             </button>
         }
@@ -138,14 +145,14 @@
                                 aria-hidden="true"
                                 aria-label="Clear text"
                                 disabled="@(IsEnabled is false)">
-                            <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
+                            <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
                         </button>
                     }
         }
 
         @if (Mode == BitSpinButtonMode.Compact)
         {
-            <div style="@Styles?.ButtonsContainer" class="bit-nfl-act @Classes?.ButtonsContainer">
+            <span style="@Styles?.ButtonsContainer" class="bit-nfl-act @Classes?.ButtonsContainer">
                 <button @ref="_buttonIncrement"
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
@@ -161,7 +168,7 @@
                         aria-disabled="@(IsEnabled is false)">
                     <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                         <i style="@Styles?.IncrementIcon"
-                           class="bit-nfl-bic bit-icon bit-icon--@(IncrementIconName ?? "ChevronDownSmall bit-ico-r180") @Classes?.IncrementIcon" />
+                           class="bit-nfl-bic @incrementIcon?.GetCssClasses() @Classes?.IncrementIcon" />
                     </span>
                 </button>
 
@@ -180,10 +187,10 @@
                         aria-disabled="@(IsEnabled is false)">
                     <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                         <i style="@Styles?.DecrementIcon"
-                           class="bit-nfl-bic bit-icon bit-icon--@(DecrementIconName ?? "ChevronDownSmall") @Classes?.DecrementIcon" />
+                           class="bit-nfl-bic @decrementIcon?.GetCssClasses() @Classes?.DecrementIcon" />
                     </span>
                 </button>
-            </div>
+            </span>
         }
         else if (Mode == BitSpinButtonMode.Inline)
         {
@@ -201,7 +208,7 @@
                     aria-label="@DecrementAriaLabel">
                 <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                     <i style="@Styles?.DecrementIcon"
-                       class="bit-nfl-bic bit-nfl-sbi bit-icon bit-icon--@(DecrementIconName ?? "ChevronDownSmall") @Classes?.DecrementIcon" />
+                       class="bit-nfl-bic bit-nfl-sbi @decrementIcon?.GetCssClasses() @Classes?.DecrementIcon" />
                 </span>
             </button>
 
@@ -219,7 +226,7 @@
                     aria-label="@IncrementAriaLabel">
                 <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                     <i style="@Styles?.IncrementIcon"
-                       class="bit-nfl-bic bit-nfl-sbi bit-icon bit-icon--@(IncrementIconName ?? "ChevronDownSmall bit-ico-r180") @Classes?.IncrementIcon" />
+                       class="bit-nfl-bic bit-nfl-sbi @incrementIcon?.GetCssClasses() @Classes?.IncrementIcon" />
                 </span>
             </button>
         }
@@ -239,17 +246,17 @@
                     aria-label="@IncrementAriaLabel">
                 <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                     <i style="@Styles?.IncrementIcon"
-                       class="bit-nfl-bic bit-nfl-sbi bit-icon bit-icon--@(IncrementIconName ?? "ChevronDownSmall bit-ico-r180") @Classes?.IncrementIcon" />
+                       class="bit-nfl-bic bit-nfl-sbi @incrementIcon?.GetCssClasses() @Classes?.IncrementIcon" />
                 </span>
             </button>
         }
 
-        @if (IconName.HasValue())
+        @if (icon is not null)
         {
             <i style="@Styles?.Icon"
-               class="bit-nfl-lic bit-icon bit-icon--@IconName @Classes?.Icon"
+               class="bit-nfl-lic @icon.GetCssClasses() @Classes?.Icon"
                role="@(IconAriaLabel.HasValue() ? "img" : null)"
-               aria-label="@IconAriaLabel" 
+               aria-label="@IconAriaLabel"
                aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")" />
         }
 
