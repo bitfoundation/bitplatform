@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -439,28 +439,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         }
 
         return BitIconInfo.From(icon, iconName);
-    }
-
-    internal string? GetIconName(TItem item)
-    {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
-        {
-            return choiceGroupItem.IconName;
-        }
-
-        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
-        {
-            return choiceGroupOption.IconName;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.IconName.Selector is not null)
-        {
-            return NameSelectors.IconName.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
     }
 
     internal string? GetImageSrc(TItem item)
