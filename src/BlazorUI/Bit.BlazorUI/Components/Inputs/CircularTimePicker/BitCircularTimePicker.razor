@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitInputBase<TimeSpan?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -53,7 +53,8 @@
                 }
                 else
                 {
-                    <i style="@Styles?.Icon" class="bit-ctp-ico bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
+                    var icon = BitIconInfo.From(Icon, IconName ?? "Clock");
+                    <i style="@Styles?.Icon" class="bit-ctp-ico @icon?.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
                 }
             </div>
         </div>
@@ -183,13 +184,14 @@
 
             @if (ShowCloseButton && Standalone is false)
             {
+                var closeButtonIcon = BitIconInfo.From(CloseButtonIcon, CloseButtonIconName ?? "Cancel");
                 <button @onclick="CloseCallout"
                         type="button"
                         style="@Styles?.CloseButton"
                         class="bit-ctp-cbn @Classes?.CloseButton"
                         title="@CloseButtonTitle"
                         aria-label="@CloseButtonTitle">
-                    <i style="@Styles?.CloseButtonIcon" class="bit-ctp-cbi bit-icon bit-icon--Cancel @Classes?.CloseButtonIcon" aria-hidden="true" />
+                    <i style="@Styles?.CloseButtonIcon" class="bit-ctp-cbi @closeButtonIcon?.GetCssClasses() @Classes?.CloseButtonIcon" aria-hidden="true" />
                 </button>
             }
         </div>

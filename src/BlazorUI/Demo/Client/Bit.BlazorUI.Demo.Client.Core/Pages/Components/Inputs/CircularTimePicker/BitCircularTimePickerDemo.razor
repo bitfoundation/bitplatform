@@ -1,4 +1,4 @@
-﻿@page "/components/circulartimepicker"
+@page "/components/circulartimepicker"
 @page "/components/circular-time-picker"
 @using Bit.BlazorUI.Demo.Client.Core.Helpers
 
@@ -194,7 +194,34 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
+        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
+        <br />
+        <br />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        <div>FontAwesome:</div>
+        <br />
+        <div class="example-content">
+            <BitCircularTimePicker Label="FontAwesome" Icon="@("fa-solid fa-clock")" />
+            <br /><br />
+            <BitCircularTimePicker Label="FontAwesome (Css)" Icon="@BitIconInfo.Css("fa-solid fa-heart")" />
+            <br /><br />
+            <BitCircularTimePicker Label="FontAwesome (Fa)" Icon="@BitIconInfo.Fa("solid clock")" />
+        </div>
+        <br /><br />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        <div>Bootstrap:</div>
+        <br />
+        <div class="example-content">
+            <BitCircularTimePicker Label="Bootstrap" Icon="@("bi bi-clock-fill")" />
+            <br /><br />
+            <BitCircularTimePicker Label="Bootstrap (Css)" Icon="@BitIconInfo.Css("bi bi-heart-fill")" />
+            <br /><br />
+            <BitCircularTimePicker Label="Bootstrap (Bi)" Icon="@BitIconInfo.Bi("clock-fill")" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>Explore styling and class customization for BitCircularTimePicker, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -237,7 +264,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
         <div>Use BitCircularTimePicker in a right-to-left (RTL) layout.</div>
         <br />
         <div dir="rtl">
