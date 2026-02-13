@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitChoiceGroupNameSelectors<TItem, TValue>
 {
@@ -21,6 +21,11 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     /// The IsEnabled field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.IsEnabled));
+
+    /// <summary>
+    /// The Icon field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitIconInfo?> Icon { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.Icon));
 
     /// <summary>
     /// The IconName field name and selector of the custom input class.

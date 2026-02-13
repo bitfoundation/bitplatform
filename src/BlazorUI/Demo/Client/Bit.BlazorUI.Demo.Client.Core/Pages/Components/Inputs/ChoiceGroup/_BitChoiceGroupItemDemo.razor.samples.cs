@@ -567,6 +567,23 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
 ];";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitChoiceGroup Label=""External Icons"" Items=""externalIconItems"" DefaultValue=""@(""Day"")"" />
+
+<BitChoiceGroup Label=""External Icons (Inline)"" Items=""externalIconItems"" DefaultValue=""@(""Day"")"" Inline />
+
+<BitChoiceGroup Label=""External Icons (Horizontal)"" Items=""externalIconItems"" DefaultValue=""@(""Day"")"" Horizontal />";
+    private readonly string example12CsharpCode = @"
+private readonly List<BitChoiceGroupItem<string>> externalIconItems =
+[
+    new() { Text = ""Day"", Value = ""Day"", Icon = BitIconInfo.Fa(""solid sun"") },
+    new() { Text = ""Week"", Value = ""Week"", Icon = BitIconInfo.Css(""fa-solid fa-calendar-week"") },
+    new() { Text = ""Month"", Value = ""Month"", Icon = BitIconInfo.Bi(""calendar-month"") }
+];";
+
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -641,7 +658,7 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
                                    ItemText = ""custom-text"",
                                    ItemChecked = ""custom-checked"",
                                    ItemRadioButton = ""custom-radio-btn"" })"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [
     new() { Text = ""Item A"", Value = ""A"" },
@@ -658,10 +675,10 @@ private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems =
     new() { Text = ""Item D"", Value = ""D"", Class = ""custom-item"" }
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitChoiceGroup Label=""ساده"" Items=""rtlItems"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"" />
 <BitChoiceGroup Label=""غیرفعال"" Items=""rtlItems"" IsEnabled=""false"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> rtlItems = new()
 {
     new() { Text = ""بخش آ"", Value = ""A"" },

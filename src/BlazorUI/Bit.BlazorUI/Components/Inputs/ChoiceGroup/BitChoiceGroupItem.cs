@@ -24,6 +24,19 @@ public class BitChoiceGroupItem<TValue>
 
     /// <summary>
     /// The icon to show as content of the BitChoiceGroup item.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </summary>
+    /// <example>
+    /// Bootstrap: Icon="BitIconInfo.Bi("gear-fill")"
+    /// FontAwesome: Icon = BitIconInfo.Fa("solid house")
+    /// Custom CSS: Icon = BitIconInfo.Css("my-icon-class")
+    /// </example>
+    public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// The icon to show as content of the BitChoiceGroup item.
     /// </summary>
     public string? IconName { get; set; }
 

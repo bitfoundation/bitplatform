@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @typeparam TItem
 @typeparam TValue
 
@@ -57,17 +57,17 @@
                     </div>
                 }
 
-                var iconName = ChoiceGroup.GetIconName(Item);
-                @if (iconName.HasValue())
+                var icon = ChoiceGroup.GetIcon(Item);
+                @if (icon is not null)
                 {
                     <div style="@ChoiceGroup.Styles?.ItemIconWrapper" class="bit-chg-icw @ChoiceGroup.Classes?.ItemIconWrapper">
                         <i aria-hidden="true"
                            style="@ChoiceGroup.Styles?.ItemIcon"
-                           class="bit-icon bit-icon--@iconName @ChoiceGroup.Classes?.ItemIcon" />
+                           class="bit-chg-ico @icon.GetCssClasses() @ChoiceGroup.Classes?.ItemIcon" />
                     </div>
                 }
 
-                @if (imageSrc.HasValue() || iconName.HasValue())
+                @if (imageSrc.HasValue() || icon is not null)
                 {
                     <div style="@ChoiceGroup.Styles?.ItemTextWrapper" class="bit-chg-itw @ChoiceGroup.Classes?.ItemTextWrapper">
                         <span style="@ChoiceGroup.Styles?.ItemText" class="bit-chg-itx @ChoiceGroup.Classes?.ItemText">@ChoiceGroup.GetText(Item)</span>

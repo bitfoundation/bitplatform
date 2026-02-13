@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
 
 public class Order
 {
@@ -8,6 +8,7 @@ public class Order
     public string? ImageDescription { get; set; }
     public BitImageSize? ImageSize { get; set; }
     public string? SelectedImageAddress { get; set; }
+    public BitIconInfo? Icon { get; set; }
     public string? IconName { get; set; }
     public bool IsDisabled { get; set; }
     public string? Class { get; set; }
