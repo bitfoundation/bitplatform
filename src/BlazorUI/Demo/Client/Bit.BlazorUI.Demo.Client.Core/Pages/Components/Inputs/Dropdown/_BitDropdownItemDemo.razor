@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>Displays basic dropdowns demonstrating single and multi-select options, including required and disabled states.</div>
     <br /><br />
     <div class="example-content">
@@ -375,57 +375,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Virtualization" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-    <div>Demonstrates virtualization in the BitDropdown component for handling large datasets efficiently.</div>
-    <br /><br /><br />
-    <div class="example-content">
-        <div>With <b>Items</b>:</div><br />
-        <BitDropdown Label="Single select"
-                     Virtualize
-                     Items="virtualizeItems1"
-                     DefaultValue="@string.Empty"
-                     Placeholder="Select an item" />
-        <br />
-        <BitDropdown Label="Multi select"
-                     Virtualize
-                     MultiSelect
-                     Items="virtualizeItems2"
-                     Placeholder="Select items"
-                     DefaultValue="@string.Empty" />
-        <br /><br /><br /><br />
-        <div>With <b>ItemsProvider</b>:</div><br />
-        <BitDropdown Label="Single select"
-                     Virtualize
-                     ItemsProvider="LoadItems"
-                     Placeholder="Select an item"
-                     TItem="BitDropdownItem<string>" TValue="string" />
-        <br />
-        <BitDropdown Label="Multi select"
-                     Virtualize
-                     MultiSelect
-                     ItemsProvider="LoadItems"
-                     Placeholder="Select items"
-                     TItem="BitDropdownItem<string>" TValue="string" />
-        <br /><br /><br /><br />
-        <div>With <b>ItemsProvider and InitialSelectedItems</b>:</div><br />
-        <BitDropdown Label="Single select"
-                     Virtualize
-                     ItemsProvider="LoadItems"
-                     Placeholder="Select an item"
-                     InitialSelectedItems="initialSelectedItem"
-                     TItem="BitDropdownItem<string>" TValue="string" />
-        <br />
-        <BitDropdown Label="Multi select"
-                     Virtualize
-                     MultiSelect
-                     ItemsProvider="LoadItems"
-                     Placeholder="Select items"
-                     InitialSelectedItems="initialSelectedItems"
-                     TItem="BitDropdownItem<string>" TValue="string" />
-    </div>
-</DemoExample>
-
-<DemoExample Title="ComboBox" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="ComboBox" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>When the <b>Combo</b> parameter is true, you can type in BitDropdown input and search between items.</div>
     <br />
     <div class="example-content">
@@ -450,7 +400,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Chips" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+<DemoExample Title="Chips" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>When the <b>Chips</b> parameter is true, shows the selected items like chips in the ComboBox.</div>
     <br />
     <div class="example-content">
@@ -475,7 +425,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Dynamic ComboBox" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+<DemoExample Title="Dynamic ComboBox" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>When the <b>Dynamic</b> parameter is true, you can add a new item in the ComboBox.</div>
     <br />
     <div class="example-content">
@@ -517,6 +467,40 @@
                      OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
         <br />
         <div>Values: @string.Join(',', comboBoxValues3)</div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="External Icons" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>CaretDownIcon</b> parameter on the dropdown and the <b>Icon</b> or <b>IconName</b> parameters on <b>BitDropdownItem</b>.</div>
+    <br />
+    <br />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <div class="example-content">
+        <BitDropdown Label="Caret down icon (external)"
+                     CaretDownIcon="@BitIconInfo.Css("fa-solid fa-circle-chevron-down")"
+                     Items="GetBasicItems()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownItem<string>" TValue="string" />
+        <br /><br />
+        <BitDropdown Label="Item icons (IconName - Fluent UI)"
+                     Items="GetExternalIconItems()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownItem<string>" TValue="string" />
+        <br /><br />
+        <BitDropdown Label="Item icons (Icon - FontAwesome)"
+                     Items="GetExternalIconFaItems()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownItem<string>" TValue="string" />
+        <br /><br />
+        <BitDropdown Label="Item icons (Icon - Bootstrap Icons)"
+                     Items="GetExternalIconBiItems()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownItem<string>" TValue="string" />
     </div>
 </DemoExample>
 
@@ -588,4 +572,54 @@
                          Placeholder="لطفا انتخاب کنید" />
         </div>
     </dir>
+</DemoExample>
+
+<DemoExample Title="Virtualization" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+    <div>Demonstrates virtualization in the BitDropdown component for handling large datasets efficiently.</div>
+    <br /><br /><br />
+    <div class="example-content">
+        <div>With <b>Items</b>:</div><br />
+        <BitDropdown Label="Single select"
+                     Virtualize
+                     Items="virtualizeItems1"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item" />
+        <br />
+        <BitDropdown Label="Multi select"
+                     Virtualize
+                     MultiSelect
+                     Items="virtualizeItems2"
+                     Placeholder="Select items"
+                     DefaultValue="@string.Empty" />
+        <br /><br /><br /><br />
+        <div>With <b>ItemsProvider</b>:</div><br />
+        <BitDropdown Label="Single select"
+                     Virtualize
+                     ItemsProvider="LoadItems"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownItem<string>" TValue="string" />
+        <br />
+        <BitDropdown Label="Multi select"
+                     Virtualize
+                     MultiSelect
+                     ItemsProvider="LoadItems"
+                     Placeholder="Select items"
+                     TItem="BitDropdownItem<string>" TValue="string" />
+        <br /><br /><br /><br />
+        <div>With <b>ItemsProvider and InitialSelectedItems</b>:</div><br />
+        <BitDropdown Label="Single select"
+                     Virtualize
+                     ItemsProvider="LoadItems"
+                     Placeholder="Select an item"
+                     InitialSelectedItems="initialSelectedItem"
+                     TItem="BitDropdownItem<string>" TValue="string" />
+        <br />
+        <BitDropdown Label="Multi select"
+                     Virtualize
+                     MultiSelect
+                     ItemsProvider="LoadItems"
+                     Placeholder="Select items"
+                     InitialSelectedItems="initialSelectedItems"
+                     TItem="BitDropdownItem<string>" TValue="string" />
+    </div>
 </DemoExample>

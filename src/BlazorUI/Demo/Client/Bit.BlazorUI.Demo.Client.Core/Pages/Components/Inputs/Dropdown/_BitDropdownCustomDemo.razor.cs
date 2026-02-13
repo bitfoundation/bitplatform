@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
 public partial class _BitDropdownCustomDemo
 {
@@ -19,6 +19,8 @@ public partial class _BitDropdownCustomDemo
         Text = { Selector = c => c.Text },
         Title = { Selector = c => c.Title },
         Value = { Selector = c => c.Value },
+        Icon = { Selector = c => c.Icon },
+        IconName = { Selector = c => c.IconName },
     };
 
     private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
@@ -34,6 +36,8 @@ public partial class _BitDropdownCustomDemo
         Text = { Selector = c => c.Text },
         Title = { Selector = c => c.Title },
         Value = { Selector = c => c.Value },
+        Icon = { Selector = c => c.Icon },
+        IconName = { Selector = c => c.IconName },
         ValueSetter = (Product item, string value) => item.Value = value,
         TextSetter = (string text, Product item) => item.Text = text
     };
@@ -68,6 +72,48 @@ public partial class _BitDropdownCustomDemo
 
     private ICollection<Product>? virtualizeCustoms1;
     private ICollection<Product>? virtualizeCustoms2;
+
+    private List<Product> GetExternalIconCustoms() =>
+    [
+        new() { Type = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app", IconName = nameof(BitIconName.AllApps) },
+        new() { Text = "Banana", Value = "f-ban", IconName = nameof(BitIconName.Calculator) },
+        new() { Text = "Orange", Value = "f-ora", IconName = nameof(BitIconName.FavoriteStar), Disabled = true },
+        new() { Text = "Grape", Value = "f-gra", IconName = nameof(BitIconName.Edit) },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Type = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro", IconName = nameof(BitIconName.Health) },
+        new() { Text = "Carrot", Value = "v-car", IconName = nameof(BitIconName.Add) },
+        new() { Text = "Lettuce", Value = "v-let", IconName = nameof(BitIconName.ChevronDown) }
+    ];
+
+    private List<Product> GetExternalIconFaCustoms() =>
+    [
+        new() { Type = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app", Icon = BitIconInfo.Css("fa-solid fa-apple-whole") },
+        new() { Text = "Banana", Value = "f-ban", Icon = BitIconInfo.Css("fa-solid fa-moon") },
+        new() { Text = "Orange", Value = "f-ora", Icon = BitIconInfo.Fa("solid lemon"), Disabled = true },
+        new() { Text = "Grape", Value = "f-gra", Icon = BitIconInfo.Css("fa-solid fa-droplet") },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Type = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro", Icon = BitIconInfo.Css("fa-solid fa-seedling") },
+        new() { Text = "Carrot", Value = "v-car", Icon = BitIconInfo.Css("fa-solid fa-carrot") },
+        new() { Text = "Lettuce", Value = "v-let", Icon = BitIconInfo.Css("fa-solid fa-leaf") }
+    ];
+
+    private List<Product> GetExternalIconBiCustoms() =>
+    [
+        new() { Type = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app", Icon = BitIconInfo.Bi("apple") },
+        new() { Text = "Banana", Value = "f-ban", Icon = BitIconInfo.Bi("flower1") },
+        new() { Text = "Orange", Value = "f-ora", Icon = BitIconInfo.Css("bi bi-sun"), Disabled = true },
+        new() { Text = "Grape", Value = "f-gra", Icon = BitIconInfo.Bi("droplet-fill") },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Type = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro", Icon = BitIconInfo.Bi("tree-fill") },
+        new() { Text = "Carrot", Value = "v-car", Icon = BitIconInfo.Bi("egg") },
+        new() { Text = "Lettuce", Value = "v-let", Icon = BitIconInfo.Bi("flower2") }
+    ];
 
     private List<Product> GetRtlCustoms() =>
     [

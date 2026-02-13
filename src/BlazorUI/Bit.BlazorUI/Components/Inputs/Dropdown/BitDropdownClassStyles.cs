@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitDropdownClassStyles
 {
@@ -141,6 +141,11 @@ public class BitDropdownClassStyles
     /// Custom CSS classes/styles for the item check icon of the multi-select BitDropdown.
     /// </summary>
     public string? ItemCheckIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the item icon of the BitDropdown.
+    /// </summary>
+    public string? ItemIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the item text of the BitDropdown.

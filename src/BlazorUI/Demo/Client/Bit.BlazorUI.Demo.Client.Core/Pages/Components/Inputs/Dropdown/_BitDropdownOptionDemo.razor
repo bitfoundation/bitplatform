@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>Displays basic dropdowns demonstrating single and multi-select options, including required and disabled states.</div>
     <br /><br />
     <div class="example-content">
@@ -640,6 +640,7 @@
     <div>When the <b>Combo</b>, <b>Chips</b> and <b>Dynamic</b> parameters are true, you can add a new item in the ComboBox (pressing the enter key or touching the add button on the mobile).</div>
     <br />
     <div class="example-content">
+        <br />
         <BitDropdown @bind-Value="comboBoxValueSample4"
                      Responsive
                      Combo Chips Dynamic
@@ -675,7 +676,71 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+<DemoExample Title="External Icons" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>CaretDownIcon</b> parameter on the dropdown and the <b>Icon</b> or <b>IconName</b> parameters on <b>BitDropdownOption</b>.</div>
+    <br />
+    <br />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <div class="example-content">
+        <BitDropdown Label="Caret down icon (external)"
+                     CaretDownIcon="@BitIconInfo.Css("fa-solid fa-circle-chevron-down")"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="Item icons (IconName - Fluent UI)"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
+            <BitDropdownOption Text="Apple" Value="@("f-app")" IconName="@BitIconName.AllApps" />
+            <BitDropdownOption Text="Banana" Value="@("f-ban")" IconName="@BitIconName.Calculator" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" IconName="@BitIconName.FavoriteStar" IsEnabled="false" />
+            <BitDropdownOption Text="Grape" Value="@("f-gra")" IconName="@BitIconName.Edit" />
+            <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
+            <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
+            <BitDropdownOption Text="Broccoli" Value="@("v-bro")" IconName="@BitIconName.Health" />
+            <BitDropdownOption Text="Carrot" Value="@("v-car")" IconName="@BitIconName.Add" />
+            <BitDropdownOption Text="Lettuce" Value="@("v-let")" IconName="@BitIconName.ChevronDown" />
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="Item icons (Icon - FontAwesome)"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
+            <BitDropdownOption Text="Apple" Value="@("f-app")" Icon="@BitIconInfo.Css("fa-solid fa-apple-whole")" />
+            <BitDropdownOption Text="Banana" Value="@("f-ban")" Icon="@BitIconInfo.Css("fa-solid fa-moon")" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" Icon="@BitIconInfo.Fa("solid lemon")" IsEnabled="false" />
+            <BitDropdownOption Text="Grape" Value="@("f-gra")" Icon="@BitIconInfo.Css("fa-solid fa-droplet")" />
+            <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
+            <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
+            <BitDropdownOption Text="Broccoli" Value="@("v-bro")" Icon="@BitIconInfo.Css("fa-solid fa-seedling")" />
+            <BitDropdownOption Text="Carrot" Value="@("v-car")" Icon="@BitIconInfo.Css("fa-solid fa-carrot")" />
+            <BitDropdownOption Text="Lettuce" Value="@("v-let")" Icon="@BitIconInfo.Css("fa-solid fa-leaf")" />
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="Item icons (Icon - Bootstrap Icons)"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
+            <BitDropdownOption Text="Apple" Value="@("f-app")" Icon="@BitIconInfo.Bi("apple")" />
+            <BitDropdownOption Text="Banana" Value="@("f-ban")" Icon="@BitIconInfo.Bi("flower1")" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" Icon="@BitIconInfo.Css("bi bi-sun")" IsEnabled="false" />
+            <BitDropdownOption Text="Grape" Value="@("f-gra")" Icon="@BitIconInfo.Bi("droplet-fill")" />
+            <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
+            <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
+            <BitDropdownOption Text="Broccoli" Value="@("v-bro")" Icon="@BitIconInfo.Bi("tree-fill")" />
+            <BitDropdownOption Text="Carrot" Value="@("v-car")" Icon="@BitIconInfo.Bi("egg")" />
+            <BitDropdownOption Text="Lettuce" Value="@("v-let")" Icon="@BitIconInfo.Bi("flower2")" />
+        </BitDropdown>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div class="example-content">
@@ -737,7 +802,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+<DemoExample Title="RTL" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
     <div>Use BitDropdown in right-to-left (RTL).</div>
     <br />
     <dir dir="rtl" style="padding:0">
@@ -775,4 +840,8 @@
             </BitDropdown>
         </div>
     </dir>
+</DemoExample>
+
+<DemoExample Title="Virtualization" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+    <div>Not applicable to option demo!</div>
 </DemoExample>
