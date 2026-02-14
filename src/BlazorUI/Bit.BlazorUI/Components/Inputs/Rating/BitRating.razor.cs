@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -41,9 +41,25 @@ public partial class BitRating : BitInputBase<double>
     [Parameter] public int Max { get; set; } = 5;
 
     /// <summary>
-    /// Custom icon name for selected rating elements, If unset, default will be the FavoriteStarFill icon.
+    /// Gets or sets the icon to display for selected rating elements using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="SelectedIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string SelectedIconName { get; set; } = "FavoriteStarFill";
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="SelectedIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: SelectedIcon="BitIconInfo.Bi("star-fill")"
+    /// FontAwesome: SelectedIcon="BitIconInfo.Fa("solid star")"
+    /// Custom CSS: SelectedIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? SelectedIcon { get; set; }
+
+    /// <summary>
+    /// Custom icon name for selected rating elements. If unset, default will be the FavoriteStarFill icon.
+    /// The icon name should be from the Fluent UI icon set. For external icon libraries, use <see cref="SelectedIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? SelectedIconName { get; set; }
 
     /// <summary>
     /// Size of rating elements.
@@ -57,9 +73,25 @@ public partial class BitRating : BitInputBase<double>
     [Parameter] public BitRatingClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.
+    /// Gets or sets the icon to display for unselected rating elements using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="UnselectedIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string UnselectedIconName { get; set; } = "FavoriteStar";
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="UnselectedIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: UnselectedIcon="BitIconInfo.Bi("star")"
+    /// FontAwesome: UnselectedIcon="BitIconInfo.Fa("solid star")"
+    /// Custom CSS: UnselectedIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? UnselectedIcon { get; set; }
+
+    /// <summary>
+    /// Custom icon name for unselected rating elements. If unset, default will be the FavoriteStar icon.
+    /// The icon name should be from the Fluent UI icon set. For external icon libraries, use <see cref="UnselectedIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? UnselectedIconName { get; set; }
 
 
 

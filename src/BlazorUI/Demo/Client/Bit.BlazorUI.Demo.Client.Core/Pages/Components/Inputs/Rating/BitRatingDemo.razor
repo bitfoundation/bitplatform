@@ -1,4 +1,4 @@
-﻿@page "/components/rating"
+@page "/components/rating"
 
 <PageOutlet Url="components/rating"
             Title="Rating"
@@ -141,7 +141,36 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="External Icons" RazorCode="@example9RazorCode" Id="example9">
+        <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>SelectedIcon</b> and <b>UnselectedIcon</b> parameters.</div>
+        
+        <br />
+        <br />
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        
+        <div class="example-box">
+            <div>FontAwesome (stars):</div>
+            <BitRating SelectedIcon="@("fa-solid fa-star")" UnselectedIcon="@("fa-regular fa-star")" />
+            <br />
+            <div>FontAwesome (hearts):</div>
+            <BitRating SelectedIcon="@BitIconInfo.Fa("solid heart")" UnselectedIcon="@BitIconInfo.Fa("regular heart")" />
+        </div>
+        
+        <br />
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        
+        <div class="example-box">
+            <div>Bootstrap (stars):</div>
+            <BitRating SelectedIcon="@BitIconInfo.Css("bi bi-star-fill")" UnselectedIcon="@BitIconInfo.Css("bi bi-star")" />
+            <br />
+            <div>Bootstrap (hearts):</div>
+            <BitRating SelectedIcon="@BitIconInfo.Bi("heart-fill")" UnselectedIcon="@BitIconInfo.Bi("heart")" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
         <div>Use the BitRating component in right-to-left (RTL).</div>
         <br />
         <div dir="rtl" class="example-box">
