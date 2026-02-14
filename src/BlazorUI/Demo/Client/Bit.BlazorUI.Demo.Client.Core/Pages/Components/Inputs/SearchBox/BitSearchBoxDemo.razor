@@ -1,4 +1,4 @@
-﻿@page "/components/searchbox"
+@page "/components/searchbox"
 @page "/components/search-box"
 
 <PageOutlet Url="components/searchbox"
@@ -319,7 +319,64 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+        <DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
+            <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> and <b>SearchButtonIcon</b> parameters.</div>
+
+            <br />
+            <br />
+
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+            <div>FontAwesome (Icon):</div>
+            <br />
+            <div class="example-box">
+                <BitSearchBox Placeholder="Search" Icon="@("fa-solid fa-house")" />
+                <br />
+                <BitSearchBox Placeholder="Search" Icon="@BitIconInfo.Css("fa-solid fa-heart")" Color="BitColor.Secondary" />
+                <br />
+                <BitSearchBox Placeholder="Search" Icon="@BitIconInfo.Fa("fa-brands fa-github")" Color="BitColor.Tertiary" />
+                <br />
+                <BitSearchBox Placeholder="Search" Icon="@BitIconInfo.Fa("solid search")" Color="BitColor.Error" />
+            </div>
+
+            <br /><br /><br />
+
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+            <div>Bootstrap (Icon):</div>
+            <br />
+            <div class="example-box">
+                <BitSearchBox Placeholder="Search" Icon="@("bi bi-house-fill")" />
+                <br />
+                <BitSearchBox Placeholder="Search" Icon="@BitIconInfo.Css("bi bi-heart-fill")" Color="BitColor.Secondary" />
+                <br />
+                <BitSearchBox Placeholder="Search" Icon="@BitIconInfo.Bi("search")" Color="BitColor.Tertiary" />
+                <br />
+                <BitSearchBox Placeholder="Search" Icon="@BitIconInfo.Bi("gear-fill")" Color="BitColor.Error" />
+            </div>
+
+            <br /><br /><br />
+
+            <div>Search button with external icons (ShowSearchButton + SearchButtonIcon):</div>
+            <br />
+            <div class="example-box">
+                <BitSearchBox Placeholder="Search" ShowSearchButton SearchButtonIcon="@BitIconInfo.Fa("solid search")" />
+                <br />
+                <BitSearchBox Placeholder="Search" ShowSearchButton SearchButtonIcon="@BitIconInfo.Bi("search")" Color="BitColor.Secondary" />
+            </div>
+
+            <br /><br /><br />
+
+            <div>Clear button with external icons (ClearButtonIcon):</div>
+            <br />
+            <div class="example-box">
+                <BitSearchBox Placeholder="Type to see clear icon" ClearButtonIcon="@BitIconInfo.Fa("solid xmark")" />
+                <br />
+                <BitSearchBox Placeholder="Type to see clear icon" ClearButtonIcon="@BitIconInfo.Bi("x-circle-fill")" Color="BitColor.Secondary" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
             <div>Explore styling and class customization for BitSearchBox, including component styles, custom classes, and detailed styles.</div>
             <br /><br />
             <div class="example-box">
@@ -346,7 +403,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+        <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
             <div>Use the BitSearchBox component in right-to-left (RTL).</div><br />
             <div dir="rtl">
                 <div class="example-box">
