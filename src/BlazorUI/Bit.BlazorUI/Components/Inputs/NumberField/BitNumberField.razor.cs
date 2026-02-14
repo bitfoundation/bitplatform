@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics.CodeAnalysis;
 
@@ -85,7 +85,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? DecrementAriaLabel { get; set; }
 
     /// <summary>
-    /// Custom icon name for the decrement button.
+    /// Gets or sets the icon to display on the decrement button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="DecrementIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="DecrementIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: DecrementIcon="BitIconInfo.Bi("dash")"
+    /// FontAwesome: DecrementIcon="BitIconInfo.Fa("solid minus")"
+    /// Custom CSS: DecrementIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? DecrementIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon for the decrement button from the built-in Fluent UI icons.
+    /// For external icon libraries, use <see cref="DecrementIcon"/> instead.
     /// </summary>
     [Parameter] public string? DecrementIconName { get; set; }
 
@@ -110,7 +126,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? IconAriaLabel { get; set; }
 
     /// <summary>
-    /// Icon name for an icon to display alongside the number field's label.
+    /// Gets or sets the icon to display alongside the number field using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: Icon="BitIconInfo.Bi("calculator")"
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid calculator")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display alongside the number field from the built-in Fluent UI icons.
+    /// For external icon libraries, use <see cref="Icon"/> instead.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
@@ -120,7 +152,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? IncrementAriaLabel { get; set; }
 
     /// <summary>
-    /// Custom icon name for the increment button.
+    /// Gets or sets the icon to display on the increment button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IncrementIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IncrementIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: IncrementIcon="BitIconInfo.Bi("plus")"
+    /// FontAwesome: IncrementIcon="BitIconInfo.Fa("solid plus")"
+    /// Custom CSS: IncrementIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? IncrementIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon for the increment button from the built-in Fluent UI icons.
+    /// For external icon libraries, use <see cref="IncrementIcon"/> instead.
     /// </summary>
     [Parameter] public string? IncrementIconName { get; set; }
 
@@ -242,6 +290,27 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Shows the custom prefix for numeric field.
     /// </summary>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to display on the clear button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="ClearButtonIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ClearButtonIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: ClearButtonIcon="BitIconInfo.Bi("x-circle-fill")"
+    /// FontAwesome: ClearButtonIcon="BitIconInfo.Fa("solid xmark")"
+    /// Custom CSS: ClearButtonIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? ClearButtonIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon for the clear button from the built-in Fluent UI icons.
+    /// For external icon libraries, use <see cref="ClearButtonIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? ClearButtonIconName { get; set; }
 
     /// <summary>
     /// Whether to shows the clear button when the BitNumberField has value.

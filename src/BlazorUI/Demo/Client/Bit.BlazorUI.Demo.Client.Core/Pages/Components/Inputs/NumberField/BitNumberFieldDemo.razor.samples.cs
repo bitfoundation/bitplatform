@@ -147,6 +147,31 @@ public class BitNumberFieldValidationModel
 private BitNumberFieldValidationModel validationModel = new();";
 
     private readonly string example14RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<div>Component Icon (FontAwesome):</div>
+<BitNumberField Label=""Label & Icon"" TValue=""int"" Icon=""@(""fa-solid fa-calculator"")"" />
+
+<BitNumberField Label=""Icon with BitIconInfo.Css"" TValue=""int"" Icon=""@BitIconInfo.Css(""fa-solid fa-lightbulb"")"" />
+
+<BitNumberField Label=""Icon with BitIconInfo.Fa"" TValue=""int"" Icon=""@BitIconInfo.Fa(""solid calculator"")"" />
+
+<div>Increment & Decrement Icons (FontAwesome):</div>
+<BitNumberField Label=""Compact mode"" TValue=""int"" Mode=""BitSpinButtonMode.Compact""
+                IncrementIcon=""@BitIconInfo.Fa(""solid plus"")""
+                DecrementIcon=""@BitIconInfo.Fa(""solid minus"")"" />
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<div>Component Icon (Bootstrap):</div>
+<BitNumberField Label=""Icon with BitIconInfo.Bi"" TValue=""int"" Icon=""@BitIconInfo.Bi(""calculator"")"" />
+
+<div>Increment & Decrement Icons (Bootstrap):</div>
+<BitNumberField Label=""Spread mode"" TValue=""int"" Mode=""BitSpinButtonMode.Spread""
+                IncrementIcon=""@BitIconInfo.Bi(""plus-circle-fill"")""
+                DecrementIcon=""@BitIconInfo.Bi(""dash-circle-fill"")"" />";
+
+    private readonly string example15RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -229,7 +254,7 @@ private BitNumberFieldValidationModel validationModel = new();";
                 Label=""Styles""
                 Styles=""@(new() { Root = ""margin-inline: 1rem;"",
                                   Focused = ""--focused-background: #b2b2b25a;"",
-                                  InputWrapper = ""background: var(--focused-background);"",
+                                  InputContainer = ""background: var(--focused-background);"",
                                   Label = ""text-shadow: aqua 0 0 1rem; font-weight: 900; font-size: 1.25rem;"",
                                   Input = ""padding: 0.5rem;"" })"" />
 
@@ -237,12 +262,12 @@ private BitNumberFieldValidationModel validationModel = new();";
                 Label=""Classes""
                 @bind-Value=""classesValue""
                 Classes=""@(new() { Root = ""custom-root"",
-                                 InputWrapper = ""custom-input-wrapper"",
+                                 InputContainer = ""custom-input-wrapper"",
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(classesValue is null ? string.Empty : "" custom-label-top"")}"" })"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <CascadingValue Value=""BitDir.Rtl"">
 
     <BitNumberField Label=""برچسب در بالا"" TValue=""int"" ShowButtons />
