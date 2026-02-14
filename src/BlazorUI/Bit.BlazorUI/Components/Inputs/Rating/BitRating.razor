@@ -1,5 +1,10 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitInputBase<double>
+
+@{
+    var selectedIcon = BitIconInfo.From(SelectedIcon, SelectedIconName ?? "FavoriteStarFill");
+    var unselectedIcon = BitIconInfo.From(UnselectedIcon, UnselectedIconName ?? "FavoriteStar");
+}
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
@@ -36,11 +41,11 @@
             <div class="bit-rtg-ict @Classes?.IconContainer" style="@Styles?.IconContainer">
                 <i aria-hidden="true"
                    style="@Styles?.UnselectedIcon"
-                   class="bit-rtg-iem bit-icon bit-icon--@(percentage == 100 ? SelectedIconName : UnselectedIconName) @Classes?.UnselectedIcon">
+                   class="bit-rtg-iem @(percentage == 100 ? selectedIcon?.GetCssClasses() : unselectedIcon?.GetCssClasses()) @Classes?.UnselectedIcon">
                 </i>
                 <i aria-hidden="true"
                    style=@(FormattableString.Invariant($"width:{percentage}%; {Styles?.SelectedIcon}"))
-                   class="bit-rtg-ifl bit-icon bit-icon--@(percentage > 0 ? SelectedIconName : UnselectedIconName) @Classes?.SelectedIcon">
+                   class="bit-rtg-ifl @(percentage > 0 ? selectedIcon?.GetCssClasses() : unselectedIcon?.GetCssClasses()) @Classes?.SelectedIcon">
                 </i>
             </div>
         </button>

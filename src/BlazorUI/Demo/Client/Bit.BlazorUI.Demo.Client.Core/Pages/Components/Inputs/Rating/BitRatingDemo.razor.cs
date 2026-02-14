@@ -50,10 +50,19 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Name = "SelectedIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Icon for selected rating elements using external icon libraries (e.g. FontAwesome, Bootstrap Icons). Takes precedence over SelectedIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "SelectedIconName",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "FavoriteStarFill",
-            Description = "Custom icon name for selected rating elements.",
+            Description = "Custom icon name for selected rating elements (Fluent UI). For external icon libraries, use SelectedIcon instead.",
         },
         new()
         {
@@ -75,10 +84,19 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Name = "UnselectedIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Icon for unselected rating elements using external icon libraries (e.g. FontAwesome, Bootstrap Icons). Takes precedence over UnselectedIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "UnselectedIconName",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "FavoriteStar",
-            Description = "Custom icon name for unselected rating elements.",
+            Description = "Custom icon name for unselected rating elements (Fluent UI). For external icon libraries, use UnselectedIcon instead.",
         }
     ];
 
@@ -126,6 +144,36 @@ public partial class BitRatingDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the rating unselected icon.",
                 }
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Description = "Represents icon information for rendering icons. Supports built-in Fluent UI icons and external icon libraries (FontAwesome, Bootstrap Icons, etc.). Use BitIconInfo.Css(\"fa-solid fa-star\"), BitIconInfo.Fa(\"solid star\"), or BitIconInfo.Bi(\"star-fill\") for external icons.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Name",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the name of the icon.",
+                },
+                new()
+                {
+                    Name = "BaseClass",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the base CSS class for the icon. For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty.",
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the CSS class prefix used before the icon name. For external icon libraries, you might set this to \"fa-\" or leave empty.",
+                },
             ]
         }
     ];
@@ -294,5 +342,19 @@ private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
     private readonly string example9RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitRating SelectedIcon=""@(""fa-solid fa-star"")"" UnselectedIcon=""@(""fa-regular fa-star"")"" />
+
+<BitRating SelectedIcon=""@BitIconInfo.Fa(""solid heart"")"" UnselectedIcon=""@BitIconInfo.Fa(""regular heart"")"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitRating SelectedIcon=""@BitIconInfo.Css(""bi bi-star-fill"")"" UnselectedIcon=""@BitIconInfo.Css(""bi bi-star"")"" />
+
+<BitRating SelectedIcon=""@BitIconInfo.Bi(""heart-fill"")"" UnselectedIcon=""@BitIconInfo.Bi(""heart"")"" />";
+
+    private readonly string example10RazorCode = @"
 <BitRating Dir=""BitDir.Rtl"" />";
 }
