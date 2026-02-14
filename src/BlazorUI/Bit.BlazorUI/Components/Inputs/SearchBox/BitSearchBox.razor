@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitTextInputBase<string?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -9,12 +9,13 @@
     <div class="bit-srb-cnt @Classes?.InputContainer" style="@Styles?.InputContainer">
         @if (HideIcon is false)
         {
+            var icon = BitIconInfo.From(Icon, IconName ?? "Search");
             <div aria-hidden="true"
                  style="@Styles?.IconWrapper" 
                  class="bit-srb-iwp @Classes?.IconWrapper">
                 <i aria-hidden="true" 
                    style="@Styles?.Icon" 
-                   class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+                   class="@icon?.GetCssClasses() @Classes?.Icon" />
             </div>
         }
 
@@ -82,7 +83,8 @@
                 }
                 else
                 {
-                    <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
+                    var clearButtonIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
+                    <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon?.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
                 }
             </button>
         }
@@ -102,7 +104,8 @@
             }
             else
             {
-                <i style="@Styles?.SearchButtonIcon" class="bit-icon bit-icon--@SearchButtonIconName @Classes?.SearchButtonIcon" aria-hidden="true" />
+                var searchButtonIcon = BitIconInfo.From(SearchButtonIcon, SearchButtonIconName ?? "ChromeBackMirrored");
+                <i style="@Styles?.SearchButtonIcon" class="@searchButtonIcon?.GetCssClasses() @Classes?.SearchButtonIcon" aria-hidden="true" />
             }
         </button>
     }
