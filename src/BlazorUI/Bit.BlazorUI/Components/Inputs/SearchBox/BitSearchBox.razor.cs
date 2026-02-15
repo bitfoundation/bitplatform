@@ -36,6 +36,29 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public BitSearchBoxClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to display on the clear button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="ClearButtonIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ClearButtonIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: ClearButtonIcon="BitIconInfo.Bi("x-circle-fill")"
+    /// FontAwesome: ClearButtonIcon="BitIconInfo.Fa("solid xmark")"
+    /// Custom CSS: ClearButtonIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? ClearButtonIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display on the clear button from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// For external icon libraries, use <see cref="ClearButtonIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? ClearButtonIconName { get; set; }
+
+    /// <summary>
     /// The custom template for clear button icon.
     /// </summary>
     [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
@@ -80,9 +103,32 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public bool HideClearButton { get; set; }
 
     /// <summary>
-    /// The icon name for the icon shown at the beginning of the search box.
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
-    [Parameter] public string IconName { get; set; } = "Search";
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: Icon="BitIconInfo.Bi("search")"
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Search</c>).
+    /// <br />
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery:
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// <br />
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </remarks>
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Sets the inputmode html attribute of the input element.
@@ -143,9 +189,27 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
 
     /// <summary>
-    /// Custom icon name for the search button.
+    /// Gets or sets the icon to display on the search button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="SearchButtonIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string SearchButtonIconName { get; set; } = "ChromeBackMirrored";
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="SearchButtonIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: SearchButtonIcon="BitIconInfo.Bi("arrow-left")"
+    /// FontAwesome: SearchButtonIcon="BitIconInfo.Fa("solid arrow-left")"
+    /// Custom CSS: SearchButtonIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? SearchButtonIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display on the search button from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// For external icon libraries, use <see cref="SearchButtonIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? SearchButtonIconName { get; set; }
 
     /// <summary>
     /// The custom template for search button icon.

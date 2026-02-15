@@ -242,6 +242,38 @@ private ValidationSearchBoxModel validationBoxModel = new();";
 <BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" />";
 
     private readonly string example13RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitSearchBox Placeholder=""Search"" Icon=""fa-solid fa-house"" />
+
+<BitSearchBox Placeholder=""Search"" Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" Color=""BitColor.Secondary"" />
+
+<BitSearchBox Placeholder=""Search"" Icon=""@BitIconInfo.Fa(""fa-brands fa-github"")"" Color=""BitColor.Tertiary"" />
+
+<BitSearchBox Placeholder=""Search"" Icon=""@BitIconInfo.Fa(""solid search"")"" Color=""BitColor.Error"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitSearchBox Placeholder=""Search"" Icon=""bi bi-house-fill"" />
+
+<BitSearchBox Placeholder=""Search"" Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"" Color=""BitColor.Secondary"" />
+
+<BitSearchBox Placeholder=""Search"" Icon=""@BitIconInfo.Bi(""search"")"" Color=""BitColor.Tertiary"" />
+
+<BitSearchBox Placeholder=""Search"" Icon=""@BitIconInfo.Bi(""gear-fill"")"" Color=""BitColor.Error"" />
+
+
+<BitSearchBox Placeholder=""Search"" ShowSearchButton SearchButtonIcon=""@BitIconInfo.Fa(""solid search"")"" />
+
+<BitSearchBox Placeholder=""Search"" ShowSearchButton SearchButtonIcon=""@BitIconInfo.Bi(""search"")"" Color=""BitColor.Secondary"" />
+
+
+<BitSearchBox Placeholder=""Type to see clear icon"" ClearButtonIcon=""@BitIconInfo.Fa(""solid xmark"")"" />
+
+<BitSearchBox Placeholder=""Type to see clear icon"" ClearButtonIcon=""@BitIconInfo.Bi(""x-circle-fill"")"" Color=""BitColor.Secondary"" />";
+
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -310,7 +342,7 @@ private ValidationSearchBoxModel validationBoxModel = new();";
                                  IconWrapper = ""custom-icon-wrapper"",
                                  InputContainer = ""custom-input-container"" })"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" />
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" ShowSearchButton />
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" Underlined />";
