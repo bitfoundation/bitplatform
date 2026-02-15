@@ -297,7 +297,54 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
+
+        <br />
+        <br />
+        
+        <div class="example-box">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        
+            <div>FontAwesome:</div>
+            <br />
+            <BitTextField Label="House" Icon="@("fa-solid fa-house")" />
+        
+            <br />
+        
+            <BitTextField Label="Heart" Icon="@BitIconInfo.Css("fa-solid fa-heart")" />
+        
+            <br />
+        
+            <BitTextField Label="GitHub" Icon="@BitIconInfo.Fa("brands github")" />
+        
+            <br />
+        
+            <BitTextField Label="Rocket" Icon="@BitIconInfo.Fa("solid rocket")" />
+        
+            <br /><br /><br />
+
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+            <div>Bootstrap:</div>
+            <br />
+            <BitTextField Label="House" Icon="@("bi bi-house-fill")" />
+        
+            <br />
+        
+            <BitTextField Label="Heart" Icon="@BitIconInfo.Css("bi bi-heart-fill")" />
+        
+            <br />
+        
+            <BitTextField Label="GitHub" Icon="@BitIconInfo.Bi("github")" />
+        
+            <br />
+        
+            <BitTextField Label="Gear" Icon="@BitIconInfo.Bi("gear-fill")" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
         <div>Explores styling and class customization for BitTextField, including component styles, custom classes, and detailed style options.</div>
         <br /><br />
         <div class="example-box">
@@ -326,7 +373,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
         <div>Use BitTextField in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

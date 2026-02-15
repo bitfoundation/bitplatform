@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TextField;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TextField;
 
 public partial class BitTextFieldDemo
 {
@@ -83,10 +83,35 @@ public partial class BitTextFieldDemo
         },
         new()
         {
+            Name = "HidePasswordIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon for the reveal password button when password is shown using custom CSS classes for external icon libraries.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "HidePasswordIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name for the reveal password button when password is shown from the built-in Fluent UI icons.",
+        },
+        new()
+        {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name for the icon shown in the far right end of the text field.",
+            Description = "The icon name for the icon shown in the far right end of the text field from the built-in Fluent UI icons.",
         },
         new()
         {
@@ -220,7 +245,23 @@ public partial class BitTextFieldDemo
             Name = "RevealPasswordAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Suffix displayed after the text field contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.",
+            Description = "Aria label for the reveal password button.",
+        },
+        new()
+        {
+            Name = "RevealPasswordIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon for the reveal password button when password is hidden using custom CSS classes for external icon libraries.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "RevealPasswordIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name for the reveal password button when password is hidden from the built-in Fluent UI icons.",
         },
         new()
         {
@@ -420,7 +461,36 @@ public partial class BitTextFieldDemo
                     Description = "Custom CSS classes/styles for the BitTextField's description."
                 }
             ]
-        }
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -923,6 +993,28 @@ private void HandleInvalidSubmit() { }";
 <BitTextField Label=""TertiaryBorder"" Accent=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Calendar"" />";
 
     private readonly string example16RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitTextField Label=""House"" Icon=""@(""fa-solid fa-house"")"" />
+
+<BitTextField Label=""Heart"" Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" />
+
+<BitTextField Label=""GitHub"" Icon=""@BitIconInfo.Fa(""brands github"")"" />
+
+<BitTextField Label=""Rocket"" Icon=""@BitIconInfo.Fa(""solid rocket"")"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitTextField Label=""House"" Icon=""@(""bi bi-house-fill"")"" />
+
+<BitTextField Label=""Heart"" Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"" />
+
+<BitTextField Label=""GitHub"" Icon=""@BitIconInfo.Bi(""github"")"" />
+
+<BitTextField Label=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")"" />";
+
+    private readonly string example17RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -1031,10 +1123,10 @@ private void HandleInvalidSubmit() { }";
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : "" custom-label-top"")}"" })"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private string? classesValue;";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitTextField Dir=""BitDir.Rtl""
               Placeholder=""پست الکترونیکی""
               IconName=""@BitIconName.EditMail"" />

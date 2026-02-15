@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -76,8 +76,26 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public bool FullWidth { get; set; }
 
     /// <summary>
-    /// The icon name for the icon shown in the far right end of the text field.
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: Icon="BitIconInfo.Bi("gear-fill")"
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// The icon name for the icon shown in the far right end of the text field from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </remarks>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
@@ -186,6 +204,28 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Aria label for the reveal password button.
     /// </summary>
     [Parameter] public string? RevealPasswordAriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon for the reveal password button when password is hidden using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="RevealPasswordIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? RevealPasswordIcon { get; set; }
+
+    /// <summary>
+    /// The icon name for the reveal password button when password is hidden from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? RevealPasswordIconName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon for the reveal password button when password is shown using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="HidePasswordIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? HidePasswordIcon { get; set; }
+
+    /// <summary>
+    /// The icon name for the reveal password button when password is shown from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? HidePasswordIconName { get; set; }
 
     /// <summary>
     /// For multiline text, Number of rows.
