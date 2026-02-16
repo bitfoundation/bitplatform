@@ -124,18 +124,24 @@
                         aria-pressed="@(_elementType == BitInputType.Text ? "true" : "false")">
                     <span style="@Styles?.RevealPasswordIconContainer"
                           class="bit-tfl-rpc @Classes?.RevealPasswordIconContainer">
+                        @{
+                            var revealIcon = _elementType == BitInputType.Text
+                                ? BitIconInfo.From(HidePasswordIcon, HidePasswordIconName ?? "Hide3")
+                                : BitIconInfo.From(RevealPasswordIcon, RevealPasswordIconName ?? "View");
+                        }
                         <i aria-hidden="true" 
                            style="@Styles?.RevealPasswordIcon"
-                           class="bit-tfl-rpi bit-icon bit-icon--@(_elementType == BitInputType.Text ? "Hide3" : "View") @Classes?.RevealPasswordIcon" />
+                           class="bit-tfl-rpi @revealIcon.GetCssClasses() @Classes?.RevealPasswordIcon" />
                     </span>
                 </button>
             }
 
-            @if (IconName.HasValue())
+            @if (Icon is not null || IconName.HasValue())
             {
+                var icon = BitIconInfo.From(Icon, IconName);
                 <i aria-hidden="true" 
                    style="@Styles?.Icon"
-                   class="bit-tfl-ico bit-icon bit-icon--@IconName @Classes?.Icon" />
+                   class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon" />
             }
 
             @if (SuffixTemplate is not null)
