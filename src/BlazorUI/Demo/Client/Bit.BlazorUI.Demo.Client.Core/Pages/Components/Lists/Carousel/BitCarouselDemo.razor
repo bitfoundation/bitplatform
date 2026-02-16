@@ -1,4 +1,4 @@
-﻿@page "/components/carousel"
+@page "/components/carousel"
 
 <PageOutlet Url="components/carousel"
             Title="Carousel"
@@ -195,7 +195,46 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="External Icons" RazorCode="@example7RazorCode" Id="example7">
+        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>GoLeftIcon</b> and <b>GoRightIcon</b> parameters.</div>
+
+        <br />
+        <br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+        <div>FontAwesome:</div>
+        <br />
+        <BitCarousel Style="height: 100px" InfiniteScrolling
+                     GoLeftIcon="@BitIconInfo.Fa("solid chevron-left")"
+                     GoRightIcon="@BitIconInfo.Fa("solid chevron-right")">
+            <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+            <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+            <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+            <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+            <BitCarouselItem Class="item"><div>5</div></BitCarouselItem>
+            <BitCarouselItem Class="item"><div>6</div></BitCarouselItem>
+        </BitCarousel>
+
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap:</div>
+        <br />
+        <BitCarousel Style="height: 100px" InfiniteScrolling
+                     GoLeftIcon="@BitIconInfo.Bi("chevron-left")"
+                     GoRightIcon="@BitIconInfo.Bi("chevron-right")">
+            <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+            <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+            <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+            <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+            <BitCarouselItem Class="item"><div>5</div></BitCarouselItem>
+            <BitCarouselItem Class="item"><div>6</div></BitCarouselItem>
+        </BitCarousel>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
         <div>Use BitCarousel in right-to-left (RTL).</div>
         <br />
         <div>

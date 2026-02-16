@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -22,18 +22,20 @@
 
         @if (HideNextPrev is false)
         {
+            var goLeftIcon = BitIconInfo.From(GoLeftIcon, GoLeftIconName ?? "ChevronRight");
+            var goRightIcon = BitIconInfo.From(GoRightIcon, GoRightIconName ?? "ChevronRight bit-ico-r180");
             <div @onclick="GoLeft"
                  class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
                  style="@_goLeftButtonStyle @Styles?.Buttons @Styles?.GoLeftButton">
                 <i style="@Styles?.GoLeftButtonIcon"
-                   class="bit-icon bit-icon--@(GoLeftIcon ?? "ChevronRight") @Classes?.GoLeftButtonIcon" />
+                   class="@goLeftIcon?.GetCssClasses() @Classes?.GoLeftButtonIcon" />
             </div>
 
             <div @onclick="GoRight"
                  class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
                  style="@_goRightButtonStyle @Styles?.Buttons @Styles?.GoRightButton">
                 <i style="@Styles?.GoRightButtonIcon"
-                   class="bit-csl-rbi bit-icon bit-icon--@(GoRightIcon ?? "ChevronRight") @Classes?.GoRightButtonIcon" />
+                   class="bit-csl-rbi @goRightIcon?.GetCssClasses() @Classes?.GoRightButtonIcon" />
             </div>
         }
     </div>
