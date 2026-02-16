@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public class Event
 {
@@ -9,6 +9,8 @@ public class Event
     public RenderFragment<Event>? FirstContent { get; set; }
 
     public string? FirstText { get; set; }
+
+    public BitIconInfo? ExternalIcon { get; set; }
 
     public string? Icon { get; set; }
 

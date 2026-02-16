@@ -265,6 +265,30 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
+    private BitIconInfo? GetIcon(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitTimelineItem timelineItem)
+        {
+            return timelineItem.Icon;
+        }
+
+        if (item is BitTimelineOption timelineOption)
+        {
+            return timelineOption.Icon;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Icon.Selector is not null)
+        {
+            return NameSelectors.Icon.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
+    }
+
     private string? GetIconName(TItem? item)
     {
         if (item is null) return null;

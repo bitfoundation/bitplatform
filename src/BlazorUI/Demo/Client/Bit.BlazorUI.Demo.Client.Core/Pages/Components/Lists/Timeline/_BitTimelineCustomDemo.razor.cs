@@ -13,6 +13,7 @@ public partial class _BitTimelineCustomDemo
         DotTemplate = { Selector = i => i.DotContent },
         PrimaryContent = { Selector = i => i.FirstContent },
         SecondaryContent = { Selector = i => i.SecondContent },
+        Icon = { Selector = i => i.ExternalIcon },
     };
 
     private List<Event> basicCustoms =
@@ -41,6 +42,48 @@ public partial class _BitTimelineCustomDemo
         new() { FirstText = "Custom 1" },
         new() { FirstText = "Custom 2", Reversed = true },
         new() { FirstText = "Custom 3" }
+    ];
+
+    private List<Event> externalIconCustoms1 =
+    [
+        new() { FirstText = "Custom 1", ExternalIcon = "fa-solid fa-plus" },
+        new() { FirstText = "Custom 2", ExternalIcon = "fa-solid fa-pen", SecondText = "Custom 2 Secondary" },
+        new() { FirstText = "Custom 3", ExternalIcon = "fa-solid fa-trash" }
+    ];
+
+    private List<Event> externalIconCustoms2 =
+    [
+        new() { FirstText = "Custom 1", ExternalIcon = BitIconInfo.Css("fa-solid fa-plus") },
+        new() { FirstText = "Custom 2", ExternalIcon = BitIconInfo.Css("fa-solid fa-pen"), SecondText = "Custom 2 Secondary" },
+        new() { FirstText = "Custom 3", ExternalIcon = BitIconInfo.Css("fa-solid fa-trash") }
+    ];
+
+    private List<Event> externalIconCustoms3 =
+    [
+        new() { FirstText = "Custom 1", ExternalIcon = BitIconInfo.Fa("solid plus") },
+        new() { FirstText = "Custom 2", ExternalIcon = BitIconInfo.Fa("solid pen"), SecondText = "Custom 2 Secondary" },
+        new() { FirstText = "Custom 3", ExternalIcon = BitIconInfo.Fa("solid trash") }
+    ];
+
+    private List<Event> bootstrapIconCustoms1 =
+    [
+        new() { FirstText = "Custom 1", ExternalIcon = "bi bi-plus-lg" },
+        new() { FirstText = "Custom 2", ExternalIcon = "bi bi-pencil", SecondText = "Custom 2 Secondary" },
+        new() { FirstText = "Custom 3", ExternalIcon = "bi bi-trash" }
+    ];
+
+    private List<Event> bootstrapIconCustoms2 =
+    [
+        new() { FirstText = "Custom 1", ExternalIcon = BitIconInfo.Css("bi bi-plus-lg") },
+        new() { FirstText = "Custom 2", ExternalIcon = BitIconInfo.Css("bi bi-pencil"), SecondText = "Custom 2 Secondary" },
+        new() { FirstText = "Custom 3", ExternalIcon = BitIconInfo.Css("bi bi-trash") }
+    ];
+
+    private List<Event> bootstrapIconCustoms3 =
+    [
+        new() { FirstText = "Custom 1", ExternalIcon = BitIconInfo.Bi("plus-lg") },
+        new() { FirstText = "Custom 2", ExternalIcon = BitIconInfo.Bi("pencil"), SecondText = "Custom 2 Secondary" },
+        new() { FirstText = "Custom 3", ExternalIcon = BitIconInfo.Bi("trash") }
     ];
 
     private List<Event> styleClassCustoms =

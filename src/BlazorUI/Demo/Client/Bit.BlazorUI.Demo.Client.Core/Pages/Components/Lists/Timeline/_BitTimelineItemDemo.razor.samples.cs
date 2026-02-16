@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public partial class _BitTimelineItemDemo
 {
@@ -205,6 +205,66 @@ private List<BitTimelineItem> iconItems =
 ];";
 
     private readonly string example10RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitTimeline Horizontal Items=""externalIconItems1"" />
+
+<BitTimeline Horizontal Items=""externalIconItems2"" Variant=""BitVariant.Outline"" />
+
+<BitTimeline Horizontal Items=""externalIconItems3"" Variant=""BitVariant.Text"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitTimeline Horizontal Items=""bootstrapIconItems1"" />
+
+<BitTimeline Horizontal Items=""bootstrapIconItems2"" Variant=""BitVariant.Outline"" />
+
+<BitTimeline Horizontal Items=""bootstrapIconItems3"" Variant=""BitVariant.Text"" />";
+    private readonly string example10CsharpCode = @"
+private List<BitTimelineItem> externalIconItems1 =
+[
+    new() { PrimaryText = ""Item 1"", Icon = ""fa-solid fa-plus"" },
+    new() { PrimaryText = ""Item 2"", Icon = ""fa-solid fa-pen"", SecondaryText = ""Item 2 Secondary"" },
+    new() { PrimaryText = ""Item 3"", Icon = ""fa-solid fa-trash"" }
+];
+
+private List<BitTimelineItem> externalIconItems2 =
+[
+    new() { PrimaryText = ""Item 1"", Icon = BitIconInfo.Css(""fa-solid fa-plus"") },
+    new() { PrimaryText = ""Item 2"", Icon = BitIconInfo.Css(""fa-solid fa-pen""), SecondaryText = ""Item 2 Secondary"" },
+    new() { PrimaryText = ""Item 3"", Icon = BitIconInfo.Css(""fa-solid fa-trash"") }
+];
+
+private List<BitTimelineItem> externalIconItems3 =
+[
+    new() { PrimaryText = ""Item 1"", Icon = BitIconInfo.Fa(""solid plus"") },
+    new() { PrimaryText = ""Item 2"", Icon = BitIconInfo.Fa(""solid pen""), SecondaryText = ""Item 2 Secondary"" },
+    new() { PrimaryText = ""Item 3"", Icon = BitIconInfo.Fa(""solid trash"") }
+];
+
+private List<BitTimelineItem> bootstrapIconItems1 =
+[
+    new() { PrimaryText = ""Item 1"", Icon = ""bi bi-plus-lg"" },
+    new() { PrimaryText = ""Item 2"", Icon = ""bi bi-pencil"", SecondaryText = ""Item 2 Secondary"" },
+    new() { PrimaryText = ""Item 3"", Icon = ""bi bi-trash"" }
+];
+
+private List<BitTimelineItem> bootstrapIconItems2 =
+[
+    new() { PrimaryText = ""Item 1"", Icon = BitIconInfo.Css(""bi bi-plus-lg"") },
+    new() { PrimaryText = ""Item 2"", Icon = BitIconInfo.Css(""bi bi-pencil""), SecondaryText = ""Item 2 Secondary"" },
+    new() { PrimaryText = ""Item 3"", Icon = BitIconInfo.Css(""bi bi-trash"") }
+];
+
+private List<BitTimelineItem> bootstrapIconItems3 =
+[
+    new() { PrimaryText = ""Item 1"", Icon = BitIconInfo.Bi(""plus-lg"") },
+    new() { PrimaryText = ""Item 2"", Icon = BitIconInfo.Bi(""pencil""), SecondaryText = ""Item 2 Secondary"" },
+    new() { PrimaryText = ""Item 3"", Icon = BitIconInfo.Bi(""trash"") }
+];";
+
+    private readonly string example11RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -258,7 +318,7 @@ private List<BitTimelineItem> iconItems =
                                 Icon = ""custom-icon"",
                                 Item = ""custom-item-text"",
                                 Divider = ""custom-divider"" })"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private List<BitTimelineItem> basicItems =
 [
     new() { PrimaryText = ""Item 1"" },
@@ -279,10 +339,10 @@ private List<BitTimelineItem> iconItems =
     new() { PrimaryText = ""Item 3"", IconName = BitIconName.Delete }
 ];";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitTimeline Dir=""BitDir.Rtl"" Items=""basicRtlItems"" />
 <BitTimeline Horizontal Dir=""BitDir.Rtl"" Items=""basicRtlItems"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private List<BitTimelineItem> basicRtlItems =
 [
     new() { PrimaryText = ""گزینه ۱"" },

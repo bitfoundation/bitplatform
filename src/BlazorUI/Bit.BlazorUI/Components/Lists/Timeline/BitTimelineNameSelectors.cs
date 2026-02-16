@@ -23,6 +23,11 @@ public class BitTimelineNameSelectors<TItem>
     public BitNameSelectorPair<TItem, bool> HideDot { get; set; } = new(nameof(BitTimelineItem.HideDot));
 
     /// <summary>
+    /// Icon field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitIconInfo?> Icon { get; set; } = new(nameof(BitTimelineItem.Icon));
+
+    /// <summary>
     /// IconName field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitTimelineItem.IconName));

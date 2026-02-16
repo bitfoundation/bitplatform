@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public partial class BitTimelineDemo
 {
@@ -141,6 +141,15 @@ public partial class BitTimelineDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon to render in the item. Takes precedence over IconName.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "IconName",
                    Type = "string?",
                    DefaultValue = "null",
@@ -261,6 +270,15 @@ public partial class BitTimelineDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "The icon to render in the option. Takes precedence over IconName.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "IconName",
                    Type = "string?",
                    DefaultValue = "null",
@@ -375,6 +393,15 @@ public partial class BitTimelineDemo
                     Type = "BitNameSelectorPair<TItem, bool>",
                     DefaultValue = "new(nameof(BitTimelineItem.HideDot))",
                     Description = "HideDot field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "BitNameSelectorPair<TItem, BitIconInfo?>",
+                    DefaultValue = "new(nameof(BitTimelineItem.Icon))",
+                    Description = "Icon field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -510,64 +537,93 @@ public partial class BitTimelineDemo
                    Name = "Root",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the root element of the BitButton."
+                   Description = "Custom CSS classes/styles for the root element of the BitTimeline."
                },
                new()
                {
                    Name = "Item",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the item of the BitButton."
+                   Description = "Custom CSS classes/styles for the item of the BitTimeline."
                },
                new()
                {
                    Name = "PrimaryContent",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the primary content of the BitButton."
+                   Description = "Custom CSS classes/styles for the primary content of the BitTimeline."
                },
                new()
                {
                    Name = "PrimaryText",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the primary text of the BitButton."
+                   Description = "Custom CSS classes/styles for the primary text of the BitTimeline."
                },
                new()
                {
                    Name = "SecondaryContent",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the secondary content of the BitButton."
+                   Description = "Custom CSS classes/styles for the secondary content of the BitTimeline."
                },
                new()
                {
                    Name = "SecondaryText",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the secondary text of the BitButton."
+                   Description = "Custom CSS classes/styles for the secondary text of the BitTimeline."
                },
                new()
                {
                    Name = "Divider",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the divider of the BitButton."
+                   Description = "Custom CSS classes/styles for the divider of the BitTimeline."
                },
                new()
                {
                    Name = "Dot",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the dot of the BitButton."
+                   Description = "Custom CSS classes/styles for the dot of the BitTimeline."
                },
                new()
                {
                    Name = "Icon",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the icon of the BitButton."
+                   Description = "Custom CSS classes/styles for the icon of the BitTimeline."
                }
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
             ]
         }
     ];

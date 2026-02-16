@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public partial class BitTimelineOption : ComponentBase, IDisposable
 {
@@ -27,6 +27,21 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     /// Hides the timeline option's dot.
     /// </summary>
     [Parameter] public bool HideDot { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: Icon="BitIconInfo.Bi("gear-fill")"
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
 
     /// <summary>
     /// Name of an icon to render in the timeline option.
