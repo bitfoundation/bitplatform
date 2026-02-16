@@ -203,34 +203,62 @@
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
 
-        <div>FontAwesome:</div>
+        <div>FontAwesome (circle-arrow icons):</div>
         <br />
-        <BitCarousel Style="height: 100px" InfiniteScrolling
-                     GoLeftIcon="@BitIconInfo.Fa("solid chevron-left")"
-                     GoRightIcon="@BitIconInfo.Fa("solid chevron-right")">
-            <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
-            <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
-            <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
-            <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
-            <BitCarouselItem Class="item"><div>5</div></BitCarouselItem>
-            <BitCarouselItem Class="item"><div>6</div></BitCarouselItem>
+        <BitCarousel InfiniteScrolling
+                     GoLeftIcon="@BitIconInfo.Fa("solid circle-arrow-right")"
+                     GoRightIcon="@BitIconInfo.Fa("solid circle-arrow-left")">
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                <div class="text-title">Aurora</div>
+                <div class="text-description">This is Aurora and it's fantastic</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                <div class="text-title">Beautiful Mountain</div>
+                <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                <div class="text-title">Forest In The Valley</div>
+                <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                <div class="text-title">Road Among The Mountains</div>
+                <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
+            </BitCarouselItem>
         </BitCarousel>
 
         <br /><br /><br /><br />
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
-        <div>Bootstrap:</div>
+        <div>Bootstrap Icons (arrow-left-circle / arrow-right-circle):</div>
         <br />
-        <BitCarousel Style="height: 100px" InfiniteScrolling
-                     GoLeftIcon="@BitIconInfo.Bi("chevron-left")"
-                     GoRightIcon="@BitIconInfo.Bi("chevron-right")">
-            <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
-            <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
-            <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
-            <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
-            <BitCarouselItem Class="item"><div>5</div></BitCarouselItem>
-            <BitCarouselItem Class="item"><div>6</div></BitCarouselItem>
+        <BitCarousel InfiniteScrolling
+                     GoLeftIcon="@BitIconInfo.Bi("arrow-right-circle")"
+                     GoRightIcon="@BitIconInfo.Bi("arrow-left-circle")">
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                <div class="text-title">Aurora</div>
+                <div class="text-description">This is Aurora and it's fantastic</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                <div class="text-title">Beautiful Mountain</div>
+                <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                <div class="text-title">Forest In The Valley</div>
+                <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                <div class="text-title">Road Among The Mountains</div>
+                <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
+            </BitCarouselItem>
         </BitCarousel>
     </DemoExample>
 
