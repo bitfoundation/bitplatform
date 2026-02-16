@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Carousel;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Carousel;
 
 public partial class BitCarouselDemo
 {
@@ -44,16 +44,38 @@ public partial class BitCarouselDemo
         new()
         {
             Name = "GoLeftIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon for the go to left button using custom CSS classes for external icon libraries. Takes precedence over GoLeftIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "GoLeftIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom icon name for the go to left button at the right side of the carousel."
+            Description = "Gets or sets the name of the icon for the go to left button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
             Name = "GoRightIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon for the go to right button using custom CSS classes for external icon libraries. Takes precedence over GoRightIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "GoRightIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom icon name for the go to right button at the left side of the carousel."
+            Description = "Gets or sets the name of the icon for the go to right button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -187,7 +209,36 @@ public partial class BitCarouselDemo
                    Description = "Custom CSS classes/styles for the current dot element of the BitCarousel."
                }
             ]
-        }
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -542,6 +593,63 @@ private async Task GoTo()
 </div>";
 
     private readonly string example7RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<div>FontAwesome (circle-arrow icons):</div>
+<BitCarousel InfiniteScrolling
+             GoLeftIcon=""@BitIconInfo.Fa(""solid circle-arrow-right"")""
+             GoRightIcon=""@BitIconInfo.Fa(""solid circle-arrow-left"")"">
+    <BitCarouselItem>
+        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"" />
+        <div class=""text-title"">Aurora</div>
+        <div class=""text-description"">This is Aurora and it's fantastic</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"" />
+        <div class=""text-title"">Beautiful Mountain</div>
+        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" />
+        <div class=""text-title"">Forest In The Valley</div>
+        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" />
+        <div class=""text-title"">Road Among The Mountains</div>
+        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
+    </BitCarouselItem>
+</BitCarousel>
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<div>Bootstrap Icons (arrow-left-circle / arrow-right-circle):</div>
+<BitCarousel InfiniteScrolling
+             GoLeftIcon=""@BitIconInfo.Bi(""arrow-right-circle"")""
+             GoRightIcon=""@BitIconInfo.Bi(""arrow-left-circle"")"">
+    <BitCarouselItem>
+        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"" />
+        <div class=""text-title"">Aurora</div>
+        <div class=""text-description"">This is Aurora and it's fantastic</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"" />
+        <div class=""text-title"">Beautiful Mountain</div>
+        <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" />
+        <div class=""text-title"">Forest In The Valley</div>
+        <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" />
+        <div class=""text-title"">Road Among The Mountains</div>
+        <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
+    </BitCarouselItem>
+</BitCarousel>";
+
+    private readonly string example8RazorCode = @"
 <style>
     .item {
         text-align: center;

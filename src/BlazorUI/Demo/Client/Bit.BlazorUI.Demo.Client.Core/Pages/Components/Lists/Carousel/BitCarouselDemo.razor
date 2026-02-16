@@ -1,4 +1,4 @@
-﻿@page "/components/carousel"
+@page "/components/carousel"
 
 <PageOutlet Url="components/carousel"
             Title="Carousel"
@@ -195,7 +195,74 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="External Icons" RazorCode="@example7RazorCode" Id="example7">
+        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>GoLeftIcon</b> and <b>GoRightIcon</b> parameters.</div>
+
+        <br />
+        <br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+        <div>FontAwesome (circle-arrow icons):</div>
+        <br />
+        <BitCarousel InfiniteScrolling
+                     GoLeftIcon="@BitIconInfo.Fa("solid circle-arrow-right")"
+                     GoRightIcon="@BitIconInfo.Fa("solid circle-arrow-left")">
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                <div class="text-title">Aurora</div>
+                <div class="text-description">This is Aurora and it's fantastic</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                <div class="text-title">Beautiful Mountain</div>
+                <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                <div class="text-title">Forest In The Valley</div>
+                <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                <div class="text-title">Road Among The Mountains</div>
+                <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
+            </BitCarouselItem>
+        </BitCarousel>
+
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap Icons (arrow-left-circle / arrow-right-circle):</div>
+        <br />
+        <BitCarousel InfiniteScrolling
+                     GoLeftIcon="@BitIconInfo.Bi("arrow-right-circle")"
+                     GoRightIcon="@BitIconInfo.Bi("arrow-left-circle")">
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                <div class="text-title">Aurora</div>
+                <div class="text-description">This is Aurora and it's fantastic</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                <div class="text-title">Beautiful Mountain</div>
+                <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                <div class="text-title">Forest In The Valley</div>
+                <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
+            </BitCarouselItem>
+            <BitCarouselItem>
+                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                <div class="text-title">Road Among The Mountains</div>
+                <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
+            </BitCarouselItem>
+        </BitCarousel>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
         <div>Use BitCarousel in right-to-left (RTL).</div>
         <br />
         <div>

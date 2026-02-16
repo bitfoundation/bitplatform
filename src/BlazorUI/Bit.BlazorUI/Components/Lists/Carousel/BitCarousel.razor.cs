@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Carousel (slide-show) let people show their items in separate slides from two or more items.
@@ -59,14 +59,54 @@ public partial class BitCarousel : BitComponentBase
     [Parameter] public BitCarouselClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The custom icon name for the go to left button at the right side of the carousel.
+    /// Gets or sets the icon for the go to left button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="GoLeftIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string? GoLeftIcon { get; set; }
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="GoLeftIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: GoLeftIcon="BitIconInfo.Bi("chevron-left")"
+    /// FontAwesome: GoLeftIcon="BitIconInfo.Fa("solid chevron-left")"
+    /// Custom CSS: GoLeftIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? GoLeftIcon { get; set; }
 
     /// <summary>
-    /// The custom icon name for the go to right button at the left side of the carousel.
+    /// Gets or sets the name of the icon for the go to left button from the built-in Fluent UI icons.
     /// </summary>
-    [Parameter] public string? GoRightIcon { get; set; }
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.ChevronLeft</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="GoLeftIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? GoLeftIconName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon for the go to right button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="GoRightIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="GoRightIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: GoRightIcon="BitIconInfo.Bi("chevron-right")"
+    /// FontAwesome: GoRightIcon="BitIconInfo.Fa("solid chevron-right")"
+    /// Custom CSS: GoRightIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? GoRightIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon for the go to right button from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.ChevronRight</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="GoRightIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? GoRightIconName { get; set; }
 
     /// <summary>
     /// Hides the Dots indicator at the bottom of the BitCarousel.

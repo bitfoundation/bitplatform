@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-csl {
     display: flex;
@@ -65,10 +65,6 @@
 
 .bit-csl-rbt {
     left: 0;
-}
-
-.bit-csl-rbi {
-    transform: scaleX(-1);
 }
 
 .bit-csl-dcn {
