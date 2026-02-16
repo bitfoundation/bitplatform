@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -116,6 +116,17 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public BitTimePickerClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// Gets or sets the close button icon using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="CloseButtonIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? CloseButtonIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the close button icon from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? CloseButtonIconName { get; set; }
+
+    /// <summary>
     /// The title of the close button (tooltip).
     /// </summary>
     [Parameter] public string CloseButtonTitle { get; set; } = "Close time picker";
@@ -126,6 +137,28 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(OnSetCulture))]
     public CultureInfo? Culture { get; set; }
+
+    /// <summary>
+    /// Gets or sets the decrease hour button icon using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="DecreaseHourIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? DecreaseHourIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the decrease hour button icon from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? DecreaseHourIconName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the decrease minute button icon using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="DecreaseMinuteIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? DecreaseMinuteIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the decrease minute button icon from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? DecreaseMinuteIconName { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the callout.
@@ -144,9 +177,35 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public int HourStep { get; set; } = 1;
 
     /// <summary>
-    /// Optional TimePicker icon
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
-    [Parameter] public string IconName { get; set; } = "Clock";
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: Icon="BitIconInfo.Bi("gear-fill")"
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Clock</c>).
+    /// <br />
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery: 
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// <br />
+    /// The value is case-sensitive and must match a valid icon identifier. 
+    /// If not set or set to <c>null</c>, the default Clock icon will be rendered.
+    /// <br />
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </remarks>
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// TimePicker icon location
@@ -158,6 +217,28 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// Custom TimePicker icon template
     /// </summary>
     [Parameter] public RenderFragment? IconTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the increase hour button icon using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IncreaseHourIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? IncreaseHourIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the increase hour button icon from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? IncreaseHourIconName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the increase minute button icon using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IncreaseMinuteIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? IncreaseMinuteIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the increase minute button icon from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? IncreaseMinuteIconName { get; set; }
 
     /// <summary>
     /// The custom validation error message for the invalid value.

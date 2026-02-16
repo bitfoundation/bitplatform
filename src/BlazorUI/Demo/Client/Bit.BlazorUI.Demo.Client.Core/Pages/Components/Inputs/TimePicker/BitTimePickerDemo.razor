@@ -1,4 +1,4 @@
-﻿@page "/components/timepicker"
+@page "/components/timepicker"
 @page "/components/time-picker"
 
 <PageOutlet Url="components/timepicker"
@@ -190,7 +190,46 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
+        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
+
+        <br />
+        <br />
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        
+        <div>FontAwesome:</div>
+        <br />
+        <div class="example-content">
+            <BitTimePicker Icon="@("fa-solid fa-clock")" Placeholder="Select a time..." />
+            <br />
+            <BitTimePicker Icon="@BitIconInfo.Css("fa-solid fa-hourglass-half")"
+                           Placeholder="Select a time..."
+                           IconLocation="BitIconLocation.Left" />
+            <br />
+            <BitTimePicker Icon="@BitIconInfo.Fa("solid stopwatch")"
+                           Placeholder="Select a time..." />
+        </div>
+        
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap:</div>
+        <br />
+        <div class="example-content">
+            <BitTimePicker Icon="@("bi bi-clock-fill")" Placeholder="Select a time..." />
+            <br />
+            <BitTimePicker Icon="@BitIconInfo.Css("bi bi-alarm-fill")"
+                           Placeholder="Select a time..."
+                           IconLocation="BitIconLocation.Left" />
+            <br />
+            <BitTimePicker Icon="@BitIconInfo.Bi("stopwatch-fill")"
+                           Placeholder="Select a time..." />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>Explore styling and class customization for BitTimePicker, including component styles, custom classes, and detailed styles.</div>
         <br /><br />
         <div>Component's Style & Class:</div>
@@ -228,7 +267,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
         <div>Use BitTimePicker in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TimePicker;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TimePicker;
 
 public partial class BitTimePickerDemo
 {
@@ -130,6 +130,30 @@ private async Task OpenCallout()
                Placeholder=""Select a time..."" />";
 
     private readonly string example13RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitTimePicker Icon=""@(""fa-solid fa-clock"")"" Placeholder=""Select a time..."" />
+
+<BitTimePicker Icon=""@BitIconInfo.Css(""fa-solid fa-hourglass-half"")""
+               Placeholder=""Select a time...""
+               IconLocation=""BitIconLocation.Left"" />
+
+<BitTimePicker Icon=""@BitIconInfo.Fa(""solid stopwatch"")""
+               Placeholder=""Select a time..."" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitTimePicker Icon=""@(""bi bi-clock-fill"")"" Placeholder=""Select a time..."" />
+
+<BitTimePicker Icon=""@BitIconInfo.Css(""bi bi-alarm-fill"")""
+               Placeholder=""Select a time...""
+               IconLocation=""BitIconLocation.Left"" />
+
+<BitTimePicker Icon=""@BitIconInfo.Bi(""stopwatch-fill"")""
+               Placeholder=""Select a time..."" />";
+
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -235,10 +259,10 @@ private async Task OpenCallout()
                                   DecreaseHourButton = ""custom-button"",
                                   IncreaseMinuteButton = ""custom-button"",
                                   DecreaseMinuteButton = ""custom-button"" })"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private TimeSpan? classesValue;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitTimePicker Dir=""BitDir.Rtl""
                Standalone
                Label=""تایم""
