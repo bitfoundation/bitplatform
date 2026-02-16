@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TimePicker;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TimePicker;
 
 public partial class BitTimePickerDemo
 {
@@ -36,6 +36,24 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "CloseButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the close button icon using custom CSS classes for external icon libraries. Takes precedence over CloseButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "CloseButtonIconName",
+            Type = "string?",
+            DefaultValue = "Cancel",
+            Description = "Gets or sets the name of the close button icon from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
             Name = "CloseButtonTitle",
             Type = "string",
             DefaultValue = "Close time picker",
@@ -47,6 +65,42 @@ public partial class BitTimePickerDemo
             Type = "CultureInfo",
             DefaultValue = "CultureInfo.CurrentUICulture",
             Description = "CultureInfo for the TimePicker."
+        },
+        new()
+        {
+            Name = "DecreaseHourIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the decrease hour button icon using custom CSS classes for external icon libraries. Takes precedence over DecreaseHourIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "DecreaseHourIconName",
+            Type = "string?",
+            DefaultValue = "ChevronDownSmall",
+            Description = "Gets or sets the name of the decrease hour button icon from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "DecreaseMinuteIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the decrease minute button icon using custom CSS classes for external icon libraries. Takes precedence over DecreaseMinuteIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "DecreaseMinuteIconName",
+            Type = "string?",
+            DefaultValue = "ChevronDownSmall",
+            Description = "Gets or sets the name of the decrease minute button icon from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -73,10 +127,21 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "IconName",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "Clock",
-            Description = "Optional TimePicker icon."
+            Description = "Gets or sets the name of the icon to display from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -93,6 +158,42 @@ public partial class BitTimePickerDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Custom TimePicker icon template."
+        },
+        new()
+        {
+            Name = "IncreaseHourIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the increase hour button icon using custom CSS classes for external icon libraries. Takes precedence over IncreaseHourIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "IncreaseHourIconName",
+            Type = "string?",
+            DefaultValue = "ChevronDownSmall",
+            Description = "Gets or sets the name of the increase hour button icon from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "IncreaseMinuteIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the increase minute button icon using custom CSS classes for external icon libraries. Takes precedence over IncreaseMinuteIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "IncreaseMinuteIconName",
+            Type = "string?",
+            DefaultValue = "ChevronDownSmall",
+            Description = "Gets or sets the name of the increase minute button icon from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -547,7 +648,36 @@ public partial class BitTimePickerDemo
                     Description = "Custom CSS classes/styles for the close button icon of the BitTimePicker."
                 }
             ]
-        }
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
     ];
 
 

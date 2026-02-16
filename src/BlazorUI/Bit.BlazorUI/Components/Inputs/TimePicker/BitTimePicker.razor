@@ -1,5 +1,13 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitInputBase<TimeSpan?>
+
+@{
+    var increaseHourIcon = BitIconInfo.From(IncreaseHourIcon, IncreaseHourIconName ?? "ChevronDownSmall bit-ico-r180");
+    var decreaseHourIcon = BitIconInfo.From(DecreaseHourIcon, DecreaseHourIconName ?? "ChevronDownSmall");
+    var increaseMinuteIcon = BitIconInfo.From(IncreaseMinuteIcon, IncreaseMinuteIconName ?? "ChevronDownSmall bit-ico-r180");
+    var decreaseMinuteIcon = BitIconInfo.From(DecreaseMinuteIcon, DecreaseMinuteIconName ?? "ChevronDownSmall");
+    var closeIcon = BitIconInfo.From(CloseButtonIcon, CloseButtonIconName ?? "Cancel");
+}
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
@@ -53,7 +61,8 @@
                 }
                 else
                 {
-                    <i style="@Styles?.Icon" class="bit-tpc-ico bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
+                    var icon = BitIconInfo.From(Icon, IconName ?? "Clock");
+                    <i style="@Styles?.Icon" class="bit-tpc-ico @icon?.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
                 }
             </div>
         </div>
@@ -88,7 +97,7 @@
                             style="@Styles?.IncreaseHourButton"
                             class="bit-tpc-tbt @Classes?.IncreaseHourButton"
                             disabled="@(IsEnabled is false)">
-                        <i style="@Styles?.IncreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall bit-ico-r180 @Classes?.IncreaseHourIcon" aria-hidden="true" />
+                        <i style="@Styles?.IncreaseHourIcon" class="@increaseHourIcon?.GetCssClasses() @Classes?.IncreaseHourIcon" aria-hidden="true" />
                     </button>
                     <input @ref="_inputHourRef"
                            @bind="@_hourView"
@@ -110,7 +119,7 @@
                             style="@Styles?.DecreaseHourButton"
                             class="bit-tpc-tbt @Classes?.DecreaseHourButton"
                             disabled="@(IsEnabled is false)">
-                        <i style="@Styles?.DecreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.DecreaseHourIcon" aria-hidden="true" />
+                        <i style="@Styles?.DecreaseHourIcon" class="@decreaseHourIcon?.GetCssClasses() @Classes?.DecreaseHourIcon" aria-hidden="true" />
                     </button>
                 </div>
                 <div style="@Styles?.HourMinuteSeparator" class="bit-tpc-tpr bit-tpc-tdv @Classes?.HourMinuteSeparator">:</div>
@@ -122,7 +131,7 @@
                             style="@Styles?.IncreaseMinuteButton"
                             class="bit-tpc-tbt @Classes?.IncreaseMinuteButton"
                             disabled="@(IsEnabled is false)">
-                        <i style="@Styles?.IncreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall bit-ico-r180 @Classes?.IncreaseMinuteIcon" aria-hidden="true" />
+                        <i style="@Styles?.IncreaseMinuteIcon" class="@increaseMinuteIcon?.GetCssClasses() @Classes?.IncreaseMinuteIcon" aria-hidden="true" />
                     </button>
                     <input @ref="_inputMinuteRef"
                            @bind="@_minuteView"
@@ -144,7 +153,7 @@
                             style="@Styles?.DecreaseMinuteButton"
                             class="bit-tpc-tbt @Classes?.DecreaseMinuteButton"
                             disabled="@(IsEnabled is false)">
-                        <i style="@Styles?.DecreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.DecreaseMinuteIcon" aria-hidden="true" />
+                        <i style="@Styles?.DecreaseMinuteIcon" class="@decreaseMinuteIcon?.GetCssClasses() @Classes?.DecreaseMinuteIcon" aria-hidden="true" />
                     </button>
                 </div>
             </div>
@@ -178,7 +187,7 @@
                         class="bit-tpc-tbt bit-tpc-cbn @Classes?.CloseButton"
                         title="@CloseButtonTitle"
                         aria-label="@CloseButtonTitle">
-                    <i style="@Styles?.CloseButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.CloseButtonIcon" aria-hidden="true" />
+                    <i style="@Styles?.CloseButtonIcon" class="@closeIcon?.GetCssClasses() @Classes?.CloseButtonIcon" aria-hidden="true" />
                 </button>
             }
         </div>
