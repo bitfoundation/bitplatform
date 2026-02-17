@@ -334,6 +334,80 @@ private List<Event> iconCustoms =
 ];";
 
     private readonly string example10RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitTimeline Horizontal Items=""externalIconCustoms1"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline Horizontal Items=""externalIconCustoms2"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" />
+
+<BitTimeline Horizontal Items=""externalIconCustoms3"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitTimeline Horizontal Items=""bootstrapIconCustoms1"" NameSelectors=""nameSelectors"" />
+
+<BitTimeline Horizontal Items=""bootstrapIconCustoms2"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" />
+
+<BitTimeline Horizontal Items=""bootstrapIconCustoms3"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />";
+    private readonly string example10CsharpCode = @"
+public class Event
+{
+    public string? FirstText { get; set; }
+    public string? SecondText { get; set; }
+    public BitIconInfo? ExternalIcon { get; set; }
+}
+
+BitTimelineNameSelectors<Event> nameSelectors = new()
+{
+    PrimaryText = { Selector = i => i.FirstText },
+    SecondaryText = { Selector = i => i.SecondText },
+    Icon = { Selector = i => i.ExternalIcon },
+};
+
+private List<Event> externalIconCustoms1 =
+[
+    new() { FirstText = ""Custom 1"", ExternalIcon = ""fa-solid fa-plus"" },
+    new() { FirstText = ""Custom 2"", ExternalIcon = ""fa-solid fa-pen"", SecondText = ""Custom 2 Secondary"" },
+    new() { FirstText = ""Custom 3"", ExternalIcon = ""fa-solid fa-trash"" }
+];
+
+private List<Event> externalIconCustoms2 =
+[
+    new() { FirstText = ""Custom 1"", ExternalIcon = BitIconInfo.Css(""fa-solid fa-plus"") },
+    new() { FirstText = ""Custom 2"", ExternalIcon = BitIconInfo.Css(""fa-solid fa-pen""), SecondText = ""Custom 2 Secondary"" },
+    new() { FirstText = ""Custom 3"", ExternalIcon = BitIconInfo.Css(""fa-solid fa-trash"") }
+];
+
+private List<Event> externalIconCustoms3 =
+[
+    new() { FirstText = ""Custom 1"", ExternalIcon = BitIconInfo.Fa(""solid plus"") },
+    new() { FirstText = ""Custom 2"", ExternalIcon = BitIconInfo.Fa(""solid pen""), SecondText = ""Custom 2 Secondary"" },
+    new() { FirstText = ""Custom 3"", ExternalIcon = BitIconInfo.Fa(""solid trash"") }
+];
+
+private List<Event> bootstrapIconCustoms1 =
+[
+    new() { FirstText = ""Custom 1"", ExternalIcon = ""bi bi-plus-lg"" },
+    new() { FirstText = ""Custom 2"", ExternalIcon = ""bi bi-pencil"", SecondText = ""Custom 2 Secondary"" },
+    new() { FirstText = ""Custom 3"", ExternalIcon = ""bi bi-trash"" }
+];
+
+private List<Event> bootstrapIconCustoms2 =
+[
+    new() { FirstText = ""Custom 1"", ExternalIcon = BitIconInfo.Css(""bi bi-plus-lg"") },
+    new() { FirstText = ""Custom 2"", ExternalIcon = BitIconInfo.Css(""bi bi-pencil""), SecondText = ""Custom 2 Secondary"" },
+    new() { FirstText = ""Custom 3"", ExternalIcon = BitIconInfo.Css(""bi bi-trash"") }
+];
+
+private List<Event> bootstrapIconCustoms3 =
+[
+    new() { FirstText = ""Custom 1"", ExternalIcon = BitIconInfo.Bi(""plus-lg"") },
+    new() { FirstText = ""Custom 2"", ExternalIcon = BitIconInfo.Bi(""pencil""), SecondText = ""Custom 2 Secondary"" },
+    new() { FirstText = ""Custom 3"", ExternalIcon = BitIconInfo.Bi(""trash"") }
+];";
+
+    private readonly string example11RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -389,7 +463,7 @@ private List<Event> iconCustoms =
                                 Icon = ""custom-icon"",
                                 Item = ""custom-item-text"",
                                 Divider = ""custom-divider"" })"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class Event
 {
     public string? FirstText { get; set; }
@@ -428,10 +502,10 @@ private List<Event> iconCustoms = new()
     new() { FirstText = ""Custom 3"", Icon = BitIconName.Delete }
 };";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitTimeline Dir=""BitDir.Rtl"" Items=""basicRtlCustoms"" NameSelectors=""nameSelectors"" />
 <BitTimeline Horizontal Dir=""BitDir.Rtl"" Items=""basicRtlCustoms"" NameSelectors=""nameSelectors"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 public class Event
 {
     public string? FirstText { get; set; }

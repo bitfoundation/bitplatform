@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <BitTimeline TItem="BitTimelineOption">
         <BitTimelineOption PrimaryText="Option 1" />
         <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
@@ -456,7 +456,60 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
+<DemoExample Title="External Icons" RazorCode="@example10RazorCode" Id="example10">
+    <div>External icon libraries like FontAwesome and Bootstrap Icons can be used with the Icon parameter.</div>
+
+    <br />
+    <br />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+    <div><b>FontAwesome Icons:</b></div>
+    <br />
+    <BitTimeline Horizontal TItem="BitTimelineOption">
+        <BitTimelineOption PrimaryText="Option 1" Icon="@("fa-solid fa-plus")" />
+        <BitTimelineOption PrimaryText="Option 2" Icon="@("fa-solid fa-pen")" SecondaryText="Option 2 Secondary" />
+        <BitTimelineOption PrimaryText="Option 3" Icon="@("fa-solid fa-trash")" />
+    </BitTimeline>
+    <br /><br /><br />
+    <BitTimeline Horizontal Variant="BitVariant.Outline" TItem="BitTimelineOption">
+        <BitTimelineOption PrimaryText="Option 1" Icon="@BitIconInfo.Css("fa-solid fa-plus")" />
+        <BitTimelineOption PrimaryText="Option 2" Icon="@BitIconInfo.Css("fa-solid fa-pen")" SecondaryText="Option 2 Secondary" />
+        <BitTimelineOption PrimaryText="Option 3" Icon="@BitIconInfo.Css("fa-solid fa-trash")" />
+    </BitTimeline>
+    <br /><br /><br />
+    <BitTimeline Horizontal Variant="BitVariant.Text" TItem="BitTimelineOption">
+        <BitTimelineOption PrimaryText="Option 1" Icon="@BitIconInfo.Fa("solid plus")" />
+        <BitTimelineOption PrimaryText="Option 2" Icon="@BitIconInfo.Fa("solid pen")" SecondaryText="Option 2 Secondary" />
+        <BitTimelineOption PrimaryText="Option 3" Icon="@BitIconInfo.Fa("solid trash")" />
+    </BitTimeline>
+
+    <br /><br /><br /><br />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    <div><b>Bootstrap Icons:</b></div>
+    <br />
+    <BitTimeline Horizontal TItem="BitTimelineOption">
+        <BitTimelineOption PrimaryText="Option 1" Icon="@("bi bi-plus-lg")" />
+        <BitTimelineOption PrimaryText="Option 2" Icon="@("bi bi-pencil")" SecondaryText="Option 2 Secondary" />
+        <BitTimelineOption PrimaryText="Option 3" Icon="@("bi bi-trash")" />
+    </BitTimeline>
+    <br /><br /><br />
+    <BitTimeline Horizontal Variant="BitVariant.Outline" TItem="BitTimelineOption">
+        <BitTimelineOption PrimaryText="Option 1" Icon="@BitIconInfo.Css("bi bi-plus-lg")" />
+        <BitTimelineOption PrimaryText="Option 2" Icon="@BitIconInfo.Css("bi bi-pencil")" SecondaryText="Option 2 Secondary" />
+        <BitTimelineOption PrimaryText="Option 3" Icon="@BitIconInfo.Css("bi bi-trash")" />
+    </BitTimeline>
+    <br /><br /><br />
+    <BitTimeline Horizontal Variant="BitVariant.Text" TItem="BitTimelineOption">
+        <BitTimelineOption PrimaryText="Option 1" Icon="@BitIconInfo.Bi("plus-lg")" />
+        <BitTimelineOption PrimaryText="Option 2" Icon="@BitIconInfo.Bi("pencil")" SecondaryText="Option 2 Secondary" />
+        <BitTimelineOption PrimaryText="Option 3" Icon="@BitIconInfo.Bi("trash")" />
+    </BitTimeline>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br /><br />
     <div>Component's style & class:</div><br />
@@ -502,7 +555,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+<DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
     <div>Use the BitTimeline component in right-to-left (RTL).</div>
     <br /><br /><br />
     <div>Vertical</div><br />

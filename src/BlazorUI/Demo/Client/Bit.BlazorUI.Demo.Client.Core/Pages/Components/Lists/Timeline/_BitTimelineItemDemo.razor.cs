@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public partial class _BitTimelineItemDemo
 {
@@ -28,6 +28,48 @@ public partial class _BitTimelineItemDemo
         new() { PrimaryText = "Item 1" },
         new() { PrimaryText = "Item 2", Reversed = true },
         new() { PrimaryText = "Item 3" }
+    ];
+
+    private List<BitTimelineItem> externalIconItems1 =
+    [
+        new() { PrimaryText = "Item 1", Icon = "fa-solid fa-plus" },
+        new() { PrimaryText = "Item 2", Icon = "fa-solid fa-pen", SecondaryText = "Item 2 Secondary" },
+        new() { PrimaryText = "Item 3", Icon = "fa-solid fa-trash" }
+    ];
+
+    private List<BitTimelineItem> externalIconItems2 =
+    [
+        new() { PrimaryText = "Item 1", Icon = BitIconInfo.Css("fa-solid fa-plus") },
+        new() { PrimaryText = "Item 2", Icon = BitIconInfo.Css("fa-solid fa-pen"), SecondaryText = "Item 2 Secondary" },
+        new() { PrimaryText = "Item 3", Icon = BitIconInfo.Css("fa-solid fa-trash") }
+    ];
+
+    private List<BitTimelineItem> externalIconItems3 =
+    [
+        new() { PrimaryText = "Item 1", Icon = BitIconInfo.Fa("solid plus") },
+        new() { PrimaryText = "Item 2", Icon = BitIconInfo.Fa("solid pen"), SecondaryText = "Item 2 Secondary" },
+        new() { PrimaryText = "Item 3", Icon = BitIconInfo.Fa("solid trash") }
+    ];
+
+    private List<BitTimelineItem> bootstrapIconItems1 =
+    [
+        new() { PrimaryText = "Item 1", Icon = "bi bi-plus-lg" },
+        new() { PrimaryText = "Item 2", Icon = "bi bi-pencil", SecondaryText = "Item 2 Secondary" },
+        new() { PrimaryText = "Item 3", Icon = "bi bi-trash" }
+    ];
+
+    private List<BitTimelineItem> bootstrapIconItems2 =
+    [
+        new() { PrimaryText = "Item 1", Icon = BitIconInfo.Css("bi bi-plus-lg") },
+        new() { PrimaryText = "Item 2", Icon = BitIconInfo.Css("bi bi-pencil"), SecondaryText = "Item 2 Secondary" },
+        new() { PrimaryText = "Item 3", Icon = BitIconInfo.Css("bi bi-trash") }
+    ];
+
+    private List<BitTimelineItem> bootstrapIconItems3 =
+    [
+        new() { PrimaryText = "Item 1", Icon = BitIconInfo.Bi("plus-lg") },
+        new() { PrimaryText = "Item 2", Icon = BitIconInfo.Bi("pencil"), SecondaryText = "Item 2 Secondary" },
+        new() { PrimaryText = "Item 3", Icon = BitIconInfo.Bi("trash") }
     ];
 
     private List<BitTimelineItem> styleClassItems =

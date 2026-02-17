@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public partial class _BitTimelineOptionDemo
 {
@@ -431,6 +431,48 @@ public partial class _BitTimelineOptionDemo
 </BitTimeline>";
 
     private readonly string example10RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitTimeline Horizontal TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" Icon=""@(""fa-solid fa-plus"")"" />
+    <BitTimelineOption PrimaryText=""Option 2"" Icon=""@(""fa-solid fa-pen"")"" SecondaryText=""Option 2 Secondary"" />
+    <BitTimelineOption PrimaryText=""Option 3"" Icon=""@(""fa-solid fa-trash"")"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Variant=""BitVariant.Outline"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" Icon=""@BitIconInfo.Css(""fa-solid fa-plus"")"" />
+    <BitTimelineOption PrimaryText=""Option 2"" Icon=""@BitIconInfo.Css(""fa-solid fa-pen"")"" SecondaryText=""Option 2 Secondary"" />
+    <BitTimelineOption PrimaryText=""Option 3"" Icon=""@BitIconInfo.Css(""fa-solid fa-trash"")"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Variant=""BitVariant.Text"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" Icon=""@BitIconInfo.Fa(""solid plus"")"" />
+    <BitTimelineOption PrimaryText=""Option 2"" Icon=""@BitIconInfo.Fa(""solid pen"")"" SecondaryText=""Option 2 Secondary"" />
+    <BitTimelineOption PrimaryText=""Option 3"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
+</BitTimeline>
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitTimeline Horizontal TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" Icon=""@(""bi bi-plus-lg"")"" />
+    <BitTimelineOption PrimaryText=""Option 2"" Icon=""@(""bi bi-pencil"")"" SecondaryText=""Option 2 Secondary"" />
+    <BitTimelineOption PrimaryText=""Option 3"" Icon=""@(""bi bi-trash"")"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Variant=""BitVariant.Outline"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" Icon=""@BitIconInfo.Css(""bi bi-plus-lg"")"" />
+    <BitTimelineOption PrimaryText=""Option 2"" Icon=""@BitIconInfo.Css(""bi bi-pencil"")"" SecondaryText=""Option 2 Secondary"" />
+    <BitTimelineOption PrimaryText=""Option 3"" Icon=""@BitIconInfo.Css(""bi bi-trash"")"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Variant=""BitVariant.Text"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" Icon=""@BitIconInfo.Bi(""plus-lg"")"" />
+    <BitTimelineOption PrimaryText=""Option 2"" Icon=""@BitIconInfo.Bi(""pencil"")"" SecondaryText=""Option 2 Secondary"" />
+    <BitTimelineOption PrimaryText=""Option 3"" Icon=""@BitIconInfo.Bi(""trash"")"" />
+</BitTimeline>";
+
+    private readonly string example11RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -507,7 +549,7 @@ public partial class _BitTimelineOptionDemo
         <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
     </BitTimeline>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitTimeline Dir=""BitDir.Rtl"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""گزینه ۱"" />
     <BitTimelineOption PrimaryText=""گزینه ۲"" SecondaryText=""گزینه ۲ ثانویه"" />
