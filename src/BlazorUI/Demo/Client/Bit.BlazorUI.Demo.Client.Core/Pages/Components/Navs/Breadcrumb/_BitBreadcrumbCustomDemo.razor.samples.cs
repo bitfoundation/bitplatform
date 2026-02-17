@@ -385,6 +385,79 @@ private void RemoveCustomItem()
     }
 }";
 
+    private readonly string example9RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon1""
+               NameSelectors=""externalIconNameSelectors""
+               MaxDisplayedItems=""3"" OverflowIndex=""2""
+               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon2""
+               NameSelectors=""externalIconNameSelectors""
+               MaxDisplayedItems=""3"" OverflowIndex=""2""
+               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon3""
+               NameSelectors=""externalIconNameSelectors""
+               MaxDisplayedItems=""3"" OverflowIndex=""2""
+               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon4""
+               NameSelectors=""externalIconNameSelectors""
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
+    private readonly string example9CsharpCode = @"
+public class PageInfo
+{
+    public string? Name { get; set; }
+    public string? Address { get; set; }
+    public BitIconInfo? IconInfo { get; set; }
+    public bool IsCurrent { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon1 =
+[
+    new() { Name = ""Home"", IconInfo = ""fa-solid fa-house"" },
+    new() { Name = ""Products"", IconInfo = ""fa-solid fa-box"" },
+    new() { Name = ""Electronics"", IconInfo = ""fa-solid fa-microchip"" },
+    new() { Name = ""Laptops"", IconInfo = ""fa-solid fa-laptop"", IsCurrent = true }
+];
+
+private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon2 =
+[
+    new() { Name = ""Home"", IconInfo = BitIconInfo.Css(""fa-solid fa-house"") },
+    new() { Name = ""Products"", IconInfo = BitIconInfo.Css(""fa-solid fa-box"") },
+    new() { Name = ""Electronics"", IconInfo = BitIconInfo.Css(""fa-solid fa-microchip"") },
+    new() { Name = ""Laptops"", IconInfo = BitIconInfo.Css(""fa-solid fa-laptop""), IsCurrent = true }
+];
+
+private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon3 =
+[
+    new() { Name = ""Home"", IconInfo = BitIconInfo.Fa(""solid house"") },
+    new() { Name = ""Products"", IconInfo = BitIconInfo.Fa(""solid box"") },
+    new() { Name = ""Electronics"", IconInfo = BitIconInfo.Fa(""solid microchip"") },
+    new() { Name = ""Laptops"", IconInfo = BitIconInfo.Fa(""solid laptop""), IsCurrent = true }
+];
+
+private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon4 =
+[
+    new() { Name = ""Home"", IconInfo = BitIconInfo.Bi(""house-fill"") },
+    new() { Name = ""Products"", IconInfo = BitIconInfo.Bi(""box-seam-fill"") },
+    new() { Name = ""Electronics"", IconInfo = BitIconInfo.Bi(""cpu-fill"") },
+    new() { Name = ""Laptops"", IconInfo = BitIconInfo.Bi(""laptop-fill""), IsCurrent = true }
+];
+
+private BitBreadcrumbNameSelectors<PageInfo> externalIconNameSelectors = new()
+{
+    Text = { Selector = c => c.Name },
+    Href = { Selector = c => c.Address },
+    IsSelected = { Selector = c => c.IsCurrent },
+    Icon = { Selector = c => c.IconInfo },
+};";
+
     private readonly string example7RazorCode = @"
 <style>
     .custom-class {

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
 
 public class PageInfo
 {
@@ -11,6 +11,8 @@ public class PageInfo
     public string? HtmlStyle { get; set; }
 
     public string? Icon { get; set; }
+
+    public BitIconInfo? IconInfo { get; set; }
 
     public bool IsCurrent { get; set; }
 

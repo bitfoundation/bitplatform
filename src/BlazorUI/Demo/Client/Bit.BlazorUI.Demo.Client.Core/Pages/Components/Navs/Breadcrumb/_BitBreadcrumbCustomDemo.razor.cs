@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
 
 public partial class _BitBreadcrumbCustomDemo
 {
@@ -74,6 +74,38 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "پوشه ششم" },
     ];
 
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon1 =
+    [
+        new() { Name = "Home", IconInfo = "fa-solid fa-house" },
+        new() { Name = "Products", IconInfo = "fa-solid fa-box" },
+        new() { Name = "Electronics", IconInfo = "fa-solid fa-microchip" },
+        new() { Name = "Laptops", IconInfo = "fa-solid fa-laptop", IsCurrent = true }
+    ];
+
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon2 =
+    [
+        new() { Name = "Home", IconInfo = BitIconInfo.Css("fa-solid fa-house") },
+        new() { Name = "Products", IconInfo = BitIconInfo.Css("fa-solid fa-box") },
+        new() { Name = "Electronics", IconInfo = BitIconInfo.Css("fa-solid fa-microchip") },
+        new() { Name = "Laptops", IconInfo = BitIconInfo.Css("fa-solid fa-laptop"), IsCurrent = true }
+    ];
+
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon3 =
+    [
+        new() { Name = "Home", IconInfo = BitIconInfo.Fa("solid house") },
+        new() { Name = "Products", IconInfo = BitIconInfo.Fa("solid box") },
+        new() { Name = "Electronics", IconInfo = BitIconInfo.Fa("solid microchip") },
+        new() { Name = "Laptops", IconInfo = BitIconInfo.Fa("solid laptop"), IsCurrent = true }
+    ];
+
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon4 =
+    [
+        new() { Name = "Home", IconInfo = BitIconInfo.Bi("house-fill") },
+        new() { Name = "Products", IconInfo = BitIconInfo.Bi("box-seam-fill") },
+        new() { Name = "Electronics", IconInfo = BitIconInfo.Bi("cpu-fill") },
+        new() { Name = "Laptops", IconInfo = BitIconInfo.Bi("laptop-fill"), IsCurrent = true }
+    ];
+
     private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
     {
         Text = { Selector = c => c.Name },
@@ -83,7 +115,8 @@ public partial class _BitBreadcrumbCustomDemo
         Style = { Selector = c => c.HtmlStyle },
         IconName = { Selector = c => c.Icon },
         Template = { Name = nameof(PageInfo.Fragment) },
-        OverflowTemplate = { Name = nameof(PageInfo.OverflowFragment) }
+        OverflowTemplate = { Name = nameof(PageInfo.OverflowFragment) },
+        Icon = { Selector = c => c.IconInfo },
     };
 
     private void HandleOnCustomClick(PageInfo model)

@@ -14,6 +14,11 @@ public class BitBreadcrumbItem
     public string? Href { get; set; }
 
     /// <summary>
+    /// Icon to render next to the item text.
+    /// </summary>
+    public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
     /// Name of an icon to render next to the item text.
     /// </summary>
     public string? IconName { get; set; }

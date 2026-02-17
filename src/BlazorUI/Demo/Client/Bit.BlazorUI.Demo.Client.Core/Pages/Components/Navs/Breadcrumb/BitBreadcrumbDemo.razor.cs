@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
 
 public partial class BitBreadcrumbDemo
 {
@@ -19,6 +19,15 @@ public partial class BitBreadcrumbDemo
             Description = "Custom CSS classes for different parts of the breadcrumb.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "DividerIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Render a custom divider icon in place of the default chevron.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
         },
         new()
         {
@@ -92,6 +101,15 @@ public partial class BitBreadcrumbDemo
             Type = "uint",
             DefaultValue = "0",
             Description = "Optional index where overflow items will be collapsed."
+        },
+        new()
+        {
+            Name = "OverflowIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Render a custom overflow icon in place of the default icon.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
         },
         new()
         {
@@ -169,6 +187,14 @@ public partial class BitBreadcrumbDemo
                    Name = "Style",
                    Type = "string?",
                    Description = "Style attribute for breadcrumb item.",
+               },
+               new()
+               {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   Description = "Icon to render next to the item text.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
                },
                new()
                {
@@ -250,6 +276,14 @@ public partial class BitBreadcrumbDemo
                    Name = "Style",
                    Type = "string?",
                    Description = "Style attribute for breadcrumb option.",
+               },
+               new()
+               {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   Description = "Icon to render next to the item text.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
                },
                new()
                {
@@ -490,6 +524,15 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitNameSelectorPair<TItem, BitIconInfo?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.Icon))",
+                   Description = "The Icon field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
                    Name = "IconName",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitBreadcrumbItem.IconName))",
@@ -568,6 +611,36 @@ public partial class BitBreadcrumbDemo
                    Type = "Func<TItem, TProp?>?",
                    Description = "Custom class property selector."
                }
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Description = "Represents icon information for rendering icons. Supports built-in Fluent UI icons and external icon libraries (FontAwesome, Bootstrap Icons, etc.). Use BitIconInfo.Css(\"fa-solid fa-star\"), BitIconInfo.Fa(\"solid star\"), or BitIconInfo.Bi(\"star-fill\") for external icons.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Name",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the name of the icon. For external icons, this can be the full CSS class name if BaseClass and Prefix are empty."
+                },
+                new()
+                {
+                    Name = "BaseClass",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+                },
             ]
         },
     ];

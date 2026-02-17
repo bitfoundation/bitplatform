@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div class="example-box">
         <div>
             <div>Basic</div>
@@ -145,6 +145,52 @@
                 <BitNumberField @bind-Value="MaxDisplayedItems" Label="Max displayed items" ShowButtons="true" />
                 <BitNumberField @bind-Value="OverflowIndex" Label="Overflow index" ShowButtons="true" />
             </div>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="External Icons" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
+
+    <br />
+    <br />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+    <div class="example-box">
+        <div>
+            <div>Implicit string conversion (auto-detects external icons)</div>
+            <BitBreadcrumb Items="BreadcrumbItemsWithExternalIcon1"
+                           MaxDisplayedItems="3" OverflowIndex="2"
+                           Styles="@(new() { ItemIcon = "line-height:unset" })" />
+        </div>
+
+        <br />
+
+        <div>
+            <div>BitIconInfo.Css (uses CSS classes directly)</div>
+            <BitBreadcrumb Items="BreadcrumbItemsWithExternalIcon2"
+                           MaxDisplayedItems="3" OverflowIndex="2"
+                           Styles="@(new() { ItemIcon = "line-height:unset" })" />
+        </div>
+
+        <br />
+
+        <div>
+            <div>BitIconInfo.Fa (FontAwesome helper)</div>
+            <BitBreadcrumb Items="BreadcrumbItemsWithExternalIcon3"
+                           MaxDisplayedItems="3" OverflowIndex="2"
+                           Styles="@(new() { ItemIcon = "line-height:unset" })" />
+        </div>
+
+        <br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>
+            <div>BitIconInfo.Bi (Bootstrap Icons helper)</div>
+            <BitBreadcrumb Items="BreadcrumbItemsWithExternalIcon4"
+                           MaxDisplayedItems="3" OverflowIndex="2" />
         </div>
     </div>
 </DemoExample>
