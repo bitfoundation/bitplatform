@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public partial class BitTimelineDemo
 {
@@ -456,15 +456,6 @@ public partial class BitTimelineDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitTimelineItem.Reversed))",
                     Description = "Reversed field name and selector of the custom input class.",
-                    Href = "#name-selector-pair",
-                    LinkType = LinkType.Link,
-                },
-                new()
-                {
-                    Name = "IsEnabled",
-                    Type = "BitNameSelectorPair<TItem, bool>",
-                    DefaultValue = "new(nameof(BitTimelineItem.IsEnabled))",
-                    Description = "IsEnabled field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
