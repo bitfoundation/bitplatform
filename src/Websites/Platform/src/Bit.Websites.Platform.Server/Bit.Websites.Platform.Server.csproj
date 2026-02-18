@@ -29,7 +29,7 @@
         <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="10.0.0-preview.1.25559.3" />
         <PackageReference Include="ModelContextProtocol" Version="0.8.0-preview.1" />
         <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
