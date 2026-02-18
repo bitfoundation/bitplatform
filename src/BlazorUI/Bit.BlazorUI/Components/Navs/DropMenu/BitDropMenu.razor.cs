@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// DropMenu component is a versatile dropdown menu used in Blazor applications. It allows you to create a button that, when clicked, opens a callout or dropdown menu.
@@ -20,9 +20,30 @@ public partial class BitDropMenu : BitComponentBase
     [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>
-    /// The icon name of the chevron down part of the drop menu.
+    /// Gets or sets the icon for the chevron down part of the drop menu using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="ChevronDownIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string? ChevronDownIcon { get; set; }
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ChevronDownIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: ChevronDownIcon="BitIconInfo.Bi("chevron-down")"
+    /// FontAwesome: ChevronDownIcon="BitIconInfo.Fa("solid chevron-down")"
+    /// Custom CSS: ChevronDownIcon="BitIconInfo.Css("my-chevron-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? ChevronDownIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon name for the chevron down part of the drop menu from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set. When null, defaults to "ChevronRight bit-ico-r90".
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery:
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// For external icon libraries, use <see cref="ChevronDownIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? ChevronDownIconName { get; set; }
 
     /// <summary>
     /// The content of the callout of the drop menu.
@@ -35,8 +56,29 @@ public partial class BitDropMenu : BitComponentBase
     [Parameter] public BitDropMenuClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The icon to show inside the header of the drop menu.
+    /// Gets or sets the icon to display inside the header of the drop menu using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: Icon="BitIconInfo.Bi("gear-fill")"
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display inside the header of the drop menu from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.AddFriend</c>).
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery:
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </remarks>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>

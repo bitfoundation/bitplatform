@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
 
 public partial class BitDropMenuDemo
 {
@@ -34,7 +34,7 @@ public partial class BitDropMenuDemo
     </BitStack>
 </BitDropMenu>
 
-<BitDropMenu Text=""ChevronDownIcon"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"">
+<BitDropMenu Text=""ChevronDownIconName"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
     </BitStack>
@@ -89,6 +89,42 @@ public partial class BitDropMenuDemo
 private int clickCounter;";
 
     private readonly string example6RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitDropMenu Text=""House"" Icon=""@(""fa-solid fa-house"")"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""Heart"" Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""GitHub"" Icon=""@BitIconInfo.Fa(""fa-brands fa-github"")"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitDropMenu Text=""House"" Icon=""@(""bi bi-house-fill"")"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")""
+             ChevronDownIcon=""@BitIconInfo.Bi(""chevron-down"")"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>";
+
+    private readonly string example7RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -138,7 +174,7 @@ private int clickCounter;";
 
 <BitDropMenu Text=""Styled Drop menu""
              Styles=""@(new() { Root = ""background-color: peachpuff; border-color: peachpuff; min-width: 6rem;"",
-                               Text = ""color: tomato; font-weight: bold;""
+                               Text = ""color: tomato; font-weight: bold;"",
                                Opened = ""border-color: tomato; background-color: goldenrod;"" })"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
@@ -154,7 +190,7 @@ private int clickCounter;";
     </BitStack>
 </BitDropMenu>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitDropMenu Text=""منو"" Dir=""BitDir.Rtl"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">این یک محتوای تستی می باشد.</BitText>

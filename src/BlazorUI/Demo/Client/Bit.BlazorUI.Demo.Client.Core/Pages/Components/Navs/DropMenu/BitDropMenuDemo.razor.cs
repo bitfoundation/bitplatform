@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
 
 public partial class BitDropMenuDemo
 {
@@ -14,9 +14,20 @@ public partial class BitDropMenuDemo
         new()
         {
             Name = "ChevronDownIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon for the chevron down part of the drop menu using custom CSS classes for external icon libraries. Takes precedence over ChevronDownIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "ChevronDownIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name of the chevron down part of the drop menu."
+            Description = "The icon name for the chevron down part of the drop menu from the built-in Fluent UI icons. For external icon libraries, use ChevronDownIcon instead.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
         },
         new()
         {
@@ -36,10 +47,21 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the header using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon to show inside the header of the drop menu."
+            Description = "The name of the icon to display inside the header from the built-in Fluent UI icons. For external icon libraries, use Icon instead.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
         },
         new()
         {
@@ -171,6 +193,35 @@ public partial class BitDropMenuDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the callout of the BitDropMenu."
+                },
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Name",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the name of the icon."
+                },
+                new()
+                {
+                    Name = "BaseClass",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
                 },
             ]
         }
