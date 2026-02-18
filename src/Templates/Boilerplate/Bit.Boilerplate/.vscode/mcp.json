@@ -1,7 +1,7 @@
 {
     "servers": {
         "DeepWiki": {
-            "type": "sse",
+            "type": "http",
             "url": "https://mcp.deepwiki.com/mcp"
         },
         "MicrosoftLearn": {

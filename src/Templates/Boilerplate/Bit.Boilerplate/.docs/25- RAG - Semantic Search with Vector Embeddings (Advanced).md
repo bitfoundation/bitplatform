@@ -95,7 +95,7 @@ The project supports multiple embedding model providers. You configure them in `
 services.AddEmbeddingGenerator(sp => new LocalTextEmbeddingGenerationService()
     .AsEmbeddingGenerator())
     .UseLogging()
-    .UseOpenTelemetry();
+    .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
 ```
 
 **Characteristics**:

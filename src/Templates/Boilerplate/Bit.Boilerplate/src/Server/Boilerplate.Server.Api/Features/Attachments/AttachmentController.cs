@@ -68,6 +68,10 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
     public async Task<IActionResult> GetAttachment(Guid attachmentId, AttachmentKind kind, CancellationToken cancellationToken = default)
     {
+        // If the backend is hosted behind a CDN (which is recommended for production), the GetAttachment method's returned stream will be cached on CDN edge servers.
+        // Alternatively, you can generate URLs that allow clients to download files directly from the file storage, further reducing the load on the backend.
+        // If security is a concern, you can generate short-lived signed URLs for the file storage. These signed URLs can be validated either at the CDN edge or on the file storage server, ensuring that only authorized users can access the files.
+
         var filePath = GetFilePath(attachmentId, kind);
 
         if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)

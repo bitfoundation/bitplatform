@@ -39,9 +39,9 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.31" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3719.77" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.40" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3800.47" />
         <PackageReference Include="Velopack" Version="0.0.1298" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">

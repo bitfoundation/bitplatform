@@ -159,7 +159,8 @@ public static class WebApplicationBuilderExtensions
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
 
-                metrics.AddMeter(ActivitySource.Current.Name);
+                metrics.AddMeter(ActivitySource.Current.Name)
+                    .AddMeter("Experimental.Microsoft.Extensions.AI");
             })
             .WithTracing(tracing =>
             {
@@ -189,7 +190,8 @@ public static class WebApplicationBuilderExtensions
                     .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is false /* Ignore Hangfire */)
                     .AddHangfireInstrumentation();
 
-                tracing.AddSource(ActivitySource.Current.Name);
+                tracing.AddSource(ActivitySource.Current.Name)
+                    .AddSource("Experimental.Microsoft.Extensions.AI");
             })
             .ConfigureResource(resource =>
             {
