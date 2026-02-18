@@ -19,9 +19,11 @@
         }
         else
         {
-            @if (IconName.HasValue())
+            var icon = BitIconInfo.From(Icon, IconName);
+
+            if (icon is not null)
             {
-                <i style="@Styles?.Icon" class="bit-drm-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
+                <i style="@Styles?.Icon" class="bit-drm-icn @icon.GetCssClasses() @Classes?.Icon" />
             }
 
             @if (Text.HasValue())
@@ -31,8 +33,10 @@
                 </div>
             }
 
+            var chevronIcon = BitIconInfo.From(ChevronDownIcon, ChevronDownIconName ?? "ChevronRight bit-ico-r90");
+
             <i style="@Styles?.ChevronDown"
-               class="bit-icon bit-icon--@(ChevronDownIcon ?? "ChevronRight bit-ico-r90") @Classes?.ChevronDown" />
+               class="@chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
         }
     </button>
 
