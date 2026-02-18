@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public partial class BitNav<TItem>
 {
@@ -14,9 +14,17 @@ public partial class BitNav<TItem>
     [Parameter] public bool AllExpanded { get; set; }
 
     /// <summary>
+    /// The icon for the chevron-down element of each nav item.
+    /// Takes precedence over <see cref="ChevronDownIconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ChevronDownIconName"/> instead.
+    /// </summary>
+    [Parameter] public BitIconInfo? ChevronDownIcon { get; set; }
+
+    /// <summary>
     /// The custom icon name of the chevron-down element of each nav item.
     /// </summary>
-    [Parameter] public string? ChevronDownIcon { get; set; }
+    [Parameter] public string? ChevronDownIconName { get; set; }
 
     /// <summary>
     /// Items to render as children.

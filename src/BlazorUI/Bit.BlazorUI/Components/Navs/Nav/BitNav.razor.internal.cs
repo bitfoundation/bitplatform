@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public partial class BitNav<TItem>
 {
@@ -215,6 +215,43 @@ public partial class BitNav<TItem>
         }
 
         return item.GetValueFromProperty(NameSelectors.ForceAnchor.Name, false);
+    }
+
+    internal BitIconInfo? GetIcon(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return BitIconInfo.From(navItem.Icon, navItem.IconName);
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return BitIconInfo.From(navOption.Icon, navOption.IconName);
+        }
+
+        if (NameSelectors is null) return null;
+
+        BitIconInfo? icon = null;
+        if (NameSelectors.Icon.Selector is not null)
+        {
+            icon = NameSelectors.Icon.Selector!(item);
+        }
+        else
+        {
+            icon = item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
+        }
+
+        string? iconName = null;
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            iconName = NameSelectors.IconName.Selector!(item);
+        }
+        else
+        {
+            iconName = item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+        }
+
+        return BitIconInfo.From(icon, iconName);
     }
 
     internal string? GetIconName(TItem item)

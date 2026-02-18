@@ -48,6 +48,11 @@ public class BitNavNameSelectors<TItem>
     public BitNameSelectorPair<TItem, bool?> ForceAnchor { get; set; } = new(nameof(BitNavItem.ForceAnchor));
 
     /// <summary>
+    /// The Icon field name and selector of the custom input class (see <see cref="BitNavItem.Icon"/>).
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitIconInfo?> Icon { get; set; } = new(nameof(BitNavItem.Icon));
+
+    /// <summary>
     /// The IconName field name and selector of the custom input class (see <see cref="BitNavItem.IconName"/>).
     /// </summary>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitNavItem.IconName));
