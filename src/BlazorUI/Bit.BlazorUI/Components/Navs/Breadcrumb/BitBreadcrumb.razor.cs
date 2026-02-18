@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy.
@@ -33,6 +33,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// Custom CSS classes for different parts of the breadcrumb.
     /// </summary>
     [Parameter] public BitBreadcrumbClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Render a custom divider icon in place of the default chevron >
+    /// </summary>
+    [Parameter] public BitIconInfo? DividerIcon { get; set; }
 
     /// <summary>
     /// Render a custom divider in place of the default chevron >
@@ -84,6 +89,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// Optional index where overflow items will be collapsed.
     /// </summary>
     [Parameter] public uint OverflowIndex { get; set; }
+
+    /// <summary>
+    /// Render a custom overflow icon in place of the default icon.
+    /// </summary>
+    [Parameter] public BitIconInfo? OverflowIcon { get; set; }
 
     /// <summary>
     /// Render a custom overflow icon in place of the default icon.
@@ -453,26 +463,41 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
-    private string? GetIconName(TItem item)
+    private BitIconInfo? GetIcon(TItem item)
     {
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
-            return breadcrumbItem.IconName;
+            return BitIconInfo.From(breadcrumbItem.Icon, breadcrumbItem.IconName);
         }
 
         if (item is BitBreadcrumbOption bitBreadcrumbOption)
         {
-            return bitBreadcrumbOption.IconName;
+            return BitIconInfo.From(bitBreadcrumbOption.Icon, bitBreadcrumbOption.IconName);
         }
 
         if (NameSelectors is null) return null;
 
-        if (NameSelectors.IconName.Selector is not null)
+        BitIconInfo? icon = null;
+        if (NameSelectors.Icon.Selector is not null)
         {
-            return NameSelectors.IconName.Selector!(item);
+            icon = NameSelectors.Icon.Selector!(item);
+        }
+        else
+        {
+            icon = item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
         }
 
-        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+        string? iconName = null;
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            iconName = NameSelectors.IconName.Selector!(item);
+        }
+        else
+        {
+            iconName = item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+        }
+
+        return BitIconInfo.From(icon, iconName);
     }
 
     private bool GetReversedIcon(TItem item)

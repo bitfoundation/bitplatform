@@ -22,6 +22,11 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
     [Parameter] public string? Href { get; set; }
 
     /// <summary>
+    /// Icon to render next to the item text.
+    /// </summary>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
     /// Name of an icon to render next to the item text.
     /// </summary>
     [Parameter] public string? IconName { get; set; }

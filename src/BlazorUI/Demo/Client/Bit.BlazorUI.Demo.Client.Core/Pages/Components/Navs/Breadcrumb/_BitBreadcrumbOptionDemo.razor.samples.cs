@@ -170,6 +170,45 @@ private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
 private int CustomizedSelectedOptionNumber = 4;";
 
+    private readonly string example9RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" 
+               MaxDisplayedItems=""3"" OverflowIndex=""2""
+               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"">
+    <BitBreadcrumbOption Text=""Home"" Icon=""@(""fa-solid fa-house"")"" />
+    <BitBreadcrumbOption Text=""Products"" Icon=""@(""fa-solid fa-box"")"" />
+    <BitBreadcrumbOption Text=""Electronics"" Icon=""@(""fa-solid fa-microchip"")"" />
+    <BitBreadcrumbOption Text=""Laptops"" Icon=""@(""fa-solid fa-laptop"")"" IsSelected />
+</BitBreadcrumb>
+
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" 
+               MaxDisplayedItems=""3"" OverflowIndex=""2""
+               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"">
+    <BitBreadcrumbOption Text=""Home"" Icon=""@BitIconInfo.Css(""fa-solid fa-house"")"" />
+    <BitBreadcrumbOption Text=""Products"" Icon=""@BitIconInfo.Css(""fa-solid fa-box"")"" />
+    <BitBreadcrumbOption Text=""Electronics"" Icon=""@BitIconInfo.Css(""fa-solid fa-microchip"")"" />
+    <BitBreadcrumbOption Text=""Laptops"" Icon=""@BitIconInfo.Css(""fa-solid fa-laptop"")"" IsSelected />
+</BitBreadcrumb>
+
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" 
+               MaxDisplayedItems=""3"" OverflowIndex=""2""
+               Styles=""@(new() { ItemIcon = ""line-height:unset"" })"">
+    <BitBreadcrumbOption Text=""Home"" Icon=""@BitIconInfo.Fa(""solid house"")"" />
+    <BitBreadcrumbOption Text=""Products"" Icon=""@BitIconInfo.Fa(""solid box"")"" />
+    <BitBreadcrumbOption Text=""Electronics"" Icon=""@BitIconInfo.Fa(""solid microchip"")"" />
+    <BitBreadcrumbOption Text=""Laptops"" Icon=""@BitIconInfo.Fa(""solid laptop"")"" IsSelected />
+</BitBreadcrumb>
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
+    <BitBreadcrumbOption Text=""Home"" Icon=""@BitIconInfo.Bi(""house-fill"")"" />
+    <BitBreadcrumbOption Text=""Products"" Icon=""@BitIconInfo.Bi(""box-seam-fill"")"" />
+    <BitBreadcrumbOption Text=""Electronics"" Icon=""@BitIconInfo.Bi(""cpu-fill"")"" />
+    <BitBreadcrumbOption Text=""Laptops"" Icon=""@BitIconInfo.Bi(""laptop-fill"")"" IsSelected />
+</BitBreadcrumb>";
+
     private readonly string example7RazorCode = @"
 <style>
     .custom-class {

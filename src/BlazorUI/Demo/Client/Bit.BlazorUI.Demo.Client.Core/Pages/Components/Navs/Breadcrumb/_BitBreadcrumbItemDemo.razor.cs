@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
 
 public partial class _BitBreadcrumbItemDemo
 {
@@ -63,6 +63,38 @@ public partial class _BitBreadcrumbItemDemo
         new() { Text = "Item 2" },
         new() { Text = "Item 3" },
         new() { Text = "Item 4", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithExternalIcon1 =
+    [
+        new() { Text = "Home", Icon = "fa-solid fa-house" },
+        new() { Text = "Products", Icon = "fa-solid fa-box" },
+        new() { Text = "Electronics", Icon = "fa-solid fa-microchip" },
+        new() { Text = "Laptops", Icon = "fa-solid fa-laptop", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithExternalIcon2 =
+    [
+        new() { Text = "Home", Icon = BitIconInfo.Css("fa-solid fa-house") },
+        new() { Text = "Products", Icon = BitIconInfo.Css("fa-solid fa-box") },
+        new() { Text = "Electronics", Icon = BitIconInfo.Css("fa-solid fa-microchip") },
+        new() { Text = "Laptops", Icon = BitIconInfo.Css("fa-solid fa-laptop"), IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithExternalIcon3 =
+    [
+        new() { Text = "Home", Icon = BitIconInfo.Fa("solid house") },
+        new() { Text = "Products", Icon = BitIconInfo.Fa("solid box") },
+        new() { Text = "Electronics", Icon = BitIconInfo.Fa("solid microchip") },
+        new() { Text = "Laptops", Icon = BitIconInfo.Fa("solid laptop"), IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithExternalIcon4 =
+    [
+        new() { Text = "Home", Icon = BitIconInfo.Bi("house-fill") },
+        new() { Text = "Products", Icon = BitIconInfo.Bi("box-seam-fill") },
+        new() { Text = "Electronics", Icon = BitIconInfo.Bi("cpu-fill") },
+        new() { Text = "Laptops", Icon = BitIconInfo.Bi("laptop-fill"), IsSelected = true }
     ];
 
     private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems =

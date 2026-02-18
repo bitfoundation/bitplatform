@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
@@ -35,7 +35,8 @@
                         }
                         else
                         {
-                            <i style="@Styles?.OverflowButtonIcon" class="bit-icon bit-icon--@(OverflowIconName ?? "More") @Classes?.OverflowButtonIcon" />
+                            var overflowIcon = BitIconInfo.From(OverflowIcon, OverflowIconName ?? "More");
+                            <i style="@Styles?.OverflowButtonIcon" class="@overflowIcon?.GetCssClasses() @Classes?.OverflowButtonIcon" />
                         }
                     </button>
                 }
@@ -58,10 +59,10 @@
                             }
                             else
                             {
-                                var iconName = GetIconName(item);
-                                @if (iconName.HasValue())
+                                var icon = GetIcon(item);
+                                @if (icon is not null)
                                 {
-                                    <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                                    <i style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
                                 }
                                 <span style="@Styles?.ItemText" class="@Classes?.ItemText">@GetItemText(item)</span>
                             }
@@ -84,10 +85,10 @@
                             }
                             else
                             {
-                                var iconName = GetIconName(item);
-                                @if (iconName.HasValue())
+                                var icon = GetIcon(item);
+                                @if (icon is not null)
                                 {
-                                    <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                                    <i style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
                                 }
                                 <span style="@Styles?.ItemText" class="@Classes?.ItemText">@GetItemText(item)</span>
                             }
@@ -108,10 +109,10 @@
                             }
                             else
                             {
-                                var iconName = GetIconName(item);
-                                @if (iconName.HasValue())
+                                var icon = GetIcon(item);
+                                @if (icon is not null)
                                 {
-                                    <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                                    <i style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
                                 }
                                 <span style="@Styles?.ItemText" class="@Classes?.ItemText">@GetItemText(item)</span>
                             }
@@ -129,8 +130,9 @@
                     }
                     else
                     {
+                        var dividerIcon = BitIconInfo.From(DividerIcon, DividerIconName ?? "ChevronRight bit-brc-trd");
                         <i style="@Styles?.DividerIcon"
-                           class="bit-brc-div bit-icon bit-icon--@(DividerIconName ?? "ChevronRight bit-brc-trd") @Classes?.DividerIcon" />
+                           class="bit-brc-div @dividerIcon?.GetCssClasses() @Classes?.DividerIcon" />
                     }
                 </li>
             }
@@ -163,10 +165,10 @@
                             }
                             else
                             {
-                                var iconName = GetIconName(item);
-                                @if (iconName.HasValue())
+                                var icon = GetIcon(item);
+                                @if (icon is not null)
                                 {
-                                    <i style="@Styles?.OverflowItemIcon" class="bit-icon bit-icon--@iconName @Classes?.OverflowItemIcon" />
+                                    <i style="@Styles?.OverflowItemIcon" class="@icon.GetCssClasses() @Classes?.OverflowItemIcon" />
                                 }
                                 <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
                             }
@@ -189,10 +191,10 @@
                             }
                             else
                             {
-                                var iconName = GetIconName(item);
-                                @if (iconName.HasValue())
+                                var icon = GetIcon(item);
+                                @if (icon is not null)
                                 {
-                                    <i style="@Styles?.OverflowItemIcon" class="bit-icon bit-icon--@iconName @Classes?.OverflowItemIcon" />
+                                    <i style="@Styles?.OverflowItemIcon" class="@icon.GetCssClasses() @Classes?.OverflowItemIcon" />
                                 }
                                 <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
                             }
@@ -213,10 +215,10 @@
                               }
                               else
                               {
-                                  var iconName = GetIconName(item);
-                                  @if (iconName.HasValue())
+                                  var icon = GetIcon(item);
+                                  @if (icon is not null)
                                   {
-                                      <i style="@Styles?.OverflowItemIcon" class="bit-icon bit-icon--@iconName @Classes?.OverflowItemIcon" />
+                                      <i style="@Styles?.OverflowItemIcon" class="@icon.GetCssClasses() @Classes?.OverflowItemIcon" />
                                   }
                                   <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
                               }

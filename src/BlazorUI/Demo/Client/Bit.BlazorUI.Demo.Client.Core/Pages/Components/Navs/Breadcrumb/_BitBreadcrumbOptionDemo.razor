@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <div class="example-box">
         <div>
             <div>Basic</div>
@@ -229,6 +229,60 @@
                 <BitNumberField @bind-Value="MaxDisplayedItems" Label="Max displayed options" ShowButtons />
                 <BitNumberField @bind-Value="OverflowIndex" Label="Overflow index" ShowButtons />
             </div>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="External Icons" RazorCode="@example9RazorCode" Id="example9">
+    <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
+    <br /><br />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <div class="example-box">
+        <div>
+            <div>Implicit string conversion (auto-detects external icons)</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption"
+                           MaxDisplayedItems="3" OverflowIndex="2"
+                           Styles="@(new() { ItemIcon = "line-height:unset" })">
+                <BitBreadcrumbOption Text="Home" Icon="@("fa-solid fa-house")" />
+                <BitBreadcrumbOption Text="Products" Icon="@("fa-solid fa-box")" />
+                <BitBreadcrumbOption Text="Electronics" Icon="@("fa-solid fa-microchip")" />
+                <BitBreadcrumbOption Text="Laptops" Icon="@("fa-solid fa-laptop")" IsSelected />
+            </BitBreadcrumb>
+        </div>
+        <br />
+        <div>
+            <div>BitIconInfo.Css (uses CSS classes directly)</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption"
+                           MaxDisplayedItems="3" OverflowIndex="2"
+                           Styles="@(new() { ItemIcon = "line-height:unset" })">
+                <BitBreadcrumbOption Text="Home" Icon="@BitIconInfo.Css("fa-solid fa-house")" />
+                <BitBreadcrumbOption Text="Products" Icon="@BitIconInfo.Css("fa-solid fa-box")" />
+                <BitBreadcrumbOption Text="Electronics" Icon="@BitIconInfo.Css("fa-solid fa-microchip")" />
+                <BitBreadcrumbOption Text="Laptops" Icon="@BitIconInfo.Css("fa-solid fa-laptop")" IsSelected />
+            </BitBreadcrumb>
+        </div>
+        <br />
+        <div>
+            <div>BitIconInfo.Fa (FontAwesome helper)</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption"
+                           MaxDisplayedItems="3" OverflowIndex="2"
+                           Styles="@(new() { ItemIcon = "line-height:unset" })">
+                <BitBreadcrumbOption Text="Home" Icon="@BitIconInfo.Fa("solid house")" />
+                <BitBreadcrumbOption Text="Products" Icon="@BitIconInfo.Fa("solid box")" />
+                <BitBreadcrumbOption Text="Electronics" Icon="@BitIconInfo.Fa("solid microchip")" />
+                <BitBreadcrumbOption Text="Laptops" Icon="@BitIconInfo.Fa("solid laptop")" IsSelected />
+            </BitBreadcrumb>
+        </div>
+        <br />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        <div>
+            <div>BitIconInfo.Bi (Bootstrap Icons helper)</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2">
+                <BitBreadcrumbOption Text="Home" Icon="@BitIconInfo.Bi("house-fill")" />
+                <BitBreadcrumbOption Text="Products" Icon="@BitIconInfo.Bi("box-seam-fill")" />
+                <BitBreadcrumbOption Text="Electronics" Icon="@BitIconInfo.Bi("cpu-fill")" />
+                <BitBreadcrumbOption Text="Laptops" Icon="@BitIconInfo.Bi("laptop-fill")" IsSelected />
+            </BitBreadcrumb>
         </div>
     </div>
 </DemoExample>
