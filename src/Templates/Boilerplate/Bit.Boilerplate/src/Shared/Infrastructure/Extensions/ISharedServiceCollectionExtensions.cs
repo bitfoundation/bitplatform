@@ -38,8 +38,11 @@ public static partial class ISharedServiceCollectionExtensions
         services.ConfigureAuthorizationCore();
 
         services.AddLocalization();
-
-        services.AddMemoryCache();
+        services.AddMemoryCache(options =>
+        {
+            // Total capacity of the cache. Unit is arbitrary; we treat it as 1 unit per average entry.
+            options.SizeLimit = 1_000_000;
+        });
 
         return services;
     }
