@@ -40,8 +40,8 @@ public static partial class ISharedServiceCollectionExtensions
         services.AddLocalization();
         services.AddMemoryCache(options =>
         {
-            // Total capacity of the cache. Unit is arbitrary; we treat it as 1 unit per average entry.
-            options.SizeLimit = 1_000_000;
+            // Total capacity of the L1 cache. Unit is arbitrary; we treat it as 1 unit per average entry.
+            options.SizeLimit = 100_000;
         });
 
         return services;
