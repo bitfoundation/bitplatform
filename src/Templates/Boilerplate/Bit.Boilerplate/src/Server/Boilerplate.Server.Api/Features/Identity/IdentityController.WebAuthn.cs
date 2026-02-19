@@ -42,10 +42,7 @@ public partial class IdentityController
 
         var key = new string([.. options.Challenge.Select(b => (char)b)]);
         await cache.SetAsync(key, options,
-            new FusionCacheEntryOptions
-            {
-                Duration = TimeSpan.FromMinutes(3)
-            },
+            options => options.Duration = TimeSpan.FromMinutes(3),
             cancellationToken);
 
         return options;
