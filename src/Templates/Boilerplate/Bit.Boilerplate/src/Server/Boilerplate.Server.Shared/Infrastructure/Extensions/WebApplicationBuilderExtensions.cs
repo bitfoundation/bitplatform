@@ -59,6 +59,7 @@ public static class WebApplicationBuilderExtensions
         //#endif
 
         services.AddFusionCache()
+            .WithDefaultEntryOptions(options => options.Size = 1)
             // Auto-clone cached objects to avoid further issues after scaling out and switching to distributed caching.
             .WithOptions(opt => opt.DefaultEntryOptions.EnableAutoClone = true)
             //#if(redis == true)

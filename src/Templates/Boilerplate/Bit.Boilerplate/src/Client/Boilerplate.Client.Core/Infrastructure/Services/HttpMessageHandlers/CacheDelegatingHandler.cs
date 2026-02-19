@@ -52,7 +52,11 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
                     ResponseHeaders = response.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray()),
                     ContentHeaders = response.Content.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray()),
                     LogScopeData = logScopeData.ToDictionary()
-                }, maxAge);
+                }, options: new()
+                {
+                    Size = 1,
+                    AbsoluteExpirationRelativeToNow = maxAge
+                });
             }
 
             return response;

@@ -63,10 +63,7 @@ public partial class AppChatbot
                     .FirstOrDefaultAsync(p => p.PromptKind == PromptKind.Support, cancel);
                 return prompt?.Markdown ?? throw new ResourceNotFoundException();
             },
-            new FusionCacheEntryOptions()
-            {
-                Duration = TimeSpan.FromHours(1)
-            },
+            options => options.Duration = TimeSpan.FromHours(1),
             token: cancellationToken);
 
         // The following variables won't change unless SignalR connection restarts and StartChat gets called again, so setting variables once here is sufficient.
