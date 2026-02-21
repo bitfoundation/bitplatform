@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Nav;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Nav;
 
 public partial class _BitNavItemDemo
 {
@@ -175,6 +175,31 @@ public partial class _BitNavItemDemo
         },
         new() { Text = "Ice Cream" },
         new() { Text = "Cookie" },
+    ];
+
+    private static readonly List<BitNavItem> externalIconNavItems =
+    [
+        new()
+        {
+            Text = "bit platform",
+            Description = "Nav with external icons (FontAwesome)",
+            ChildItems =
+            [
+                new() { Text = "Home", Icon = BitIconInfo.Css("fa-solid fa-house"), Url = "https://bitplatform.dev/" },
+                new()
+                {
+                    Text = "Products & Services",
+                    ChildItems =
+                    [
+                        new() { Text = "BlazorUI", Icon = BitIconInfo.Fa("solid code"), Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Pricing", Icon = BitIconInfo.Css("fa-solid fa-tag"), Url = "https://bitplatform.dev/pricing" },
+                    ]
+                },
+                new() { Text = "About", Icon = BitIconInfo.Fa("solid circle-info"), Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", Icon = BitIconInfo.Css("fa-solid fa-envelope"), Url = "https://bitplatform.dev/contact-us" },
+            ],
+        },
+        new() { Text = "Iconography", Icon = BitIconInfo.Css("fa-solid fa-icons"), Url = "/iconography" },
     ];
 
     private static readonly List<BitNavItem> noCollapseNavItems =
@@ -938,6 +963,36 @@ private static readonly List<BitNavItem> noCollapseNavItems =
         ]
     },
     new() { Text = ""Iconography"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
+];";
+
+    private readonly string example11RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitNav Items=""externalIconNavItems"" />";
+    private readonly string example11CsharpCode = @"
+private static readonly List<BitNavItem> externalIconNavItems =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Description = ""Nav with external icons (FontAwesome)"",
+        ChildItems =
+        [
+            new() { Text = ""Home"", Icon = BitIconInfo.Css(""fa-solid fa-house""), Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""Products & Services"",
+                ChildItems =
+                [
+                    new() { Text = ""BlazorUI"", Icon = BitIconInfo.Fa(""solid code""), Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Pricing"", Icon = BitIconInfo.Css(""fa-solid fa-tag""), Url = ""https://bitplatform.dev/pricing"" },
+                ]
+            },
+            new() { Text = ""About"", Icon = BitIconInfo.Fa(""solid circle-info""), Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", Icon = BitIconInfo.Css(""fa-solid fa-envelope""), Url = ""https://bitplatform.dev/contact-us"" },
+        ],
+    },
+    new() { Text = ""Iconography"", Icon = BitIconInfo.Css(""fa-solid fa-icons""), Url = ""/iconography"" },
 ];";
 
     private readonly string example9RazorCode = @"

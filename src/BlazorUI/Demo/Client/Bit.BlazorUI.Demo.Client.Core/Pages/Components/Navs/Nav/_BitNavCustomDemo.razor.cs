@@ -10,7 +10,7 @@ public partial class _BitNavCustomDemo
             Comment = "the bit platform description",
             Links =
             [
-                new() { Text = "Home", Icon = BitIconName.Home, Url = "https://bitplatform.dev/" },
+                new() { Text = "Home", ImageName = BitIconName.Home, Url = "https://bitplatform.dev/" },
                 new()
                 {
                     Text = "Products & Services",
@@ -21,18 +21,18 @@ public partial class _BitNavCustomDemo
                             Text = "Project Templates",
                             Links =
                             [
-                                new() { Text = "Todo sample", Icon = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
-                                new() { Text = "AdminPanel sample", Icon = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "Todo sample", ImageName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "AdminPanel sample", ImageName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
                             ]
                         },
-                        new() { Text = "BlazorUI", Icon = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
-                        new() { Text = "Cloud hosting solutions", Icon = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
-                        new() { Text = "Bit academy", Icon = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "BlazorUI", ImageName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Cloud hosting solutions", ImageName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Bit academy", ImageName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
                     ]
                 },
-                new() { Text = "Pricing", Icon = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
-                new() { Text = "About", Icon = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
-                new() { Text = "Contact us", Icon = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
+                new() { Text = "Pricing", ImageName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "About", ImageName = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", ImageName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
             ],
         },
         new()
@@ -40,31 +40,31 @@ public partial class _BitNavCustomDemo
             Text = "Community",
             Links =
             [
-                new() { Text = "Linkedin", Icon = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
-                new() { Text = "Twitter", Icon = BitIconName.Globe, Url = "https://twitter.com/bitplatformhq" },
-                new() { Text = "Github repo", Icon = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
+                new() { Text = "Linkedin", ImageName = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
+                new() { Text = "Twitter", ImageName = BitIconName.Globe, Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "Github repo", ImageName = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
             ]
         },
-        new() { Text = "Iconography", Icon = BitIconName.AppIconDefault, Url = "/iconography" },
+        new() { Text = "Iconography", ImageName = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
     private static readonly List<Section> customIconOnlyNavItems =
     [
-        new() { Text = "Home", Icon = BitIconName.Home },
+        new() { Text = "Home", ImageName = BitIconName.Home },
         new() {
             Text = "AdminPanel sample",
-            Icon = BitIconName.LocalAdmin,
+            ImageName = BitIconName.LocalAdmin,
             Links =
             [
-                new() { Text = "Dashboard", Icon = BitIconName.ViewDashboard },
-                new() { Text = "Categories", Icon = BitIconName.BuildQueue },
-                new() { Text = "Products", Icon = BitIconName.Product },
+                new() { Text = "Dashboard", ImageName = BitIconName.ViewDashboard },
+                new() { Text = "Categories", ImageName = BitIconName.BuildQueue },
+                new() { Text = "Products", ImageName = BitIconName.Product },
             ]
         },
-        new() { Text = "Todo sample", Icon = BitIconName.ToDoLogoOutline},
-        new() { Text = "BlazorUI", Icon = BitIconName.F12DevTools },
-        new() { Text = "Bit academy", Icon = BitIconName.LearningTools, IsEnabled = false },
-        new() { Text = "Contact us", Icon = BitIconName.Contact },
+        new() { Text = "Todo sample", ImageName = BitIconName.ToDoLogoOutline},
+        new() { Text = "BlazorUI", ImageName = BitIconName.F12DevTools },
+        new() { Text = "Bit academy", ImageName = BitIconName.LearningTools, IsEnabled = false },
+        new() { Text = "Contact us", ImageName = BitIconName.Contact },
     ];
 
     private static readonly List<CarMenu> customCarNavItems =
@@ -131,7 +131,7 @@ public partial class _BitNavCustomDemo
         new()
         {
             Name = "Fast foods",
-            Icon = BitIconName.HeartBroken,
+            Image = BitIconName.HeartBroken,
             IsExpanded = true,
             Comment = "List of fast foods",
             Childs =
@@ -165,7 +165,7 @@ public partial class _BitNavCustomDemo
         new()
         {
             Name = "Fruits",
-            Icon = BitIconName.Health,
+            Image = BitIconName.Health,
             Childs =
             [
                 new() { Name = "Apple" },
@@ -185,7 +185,7 @@ public partial class _BitNavCustomDemo
             Comment = "the bit platform description",
             Links =
             [
-                new() { Text = "Home", Icon = BitIconName.Home, Url = "https://bitplatform.dev/" },
+                new() { Text = "Home", ImageName = BitIconName.Home, Url = "https://bitplatform.dev/" },
                 new()
                 {
                     Text = "Products & Services",
@@ -196,18 +196,18 @@ public partial class _BitNavCustomDemo
                             Text = "Project Templates",
                             Links =
                             [
-                                new() { Text = "Todo sample", Icon = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
-                                new() { Text = "AdminPanel sample", Icon = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "Todo sample", ImageName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "AdminPanel sample", ImageName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
                             ]
                         },
-                        new() { Text = "BlazorUI", Icon = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
-                        new() { Text = "Cloud hosting solutions", Icon = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
-                        new() { Text = "Bit academy", Icon = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "BlazorUI", ImageName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Cloud hosting solutions", ImageName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Bit academy", ImageName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
                     ]
                 },
-                new() { Text = "Pricing", Icon = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
-                new() { Text = "About", Icon = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
-                new() { Text = "Contact us", Icon = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
+                new() { Text = "Pricing", ImageName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "About", ImageName = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", ImageName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
             ],
         },
         new()
@@ -215,12 +215,37 @@ public partial class _BitNavCustomDemo
             Text = "Community",
             Links =
             [
-                new() { Text = "Linkedin", Icon = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
-                new() { Text = "Twitter", Icon = BitIconName.Globe, Url = "https://twitter.com/bitplatformhq" },
-                new() { Text = "Github repo", Icon = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
+                new() { Text = "Linkedin", ImageName = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
+                new() { Text = "Twitter", ImageName = BitIconName.Globe, Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "Github repo", ImageName = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
             ]
         },
-        new() { Text = "Iconography", Icon = BitIconName.AppIconDefault, Url = "/iconography" },
+        new() { Text = "Iconography", ImageName = BitIconName.AppIconDefault, Url = "/iconography" },
+    ];
+
+    private static readonly List<Section> customExternalIconNavItems =
+    [
+        new()
+        {
+            Text = "bit platform",
+            Comment = "Nav with external icons (FontAwesome)",
+            Links =
+            [
+                new() { Text = "Home", ImageName = BitIconInfo.Css("fa-solid fa-house"), Url = "https://bitplatform.dev/" },
+                new()
+                {
+                    Text = "Products & Services",
+                    Links =
+                    [
+                        new() { Text = "BlazorUI", ImageName = BitIconInfo.Fa("solid code"), Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Pricing", ImageName = BitIconInfo.Css("fa-solid fa-tag"), Url = "https://bitplatform.dev/pricing" },
+                    ]
+                },
+                new() { Text = "About", ImageName = BitIconInfo.Fa("solid circle-info"), Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", ImageName = BitIconInfo.Css("fa-solid fa-envelope"), Url = "https://bitplatform.dev/contact-us" },
+            ],
+        },
+        new() { Text = "Iconography", ImageName = BitIconInfo.Css("fa-solid fa-icons"), Url = "/iconography" },
     ];
 
     private static readonly List<Section> customCustomStyleNavItems =
@@ -231,7 +256,7 @@ public partial class _BitNavCustomDemo
             Comment = "the bit platform description",
             Links =
             [
-                new() { Text = "Home", Icon = BitIconName.Home, Url = "https://bitplatform.dev/" },
+                new() { Text = "Home", ImageName = BitIconName.Home, Url = "https://bitplatform.dev/" },
                 new()
                 {
                     Text = "Products & Services",
@@ -242,18 +267,18 @@ public partial class _BitNavCustomDemo
                             Text = "Project Templates",
                             Links =
                             [
-                                new() { Text = "Todo sample", Icon = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
-                                new() { Text = "AdminPanel sample", Icon = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "Todo sample", ImageName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "AdminPanel sample", ImageName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
                             ]
                         },
-                        new() { Text = "BlazorUI", Icon = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
-                        new() { Text = "Cloud hosting solutions", Icon = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
-                        new() { Text = "Bit academy", Icon = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "BlazorUI", ImageName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Cloud hosting solutions", ImageName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Bit academy", ImageName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
                     ]
                 },
-                new() { Text = "Pricing", Icon = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
-                new() { Text = "About", Icon = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
-                new() { Text = "Contact us", Icon = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
+                new() { Text = "Pricing", ImageName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "About", ImageName = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", ImageName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
             ],
         },
         new()
@@ -261,12 +286,12 @@ public partial class _BitNavCustomDemo
             Text = "Community",
             Links =
             [
-                new() { Text = "Linkedin", Icon = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
-                new() { Text = "Twitter", Icon = BitIconName.Globe, Url = "https://twitter.com/bitplatformhq" },
-                new() { Text = "Github repo", Icon = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
+                new() { Text = "Linkedin", ImageName = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
+                new() { Text = "Twitter", ImageName = BitIconName.Globe, Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "Github repo", ImageName = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
             ]
         },
-        new() { Text = "Iconography", Icon = BitIconName.AppIconDefault, Url = "/iconography" },
+        new() { Text = "Iconography", ImageName = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
     private static readonly List<Section> customRtlNavItems =
@@ -277,7 +302,7 @@ public partial class _BitNavCustomDemo
             Comment = "توضیحاتِ پلتفرمِ بیت",
             Links =
             [
-                new() { Text = "خانه", Icon = BitIconName.Home, Url = "https://bitplatform.dev/" },
+                new() { Text = "خانه", ImageName = BitIconName.Home, Url = "https://bitplatform.dev/" },
                 new()
                 {
                     Text = "محصولات و خدمات",
@@ -288,18 +313,18 @@ public partial class _BitNavCustomDemo
                             Text = "قالب های پروژه",
                             Links =
                             [
-                                new() { Text = "نمونه ی Todo", Icon = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
-                                new() { Text = "نمونه ی AdminPanel", Icon = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "نمونه ی Todo", ImageName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "نمونه ی AdminPanel", ImageName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
                             ]
                         },
-                        new() { Text = "رابط کاربری Blazor", Icon = BitIconName.F12DevTools, Url = "https://blazorui.bitplatform.dev/" },
-                        new() { Text = "راه های هاست ابری", Icon = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
-                        new() { Text = "آکادمی بیت", Icon = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "رابط کاربری Blazor", ImageName = BitIconName.F12DevTools, Url = "https://blazorui.bitplatform.dev/" },
+                        new() { Text = "راه های هاست ابری", ImageName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "آکادمی بیت", ImageName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
                     ]
                 },
-                new() { Text = "قیمت", Icon = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
-                new() { Text = "درباره ما", Icon = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
-                new() { Text = "ارتباط با ما", Icon = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
+                new() { Text = "قیمت", ImageName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "درباره ما", ImageName = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "ارتباط با ما", ImageName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
             ],
         },
         new()
@@ -307,12 +332,12 @@ public partial class _BitNavCustomDemo
             Text = "انجمن ها",
             Links =
             [
-                new() { Text = "لینکدین", Icon = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
-                new() { Text = "توییتر", Icon = BitIconName.Globe, Url = "https://twitter.com/bitplatformhq" },
-                new() { Text = "گیتهاب", Icon = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
+                new() { Text = "لینکدین", ImageName = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
+                new() { Text = "توییتر", ImageName = BitIconName.Globe, Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "گیتهاب", ImageName = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
             ]
         },
-        new() { Text = "شمایل نگاری", Icon = BitIconName.AppIconDefault, Url = "/iconography" },
+        new() { Text = "شمایل نگاری", ImageName = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
     private bool iconOnly;
@@ -347,17 +372,18 @@ public partial class _BitNavCustomDemo
 
     private readonly string example1RazorCode = @"
 <BitNav Items=""customBasicNavItems""
-        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
+        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })"" />";
     private readonly string example1CsharpCode = @"
 public class Section
 {
     public string Text { get; set; } = string.Empty;
-    public string? Icon { get; set; }
+    public string? ImageName { get; set; }
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool IsExpanded { get; set; }
+    public string? Comment { get; set; }
     public List<Section> Links { get; set; } = [];
 }
 
@@ -369,7 +395,7 @@ private static readonly List<Section> customBasicNavItems =
         Comment = ""the bit platform description"",
         Links =
         [
-            new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new() { Text = ""Home"", ImageName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
             new()
             {
                 Text = ""Products & Services"",
@@ -380,18 +406,18 @@ private static readonly List<Section> customBasicNavItems =
                         Text = ""Project Templates"",
                         Links =
                         [
-                            new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""AdminPanel sample"", Icon = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""Todo sample"", ImageName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", ImageName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
                         ]
                     },
-                    new() { Text = ""BlazorUI"", Icon = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
-                    new() { Text = ""Cloud hosting solutions"", Icon = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
-                    new() { Text = ""Bit academy"", Icon = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""BlazorUI"", ImageName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", ImageName = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", ImageName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
                 ]
             },
-            new() { Text = ""Pricing"", Icon = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
-            new() { Text = ""About"", Icon = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
-            new() { Text = ""Contact us"", Icon = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+            new() { Text = ""Pricing"", ImageName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", ImageName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", ImageName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         ],
     },
     new()
@@ -399,27 +425,28 @@ private static readonly List<Section> customBasicNavItems =
         Text = ""Community"",
         Links =
         [
-            new() { Text = ""Linkedin"", Icon = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
-            new() { Text = ""Twitter"", Icon = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
-            new() { Text = ""Github repo"", Icon = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
+            new() { Text = ""Linkedin"", ImageName = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""Twitter"", ImageName = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""Github repo"", ImageName = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
         ]
     },
-    new() { Text = ""Iconography"", Icon = BitIconName.AppIconDefault, Url = ""/iconography"" },
+    new() { Text = ""Iconography"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];";
 
     private readonly string example2RazorCode = @"
 <BitNav Items=""customBasicNavItems"" FitWidth
-        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
+        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })"" />";
     private readonly string example2CsharpCode = @"
 public class Section
 {
     public string Text { get; set; } = string.Empty;
-    public string? Icon { get; set; }
+    public string? ImageName { get; set; }
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool IsExpanded { get; set; }
+    public string? Comment { get; set; }
     public List<Section> Links { get; set; } = [];
 }
 
@@ -431,7 +458,7 @@ private static readonly List<Section> customBasicNavItems =
         Comment = ""the bit platform description"",
         Links =
         [
-            new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new() { Text = ""Home"", ImageName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
             new()
             {
                 Text = ""Products & Services"",
@@ -442,18 +469,18 @@ private static readonly List<Section> customBasicNavItems =
                         Text = ""Project Templates"",
                         Links =
                         [
-                            new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""AdminPanel sample"", Icon = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""Todo sample"", ImageName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", ImageName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
                         ]
                     },
-                    new() { Text = ""BlazorUI"", Icon = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
-                    new() { Text = ""Cloud hosting solutions"", Icon = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
-                    new() { Text = ""Bit academy"", Icon = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""BlazorUI"", ImageName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", ImageName = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", ImageName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
                 ]
             },
-            new() { Text = ""Pricing"", Icon = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
-            new() { Text = ""About"", Icon = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
-            new() { Text = ""Contact us"", Icon = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+            new() { Text = ""Pricing"", ImageName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", ImageName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", ImageName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         ],
     },
     new()
@@ -461,12 +488,12 @@ private static readonly List<Section> customBasicNavItems =
         Text = ""Community"",
         Links =
         [
-            new() { Text = ""Linkedin"", Icon = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
-            new() { Text = ""Twitter"", Icon = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
-            new() { Text = ""Github repo"", Icon = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
+            new() { Text = ""Linkedin"", ImageName = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""Twitter"", ImageName = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""Github repo"", ImageName = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
         ]
     },
-    new() { Text = ""Iconography"", Icon = BitIconName.AppIconDefault, Url = ""/iconography"" },
+    new() { Text = ""Iconography"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];";
 
     private readonly string example3RazorCode = @"
@@ -491,6 +518,7 @@ public class CarMenu
     public string ExpandedAriaLabel { get; set; }
     public string CollapsedAriaLabel { get; set; }
     public bool IsExpandedParent { get; set; }
+    public string? Comment { get; set; }
     public List<CarMenu> Links { get; set; } = [];
 }
 
@@ -558,7 +586,7 @@ private static readonly List<CarMenu> customCarNavItems =
         Mode=""BitNavMode.Manual""
         DefaultSelectedItem=""customCarNavItems[0].Childs[2]""
         NameSelectors=""@(new() { Text =  { Selector = item => item.Name },
-                                 IconName =  { Selector = item => item.Icon },
+                                 IconName =  { Selector = item => item.Image },
                                  ChildItems =  { Selector = item => item.Childs },
                                  Description =  { Selector = item => item.Comment } })"" />
 
@@ -568,7 +596,7 @@ private static readonly List<CarMenu> customCarNavItems =
         Mode=""BitNavMode.Manual""
         DefaultSelectedItem=""customCarNavItems[0].Childs[2]""
         NameSelectors=""@(new() { Text =  { Selector = item => item.Name },
-                                 IconName =  { Selector = item => item.Icon },
+                                 IconName =  { Selector = item => item.Image },
                                  ChildItems =  { Selector = item => item.Childs },
                                  Description =  { Selector = item => item.Comment } })""
         OnSelectItem=""(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropdownItems.Single(i => i.Text == item.Name).Text"" />
@@ -581,8 +609,9 @@ private static readonly List<CarMenu> customCarNavItems =
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
-    public string Icon { get; set; }
+    public string Image { get; set; }
     public bool IsExpanded { get; set; }
+    public string? Comment { get; set; }
     public List<FoodMenu> Childs { get; set; } = [];
 }
 
@@ -591,7 +620,7 @@ private static readonly List<FoodMenu> customCarNavItems =
     new()
     {
         Name = ""Fast foods"",
-        Icon = BitIconName.HeartBroken,
+        Image = BitIconName.HeartBroken,
         IsExpanded = true,
         Comment = ""List of fast foods"",
         Childs =
@@ -625,7 +654,7 @@ private static readonly List<FoodMenu> customCarNavItems =
     new()
     {
         Name = ""Fruits"",
-        Icon = BitIconName.Health,
+        Image = BitIconName.Health,
         Childs =
         [
             new() { Name = ""Apple"" },
@@ -662,7 +691,7 @@ private string CustomSelectedFoodName = customCarNavItems[0].Childs[2].Name;";
     private readonly string example5RazorCode = @"
 <BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
 <BitNav Items=""customIconOnlyNavItems"" Mode=""BitNavMode.Manual"" IconOnly=""iconOnly""
-        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
+        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })"" />";
     private readonly string example5CsharpCode = @"
@@ -671,30 +700,31 @@ private bool iconOnly;
 public class Section
 {
     public string Text { get; set; } = string.Empty;
-    public string? Icon { get; set; }
+    public string? ImageName { get; set; }
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool IsExpanded { get; set; }
+    public string? Comment { get; set; }
     public List<Section> Links { get; set; } = [];
 }
 
 private static readonly List<Section> customIconOnlyNavItems =
 [
-    new() { Text = ""Home"", Icon = BitIconName.Home },
+    new() { Text = ""Home"", ImageName = BitIconName.Home },
     new() {
         Text = ""AdminPanel sample"",
-        Icon = BitIconName.LocalAdmin,
+        ImageName = BitIconName.LocalAdmin,
         Links =
         [
-            new() { Text = ""Dashboard"", Icon = BitIconName.ViewDashboard },
-            new() { Text = ""Categories"", Icon = BitIconName.BuildQueue },
-            new() { Text = ""Products"", Icon = BitIconName.Product },
+            new() { Text = ""Dashboard"", ImageName = BitIconName.ViewDashboard },
+            new() { Text = ""Categories"", ImageName = BitIconName.BuildQueue },
+            new() { Text = ""Products"", ImageName = BitIconName.Product },
         ]
     },
-    new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline},
-    new() { Text = ""BlazorUI"", Icon = BitIconName.F12DevTools },
-    new() { Text = ""Bit academy"", Icon = BitIconName.LearningTools, IsEnabled = false },
-    new() { Text = ""Contact us"", Icon = BitIconName.Contact },
+    new() { Text = ""Todo sample"", ImageName = BitIconName.ToDoLogoOutline},
+    new() { Text = ""BlazorUI"", ImageName = BitIconName.F12DevTools },
+    new() { Text = ""Bit academy"", ImageName = BitIconName.LearningTools, IsEnabled = false },
+    new() { Text = ""Contact us"", ImageName = BitIconName.Contact },
 ];";
 
     private readonly string example6RazorCode = @"
@@ -736,10 +766,10 @@ private static readonly List<Section> customIconOnlyNavItems =
 
 
 
-<BitNav Items=""customCarNavItems""
+<BitNav Items=""customFoodNavItems""
         Mode=""BitNavMode.Manual""
         NameSelectors=""@(new() { Text =  { Selector = item => item.Name },
-                                 IconName =  { Selector = item => item.Icon },
+                                 IconName =  { Selector = item => item.Image },
                                  ChildItems =  { Selector = item => item.Childs },
                                  Description =  { Selector = item => item.Comment } })"">
     <ItemTemplate Context=""item"">
@@ -760,14 +790,16 @@ public class CarMenu
     public string ExpandedAriaLabel { get; set; }
     public string CollapsedAriaLabel { get; set; }
     public bool IsExpandedParent { get; set; }
+    public string? Comment { get; set; }
     public List<CarMenu> Links { get; set; } = [];
 }
 
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
-    public string Icon { get; set; }
+    public string Image { get; set; }
     public bool IsExpanded { get; set; }
+    public string? Comment { get; set; }
     public List<FoodMenu> Childs { get; set; } = [];
 }
 
@@ -830,12 +862,12 @@ private static readonly List<CarMenu> customCarNavItems =
     },
 ];
 
-private static readonly List<FoodMenu> customCarNavItems =
+private static readonly List<FoodMenu> customFoodNavItems =
 [
     new()
     {
         Name = ""Fast foods"",
-        Icon = BitIconName.HeartBroken,
+        Image = BitIconName.HeartBroken,
         IsExpanded = true,
         Comment = ""List of fast foods"",
         Childs =
@@ -869,7 +901,7 @@ private static readonly List<FoodMenu> customCarNavItems =
     new()
     {
         Name = ""Fruits"",
-        Icon = BitIconName.Health,
+        Image = BitIconName.Health,
         Childs =
         [
             new() { Name = ""Apple"" },
@@ -882,13 +914,13 @@ private static readonly List<FoodMenu> customCarNavItems =
 ];";
 
     private readonly string example7RazorCode = @"
-<BitNav Items=""customCarNavItems""
+<BitNav Items=""customFoodNavItems""
         Mode=""BitNavMode.Manual""
         OnItemClick=""(FoodMenu item) => CustomClickedItem = item""
         OnSelectItem=""(FoodMenu item) => CustomSelectedItem = item""
         OnItemToggle=""(FoodMenu item) => CustomToggledItem = item""
         NameSelectors=""@(new() { Text =  { Selector = item => item.Name },
-                                 IconName =  { Selector = item => item.Icon },
+                                 IconName =  { Selector = item => item.Image },
                                  ChildItems =  { Selector = item => item.Childs },
                                  Description =  { Selector = item => item.Comment } })"" />
 <div>Clicked Item: @CustomClickedItem?.Name</div>
@@ -898,8 +930,9 @@ private static readonly List<FoodMenu> customCarNavItems =
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
-    public string Icon { get; set; }
+    public string Image { get; set; }
     public bool IsExpanded { get; set; }
+    public string? Comment { get; set; }
     public List<FoodMenu> Childs { get; set; } = [];
 }
 
@@ -908,7 +941,7 @@ private static readonly List<FoodMenu> customCarNavItems =
     new()
     {
         Name = ""Fast foods"",
-        Icon = BitIconName.HeartBroken,
+        Image = BitIconName.HeartBroken,
         IsExpanded = true,
         Comment = ""List of fast foods"",
         Childs =
@@ -942,7 +975,7 @@ private static readonly List<FoodMenu> customCarNavItems =
     new()
     {
         Name = ""Fruits"",
-        Icon = BitIconName.Health,
+        Image = BitIconName.Health,
         Childs =
         [
             new() { Name = ""Apple"" },
@@ -961,17 +994,18 @@ private FoodMenu CustomToggledItem;";
     private readonly string example8RazorCode = @"
 <BitNav AllExpanded NoCollapse
         Items=""customBasicNavItems""
-        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
+        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })"" />";
     private readonly string example8CsharpCode = @"
 public class Section
 {
     public string Text { get; set; } = string.Empty;
-    public string? Icon { get; set; }
+    public string? ImageName { get; set; }
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool IsExpanded { get; set; }
+    public string? Comment { get; set; }
     public List<Section> Links { get; set; } = [];
 }
 
@@ -983,7 +1017,7 @@ private static readonly List<Section> customBasicNavItems =
         Comment = ""the bit platform description"",
         Links =
         [
-            new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new() { Text = ""Home"", ImageName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
             new()
             {
                 Text = ""Products & Services"",
@@ -994,18 +1028,18 @@ private static readonly List<Section> customBasicNavItems =
                         Text = ""Project Templates"",
                         Links =
                         [
-                            new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""AdminPanel sample"", Icon = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""Todo sample"", ImageName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", ImageName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
                         ]
                     },
-                    new() { Text = ""BlazorUI"", Icon = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
-                    new() { Text = ""Cloud hosting solutions"", Icon = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
-                    new() { Text = ""Bit academy"", Icon = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""BlazorUI"", ImageName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", ImageName = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", ImageName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
                 ]
             },
-            new() { Text = ""Pricing"", Icon = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
-            new() { Text = ""About"", Icon = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
-            new() { Text = ""Contact us"", Icon = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+            new() { Text = ""Pricing"", ImageName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", ImageName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", ImageName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         ],
     },
     new()
@@ -1013,31 +1047,78 @@ private static readonly List<Section> customBasicNavItems =
         Text = ""Community"",
         Links =
         [
-            new() { Text = ""Linkedin"", Icon = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
-            new() { Text = ""Twitter"", Icon = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
-            new() { Text = ""Github repo"", Icon = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
+            new() { Text = ""Linkedin"", ImageName = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""Twitter"", ImageName = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""Github repo"", ImageName = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
         ]
     },
-    new() { Text = ""Iconography"", Icon = BitIconName.AppIconDefault, Url = ""/iconography"" },
+    new() { Text = ""Iconography"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];";
 
     private readonly string example9RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitNav Items=""customExternalIconNavItems""
+        NameSelectors=""@(new() { Text =  { Name = nameof(Section.Text) },
+                                 Icon =  { Name = nameof(Section.ImageName) },
+                                 Url =  { Name = nameof(Section.Url) },
+                                 ChildItems =  { Name = nameof(Section.Links) },
+                                 Description =  { Name = nameof(Section.Comment) } })"" />";
+    private readonly string example9CsharpCode = @"
+public class Section
+{
+    public string Text { get; set; } = string.Empty;
+    public string? ImageName { get; set; }
+    public string? Url { get; set; }
+    public bool IsEnabled { get; set; } = true;
+    public bool IsExpanded { get; set; }
+    public string? Comment { get; set; }
+    public List<Section> Links { get; set; } = [];
+}
+
+private static readonly List<Section> customExternalIconNavItems =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Comment = ""Nav with external icons (FontAwesome)"",
+        Links =
+        [
+            new() { Text = ""Home"", ImageName = BitIconInfo.Css(""fa-solid fa-house""), Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""Products & Services"",
+                Links =
+                [
+                    new() { Text = ""BlazorUI"", ImageName = BitIconInfo.Fa(""solid code""), Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Pricing"", ImageName = BitIconInfo.Css(""fa-solid fa-tag""), Url = ""https://bitplatform.dev/pricing"" },
+                ]
+            },
+            new() { Text = ""About"", ImageName = BitIconInfo.Fa(""solid circle-info""), Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", ImageName = BitIconInfo.Css(""fa-solid fa-envelope""), Url = ""https://bitplatform.dev/contact-us"" },
+        ],
+    },
+    new() { Text = ""Iconography"", ImageName = BitIconInfo.Css(""fa-solid fa-icons""), Url = ""/iconography"" },
+];";
+
+    private readonly string example10RazorCode = @"
 <BitNav Items=""customCustomStyleNavItems""
-        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
+        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })""
         Styles=""@(new() { ItemContainer = ""border: 1px solid green; margin: 2px;"",
                           ToggleButton = ""color: cyan;"",
                           Item = ""color: red;"",
                           ItemIcon = ""color: gold; margin-right: 15px;"" })"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class Section
 {
     public string Text { get; set; } = string.Empty;
-    public string? Icon { get; set; }
+    public string? ImageName { get; set; }
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool IsExpanded { get; set; }
+    public string? Comment { get; set; }
     public List<Section> Links { get; set; } = [];
 }
 
@@ -1049,7 +1130,7 @@ private static readonly List<Section> customCustomStyleNavItems =
         Comment = ""the bit platform description"",
         Links =
         [
-            new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new() { Text = ""Home"", ImageName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
             new()
             {
                 Text = ""Products & Services"",
@@ -1060,18 +1141,18 @@ private static readonly List<Section> customCustomStyleNavItems =
                         Text = ""Project Templates"",
                         Links =
                         [
-                            new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""AdminPanel sample"", Icon = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""Todo sample"", ImageName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", ImageName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
                         ]
                     },
-                    new() { Text = ""BlazorUI"", Icon = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
-                    new() { Text = ""Cloud hosting solutions"", Icon = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
-                    new() { Text = ""Bit academy"", Icon = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""BlazorUI"", ImageName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Cloud hosting solutions"", ImageName = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""Bit academy"", ImageName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
                 ]
             },
-            new() { Text = ""Pricing"", Icon = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
-            new() { Text = ""About"", Icon = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
-            new() { Text = ""Contact us"", Icon = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+            new() { Text = ""Pricing"", ImageName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""About"", ImageName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", ImageName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         ],
     },
     new()
@@ -1079,28 +1160,29 @@ private static readonly List<Section> customCustomStyleNavItems =
         Text = ""Community"",
         Links =
         [
-            new() { Text = ""Linkedin"", Icon = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
-            new() { Text = ""Twitter"", Icon = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
-            new() { Text = ""Github repo"", Icon = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
+            new() { Text = ""Linkedin"", ImageName = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""Twitter"", ImageName = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""Github repo"", ImageName = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
         ]
     },
-    new() { Text = ""Iconography"", Icon = BitIconName.AppIconDefault, Url = ""/iconography"" },
+    new() { Text = ""Iconography"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitNav Dir=""BitDir.Rtl""
         Items=""customRtlNavItems""
-        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
+        NameSelectors=""@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class Section
 {
     public string Text { get; set; } = string.Empty;
-    public string? Icon { get; set; }
+    public string? ImageName { get; set; }
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool IsExpanded { get; set; }
+    public string? Comment { get; set; }
     public List<Section> Links { get; set; } = [];
 }
 
@@ -1112,7 +1194,7 @@ private static readonly List<Section> customRtlNavItems =
         Comment = ""توضیحاتِ پلتفرمِ بیت"",
         Links =
         [
-            new() { Text = ""خانه"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new() { Text = ""خانه"", ImageName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
             new()
             {
                 Text = ""محصولات و خدمات"",
@@ -1123,18 +1205,18 @@ private static readonly List<Section> customRtlNavItems =
                         Text = ""قالب های پروژه"",
                         Links =
                         [
-                            new() { Text = ""نمونه ی Todo"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""نمونه ی AdminPanel"", Icon = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""نمونه ی Todo"", ImageName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""نمونه ی AdminPanel"", ImageName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
                         ]
                     },
-                    new() { Text = ""رابط کاربری Blazor"", Icon = BitIconName.F12DevTools, Url = ""https://blazorui.bitplatform.dev/"" },
-                    new() { Text = ""راه های هاست ابری"", Icon = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
-                    new() { Text = ""آکادمی بیت"", Icon = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""رابط کاربری Blazor"", ImageName = BitIconName.F12DevTools, Url = ""https://blazorui.bitplatform.dev/"" },
+                    new() { Text = ""راه های هاست ابری"", ImageName = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""آکادمی بیت"", ImageName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
                 ]
             },
-            new() { Text = ""قیمت"", Icon = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
-            new() { Text = ""درباره ما"", Icon = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
-            new() { Text = ""ارتباط با ما"", Icon = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+            new() { Text = ""قیمت"", ImageName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""درباره ما"", ImageName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""ارتباط با ما"", ImageName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         ],
     },
     new()
@@ -1142,11 +1224,11 @@ private static readonly List<Section> customRtlNavItems =
         Text = ""انجمن ها"",
         Links =
         [
-            new() { Text = ""لینکدین"", Icon = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
-            new() { Text = ""توییتر"", Icon = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
-            new() { Text = ""گیتهاب"", Icon = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
+            new() { Text = ""لینکدین"", ImageName = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""توییتر"", ImageName = BitIconName.Globe, Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""گیتهاب"", ImageName = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
         ]
     },
-    new() { Text = ""شمایل نگاری"", Icon = BitIconName.AppIconDefault, Url = ""/iconography"" },
+    new() { Text = ""شمایل نگاری"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];";
 }

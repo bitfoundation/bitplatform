@@ -360,6 +360,22 @@ private BitNavOption ToggledOption;";
 </BitNav>";
 
     private readonly string example9RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitNav TItem=""BitNavOption"">
+    <BitNavOption Text=""bit platform"" Description=""Nav with external icons (FontAwesome)"">
+        <BitNavOption Text=""Home"" Icon=""@BitIconInfo.Css(""fa-solid fa-house"")"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
+        <BitNavOption Text=""Products & Services"">
+            <BitNavOption Text=""BlazorUI"" Icon=""@BitIconInfo.Fa(""solid code"")"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
+            <BitNavOption Text=""Pricing"" Icon=""@BitIconInfo.Css(""fa-solid fa-tag"")"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        </BitNavOption>
+        <BitNavOption Text=""About"" Icon=""@BitIconInfo.Fa(""solid circle-info"")"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
+        <BitNavOption Text=""Contact us"" Icon=""@BitIconInfo.Css(""fa-solid fa-envelope"")"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
+    </BitNavOption>
+    <BitNavOption Text=""Iconography"" Icon=""@BitIconInfo.Css(""fa-solid fa-icons"")"" Url=""/iconography"" Target=""_blank"" />
+</BitNav>";
+
+    private readonly string example10RazorCode = @"
 <BitNav TItem=""BitNavOption""
         Styles=""@(new() { ItemContainer = ""border: 1px solid green; margin: 2px;"",
                           ToggleButton = ""color: cyan;"",
@@ -392,7 +408,7 @@ private BitNavOption ToggledOption;";
     <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
 </BitNav>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitNav Dir=""BitDir.Rtl"" TItem=""BitNavOption"">
     <BitNavOption Text=""پلتفرمِ بیت"" Description=""توضیحاتِ پلتفرمِ بیت"">
         <BitNavOption Text=""خانه"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />

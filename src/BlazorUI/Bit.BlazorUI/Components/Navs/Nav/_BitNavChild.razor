@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @typeparam TItem
 
 <li role="listitem" style="@Nav.GetStyle(Item)" class="@Nav.GetClass(Item)">
@@ -13,7 +13,8 @@
         var text = Nav.GetText(Item);
         var childItems = Nav.GetChildItems(Item);
         var description = Nav.GetDescription(Item);
-        var iconName = Nav.GetIconName(Item);
+        var chevronIcon = BitIconInfo.From(Nav.ChevronDownIcon, Nav.ChevronDownIconName ?? $"ChevronRight {(isExpanded ? "bit-nav-exp" : "bit-ico-r90")}");
+        var icon = Nav.GetIcon(Item);
         var url = Nav.GetUrl(Item);
         var title = Nav.GetTitle(Item);
         var target = Nav.GetTarget(Item);
@@ -66,7 +67,7 @@
                             <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
                                 @if (Nav.NoCollapse is false)
                                 {
-                                    <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasValue() ? "" : (isExpanded ? "bit-nav-exp" : "bit-ico-r90"))" aria-hidden="true" />
+                                    <i class="@chevronIcon?.GetCssClasses()" aria-hidden="true" />
                                 }
                                 <span class="bit-nav-ghd">@text</span>
                             </div>
@@ -82,7 +83,7 @@
                         <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
                             @if (Nav.NoCollapse is false)
                             {
-                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasValue() ? "" : (isExpanded ? "bit-nav-exp" : "bit-ico-r90"))" aria-hidden="true" />
+                                <i class="@chevronIcon?.GetCssClasses()" aria-hidden="true" />
                             }
                             <span class="bit-nav-ghd">@text</span>
                         </div>
@@ -144,7 +145,7 @@
                                  class="bit-nav-cbt @Nav.Classes?.ToggleButton"
                                  aria-expanded="@(isExpanded ? "true" : "false")"
                                  aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
-                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasValue() ? "" : (isExpanded ? "bit-nav-exp" : "bit-ico-r90"))" aria-hidden="true" />
+                                <i class="@chevronIcon?.GetCssClasses()" aria-hidden="true" />
                             </div>
                         }
                         <div style="@GetItemStyles()"
@@ -159,9 +160,9 @@
                             }
                             else
                             {
-                                @if (iconName.HasValue())
+                                @if (icon is not null)
                                 {
-                                    <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
+                                    <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic @icon.GetCssClasses() @Nav.Classes?.ItemIcon" aria-hidden="true" />
                                 }
                                 <span style="@Nav.Styles?.ItemText" class="bit-nav-itx @Nav.Classes?.ItemText">@text</span>
                             }

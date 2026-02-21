@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Bit.BlazorUI;
@@ -28,6 +28,18 @@ internal static class ObjectExtensions
             value = value.ToString();
 
             if (value is null) return defaultValue;
+        }
+
+        if (value is T tValue)
+        {
+            return tValue;
+        }
+
+        var implicitOp = targetType.GetMethod("op_Implicit", [value.GetType()]);
+        if (implicitOp is not null)
+        {
+            var result = implicitOp.Invoke(null, [value]);
+            return result is null ? defaultValue : (T)result;
         }
 
         return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);

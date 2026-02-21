@@ -1,13 +1,13 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <BitNav Items="customBasicNavItems"
-            NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
+            NameSelectors="@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                      ChildItems =  { Name = nameof(Section.Links) },
                                      Description =  { Name = nameof(Section.Comment) } })" />
 </DemoExample>
 
 <DemoExample Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <BitNav Items="customBasicNavItems" FitWidth
-            NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
+            NameSelectors="@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                      ChildItems =  { Name = nameof(Section.Links) },
                                      Description =  { Name = nameof(Section.Comment) } })" />
 </DemoExample>
@@ -32,7 +32,7 @@
             Mode="BitNavMode.Manual"
             DefaultSelectedItem="customFoodNavItems[0].Childs[2]"
             NameSelectors="@(new() { Text =  { Selector = item => item.Name },
-                                     IconName =  { Selector = item => item.Icon },
+                                     IconName =  { Selector = item => item.Image },
                                      ChildItems =  { Selector = item => item.Childs },
                                      Description =  { Selector = item => item.Comment } })" />
     <br /><br /><br />
@@ -43,7 +43,7 @@
                 Mode="BitNavMode.Manual"
                 DefaultSelectedItem="customFoodNavItems[0].Childs[2]"
                 NameSelectors="@(new() { Text =  { Selector = item => item.Name },
-                                         IconName =  { Selector = item => item.Icon },
+                                         IconName =  { Selector = item => item.Image },
                                          ChildItems =  { Selector = item => item.Childs },
                                          Description =  { Selector = item => item.Comment } })"
                 OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropdownItems.Single(i => i.Text == item.Name).Text" />
@@ -60,7 +60,7 @@
     <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
     <br />
     <BitNav Items="customIconOnlyNavItems" Mode="BitNavMode.Manual" IconOnly="iconOnly"
-            NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
+            NameSelectors="@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                      ChildItems =  { Name = nameof(Section.Links) },
                                      Description =  { Name = nameof(Section.Comment) } })" />
 </DemoExample>
@@ -90,13 +90,13 @@
     <BitNav Items="customFoodNavItems"
             Mode="BitNavMode.Manual"
             NameSelectors="@(new() { Text =  { Selector = item => item.Name },
-                                     IconName =  { Selector = item => item.Icon },
+                                     IconName =  { Selector = item => item.Image },
                                      ChildItems =  { Selector = item => item.Childs },
                                      Description =  { Selector = item => item.Comment } })">
         <ItemTemplate Context="item">
             <div class="nav-custom-item">
                 <BitCheckbox />
-                <BitIcon IconName="@item.Icon" />
+                <BitIcon IconName="@item.Image" />
                 <span>@item.Name</span>
             </div>
         </ItemTemplate>
@@ -111,7 +111,7 @@
                 OnSelectItem="(FoodMenu item) => CustomSelectedItem = item"
                 OnItemToggle="(FoodMenu item) => CustomToggledItem = item"
                 NameSelectors="@(new() { Text =  { Selector = item => item.Name },
-                                                   IconName =  { Selector = item => item.Icon },
+                                                   IconName =  { Selector = item => item.Image },
                                                    ChildItems =  { Selector = item => item.Childs },
                                                    Description =  { Selector = item => item.Comment } })" />
         <div>
@@ -125,14 +125,30 @@
 <DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <BitNav AllExpanded NoCollapse
             Items="customNoCollapseNavItems"
-            NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
+            NameSelectors="@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                      ChildItems =  { Name = nameof(Section.Links) },
                                      Description =  { Name = nameof(Section.Comment) } })" />
 </DemoExample>
 
-<DemoExample Title="Custom Styles" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="External Icons" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <div>
+        Use icons from external libraries like FontAwesome with the <BitLink Href="#bit-icon-info">Icon</BitLink> selector in 
+        <BitLink Href="#name-selectors">NameSelectors</BitLink>. See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.
+        Built-in Fluent UI icons use <BitLink Href="#nav-item">IconName</BitLink>.
+    </div>
+    <br />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <BitNav Items="customExternalIconNavItems"
+            NameSelectors="@(new() { Text =  { Name = nameof(Section.Text) },
+                                     Icon =  { Name = nameof(Section.ImageName) },
+                                     Url =  { Name = nameof(Section.Url) },
+                                     ChildItems =  { Name = nameof(Section.Links) },
+                                     Description =  { Name = nameof(Section.Comment) } })" />
+</DemoExample>
+
+<DemoExample Title="Custom Styles" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <BitNav Items="customCustomStyleNavItems"
-            NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
+            NameSelectors="@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                      ChildItems =  { Name = nameof(Section.Links) },
                                      Description =  { Name = nameof(Section.Comment) } })"
             Styles="@(new() { ItemContainer = "border: 1px solid green; margin: 2px;",
@@ -141,11 +157,11 @@
                               ItemIcon = "color: gold; margin-right: 15px;" })" />
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <div dir="rtl">
         <BitNav Dir="BitDir.Rtl"
                 Items="customRtlNavItems"
-                NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
+                NameSelectors="@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                          ChildItems =  { Name = nameof(Section.Links) },
                                          Description =  { Name = nameof(Section.Comment) } })" />
     </div>

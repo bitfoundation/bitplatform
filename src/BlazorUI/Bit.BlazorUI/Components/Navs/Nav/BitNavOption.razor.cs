@@ -62,6 +62,19 @@ public partial class BitNavOption : ComponentBase, IDisposable
     [Parameter] public bool ForceAnchor { get; set; }
 
     /// <summary>
+    /// Icon to render next to the nav option.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </summary>
+    /// <example>
+    /// Bootstrap: Icon=BitIconInfo.Bi("gear-fill")
+    /// FontAwesome: Icon=BitIconInfo.Fa("solid house")
+    /// Custom CSS: Icon=BitIconInfo.Css("my-icon-class")
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
     /// Name of an icon to render next to the nav option.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
