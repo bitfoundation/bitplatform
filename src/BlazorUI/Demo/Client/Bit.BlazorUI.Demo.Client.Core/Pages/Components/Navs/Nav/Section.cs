@@ -3,7 +3,7 @@
 public class Section
 {
     public string Text { get; set; } = string.Empty;
-    public string? Icon { get; set; }
+    public string? ImageName { get; set; }
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool IsExpanded { get; set; }

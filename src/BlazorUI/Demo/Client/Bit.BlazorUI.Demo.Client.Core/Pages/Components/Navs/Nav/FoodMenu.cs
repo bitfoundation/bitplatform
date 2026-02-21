@@ -3,8 +3,8 @@
 public class FoodMenu
 {
     public string Name { get; set; } = string.Empty;
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool IsExpanded { get; set; }
-    public List<FoodMenu> Childs { get; set; } = [];
     public string? Comment { get; set; }
+    public List<FoodMenu> Childs { get; set; } = [];
 }

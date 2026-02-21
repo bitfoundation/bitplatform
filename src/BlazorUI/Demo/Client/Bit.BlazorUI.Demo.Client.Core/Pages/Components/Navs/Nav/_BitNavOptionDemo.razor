@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <BitNav TItem="BitNavOption">
         <BitNavOption Text="bit platform"
                       Description="the bit platform description"
@@ -324,6 +324,24 @@
         </BitNavOption>
 
         <BitNavOption Text="Iconography" IconName="@BitIconName.AppIconDefault" Url="/iconography" Target="_blank" />
+    </BitNav>
+</DemoExample>
+
+<DemoExample Title="External Icons" RazorCode="@example11RazorCode" Id="example11">
+    <div>Use icons from external libraries like FontAwesome with the <BitLink Href="#bit-icon-info">Icon</BitLink> parameter (<BitLink Href="#nav-option">BitNavOption</BitLink>.<BitLink Href="#bit-icon-info">Icon</BitLink>). See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage. Built-in Fluent UI icons use <BitLink Href="#nav-option">IconName</BitLink>.</div>
+    <br />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <BitNav TItem="BitNavOption">
+        <BitNavOption Text="bit platform" Description="Nav with external icons (FontAwesome)">
+            <BitNavOption Text="Home" Icon="@BitIconInfo.Css("fa-solid fa-house")" Url="https://bitplatform.dev/" Target="_blank" />
+            <BitNavOption Text="Products & Services">
+                <BitNavOption Text="BlazorUI" Icon="@BitIconInfo.Fa("solid code")" Url="https://bitplatform.dev/components" Target="_blank" />
+                <BitNavOption Text="Pricing" Icon="@BitIconInfo.Css("fa-solid fa-tag")" Url="https://bitplatform.dev/pricing" Target="_blank" />
+            </BitNavOption>
+            <BitNavOption Text="About" Icon="@BitIconInfo.Fa("solid circle-info")" Url="https://bitplatform.dev/about-us" Target="_blank" />
+            <BitNavOption Text="Contact us" Icon="@BitIconInfo.Css("fa-solid fa-envelope")" Url="https://bitplatform.dev/contact-us" Target="_blank" />
+        </BitNavOption>
+        <BitNavOption Text="Iconography" Icon="@BitIconInfo.Css("fa-solid fa-icons")" Url="/iconography" Target="_blank" />
     </BitNav>
 </DemoExample>
 

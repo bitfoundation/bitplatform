@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Nav;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Nav;
 
 public partial class _BitNavOptionDemo
 {
@@ -415,5 +415,21 @@ private BitNavOption ToggledOption;";
         <BitNavOption Text=""گیتهاب"" IconName=""@BitIconName.GitGraph"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
     </BitNavOption>
     <BitNavOption Text=""شمایل نگاری"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
+</BitNav>";
+
+    private readonly string example11RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitNav TItem=""BitNavOption"">
+    <BitNavOption Text=""bit platform"" Description=""Nav with external icons (FontAwesome)"">
+        <BitNavOption Text=""Home"" Icon=""@BitIconInfo.Css(""""fa-solid fa-house"""")"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
+        <BitNavOption Text=""Products & Services"">
+            <BitNavOption Text=""BlazorUI"" Icon=""@BitIconInfo.Fa(""""solid code"""")"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
+            <BitNavOption Text=""Pricing"" Icon=""@BitIconInfo.Css(""""fa-solid fa-tag"""")"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        </BitNavOption>
+        <BitNavOption Text=""About"" Icon=""@BitIconInfo.Fa(""""solid circle-info"""")"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
+        <BitNavOption Text=""Contact us"" Icon=""@BitIconInfo.Css(""""fa-solid fa-envelope"""")"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
+    </BitNavOption>
+    <BitNavOption Text=""Iconography"" Icon=""@BitIconInfo.Css(""""fa-solid fa-icons"""")"" Url=""/iconography"" Target=""_blank"" />
 </BitNav>";
 }

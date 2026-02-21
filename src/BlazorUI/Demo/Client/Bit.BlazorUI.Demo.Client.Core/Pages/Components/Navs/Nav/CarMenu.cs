@@ -9,6 +9,6 @@ public class CarMenu
     public string? ExpandedAriaLabel { get; set; }
     public string? CollapsedAriaLabel { get; set; }
     public bool IsExpandedParent { get; set; }
-    public List<CarMenu> Links { get; set; } = [];
     public string? Comment { get; set; }
+    public List<CarMenu> Links { get; set; } = [];
 }
