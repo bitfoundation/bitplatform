@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitNavOption : ComponentBase, IDisposable
 {
@@ -68,9 +68,9 @@ public partial class BitNavOption : ComponentBase, IDisposable
     /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
     /// </summary>
     /// <example>
-    /// Bootstrap: Icon="BitIconInfo.Bi("gear-fill")"
-    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
-    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// Bootstrap: Icon=BitIconInfo.Bi("gear-fill")
+    /// FontAwesome: Icon=BitIconInfo.Fa("solid house")
+    /// Custom CSS: Icon=BitIconInfo.Css("my-icon-class")
     /// </example>
     [Parameter] public BitIconInfo? Icon { get; set; }
 

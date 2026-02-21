@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitNavItem
 {
@@ -54,9 +54,9 @@ public class BitNavItem
     /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
     /// </summary>
     /// <example>
-    /// Bootstrap: Icon="BitIconInfo.Bi("gear-fill")"
-    /// FontAwesome: Icon = BitIconInfo.Fa("solid house")
-    /// Custom CSS: Icon = BitIconInfo.Css("my-icon-class")
+    /// Bootstrap: Icon=BitIconInfo.Bi("gear-fill")
+    /// FontAwesome: Icon=BitIconInfo.Fa("solid house")
+    /// Custom CSS: Icon=BitIconInfo.Css("my-icon-class")
     /// </example>
     public BitIconInfo? Icon { get; set; }
 

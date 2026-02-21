@@ -1056,6 +1056,52 @@ private static readonly List<Section> customBasicNavItems =
 ];";
 
     private readonly string example9RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitNav Items=""customExternalIconNavItems""
+        NameSelectors=""@(new() { Text =  { Name = nameof(Section.Text) },
+                                 Icon =  { Name = nameof(Section.ImageName) },
+                                 Url =  { Name = nameof(Section.Url) },
+                                 ChildItems =  { Name = nameof(Section.Links) },
+                                 Description =  { Name = nameof(Section.Comment) } })"" />";
+    private readonly string example9CsharpCode = @"
+public class Section
+{
+    public string Text { get; set; } = string.Empty;
+    public string? ImageName { get; set; }
+    public string? Url { get; set; }
+    public bool IsEnabled { get; set; } = true;
+    public bool IsExpanded { get; set; }
+    public string? Comment { get; set; }
+    public List<Section> Links { get; set; } = [];
+}
+
+private static readonly List<Section> customExternalIconNavItems =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Comment = ""Nav with external icons (FontAwesome)"",
+        Links =
+        [
+            new() { Text = ""Home"", ImageName = BitIconInfo.Css(""fa-solid fa-house""), Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""Products & Services"",
+                Links =
+                [
+                    new() { Text = ""BlazorUI"", ImageName = BitIconInfo.Fa(""solid code""), Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Pricing"", ImageName = BitIconInfo.Css(""fa-solid fa-tag""), Url = ""https://bitplatform.dev/pricing"" },
+                ]
+            },
+            new() { Text = ""About"", ImageName = BitIconInfo.Fa(""solid circle-info""), Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", ImageName = BitIconInfo.Css(""fa-solid fa-envelope""), Url = ""https://bitplatform.dev/contact-us"" },
+        ],
+    },
+    new() { Text = ""Iconography"", ImageName = BitIconInfo.Css(""fa-solid fa-icons""), Url = ""/iconography"" },
+];";
+
+    private readonly string example10RazorCode = @"
 <BitNav Items=""customCustomStyleNavItems""
         NameSelectors=""@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                  ChildItems =  { Name = nameof(Section.Links) },
@@ -1064,7 +1110,7 @@ private static readonly List<Section> customBasicNavItems =
                           ToggleButton = ""color: cyan;"",
                           Item = ""color: red;"",
                           ItemIcon = ""color: gold; margin-right: 15px;"" })"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class Section
 {
     public string Text { get; set; } = string.Empty;
@@ -1122,13 +1168,13 @@ private static readonly List<Section> customCustomStyleNavItems =
     new() { Text = ""Iconography"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitNav Dir=""BitDir.Rtl""
         Items=""customRtlNavItems""
         NameSelectors=""@(new() { IconName =  { Name = nameof(Section.ImageName) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class Section
 {
     public string Text { get; set; } = string.Empty;
@@ -1184,51 +1230,5 @@ private static readonly List<Section> customRtlNavItems =
         ]
     },
     new() { Text = ""شمایل نگاری"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
-];";
-
-    private readonly string example11RazorCode = @"
-<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
-
-<BitNav Items=""customExternalIconNavItems""
-        NameSelectors=""@(new() { Text =  { Name = nameof(NavItem.Text) },
-                                 Icon =  { Name = nameof(NavItem.ImageName) },
-                                 Url =  { Name = nameof(NavItem.Url) },
-                                 ChildItems =  { Name = nameof(NavItem.Links) },
-                                 Description =  { Name = nameof(NavItem.Comment) } })"" />";
-    private readonly string example11CsharpCode = @"
-public class Section
-{
-    public string Text { get; set; } = string.Empty;
-    public string? ImageName { get; set; }
-    public string? Url { get; set; }
-    public bool IsEnabled { get; set; } = true;
-    public bool IsExpanded { get; set; }
-    public string? Comment { get; set; }
-    public List<Section> Links { get; set; } = [];
-}
-
-private static readonly List<Section> customExternalIconNavItems =
-[
-    new()
-    {
-        Text = ""bit platform"",
-        Comment = ""Nav with external icons (FontAwesome)"",
-        Links =
-        [
-            new() { Text = ""Home"", ImageName = BitIconInfo.Css(""fa-solid fa-house""), Url = ""https://bitplatform.dev/"" },
-            new()
-            {
-                Text = ""Products & Services"",
-                Links =
-                [
-                    new() { Text = ""BlazorUI"", ImageName = BitIconInfo.Fa(""solid code""), Url = ""https://bitplatform.dev/components"" },
-                    new() { Text = ""Pricing"", ImageName = BitIconInfo.Css(""fa-solid fa-tag""), Url = ""https://bitplatform.dev/pricing"" },
-                ]
-            },
-            new() { Text = ""About"", ImageName = BitIconInfo.Fa(""solid circle-info""), Url = ""https://bitplatform.dev/about-us"" },
-            new() { Text = ""Contact us"", ImageName = BitIconInfo.Css(""fa-solid fa-envelope""), Url = ""https://bitplatform.dev/contact-us"" },
-        ],
-    },
-    new() { Text = ""Iconography"", ImageName = BitIconInfo.Css(""fa-solid fa-icons""), Url = ""/iconography"" },
 ];";
 }
