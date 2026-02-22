@@ -38,8 +38,10 @@ public static partial class ISharedServiceCollectionExtensions
         services.ConfigureAuthorizationCore();
 
         services.AddLocalization();
-
-        services.AddMemoryCache();
+        services.AddMemoryCache(options =>
+        {
+            configuration.GetRequiredSection("MemoryCache").Bind(options);
+        });
 
         return services;
     }

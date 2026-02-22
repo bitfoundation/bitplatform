@@ -1,4 +1,6 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
+using Microsoft.Extensions.Caching.Memory;
+
 namespace Boilerplate.Shared;
 
 public partial class SharedSettings : IValidatableObject
@@ -6,6 +8,8 @@ public partial class SharedSettings : IValidatableObject
     //#if (appInsights == true)
     public ApplicationInsightsOptions? ApplicationInsights { get; set; }
     //#endif
+
+    public MemoryCacheOptions MemoryCache { get; set; } = default!;
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

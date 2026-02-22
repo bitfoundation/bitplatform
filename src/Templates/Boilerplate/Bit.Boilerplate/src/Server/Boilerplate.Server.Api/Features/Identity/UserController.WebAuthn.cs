@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Text;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
@@ -54,10 +54,7 @@ public partial class UserController
 
         var key = GetWebAuthnCacheKey(userId);
         await cache.SetAsync(key, options,
-            new FusionCacheEntryOptions
-            {
-                Duration = TimeSpan.FromMinutes(3)
-            },
+            options => options.Duration = TimeSpan.FromMinutes(3),
             cancellationToken);
 
         return options;
