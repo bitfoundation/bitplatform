@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-acd {
     width: 100%;
@@ -32,6 +32,41 @@
         background-color: $clr-bg-sec;
     }
 }
+
+
+.bit-acd-pbg {
+    background-color: $clr-bg-pri;
+}
+
+.bit-acd-sbg {
+    background-color: $clr-bg-sec;
+}
+
+.bit-acd-tbg {
+    background-color: $clr-bg-ter;
+}
+
+.bit-acd-rbg {
+    background-color: transparent;
+}
+
+
+.bit-acd-pbr {
+    border-color: $clr-brd-pri;
+}
+
+.bit-acd-sbr {
+    border-color: $clr-brd-sec;
+}
+
+.bit-acd-tbr {
+    border-color: $clr-brd-ter;
+}
+
+.bit-acd-rbr {
+    border-color: transparent;
+}
+
 
 .bit-acd-hdr {
     display: flex;
