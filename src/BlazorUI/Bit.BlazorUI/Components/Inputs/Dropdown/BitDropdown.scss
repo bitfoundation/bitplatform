@@ -132,7 +132,7 @@
     user-select: none;
     color: $clr-fg-sec;
     position: relative;
-    height: spacing(4);
+    min-height: spacing(4);
     box-sizing: border-box;
     background-color: $clr-bg-pri;
     border-radius: $shp-border-radius;
