@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
 public partial class BitNavBarDemo
 {
@@ -157,10 +157,19 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the icon to display using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "IconName",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Name of an icon to render next to the navbar item.",
+                   Description = "Gets or sets the name of the icon to display from the built-in Fluent UI icons.",
                },
                new()
                {
@@ -249,10 +258,19 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitIconInfo?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the icon to display using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "IconName",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Name of an icon to render next to the navbar option.",
+                   Description = "Gets or sets the name of the icon to display from the built-in Fluent UI icons.",
                },
                new()
                {
@@ -341,10 +359,19 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "Icon",
+                   Type = "BitNameSelectorPair<TItem, BitIconInfo?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.Icon))",
+                   Description = "The Icon field name and selector of the custom input class. Maps to Icon for external icon libraries.",
+                   LinkType = LinkType.Link,
+                   Href = "#bit-icon-info",
+               },
+               new()
+               {
                    Name = "IconName",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavBarItem.IconName))",
-                   Description = "The IconName field name and selector of the custom input class."
+                   Description = "The IconName field name and selector of the custom input class. Maps to IconName for built-in Fluent UI icons."
                },
                new()
                {
@@ -408,6 +435,35 @@ public partial class BitNavBarDemo
                    Type = "BitNameSelectorPair<TItem, IEnumerable<string>?>",
                    DefaultValue = "new(nameof(BitNavBarItem.AdditionalUrls))",
                    Description = "The AdditionalUrls field name and selector of the custom input class."
+               },
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
                },
             ]
         },

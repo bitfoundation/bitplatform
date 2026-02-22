@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
 public partial class _BitNavBarItemDemo
 {
@@ -256,6 +256,20 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 ];";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitNavBar Items=""externalIconItems"" />";
+    private readonly string example12CsharpCode = @"
+private static readonly List<BitNavBarItem> externalIconItems =
+[
+    new() { Text = ""Home"", Icon = ""fa-solid fa-house"" },
+    new() { Text = ""Products"", Icon = BitIconInfo.Css(""fa-solid fa-box"") },
+    new() { Text = ""Academy"", Icon = BitIconInfo.Fa(""solid graduation-cap"") },
+    new() { Text = ""Profile"", Icon = BitIconInfo.Fa(""solid user"") },
+];";
+
+
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -287,7 +301,7 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 
 <BitNavBar Items=""basicNavBarItems"" Styles=""@(new() { ItemIcon = ""color: aqua;"", ItemText = ""color: tomato;"" })"" />
 <BitNavBar Items=""basicNavBarItems"" Classes=""@(new() { ItemIcon = ""custom-item-ico"", ItemText = ""custom-item-txt"" })"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private static readonly List<BitNavBarItem> basicNavBarItems =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home  },
@@ -305,9 +319,9 @@ private static readonly List<BitNavBarItem> styleClassItems =
 ];";
 
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitNavBar Dir=""BitDir.Rtl"" Items=""rtlItems"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private static readonly List<BitNavBarItem> rtlItems =
 [
     new() { Text = ""خانه"", IconName = BitIconName.Home  },

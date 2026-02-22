@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public partial class BitNavBarOption : ComponentBase, IDisposable
 {
@@ -21,8 +21,28 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     [Parameter] public object? Data { get; set; }
 
     /// <summary>
-    /// Name of an icon to render next to the navbar option.
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// FontAwesome: Icon=BitIconInfo.Fa("solid house")
+    /// Bootstrap: Icon=BitIconInfo.Bi("gear-fill")
+    /// Custom CSS: Icon=BitIconInfo.Css("my-icon-class")
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Home</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </remarks>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>

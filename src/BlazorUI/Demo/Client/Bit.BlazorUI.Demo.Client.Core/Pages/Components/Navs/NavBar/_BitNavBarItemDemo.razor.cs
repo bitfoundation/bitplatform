@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
 public partial class _BitNavBarItemDemo
 {
@@ -24,6 +24,14 @@ public partial class _BitNavBarItemDemo
         new() { Text = "Products", IconName = BitIconName.ProductVariant, Class = "custom-item" },
         new() { Text = "Academy", IconName = BitIconName.LearningTools, Style = "color: #b6ff00;font-weight: 600;" },
         new() { Text = "Profile", IconName = BitIconName.Contact },
+    ];
+
+    private static readonly List<BitNavBarItem> externalIconItems =
+    [
+        new() { Text = "Home", Icon = "fa-solid fa-house" },
+        new() { Text = "Products", Icon = BitIconInfo.Css("fa-solid fa-box") },
+        new() { Text = "Academy", Icon = BitIconInfo.Fa("solid graduation-cap") },
+        new() { Text = "Profile", Icon = BitIconInfo.Fa("solid user") },
     ];
 
     private static readonly List<BitNavBarItem> rtlItems =

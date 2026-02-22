@@ -1,8 +1,8 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div class="container">
         <BitNavBar Items="basicNavBarCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
 </DemoExample>
 
@@ -11,14 +11,14 @@
     <div class="container">
         <BitNavBar Items="basicNavBarCustoms" IsEnabled="false"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>Disabled item:</div><br />
     <div class="container">
         <BitNavBar Items="basicNavBarCustomsDisabled"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon },
+                                            IconName = { Selector = item => item.ImageName },
                                             IsEnabled = { Selector = item => item.Disabled is false } })" />
     </div>
 </DemoExample>
@@ -31,7 +31,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
 </DemoExample>
 
@@ -42,7 +42,7 @@
         <BitNavBar IconOnly
                    Items="basicNavBarCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
 </DemoExample>
 
@@ -53,7 +53,7 @@
         <BitNavBar FitWidth
                    Items="basicNavBarCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
 </DemoExample>
 
@@ -64,10 +64,10 @@
     <div class="container">
         <BitNavBar Items="basicNavBarCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })">
+                                            IconName = { Selector = item => item.ImageName } })">
             <ItemTemplate Context="custom">
                 <BitText Typography="BitTypography.Caption1" Color="BitColor.Warning">@custom.Title</BitText>
-                <BitIcon IconName="@custom.Icon" Color="BitColor.Success" />
+                <BitIcon IconName="@custom.ImageName" Color="BitColor.Success" />
             </ItemTemplate>
         </BitNavBar>
     </div>
@@ -76,7 +76,7 @@
     <div class="container">
         <BitNavBar Items="templateNavBarCustoms"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon },
+                                            IconName = { Selector = item => item.ImageName },
                                             Template = { Selector = item => item.Fragment } })" />
     </div>
 </DemoExample>
@@ -88,7 +88,7 @@
         <BitNavBar Items="basicNavBarCustoms"
                    OnItemClick="(MenuItem item) => eventsClickedItem = item"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br />
     Clicked item: @eventsClickedItem?.Title
@@ -104,7 +104,7 @@
                    Mode="BitNavMode.Manual"
                    DefaultSelectedItem="basicNavBarCustoms[1]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br />
     Selected item: @selectedItem.Title
@@ -115,7 +115,7 @@
                    Mode="BitNavMode.Manual"
                    @bind-SelectedItem="twoWaySelectedItem"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br />
     <BitChoiceGroup Horizontal Items="@choiceGroupItems" @bind-Value="@twoWaySelectedItem" />
@@ -132,7 +132,7 @@
                    Reselectable="reselectable"
                    OnItemClick="(MenuItem item) => countClick++"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br />
     Item click count: @countClick
@@ -155,7 +155,7 @@
             </BitSticky>
             <BitStack Alignment="BitAlignment.Center" AutoHeight Grows>
                 <BitText Typography="BitTypography.H4" Color="BitColor.PrimaryForeground">
-                    <BitIcon IconName="@advancedSelectedItem?.Icon" Color="BitColor.PrimaryForeground" Size="BitSize.Large" />
+                    <BitIcon IconName="@advancedSelectedItem?.ImageName" Color="BitColor.PrimaryForeground" Size="BitSize.Large" />
                     <span>@advancedSelectedItem?.Title</span>
                 </BitText>
             </BitStack>
@@ -165,7 +165,7 @@
                                Items="basicNavBarCustoms"
                                @bind-SelectedItem="advancedSelectedItem"
                                NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                                        IconName = { Selector = item => item.Icon } })" />
+                                                        IconName = { Selector = item => item.ImageName } })" />
                 </BitCard>
             </BitSticky>
         </div>
@@ -182,7 +182,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>Secondary:</div><br />
@@ -192,7 +192,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>Tertiary:</div><br />
@@ -202,7 +202,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>Info:</div><br />
@@ -212,7 +212,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>Success:</div><br />
@@ -222,7 +222,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>Warning:</div><br />
@@ -232,7 +232,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>SevereWarning:</div><br />
@@ -242,7 +242,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>Error:</div><br />
@@ -252,7 +252,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div style="background:var(--bit-clr-fg-sec);padding:1rem">
@@ -263,7 +263,7 @@
                        Items="basicNavBarCustoms"
                        DefaultSelectedItem="basicNavBarCustoms[0]"
                        NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                                IconName = { Selector = item => item.Icon } })" />
+                                                IconName = { Selector = item => item.ImageName } })" />
         </div>
         <br /><br /><br /><br />
         <div style="color:var(--bit-clr-bg-sec)">SecondaryBackground:</div><br />
@@ -273,7 +273,7 @@
                        Items="basicNavBarCustoms"
                        DefaultSelectedItem="basicNavBarCustoms[0]"
                        NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                                IconName = { Selector = item => item.Icon } })" />
+                                                IconName = { Selector = item => item.ImageName } })" />
         </div>
         <br /><br /><br /><br />
         <div style="color:var(--bit-clr-bg-ter)">TertiaryBackground:</div><br />
@@ -283,7 +283,7 @@
                        Items="basicNavBarCustoms"
                        DefaultSelectedItem="basicNavBarCustoms[0]"
                        NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                                IconName = { Selector = item => item.Icon } })" />
+                                                IconName = { Selector = item => item.ImageName } })" />
         </div>
     </div>
     <br /><br /><br /><br />
@@ -294,7 +294,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>SecondaryForeground:</div><br />
@@ -304,7 +304,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>TertiaryForeground:</div><br />
@@ -314,7 +314,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>PrimaryBorder:</div><br />
@@ -324,7 +324,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>SecondaryBorder:</div><br />
@@ -334,7 +334,7 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>TertiaryBorder:</div><br />
@@ -344,11 +344,26 @@
                    Items="basicNavBarCustoms"
                    DefaultSelectedItem="basicNavBarCustoms[0]"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
+
+    <br />
+    <br />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+    <div class="container">
+        <BitNavBar Items="externalIconCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            Icon = { Selector = item => item.Image } })" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div>Component's Style:</div><br />
@@ -356,7 +371,7 @@
         <BitNavBar Items="basicNavBarCustoms"
                    Style="border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br />
     <div>Component's Class:</div><br />
@@ -364,14 +379,14 @@
         <BitNavBar Items="basicNavBarCustoms"
                    Class="custom-class"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br /><br /><br />
     <div>Item's style & class:</div><br />
     <div class="container">
         <BitNavBar Items="basicNavBarCustomsClassStyle"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon },
+                                            IconName = { Selector = item => item.ImageName },
                                             Class = { Selector = item => item.CssClass },
                                             Style = { Selector = item => item.Style }})" />
     </div>
@@ -381,7 +396,7 @@
         <BitNavBar Items="basicNavBarCustoms"
                    Styles="@(new() { ItemIcon = "color: aqua;", ItemText = "color: tomato;" })"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
     <br /><br />
     <div>Classes:</div><br />
@@ -389,27 +404,27 @@
         <BitNavBar Items="basicNavBarCustoms"
                    Classes="@(new() { ItemIcon = "custom-item-ico", ItemText = "custom-item-txt" })"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example8">
+<DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br /><br />
     <div dir="rtl" class="container">
         <BitNavBar Dir="BitDir.Rtl"
                    Items="rtlCustomsItems"
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
-                                            IconName = { Selector = item => item.Icon } })" />
+                                            IconName = { Selector = item => item.ImageName } })" />
     </div>
 </DemoExample>
 
 @code {
     private static readonly List<MenuItem> templateNavBarCustoms =
             [
-        new() { Title = "Home", Icon = BitIconName.Home  },
+        new() { Title = "Home", ImageName = BitIconName.Home  },
         new() { Title = "Products", Fragment = (item) => @<div style="display:flex;flex-direction:column"><b>@item.Title</b><span>🎁</span></div> },
-        new() { Title = "Academy", Icon = BitIconName.LearningTools },
-        new() { Title = "Profile", Icon = BitIconName.Contact },
+        new() { Title = "Academy", ImageName = BitIconName.LearningTools },
+        new() { Title = "Profile", ImageName = BitIconName.Contact },
     ];
 }
