@@ -1,7 +1,7 @@
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
+using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Features.Identity.Services;
 
@@ -12,6 +12,7 @@ public partial class AppJwtSecureDataFormat
     : ISecureDataFormat<AuthenticationTicket>
 {
     private readonly string tokenType;
+    private readonly RsaSecurityKey privateKey;
     private readonly ServerApiSettings appSettings;
     private readonly ILogger<AppJwtSecureDataFormat> logger;
     private readonly TokenValidationParameters validationParameters;
@@ -25,13 +26,16 @@ public partial class AppJwtSecureDataFormat
         this.tokenType = tokenType;
         this.appSettings = appSettings;
 
+        privateKey = AppCertificateService.GetPrivateSecurityKey();
+
         validationParameters = new()
         {
             ClockSkew = TimeSpan.Zero,
             RequireSignedTokens = true,
 
+            IssuerSigningKey = AppCertificateService.GetPublicSecurityKey(),
+            ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
             ValidateIssuerSigningKey = env.IsDevelopment() is false,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret)),
 
             RequireExpirationTime = true,
             ValidateLifetime = tokenType is "AccessToken", /* IdentityController.Refresh will validate expiry itself while refreshing the token */
@@ -105,7 +109,7 @@ public partial class AppJwtSecureDataFormat
                 Audience = appSettings.Identity.Audience,
                 IssuedAt = DateTimeOffset.UtcNow.DateTime,
                 Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime,
-                SigningCredentials = new SigningCredentials(validationParameters.IssuerSigningKey, SecurityAlgorithms.HmacSha512),
+                SigningCredentials = new SigningCredentials(privateKey, SecurityAlgorithms.RsaSha256Signature),
                 Subject = new ClaimsIdentity(data.Principal.Claims),
             });
 

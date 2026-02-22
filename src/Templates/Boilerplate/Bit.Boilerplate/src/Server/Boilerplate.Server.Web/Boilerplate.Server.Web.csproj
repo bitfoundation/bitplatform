@@ -40,6 +40,11 @@
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Include="..\Boilerplate.Server.Api\AppCertificate*">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <DependentUpon>AppCertificate.md</DependentUpon>
+        </None>
     </ItemGroup>
 
     <!--

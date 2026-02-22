@@ -220,7 +220,6 @@ In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplat
         }
     },
     "Identity": {
-        "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSigningKeySecret...",
         "Issuer": "Boilerplate",
         "Audience": "Boilerplate",
         "BearerTokenExpiration": "0.00:05:00",

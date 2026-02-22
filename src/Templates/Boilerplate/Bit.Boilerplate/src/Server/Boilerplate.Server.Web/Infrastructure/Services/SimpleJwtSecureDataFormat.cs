@@ -6,8 +6,8 @@ namespace Boilerplate.Server.Web.Infrastructure.Services;
 
 /// <summary>
 /// In standalone API mode, this code only runs during Blazor pre-rendering or Blazor Server.
-/// Since the `AppJwtSecureDataFormat` in the Server.Api project strictly validates access tokens using the provided JwtIssuerSigningKeySecret, 
-/// strict validation isn't necessary here. Instead, we simply parse the token, similar to how it's handled on the client side (Blazor WASM and Blazor Hybrid).
+/// Since the `AppJwtSecureDataFormat` in the Server.Api project strictly validates access tokens, strict validation isn't necessary here.
+/// Instead, we simply parse the token, similar to how it's handled on the client side (Blazor WASM and Blazor Hybrid).
 /// </summary>
 public partial class SimpleJwtSecureDataFormat : ISecureDataFormat<AuthenticationTicket>
 {

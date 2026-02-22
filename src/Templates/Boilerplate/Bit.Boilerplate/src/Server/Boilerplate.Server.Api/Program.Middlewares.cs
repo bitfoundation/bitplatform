@@ -1,6 +1,8 @@
 ﻿//+:cnd:noEmit
 
 using Scalar.AspNetCore;
+using Microsoft.IdentityModel.Tokens;
+using Boilerplate.Server.Api.Infrastructure.Services;
 using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 
 namespace Boilerplate.Server.Api;
@@ -77,8 +79,33 @@ public static partial class Program
         app.MapMcp("/mcp").RequireAuthorization(); // Map MCP endpoints for chatbot tool
         //#endif
 
+        app.MapOpenIdConfiguration();
+
         app.MapControllers()
            .RequireAuthorization()
            .CacheOutput("AppResponseCachePolicy");
+    }
+
+
+    /// <summary>
+    /// Checkout AppCertificate.md for more information,
+    /// </summary>
+    private static WebApplication MapOpenIdConfiguration(this WebApplication app)
+    {
+        var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(AppCertificateService.GetPublicSecurityKey());
+        jwk.Use = "sig";
+        jwk.Kid = "Boilerplate";
+
+        app.MapGet("/.well-known/openid-configuration", (HttpRequest request) =>
+        {
+            var baseUrl = request.GetBaseUrl();
+            return Results.Ok(new
+            {
+                issuer = baseUrl,
+                jwks_uri = $"{baseUrl}/.well-known/jwks",
+            });
+        });
+
+        return app;
     }
 }

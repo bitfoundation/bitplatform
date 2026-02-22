@@ -421,7 +421,8 @@ public static partial class Program
         });
 
         services.AddDataProtection()
-           .PersistKeysToDbContext<AppDbContext>(); // It's advised to secure database-stored keys with a certificate by invoking ProtectKeysWithCertificate.
+            .PersistKeysToDbContext<AppDbContext>()
+            .ProtectKeysWithCertificate(AppCertificateService.GetAppCertificate());
 
         AddIdentity(builder);
 

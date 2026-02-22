@@ -108,6 +108,11 @@
             <StronglyTypedClassName>EmailStrings</StronglyTypedClassName>
             <PublicClass>true</PublicClass>
         </EmbeddedResource>
+
+        <None Update="AppCertificate.*.pem">
+            <DependentUpon>AppCertificate.md</DependentUpon>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <!--
