@@ -449,7 +449,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 
 <BitNavBar Items=""externalIconCustoms""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
-                                    ImageName = { Selector = item => item.Image } })"" />";
+                                    Icon = { Selector = item => item.Image } })"" />";
     private readonly string example12CsharpCode = @"
 public class MenuItem
 {
@@ -507,18 +507,18 @@ private static readonly List<MenuItem> externalIconCustoms =
                                     Style = { Selector = item => item.Style }})"" />
 
 <BitNavBar Items=""basicNavBarCustoms""
-           Styles=""@(new() { ItemImageName = ""color: aqua;"", ItemText = ""color: tomato;"" })""
+           Styles=""@(new() { ItemIcon = ""color: aqua;"", ItemText = ""color: tomato;"" })""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName } })"" />
 <BitNavBar Items=""basicNavBarCustoms""
-           Classes=""@(new() { ItemImageName = ""custom-item-ico"", ItemText = ""custom-item-txt"" })""
+           Classes=""@(new() { ItemIcon = ""custom-item-ico"", ItemText = ""custom-item-txt"" })""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName } })"" />";
     private readonly string example13CsharpCode = @"
 public class MenuItem
 {
     public string? Title { get; set; }
-    public BitIconInfo? Icon { get; set; }
+    public string? ImageName { get; set; }
     public string? CssClass { get; set; }
     public string? Style { get; set; }
 }

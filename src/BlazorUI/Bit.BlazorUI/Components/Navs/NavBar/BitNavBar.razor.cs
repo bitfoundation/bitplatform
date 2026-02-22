@@ -323,7 +323,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             return NameSelectors.Icon.Selector!(item);
         }
 
-        return item.GetValueFromProperty<string?>(NameSelectors.Icon.Name);
+        return item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
     }
 
     private string? GetIconName(TItem item)
