@@ -15,8 +15,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-owns="@(IsOpen ? _calloutId : null)">
-
+     aria-owns="@(IsOpen? _calloutId : null)">
     @if (LabelTemplate is not null)
     {
         <label id="@_labelId">
@@ -42,7 +41,7 @@
          aria-disabled="@(IsEnabled is false)"
          aria-expanded=@(IsOpen ? "true" : "false")
          aria-labelledby="@GetDropdownAriaLabelledby"
-         aria-controls="@(IsOpen ? _calloutId : null)">
+         aria-controls="@(IsOpen? _calloutId : null)">
 
         @if (PrefixTemplate is not null)
         {
