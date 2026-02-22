@@ -1,9 +1,27 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Surfaces.Accordion;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Surfaces.Accordion;
 
 public partial class BitAccordionDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "Background",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the background of the accordion.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum",
+        },
+        new()
+        {
+            Name = "Border",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the border of the accordion.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum",
+        },
         new()
         {
             Name = "Body",
@@ -92,6 +110,43 @@ public partial class BitAccordionDemo
         }
     ];
 
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "color-kind-enum",
+            Name = "BitColorKind",
+            Description = "Defines the color kinds available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Primary",
+                    Description = "The primary color kind.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Secondary",
+                    Description = "The secondary color kind.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Tertiary",
+                    Description = "The tertiary color kind.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Transparent",
+                    Description = "The transparent color kind.",
+                    Value = "3",
+                },
+            ]
+        }
+    ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -169,6 +224,9 @@ public partial class BitAccordionDemo
 
 
 
+    private BitColorKind backgroundColorKind = BitColorKind.Primary;
+    private BitColorKind borderColorKind = BitColorKind.Primary;
+
     private byte controlledAccordionExpandedItem = 1;
 
     private bool AccordionToggleIsEnabled;
@@ -199,6 +257,50 @@ public partial class BitAccordionDemo
 </BitAccordion>";
 
     private readonly string example3RazorCode = @"
+<BitChoiceGroup @bind-Value=""backgroundColorKind"" Horizontal
+                TItem=""BitChoiceGroupOption<BitColorKind>"" TValue=""BitColorKind"">
+    <BitChoiceGroupOption Text=""Primary"" Value=""BitColorKind.Primary"" />
+    <BitChoiceGroupOption Text=""Secondary"" Value=""BitColorKind.Secondary"" />
+    <BitChoiceGroupOption Text=""Tertiary"" Value=""BitColorKind.Tertiary"" />
+    <BitChoiceGroupOption Text=""Transparent"" Value=""BitColorKind.Transparent"" />
+</BitChoiceGroup>
+
+<div style=""padding:2rem;background:gray"">
+    <BitAccordion Title=""Accordion"" Background=""backgroundColorKind"">
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities 
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+    </BitAccordion>
+</div>";
+    private readonly string example3CsharpCode = @"
+private BitColorKind backgroundColorKind = BitColorKind.Primary;";
+
+    private readonly string example4RazorCode = @"
+<BitChoiceGroup @bind-Value=""borderColorKind"" Horizontal
+                TItem=""BitChoiceGroupOption<BitColorKind>"" TValue=""BitColorKind"">
+    <BitChoiceGroupOption Text=""Primary"" Value=""BitColorKind.Primary"" />
+    <BitChoiceGroupOption Text=""Secondary"" Value=""BitColorKind.Secondary"" />
+    <BitChoiceGroupOption Text=""Tertiary"" Value=""BitColorKind.Tertiary"" />
+    <BitChoiceGroupOption Text=""Transparent"" Value=""BitColorKind.Transparent"" />
+</BitChoiceGroup>
+
+<BitAccordion Title=""Accordion"" Border=""borderColorKind"">
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
+    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
+    inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
+    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
+    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities 
+    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+</BitAccordion>";
+    private readonly string example4CsharpCode = @"
+private BitColorKind borderColorKind = BitColorKind.Primary;";
+
+    private readonly string example5RazorCode = @"
 <BitAccordion Title=""Accordion 1"">
     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
     Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
@@ -228,7 +330,7 @@ public partial class BitAccordionDemo
     begins here, in this quiet moment where everything is possible.
 </BitAccordion>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitAccordion Title=""General settings"" Description=""The general settings of the application"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
     These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
@@ -239,7 +341,7 @@ public partial class BitAccordionDemo
     are boundless. This space is yours to craft, yours to shape, yours to bring to life.
 </BitAccordion>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitAccordion Title=""General settings""
               Description=""I am an accordion""
               OnClick=""() => controlledAccordionExpandedItem = 1""
@@ -277,10 +379,10 @@ public partial class BitAccordionDemo
     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
     begins here, in this quiet moment where everything is possible.
 </BitAccordion>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private byte controlledAccordionExpandedItem = 1;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitToggle @bind-Value=""AccordionToggleIsEnabled"" OnText=""Enabled"" OffText=""Disabled"" />
 <BitToggle @bind-Value=""AccordionToggleIsExpanded"" OnText=""Expanded"" OffText=""Collapsed"" />
 
@@ -296,11 +398,11 @@ private byte controlledAccordionExpandedItem = 1;";
     in potential the quiet magic of beginnings, where everything is still to come, and the possibilities 
     are boundless. This space is yours to craft, yours to shape, yours to bring to life.
 </BitAccordion>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool AccordionToggleIsEnabled;
 private bool AccordionToggleIsExpanded;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .custom-header {
         gap: 1rem;
@@ -355,7 +457,7 @@ private bool AccordionToggleIsExpanded;";
     </BitCarousel>
 </BitAccordion>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitAccordion Dir=""BitDir.Rtl"" 
               Title=""تنظیمات"" 
               Description=""من یک آکاردئون هستم!"">

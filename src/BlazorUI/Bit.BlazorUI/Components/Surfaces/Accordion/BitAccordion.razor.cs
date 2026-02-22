@@ -1,10 +1,22 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The Accordion component allows the user to show and hide sections of related content on a page.
 /// </summary>
 public partial class BitAccordion : BitComponentBase
 {
+    /// <summary>
+    /// The color kind of the background of the accordion.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Background { get; set; }
+
+    /// <summary>
+    /// The color kind of the border of the accordion.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Border { get; set; }
+
     /// <summary>
     /// Alias for the ChildContent parameter.
     /// </summary>
@@ -78,6 +90,24 @@ public partial class BitAccordion : BitComponentBase
         ClassBuilder.Register(() => IsExpanded ? Classes?.Expanded : string.Empty);
 
         ClassBuilder.Register(() => NoBorder ? "bit-acd-nbd" : string.Empty);
+
+        ClassBuilder.Register(() => Background switch
+        {
+            BitColorKind.Primary => "bit-acd-pbg",
+            BitColorKind.Secondary => "bit-acd-sbg",
+            BitColorKind.Tertiary => "bit-acd-tbg",
+            BitColorKind.Transparent => "bit-acd-rbg",
+            _ => string.Empty
+        });
+
+        ClassBuilder.Register(() => Border switch
+        {
+            BitColorKind.Primary => "bit-acd-pbr",
+            BitColorKind.Secondary => "bit-acd-sbr",
+            BitColorKind.Tertiary => "bit-acd-tbr",
+            BitColorKind.Transparent => "bit-acd-rbr",
+            _ => string.Empty
+        });
     }
 
     protected override void RegisterCssStyles()
