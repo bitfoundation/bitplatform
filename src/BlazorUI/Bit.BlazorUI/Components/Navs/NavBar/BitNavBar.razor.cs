@@ -80,7 +80,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Names and selectors of the custom input type properties.
     /// </summary>
-    [Parameter] public BitNavNameSelectors<TItem>? NameSelectors { get; set; }
+    [Parameter] public BitNavBarNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
     /// Callback invoked when an item is clicked.
@@ -302,6 +302,28 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
+    }
+
+    private BitIconInfo? GetIcon(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.Icon;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.Icon;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Icon.Selector is not null)
+        {
+            return NameSelectors.Icon.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitIconInfo?>(NameSelectors.Icon.Name);
     }
 
     private string? GetIconName(TItem item)

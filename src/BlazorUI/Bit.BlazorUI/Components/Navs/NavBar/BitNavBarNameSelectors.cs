@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitNavBarNameSelectors<TItem>
 {
@@ -13,7 +13,14 @@ public class BitNavBarNameSelectors<TItem>
     public BitNameSelectorPair<TItem, object?> Data { get; set; } = new(nameof(BitNavBarItem.Data));
 
     /// <summary>
+    /// The Icon field name and selector of the custom input class.
+    /// Maps to <see cref="BitNavBarItem.Icon"/> for external icon libraries.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitIconInfo?> Icon { get; set; } = new(nameof(BitNavBarItem.Icon));
+
+    /// <summary>
     /// The IconName field name and selector of the custom input class.
+    /// Maps to <see cref="BitNavBarItem.IconName"/> for built-in Fluent UI icons.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitNavBarItem.IconName));
 

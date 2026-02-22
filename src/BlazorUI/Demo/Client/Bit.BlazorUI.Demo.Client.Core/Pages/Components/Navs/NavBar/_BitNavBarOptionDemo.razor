@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <div class="container">
         <BitNavBar TItem="BitNavBarOption">
             <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
@@ -380,7 +380,25 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
+    <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
+
+    <br />
+    <br />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+    <div class="container">
+        <BitNavBar TItem="BitNavBarOption">
+            <BitNavBarOption Text="Home" Icon="@("fa-solid fa-house")" />
+            <BitNavBarOption Text="Products" Icon="@BitIconInfo.Css("fa-solid fa-box")" />
+            <BitNavBarOption Text="Academy" Icon="@BitIconInfo.Fa("solid graduation-cap")" />
+            <BitNavBarOption Text="Profile" Icon="@BitIconInfo.Fa("solid user")" />
+        </BitNavBar>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div>Component's Style:</div><br />
@@ -434,7 +452,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+<DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br /><br />
     <div dir="rtl" class="container">

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
 public partial class _BitNavBarOptionDemo
 {
@@ -298,6 +298,17 @@ private BitNavBarOption? advancedSelectedOption;
 </BitNavBar>";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitNavBar TItem=""BitNavBarOption"">
+    <BitNavBarOption Text=""Home"" Icon=""@(""fa-solid fa-house"")"" />
+    <BitNavBarOption Text=""Products"" Icon=""@BitIconInfo.Css(""fa-solid fa-box"")"" />
+    <BitNavBarOption Text=""Academy"" Icon=""@BitIconInfo.Fa(""solid graduation-cap"")"" />
+    <BitNavBarOption Text=""Profile"" Icon=""@BitIconInfo.Fa(""solid user"")"" />
+</BitNavBar>";
+
+
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -355,7 +366,7 @@ private BitNavBarOption? advancedSelectedOption;
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitNavBar Dir=""BitDir.Rtl"" TItem=""BitNavBarOption"">
     <BitNavBarOption Text=""خانه"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""محصولات"" IconName=""@BitIconName.ProductVariant"" />

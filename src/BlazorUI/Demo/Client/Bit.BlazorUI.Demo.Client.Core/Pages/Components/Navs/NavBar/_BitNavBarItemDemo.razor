@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div class="container">
         <BitNavBar Items="basicNavBarItems" />
     </div>
@@ -232,7 +232,20 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
+
+    <br />
+    <br />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+    <div class="container">
+        <BitNavBar Items="externalIconItems" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div>Component's Style:</div><br />
@@ -263,7 +276,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br /><br />
     <div dir="rtl" class="container">

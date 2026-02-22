@@ -4,34 +4,42 @@ public partial class _BitNavBarCustomDemo
 {
     private static readonly List<MenuItem> basicNavBarCustoms =
     [
-        new() { Title = "Home", Icon = BitIconName.Home  },
-        new() { Title = "Products", Icon = BitIconName.ProductVariant },
-        new() { Title = "Academy", Icon = BitIconName.LearningTools },
-        new() { Title = "Profile", Icon = BitIconName.Contact },
+        new() { Title = "Home", ImageName = BitIconName.Home  },
+        new() { Title = "Products", ImageName = BitIconName.ProductVariant },
+        new() { Title = "Academy", ImageName = BitIconName.LearningTools },
+        new() { Title = "Profile", ImageName = BitIconName.Contact },
     ];
 
     private static readonly List<MenuItem> basicNavBarCustomsDisabled =
     [
-        new() { Title = "Home", Icon = BitIconName.Home  },
-        new() { Title = "Products", Icon = BitIconName.ProductVariant },
-        new() { Title = "Academy", Icon = BitIconName.LearningTools, Disabled = true },
-        new() { Title = "Profile", Icon = BitIconName.Contact },
+        new() { Title = "Home", ImageName = BitIconName.Home  },
+        new() { Title = "Products", ImageName = BitIconName.ProductVariant },
+        new() { Title = "Academy", ImageName = BitIconName.LearningTools, Disabled = true },
+        new() { Title = "Profile", ImageName = BitIconName.Contact },
     ];
 
     private static readonly List<MenuItem> basicNavBarCustomsClassStyle =
     [
-        new() { Title = "Home", Icon = BitIconName.Home  },
-        new() { Title = "Products", Icon = BitIconName.ProductVariant, CssClass = "custom-item" },
-        new() { Title = "Academy", Icon = BitIconName.LearningTools, Style = "color: #b6ff00;font-weight: 600;" },
-        new() { Title = "Profile", Icon = BitIconName.Contact },
+        new() { Title = "Home", ImageName = BitIconName.Home  },
+        new() { Title = "Products", ImageName = BitIconName.ProductVariant, CssClass = "custom-item" },
+        new() { Title = "Academy", ImageName = BitIconName.LearningTools, Style = "color: #b6ff00;font-weight: 600;" },
+        new() { Title = "Profile", ImageName = BitIconName.Contact },
+    ];
+
+    private static readonly List<MenuItem> externalIconCustoms =
+    [
+        new() { Title = "Home", Image = "fa-solid fa-house" },
+        new() { Title = "Products", Image = BitIconInfo.Css("fa-solid fa-box") },
+        new() { Title = "Academy", Image = BitIconInfo.Fa("solid graduation-cap") },
+        new() { Title = "Profile", Image = BitIconInfo.Fa("solid user") },
     ];
 
     private static readonly List<MenuItem> rtlCustomsItems =
     [
-        new() { Title = "خانه", Icon = BitIconName.Home  },
-        new() { Title = "محصولات", Icon = BitIconName.ProductVariant },
-        new() { Title = "آکادمی", Icon = BitIconName.LearningTools },
-        new() { Title = "پروفایل", Icon = BitIconName.Contact },
+        new() { Title = "خانه", ImageName = BitIconName.Home  },
+        new() { Title = "محصولات", ImageName = BitIconName.ProductVariant },
+        new() { Title = "آکادمی", ImageName = BitIconName.LearningTools },
+        new() { Title = "پروفایل", ImageName = BitIconName.Contact },
     ];
 
     private static IEnumerable<BitChoiceGroupItem<MenuItem>> choiceGroupItems =
