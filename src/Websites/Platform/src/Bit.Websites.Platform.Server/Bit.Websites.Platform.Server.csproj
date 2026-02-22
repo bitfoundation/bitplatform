@@ -27,7 +27,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.3" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.3.0" />
         <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="10.0.0-preview.1.25559.3" />
-        <PackageReference Include="ModelContextProtocol" Version="0.8.0-preview.1" />
+        <PackageReference Include="ModelContextProtocol" Version="0.9.0-preview.2" />
         <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
