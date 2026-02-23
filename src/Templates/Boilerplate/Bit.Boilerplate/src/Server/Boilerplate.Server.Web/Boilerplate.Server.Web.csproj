@@ -21,6 +21,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" />
+        <PackageReference Condition=" '$(api)' == 'Standalone' " Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <ProjectReference Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''" Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
         <ProjectReference Include="..\..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
         <ProjectReference Include="..\..\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />

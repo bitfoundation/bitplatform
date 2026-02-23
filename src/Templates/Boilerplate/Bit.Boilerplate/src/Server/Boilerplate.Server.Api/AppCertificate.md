@@ -82,7 +82,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero,
             RequireSignedTokens = true,
 
-            ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
             ValidateIssuerSigningKey = true,
 
             RequireExpirationTime = true,
