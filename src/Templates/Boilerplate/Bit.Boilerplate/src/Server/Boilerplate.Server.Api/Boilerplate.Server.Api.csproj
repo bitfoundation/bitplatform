@@ -109,7 +109,7 @@
             <PublicClass>true</PublicClass>
         </EmbeddedResource>
 
-        <None Update="AppCertificate.*.pem">
+        <None Update="AppCertificate.*">
             <DependentUpon>AppCertificate.md</DependentUpon>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
