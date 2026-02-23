@@ -595,7 +595,7 @@ public static partial class Program
                 hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
                 {
                     var connectionString = "Data Source=BoilerplateJobs.db;Mode=Memory;Cache=Shared;";
-                    var connection = new SqliteConnection(connectionString);
+                    var connection = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
                     connection.Open();
                     AppContext.SetData("ReferenceTheKeepTheInMemorySQLiteDatabaseAlive", connection);
                     optionsBuilder.UseSqlite(connectionString);
