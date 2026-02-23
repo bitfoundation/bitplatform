@@ -77,15 +77,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         options.Authority = "http://localhost:5030";
         options.RequireHttpsMetadata = builder.Environment.IsDevelopment() is false;
-
-        options.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters = new()
         {
-            ValidateIssuer = true,
-            ValidIssuer = "Boilerplate",
-
-            ValidateAudience = true,
-            ValidAudience = "Boilerplate",
-
             ValidateLifetime = true
         };
     });

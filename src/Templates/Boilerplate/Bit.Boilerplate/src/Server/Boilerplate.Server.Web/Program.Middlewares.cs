@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Endpoints;
 //#if (api == "Integrated")
 using Hangfire;
 using Scalar.AspNetCore;
+using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 //#endif
 
@@ -143,6 +144,8 @@ public static partial class Program
         app.MapHub<Api.Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
         app.MapMcp("/mcp").RequireAuthorization(); // Map MCP endpoints for chatbot tool
         //#endif
+
+        app.MapOpenIdConfiguration();
 
         app.MapControllers()
            .RequireAuthorization()
