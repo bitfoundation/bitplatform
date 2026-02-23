@@ -79,7 +79,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.RequireHttpsMetadata = builder.Environment.IsDevelopment() is false;
         options.TokenValidationParameters = new()
         {
-            ValidateLifetime = true
+            ClockSkew = TimeSpan.Zero,
+            RequireSignedTokens = true,
+
+            ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
+            ValidateIssuerSigningKey = true,
+
+            RequireExpirationTime = true,
+
+            ValidateAudience = true,
+            ValidAudience = "Boilerplate",
+
+            ValidateIssuer = true,
+            ValidIssuer = "Boilerplate"
+        };
+
+        // OR
+
+        options.TokenValidationParameters = new()
+        {
+            ValidateAudience = false,
+
+            ValidateIssuer = true,
+            ValidIssuer = "Boilerplate"
         };
     });
 
