@@ -81,22 +81,8 @@ public partial class ServerApiSettings : ServerSharedSettings
             Validator.TryValidateObject(SupportedAppVersions, new ValidationContext(SupportedAppVersions), validationResults, true);
         }
 
-        const int MinimumJwtIssuerSigningKeySecretByteLength = 64; // 512 bits = 64 bytes, minimum for HS512
-        var jwtIssuerSigningKeySecretByteLength = Encoding.UTF8.GetBytes(Identity.JwtIssuerSigningKeySecret).Length;
-        if (jwtIssuerSigningKeySecretByteLength <= MinimumJwtIssuerSigningKeySecretByteLength)
-        {
-            throw new ArgumentException(
-                $"The JWT signing key must be greater than {MinimumJwtIssuerSigningKeySecretByteLength} bytes " +
-                $"({MinimumJwtIssuerSigningKeySecretByteLength * 8} bits) for HS512. Current key is {jwtIssuerSigningKeySecretByteLength} bytes.");
-        }
-
         if (AppEnvironment.IsDevelopment() is false)
         {
-            if (Identity.JwtIssuerSigningKeySecret is "VeryLongJWTIssuerSigningKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm")
-            {
-                throw new InvalidOperationException(@"Please replace JwtIssuerSigningKeySecret with a new one.");
-            }
-
             //#if (captcha == "reCaptcha")
             if (GoogleRecaptchaSecretKey is "6LdMKr4pAAAAANvngWNam_nlHzEDJ2t6SfV6L_DS")
             {
@@ -118,9 +104,6 @@ public partial class ServerApiSettings : ServerSharedSettings
 
 public partial class AppIdentityOptions : IdentityOptions
 {
-    [Required]
-    public string JwtIssuerSigningKeySecret { get; set; } = default!;
-
     /// <summary>
     /// BearerTokenExpiration used as JWT's expiration claim, access token's `expires in` and cookie's `max age`.
     /// </summary>

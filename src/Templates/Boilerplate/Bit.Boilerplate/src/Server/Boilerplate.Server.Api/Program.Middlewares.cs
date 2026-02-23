@@ -1,6 +1,8 @@
 ﻿//+:cnd:noEmit
 
 using Scalar.AspNetCore;
+using Microsoft.IdentityModel.Tokens;
+using Boilerplate.Server.Api.Infrastructure.Services;
 using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 
 namespace Boilerplate.Server.Api;
@@ -77,8 +79,42 @@ public static partial class Program
         app.MapMcp("/mcp").RequireAuthorization(); // Map MCP endpoints for chatbot tool
         //#endif
 
+        app.MapOpenIdConfiguration();
+
         app.MapControllers()
            .RequireAuthorization()
            .CacheOutput("AppResponseCachePolicy");
+    }
+
+
+    /// <summary>
+    /// This allows other backends to retrieve the OpenID Connect configuration and the public key for validating JWT tokens issued by this server.
+    /// Checkout AppCertificate.md for more information.
+    /// </summary>
+    public static WebApplication MapOpenIdConfiguration(this WebApplication app)
+    {
+        var publicKey = AppCertificateService.GetPublicSecurityKey();
+        var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(publicKey);
+        jwk.Use = "sig";
+
+        app.MapGet("/.well-known/openid-configuration", (HttpRequest request) =>
+        {
+            var baseUrl = request.GetBaseUrl();
+            return new
+            {
+                issuer = app.Configuration["Identity:Issuer"],
+                jwks_uri = new Uri(baseUrl, ".well-known/jwks"),
+            };
+        });
+
+        app.MapGet("/.well-known/jwks", () =>
+        {
+            return new
+            {
+                keys = new[] { jwk }
+            };
+        });
+
+        return app;
     }
 }

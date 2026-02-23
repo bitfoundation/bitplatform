@@ -106,6 +106,7 @@ serverApiProject.WithReference(s3Storage);
 serverApiProject.WithReference(keycloak);
 //#if (redis == true)
 serverApiProject.WithReference(redisCache).WaitFor(redisCache);
+serverWebProject.WithReference(redisCache).WaitFor(redisCache);
 serverApiProject.WithReference(redisPersistent).WaitFor(redisPersistent);
 //#endif
 //#else

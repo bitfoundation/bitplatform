@@ -2,6 +2,8 @@
 using Microsoft.Net.Http.Headers;
 //#if (api == "Integrated")
 using Boilerplate.Server.Api;
+//#else
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 //#endif
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Shared;
@@ -35,20 +37,45 @@ public static partial class Program
         //#endif
         builder.AddServerSharedServices();
         builder.AddDefaultHealthChecks();
-        services.AddAuthentication(options =>
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
-            options.DefaultScheme = Microsoft.AspNetCore.Identity.IdentityConstants.BearerScheme;
-        }).AddBearerToken(Microsoft.AspNetCore.Identity.IdentityConstants.BearerScheme, options =>
-        {
-            options.BearerTokenProtector = new SimpleJwtSecureDataFormat();
-            options.RefreshTokenProtector = new SimpleJwtSecureDataFormat();
+            options.Authority = configuration.GetServerAddress();
+            options.RequireHttpsMetadata = builder.Environment.IsDevelopment() is false;
+            options.TokenValidationParameters = new()
+            {
+                ClockSkew = TimeSpan.Zero,
+                RequireSignedTokens = true,
+
+                ValidateIssuerSigningKey = true,
+
+                RequireExpirationTime = true,
+
+                ValidateAudience = true,
+                ValidAudience = configuration["Identity:Audience"],
+
+                ValidateIssuer = true,
+                ValidIssuer = configuration["Identity:Issuer"]
+            };
 
             options.Events = new()
             {
                 OnMessageReceived = async context =>
                 {
-                    // The server accepts the accessToken from either the authorization header, the cookie, or the request URL query string
-                    context.Token ??= context.Request.Query.ContainsKey("access_token") ? context.Request.Query["access_token"] : context.Request.Cookies["access_token"];
+                    // The server accepts the accessToken from either the authorization header or the cookie.
+                    context.Token ??= context.HttpContext.GetAccessToken();
+                },
+                OnTokenValidated = async context =>
+                {
+                    var principal = context.Principal!;
+                    var identity = (ClaimsIdentity)principal.Identity!;
+
+                    if (principal.IsInRole(AppRoles.SuperAdmin))
+                    {
+                        foreach (var feat in AppFeatures.GetSuperAdminFeatures())
+                        {
+                            identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
+                        }
+                    }
                 }
             };
         });

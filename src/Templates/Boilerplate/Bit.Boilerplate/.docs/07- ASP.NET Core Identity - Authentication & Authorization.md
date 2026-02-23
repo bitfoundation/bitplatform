@@ -91,7 +91,6 @@ You can configure token expiration in [`appsettings.json`](/src/Server/Boilerpla
 "Identity": {
     "BearerTokenExpiration": "0.00:05:00",  // Format: D.HH:mm:ss (5 minutes)
     "RefreshTokenExpiration": "14.00:00:00", // 14 days
-    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSigningKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm"
 }
 ```
 
@@ -470,7 +469,6 @@ public class AppClaimTypes
 
 ```json
 "Identity": {
-    "JwtIssuerSigningKeySecret": "VeryLongJWTIssuerSigningKeySecretThatIsMoreThan64BytesToEnsureCompatibilityWithHS512Algorithm",
     "Issuer": "Boilerplate",
     "Audience": "Boilerplate",
     "BearerTokenExpiration": "0.00:05:00",
@@ -700,54 +698,6 @@ Let's walk through a password reset scenario:
 ---
 
 ## Advanced Topics
-
-### JWT Token Signing with PFX Certificates
-
-By default, the Bit Boilerplate uses a string-based secret (`JwtIssuerSigningKeySecret`) for signing JWT tokens in the [`AppJwtSecureDataFormat`](/src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppJwtSecureDataFormat.cs) class. While this approach is valid and secure, using a **PFX certificate** is considered best practice for production environments, especially when:
-
-- You need to share JWT validation across multiple backend services
-- You want to follow industry-standard cryptographic practices
-- You're deploying to enterprise environments with strict security requirements
-
-**Why We Didn't Use PFX by Default**
-
-We chose the string-based secret as the default because:
-- **Easier Deployment**: PFX certificates require additional configuration on shared hosting providers
-- **Simplified Development**: Developers can get started immediately without certificate management
-- **Good Security**: String-based secrets with HS512 are still cryptographically secure
-
-**How to Migrate to PFX Certificates**
-
-If you want to use PFX certificates, you'll need to modify [`AppJwtSecureDataFormat`](/src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppJwtSecureDataFormat.cs) to use `AsymmetricSecurityKey` instead of `SymmetricSecurityKey`:
-
-```csharp
-// Instead of:
-IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.Identity.JwtIssuerSigningKeySecret))
-
-// Use:
-var certificate = new X509Certificate2("path/to/certificate.pfx", "password");
-IssuerSigningKey = new X509SecurityKey(certificate)
-```
-
-**Protecting ASP.NET Core Data Protection Keys**
-
-Additionally, you should protect the Data Protection keys stored in the database. In [`Program.Services.cs`](/src/Server/Boilerplate.Server.Api/Program.Services.cs), update the following code:
-
-```csharp
-services.AddDataProtection()
-   .PersistKeysToDbContext<AppDbContext>()
-   .ProtectKeysWithCertificate(certificate); // Add this line
-```
-
-**Cross-Service JWT Validation**
-
-When using PFX certificates, you can share the **public key** with other backend services to validate JWTs issued by your ASP.NET Core Identity system. Other services can use the `AddJwtAuthentication` method to validate tokens without needing the private key.
-
-This enables scenarios where:
-- Multiple microservices validate the same JWT
-- Third-party services can verify your tokens
-
----
 
 ### Keycloak Integration
 

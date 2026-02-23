@@ -21,6 +21,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" />
+        <PackageReference Condition=" '$(api)' == 'Standalone' " Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <ProjectReference Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''" Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
         <ProjectReference Include="..\..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
         <ProjectReference Include="..\..\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
@@ -39,6 +40,11 @@
         <None Include="..\Boilerplate.Server.Api\appsettings*.json">
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\Boilerplate.Server.Api\AppCertificate*">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <DependentUpon>AppCertificate.md</DependentUpon>
         </None>
     </ItemGroup>
 

@@ -82,6 +82,9 @@ public partial class AppHub : Hub
 
     private async Task ChangeAuthenticationStateImplementation(ClaimsPrincipal? user)
     {
+        if (Context.ConnectionAborted.IsCancellationRequested)
+            return;
+
         Context.GetHttpContext()!.User = user ?? new ClaimsPrincipal(new ClaimsIdentity()) /*Anonymous*/;
 
         await using var scope = serviceProvider.CreateAsyncScope();
