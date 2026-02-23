@@ -572,7 +572,7 @@ public static partial class Program
         //#endif
 
         // Configure Hangfire to use Redis for persistent background job storage
-        builder.Services.AddHangfire((sp, hangfireConfiguration) =>
+        services.AddHangfire((sp, hangfireConfiguration) =>
         {
             if (appSettings.Hangfire?.UseIsolatedStorage is not true)
             {
@@ -590,6 +590,22 @@ public static partial class Program
                 });
                 //#endif
             }
+            else
+            {
+                hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
+                {
+                    var connectionString = "Data Source=BoilerplateJobs.db;Mode=Memory;Cache=Shared;";
+                    var connection = new SqliteConnection(connectionString);
+                    connection.Open();
+                    AppContext.SetData("ReferenceTheKeepTheInMemorySQLiteDatabaseAlive", connection);
+                    optionsBuilder.UseSqlite(connectionString);
+                }, new()
+                {
+                    Schema = "jobs",
+                    QueuePollInterval = new TimeSpan(0, 0, 1)
+                })
+                .UseDatabaseCreator();
+            }
 
             hangfireConfiguration.UseRecommendedSerializerSettings();
             hangfireConfiguration.UseSimpleAssemblyNameTypeSerializer();
@@ -597,23 +613,7 @@ public static partial class Program
             hangfireConfiguration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
         });
 
-        if (appSettings.Hangfire?.UseIsolatedStorage is true)
-        {
-            services.AddSingleton<JobStorage>(sp => new EFCoreStorage(optionsBuilder =>
-            {
-                var connectionString = "Data Source=BoilerplateJobs.db;Mode=Memory;Cache=Shared;";
-                var connection = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
-                connection.Open();
-                AppContext.SetData("ReferenceTheKeepTheInMemorySQLiteDatabaseAlive", connection);
-                optionsBuilder.UseSqlite(connectionString);
-            }, new()
-            {
-                Schema = "jobs",
-                QueuePollInterval = new TimeSpan(0, 0, 1)
-            }));
-        }
-
-        builder.Services.AddHangfireServer(options =>
+        services.AddHangfireServer(options =>
         {
             options.SchedulePollingInterval = TimeSpan.FromSeconds(5);
             configuration.Bind("Hangfire", options);
