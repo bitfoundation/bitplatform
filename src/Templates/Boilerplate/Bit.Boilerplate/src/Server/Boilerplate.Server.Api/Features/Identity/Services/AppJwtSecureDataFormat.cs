@@ -34,7 +34,7 @@ public partial class AppJwtSecureDataFormat
             RequireSignedTokens = true,
 
             IssuerSigningKey = AppCertificateService.GetPublicSecurityKey(),
-            ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
+            ValidAlgorithms = [SecurityAlgorithms.RsaSha256Signature],
             ValidateIssuerSigningKey = env.IsDevelopment() is false,
 
             RequireExpirationTime = true,

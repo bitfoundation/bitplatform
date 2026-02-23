@@ -46,7 +46,7 @@ openssl genrsa -out AppCertificate.Private.pem 2048
 # 2. Extract the public key from the private key
 openssl rsa -in AppCertificate.Private.pem -pubout -out AppCertificate.Public.pem
 
-# 3. Generate a self-signed X.509 certificate (valid for 1 years)
+# 3. Generate a self-signed X.509 certificate (valid for 1 year)
 openssl req -new -x509 -key AppCertificate.Private.pem -out AppCertificate.Cert.pem -days 365 -subj "/CN=AppCertificate"
 ```
 

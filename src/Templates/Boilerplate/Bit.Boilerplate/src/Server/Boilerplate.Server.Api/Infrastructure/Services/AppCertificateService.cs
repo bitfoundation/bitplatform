@@ -9,6 +9,8 @@ namespace Boilerplate.Server.Api.Infrastructure.Services;
 public static class AppCertificateService
 {
     private static X509Certificate2? appCert;
+    private static RsaSecurityKey? privateSecurityKey;
+    private static RsaSecurityKey? publicSecurityKey;
 
     /// <summary>
     /// This would return AppCertificate containing private key and public key.
@@ -35,7 +37,7 @@ public static class AppCertificateService
     /// </summary>
     public static RsaSecurityKey GetPrivateSecurityKey()
     {
-        return new RsaSecurityKey(GetAppCertificate().GetRSAPrivateKey());
+        return privateSecurityKey ??= new RsaSecurityKey(GetAppCertificate().GetRSAPrivateKey() ?? throw new InvalidOperationException("Private key not found in the certificate.")) { KeyId = "Boilerplate" };
     }
 
     /// <summary>
@@ -43,6 +45,6 @@ public static class AppCertificateService
     /// </summary>
     public static RsaSecurityKey GetPublicSecurityKey()
     {
-        return new RsaSecurityKey(GetAppCertificate().GetRSAPublicKey());
+        return publicSecurityKey ??= new RsaSecurityKey(GetAppCertificate().GetRSAPublicKey() ?? throw new InvalidOperationException("Public key not found in the certificate.")) { KeyId = "Boilerplate" };
     }
 }

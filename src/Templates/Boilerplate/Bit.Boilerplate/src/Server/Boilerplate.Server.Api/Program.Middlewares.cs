@@ -79,7 +79,7 @@ public static partial class Program
         app.MapMcp("/mcp").RequireAuthorization(); // Map MCP endpoints for chatbot tool
         //#endif
 
-        app.MapOpenIdConfiguration();
+        app.MapOpenIdConfiguration(settings);
 
         app.MapControllers()
            .RequireAuthorization()
@@ -88,22 +88,32 @@ public static partial class Program
 
 
     /// <summary>
-    /// Checkout AppCertificate.md for more information,
+    /// This allows other backends to retrieve the OpenID Connect configuration and the public key for validating JWT tokens issued by this server.
+    /// Checkout AppCertificate.md for more information.
     /// </summary>
-    private static WebApplication MapOpenIdConfiguration(this WebApplication app)
+    private static WebApplication MapOpenIdConfiguration(this WebApplication app, ServerApiSettings settings)
     {
-        var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(AppCertificateService.GetPublicSecurityKey());
+        var publicKey = AppCertificateService.GetPublicSecurityKey();
+        var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(publicKey);
         jwk.Use = "sig";
-        jwk.Kid = "Boilerplate";
+        jwk.Kid = publicKey.KeyId;
 
         app.MapGet("/.well-known/openid-configuration", (HttpRequest request) =>
         {
             var baseUrl = request.GetBaseUrl();
-            return Results.Ok(new
+            return new
             {
-                issuer = baseUrl,
+                issuer = settings.Identity.Issuer,
                 jwks_uri = $"{baseUrl}/.well-known/jwks",
-            });
+            };
+        });
+
+        app.MapGet("/.well-known/jwks", () =>
+        {
+            return new
+            {
+                keys = new[] { jwk }
+            };
         });
 
         return app;
