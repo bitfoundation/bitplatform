@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Pagination;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Pagination;
 
 public partial class BitPaginationDemo
 {
@@ -45,17 +45,39 @@ public partial class BitPaginationDemo
         },
         new()
         {
-            Name = "FirstIcon",
-            Type = "string?",
+            Name = "FirstButtonIcon",
+            Type = "BitIconInfo?",
             DefaultValue = "null",
-            Description = "The icon name of the first button."
+            Description = "The icon for the first button using custom CSS classes for external icon libraries. Takes precedence over FirstButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
         },
         new()
         {
-            Name = "LastIcon",
+            Name = "FirstButtonIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name of the last button."
+            Description = "The built-in icon name for the first button.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "LastButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon for the last button using custom CSS classes for external icon libraries. Takes precedence over LastButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "LastButtonIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The built-in icon name for the last button.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -66,10 +88,21 @@ public partial class BitPaginationDemo
         },
         new()
         {
-            Name = "NextIcon",
+            Name = "NextButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon for the next button using custom CSS classes for external icon libraries. Takes precedence over NextButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "NextButtonIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name of the next button."
+            Description = "The built-in icon name for the next button.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -80,10 +113,21 @@ public partial class BitPaginationDemo
         },
         new()
         {
-            Name = "PreviousIcon",
+            Name = "PreviousButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon for the previous button using custom CSS classes for external icon libraries. Takes precedence over PreviousButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "PreviousButtonIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name of the previous button."
+            Description = "The built-in icon name for the previous button.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -266,6 +310,35 @@ public partial class BitPaginationDemo
 
     private readonly List<ComponentSubClass> componentSubClasses =
     [
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
         new()
         {
             Id = "pagination-class-styles",

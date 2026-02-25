@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Pagination;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Pagination;
 
 public partial class BitPaginationDemo
 {
@@ -23,7 +23,7 @@ public partial class BitPaginationDemo
 <BitPagination Count=""24"" ShowFirstButton ShowLastButton />";
 
     private readonly string example7RazorCode = @"
-<BitPagination Count=""5"" NextIcon=""@BitIconName.Next"" PreviousIcon=""@BitIconName.Previous"" />";
+<BitPagination Count=""5"" NextButtonIconName=""@BitIconName.Next"" PreviousButtonIconName=""@BitIconName.Previous"" />";
 
     private readonly string example8RazorCode = @"
 <BitPagination Count=""5"" Color=""BitColor.Primary"" />
@@ -72,6 +72,36 @@ public partial class BitPaginationDemo
 <BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Outline"" />";
 
     private readonly string example10RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitPagination Count=""5""
+               NextButtonIcon=""@BitIconInfo.Fa(""solid forward"")""
+               PreviousButtonIcon=""@BitIconInfo.Fa(""solid backward"")"" />
+
+<BitPagination Count=""5""
+               ShowFirstButton
+               ShowLastButton
+               NextButtonIcon=""@BitIconInfo.Css(""fa-solid fa-angle-right"")""
+               PreviousButtonIcon=""@BitIconInfo.Css(""fa-solid fa-angle-left"")""
+               FirstButtonIcon=""@BitIconInfo.Css(""fa-solid fa-angles-left"")""
+               LastButtonIcon=""@BitIconInfo.Css(""fa-solid fa-angles-right"")"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitPagination Count=""5""
+               NextButtonIcon=""@BitIconInfo.Bi(""chevron-right"")""
+               PreviousButtonIcon=""@BitIconInfo.Bi(""chevron-left"")"" />
+
+<BitPagination Count=""5""
+               ShowFirstButton
+               ShowLastButton
+               NextButtonIcon=""@BitIconInfo.Css(""bi bi-caret-right-fill"")""
+               PreviousButtonIcon=""@BitIconInfo.Css(""bi bi-caret-left-fill"")""
+               FirstButtonIcon=""@BitIconInfo.Css(""bi bi-skip-start-fill"")""
+               LastButtonIcon=""@BitIconInfo.Css(""bi bi-skip-end-fill"")"" />";
+
+    private readonly string example11RazorCode = @"
 <style>
     .custom-class {
         margin-left: 1rem;
@@ -103,8 +133,8 @@ public partial class BitPaginationDemo
 </style>
 
 <BitPagination Count=""5""
-               NextIcon=""@BitIconName.ChevronDown""
-               PreviousIcon=""@BitIconName.ChevronUp""
+               NextButtonIconName=""@BitIconName.ChevronDown""
+               PreviousButtonIconName=""@BitIconName.ChevronUp""
                Style=""margin-left: 1rem; flex-flow: column;"" />
 
 <BitPagination Count=""5"" Class=""custom-class"" />    
@@ -120,7 +150,7 @@ public partial class BitPaginationDemo
                                   Button = ""custom-button"",
                                   SelectedButton = ""custom-selected-button""})"" />";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitPagination Count=""5"" SelectedPage=""oneWaySelectedPage"" />
 <BitNumberField @bind-Value=""oneWaySelectedPage"" Min=""1"" Max=""5"" />
 
@@ -129,12 +159,12 @@ public partial class BitPaginationDemo
 
 <BitPagination Count=""5"" OnChange=""p => onChangeSelectedPage = p"" />
 <div>Changed page: <b>@onChangeSelectedPage</b></div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private int oneWaySelectedPage = 1;
 private int twoWaySelectedPage = 2;
 private int onChangeSelectedPage = 3;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitPagination Dir=""BitDir.Rtl"" Count=""5"" Variant=""BitVariant.Fill"" />
 <BitPagination Dir=""BitDir.Rtl"" Count=""5"" Variant=""BitVariant.Outline"" />
 <BitPagination Dir=""BitDir.Rtl"" Count=""5"" Variant=""BitVariant.Text"" />";
