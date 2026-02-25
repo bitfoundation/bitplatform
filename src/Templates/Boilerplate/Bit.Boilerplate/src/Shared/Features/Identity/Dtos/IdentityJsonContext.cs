@@ -6,7 +6,16 @@ namespace Boilerplate.Shared.Features.Identity;
 /// <summary>
 /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
 /// </summary>
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSourceGenerationOptions(
+  PropertyNameCaseInsensitive = true,
+  PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+  DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
+  UseStringEnumConverter = true,
+  WriteIndented = false,
+  GenerationMode = JsonSourceGenerationMode.Default,
+  AllowTrailingCommas = true,
+  DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+)]
 [JsonSerializable(typeof(UserDto))]
 [JsonSerializable(typeof(IdentityRequestDto))]
 [JsonSerializable(typeof(SignInRequestDto))]
