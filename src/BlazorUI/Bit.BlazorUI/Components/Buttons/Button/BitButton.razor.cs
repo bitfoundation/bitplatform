@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
@@ -8,7 +8,7 @@ namespace Bit.BlazorUI;
 public partial class BitButton : BitComponentBase
 {
     private string? _rel;
-    private int? _tabIndex;
+    private string? _tabIndex;
     private bool _dragging;
     private BitButtonType _buttonType;
     private DotNetObjectReference<BitButton>? _dotnetObj;
@@ -21,23 +21,24 @@ public partial class BitButton : BitComponentBase
 
     /// <summary>
     /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>.
+    /// The value is coming from the cascading value provided by the EditForm.
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
 
 
 
     /// <summary>
-    /// Whether the button can have focus in disabled mode.
+    /// Keeps the disabled button focusable by not forcing a negative tabindex when <see cref="BitComponentBase.IsEnabled"/> is false.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; } = true;
 
     /// <summary>
-    /// Detailed description of the button for the benefit of screen readers.
+    /// Detailed description of the button for the benefit of screen readers (rendered into <c>aria-describedby</c>).
     /// </summary>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// If true, adds an aria-hidden attribute instructing screen readers to ignore the element.
+    /// If true, adds an <c>aria-hidden</c> attribute instructing screen readers to ignore the button.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
 
@@ -47,7 +48,7 @@ public partial class BitButton : BitComponentBase
     [Parameter] public bool AutoLoading { get; set; }
 
     /// <summary>
-    /// The value of the type attribute of the button.
+    /// The type of the button element; defaults to <c>submit</c> inside an <see cref="EditForm"/> otherwise <c>button</c>.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
@@ -132,8 +133,16 @@ public partial class BitButton : BitComponentBase
     [Parameter] public BitIconInfo? Icon { get; set; }
 
     /// <summary>
-    /// The name of the icon to render inside the button.
+    /// Gets or sets the name of the icon to display from the built-in Fluent UI icons.
     /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Emoji</c>).
+    /// <br />
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery: 
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// <br />
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </remarks>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
@@ -141,6 +150,12 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool IconOnly { get; set; }
+
+    /// <summary>
+    /// Gets or sets the position of the icon relative to the component's content.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitIconPosition? IconPosition { get; set; }
 
     /// <summary>
     /// The url of the custom icon to render inside the button.
@@ -169,7 +184,7 @@ public partial class BitButton : BitComponentBase
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
-    /// The callback for the click event of the button with a bool argument passing the current loading state.
+    /// Raised when the button is clicked; receives a bool indicating the current loading state.
     /// </summary>
     [Parameter] public EventCallback<bool> OnClick { get; set; }
 
@@ -185,13 +200,8 @@ public partial class BitButton : BitComponentBase
     [Parameter] public bool Reclickable { get; set; }
 
     /// <summary>
-    /// Reverses the positions of the icon and the main content of the button.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool ReversedIcon { get; set; }
-
-    /// <summary>
-    /// If Href provided, specifies the relationship between the current document and the linked document.
+    /// Sets the <c>rel</c> attribute for link-rendered buttons when <see cref="Href"/> is a non-anchor URL; ignored for empty or hash-only hrefs.
+    /// The <c>rel</c> attribute specifies the relationship between the current document and the linked document.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
@@ -210,13 +220,13 @@ public partial class BitButton : BitComponentBase
     public RenderFragment? SecondaryTemplate { get; set; }
 
     /// <summary>
-    /// The size of the button.
+    /// Sets the preset size for typography and padding of the button.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the button.
+    /// Custom inline styles for different parts of the button.
     /// </summary>
     [Parameter] public BitButtonClassStyles? Styles { get; set; }
 
@@ -311,7 +321,7 @@ public partial class BitButton : BitComponentBase
             _ => "bit-btn-md"
         });
 
-        ClassBuilder.Register(() => ReversedIcon ? "bit-btn-rvi" : string.Empty);
+        ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-btn-eni" : string.Empty);
 
         ClassBuilder.Register(() => FixedColor ? "bit-btn-fxc" : string.Empty);
 
@@ -352,7 +362,11 @@ public partial class BitButton : BitComponentBase
     {
         if (IsEnabled is false)
         {
-            _tabIndex = AllowDisabledFocus ? null : -1;
+            _tabIndex = AllowDisabledFocus ? null : "-1";
+        }
+        else
+        {
+            _tabIndex = TabIndex ?? _tabIndex;
         }
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
