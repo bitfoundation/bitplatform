@@ -42,7 +42,7 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
   DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
   UseStringEnumConverter = true,
   WriteIndented = false,
-  GenerationMode = JsonSourceGenerationMode.Metadata,
+  GenerationMode = JsonSourceGenerationMode.Default,
   AllowTrailingCommas = true,
   DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
 )]
