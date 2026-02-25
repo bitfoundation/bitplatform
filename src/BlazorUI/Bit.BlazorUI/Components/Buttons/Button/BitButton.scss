@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-btn {
     cursor: pointer;
@@ -68,7 +68,7 @@
     height: var(--bit-btn-icn-size);
 }
 
-.bit-btn-rvi {
+.bit-btn-eni {
     flex-direction: row-reverse;
 }
 

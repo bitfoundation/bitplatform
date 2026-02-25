@@ -32,6 +32,7 @@
 
     <DemoExample Title="Variant" RazorCode="@example3RazorCode" Id="example3">
         <div>The Button offers three style variants: Fill (default), Outline, and Text.</div>
+        <div>Using the <b>Variant</b> parameter and its value of type <BitLink Href="#variant-enum">BitVariant</BitLink> enum:</div>
         <br />
         <div class="example-content">
             <BitButton Variant="BitVariant.Fill">Fill</BitButton>
@@ -58,8 +59,19 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
-        <div>BitButton has an icon slot that, if specified, renders an icon that can be set at the start (default) or revered positioned at the end of component.</div>
+    <DemoExample Title="Title" RazorCode="@example4RazorCode" Id="example4">
+        <div>The Title parameter sets a tooltip that appears when hovering over the button.</div>
+        <br />
+        <div class="example-content">
+            <BitButton Title="This is a tooltip" Variant="BitVariant.Fill">Hover me</BitButton>
+            <BitButton Title="Another tooltip" Variant="BitVariant.Outline">Hover me</BitButton>
+            <BitButton Title="Text tooltip" Variant="BitVariant.Text">Hover me</BitButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Icon" RazorCode="@example5RazorCode" Id="example5">
+        <div>BitButton has an icon slot that, if specified, renders an icon at the start (default) or end of the component using <b>IconPosition</b>.</div>
+        <div>Using the <b>IconPosition</b> parameter and <BitLink Href="#icon-position-enum">BitIconPosition</BitLink> enum as its value:</div>
         <br />
         <div class="example-content">
             <BitButton IconName="@BitIconName.EmojiNeutral" Variant="BitVariant.Fill" />
@@ -80,15 +92,15 @@
         </div>
         <br />
         <div class="example-content">
-            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill" ReversedIcon>End</BitButton>
-            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" ReversedIcon>End</BitButton>
-            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" ReversedIcon>End</BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" IconPosition="BitIconPosition.End">End</BitButton>
         </div>
         <br />
         <div class="example-content">
-            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Fill" ReversedIcon>End</BitButton>
-            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Outline" ReversedIcon>End</BitButton>
-            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Text" ReversedIcon>End</BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Text" IconPosition="BitIconPosition.End">End</BitButton>
         </div>
         <br /><br />
         <div class="example-content">
@@ -98,13 +110,13 @@
         </div>
         <br />
         <div class="example-content">
-            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Fill" ReversedIcon>End</BitButton>
-            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Outline" ReversedIcon>End</BitButton>
-            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Text" ReversedIcon>End</BitButton>
+            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">End</BitButton>
+            <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl" Variant="BitVariant.Text" IconPosition="BitIconPosition.End">End</BitButton>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Loading" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Loading" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>Demonstrate the dynamic loading state of buttons using the "IsLoading" property. Customize the loading label to provide users with feedback on ongoing processes.</div>
         <br /><br />
         <div class="example-content">
@@ -147,8 +159,9 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Loading Label" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Loading Label" RazorCode="@example7RazorCode" Id="example7">
         <div>Explore customizing the loading label and its different positions, including start, end, bottom, and top.</div>
+        <div>Using the <b>LoadingLabelPosition</b> parameter and its value of type <BitLink Href="#label-position-enum">BitLabelPosition</BitLink> enum:</div>
         <br />
         <div class="example-content">
             <BitButton IsLoading="true"
@@ -187,7 +200,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Href" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Href" RazorCode="@example8RazorCode" Id="example8">
         <div>Use BitButton as a hyperlink to external URLs, opening either in a new tab or the same tab.</div>
         <br />
         <div class="example-content">
@@ -201,8 +214,9 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Rel" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Rel" RazorCode="@example9RazorCode" Id="example9">
         <div>Use BitButton as a hyperlink to external URLs, with a rel attribute.</div>
+        <div>The actual <b>rel</b> attribute value is generated using the provided <BitLink Href="#link-rels">BitLinkRels</BitLink> and Href value.</div>
         <br />
         <div class="example-content">
             <BitButton Rel="BitLinkRels.NoFollow" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
@@ -215,8 +229,9 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Float & Draggable" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Float & Draggable" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>Demonstrates a floating button with adjustable float modes and customizable positions.</div>
+        <div>Using the <b>FloatPosition</b> parameter and its value of type <BitLink Href="#button-position">BitPosition</BitLink> enum:</div>
         <br />
         <div class="example-content">
             <BitDropdown Label="FloatPosition" Items="floatPositionList" @bind-Value="floatPosition" FitWidth />
@@ -268,8 +283,9 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Button Type" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Button Type" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>BitButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.</div>
+        <div>Using the <b>ButtonType</b> parameter and its value of type <BitLink Href="#button-type-enum">BitButtonType</BitLink> enum:</div>
         <br />
         <div class="form-container">
             @if (formIsValidSubmit is false)
@@ -298,7 +314,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Templates" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>Here are some examples of customizing the button content.</div>
         <br />
         <div>
@@ -307,7 +323,9 @@
                 <span>A primary template</span>
                 <BitRippleLoading CustomSize="20" Color="BitColor.Tertiary" />
             </BitButton>
-            <br />
+
+            <br /><br />
+
             <BitButton Class="custom-content" Variant="BitVariant.Outline">
                 <PrimaryTemplate>Primary text</PrimaryTemplate>
                 <SecondaryTemplate>
@@ -316,7 +334,9 @@
                     <BitRollerLoading CustomSize="20" />
                 </SecondaryTemplate>
             </BitButton>
-            <br />
+            
+            <br /><br />
+
             <BitButton Class="custom-content" Variant="BitVariant.Text">
                 <PrimaryTemplate>
                     <BitIcon IconName="@BitIconName.Airplane" />
@@ -331,10 +351,10 @@
             </BitButton>
         </div>
         <br /><br />
-        <div>Utilize the "LoadingTemplate" feature to design personalized loading indicators and messages, providing a unique visual experience during loading states.</div>
+        <div>Utilize the <b>LoadingTemplate</b> feature to design personalized loading indicators and messages, providing a unique visual experience during loading states.</div>
         <br />
         <div class="example-content">
-            <BitButton IsLoading="!templateIsLoading" OnClick="LoadingTemplateClick">
+            <BitButton IsLoading="templateIsLoading" OnClick="LoadingTemplateClick">
                 <PrimaryTemplate>Click me</PrimaryTemplate>
                 <LoadingTemplate>
                     <div style="display:flex;align-items:center;">
@@ -346,7 +366,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             Managing button click event (OnClick).
         </div>
@@ -356,8 +376,9 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
         <div>Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
+        <div>Using the <b>Size</b> parameter and its value of type <BitLink Href="#size-enum">BitSize</BitLink> enum:</div>
         <br />
         <div><b>Small</b>:</div><br />
         <BitButton Size="BitSize.Small" IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill" />
@@ -433,14 +454,15 @@
         <BitButton Size="BitSize.Large" SecondaryText="this is the secondary text" IconName="@BitIconName.Emoji2" Variant="BitVariant.Text">Text</BitButton>
     </DemoExample>
 
-    <DemoExample Title="FullWidth" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="FullWidth" RazorCode="@example15RazorCode" Id="example15">
         <div>Setting the FullWidth makes the button occupy 100% of its container's width.</div>
         <br />
         <BitButton FullWidth IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Full Width Button</BitButton>
     </DemoExample>
 
-    <DemoExample Title="FixedColor" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="FixedColor" RazorCode="@example16RazorCode" Id="example16">
         <div>FixedColor flag parameter makes the foreground color to be fixed regardless of its hovering state.</div>
+        <div>Using the <b>Color</b> parameter and its value of type <BitLink Href="#color-enum">BitColor</BitLink> enum:</div>
         <br />
         <BitButton FixedColor IconOnly
                    Size="BitSize.Large"
@@ -455,8 +477,9 @@
                    Color="BitColor.TertiaryBackground" />
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
         <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
+        <div>Using the <b>Color</b> parameter and its value of type <BitLink Href="#color-enum">BitColor</BitLink> enum:</div>
         <br />
         <div>
             <BitButton Color="BitColor.Primary">Primary</BitButton>
@@ -567,8 +590,9 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
+        <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.</div>
 
         <br />
         <br />
@@ -634,8 +658,9 @@
         </BitButton>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+        <div>Using the <b>Styles</b> and <b>Classes</b> parameters and their value of <BitLink Href="#button-class-styles">BitButtonClassStyles</BitLink> class:</div>
         <br /><br />
         <div>Component's Style & Class:</div>
         <br />
@@ -675,7 +700,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div>Use BitButton in right-to-left (RTL).</div>
         <br />
         <div class="example-content" dir="rtl">
