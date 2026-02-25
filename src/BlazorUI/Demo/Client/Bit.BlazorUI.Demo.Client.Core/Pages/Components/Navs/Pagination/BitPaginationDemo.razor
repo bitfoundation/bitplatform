@@ -58,7 +58,7 @@
     <DemoExample Title="Icon" RazorCode="@example7RazorCode" Id="example7">
         <div>Displaying custom icons feature within the Pagination navigation buttons.</div>
         <br />
-        <BitPagination Count="5" NextIcon="@BitIconName.Next" PreviousIcon="@BitIconName.Previous" />
+        <BitPagination Count="5" NextButtonIconName="@BitIconName.Next" PreviousButtonIconName="@BitIconName.Previous" />
     </DemoExample>
 
     <DemoExample Title="Color" RazorCode="@example8RazorCode" Id="example8">
@@ -146,15 +146,63 @@
         <BitPagination Count="5" Size="BitSize.Large" Variant="BitVariant.Outline" />
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="External Icons" RazorCode="@example10RazorCode" Id="example10">
+        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the navigation button <b>Icon</b> parameters.</div>
+        <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.</div>
+
+        <br />
+        <br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+        <div>FontAwesome:</div>
+        <br />
+        <BitPagination Count="5"
+                       NextButtonIcon="@BitIconInfo.Fa("solid forward")"
+                       PreviousButtonIcon="@BitIconInfo.Fa("solid backward")" />
+
+        <br />
+        <br />
+
+        <BitPagination Count="5"
+                       ShowFirstButton
+                       ShowLastButton
+                       NextButtonIcon="@BitIconInfo.Css("fa-solid fa-angle-right")"
+                       PreviousButtonIcon="@BitIconInfo.Css("fa-solid fa-angle-left")"
+                       FirstButtonIcon="@BitIconInfo.Css("fa-solid fa-angles-left")"
+                       LastButtonIcon="@BitIconInfo.Css("fa-solid fa-angles-right")" />
+
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap:</div>
+        <br />
+        <BitPagination Count="5"
+                       NextButtonIcon="@BitIconInfo.Bi("chevron-right")"
+                       PreviousButtonIcon="@BitIconInfo.Bi("chevron-left")" />
+
+        <br />
+        <br />
+
+        <BitPagination Count="5"
+                       ShowFirstButton
+                       ShowLastButton
+                       NextButtonIcon="@BitIconInfo.Css("bi bi-caret-right-fill")"
+                       PreviousButtonIcon="@BitIconInfo.Css("bi bi-caret-left-fill")"
+                       FirstButtonIcon="@BitIconInfo.Css("bi bi-skip-start-fill")"
+                       LastButtonIcon="@BitIconInfo.Css("bi bi-skip-end-fill")" />
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
         <div>
             <div>Component's Style & Class:</div>
             <br />
             <BitPagination Count="5"
-                           NextIcon="@BitIconName.ChevronDown"
-                           PreviousIcon="@BitIconName.ChevronUp"
+                           NextButtonIconName="@BitIconName.ChevronDown"
+                           PreviousButtonIconName="@BitIconName.ChevronUp"
                            Style="margin-left: 1rem; flex-flow: column;" />
             <br /><br />
             <BitPagination Count="5" Class="custom-class" />
@@ -173,7 +221,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Binding" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>Examples of one-way and two-way data binding with BitPagination.</div>
         <br /><br />
         <div style="max-width: 250px;">
@@ -197,7 +245,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div>Use BitPagination in right-to-left (RTL).</div>
         <br /><br />
         <div dir="rtl">
