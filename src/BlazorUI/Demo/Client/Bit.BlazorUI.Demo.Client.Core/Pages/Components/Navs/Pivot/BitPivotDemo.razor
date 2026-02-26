@@ -1,4 +1,4 @@
-﻿@page "/components/pivot"
+@page "/components/pivot"
 
 <PageOutlet Url="components/pivot"
             Title="Pivot"
@@ -534,7 +534,77 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="External Icons" RazorCode="@example11RazorCode" Id="example11">
+        <div>Use icons from external libraries like FontAwesome, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
+        <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.</div>
+
+        <br />
+        <br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+        <div>FontAwesome:</div>
+        <br />
+        <BitPivot>
+            <BitPivotItem HeaderText="Home" Icon="@("fa-solid fa-house")">
+                <h1>Pivot #1: Home</h1>
+                <div>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge.
+                </div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Heart" Icon="@BitIconInfo.Css("fa-solid fa-heart")">
+                <h1>Pivot #2: Heart</h1>
+                <div>
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+                </div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Rocket" Icon="@BitIconInfo.Fa("solid rocket")">
+                <h1>Pivot #3: Rocket</h1>
+                <div>
+                    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead.
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap:</div>
+        <br />
+        <BitPivot>
+            <BitPivotItem HeaderText="Home" Icon="@("bi bi-house-fill")">
+                <h1>Pivot #1: Home</h1>
+                <div>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+                    when possibilities are limitless, waiting for content to emerge.
+                </div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Heart" Icon="@BitIconInfo.Css("bi bi-heart-fill")">
+                <h1>Pivot #2: Heart</h1>
+                <div>
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+                </div>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Gear" Icon="@BitIconInfo.Bi("gear-fill")">
+                <h1>Pivot #3: Gear</h1>
+                <div>
+                    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+                    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+                    possibilities that lie ahead.
+                </div>
+            </BitPivotItem>
+        </BitPivot>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
         <div>
             <div>Component's Style & Class:</div><br />
             <BitPivot Style="border: 1px solid tomato;">
@@ -676,7 +746,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div class="box">
             <BitPivot Dir="BitDir.Rtl" OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
                 <BitPivotItem HeaderText="اسناد" IconName="@BitIconName.Info">

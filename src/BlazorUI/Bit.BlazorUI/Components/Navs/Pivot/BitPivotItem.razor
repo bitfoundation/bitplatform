@@ -13,10 +13,13 @@
         tabindex="@Parent?.GetPivotItemTabIndex(this)"
         aria-selected="@(IsSelected ? "true": "false")">
     <span style="@Parent?.Styles?.HeaderItemContent" class="@Parent?.Classes?.HeaderItemContent">
-        @if (@IconName.HasValue())
+        @{
+            var icon = BitIconInfo.From(Icon, IconName);
+        }
+        @if (icon is not null)
         {
             <span style="@Parent?.Styles?.HeaderIconContainer" class="@Parent?.Classes?.HeaderIconContainer">
-                <i style="@Parent?.Styles?.HeaderIcon" class="bit-icon bit-icon--@IconName @Parent?.Classes?.HeaderIcon" />
+                <i style="@Parent?.Styles?.HeaderIcon" class="@icon.GetCssClasses() @Parent?.Classes?.HeaderIcon" />
             </span>
         }
 
