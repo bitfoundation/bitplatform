@@ -15,7 +15,11 @@ public partial class AppStorageHealthCheck : IHealthCheck
     {
         try
         {
-            _ = await blobStorage.ExistsAsync(settings.UserProfileImagesDir, cancellationToken);
+            var result = await blobStorage.ListAsync(new()
+            {
+                FolderPath = settings.UserProfileImagesDir,
+                MaxResults = 1
+            }, cancellationToken);
 
             return HealthCheckResult.Healthy("Storage is healthy");
         }
