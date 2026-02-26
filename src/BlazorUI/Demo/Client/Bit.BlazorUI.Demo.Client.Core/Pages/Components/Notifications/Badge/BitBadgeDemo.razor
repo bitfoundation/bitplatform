@@ -1,4 +1,4 @@
-﻿@page "/components/badge"
+@page "/components/badge"
 
 <PageOutlet Url="components/badge"
             Title="Badge"
@@ -260,7 +260,38 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="External Icons" RazorCode="@example11RazorCode" Id="example11">
+        <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>Icon</b> parameter.</div>
+        <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.</div>
+
+        <br /><br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        
+        <div class="example-content">
+            <BitBadge Content="04" Icon="@BitIconInfo.Css("fa-solid fa-heart")" Variant="BitVariant.Fill">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+            <BitBadge Content="63" Icon="@BitIconInfo.Fa("solid bell")" Variant="BitVariant.Outline" Color="BitColor.Secondary">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+        </div>
+        
+        <br /><br />
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        
+        <div class="example-content">
+            <BitBadge Content="3" Icon="@BitIconInfo.Css("bi bi-heart-fill")" Variant="BitVariant.Fill" Color="BitColor.Error">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+            <BitBadge Icon="@BitIconInfo.Bi("gear-fill")" Variant="BitVariant.Text" Color="BitColor.Tertiary">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
         <div>
             Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
         </div>
@@ -295,7 +326,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>Managing clicking on the badge event (OnClick).</div>
         <br /><br />
         <BitBadge Content="counter" OnClick="() => counter++">
