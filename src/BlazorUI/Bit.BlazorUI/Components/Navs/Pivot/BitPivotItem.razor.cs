@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public partial class BitPivotItem : BitComponentBase
 {
@@ -41,7 +41,14 @@ public partial class BitPivotItem : BitComponentBase
     [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
-    /// The icon name for the icon shown next to the pivot link.
+    /// Gets or sets the icon to display next to the pivot link using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display next to the pivot link from the built-in Fluent UI icons.
+    /// For external icon libraries, use <see cref="Icon"/> instead.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 

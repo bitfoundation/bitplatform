@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Pivot;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Pivot;
 
 public partial class BitPivotDemo
 {
@@ -172,10 +172,21 @@ public partial class BitPivotDemo
                 },
                 new()
                 {
+                    Name = "Icon",
+                    Type = "BitIconInfo?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the icon to display next to the pivot link using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+                    LinkType = LinkType.Link,
+                    Href = "#bit-icon-info",
+                },
+                new()
+                {
                     Name = "IconName",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "The icon name for the icon shown next to the pivot link.",
+                    Description = "Gets or sets the name of the icon to display next to the pivot link from the built-in Fluent UI icons.",
+                    LinkType = LinkType.Link,
+                    Href = "https://blazorui.bitplatform.dev/iconography",
                 },
                 new()
                 {
@@ -269,6 +280,35 @@ public partial class BitPivotDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the header item count of the BitPivot."
                }
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
             ]
         }
     ];
@@ -947,6 +987,64 @@ private BitPivotItem selectedPivotItem;";
 </BitPivot>";
 
     private readonly string example11RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitPivot>
+    <BitPivotItem HeaderText=""Home"" Icon=""@(""fa-solid fa-house"")"">
+        <h1>Pivot #1: Home</h1>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge.
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Heart"" Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"">
+        <h1>Pivot #2: Heart</h1>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Rocket"" Icon=""@BitIconInfo.Fa(""solid rocket"")"">
+        <h1>Pivot #3: Rocket</h1>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead.
+        </div>
+    </BitPivotItem>
+</BitPivot>
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitPivot>
+    <BitPivotItem HeaderText=""Home"" Icon=""@(""bi bi-house-fill"")"">
+        <h1>Pivot #1: Home</h1>
+        <div>
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
+            when possibilities are limitless, waiting for content to emerge.
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Heart"" Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"">
+        <h1>Pivot #2: Heart</h1>
+        <div>
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")"">
+        <h1>Pivot #3: Gear</h1>
+        <div>
+            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
+            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+            possibilities that lie ahead.
+        </div>
+    </BitPivotItem>
+</BitPivot>";
+
+    private readonly string example12RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -1106,7 +1204,7 @@ private BitPivotItem selectedPivotItem;";
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitPivot Dir=""BitDir.Rtl"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
     <BitPivotItem HeaderText=""اسناد"" IconName=""@BitIconName.Info"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
