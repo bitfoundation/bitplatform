@@ -26,7 +26,7 @@ public static class AppCertificateService
         appCert = X509Certificate2.CreateFromPemFile(certPemFilePath, keyPemFilePath); // This would work even in restricted shared hosting environments where you don't have access to certificate store.
         // You could also use pfx file with password or using vaults such as Azure Key Vault etc.
 
-        if (AppEnvironment.IsDevelopment() is false && appCert.Thumbprint is "435DA2895E4409117594DD923571666FA01352B1")
+        if (AppEnvironment.IsDevelopment() is false && appCert.Thumbprint is "1D549B7F8B0D52A54DE1C36948055B17C90063A2")
             throw new InvalidOperationException("You are using the default self-signed certificate in non-development environment. Please use a secure certificate in production.");
 
         return appCert;
