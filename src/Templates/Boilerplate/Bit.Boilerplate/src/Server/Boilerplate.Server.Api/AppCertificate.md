@@ -73,7 +73,7 @@ By default, the system uses **PEM files** (`.crt` and `.key`) instead of the bun
 - **Azure Key Vault** or **AWS Secrets Manager**.
 - The local **OS Certificate Store**.
 
-### How to generate PFX files (Optional):
+#### How to generate PFX files (Optional):
 ```powershell
 $cert = New-SelfSignedCertificate -Subject "AppCertificate" -KeyLength 3072 -HashAlgorithm "SHA256" -NotAfter (Get-Date).AddYears(1)
 Export-PfxCertificate -cert $cert.PSPath -FilePath "AppCertificate.pfx" -Password (ConvertTo-SecureString -String "USE_STRONG_P@SSW0RD_HERE" -Force -AsPlainText)
