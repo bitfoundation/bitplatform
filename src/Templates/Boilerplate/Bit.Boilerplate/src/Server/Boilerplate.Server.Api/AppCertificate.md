@@ -47,6 +47,34 @@ openssl genrsa -out AppCertificate.key 2048
 openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365 -subj "/CN=AppCertificate"
 ```
 
+## Why RSA 2048 + SHA-256?
+
+The application uses **RSA 2048** paired with **SHA-256** for the following reasons:
+
+- **The "Weakest Link" Rule:** Security is only as strong as its weakest component. RSA 2048 provides **112 bits** of security strength, while SHA-256 provides **128 bits**. Using a stronger hash (like SHA-512 with 256 bits) adds no real security benefit because the 2048-bit key remains the limiting factor.
+- **Performance Balance:** Moving to RSA 4096 and SHA-512 would make cryptographic operations (signing and decryption) **5 to 7 times slower** without providing a meaningful security upgrade for standard production environments.
+- **Industry Standard:** RSA 2048 + SHA-256 is the current "Golden Standard" recommended by NIST for secure applications until at least 2030.
+
+## Why RSA over HMAC?
+HMAC algorithms (like HMAC-SHA512) are **Symmetric**, meaning they require a shared secret. This is unsuitable for our architecture, which requires **Asymmetric** (Public/Private) keys so that external services can validate tokens without having the power to issue them.
+
+## Why RSA over ECDSA?
+While ECDSA is highly efficient for JWT signing, **ECDSA** does not support **Encryption/Decryption**. Since our Data Protection layer requires encryption, choosing ECDSA would force us to manage two separate key pairs (4 files and 4 commands). RSA provides a unified solution for both signing and encryption with a single key pair.
+
+## Why PEM over PFX?
+
+By default, the system uses **PEM files** (`.crt` and `.key`) instead of the bundled **PFX** format:
+
+- **Shared Hosting Compatibility:** PFX loading often fails in restricted shared hosting environments because it tries to interact with the OS Certificate Store or write to temporary system folders. PEM loading is **memory-only**, making it "infrastructure-agnostic."
+- **Simplicity:** PEM files are easier to manage in Linux-based containers and CI/CD pipelines.
+
+**Note:** While the current implementation uses **PEM files** for maximum compatibility with shared hosting, you can easily switch to other sources. By modifying a single line in `AppCertificateService.GetAppCertificate`, you can load the certificate from:
+- A password-protected **PFX** file.
+- **Azure Key Vault** or **AWS Secrets Manager**.
+- The local **OS Certificate Store**.
+
+This architecture ensures that your security logic remains decoupled from your key storage strategy.
+
 ## OpenID Configuration Endpoint
 
 The application exposes an OpenID Connect discovery endpoint at `/.well-known/openid-configuration`. This endpoint provides:
@@ -57,7 +85,7 @@ The application exposes an OpenID Connect discovery endpoint at `/.well-known/op
 
 ### Why Expose This Endpoint?
 
-This allows **other backend services** to securely validate JWTs issued by this API without:
+This allows **other backend (micro) services** to securely validate JWTs issued by this API without:
 - Sharing the private key
 - Hardcoding the public key
 - Manual key distribution
