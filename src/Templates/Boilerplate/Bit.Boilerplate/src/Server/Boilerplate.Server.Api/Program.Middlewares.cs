@@ -93,7 +93,7 @@ public static partial class Program
     /// </summary>
     public static WebApplication MapOpenIdConfiguration(this WebApplication app)
     {
-        var publicKey = AppCertificateService.GetPublicSecurityKey();
+        var publicKey = AppCertificateService.GetPublicSecurityKey(app.Configuration);
         var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(publicKey);
         jwk.Use = "sig";
 

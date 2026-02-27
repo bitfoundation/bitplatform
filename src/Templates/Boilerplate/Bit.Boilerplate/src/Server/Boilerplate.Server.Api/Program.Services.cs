@@ -422,7 +422,7 @@ public static partial class Program
 
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()
-            .ProtectKeysWithCertificate(AppCertificateService.GetAppCertificate());
+            .ProtectKeysWithCertificate(AppCertificateService.GetAppCertificate(configuration));
 
         AddIdentity(builder);
 
