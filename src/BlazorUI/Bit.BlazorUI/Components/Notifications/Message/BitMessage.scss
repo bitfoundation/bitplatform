@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-msg {
     width: 100%;
@@ -84,6 +84,7 @@
     cursor: pointer;
     min-width: spacing(4);
     min-height: spacing(4);
+    color: var(--bit-msg-clr);
     background-color: transparent;
 }
 
