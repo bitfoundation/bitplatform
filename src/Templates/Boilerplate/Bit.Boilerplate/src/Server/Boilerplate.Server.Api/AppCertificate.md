@@ -7,7 +7,7 @@ This document explains how the application uses cryptographic certificates for s
 The application uses asymmetric cryptography (public/private key pairs) for two critical security functions:
 
 1. **JWT Token Signing & Validation** - Securely issue and verify access tokens
-2. **Data Protection API** - Encrypt sensitive data at rest
+2. **Data Protection API** - Encrypt sensitive data (cookies, anti-forgery tokens, etc.) at rest
 
 ## Benefits of Public/Private Key Pairs
 
@@ -15,8 +15,8 @@ The application uses asymmetric cryptography (public/private key pairs) for two 
 
 | Key Type | Purpose |
 |----------|---------|
-| **Private Key** | Used by the **issuing server** to **sign** JWT tokens. This key must be kept secret and secure. |
 | **Public Key** | Used by **any service** to **validate** JWT tokens. This key can be freely distributed. |
+| **Private Key** | Used by the **issuing server** to **sign** JWT tokens. This key must be kept secret and secure. |
 
 **Advantages:**
 - Other backend services can validate tokens without needing the private key
@@ -27,8 +27,8 @@ The application uses asymmetric cryptography (public/private key pairs) for two 
 
 | Key Type | Purpose |
 |----------|---------|
-| **Private Key** | Used to **decrypt** protected data (cookies, anti-forgery tokens, etc.) |
-| **Public Key** | Used to **encrypt** data for protection |
+| **Public Key** | Used to protect data protection API keys by encrypting them. |
+| **Private Key** | Used to decrypt the protected keys when the application starts. |
 
 **Advantages:**
 - Consistent encryption across multiple server instances
