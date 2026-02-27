@@ -51,7 +51,7 @@ openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365
 
 The application uses **RSA 3072** paired with **SHA-256** for the following reasons:
 
-- **The "Weakest Link" Rule:** Security is only as strong as its weakest component. RSA 3072 provides **128 bits** of security strength, while SHA-256 provides **128 bits**. Using a stronger hash (like SHA-512 with 256 bits) adds no real security benefit because the 3072-bit key remains the limiting factor.
+- **The "Weakest Link" Rule:** Security is only as strong as its weakest component. RSA 3072 & SHA-256 provide **128 bits** of security strength. Using a stronger hash (like SHA-512 with 256 bits security strength) adds no real security benefit because the 3072-bit key remains the limiting factor.
 - **Performance Balance:** Moving to RSA 4096 and SHA-512 would make cryptographic operations (signing and decryption) **5 to 7 times slower** without providing a meaningful security upgrade for standard production environments.
 - **Industry Standard:** RSA 3072 + SHA-256 is the current "Golden Standard" recommended by NIST for secure applications until at least 2030.
 
