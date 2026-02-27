@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A Message displays errors, warnings, or important information. For example, if a file failed to upload an error message should appear.
@@ -328,7 +328,7 @@ public partial class BitMessage : BitComponentBase
 
 
 
-    private static Dictionary<BitColor, string> _IconMap = new()
+    private static readonly Dictionary<BitColor, string> _IconMap = new()
     {
         [BitColor.Primary] = "Info",
         [BitColor.Secondary] = "Info",
