@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-bdg {
     position: relative;
@@ -25,6 +25,7 @@
 .bit-bdg-ctn {
     cursor: default;
     font-weight: 600;
+    gap: spacing(0.5);
     position: absolute;
     align-items: center;
     display: inline-flex;
