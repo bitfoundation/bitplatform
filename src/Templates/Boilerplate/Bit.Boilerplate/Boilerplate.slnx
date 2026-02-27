@@ -8,6 +8,7 @@
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
     <File Path=".vsconfig" />
+	<File Path="AGENTS.md" />
     <File Path="Clean.bat" />
     <File Path="global.json" />
     <File Path="vs-spell.dic" />
@@ -25,13 +26,12 @@
     <File Path=".azure-devops/workflows/ci.yml" />
   </Folder>
 <!--#endif-->
-  <Folder Name="/.SolutionItems/.github/">
-    <File Path=".github/copilot-instructions.md" />
-  </Folder>
-  <Folder Name="/.SolutionItems/.github/prompts/">
-    <File Path=".github/prompts/resx.prompt.md" />
-    <File Path=".github/prompts/bitify.prompt.md" />
-    <File Path=".github/prompts/scaffold.prompt.md" />
+  <Folder Name="/.SolutionItems/.github/" />
+  <Folder Name="/.SolutionItems/.github/agents/">
+    <File Path=".github/agents/resx.agent.md" />
+	<File Path=".github/agents/code-reviewer.agent.md" />
+    <File Path=".github/agents/bitify.agent.md" />
+    <File Path=".github/agents/scaffold.agent.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.docs/">
     <File Path=".docs/00- Wiki.md" />

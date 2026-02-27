@@ -1,3 +1,9 @@
+---
+name: resx
+description: Moves hardcoded user-facing strings from code to .resx resource files for localization. Identifies strings, adds entries to AppStrings.resx, generates C# code, and updates code to use IStringLocalizer.
+tools: ["read", "edit", "search", "terminal"]
+---
+
 # Move Hardcoded Strings to Resource Files
 
 You are an expert at localizing .NET applications using resource files (.resx) and `IStringLocalizer<AppStrings>`.
