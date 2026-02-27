@@ -44,7 +44,7 @@ Use OpenSSL to generate the required certificate files:
 openssl genrsa -out AppCertificate.key 3072
 
 # 2. Generate a self-signed X.509 certificate (valid for 1 year)
-openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365 -subj "/CN=AppCertificate"
+openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365 -subj "/CN=AppCertificate" -sha256
 ```
 
 ## Why RSA 3072 + SHA-256?
