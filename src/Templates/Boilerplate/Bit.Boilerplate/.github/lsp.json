@@ -1,0 +1,35 @@
+{
+    "lspServers": {
+        "csharp": {
+            "command": "dotnet",
+            "args": [
+                "Microsoft.CodeAnalysis.LanguageServer",
+                "--stdio"
+            ],
+            "fileExtensions": {
+                ".cs": "csharp",
+                ".razor": "razor"
+            }
+        },
+        "typescript": {
+            "command": "typescript-language-server",
+            "args": [
+                "--stdio"
+            ],
+            "fileExtensions": {
+                ".ts": "typescript",
+                ".tsx": "typescriptreact"
+            }
+        },
+        "css": {
+            "command": "vscode-css-language-server",
+            "args": [
+                "--stdio"
+            ],
+            "fileExtensions": {
+                ".css": "css",
+                ".scss": "scss"
+            }
+        }
+    }
+}
