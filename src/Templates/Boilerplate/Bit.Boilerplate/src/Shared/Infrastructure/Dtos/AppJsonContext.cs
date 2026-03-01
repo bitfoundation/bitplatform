@@ -36,15 +36,12 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
   ],
   //#endif
 
-
-  PropertyNameCaseInsensitive = true,
-  PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-  DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
-  UseStringEnumConverter = true,
-  WriteIndented = false,
-  GenerationMode = JsonSourceGenerationMode.Default,
   AllowTrailingCommas = true,
-  DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+  PropertyNameCaseInsensitive = true,
+  GenerationMode = JsonSourceGenerationMode.Default,
+  DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
+  PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase
+
 )]
 
 

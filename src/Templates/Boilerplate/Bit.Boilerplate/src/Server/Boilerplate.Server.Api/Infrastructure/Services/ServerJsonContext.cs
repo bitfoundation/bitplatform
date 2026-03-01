@@ -9,14 +9,11 @@ namespace Boilerplate.Server.Api.Infrastructure.Services;
 /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
 /// </summary>
 [JsonSourceGenerationOptions(
-  PropertyNameCaseInsensitive = true,
-  PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-  DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
-  UseStringEnumConverter = true,
-  WriteIndented = false,
-  GenerationMode = JsonSourceGenerationMode.Default,
   AllowTrailingCommas = true,
-  DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+  PropertyNameCaseInsensitive = true,
+  GenerationMode = JsonSourceGenerationMode.Default,
+  DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
+  PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase
 )]
 [JsonSerializable(typeof(NugetStatsDto))]
 //#if (captcha == "reCaptcha")
