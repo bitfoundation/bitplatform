@@ -228,18 +228,13 @@ public static partial class Program
             return options;
         });
 
-        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]));
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.ApplyDefaultOptions());
 
         services.AddSingleton<HtmlSanitizer>();
 
         services
             .AddControllers(options => options.Filters.Add<AutoCsrfProtectionFilter>())
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                options.JsonSerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]);
-            })
+            .AddJsonOptions(options => options.JsonSerializerOptions.ApplyDefaultOptions())
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif
@@ -269,17 +264,7 @@ public static partial class Program
         var signalRBuilder = services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = env.IsDevelopment();
-        }).AddJsonProtocol(options =>
-        {
-            JsonSerializerOptions jsonOptions = new JsonSerializerOptions(AppJsonContext.Default.Options);
-            jsonOptions.TypeInfoResolverChain.Add(IdentityJsonContext.Default);
-            jsonOptions.TypeInfoResolverChain.Add(ServerJsonContext.Default);
-
-            foreach (var chain in jsonOptions.TypeInfoResolverChain)
-            {
-                options.PayloadSerializerOptions.TypeInfoResolverChain.Add(chain);
-            }
-        });
+        }).AddJsonProtocol(options => options.PayloadSerializerOptions.ApplyDefaultOptions());
 
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
         {
