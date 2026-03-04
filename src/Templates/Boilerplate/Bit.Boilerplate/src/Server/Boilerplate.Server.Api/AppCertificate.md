@@ -91,7 +91,7 @@ The application exposes an OpenID Connect discovery endpoint at `/.well-known/op
 
 ### Why Expose This Endpoint?
 
-This allows **other backend (micro) services** to securely validate JWTs issued by this API without:
+This allows **other backend (micro) services / resource servers** to securely validate JWTs issued by this API without:
 - Sharing the private key
 - Hardcoding the public key
 - Manual key distribution

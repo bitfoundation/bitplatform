@@ -108,7 +108,7 @@ public partial class AppJwtSecureDataFormat
             {
                 Issuer = appSettings.Identity.Issuer,
                 Audience = appSettings.Identity.Audience,
-                IssuedAt = DateTimeOffset.UtcNow.DateTime,
+                IssuedAt = DateTime.UtcNow,
                 Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime,
                 SigningCredentials = new SigningCredentials(privateKey, SecurityAlgorithms.RsaSha256Signature),
                 Subject = new ClaimsIdentity(data.Principal.Claims),
