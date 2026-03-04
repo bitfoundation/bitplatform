@@ -254,6 +254,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             if ((refreshTicket.Properties.ExpiresUtc ?? DateTimeOffset.MinValue) < DateTimeOffset.UtcNow)
                 throw new UnauthorizedException(); // refresh token is expired.
 
+            // Refresh token rotation detection: If the refresh token is used more than once, then it means the token has been compromised, so we should reject the request.
+            long issuedAtClaimValue = refreshTicket.Principal.GetClaimValue<long>("iat");
+            long difference = Math.Abs(issuedAtClaimValue - (userSession.RenewedOn ?? userSession.StartedOn));
+            if (difference > 5) // The 5 seconds is added because there might be a delay between the time the refresh token is issued and the time the user session is updated in the database.
+                throw new UnauthorizedException();
+
             var user = userSession.User!;
 
             if (await signInManager.ValidateSecurityStampAsync(userSession.User, securityStamp) is false)

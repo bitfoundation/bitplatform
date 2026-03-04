@@ -40,7 +40,8 @@ public static class AppCertificateService
     /// </summary>
     public static RsaSecurityKey GetPrivateSecurityKey(IConfiguration configuration)
     {
-        return privateSecurityKey ??= new RsaSecurityKey(GetAppCertificate(configuration).GetRSAPrivateKey() ?? throw new InvalidOperationException("Private key not found in the certificate.")) { KeyId = "Boilerplate" };
+        var privateKey = GetAppCertificate(configuration).GetRSAPrivateKey() ?? throw new InvalidOperationException("Private key not found in the certificate.");
+        return privateSecurityKey ??= new RsaSecurityKey(privateKey) { KeyId = "Boilerplate" };
     }
 
     /// <summary>
@@ -48,6 +49,7 @@ public static class AppCertificateService
     /// </summary>
     public static RsaSecurityKey GetPublicSecurityKey(IConfiguration configuration)
     {
-        return publicSecurityKey ??= new RsaSecurityKey(GetAppCertificate(configuration).GetRSAPublicKey() ?? throw new InvalidOperationException("Public key not found in the certificate.")) { KeyId = "Boilerplate" };
+        var publicKey = GetAppCertificate(configuration).GetRSAPublicKey() ?? throw new InvalidOperationException("Public key not found in the certificate.");
+        return publicSecurityKey ??= new RsaSecurityKey(publicKey) { KeyId = "Boilerplate" };
     }
 }
