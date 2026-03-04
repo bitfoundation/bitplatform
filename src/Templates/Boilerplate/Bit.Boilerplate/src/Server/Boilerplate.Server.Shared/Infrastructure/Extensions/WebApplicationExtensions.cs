@@ -133,6 +133,9 @@ public static class WebApplicationExtensions
             // 'frame-ancestors self': Modern replacement for X-Frame-Options.
             // 'form-action self': Restricts forms to only submit to your own domain (prevents form hijacking).
             context.Response.Headers.Append("Content-Security-Policy", "object-src 'none'; frame-ancestors 'self'; form-action 'self';");
+            // Full Version: For a stricter, app-wide CSP that also works in all Interactive Blazor rendering modes
+            // use the SecurityHeaders component in Client.Core by adding <SecurityHeaders /> to MainLayout.razor.
+            // Checkout the SecurityHeaders.razor file for more information.
 
             await next();
         });

@@ -23,6 +23,13 @@ public partial class ClientCoreSettings : SharedSettings
     public string AdUnitPath { get; set; } = default!;
     //#endif
 
+    /// <summary>
+    /// When the Blazor Hybrid app sends a request to the API server, and the API server and web app are hosted on different URLs,
+    /// the origin of the generated links (e.g., email confirmation links) will depend on `WebAppUrl` value.
+    /// The config is revelant for Blazor Hybrid apps only.
+    /// </summary>
+    public Uri? WebAppUrl { get; set; }
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();

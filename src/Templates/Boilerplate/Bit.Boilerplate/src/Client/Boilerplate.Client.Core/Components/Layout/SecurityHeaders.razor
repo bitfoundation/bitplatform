@@ -1,0 +1,10 @@
+@* Unlike UseSecurityHeaders in WebApplicationExtensions.cs, which only applies during Blazor Server
+   and Blazor WebAssembly Pre-Rendering, this component works across all Interactive Blazor
+   rendering modes (Server, WebAssembly, WebAssembly Standalone, Auto and Hybrid).
+   Because it enforces a stricter Content-Security-Policy, it is not enabled by default.
+   To activate it, add <SecurityHeaders /> inside AppShell.razor *@
+
+<HeadContent>
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="@CspContent">
+</HeadContent>
