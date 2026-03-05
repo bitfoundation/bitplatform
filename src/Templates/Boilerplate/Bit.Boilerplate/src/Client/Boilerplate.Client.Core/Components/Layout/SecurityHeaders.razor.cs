@@ -25,7 +25,7 @@ public partial class SecurityHeaders
         var ownOriginsString = string.Join(" ", ownOrigins);
 
         // 2. Service Specific Origins
-        var connectSrc = new HashSet<string> { ownOriginsString };
+        var connectSrc = new HashSet<string>(ownOrigins);
         var imgSrc = new HashSet<string> { ownOriginsString, "data:" };
         var scriptSrc = new HashSet<string> { "'self'", "'unsafe-inline'" };
         var styleSrc = new HashSet<string> { "'self'", "'unsafe-inline'" };
