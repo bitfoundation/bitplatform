@@ -27,7 +27,7 @@ public partial class SecurityHeaders
         // 2. Service Specific Origins
         var connectSrc = new HashSet<string>(ownOrigins);
         var imgSrc = new HashSet<string> { ownOriginsString, "data:" };
-        var scriptSrc = new HashSet<string> { "'self'", "'unsafe-inline'" };
+        var scriptSrc = new HashSet<string> { "'self'", "'unsafe-inline'", "'wasm-unsafe-eval'" };
         var styleSrc = new HashSet<string> { "'self'", "'unsafe-inline'" };
         var fontSrc = new HashSet<string> { "'self'" };
         var frameSrc = new HashSet<string> { "'self'" };
