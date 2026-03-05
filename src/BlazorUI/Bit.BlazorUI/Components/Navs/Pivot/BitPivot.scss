@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-pvt {
     gap: 1rem;
@@ -82,7 +82,7 @@
 
     .bit-pvti-sel {
         &::before {
-            background-color: $clr-pri;
+            background-color: var(--bit-pvt-clr);
         }
 
         @media(hover:hover) {
@@ -99,16 +99,16 @@
     .bit-pvti {
         @media(hover:hover) {
             &:hover {
-                color: $clr-pri-text;
-                background-color: $clr-pri-hover;
+                color: var(--bit-pvt-clr-text);
+                background-color: var(--bit-pvt-clr-hover);
             }
         }
     }
 
     .bit-pvti-sel {
         font-weight: 400;
-        color: $clr-pri-text;
-        background-color: $clr-pri;
+        color: var(--bit-pvt-clr-text);
+        background-color: var(--bit-pvt-clr);
     }
 }
 
@@ -244,4 +244,107 @@
             }
         }
     }
+}
+
+.bit-pvt-pri {
+    --bit-pvt-clr: #{$clr-pri};
+    --bit-pvt-clr-hover: #{$clr-pri-hover};
+    --bit-pvt-clr-text: #{$clr-pri-text};
+}
+
+.bit-pvt-sec {
+    --bit-pvt-clr: #{$clr-sec};
+    --bit-pvt-clr-hover: #{$clr-sec-hover};
+    --bit-pvt-clr-text: #{$clr-sec-text};
+}
+
+.bit-pvt-ter {
+    --bit-pvt-clr: #{$clr-ter};
+    --bit-pvt-clr-hover: #{$clr-ter-hover};
+    --bit-pvt-clr-text: #{$clr-ter-text};
+}
+
+.bit-pvt-inf {
+    --bit-pvt-clr: #{$clr-inf};
+    --bit-pvt-clr-hover: #{$clr-inf-hover};
+    --bit-pvt-clr-text: #{$clr-inf-text};
+}
+
+.bit-pvt-suc {
+    --bit-pvt-clr: #{$clr-suc};
+    --bit-pvt-clr-hover: #{$clr-suc-hover};
+    --bit-pvt-clr-text: #{$clr-suc-text};
+}
+
+.bit-pvt-wrn {
+    --bit-pvt-clr: #{$clr-wrn};
+    --bit-pvt-clr-hover: #{$clr-wrn-hover};
+    --bit-pvt-clr-text: #{$clr-wrn-text};
+}
+
+.bit-pvt-swr {
+    --bit-pvt-clr: #{$clr-swr};
+    --bit-pvt-clr-hover: #{$clr-swr-hover};
+    --bit-pvt-clr-text: #{$clr-swr-text};
+}
+
+.bit-pvt-err {
+    --bit-pvt-clr: #{$clr-err};
+    --bit-pvt-clr-hover: #{$clr-err-hover};
+    --bit-pvt-clr-text: #{$clr-err-text};
+}
+
+
+.bit-pvt-pbg {
+    --bit-pvt-clr: #{$clr-bg-pri};
+    --bit-pvt-clr-hover: #{$clr-bg-pri-hover};
+    --bit-pvt-clr-text: #{$clr-fg-pri};
+}
+
+.bit-pvt-sbg {
+    --bit-pvt-clr: #{$clr-bg-sec};
+    --bit-pvt-clr-hover: #{$clr-bg-sec-hover};
+    --bit-pvt-clr-text: #{$clr-fg-pri};
+}
+
+.bit-pvt-tbg {
+    --bit-pvt-clr: #{$clr-bg-ter};
+    --bit-pvt-clr-hover: #{$clr-bg-ter-hover};
+    --bit-pvt-clr-text: #{$clr-fg-pri};
+}
+
+.bit-pvt-pfg {
+    --bit-pvt-clr: #{$clr-fg-pri};
+    --bit-pvt-clr-hover: #{$clr-fg-pri-hover};
+    --bit-pvt-clr-text: #{$clr-bg-pri};
+}
+
+.bit-pvt-sfg {
+    --bit-pvt-clr: #{$clr-fg-sec};
+    --bit-pvt-clr-hover: #{$clr-fg-sec-hover};
+    --bit-pvt-clr-text: #{$clr-bg-pri};
+}
+
+.bit-pvt-tfg {
+    --bit-pvt-clr: #{$clr-fg-ter};
+    --bit-pvt-clr-hover: #{$clr-fg-ter-hover};
+    --bit-pvt-clr-text: #{$clr-bg-pri};
+}
+
+.bit-pvt-pbr {
+    --bit-pvt-clr: #{$clr-brd-pri};
+    --bit-pvt-clr-hover: #{$clr-brd-pri-hover};
+    --bit-pvt-clr-text: #{$clr-fg-pri};
+}
+
+.bit-pvt-sbr {
+    --bit-pvt-clr: #{$clr-brd-sec};
+    --bit-pvt-clr-hover: #{$clr-brd-sec-hover};
+    --bit-pvt-clr-text: #{$clr-fg-pri};
+}
+
+.bit-pvt-tbr {
+    --bit-pvt-clr: #{$clr-brd-ter};
+    --bit-pvt-clr-hover: #{$clr-brd-ter-hover};
+    --bit-pvt-clr-text: #{$clr-fg-pri};
 }
