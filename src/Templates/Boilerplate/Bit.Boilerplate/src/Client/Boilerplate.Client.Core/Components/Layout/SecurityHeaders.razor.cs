@@ -19,18 +19,19 @@ public partial class SecurityHeaders
         var webAppUrl = settings.WebAppUrl?.ToString();
 
         // 1. Common Trusted Origins (Your own servers)
-        var ownOrigins = new List<string> { "'self'", apiUrl, apiUrl.Replace("http:", "ws:").Replace("https:", "wss:") };
+        var ownOrigins = new HashSet<string> { "'self'", apiUrl, apiUrl.Replace("http:", "ws:").Replace("https:", "wss:") };
         if (string.IsNullOrWhiteSpace(webAppUrl) is false)
             ownOrigins.Add(webAppUrl);
-        var ownOriginsString = string.Join(" ", ownOrigins.Distinct());
+        var ownOriginsString = string.Join(" ", ownOrigins);
 
         // 2. Service Specific Origins
-        var connectSrc = new List<string> { ownOriginsString };
-        var imgSrc = new List<string> { ownOriginsString, "data:" };
-        var scriptSrc = new List<string> { "'self'", "'unsafe-inline'" };
-        var styleSrc = new List<string> { "'self'", "'unsafe-inline'" };
-        var fontSrc = new List<string> { "'self'" };
-        var frameSrc = new List<string> { "'self'" };
+        var connectSrc = new HashSet<string> { ownOriginsString };
+        var imgSrc = new HashSet<string> { ownOriginsString, "data:" };
+        var scriptSrc = new HashSet<string> { "'self'", "'unsafe-inline'" };
+        var styleSrc = new HashSet<string> { "'self'", "'unsafe-inline'" };
+        var fontSrc = new HashSet<string> { "'self'" };
+        var frameSrc = new HashSet<string> { "'self'" };
+        var mediaSrc = new HashSet<string> { "'self'" };
 
         //#if (appInsights == true)
         // --- Add Azure App Insights ---
@@ -44,38 +45,45 @@ public partial class SecurityHeaders
 
         //#if (captcha == "reCaptcha")
         // --- Add Google reCAPTCHA ---
+        connectSrc.Add("https://www.google.com/");
         scriptSrc.Add("https://www.google.com/recaptcha/ https://www.gstatic.com/");
         frameSrc.Add("https://www.google.com/recaptcha/");
         //#endif
 
         //#if (ads == true)
         // --- Add Google Ads ---
-        scriptSrc.Add("https://www.googleadservices.com https://googleads.g.doubleclick.net https://securepubads.g.doubleclick.net https://*.adtrafficquality.google");
-        connectSrc.Add("https://securepubads.g.doubleclick.net https://*.adtrafficquality.google https://*.googlesyndication.com");
-        imgSrc.Add("https://www.google.com https://googleads.g.doubleclick.net");
-        frameSrc.Add("https://googleads.g.doubleclick.net https://*.googlesyndication.com");
+        scriptSrc.Add("https://www.googleadservices.com https://googleads.g.doubleclick.net https://securepubads.g.doubleclick.net https://*.adtrafficquality.google https://*.googlesyndication.com");
+        connectSrc.Add("https://securepubads.g.doubleclick.net https://*.adtrafficquality.google https://*.googlesyndication.com https://csi.gstatic.com");
+        imgSrc.Add("https://www.google.com https://googleads.g.doubleclick.net https://*.googlesyndication.com https://www.gstatic.com https://imasdk.googleapis.com https://*.adtrafficquality.google");
+        frameSrc.Add("https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.adtrafficquality.google");
+        mediaSrc.Add("https://*.gvt1.com");
         //#endif
 
         // --- Add Google Fonts ---
-        styleSrc.Add("https://fonts.googleapis.com");
         fontSrc.Add("https://fonts.gstatic.com");
+        styleSrc.Add("https://fonts.googleapis.com");
 
-        // --- Add shields.io for badge images ---
+        // --- Add for home page's github stats ---
         imgSrc.Add("https://img.shields.io");
+        connectSrc.Add("https://api.github.com");
 
-        // --- Allow localhost WebSocket connections during development (hot reload / debugging) ---
         if (AppEnvironment.IsDevelopment())
-            connectSrc.Add("ws://localhost:* wss://localhost:*");
+        {
+            connectSrc.Add("ws://localhost:* wss://localhost:*"); // Allow localhost WebSocket connections during development (hot reload / debugging)
+            connectSrc.Add("https://raw.githubusercontent.com/"); // Source maps
+        }
 
         // Construct the final CSP string
-        CspContent = $"default-src 'self' 'unsafe-inline' data:; " +
-                     $"script-src {string.Join(" ", scriptSrc)}; " +
-                     $"style-src {string.Join(" ", styleSrc)}; " +
-                     $"font-src {string.Join(" ", fontSrc)}; " +
-                     $"img-src {string.Join(" ", imgSrc)}; " +
-                     $"connect-src {string.Join(" ", connectSrc)}; " +
-                     $"frame-src {string.Join(" ", frameSrc)}; " +
-                     $"form-action 'self'; " +
-                     $"object-src 'none';";
+        CspContent = $"default-src {string.Join(" ", ownOrigins)} 'unsafe-inline' data:; " +   // Fallback for all directives; allows self-origin, inline styles/scripts, and data URIs.
+                     $"script-src {string.Join(" ", scriptSrc)}; " +                           // Defines valid sources for executable JavaScript.
+                     $"style-src {string.Join(" ", styleSrc)}; " +                             // Specifies trusted sources for CSS stylesheets.
+                     $"font-src {string.Join(" ", fontSrc)}; " +                               // Controls where web fonts (e.g., Google Fonts) can be loaded from.
+                     $"img-src {string.Join(" ", imgSrc)}; " +                                 // Defines allowed origins for images and favicons.
+                     $"connect-src {string.Join(" ", connectSrc)}; " +                         // Limits targets for API calls (fetch, XHR, WebSockets).
+                     $"frame-src {string.Join(" ", frameSrc)}; " +                             // Restricts sources for iframes and nested browsing contexts.
+                     $"media-src {string.Join(" ", mediaSrc)}; " +                             // Controls where video/audio media can be loaded from.
+                     $"base-uri {string.Join(" ", ownOrigins)}; " +                            // Restricts the URLs that can be used in a document's <base> element to prevent base URL manipulation.
+                     $"form-action {string.Join(" ", ownOrigins)}; " +                         // Ensures form data is only submitted to your own server.
+                     $"object-src 'none';";                                                    // Disallows legacy plugins like Flash or Java Applets for better security.
     }
 }
