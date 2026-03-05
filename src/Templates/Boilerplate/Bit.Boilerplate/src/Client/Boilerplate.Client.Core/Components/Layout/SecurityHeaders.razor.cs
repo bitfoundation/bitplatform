@@ -18,7 +18,7 @@ public partial class SecurityHeaders
         var apiUrl = absoluteServerAddressProvider.GetAddress().ToString();
         var webAppUrl = settings.WebAppUrl?.ToString();
 
-        // 1. Common Trusted Origins (Your own servers)
+        // 1. Common Trusted Origins (Our own servers)
         var ownOrigins = new HashSet<string> { "'self'", apiUrl, apiUrl.Replace("http:", "ws:").Replace("https:", "wss:") };
         if (string.IsNullOrWhiteSpace(webAppUrl) is false)
             ownOrigins.Add(webAppUrl);
