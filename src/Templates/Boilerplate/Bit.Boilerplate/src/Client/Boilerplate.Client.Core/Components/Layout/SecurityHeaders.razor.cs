@@ -74,16 +74,22 @@ public partial class SecurityHeaders
         }
 
         // Construct the final CSP string
-        CspContent = $"default-src {string.Join(" ", ownOrigins)} 'unsafe-inline' data:; " +   // Fallback for all directives; allows self-origin, inline styles/scripts, and data URIs.
-                     $"script-src {string.Join(" ", scriptSrc)}; " +                           // Defines valid sources for executable JavaScript.
-                     $"style-src {string.Join(" ", styleSrc)}; " +                             // Specifies trusted sources for CSS stylesheets.
-                     $"font-src {string.Join(" ", fontSrc)}; " +                               // Controls where web fonts (e.g., Google Fonts) can be loaded from.
-                     $"img-src {string.Join(" ", imgSrc)}; " +                                 // Defines allowed origins for images and favicons.
-                     $"connect-src {string.Join(" ", connectSrc)}; " +                         // Limits targets for API calls (fetch, XHR, WebSockets).
-                     $"frame-src {string.Join(" ", frameSrc)}; " +                             // Restricts sources for iframes and nested browsing contexts.
-                     $"media-src {string.Join(" ", mediaSrc)}; " +                             // Controls where video/audio media can be loaded from.
-                     $"base-uri {string.Join(" ", ownOrigins)}; " +                            // Restricts the URLs that can be used in a document's <base> element to prevent base URL manipulation.
-                     $"form-action {string.Join(" ", ownOrigins)}; " +                         // Ensures form data is only submitted to your own server.
-                     $"object-src 'none';";                                                    // Disallows legacy plugins like Flash or Java Applets for better security.
+        CspContent = $"default-src {string.Join(" ", ownOrigins)}; " + // Fallback for all directives.
+                     $"script-src {string.Join(" ", scriptSrc)}; " +   // Defines valid sources for executable JavaScript.
+                     $"style-src {string.Join(" ", styleSrc)}; " +     // Specifies trusted sources for CSS stylesheets.
+                     $"font-src {string.Join(" ", fontSrc)}; " +       // Controls where web fonts (e.g., Google Fonts) can be loaded from.
+                     $"img-src {string.Join(" ", imgSrc)}; " +         // Defines allowed origins for images.
+                     $"connect-src {string.Join(" ", connectSrc)}; " + // Limits targets for API calls (fetch, XHR, WebSockets).
+                     $"frame-src {string.Join(" ", frameSrc)}; " +     // Restricts sources for iframes and nested browsing contexts.
+                     $"media-src {string.Join(" ", mediaSrc)}; " +     // Controls where video/audio media can be loaded from.
+                     $"worker-src 'self'; " +                          // Restricts the sources from which Web Workers can be loaded to the same origin.
+                     $"base-uri {string.Join(" ", ownOrigins)}; " +    // Restricts the URLs that can be used in a document's <base> element.
+                     $"form-action {string.Join(" ", ownOrigins)}; " + // Ensures form data is only submitted to your own server.
+                     $"object-src 'none';";                            // Disallows legacy plugins like Flash.
+
+        if (AppEnvironment.IsDevelopment() is false)
+        {
+            CspContent += "upgrade-insecure-requests; ";               // Tells browsers to treat all of this site's insecure URLs (those over HTTP) as though they have been replaced with secure URLs.
+        }
     }
 }

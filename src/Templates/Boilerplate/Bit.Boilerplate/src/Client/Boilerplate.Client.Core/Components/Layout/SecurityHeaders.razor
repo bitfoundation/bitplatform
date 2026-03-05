@@ -4,6 +4,13 @@
    Because it enforces a stricter Content-Security-Policy, it is not enabled by default.
    To activate it, add <SecurityHeaders /> inside AppShell.razor *@
 
+@*
+    Note: Even this CSP is not fully strict:
+    1- It allows `inline` scripts and styles, which is not recommended. To avoid this, you can use a nonce or hash-based approach.
+    2- It gets applied late in the rendering process, which means that some content might be rendered before the CSP is applied.
+    You can mitigate this by moving the desired configuration in index.html files in Client.Maui & Client.Web projects.
+*@
+
 <HeadContent>
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="Content-Security-Policy" content="@CspContent">

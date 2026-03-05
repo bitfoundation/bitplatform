@@ -132,10 +132,15 @@ public static class WebApplicationExtensions
             // 'object-src none': Blocks legacy plugins like Flash.
             // 'frame-ancestors self': Modern replacement for X-Frame-Options.
             // 'form-action self': Restricts forms to only submit to your own domain (prevents form hijacking).
-            context.Response.Headers.Append("Content-Security-Policy", "object-src 'none'; frame-ancestors 'self'; form-action 'self';");
-            // Full Version: For a stricter, app-wide CSP that also works in all Interactive Blazor rendering modes,
-            // use the SecurityHeaders component in Client.Core by adding <SecurityHeaders /> to AppShell.razor
-            // in the root component hierarchy. See SecurityHeaders.razor for more details.
+            var csp = "object-src 'none'; frame-ancestors 'self'; form-action 'self'; worker-src 'self';";
+            if (app.Environment.IsDevelopment() is false)
+            {
+                // In production, add 'upgrade-insecure-requests' to automatically upgrade any HTTP requests to HTTPS.
+                csp += " upgrade-insecure-requests;";
+            }
+            context.Response.Headers.Append("Content-Security-Policy", csp);
+            // For a stricter, app-wide CSP that also works in all Interactive Blazor rendering modes,
+            // use the SecurityHeaders.razor component in Client.Core by adding <SecurityHeaders /> to AppShell.razor
 
             await next();
         });
