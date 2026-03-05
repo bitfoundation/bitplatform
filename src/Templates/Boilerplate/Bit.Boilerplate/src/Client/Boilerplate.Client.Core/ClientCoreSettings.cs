@@ -26,7 +26,7 @@ public partial class ClientCoreSettings : SharedSettings
     /// <summary>
     /// When the Blazor Hybrid app sends a request to the API server, and the API server and web app are hosted on different URLs,
     /// the origin of the generated links (e.g., email confirmation links) will depend on `WebAppUrl` value.
-    /// The config is revelant for Blazor Hybrid apps only.
+    /// The config is relevant for Blazor Hybrid apps only.
     /// </summary>
     public Uri? WebAppUrl { get; set; }
 

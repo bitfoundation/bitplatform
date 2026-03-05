@@ -1,4 +1,5 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout;
+﻿//+:cnd:noEmit
+namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class SecurityHeaders
 {
@@ -31,18 +32,29 @@ public partial class SecurityHeaders
         var fontSrc = new List<string> { "'self'" };
         var frameSrc = new List<string> { "'self'" };
 
-        // --- Add Azure App Insights & Sentry ---
-        connectSrc.Add("https://dc.services.visualstudio.com https://*.in.applicationinsights.azure.com https://*.sentry.io");
+        //#if (appInsights == true)
+        // --- Add Azure App Insights ---
+        connectSrc.Add("https://dc.services.visualstudio.com https://*.in.applicationinsights.azure.com");
+        //#endif
 
+        //#if (appInsights == true)
+        // --- Add Sentry ---
+        connectSrc.Add("https://*.sentry.io");
+        //#endif
+
+        //#if (captcha == "reCaptcha")
         // --- Add Google reCAPTCHA ---
         scriptSrc.Add("https://www.google.com/recaptcha/ https://www.gstatic.com/");
         frameSrc.Add("https://www.google.com/recaptcha/");
+        //#endif
 
+        //#if (ads == true)
         // --- Add Google Ads ---
         scriptSrc.Add("https://www.googleadservices.com https://googleads.g.doubleclick.net https://securepubads.g.doubleclick.net https://*.adtrafficquality.google");
         connectSrc.Add("https://securepubads.g.doubleclick.net https://*.adtrafficquality.google https://*.googlesyndication.com");
         imgSrc.Add("https://www.google.com https://googleads.g.doubleclick.net");
         frameSrc.Add("https://googleads.g.doubleclick.net https://*.googlesyndication.com");
+        //#endif
 
         // --- Add Google Fonts ---
         styleSrc.Add("https://fonts.googleapis.com");
