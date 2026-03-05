@@ -4,13 +4,16 @@
     "dotnet.unitTests.runSettingsPath": "src/Tests/.runsettings",
     "chat.tools.autoApprove": true,
     "github.copilot.chat.codesearch.enabled": true,
+    "github.copilot.chat.scopeSelection": true,
+    "github.copilot.chat.agent.thinkingTool": true,
     "csharp.preview.improvedLaunchExperience": true,
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
         "*.resx": "$(capture).*.resx",
         "*.razor": "$(capture).*.razor, $(capture).razor.cs, $(capture).razor.scss",
         "*.scss": "$(capture).*.scss, $(capture).css, $(capture).css.map",
-        "*.json": "$(capture).*.json, $(capture).*.json"
+        "*.json": "$(capture).*.json, $(capture).*.json",
+        "AGENTS.md": "CLAUDE.md, GEMINI.md, COPILOT.md"
     },
     "workbench.editorAssociations": {   
         "*.md": "vscode.markdown.preview.editor"

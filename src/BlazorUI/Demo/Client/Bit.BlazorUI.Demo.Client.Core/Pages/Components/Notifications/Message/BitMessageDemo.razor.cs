@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.Message;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.Message;
 
 public partial class BitMessageDemo
 {
@@ -46,9 +46,20 @@ public partial class BitMessageDemo
         new()
         {
             Name = "CollapseIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon for the collapse button in Truncate mode using custom CSS classes for external icon libraries. Takes precedence over CollapseIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "CollapseIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Custom Fabric icon name for the collapse icon in Truncate mode.",
+            Description = "Gets or sets the name of the collapse icon in Truncate mode from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -69,9 +80,20 @@ public partial class BitMessageDemo
         new()
         {
             Name = "DismissIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon for the dismiss button using custom CSS classes for external icon libraries. Takes precedence over DismissIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "DismissIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Cancel icon.",
+            Description = "Gets or sets the name of the dismiss icon from the built-in Fluent UI icons. If unset, default will be the Fluent UI Cancel icon.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -83,9 +105,20 @@ public partial class BitMessageDemo
         new()
         {
             Name = "ExpandIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon for the expand button in Truncate mode using custom CSS classes for external icon libraries. Takes precedence over ExpandIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ExpandIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Custom Fabric icon name for the expand icon in Truncate mode.",
+            Description = "Gets or sets the name of the expand icon in Truncate mode from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -96,10 +129,21 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Custom icon to replace the message icon. If unset, default will be the icon set by Type.",
+            Description = "Gets or sets the name of the icon to display from the built-in Fluent UI icons. If unset, the icon will be selected automatically based on Color.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -473,6 +517,35 @@ public partial class BitMessageDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the truncate dismiss icon of the BitMessage."
+                },
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Name",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the name of the icon."
+                },
+                new()
+                {
+                    Name = "BaseClass",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
                 },
             ]
         }

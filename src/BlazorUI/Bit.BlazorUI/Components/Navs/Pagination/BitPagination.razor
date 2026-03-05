@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -8,23 +8,25 @@
      dir="@Dir?.ToString().ToLower()">
     @if (ShowFirstButton)
     {
+        var firstIcon = BitIconInfo.From(FirstButtonIcon, FirstButtonIconName ?? "ChevronRightEnd6 bit-pgn-trs");
         <button @onclick="@(() => ChangePage(1))"
                 aria-label="First page"
                 disabled="@(SelectedPage == 1 || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.FirstButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.FirstButton @GetButtonClasses()">
-            <i style="@Styles?.FirstButtonIcon" class="bit-icon bit-icon--@(FirstIcon ?? "ChevronRightEnd6 bit-pgn-trs") @Styles?.FirstButtonIcon" />
+            <i style="@Styles?.FirstButtonIcon" class="@firstIcon?.GetCssClasses() @Classes?.FirstButtonIcon" />
         </button>
     }
 
     @if (ShowPreviousButton)
     {
+        var previousIcon = BitIconInfo.From(PreviousButtonIcon, PreviousButtonIconName ?? "ChevronRight bit-pgn-trs");
         <button @onclick="@(() => ChangePage(SelectedPage - 1))"
                 aria-label="Previous page"
                 disabled="@(SelectedPage == 1 || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.PreviousButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.PreviousButton @GetButtonClasses()">
-            <i style="@Styles?.PreviousButtonIcon" class="bit-icon bit-icon--@(PreviousIcon ?? "ChevronRight bit-pgn-trs") @Classes?.PreviousButtonIcon" />
+            <i style="@Styles?.PreviousButtonIcon" class="@previousIcon?.GetCssClasses() @Classes?.PreviousButtonIcon" />
         </button>
     }
 
@@ -59,23 +61,25 @@
 
     @if (ShowNextButton)
     {
+        var nextIcon = BitIconInfo.From(NextButtonIcon, NextButtonIconName ?? "ChevronRight bit-pgn-tre");
         <button @onclick="@(() => ChangePage(SelectedPage + 1))"
                 aria-label="Next page"
                 disabled="@(SelectedPage == Count || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.NextButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.NextButton @GetButtonClasses()">
-            <i style="@Styles?.NextButtonIcon" class="bit-icon bit-icon--@(NextIcon ?? "ChevronRight bit-pgn-tre") @Classes?.NextButtonIcon" />
+            <i style="@Styles?.NextButtonIcon" class="@nextIcon?.GetCssClasses() @Classes?.NextButtonIcon" />
         </button>
     }
 
     @if (ShowLastButton)
     {
+        var lastIcon = BitIconInfo.From(LastButtonIcon, LastButtonIconName ?? "ChevronRightEnd6 bit-pgn-tre");
         <button @onclick="@(() => ChangePage(Count))"
                 aria-label="Last page"
                 disabled="@(SelectedPage == Count || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.LastButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.LastButton @GetButtonClasses()">
-            <i style="@Styles?.LastButtonIcon" class="bit-icon bit-icon--@(LastIcon ?? "ChevronRightEnd6 bit-pgn-tre") @Classes?.LastButtonIcon" />
+            <i style="@Styles?.LastButtonIcon" class="@lastIcon?.GetCssClasses() @Classes?.LastButtonIcon" />
         </button>
     }
 </div>

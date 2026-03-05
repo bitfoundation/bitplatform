@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -44,14 +44,28 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public int DefaultSelectedPage { get; set; }
 
     /// <summary>
-    /// The icon name of the first button.
+    /// The icon for the first button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="FirstButtonIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string? FirstIcon { get; set; }
+    [Parameter] public BitIconInfo? FirstButtonIcon { get; set; }
 
     /// <summary>
-    /// The icon name of the last button.
+    /// The built-in icon name for the first button.
+    /// For external icon libraries, use <see cref="FirstButtonIcon"/> instead.
     /// </summary>
-    [Parameter] public string? LastIcon { get; set; }
+    [Parameter] public string? FirstButtonIconName { get; set; }
+
+    /// <summary>
+    /// The icon for the last button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="LastButtonIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? LastButtonIcon { get; set; }
+
+    /// <summary>
+    /// The built-in icon name for the last button.
+    /// For external icon libraries, use <see cref="LastButtonIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? LastButtonIconName { get; set; }
 
     /// <summary>
     /// The number of items to render in the middle of the pagination.
@@ -61,9 +75,16 @@ public partial class BitPagination : BitComponentBase
     public int MiddleCount { get; set; }
 
     /// <summary>
-    /// The icon name of the next button.
+    /// The icon for the next button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="NextButtonIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string? NextIcon { get; set; }
+    [Parameter] public BitIconInfo? NextButtonIcon { get; set; }
+
+    /// <summary>
+    /// The built-in icon name for the next button.
+    /// For external icon libraries, use <see cref="NextButtonIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? NextButtonIconName { get; set; }
 
     /// <summary>
     /// The event callback for when selected page changes.
@@ -71,9 +92,16 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public EventCallback<int> OnChange { get; set; }
 
     /// <summary>
-    /// The icon name of the previous button.
+    /// The icon for the previous button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="PreviousButtonIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string? PreviousIcon { get; set; }
+    [Parameter] public BitIconInfo? PreviousButtonIcon { get; set; }
+
+    /// <summary>
+    /// The built-in icon name for the previous button.
+    /// For external icon libraries, use <see cref="PreviousButtonIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? PreviousButtonIconName { get; set; }
 
     /// <summary>
     /// The selected page number.

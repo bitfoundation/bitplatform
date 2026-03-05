@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -310,25 +310,9 @@ public class BitButtonTests : BunitTestContext
 
     [TestMethod,
         DataRow(BitLabelPosition.Top),
-        DataRow(BitLabelPosition.Top),
-        DataRow(BitLabelPosition.Top),
-        DataRow(BitLabelPosition.Top),
-
         DataRow(BitLabelPosition.End),
-        DataRow(BitLabelPosition.End),
-        DataRow(BitLabelPosition.End),
-        DataRow(BitLabelPosition.End),
-
         DataRow(BitLabelPosition.Bottom),
-        DataRow(BitLabelPosition.Bottom),
-        DataRow(BitLabelPosition.Bottom),
-        DataRow(BitLabelPosition.Bottom),
-
         DataRow(BitLabelPosition.Start),
-        DataRow(BitLabelPosition.Start),
-        DataRow(BitLabelPosition.Start),
-        DataRow(BitLabelPosition.Start),
-
         DataRow(null),
     ]
     public void BitButtonLoaderTest(BitLabelPosition? labelPosition)
@@ -361,6 +345,201 @@ public class BitButtonTests : BunitTestContext
         Assert.IsTrue(bitButton?.FirstElementChild?.ClassList.Contains("bit-btn-ldg"));
 
         Assert.IsTrue(bitButton?.FirstElementChild?.ClassList.Contains(labelPositionClass));
+    }
+
+    [TestMethod,
+        DataRow(BitIconPosition.Start),
+        DataRow(BitIconPosition.End),
+        DataRow(null)
+    ]
+    public void BitButtonIconPositionClassTest(BitIconPosition? iconPosition)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            if (iconPosition.HasValue)
+            {
+                parameters.Add(p => p.IconPosition, iconPosition.Value);
+            }
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        var expectedClassPresence = iconPosition == BitIconPosition.End;
+
+        Assert.AreEqual(expectedClassPresence, bitButton.ClassList.Contains("bit-btn-eni"));
+    }
+
+    [TestMethod,
+        DataRow("5"),
+        DataRow("50"),
+    ]
+    public void BitButtonTabIndexShouldRecoverAfterReEnable(string tabIndex)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, false);
+            parameters.Add(p => p.TabIndex, tabIndex);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual("-1", bitButton.GetAttribute("tabindex"));
+
+        com.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, true);
+        });
+
+        Assert.AreEqual(tabIndex, bitButton.GetAttribute("tabindex"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitButtonFullWidthClassTest(bool fullWidth)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.FullWidth, fullWidth);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual(fullWidth, bitButton.ClassList.Contains("bit-btn-flw"));
+    }
+
+    [TestMethod,
+        DataRow(BitColor.Primary),
+        DataRow(BitColor.Secondary),
+        DataRow(BitColor.Tertiary),
+        DataRow(BitColor.PrimaryBackground),
+        DataRow(BitColor.SecondaryBackground),
+        DataRow(BitColor.TertiaryBackground),
+        DataRow(BitColor.PrimaryForeground),
+        DataRow(BitColor.SecondaryForeground),
+        DataRow(BitColor.TertiaryForeground),
+        DataRow(BitColor.PrimaryBorder),
+        DataRow(BitColor.SecondaryBorder),
+        DataRow(BitColor.TertiaryBorder),
+    ]
+    public void BitButtonAllColorClassesTest(BitColor color)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Color, color);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        var expectedClass = color switch
+        {
+            BitColor.Primary => "bit-btn-pri",
+            BitColor.Secondary => "bit-btn-sec",
+            BitColor.Tertiary => "bit-btn-ter",
+            BitColor.Info => "bit-btn-inf",
+            BitColor.Success => "bit-btn-suc",
+            BitColor.Warning => "bit-btn-wrn",
+            BitColor.SevereWarning => "bit-btn-swr",
+            BitColor.Error => "bit-btn-err",
+            BitColor.PrimaryBackground => "bit-btn-pbg",
+            BitColor.SecondaryBackground => "bit-btn-sbg",
+            BitColor.TertiaryBackground => "bit-btn-tbg",
+            BitColor.PrimaryForeground => "bit-btn-pfg",
+            BitColor.SecondaryForeground => "bit-btn-sfg",
+            BitColor.TertiaryForeground => "bit-btn-tfg",
+            BitColor.PrimaryBorder => "bit-btn-pbr",
+            BitColor.SecondaryBorder => "bit-btn-sbr",
+            BitColor.TertiaryBorder => "bit-btn-tbr",
+            _ => "bit-btn-pri"
+        };
+
+        Assert.IsTrue(bitButton.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(null, true),
+        DataRow(null, false),
+        DataRow("", true),
+        DataRow("", false),
+        DataRow("href", true),
+        DataRow("href", false)
+    ]
+    public void BitButtonShouldRenderExpectedElementBasedOnHref(string? href, bool isEnabled)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.IsEnabled, isEnabled);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        var expectedTag = href.HasValue() ? "a" : "button";
+
+        Assert.AreEqual(expectedTag, bitButton.TagName, ignoreCase: true);
+    }
+
+    [TestMethod,
+        DataRow("https://bitplatform.dev", BitLinkRels.NoOpener | BitLinkRels.NoReferrer, "noopener noreferrer"),
+        DataRow("#section", BitLinkRels.NoOpener | BitLinkRels.NoReferrer, null)
+    ]
+    public void BitButtonRelAttributeShouldFollowHrefRules(string href, BitLinkRels rel, string? expectedRel)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.Rel, rel);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        var hasRelAttribute = bitButton.HasAttribute("rel");
+
+        Assert.AreEqual(string.IsNullOrEmpty(expectedRel) is false, hasRelAttribute);
+
+        if (expectedRel is not null)
+        {
+            Assert.AreEqual(expectedRel, bitButton.GetAttribute("rel"));
+        }
+    }
+
+    [TestMethod]
+    public void BitButtonDynamicParameterUpdateShouldRefreshMarkup()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.IconName, "Emoji");
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.IsFalse(bitButton.ClassList.Contains("bit-dis"));
+
+        com.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitButtonFixedColorClassTest(bool fixedColor)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.FixedColor, fixedColor);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual(fixedColor, bitButton.ClassList.Contains("bit-btn-fxc"));
     }
 
 }

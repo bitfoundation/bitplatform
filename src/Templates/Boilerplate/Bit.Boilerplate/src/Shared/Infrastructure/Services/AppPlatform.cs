@@ -26,9 +26,6 @@ public static partial class AppPlatform
     [SupportedOSPlatformGuard("macOS")]
     public static bool IsMacOS => IsBlazorHybrid && OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst() || IsIosOnMacOS;
 
-    /// <summary>
-    /// This is not supported yet in bit Boilerplate.
-    /// </summary>
     public static bool IsLinux => IsBlazorHybrid && OperatingSystem.IsLinux();
 
     [SupportedOSPlatformGuard("ios")]

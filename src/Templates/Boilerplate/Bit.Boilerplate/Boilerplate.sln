@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
         .editorconfig = .editorconfig
         .gitignore = .gitignore
         .vsconfig = .vsconfig
+		AGENTS.md = AGENTS.md
         Bit.ResxTranslator.json = Bit.ResxTranslator.json
         settings.VisualStudio.json = settings.VisualStudio.json
         Clean.bat = Clean.bat
@@ -47,15 +48,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 #endif
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{3E577755-186F-4E63-8153-B8DE890015C9}"
-    ProjectSection(SolutionItems) = preProject
-        .github\copilot-instructions.md = .github\copilot-instructions.md
-    EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prompts", "prompts", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D}"
     ProjectSection(SolutionItems) = preProject
-        .github\prompts\resx.prompt.md = .github\prompts\resx.prompt.md
-        .github\prompts\bitify.prompt.md = .github\prompts\bitify.prompt.md
-        .github\prompts\scaffold.prompt.md = .github\prompts\scaffold.prompt.md
+        .github\agents\resx.agent.md = .github\agents\resx.agent.md
+		.github\agents\code-reviewer.agent.md = .github\agents\code-reviewer.agent.md
+        .github\agents\bitify.agent.md = .github\agents\bitify.agent.md
+        .github\agents\scaffold.agent.md = .github\agents\scaffold.agent.md
     EndProjectSection
 EndProject
 #if (pipeline == "GitHub")

@@ -19,6 +19,7 @@ public partial class AppJwtSecureDataFormat
 
     public AppJwtSecureDataFormat(ServerApiSettings appSettings,
         IHostEnvironment env,
+        IConfiguration configuration,
         ILogger<AppJwtSecureDataFormat> logger,
         string tokenType)
     {
@@ -26,14 +27,14 @@ public partial class AppJwtSecureDataFormat
         this.tokenType = tokenType;
         this.appSettings = appSettings;
 
-        privateKey = AppCertificateService.GetPrivateSecurityKey();
+        privateKey = AppCertificateService.GetPrivateSecurityKey(configuration);
 
         validationParameters = new()
         {
             ClockSkew = TimeSpan.Zero,
             RequireSignedTokens = true,
 
-            IssuerSigningKey = AppCertificateService.GetPublicSecurityKey(),
+            IssuerSigningKey = AppCertificateService.GetPublicSecurityKey(configuration),
             ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
             ValidateIssuerSigningKey = env.IsDevelopment() is false,
 
@@ -107,7 +108,7 @@ public partial class AppJwtSecureDataFormat
             {
                 Issuer = appSettings.Identity.Issuer,
                 Audience = appSettings.Identity.Audience,
-                IssuedAt = DateTimeOffset.UtcNow.DateTime,
+                IssuedAt = DateTime.UtcNow,
                 Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime,
                 SigningCredentials = new SigningCredentials(privateKey, SecurityAlgorithms.RsaSha256Signature),
                 Subject = new ClaimsIdentity(data.Principal.Claims),

@@ -10,6 +10,7 @@ using Aspire.Hosting.ApplicationModel;
 using Microsoft.Data.Sqlite;
 //#endif
 using Microsoft.Extensions.Hosting;
+using Boilerplate.Tests.Features.Identity;
 using Boilerplate.Server.Api.Infrastructure.Data;
 
 namespace Boilerplate.Tests.Infrastructure;
@@ -38,10 +39,10 @@ public partial class TestsAssemblyInitializer
     /// <summary>
     /// Aspire.Hosting.Testing executes the complete application, including dependencies like databases, 
     /// closely mimicking a production environment. However, it has a limitation: backend services cannot 
-    /// be overridden in tests if needed, unlike <see cref="AppTestServer"/> used in <see cref="IdentityTests"/> 
-    /// and <see cref="IdentityTests"/>. The code below runs the Aspire app without the server web 
+    /// be overridden in tests if needed, unlike <see cref="AppTestServer"/> used in <see cref="UITests"/> 
+    /// and <see cref="IntegrationTests"/>. The code below runs the Aspire app without the server web 
     /// project, retrieves necessary connection strings (e.g., database connection string), and passes 
-    /// them to <see cref="AppTestServer"/>.
+    /// them to <see cref="AppTestServer"/>, so you can override services in the server project.
     /// </summary>
     private static async Task RunAspireHost(TestContext testContext)
     {

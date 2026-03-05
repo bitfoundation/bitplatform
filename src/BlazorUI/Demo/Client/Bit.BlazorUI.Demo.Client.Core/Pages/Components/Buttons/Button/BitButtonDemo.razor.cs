@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.Button;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.Button;
 
 public partial class BitButtonDemo
 {
@@ -9,21 +9,21 @@ public partial class BitButtonDemo
             Name = "AllowDisabledFocus",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the button can have focus in disabled mode.",
+            Description = "Keeps the disabled button focusable by not forcing a negative tabindex when IsEnabled is false.",
         },
         new()
         {
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Detailed description of the button for the benefit of screen readers.",
+            Description = "Detailed description of the button for the benefit of screen readers (rendered into aria-describedby).",
         },
         new()
         {
             Name = "AriaHidden",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, adds an aria-hidden attribute instructing screen readers to ignore the element.",
+            Description = "If true, adds an aria-hidden attribute instructing screen readers to ignore the button.",
         },
         new()
         {
@@ -37,7 +37,7 @@ public partial class BitButtonDemo
             Name = "ButtonType",
             Type = "BitButtonType?",
             DefaultValue = "null",
-            Description = "The value of the type attribute of the button.",
+            Description = "The type of the button element; defaults to submit inside an EditForm otherwise button.",
             LinkType = LinkType.Link,
             Href = "#button-type-enum",
         },
@@ -138,7 +138,9 @@ public partial class BitButtonDemo
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The name of the icon to render inside the button from the built-in Fluent UI icons."
+            Description = "Gets or sets the name of the icon to display from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -146,6 +148,15 @@ public partial class BitButtonDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines that only the icon should be rendered."
+        },
+        new()
+        {
+            Name = "IconPosition",
+            Type = "BitIconPosition?",
+            DefaultValue = "null",
+            Description = "Gets or sets the position of the icon relative to the component's content.",
+            LinkType = LinkType.Link,
+            Href = "#icon-position-enum",
         },
         new()
         {
@@ -189,7 +200,7 @@ public partial class BitButtonDemo
             Name = "OnClick",
             Type = "EventCallback<bool>",
             DefaultValue = "",
-            Description = "The callback for the click event of the button with a bool argument passing the current loading state.",
+            Description = "Raised when the button is clicked; receives a bool indicating the current loading state.",
         },
         new()
         {
@@ -207,17 +218,10 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "ReversedIcon",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Reverses the positions of the icon and the main content of the button.",
-        },
-        new()
-        {
             Name = "Rel",
             Type = "BitLinkRels?",
             DefaultValue = "null",
-            Description = "If Href provided, specifies the relationship between the current document and the linked document.",
+            Description = "Sets the rel attribute for link-rendered buttons when Href is a non-anchor URL; ignored for empty or hash-only hrefs.",
             LinkType = LinkType.Link,
             Href = "#link-rels",
         },
@@ -240,7 +244,7 @@ public partial class BitButtonDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the button.",
+            Description = "Sets the preset size for typography and padding of the button.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -249,7 +253,7 @@ public partial class BitButtonDemo
             Name = "Styles",
             Type = "BitButtonClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the button.",
+            Description = "Custom inline styles for different parts of the button.",
             LinkType = LinkType.Link,
             Href = "#button-class-styles",
         },
@@ -284,6 +288,7 @@ public partial class BitButtonDemo
         {
             Id = "button-class-styles",
             Title = "BitButtonClassStyles",
+            Description = "Defines per-part CSS class/style values for BitButton.",
             Parameters =
             [
                new()
@@ -291,56 +296,56 @@ public partial class BitButtonDemo
                    Name = "Root",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the root element of the BitButton."
+                   Description = "Custom class or style applied to the root element."
                },
                new()
                {
                    Name = "Icon",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the icon of the BitButton."
+                   Description = "Custom class or style applied to the icon element."
                },
                new()
                {
                    Name = "Container",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the internal container of the BitButton."
+                   Description = "Custom class or style applied to the internal container."
                },
                new()
                {
                    Name = "Primary",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the primary section of the BitButton."
+                   Description = "Custom class or style applied to the primary section."
                },
                new()
                {
                    Name = "Secondary",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the secondary section of the BitButton."
+                   Description = "Custom class or style applied to the secondary section."
                },
                new()
                {
                    Name = "LoadingContainer",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the loading container of the BitButton."
+                   Description = "Custom class or style applied to the loading container."
                },
                new()
                {
                    Name = "Spinner",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the spinner section of the BitButton."
+                   Description = "Custom class or style applied to the spinner element."
                },
                new()
                {
                    Name = "LoadingLabel",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the loading label section of the BitButton."
+                   Description = "Custom class or style applied to the loading label."
                },
             ]
         },
@@ -566,6 +571,27 @@ public partial class BitButtonDemo
                     Name= "Reset",
                     Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "icon-position-enum",
+            Name = "BitIconPosition",
+            Description = "Describes the placement of an icon relative to other content.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Start",
+                    Description = "Icon renders before the content (default).",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "End",
+                    Description = "Icon renders after the content.",
+                    Value = "1",
                 }
             ]
         },
@@ -894,5 +920,5 @@ public partial class BitButtonDemo
     }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
-    private async Task ScrollToFloat() => await _js.ScrollToElement("example9");
+    private async Task ScrollToFloat() => await _js.ScrollToElement("example10");
 }

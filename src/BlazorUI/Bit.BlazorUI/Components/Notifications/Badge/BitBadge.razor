@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <span @ref="RootElement" @attributes="HtmlAttributes"
@@ -15,9 +15,10 @@
             <span style="@Styles?.Badge" class="bit-bdg-ctn @Classes?.Badge" @onclick="HandleOnClick">
                 @if (Dot is false)
                 {
-                    if (IconName.HasValue())
+                    var icon = BitIconInfo.From(Icon, IconName);
+                    if (icon is not null)
                     {
-                        <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+                        <i style="@Styles?.Icon" class="@icon.GetCssClasses() @Classes?.Icon" />
                     }
 
                     if (_content.HasValue())
