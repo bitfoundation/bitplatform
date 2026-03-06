@@ -140,7 +140,7 @@ public static class WebApplicationExtensions
             }
             context.Response.Headers.Append("Content-Security-Policy", csp);
             // For a stricter, app-wide CSP that also works in all Interactive Blazor rendering modes,
-            // use the SecurityMetaTags.razor component in Client.Core by adding <SecurityMetaTags /> to AppShell.razor
+            // check out the ContentSecurityPolicy.razor component in Client.Core
 
             await next();
         });

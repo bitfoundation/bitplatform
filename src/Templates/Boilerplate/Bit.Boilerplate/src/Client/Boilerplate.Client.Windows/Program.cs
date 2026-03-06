@@ -2,6 +2,7 @@
 using Velopack;
 using Microsoft.Web.WebView2.Core;
 using Boilerplate.Client.Core.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Boilerplate.Client.Windows.Infrastructure.Services;
 
@@ -93,10 +94,7 @@ public partial class Program
 
         blazorWebView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#0D2960");
 
-        //#if (appInsights == true)
-        blazorWebView.RootComponents.Add(new RootComponent("head::after", typeof(BlazorApplicationInsights.ApplicationInsightsInit), new Dictionary<string, object?> { { nameof(BlazorApplicationInsights.ApplicationInsightsInit.IsWasmStandalone), true } }));
-        //#endif
-
+        blazorWebView.RootComponents.Add(new RootComponent("head::after", typeof(HeadOutlet), null));
         blazorWebView.RootComponents.Add(new RootComponent("#app-container", typeof(Routes), null));
 
         blazorWebView.BlazorWebViewInitialized += delegate

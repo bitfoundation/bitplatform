@@ -1,9 +1,8 @@
 @*+:cnd:noEmit*@
 @inherits AppComponentBase
 
-<SecurityMetaTags />
-
 <BitAppShell PersistScroll>
+    <AppHeadContents />
     <main class="@GetMainCssClass()">
         <div class="main-container">
             @if (IsIdentityPage is not true)

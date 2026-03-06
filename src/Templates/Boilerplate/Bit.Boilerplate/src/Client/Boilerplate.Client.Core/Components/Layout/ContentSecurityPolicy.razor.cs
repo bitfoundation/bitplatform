@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class SecurityMetaTags
+public partial class ContentSecurityPolicy
 {
     [AutoInject] private ClientCoreSettings settings = default!;
     [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddressProvider = default!;
@@ -19,7 +19,7 @@ public partial class SecurityMetaTags
         var webAppUrl = settings.WebAppUrl?.ToString();
 
         // 1. Common Trusted Origins (Our own servers)
-        var ownOrigins = new HashSet<string> { "'self'", apiUrl, apiUrl.Replace("http:", "ws:").Replace("https:", "wss:") };
+        var ownOrigins = new HashSet<string> { "'self'", apiUrl };
         if (string.IsNullOrWhiteSpace(webAppUrl) is false)
             ownOrigins.Add(webAppUrl);
         var ownOriginsString = string.Join(" ", ownOrigins);
@@ -58,6 +58,11 @@ public partial class SecurityMetaTags
         imgSrc.Add("https://www.google.com https://googleads.g.doubleclick.net https://*.googlesyndication.com https://www.gstatic.com https://imasdk.googleapis.com https://*.adtrafficquality.google");
         frameSrc.Add("https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.adtrafficquality.google");
         mediaSrc.Add("https://*.gvt1.com");
+        //#endif
+
+        //#if (signalR == true)
+        connectSrc.Add("https://*.service.signalr.net");
+        connectSrc.Add(apiUrl.Replace("http:", "ws:").Replace("https:", "wss:"));
         //#endif
 
         // --- Add Google Fonts ---
