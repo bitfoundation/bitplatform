@@ -13,7 +13,10 @@
     In case you're hosting your Blazor WebAssembly, Auto and Server without pre-rendering, you can put this component in App.razor
 *@
 
-<HeadContent>
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta http-equiv="Content-Security-Policy" content="@CspContent">
-</HeadContent>
+@if (AppEnvironment.IsDevelopment() is false)
+{
+    <HeadContent>
+        <meta name="referrer" content="strict-origin-when-cross-origin">
+        <meta http-equiv="Content-Security-Policy" content="@CspContent">
+    </HeadContent>
+}

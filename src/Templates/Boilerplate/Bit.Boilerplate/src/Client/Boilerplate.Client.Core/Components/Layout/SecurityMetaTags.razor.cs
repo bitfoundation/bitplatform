@@ -72,6 +72,7 @@ public partial class SecurityMetaTags
         {
             connectSrc.Add("ws://localhost:* wss://localhost:*"); // Allow localhost WebSocket connections during development (hot reload / debugging)
             connectSrc.Add("https://raw.githubusercontent.com/"); // Source maps
+            connectSrc.Add("https://cdn.jsdelivr.net/"); // eruda dev tools
         }
 
         scriptSrc.Add("https://cdn.jsdelivr.net/npm/eruda"); // eruda dev tools
