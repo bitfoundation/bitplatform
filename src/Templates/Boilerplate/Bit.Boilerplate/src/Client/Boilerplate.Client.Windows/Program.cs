@@ -1,16 +1,21 @@
 ﻿//+:cnd:noEmit
 using Velopack;
-using Microsoft.Web.WebView2.Core;
+
+using System.Diagnostics.CodeAnalysis;
+
 using Boilerplate.Client.Core.Components;
+using Boilerplate.Client.Windows.Infrastructure.Services;
+
+using Microsoft.Web.WebView2.Core;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
-using Boilerplate.Client.Windows.Infrastructure.Services;
 
 namespace Boilerplate.Client.Windows;
 
 public partial class Program
 {
     [STAThread]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HeadOutlet))]
     public static void Main(string[] args)
     {
         Application.ThreadException += (_, e) => LogException(e.Exception, reportedBy: nameof(Application.ThreadException));
