@@ -82,14 +82,14 @@ jobs:
       run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Api/AdminPanel.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}"
 
     - name: Upload server web artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: AdminPanel
         path: server-web
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
     - name: Upload server api artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: AdminPanelApi
         path: server-api
@@ -197,7 +197,7 @@ jobs:
           dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: WinAdminPanel
         path: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases
@@ -272,7 +272,7 @@ jobs:
       run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:EnableLLVM=true -p:AndroidEnableProfiledAot=false -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net10.0-android
   
     - name: Upload artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: android-bundle
         path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net10.0-android/*-Signed.*
@@ -348,7 +348,7 @@ jobs:
       run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net10.0-ios
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: ios-bundle
         path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa
