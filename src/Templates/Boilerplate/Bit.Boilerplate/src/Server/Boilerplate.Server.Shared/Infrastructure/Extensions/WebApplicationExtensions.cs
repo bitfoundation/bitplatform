@@ -142,7 +142,7 @@ public static class WebApplicationExtensions
 
     /// <summary>
     /// In addition to the `policy.SetPreflightMaxAge(TimeSpan.FromDays(1))` call in AddCors,
-    /// that caches preflight responses in browser cache, this additional middleware is neccessary to set cache headers for preflight responses in CDN Edge.
+    /// that caches preflight responses in browser cache, this additional middleware is neccessary to cache headers for preflight responses in CDN Edge.
     /// </summary>
     public static WebApplication UseEnahcedCors(this WebApplication app)
     {
