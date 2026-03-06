@@ -56,14 +56,14 @@ public static partial class Program
 
         app.UseStaticFiles(options: new()
         {
-            OnPrepareResponse = context =>
+            OnPrepareResponse = staticFileResponseContext =>
             {
                 if (env.IsDevelopment() is false)
                 {
                     // Caching static files on the Browser and CDN's edge servers.
-                    if (context.Context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)))
+                    if (staticFileResponseContext.Context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)))
                     {
-                        context.Context.Response.GetTypedHeaders().CacheControl = new()
+                        staticFileResponseContext.Context.Response.GetTypedHeaders().CacheControl = new()
                         {
                             Public = true,
                             NoTransform = true,
