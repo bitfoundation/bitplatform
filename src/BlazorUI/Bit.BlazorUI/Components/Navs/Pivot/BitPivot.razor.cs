@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The Pivot control and related tabs pattern are used for navigating frequently accessed, distinct content categories. Pivots allow for navigation between two or more contentviews and relies on text headers to articulate the different sections of content.
@@ -25,6 +25,12 @@ public partial class BitPivot : BitComponentBase
     /// Custom CSS classes for different parts of the pivot.
     /// </summary>
     [Parameter] public BitPivotClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The general color of the pivot.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// Default selected key for the pivot.
@@ -102,6 +108,28 @@ public partial class BitPivot : BitComponentBase
             BitSize.Medium => "bit-pvt-md",
             BitSize.Large => "bit-pvt-lg",
             _ => "bit-pvt-md"
+        });
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-pvt-pri",
+            BitColor.Secondary => "bit-pvt-sec",
+            BitColor.Tertiary => "bit-pvt-ter",
+            BitColor.Info => "bit-pvt-inf",
+            BitColor.Success => "bit-pvt-suc",
+            BitColor.Warning => "bit-pvt-wrn",
+            BitColor.SevereWarning => "bit-pvt-swr",
+            BitColor.Error => "bit-pvt-err",
+            BitColor.PrimaryBackground => "bit-pvt-pbg",
+            BitColor.SecondaryBackground => "bit-pvt-sbg",
+            BitColor.TertiaryBackground => "bit-pvt-tbg",
+            BitColor.PrimaryForeground => "bit-pvt-pfg",
+            BitColor.SecondaryForeground => "bit-pvt-sfg",
+            BitColor.TertiaryForeground => "bit-pvt-tfg",
+            BitColor.PrimaryBorder => "bit-pvt-pbr",
+            BitColor.SecondaryBorder => "bit-pvt-sbr",
+            BitColor.TertiaryBorder => "bit-pvt-tbr",
+            _ => "bit-pvt-pri"
         });
 
         ClassBuilder.Register(() => HeaderType switch
