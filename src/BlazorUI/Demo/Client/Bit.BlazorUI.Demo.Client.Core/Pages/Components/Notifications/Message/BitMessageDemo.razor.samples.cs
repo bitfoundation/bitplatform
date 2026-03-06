@@ -146,13 +146,13 @@ private bool isAutoDismissed;";
     Message with a custom icon.
 </BitMessage>
 
-<BitMessage Color=""BitColor.Warning"" OnDismiss=""() => {}"" DismissIcon=""@BitIconName.Blocked2Solid"">
+<BitMessage Color=""BitColor.Warning"" OnDismiss=""() => {}"" DismissIconName=""@BitIconName.Blocked2Solid"">
     Message with a custom dismiss icon.
 </BitMessage>
 
 <BitMessage Truncate Color=""BitColor.Warning""
-            ExpandIcon=""@BitIconName.ChevronDownEnd""
-            CollapseIcon=""@BitIconName.ChevronUpEnd"">
+            ExpandIconName=""@BitIconName.ChevronDownEnd""
+            CollapseIconName=""@BitIconName.ChevronUpEnd"">
     In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
@@ -219,6 +219,49 @@ private bool isErrorDismissed;";
 <BitMessage Size=""BitSize.Large"" Color=""BitColor.Tertiary"">Large</BitMessage>";
 
     private readonly string example14RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitMessage Color=""BitColor.Info"" Icon=""@(""fa-solid fa-circle-info"")"">
+    FontAwesome message (Icon=""@@(""fa-solid fa-circle-info"")"")
+</BitMessage>
+
+<BitMessage Color=""BitColor.Success"" Icon=""@BitIconInfo.Css(""fa-solid fa-circle-check"")"">
+    FontAwesome success (Icon=""@@BitIconInfo.Css(""fa-solid fa-circle-check"")"")
+</BitMessage>
+
+<BitMessage Color=""BitColor.Warning"" OnDismiss=""() => {}""
+            DismissIcon=""@BitIconInfo.Fa(""solid xmark"")"">
+    FontAwesome dismiss icon (DismissIcon=""@@BitIconInfo.Fa(""solid xmark"")"")
+</BitMessage>
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitMessage Color=""BitColor.Info"" Icon=""@BitIconInfo.Css(""bi bi-info-circle-fill"")"">
+    Bootstrap message (Icon=""@@BitIconInfo.Css(""bi bi-info-circle-fill"")"")
+</BitMessage>
+
+<BitMessage Color=""BitColor.Success"" Icon=""@BitIconInfo.Bi(""check-circle-fill"")"">
+    Bootstrap success (Icon=""@@BitIconInfo.Bi(""check-circle-fill"")"")
+</BitMessage>
+
+<BitMessage Truncate Color=""BitColor.Warning""
+            ExpandIcon=""@BitIconInfo.Bi(""chevron-double-down"")""
+            CollapseIcon=""@BitIconInfo.Bi(""chevron-double-up"")"">
+    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
+    possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
+    vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
+    shaped into meaning, and the emotions ready to resonate with every reader.
+    <br />
+    In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
+    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+    idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
+    begins here, in this quiet moment where everything is possible.
+</BitMessage>";
+
+    private readonly string example15RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -327,12 +370,12 @@ private bool isErrorDismissed;";
     <br />
     In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
     each word has the power to transform into something extraordinary. Here lies the start of something new—an 
-    opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
+    opportunity to craft, inspire, and to create. Whether it's a tale of adventure, a reflection of truth, or an 
     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
     begins here, in this quiet moment where everything is possible.
 </BitMessage>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitMessage Dir=""BitDir.Rtl"" Color=""BitColor.Info"">
     پیام خبری (پیش فرض). <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
 </BitMessage>

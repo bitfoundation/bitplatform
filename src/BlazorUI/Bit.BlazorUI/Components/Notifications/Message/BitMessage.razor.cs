@@ -37,9 +37,32 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public BitMessageClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Custom Fabric icon name for the collapse icon in Truncate mode.
+    /// Gets or sets the icon for the collapse button in Truncate mode using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="CollapseIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string? CollapseIcon { get; set; }
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="CollapseIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: <c>CollapseIcon="BitIconInfo.Bi(\"gear-fill\")"</c>
+    /// FontAwesome: <c>CollapseIcon="BitIconInfo.Fa(\"solid house\")"</c>
+    /// Custom CSS: <c>CollapseIcon="BitIconInfo.Css(\"my-icon-class\")"</c>
+    /// </example>
+    [Parameter] public BitIconInfo? CollapseIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the collapse icon in Truncate mode from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.ChevronUp</c>).
+    /// <br />
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery:
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// <br />
+    /// For external icon libraries, use <see cref="CollapseIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? CollapseIconName { get; set; }
 
     /// <summary>
     /// The general color of the message.
@@ -53,9 +76,32 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public RenderFragment? Content { get; set; }
 
     /// <summary>
-    /// Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Cancel icon.
+    /// The icon for the dismiss button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="DismissIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string? DismissIcon { get; set; }
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="DismissIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: <c>DismissIcon="BitIconInfo.Bi(\"x-circle-fill\")"</c>
+    /// FontAwesome: <c>DismissIcon="BitIconInfo.Fa(\"solid xmark\")"</c>
+    /// Custom CSS: <c>DismissIcon="BitIconInfo.Css(\"my-dismiss-icon\")"</c>
+    /// </example>
+    [Parameter] public BitIconInfo? DismissIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the dismiss icon from the built-in Fluent UI icons. If unset, default will be the Fluent UI <c>Cancel</c> icon.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Blocked2Solid</c>).
+    /// <br />
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery:
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// <br />
+    /// For external icon libraries, use <see cref="DismissIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? DismissIconName { get; set; }
 
     /// <summary>
     /// Determines the elevation of the message, a scale from 1 to 24.
@@ -64,9 +110,32 @@ public partial class BitMessage : BitComponentBase
     public int? Elevation { get; set; }
 
     /// <summary>
-    /// Custom Fabric icon name for the expand icon in Truncate mode.
+    /// Gets or sets the icon for the expand button in Truncate mode using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="ExpandIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string? ExpandIcon { get; set; }
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ExpandIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: <c>ExpandIcon="BitIconInfo.Bi(\"chevron-double-down\")"</c>
+    /// FontAwesome: <c>ExpandIcon="BitIconInfo.Fa(\"solid chevron-down\")"</c>
+    /// Custom CSS: <c>ExpandIcon="BitIconInfo.Css(\"my-expand-icon\")"</c>
+    /// </example>
+    [Parameter] public BitIconInfo? ExpandIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the expand icon in Truncate mode from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.ChevronDown</c>).
+    /// <br />
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery:
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// <br />
+    /// For external icon libraries, use <see cref="ExpandIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? ExpandIconName { get; set; }
 
     /// <summary>
     /// Prevents rendering the icon of the message.
@@ -74,8 +143,33 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public bool HideIcon { get; set; }
 
     /// <summary>
-    /// Custom icon to replace the message icon. If unset, default will be the icon set by Type.
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: <c>Icon="BitIconInfo.Bi(\"info-circle-fill\")"</c>
+    /// FontAwesome: <c>Icon="BitIconInfo.Fa(\"solid circle-info\")"</c>
+    /// Custom CSS: <c>Icon="BitIconInfo.Css(\"my-message-icon\")"</c>
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Info</c>).
+    /// <br />
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery:
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// <br />
+    /// If unset, the icon will be selected automatically based on <see cref="Color"/>.
+    /// <br />
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </remarks>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
@@ -216,6 +310,8 @@ public partial class BitMessage : BitComponentBase
 
     private string GetTextRole() => Role ?? (Color is BitColor.Success or BitColor.Info ? "status" : "alert");
 
+    private BitIconInfo? GetIcon() => BitIconInfo.From(Icon, GetIconName());
+
     private string GetIconName() => IconName ?? _IconMap[Color ?? BitColor.Info];
 
 
@@ -232,7 +328,7 @@ public partial class BitMessage : BitComponentBase
 
 
 
-    private static Dictionary<BitColor, string> _IconMap = new()
+    private static readonly Dictionary<BitColor, string> _IconMap = new()
     {
         [BitColor.Primary] = "Info",
         [BitColor.Secondary] = "Info",
