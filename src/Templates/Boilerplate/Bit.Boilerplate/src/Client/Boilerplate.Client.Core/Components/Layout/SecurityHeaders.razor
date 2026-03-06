@@ -7,8 +7,10 @@
 @*
     Note: Even this CSP is not fully strict:
     1- It allows `inline` scripts and styles, which is not recommended. To avoid this, you can use a nonce or hash-based approach.
-    2- It gets applied late in the rendering process, which means that some content might be rendered before the CSP is applied.
+    2- While this gets applied immediatly in Blazor WebAssembly, Auto and Server if pre-rendering is enabled, but in Blazor WebAssembly Standalone and Blazor Hybrid
+        it gets applied late in the rendering process, which means that some content might be rendered before the CSP is applied.
     You can mitigate this by moving the desired configuration in index.html files in Client.Maui & Client.Web projects.
+    In case you're hosting your Blazor WebAssembly, Auto and Server without pre-rendering, you can put this component in App.razor
 *@
 
 <HeadContent>
