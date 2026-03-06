@@ -15,7 +15,7 @@
         <PackageVersion Include="Fido2.AspNet" Version="4.0.0" />
         <PackageVersion Include="Fido2.Models" Version="4.0.0" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.892" />
-        <PackageVersion Include="libphonenumber-csharp" Version="9.0.24" />
+        <PackageVersion Include="libphonenumber-csharp" Version="9.0.25" />
         <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.5.4" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.3" />
@@ -50,7 +50,7 @@
         <PackageVersion Include="OpenTelemetry.Resources.ProcessRuntime" Version="1.15.0-beta.1" />
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.3.1" />
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.2.3" />
-        <PackageVersion Include="Scalar.AspNetCore" Version="2.12.47" />
+        <PackageVersion Include="Scalar.AspNetCore" Version="2.13.1" />
         <PackageVersion Include="Velopack" Version="0.0.1298" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.3" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
@@ -97,9 +97,9 @@
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI" Version="10.3.0" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.OpenAI" Version="10.3.0" />
         <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Extensions.AI.AzureAIInference" Version="10.0.0-preview.1.25559.3" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Connectors.HuggingFace" Version="1.72.0-preview" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Core" Version="1.72.0" />
-        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Agents.AI" Version="1.0.0-rc2" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Connectors.HuggingFace" Version="1.73.0-preview" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.SemanticKernel.Core" Version="1.73.0" />
+        <PackageVersion Condition=" ('$(signalR)' == 'true' OR '$(signalR)' == '') OR ('$(database)' == 'PostgreSQL' OR '$(database)' == '') OR ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Microsoft.Agents.AI" Version="1.0.0-rc3" />
         <PackageVersion Condition=" ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
         <PackageVersion Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.6.0" />
@@ -119,7 +119,7 @@
         <PackageVersion Condition=" ('$(redis)' == 'true' OR '$(redis)' == '') AND ('$(signalR)' == 'true' OR '$(signalR)' == '')" Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.3" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.3" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageVersion Include="Humanizer" Version="3.0.1" />
+        <PackageVersion Include="Humanizer" Version="3.0.8" />
         <PackageVersion Include="QRCoder" Version="1.7.0" />
         <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.10.3" />
         <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
@@ -131,7 +131,7 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.3" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.3" />
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.0.0" />
-        <PackageVersion Include="Microsoft.Identity.Web" Version="4.3.0" />
+        <PackageVersion Include="Microsoft.Identity.Web" Version="4.5.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="10.0.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.3" />

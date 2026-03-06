@@ -35,7 +35,7 @@ jobs:
       run: dotnet publish src/Websites/Platform/src/Bit.Websites.Platform.Server/Bit.Websites.Platform.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}"
 
     - name: Upload server artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: PlatformWebsite
         path: server
