@@ -217,6 +217,7 @@ public static partial class Program
                     .AllowCredentials();
             });
         });
+        services.AddRateLimiter();
 
         services.AddSingleton(sp =>
         {

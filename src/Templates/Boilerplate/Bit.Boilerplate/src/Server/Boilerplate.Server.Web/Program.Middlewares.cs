@@ -54,18 +54,16 @@ public static partial class Program
             app.UseDirectoryBrowser();
         }
 
-
-        app.Use(async (context, next) =>
+        app.UseStaticFiles(options: new()
         {
-            context.Response.OnStarting(async () =>
+            OnPrepareResponse = context =>
             {
                 if (env.IsDevelopment() is false)
                 {
                     // Caching static files on the Browser and CDN's edge servers.
-                    if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
-                        env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
+                    if (context.Context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)))
                     {
-                        context.Response.GetTypedHeaders().CacheControl = new()
+                        context.Context.Response.GetTypedHeaders().CacheControl = new()
                         {
                             Public = true,
                             NoTransform = true,
@@ -73,12 +71,8 @@ public static partial class Program
                         };
                     }
                 }
-            });
-
-            await next.Invoke();
+            }
         });
-
-        app.UseStaticFiles();
 
         if (string.IsNullOrEmpty(env.WebRootPath) is false && Path.Exists(Path.Combine(env.WebRootPath, @".well-known")))
         {
@@ -93,7 +87,8 @@ public static partial class Program
         }
 
         //#if (api == "Integrated")
-        app.UseCors();
+        app.UseEnahcedCors();
+        app.UseRateLimiter();
         app.UseMiddleware<ForceUpdateMiddleware>();
         //#endif
 
