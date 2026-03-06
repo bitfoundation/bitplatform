@@ -38,7 +38,7 @@ public partial class SecurityHeaders
         connectSrc.Add("https://dc.services.visualstudio.com https://*.in.applicationinsights.azure.com");
         //#endif
 
-        //#if (appInsights == true)
+        //#if (sentry == true)
         // --- Add Sentry ---
         connectSrc.Add("https://*.sentry.io");
         //#endif
