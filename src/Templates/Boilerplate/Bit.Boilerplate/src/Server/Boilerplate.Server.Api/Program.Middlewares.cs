@@ -41,7 +41,7 @@ public static partial class Program
 
         app.UseStaticFiles();
 
-        app.UseEnahcedCors();
+        app.UseCors();
         app.UseRateLimiter();
 
         app.UseMiddleware<ForceUpdateMiddleware>();

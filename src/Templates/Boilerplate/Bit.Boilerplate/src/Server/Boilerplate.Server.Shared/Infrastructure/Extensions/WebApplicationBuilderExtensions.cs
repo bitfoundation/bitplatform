@@ -196,7 +196,14 @@ public static class WebApplicationBuilderExtensions
             })
             .ConfigureResource(resource =>
             {
-                resource.AddAzureAppServiceDetector()
+                var resourceAttributes = new Dictionary<string, object>
+                {
+                    { "service.name", "Boilerplate" }
+                };
+
+                resource
+                    .AddAttributes(resourceAttributes)
+                    .AddAzureAppServiceDetector()
                     .AddAzureContainerAppsDetector()
                     .AddAzureVMDetector()
                     .AddContainerDetector()
