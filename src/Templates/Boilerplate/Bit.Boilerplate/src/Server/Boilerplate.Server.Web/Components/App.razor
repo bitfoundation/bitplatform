@@ -18,6 +18,7 @@
 <html bit-theme="dark">
 
 <head>
+    <ContentSecurityPolicy />
     <ResourcePreloader />
     <base href="/" />
 
@@ -45,12 +46,6 @@
     <Link rel="preconnect" Href="https://js.monitor.azure.com" crossorigin />
     <!-- Perform the initial static render of ApplicationInsightsInit to start App Insights ASAP. -->
     <BlazorApplicationInsights.ApplicationInsightsInit />
-    @if (renderMode is not null)
-    {
-        <!-- Initialize IApplicationInsights service using ApplicationInsightsInit with rendermode. -->
-        <!-- Use `IsWasmStandalone` to prevent re-downloading scripts. -->
-        <BlazorApplicationInsights.ApplicationInsightsInit IsWasmStandalone="true" @rendermode=renderMode />
-    }
     @*#endif*@
     <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
     <Link rel="manifest" Href="manifest.json" />

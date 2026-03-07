@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class SecurityHeaders
+public partial class ContentSecurityPolicy
 {
     [AutoInject] private ClientCoreSettings settings = default!;
     [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddressProvider = default!;
@@ -19,7 +19,7 @@ public partial class SecurityHeaders
         var webAppUrl = settings.WebAppUrl?.ToString();
 
         // 1. Common Trusted Origins (Our own servers)
-        var ownOrigins = new HashSet<string> { "'self'", apiUrl, apiUrl.Replace("http:", "ws:").Replace("https:", "wss:") };
+        var ownOrigins = new HashSet<string> { "'self'", apiUrl };
         if (string.IsNullOrWhiteSpace(webAppUrl) is false)
             ownOrigins.Add(webAppUrl);
         var ownOriginsString = string.Join(" ", ownOrigins);
@@ -29,13 +29,13 @@ public partial class SecurityHeaders
         var imgSrc = new HashSet<string> { ownOriginsString, "data:" };
         var scriptSrc = new HashSet<string> { "'self'", "'unsafe-inline'", "'wasm-unsafe-eval'", "'unsafe-hashes'" };
         var styleSrc = new HashSet<string> { "'self'", "'unsafe-inline'" };
-        var fontSrc = new HashSet<string> { "'self'" };
+        var fontSrc = new HashSet<string> { "'self'", "data:" };
         var frameSrc = new HashSet<string> { "'self'" };
         var mediaSrc = new HashSet<string> { "'self'" };
 
         //#if (appInsights == true)
         // --- Add Azure App Insights ---
-        connectSrc.Add("https://dc.services.visualstudio.com https://*.in.applicationinsights.azure.com");
+        connectSrc.Add("https://dc.services.visualstudio.com https://*.in.applicationinsights.azure.com https://js.monitor.azure.com");
         scriptSrc.Add("https://js.monitor.azure.com");
         //#endif
 
@@ -60,6 +60,11 @@ public partial class SecurityHeaders
         mediaSrc.Add("https://*.gvt1.com");
         //#endif
 
+        //#if (signalR == true)
+        connectSrc.Add("https://*.service.signalr.net");
+        connectSrc.Add(apiUrl.Replace("http:", "ws:").Replace("https:", "wss:"));
+        //#endif
+
         // --- Add Google Fonts ---
         fontSrc.Add("https://fonts.gstatic.com");
         styleSrc.Add("https://fonts.googleapis.com");
@@ -72,7 +77,10 @@ public partial class SecurityHeaders
         {
             connectSrc.Add("ws://localhost:* wss://localhost:*"); // Allow localhost WebSocket connections during development (hot reload / debugging)
             connectSrc.Add("https://raw.githubusercontent.com/"); // Source maps
+            connectSrc.Add("https://cdn.jsdelivr.net/"); // eruda dev tools
         }
+
+        scriptSrc.Add("https://cdn.jsdelivr.net/npm/eruda"); // eruda dev tools
 
         // Construct the final CSP string
         CspContent = $"default-src {string.Join(" ", ownOrigins)}; " + // Fallback for all directives.

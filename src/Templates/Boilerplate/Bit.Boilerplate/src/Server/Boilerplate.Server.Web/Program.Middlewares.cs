@@ -87,7 +87,7 @@ public static partial class Program
         }
 
         //#if (api == "Integrated")
-        app.UseEnahcedCors();
+        app.UseCors();
         app.UseRateLimiter();
         app.UseMiddleware<ForceUpdateMiddleware>();
         //#endif

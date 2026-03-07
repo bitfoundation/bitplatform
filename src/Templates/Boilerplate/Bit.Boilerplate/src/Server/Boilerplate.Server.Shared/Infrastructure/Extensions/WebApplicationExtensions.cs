@@ -140,35 +140,10 @@ public static class WebApplicationExtensions
             }
             context.Response.Headers.Append("Content-Security-Policy", csp);
             // For a stricter, app-wide CSP that also works in all Interactive Blazor rendering modes,
-            // use the SecurityHeaders.razor component in Client.Core by adding <SecurityHeaders /> to AppShell.razor
+            // check out the ContentSecurityPolicy.razor component in Client.Core
 
             await next();
         });
-
-        return app;
-    }
-
-    /// <summary>
-    /// In addition to the `policy.SetPreflightMaxAge(TimeSpan.FromDays(1))` call in AddCors,
-    /// that caches preflight responses in browser cache, this additional middleware is neccessary to cache headers for preflight responses in CDN Edge.
-    /// </summary>
-    public static WebApplication UseEnahcedCors(this WebApplication app)
-    {
-        app.Use(async (context, next) =>
-        {
-            if (context.Request.Method == HttpMethods.Options && context.Request.Headers.ContainsKey("Access-Control-Request-Method"))
-            {
-                context.Response.GetTypedHeaders().CacheControl = new()
-                {
-                    Public = true,
-                    SharedMaxAge = TimeSpan.FromDays(1)
-                };
-                context.Response.Headers.Append("Vary", "Origin, Access-Control-Request-Method, Access-Control-Request-Headers");
-            }
-            await next();
-        });
-
-        app.UseCors();
 
         return app;
     }

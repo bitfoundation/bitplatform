@@ -1,0 +1,12 @@
+@* Unlike UseSecurityHeaders in WebApplicationExtensions.cs, which only applies during Blazor Server
+   Auto and WebAssembly Pre-Rendering, this component works across all Interactive Blazor
+   rendering modes (Server, WebAssembly, WebAssembly Standalone, Auto and Hybrid).
+   
+   Note: This component renders a little bit late in Blazor Hybrid and WebAssembly Standalone, so it might be a good idea to move it to Client.Web/wwwroot/index.html and Client.Maui/wwwroot/index.html
+   For Blazor Server, Auto and WebAssembly, with or without pre-rendering, it renders early enough in App.razor
+   *@
+
+@if (AppEnvironment.IsDevelopment() is false)
+{
+    <meta http-equiv="Content-Security-Policy" content="@CspContent">
+}

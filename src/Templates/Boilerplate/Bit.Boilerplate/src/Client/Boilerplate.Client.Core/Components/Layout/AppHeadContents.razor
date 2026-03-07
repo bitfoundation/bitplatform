@@ -1,0 +1,14 @@
+@*+:cnd:noEmit*@
+
+@* Global place to put head tag contents: *@
+
+<HeadContent>
+    <ContentSecurityPolicy />
+    @*#if (appInsights == true)*@
+    @if (AppPlatform.IsBlazorHybridOrBrowser)
+    {
+        @* IsWasmStandalone prevents re-downloading scripts. *@
+        <BlazorApplicationInsights.ApplicationInsightsInit IsWasmStandalone="true" />
+    }
+    @*#endif*@
+</HeadContent>
