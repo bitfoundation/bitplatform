@@ -38,6 +38,21 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// </summary>
     [Parameter] public EventCallback<string?> OnRendered { get; set; }
 
+    /// <summary>
+    /// The list of fully qualified JavaScript function identifiers to invoke as JavaScript middlewares after parsing.
+    /// Each string should reference a global JS function (e.g. <c>"myApp.sanitizeHtml"</c>) that accepts an HTML string
+    /// and returns the processed HTML string. Middlewares are applied in order.
+    /// JavaScript middlewares are skipped during server-side prerendering.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string>? ParseJsMiddlewares { get; set; }
+
+    /// <summary>
+    /// The list of C# middlewares to apply to the parsed HTML before rendering.
+    /// Each middleware receives the parsed HTML string and returns the processed HTML string.
+    /// C# middlewares are applied after JavaScript middlewares, in order.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Func<string, string>>? ParseMiddlewares { get; set; }
+
 
 
     protected override string RootElementClass => "bit-mdv";
@@ -76,7 +91,7 @@ public partial class BitMarkdownViewer : BitComponentBase
 
         try
         {
-            _html = await _markdownService.Parse(Markdown, _cts.Token);
+            _html = await _markdownService.Parse(Markdown, ParseJsMiddlewares, ParseMiddlewares, _cts.Token);
         }
         catch
         {

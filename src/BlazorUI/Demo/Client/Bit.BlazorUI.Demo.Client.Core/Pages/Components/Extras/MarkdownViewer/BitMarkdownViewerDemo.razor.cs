@@ -32,6 +32,20 @@ public partial class BitMarkdownViewerDemo
            DefaultValue = "null",
            Description = "A callback that is called after rendering the parsed markdown.",
         },
+        new()
+        {
+           Name = "ParseJsMiddlewares",
+           Type = "IReadOnlyList<string>?",
+           DefaultValue = "null",
+           Description = "The list of fully qualified JavaScript function identifiers to invoke as JavaScript middlewares after parsing. Each string should reference a global JS function (e.g. \"myApp.sanitizeHtml\") that accepts an HTML string and returns the processed HTML string. JavaScript middlewares are skipped during server-side prerendering.",
+        },
+        new()
+        {
+           Name = "ParseMiddlewares",
+           Type = "IReadOnlyList<Func<string, string>>?",
+           DefaultValue = "null",
+           Description = "The list of C# middlewares to apply to the parsed HTML before rendering. Each middleware receives the parsed HTML string and returns the processed HTML string. C# middlewares are applied after JavaScript middlewares, in order.",
+        },
     ];
 
 

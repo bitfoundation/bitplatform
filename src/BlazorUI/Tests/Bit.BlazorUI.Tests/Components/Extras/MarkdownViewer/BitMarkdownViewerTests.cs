@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -150,4 +152,121 @@ public class BitMarkdownViewerTests : BunitTestContext
             Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         }
     }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldApplyCSharpMiddleware()
+    {
+        var markdown = "middleware";
+        var html = "<p>middleware</p>";
+        var processedHtml = "<p>middleware-processed</p>";
+
+        SetupMarkdownInterop(markdown, html);
+
+        var middlewareCalled = false;
+
+        Func<string, string> middleware = (input) =>
+        {
+            middlewareCalled = input == html;
+            return processedHtml;
+        };
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.ParseMiddlewares, [middleware]);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(middlewareCalled);
+            Assert.IsTrue(component.Markup.Contains(processedHtml));
+        });
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldApplyMultipleCSharpMiddlewaresInOrder()
+    {
+        var markdown = "order";
+        var html = "<p>order</p>";
+
+        SetupMarkdownInterop(markdown, html);
+
+        var callOrder = new List<int>();
+
+        Func<string, string> firstMiddleware = (input) =>
+        {
+            callOrder.Add(1);
+            return input + "-first";
+        };
+
+        Func<string, string> secondMiddleware = (input) =>
+        {
+            callOrder.Add(2);
+            return input + "-second";
+        };
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.ParseMiddlewares, [firstMiddleware, secondMiddleware]);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(2, callOrder.Count);
+            Assert.AreEqual(1, callOrder[0]);
+            Assert.AreEqual(2, callOrder[1]);
+            Assert.IsTrue(component.Markup.Contains(html + "-first-second"));
+        });
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldApplyTsMiddleware()
+    {
+        var markdown = "ts-middleware";
+        var html = "<p>ts-middleware</p>";
+        var processedHtml = "<p>ts-processed</p>";
+
+        SetupMarkdownInterop(markdown, html);
+        Context.JSInterop.Setup<string>("myApp.sanitize", html).SetResult(processedHtml);
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.ParseJsMiddlewares, ["myApp.sanitize"]);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Context.JSInterop.VerifyInvoke("myApp.sanitize");
+            Assert.IsTrue(component.Markup.Contains(processedHtml));
+        });
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldApplyMultipleTsMiddlewaresInOrder()
+    {
+        var markdown = "ts-order";
+        var html = "<p>ts-order</p>";
+        var afterFirst = "<p>ts-order</p>-first";
+        var afterSecond = "<p>ts-order</p>-first-second";
+
+        SetupMarkdownInterop(markdown, html);
+        Context.JSInterop.Setup<string>("myApp.firstMiddleware", html).SetResult(afterFirst);
+        Context.JSInterop.Setup<string>("myApp.secondMiddleware", afterFirst).SetResult(afterSecond);
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.ParseJsMiddlewares, ["myApp.firstMiddleware", "myApp.secondMiddleware"]);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Context.JSInterop.VerifyInvoke("myApp.firstMiddleware");
+            Context.JSInterop.VerifyInvoke("myApp.secondMiddleware");
+            Assert.IsTrue(component.Markup.Contains(afterSecond));
+        });
+    }
 }
+

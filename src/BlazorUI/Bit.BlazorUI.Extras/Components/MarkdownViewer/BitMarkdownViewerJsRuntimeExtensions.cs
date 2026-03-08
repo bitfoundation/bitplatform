@@ -13,4 +13,9 @@ internal static class BitMarkdownViewerJsRuntimeExtensions
             ? jsRuntime.FastInvoke<string>("BitBlazorUI.MarkdownViewer.parse", markdown)
             : jsRuntime.Invoke<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown);
     }
+
+    public static ValueTask<string> BitMarkdownViewerRunJsMiddleware(this IJSRuntime jsRuntime, string jsFunction, string html)
+    {
+        return jsRuntime.FastInvoke<string>(jsFunction, html);
+    }
 }

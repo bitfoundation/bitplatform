@@ -18,7 +18,26 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
 
 
 
-    public async Task<string> Parse(string? markdown, CancellationToken cancellationToken)
+    /// <summary>
+    /// Parses the given markdown string into an HTML string.
+    /// </summary>
+    /// <param name="markdown">The markdown string to parse.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    public Task<string> Parse(string? markdown, CancellationToken cancellationToken)
+    {
+        return Parse(markdown, null, null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Parses the given markdown string into an HTML string, then applies JavaScript and C# middlewares in order.
+    /// JavaScript middlewares are invoked via JS interop and are skipped during server-side prerendering.
+    /// C# middlewares are always applied regardless of rendering mode.
+    /// </summary>
+    /// <param name="markdown">The markdown string to parse.</param>
+    /// <param name="jsMiddlewares">Optional JavaScript middleware identifiers (fully qualified JS function paths) to invoke via JS interop after parsing.</param>
+    /// <param name="csMiddlewares">Optional C# middlewares to apply after the JavaScript middlewares.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    public async Task<string> Parse(string? markdown, IReadOnlyList<string>? jsMiddlewares, IReadOnlyList<Func<string, string>>? csMiddlewares, CancellationToken cancellationToken)
     {
         if (markdown.HasNoValue()) return string.Empty;
 
@@ -29,6 +48,8 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
             try
             {
                 html = await Task.Run(async () => await RunJint(markdown, cancellationToken), cancellationToken);
+
+                // js middlewares can't be executed on server!
             }
             catch (FileNotFoundException ex) when (ex.FileName?.StartsWith("Jint") is true)
             {
@@ -47,6 +68,25 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
             }
 
             html = await js.BitMarkdownViewerParse(markdown!);
+
+            if (jsMiddlewares is not null)
+            {
+                foreach (var m in jsMiddlewares)
+                {
+                    html = await js.BitMarkdownViewerRunJsMiddleware(m, html);
+                }
+            }
+        }
+
+        // Apply C# middlewares
+        if (csMiddlewares is not null)
+        {
+            foreach (var m in csMiddlewares)
+            {
+                if (m is null) continue;
+
+                html = m(html);
+            }
         }
 
         return html;
