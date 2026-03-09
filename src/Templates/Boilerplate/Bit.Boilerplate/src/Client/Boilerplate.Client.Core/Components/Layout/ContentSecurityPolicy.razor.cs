@@ -22,7 +22,6 @@ public partial class ContentSecurityPolicy
         var ownOrigins = new HashSet<string> { "'self'", apiUrl };
         if (string.IsNullOrWhiteSpace(webAppUrl) is false)
             ownOrigins.Add(webAppUrl);
-        var ownOriginsString = string.Join(" ", ownOrigins);
 
         // 2. Service Specific Origins
         var connectSrc = new HashSet<string>(ownOrigins);
