@@ -23,7 +23,7 @@ public class BitMarkdownViewerTests : BunitTestContext
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.Extras.initScripts");
         Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parse", markdown).SetResult(html);
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown).SetResult(html);
+        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown, null).SetResult(html);
         Context.JSInterop.Setup<bool>("BitBlazorUI.MarkdownViewer.checkScriptLoaded", MARKED_FILE).SetResult(true);
     }
 
@@ -221,51 +221,48 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMarkdownViewerShouldApplyTsMiddleware()
+    public void BitMarkdownViewerShouldApplyJsMiddleware()
     {
-        var markdown = "ts-middleware";
-        var html = "<p>ts-middleware</p>";
-        var processedHtml = "<p>ts-processed</p>";
+        var markdown = "js-middleware";
+        var html = "<p>js-middleware</p>";
+        var processedHtml = "<p>js-processed</p>";
+        IEnumerable<string> jsMiddlewares = ["myApp.sanitize"];
 
         SetupMarkdownInterop(markdown, html);
-        Context.JSInterop.Setup<string>("myApp.sanitize", html).SetResult(processedHtml);
+        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown, jsMiddlewares).SetResult(processedHtml);
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
-            parameters.Add(p => p.ParseJsMiddlewares, ["myApp.sanitize"]);
+            parameters.Add(p => p.ParseJsMiddlewares, jsMiddlewares);
         });
 
         component.WaitForAssertion(() =>
         {
-            Context.JSInterop.VerifyInvoke("myApp.sanitize");
-            Assert.IsTrue(component.Markup.Contains(processedHtml));
+            Assert.Contains(processedHtml, component.Markup);
         });
     }
 
     [TestMethod]
-    public void BitMarkdownViewerShouldApplyMultipleTsMiddlewaresInOrder()
+    public void BitMarkdownViewerShouldApplyMultipleJsMiddlewaresInOrder()
     {
         var markdown = "ts-order";
         var html = "<p>ts-order</p>";
-        var afterFirst = "<p>ts-order</p>-first";
-        var afterSecond = "<p>ts-order</p>-first-second";
+        var processedHtml = "<p>ts-order</p>-first-second";
+        IEnumerable<string> jsMiddlewares = ["myApp.firstMiddleware", "myApp.secondMiddleware"];
 
         SetupMarkdownInterop(markdown, html);
-        Context.JSInterop.Setup<string>("myApp.firstMiddleware", html).SetResult(afterFirst);
-        Context.JSInterop.Setup<string>("myApp.secondMiddleware", afterFirst).SetResult(afterSecond);
+        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown, jsMiddlewares).SetResult(processedHtml);
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
-            parameters.Add(p => p.ParseJsMiddlewares, ["myApp.firstMiddleware", "myApp.secondMiddleware"]);
+            parameters.Add(p => p.ParseJsMiddlewares, jsMiddlewares);
         });
 
         component.WaitForAssertion(() =>
         {
-            Context.JSInterop.VerifyInvoke("myApp.firstMiddleware");
-            Context.JSInterop.VerifyInvoke("myApp.secondMiddleware");
-            Assert.IsTrue(component.Markup.Contains(afterSecond));
+            Assert.Contains(processedHtml, component.Markup);
         });
     }
 }

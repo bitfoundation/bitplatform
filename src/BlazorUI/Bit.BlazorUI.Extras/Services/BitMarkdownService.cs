@@ -70,12 +70,13 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
             html = await js.BitMarkdownViewerParse(markdown!, jsMiddlewares);
         }
 
-        foreach (var m in csMiddlewares ?? [])
+        foreach (var middleware in csMiddlewares ?? [])
         {
-            if (m is null) continue;
+            if (middleware is null) continue;
+
             try
             {
-                html = m(html);
+                html = middleware(html);
             }
             catch (Exception ex)
             {

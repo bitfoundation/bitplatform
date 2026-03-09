@@ -4,12 +4,8 @@ namespace BitBlazorUI {
             return window.marked !== undefined;
         }
 
-        public static parse(md: string, middlewares?: string[]) {
+        public static async parse(md: string) {
             let html = marked.parse(md, { async: false });
-
-            if (middlewares) {
-                html = MarkdownViewer.applyMiddlewares(html, middlewares);
-            }
 
             return html;
         }
@@ -18,7 +14,7 @@ namespace BitBlazorUI {
             let html = await marked.parse(md, { async: true });
 
             if (middlewares) {
-                html = MarkdownViewer.applyMiddlewares(html, middlewares);
+                html = await MarkdownViewer.applyMiddlewares(html, middlewares);
             }
 
             return html;
@@ -26,14 +22,14 @@ namespace BitBlazorUI {
 
 
 
-        private static applyMiddlewares(html: string, middlewares: string[]) {
+        private static async applyMiddlewares(html: string, middlewares: string[]) {
             for (let i = 0; i < middlewares.length; i++) {
                 let m = middlewares[i];
 
                 if (!m) continue;
 
                 try {
-                    html = Extras.invokeJS(m, html);
+                    html = await Extras.invokeJS(m, html);
                 } catch (e) {
                     console.error(e);
                 }

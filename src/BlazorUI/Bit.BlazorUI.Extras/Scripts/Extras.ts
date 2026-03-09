@@ -94,7 +94,7 @@ namespace BitBlazorUI {
         }
 
 
-        public static invokeJS<T>(identifier: string, ...args: unknown[]): T {
+        public static invokeJS<T>(identifier: string, ...args: unknown[]): Promise<T> {
             identifier ??= '';
             identifier = identifier.trim();
 
@@ -125,7 +125,7 @@ namespace BitBlazorUI {
                 throw new Error(`'${identifier}' is not a function.`);
             }
 
-            return fn.apply(context, args) as T;
+            return Promise.resolve(fn.apply(context, args) as T);
         }
     }
 }
