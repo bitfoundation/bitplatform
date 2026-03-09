@@ -5,7 +5,7 @@
    Note: This component renders a little bit late in Blazor Hybrid and WebAssembly Standalone, so it might be a good idea to move it to Client.Web/wwwroot/index.html and Client.Maui/wwwroot/index.html
    For Blazor Server, Auto and WebAssembly, with or without pre-rendering, it renders early enough in App.razor
 
-   Warning: It's highly recommended to remove unsafe-inline, but in order to not to degrade the dev experience, it's currently included.
+   Warning: It's highly recommended to remove unsafe-inline, but to avoid degrading the dev experience, it's currently included.
 *@
 
 @if (AppEnvironment.IsDevelopment() is false)
