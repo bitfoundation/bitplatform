@@ -44,14 +44,14 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// and returns the processed HTML string. Middlewares are applied in order.
     /// JavaScript middlewares are skipped during server-side prerendering.
     /// </summary>
-    [Parameter] public IReadOnlyList<string>? ParseJsMiddlewares { get; set; }
+    [Parameter] public IEnumerable<string>? ParseJsMiddlewares { get; set; }
 
     /// <summary>
     /// The list of C# middlewares to apply to the parsed HTML before rendering.
     /// Each middleware receives the parsed HTML string and returns the processed HTML string.
     /// C# middlewares are applied after JavaScript middlewares, in order.
     /// </summary>
-    [Parameter] public IReadOnlyList<Func<string, string>>? ParseMiddlewares { get; set; }
+    [Parameter] public IEnumerable<Func<string, string>>? ParseMiddlewares { get; set; }
 
 
 

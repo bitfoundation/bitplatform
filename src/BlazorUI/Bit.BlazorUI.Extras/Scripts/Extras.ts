@@ -92,5 +92,40 @@ namespace BitBlazorUI {
                 })
             }
         }
+
+
+        public static invokeJS<T>(identifier: string, ...args: unknown[]): T {
+            identifier ??= '';
+            identifier = identifier.trim();
+
+            if (!identifier || identifier.length === 0) {
+                throw new Error("Identifier must not be empty.");
+            }
+
+            const parts = identifier.split(".");
+
+            let context = globalThis as Record<string, unknown>;
+            let target = globalThis as unknown;
+
+            const startIndex = parts[0] === "window" ? 1 : 0;
+
+            for (let i = startIndex; i < parts.length - 1; i++) {
+                const part = parts[i];
+                if (target == null || typeof target !== "object") {
+                    throw new Error(`Cannot read property '${part}' of ${target}`);
+                }
+                context = target as Record<string, unknown>;
+                target = (target as Record<string, unknown>)[part];
+            }
+
+            const fnName = parts[parts.length - 1];
+            const fn = (target as Record<string, unknown>)[fnName];
+
+            if (typeof fn !== "function") {
+                throw new Error(`'${identifier}' is not a function.`);
+            }
+
+            return fn.apply(context, args) as T;
+        }
     }
 }

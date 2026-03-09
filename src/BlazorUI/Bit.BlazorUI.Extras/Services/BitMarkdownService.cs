@@ -37,7 +37,7 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
     /// <param name="jsMiddlewares">Optional JavaScript middleware identifiers (fully qualified JS function paths) to invoke via JS interop after parsing.</param>
     /// <param name="csMiddlewares">Optional C# middlewares to apply after the JavaScript middlewares.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
-    public async Task<string> Parse(string? markdown, IReadOnlyList<string>? jsMiddlewares, IReadOnlyList<Func<string, string>>? csMiddlewares, CancellationToken cancellationToken)
+    public async Task<string> Parse(string? markdown, IEnumerable<string>? jsMiddlewares, IEnumerable<Func<string, string>>? csMiddlewares, CancellationToken cancellationToken)
     {
         if (markdown.HasNoValue()) return string.Empty;
 
@@ -49,7 +49,7 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
             {
                 html = await Task.Run(async () => await RunJint(markdown, cancellationToken), cancellationToken);
 
-                // js middlewares can't be executed on server!
+                // js middlewares can't be executed on the server (for now)!
             }
             catch (FileNotFoundException ex) when (ex.FileName?.StartsWith("Jint") is true)
             {
@@ -67,25 +67,19 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
                 await js.BitExtrasInitScripts([MARKED_FILE]);
             }
 
-            html = await js.BitMarkdownViewerParse(markdown!);
-
-            if (jsMiddlewares is not null)
-            {
-                foreach (var m in jsMiddlewares)
-                {
-                    html = await js.BitMarkdownViewerRunJsMiddleware(m, html);
-                }
-            }
+            html = await js.BitMarkdownViewerParse(markdown!, jsMiddlewares);
         }
 
-        // Apply C# middlewares
-        if (csMiddlewares is not null)
+        foreach (var m in csMiddlewares ?? [])
         {
-            foreach (var m in csMiddlewares)
+            if (m is null) continue;
+            try
             {
-                if (m is null) continue;
-
                 html = m(html);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
             }
         }
 
