@@ -22,16 +22,15 @@ public partial class ContentSecurityPolicy
         var ownOrigins = new HashSet<string> { "'self'", apiUrl };
         if (string.IsNullOrWhiteSpace(webAppUrl) is false)
             ownOrigins.Add(webAppUrl);
-        var ownOriginsString = string.Join(" ", ownOrigins);
 
         // 2. Service Specific Origins
         var connectSrc = new HashSet<string>(ownOrigins);
-        var imgSrc = new HashSet<string> { ownOriginsString, "data:" };
-        var scriptSrc = new HashSet<string> { "'self'", "'unsafe-inline'", "'wasm-unsafe-eval'", "'unsafe-hashes'" };
-        var styleSrc = new HashSet<string> { "'self'", "'unsafe-inline'" };
-        var fontSrc = new HashSet<string> { "'self'", "data:" };
-        var frameSrc = new HashSet<string> { "'self'" };
-        var mediaSrc = new HashSet<string> { "'self'" };
+        var imgSrc = new HashSet<string>(ownOrigins) { "data:" };
+        var scriptSrc = new HashSet<string>(ownOrigins) { "'unsafe-inline'", "'wasm-unsafe-eval'", "'unsafe-hashes'" };
+        var styleSrc = new HashSet<string>(ownOrigins) { "'unsafe-inline'" };
+        var fontSrc = new HashSet<string>(ownOrigins) { "data:" };
+        var frameSrc = new HashSet<string>(ownOrigins);
+        var mediaSrc = new HashSet<string>(ownOrigins);
 
         //#if (appInsights == true)
         // --- Add Azure App Insights ---
