@@ -1,6 +1,6 @@
 {
     "name": "Boilerplate",
-    "image": "mcr.microsoft.com/dotnet/nightly/sdk:10.0.103",
+    "image": "mcr.microsoft.com/dotnet/nightly/sdk:10.0.200",
     "hostRequirements": {
         "cpus": 8
     },
