@@ -45,7 +45,7 @@ jobs:
     inputs:
       targetType: 'inline'
       continueOnError: true
-      script: 'dotnet dev-certs https --trust' # Necessary for aspire related resources
+      script: 'sudo dotnet dev-certs https --trust' # Necessary for aspire related resources
 
   - task: Bash@3
     name: test

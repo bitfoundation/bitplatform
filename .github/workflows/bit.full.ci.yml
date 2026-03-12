@@ -74,7 +74,7 @@ jobs:
 
     - name: Trust dotnet cert
       continue-on-error: true
-      run: dotnet dev-certs https --trust # Necessary for aspire related resources
+      run: sudo dotnet dev-certs https --trust # Necessary for aspire related resources
 
     - name: Create appsettings.json for Client.Web
       run: |
