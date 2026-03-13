@@ -23,12 +23,13 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// an HTML string and returns the processed HTML string.
     /// JavaScript middleware is skipped during server-side prerendering.
     /// </summary>
-    [Parameter] public string? JsMiddlewareIdentifier { get; set; }
+    [Parameter, CallOnSet(nameof(OnMarkdownOrMiddlewareSet))]
+    public string? JsMiddlewareIdentifier { get; set; }
 
     /// <summary>
     /// The Markdown string value to render as an html element.
     /// </summary>
-    [Parameter, CallOnSet(nameof(OnMarkdownSet))]
+    [Parameter, CallOnSet(nameof(OnMarkdownOrMiddlewareSet))]
     public string? Markdown { get; set; }
 
     /// <summary>
@@ -36,7 +37,8 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// The middleware receives the parsed HTML string and returns the processed HTML string.
     /// C# middleware is applied after JavaScript middleware.
     /// </summary>
-    [Parameter] public Func<string, string>? Middleware { get; set; }
+    [Parameter, CallOnSet(nameof(OnMarkdownOrMiddlewareSet))]
+    public Func<string, string>? Middleware { get; set; }
 
     /// <summary>
     /// A callback that is called before starting to parse the markdown.
@@ -78,7 +80,7 @@ public partial class BitMarkdownViewer : BitComponentBase
 
 
 
-    private void OnMarkdownSet()
+    private void OnMarkdownOrMiddlewareSet()
     {
         if (IsRendered is false) return;
 

@@ -15,7 +15,7 @@ namespace BitBlazorUI {
 
             if (middleware) {
                 try {
-                    html = await Extras.invokeJS(middleware, html);
+                    html = await Extras.invokeJs(middleware, html);
                 } catch (err) {
                     console.error(err);
                 }

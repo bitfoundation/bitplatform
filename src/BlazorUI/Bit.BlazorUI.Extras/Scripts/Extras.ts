@@ -94,7 +94,7 @@ namespace BitBlazorUI {
         }
 
 
-        public static invokeJS<T>(identifier: string, ...args: unknown[]): Promise<T> {
+        public static invokeJs<T>(identifier: string, ...args: unknown[]): Promise<T> {
             identifier ??= '';
             identifier = identifier.trim();
 
