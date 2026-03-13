@@ -21,7 +21,7 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// The fully qualified JavaScript function identifier to invoke as JavaScript middleware after parsing.
     /// The string should reference a global JS function (e.g. <c>"myApp.sanitizeHtml"</c>) that accepts 
     /// an HTML string and returns the processed HTML string.
-    /// JavaScript middleware are skipped during server-side prerendering.
+    /// JavaScript middleware is skipped during server-side prerendering.
     /// </summary>
     [Parameter] public string? JsMiddlewareIdentifier { get; set; }
 
