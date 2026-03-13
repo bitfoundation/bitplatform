@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -213,13 +212,13 @@ public class BitMarkdownViewerTests : BunitTestContext
         var jsProcessedHtml = "<p>combined-middleware-js-processed</p>";
         var csharpProcessedHtml = "<p>combined-middleware-csharp-processed</p>";
         var jsMiddleware = "myApp.sanitize";
-        
+
         SetupMarkdownInterop(markdown, html);
-        
+
         Context.JSInterop
             .Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown, jsMiddleware)
             .SetResult(jsProcessedHtml);
-        
+
         var middlewareCalled = false;
         string? middlewareInput = null;
 
@@ -236,7 +235,7 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.JsMiddlewareIdentifier, jsMiddleware);
             parameters.Add(p => p.Middleware, csMiddleware);
         });
-        
+
         component.WaitForAssertion(() =>
         {
             Assert.IsTrue(middlewareCalled);

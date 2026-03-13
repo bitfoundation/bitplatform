@@ -30,7 +30,7 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
 
     /// <summary>
     /// Parses the given markdown string into an HTML string, then applies JavaScript and C# middlewares in order.
-    /// JavaScript middleware is invoked via JS interop and are skipped during server-side prerendering.
+    /// JavaScript middleware is invoked via JS interop and is skipped during server-side prerendering.
     /// C# middleware is always applied regardless of rendering mode.
     /// </summary>
     /// <param name="markdown">The markdown string to parse.</param>
