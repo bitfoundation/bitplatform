@@ -33,7 +33,7 @@ public partial class BitMarkdownViewer : BitComponentBase
 
     /// <summary>
     /// The C# function to run after parsing markdown and before rendering HTML.
-    /// The middlewar receives the parsed HTML string and returns the processed HTML string.
+    /// The middleware receives the parsed HTML string and returns the processed HTML string.
     /// C# middleware is applied after JavaScript middleware.
     /// </summary>
     [Parameter] public Func<string, string>? Middleware { get; set; }

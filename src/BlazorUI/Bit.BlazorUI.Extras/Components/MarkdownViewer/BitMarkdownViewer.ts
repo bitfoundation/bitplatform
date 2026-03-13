@@ -4,7 +4,7 @@ namespace BitBlazorUI {
             return window.marked !== undefined;
         }
 
-        public static async parse(md: string) {
+        public static parse(md: string) {
             let html = marked.parse(md, { async: false });
 
             return html;

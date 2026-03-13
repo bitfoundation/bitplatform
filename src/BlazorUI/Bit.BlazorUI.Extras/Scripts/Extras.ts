@@ -104,7 +104,6 @@ namespace BitBlazorUI {
 
             const parts = identifier.split(".");
 
-            let context = globalThis as Record<string, unknown>;
             let target = globalThis as unknown;
 
             const startIndex = parts[0] === "window" ? 1 : 0;
@@ -114,7 +113,6 @@ namespace BitBlazorUI {
                 if (target == null || typeof target !== "object") {
                     throw new Error(`Cannot read property '${part}' of ${target}`);
                 }
-                context = target as Record<string, unknown>;
                 target = (target as Record<string, unknown>)[part];
             }
 
@@ -125,7 +123,7 @@ namespace BitBlazorUI {
                 throw new Error(`'${identifier}' is not a function.`);
             }
 
-            return Promise.resolve(fn.apply(context, args) as T);
+            return Promise.resolve(fn.apply(target, args) as T);
         }
     }
 }

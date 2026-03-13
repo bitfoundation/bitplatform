@@ -27,7 +27,7 @@ public partial class BitMarkdownViewerDemo
            Type = "Func<string, string>?",
            DefaultValue = "null",
            Description = @"The C# function to run after parsing markdown and before rendering HTML.
-                           The middlewar receives the parsed HTML string and returns the processed HTML string.
+                           The middleware receives the parsed HTML string and returns the processed HTML string.
                            C# middleware is applied after JavaScript middleware.",
         },
         new()
