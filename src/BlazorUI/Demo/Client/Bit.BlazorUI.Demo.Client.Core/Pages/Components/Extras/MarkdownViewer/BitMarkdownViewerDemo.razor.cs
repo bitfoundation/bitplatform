@@ -6,10 +6,29 @@ public partial class BitMarkdownViewerDemo
     [
         new()
         {
+           Name = "JsMiddlewareIdentifier",
+           Type = "string?",
+           DefaultValue = "null",
+           Description = @"The fully qualified JavaScript function identifier to invoke as JavaScript middleware after parsing.
+                           The string should reference a global JS function (e.g. <c>""myApp.sanitizeHtml""</c>) that accepts
+                           an HTML string and returns the processed HTML string.
+                           JavaScript middleware is skipped during server-side prerendering.",
+        },
+        new()
+        {
            Name = "Markdown",
            Type = "string?",
            DefaultValue = "null",
            Description = "The Markdown string value to render as an html element.",
+        },
+        new()
+        {
+           Name = "Middleware",
+           Type = "Func<string, string>?",
+           DefaultValue = "null",
+           Description = @"The C# function to run after parsing markdown and before rendering HTML.
+                           The middleware receives the parsed HTML string and returns the processed HTML string.
+                           C# middleware is applied after JavaScript middleware.",
         },
         new()
         {

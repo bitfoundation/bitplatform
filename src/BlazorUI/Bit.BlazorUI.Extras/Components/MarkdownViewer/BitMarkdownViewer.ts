@@ -5,12 +5,22 @@ namespace BitBlazorUI {
         }
 
         public static parse(md: string) {
-            const html = marked.parse(md, { async: false });
+            let html = marked.parse(md, { async: false });
+
             return html;
         }
 
-        public static async parseAsync(md: string) {
-            const html = await marked.parse(md, { async: true });
+        public static async parseAsync(md: string, middleware?: string) {
+            let html = await marked.parse(md, { async: true });
+
+            if (middleware) {
+                try {
+                    html = await Extras.invokeJs(middleware, html);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
             return html;
         }
     }
