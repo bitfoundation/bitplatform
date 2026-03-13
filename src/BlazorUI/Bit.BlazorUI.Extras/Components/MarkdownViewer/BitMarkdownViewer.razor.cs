@@ -18,10 +18,25 @@ public partial class BitMarkdownViewer : BitComponentBase
 
 
     /// <summary>
+    /// The fully qualified JavaScript function identifier to invoke as JavaScript middleware after parsing.
+    /// The string should reference a global JS function (e.g. <c>"myApp.sanitizeHtml"</c>) that accepts 
+    /// an HTML string and returns the processed HTML string.
+    /// JavaScript middleware are skipped during server-side prerendering.
+    /// </summary>
+    [Parameter] public string? JsMiddlewareIdentifier { get; set; }
+
+    /// <summary>
     /// The Markdown string value to render as an html element.
     /// </summary>
     [Parameter, CallOnSet(nameof(OnMarkdownSet))]
     public string? Markdown { get; set; }
+
+    /// <summary>
+    /// The C# function to run after parsing markdown and before rendering HTML.
+    /// The middlewar receives the parsed HTML string and returns the processed HTML string.
+    /// C# middleware is applied after JavaScript middleware.
+    /// </summary>
+    [Parameter] public Func<string, string>? Middleware { get; set; }
 
     /// <summary>
     /// A callback that is called before starting to parse the markdown.
@@ -37,21 +52,6 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// A callback that is called after rendering the parsed markdown.
     /// </summary>
     [Parameter] public EventCallback<string?> OnRendered { get; set; }
-
-    /// <summary>
-    /// The list of fully qualified JavaScript function identifiers to invoke as JavaScript middlewares after parsing.
-    /// Each string should reference a global JS function (e.g. <c>"myApp.sanitizeHtml"</c>) that accepts an HTML string
-    /// and returns the processed HTML string. Middlewares are applied in order.
-    /// JavaScript middlewares are skipped during server-side prerendering.
-    /// </summary>
-    [Parameter] public IEnumerable<string>? ParseJsMiddlewares { get; set; }
-
-    /// <summary>
-    /// The list of C# middlewares to apply to the parsed HTML before rendering.
-    /// Each middleware receives the parsed HTML string and returns the processed HTML string.
-    /// C# middlewares are applied after JavaScript middlewares, in order.
-    /// </summary>
-    [Parameter] public IEnumerable<Func<string, string>>? ParseMiddlewares { get; set; }
 
 
 
@@ -91,7 +91,7 @@ public partial class BitMarkdownViewer : BitComponentBase
 
         try
         {
-            _html = await _markdownService.Parse(Markdown, ParseJsMiddlewares, ParseMiddlewares, _cts.Token);
+            _html = await _markdownService.Parse(Markdown, JsMiddlewareIdentifier, Middleware, _cts.Token);
         }
         catch
         {

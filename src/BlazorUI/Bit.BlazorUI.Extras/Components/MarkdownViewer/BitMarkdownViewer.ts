@@ -10,28 +10,14 @@ namespace BitBlazorUI {
             return html;
         }
 
-        public static async parseAsync(md: string, middlewares?: string[]) {
+        public static async parseAsync(md: string, middleware?: string) {
             let html = await marked.parse(md, { async: true });
 
-            if (middlewares) {
-                html = await MarkdownViewer.applyMiddlewares(html, middlewares);
-            }
-
-            return html;
-        }
-
-
-
-        private static async applyMiddlewares(html: string, middlewares: string[]) {
-            for (let i = 0; i < middlewares.length; i++) {
-                let m = middlewares[i];
-
-                if (!m) continue;
-
+            if (middleware) {
                 try {
-                    html = await Extras.invokeJS(m, html);
-                } catch (e) {
-                    console.error(e);
+                    html = await Extras.invokeJS(middleware, html);
+                } catch (err) {
+                    console.error(err);
                 }
             }
 

@@ -164,59 +164,22 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var middlewareCalled = false;
 
-        Func<string, string> middleware = (input) =>
+        string middleware(string input)
         {
             middlewareCalled = input == html;
             return processedHtml;
-        };
+        }
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
-            parameters.Add(p => p.ParseMiddlewares, [middleware]);
+            parameters.Add(p => p.Middleware, middleware);
         });
 
         component.WaitForAssertion(() =>
         {
             Assert.IsTrue(middlewareCalled);
-            Assert.IsTrue(component.Markup.Contains(processedHtml));
-        });
-    }
-
-    [TestMethod]
-    public void BitMarkdownViewerShouldApplyMultipleCSharpMiddlewaresInOrder()
-    {
-        var markdown = "order";
-        var html = "<p>order</p>";
-
-        SetupMarkdownInterop(markdown, html);
-
-        var callOrder = new List<int>();
-
-        Func<string, string> firstMiddleware = (input) =>
-        {
-            callOrder.Add(1);
-            return input + "-first";
-        };
-
-        Func<string, string> secondMiddleware = (input) =>
-        {
-            callOrder.Add(2);
-            return input + "-second";
-        };
-
-        var component = RenderComponent<BitMarkdownViewer>(parameters =>
-        {
-            parameters.Add(p => p.Markdown, markdown);
-            parameters.Add(p => p.ParseMiddlewares, [firstMiddleware, secondMiddleware]);
-        });
-
-        component.WaitForAssertion(() =>
-        {
-            Assert.AreEqual(2, callOrder.Count);
-            Assert.AreEqual(1, callOrder[0]);
-            Assert.AreEqual(2, callOrder[1]);
-            Assert.IsTrue(component.Markup.Contains(html + "-first-second"));
+            Assert.Contains(processedHtml, component.Markup);
         });
     }
 
@@ -226,38 +189,15 @@ public class BitMarkdownViewerTests : BunitTestContext
         var markdown = "js-middleware";
         var html = "<p>js-middleware</p>";
         var processedHtml = "<p>js-processed</p>";
-        IEnumerable<string> jsMiddlewares = ["myApp.sanitize"];
+        var jsMiddleware = "myApp.sanitize";
 
         SetupMarkdownInterop(markdown, html);
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown, jsMiddlewares).SetResult(processedHtml);
+        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown, jsMiddleware).SetResult(processedHtml);
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
-            parameters.Add(p => p.ParseJsMiddlewares, jsMiddlewares);
-        });
-
-        component.WaitForAssertion(() =>
-        {
-            Assert.Contains(processedHtml, component.Markup);
-        });
-    }
-
-    [TestMethod]
-    public void BitMarkdownViewerShouldApplyMultipleJsMiddlewaresInOrder()
-    {
-        var markdown = "ts-order";
-        var html = "<p>ts-order</p>";
-        var processedHtml = "<p>ts-order</p>-first-second";
-        IEnumerable<string> jsMiddlewares = ["myApp.firstMiddleware", "myApp.secondMiddleware"];
-
-        SetupMarkdownInterop(markdown, html);
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown, jsMiddlewares).SetResult(processedHtml);
-
-        var component = RenderComponent<BitMarkdownViewer>(parameters =>
-        {
-            parameters.Add(p => p.Markdown, markdown);
-            parameters.Add(p => p.ParseJsMiddlewares, jsMiddlewares);
+            parameters.Add(p => p.JsMiddlewareIdentifier, jsMiddleware);
         });
 
         component.WaitForAssertion(() =>

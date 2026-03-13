@@ -34,10 +34,10 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
     /// C# middlewares are always applied regardless of rendering mode.
     /// </summary>
     /// <param name="markdown">The markdown string to parse.</param>
-    /// <param name="jsMiddlewares">Optional JavaScript middleware identifiers (fully qualified JS function paths) to invoke via JS interop after parsing.</param>
-    /// <param name="csMiddlewares">Optional C# middlewares to apply after the JavaScript middlewares.</param>
+    /// <param name="jsMiddleware">Optional JavaScript middleware identifier (fully qualified JS function paths) to invoke via JS interop after parsing.</param>
+    /// <param name="csMiddleware">Optional C# middleware to apply after the JavaScript middleware.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
-    public async Task<string> Parse(string? markdown, IEnumerable<string>? jsMiddlewares, IEnumerable<Func<string, string>>? csMiddlewares, CancellationToken cancellationToken)
+    public async Task<string> Parse(string? markdown, string? jsMiddleware, Func<string, string>? csMiddleware, CancellationToken cancellationToken)
     {
         if (markdown.HasNoValue()) return string.Empty;
 
@@ -67,16 +67,14 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
                 await js.BitExtrasInitScripts([MARKED_FILE]);
             }
 
-            html = await js.BitMarkdownViewerParse(markdown!, jsMiddlewares);
+            html = await js.BitMarkdownViewerParse(markdown!, jsMiddleware);
         }
 
-        foreach (var middleware in csMiddlewares ?? [])
+        if (csMiddleware is not null)
         {
-            if (middleware is null) continue;
-
             try
             {
-                html = middleware(html);
+                html = csMiddleware(html);
             }
             catch (Exception ex)
             {
