@@ -292,6 +292,68 @@ private Dictionary<BitPersonaPresence, string> _icons = new()
 <BitPersona PrimaryText=""TertiaryBorder"" CoinColor=""BitColor.TertiaryBorder"" />";
 
     private readonly string example11RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            TertiaryText=""In a meeting""
+            OptionalText=""Available at 4:00pm""
+            Size=""BitPersonaSize.Size120""
+            Presence=""BitPersonaPresence.None""
+            OnActionClick=""() => actionClickCount++""
+            ActionIcon=""@BitIconInfo.Fa(""solid camera"")""
+            ImageUrl=""/images/persona/persona-female.png"" />
+<p>Action Click Count: @actionClickCount</p>
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.Online""
+            PresenceIconsInfo=""_iconsInfo""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/images/persona/persona-female.png"" />
+
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.Busy""
+            PresenceIconsInfo=""_iconsInfo""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/images/persona/persona-female.png"" />
+
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.Away""
+            PresenceIconsInfo=""_iconsInfo""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/images/persona/persona-female.png"" />
+
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.Dnd""
+            PresenceIconsInfo=""_iconsInfo""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/images/persona/persona-female.png"" />
+
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.Offline""
+            PresenceIconsInfo=""_iconsInfo""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/images/persona/persona-female.png"" />";
+    private readonly string example11CsharpCode = @"
+private Dictionary<BitPersonaPresence, BitIconInfo> _iconsInfo = new()
+{
+    {BitPersonaPresence.Offline, BitIconInfo.Bi(""wifi-off"")},
+    {BitPersonaPresence.Online, BitIconInfo.Bi(""check-circle-fill"")},
+    {BitPersonaPresence.Away, BitIconInfo.Bi(""clock-fill"")},
+    {BitPersonaPresence.Dnd, BitIconInfo.Bi(""dash-circle-fill"")},
+    {BitPersonaPresence.Blocked, BitIconInfo.Bi(""ban"")},
+    {BitPersonaPresence.Busy, BitIconInfo.Bi(""exclamation-circle-fill"")}
+};";
+
+    private readonly string example12RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -330,7 +392,7 @@ private Dictionary<BitPersonaPresence, string> _icons = new()
             Classes=""@(new() { ImageContainer = ""custom-img-container"",
                                PrimaryTextContainer = ""custom-primary-text"" })"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitPersona Dir=""BitDir.Rtl""
             PrimaryText=""صالح یوسف نژاد""
             SecondaryText=""مهندس نرم افزار""

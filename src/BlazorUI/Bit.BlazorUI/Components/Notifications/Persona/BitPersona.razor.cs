@@ -16,9 +16,14 @@ public partial class BitPersona : BitComponentBase
     [Parameter] public string ActionButtonTitle { get; set; } = "Edit image";
 
     /// <summary>
+    /// Icon for the icon button of the custom action.
+    /// </summary>
+    [Parameter] public BitIconInfo? ActionIcon { get; set; }
+
+    /// <summary>
     /// Icon name for the icon button of the custom action.
     /// </summary>
-    [Parameter] public string? ActionIconName { get; set; } = "Edit";
+    [Parameter] public string? ActionIconName { get; set; }
 
     /// <summary>
     /// Optional Custom template for the custom action element.
@@ -121,6 +126,11 @@ public partial class BitPersona : BitComponentBase
     /// Presence of the person to display - will not display presence if undefined.
     /// </summary>
     [Parameter] public BitPersonaPresence Presence { get; set; }
+
+    /// <summary>
+    /// The icons to be used for the presence status with BitIconInfo.
+    /// </summary>
+    [Parameter] public Dictionary<BitPersonaPresence, BitIconInfo>? PresenceIconsInfo { get; set; }
 
     /// <summary>
     /// The icons to be used for the presence status.
@@ -285,6 +295,18 @@ public partial class BitPersona : BitComponentBase
             position = FormattableString.Invariant($"right:-{presentationPosition}px;bottom:-{presentationPosition}px;");
         }
         return FormattableString.Invariant($"width:{presentationSize}px;height:{presentationSize}px;{position}{Styles?.Presence?.Trim(';')}");
+    }
+
+    private BitIconInfo? GetPresentationIconInfo()
+    {
+        if (Size is BitPersonaSize.Size8 or BitPersonaSize.Size24 or BitPersonaSize.Size32) return null;
+
+        if (PresenceIconsInfo?.ContainsKey(Presence) ?? false)
+        {
+            return PresenceIconsInfo[Presence];
+        }
+
+        return null;
     }
 
     private string? GetPresentationIcon()

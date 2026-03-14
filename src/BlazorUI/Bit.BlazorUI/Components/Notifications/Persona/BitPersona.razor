@@ -1,8 +1,11 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @{
     var presentationIcon = GetPresentationIcon();
+    var presentationIconInfo = GetPresentationIconInfo();
+
+    var iconInfo = BitIconInfo.From(presentationIconInfo, presentationIcon);
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -16,7 +19,10 @@
         {
             if (Presence is BitPersonaPresence.None)
             {
-                <i style="@Styles?.PresentationIcon" class="bit-prs-pic bit-icon bit-icon--@presentationIcon @Classes?.PresentationIcon" role="presentation" />
+                @if (iconInfo is not null)
+                {
+                    <i style="@Styles?.PresentationIcon" class="bit-prs-pic @iconInfo?.GetCssClasses() @Classes?.PresentationIcon" role="presentation" />
+                }
             }
             else
             {
@@ -91,17 +97,21 @@
                 }
                 else
                 {
+                    var actionIcon = BitIconInfo.From(ActionIcon, ActionIconName ?? "Edit");
                     <button @onclick="HandleActionClick" type="button" style="@Styles?.ActionButton" class="bit-prs-abt @Classes?.ActionButton" title="@ActionButtonTitle">
-                        <i style="@Styles?.ActionButtonIcon" class="bit-prs-aic bit-icon bit-icon--@ActionIconName @Classes?.ActionButtonIcon" />
+                        @if (actionIcon is not null)
+                        {
+                            <i style="@Styles?.ActionButtonIcon" class="bit-prs-aic @actionIcon.GetCssClasses() @Classes?.ActionButtonIcon" />
+                        }
                     </button>
                 }
             }
             else if (Presence is not BitPersonaPresence.None)
             {
                 <div title="@PresenceTitle" style="@GetPresentationStyle()" class="bit-prs-pre @GetPresentationClass() @Classes?.Presence">
-                    @if (presentationIcon.HasValue())
+                    @if (iconInfo is not null)
                     {
-                        <i style="@Styles?.PresentationIcon" class="bit-icon bit-icon--@presentationIcon @Classes?.PresentationIcon" role="presentation" />
+                        <i style="@Styles?.PresentationIcon" class="@iconInfo?.GetCssClasses() @Classes?.PresentationIcon" role="presentation" />
                     }
                 </div>
             }
