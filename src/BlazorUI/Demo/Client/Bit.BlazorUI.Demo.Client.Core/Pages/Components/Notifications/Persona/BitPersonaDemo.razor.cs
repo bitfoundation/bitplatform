@@ -168,7 +168,7 @@ public partial class BitPersonaDemo
             Name = "PresenceIcons",
             Type = "Dictionary<BitPersonaPresence, BitIconInfo>?",
             DefaultValue = "null",
-            Description = "The icons to be used for the presence status with BitIconInfo. Takes precedence over PresenceIcons when both are set.",
+            Description = "The icons to be used for the presence status with BitIconInfo. Takes precedence over PresenceIconNames when both are set.",
             LinkType = LinkType.Link,
             Href = "#bit-icon-info",
         },

@@ -168,7 +168,7 @@ public class BitPersonaTests : BunitTestContext
         DataRow(BitPersonaPresence.Dnd, "dash-circle-fill"),
         DataRow(BitPersonaPresence.Busy, "exclamation-circle-fill")
     ]
-    public void BitPersonaShouldRenderPresenceIconCssClassesFromPresenceIconsInfo(BitPersonaPresence presence, string iconName)
+    public void BitPersonaShouldRenderPresenceIconCssClassesFromPresenceIcons(BitPersonaPresence presence, string iconName)
     {
         var iconsInfo = new Dictionary<BitPersonaPresence, BitIconInfo>
         {
@@ -193,7 +193,7 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPersonaPresenceIconsInfoShouldTakePrecedenceOverPresenceIcons()
+    public void BitPersonaPresenceIconsShouldTakePrecedenceOverPresenceIconNames()
     {
         var iconsInfo = new Dictionary<BitPersonaPresence, BitIconInfo>
         {
@@ -221,17 +221,17 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPersonaShouldFallbackToPresenceIconsWhenPresenceIconsInfoDoesNotContainPresence()
+    public void BitPersonaShouldFallbackToPresenceIconNamesWhenPresenceIconsDoesNotContainPresence()
     {
         var icons = new Dictionary<BitPersonaPresence, BitIconInfo>
         {
-            // Only Online is defined in PresenceIconsInfo; Offline is intentionally missing.
+            // Only Online is defined in PresenceIcons; Offline is intentionally missing.
             { BitPersonaPresence.Online, BitIconInfo.Bi("check-circle-fill") }
         };
 
         var iconNames = new Dictionary<BitPersonaPresence, string>
         {
-            // Offline is only defined in PresenceIcons to verify the fallback behavior.
+            // Offline is only defined in PresenceIconNames to verify the fallback behavior.
             { BitPersonaPresence.Offline, "SkypeMinus" }
         };
 
@@ -245,8 +245,8 @@ public class BitPersonaTests : BunitTestContext
 
         var iconEl = component.Find(".bit-prs-pre i");
 
-        // When PresenceIconsInfo has no mapping for the current Presence, the component
-        // should fall back to PresenceIcons, which uses the BitIcon-based rendering.
+        // When PresenceIcons has no mapping for the current Presence, the component
+        // should fall back to PresenceIconNames, which uses the BitIcon-based rendering.
         Assert.IsTrue(iconEl.ClassList.Contains("bit-icon"));
         Assert.IsFalse(iconEl.ClassList.Contains("bi"));
     }
@@ -273,7 +273,7 @@ public class BitPersonaTests : BunitTestContext
         
         var iconElements = component.FindAll(".bit-prs-pre i");
         
-        // When neither PresenceIconsInfo nor PresenceIcons contains the current Presence,
+        // When neither PresenceIcons nor PresenceIcons contains the current Presence,
         // no presence icon should be rendered.
         Assert.IsEmpty(iconElements);
     }
