@@ -156,7 +156,7 @@ private int actionClickCount = 0;";
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.None""
-            PresenceIcons=""_icons""
+            PresenceIconNames=""_iconNames""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/images/persona/persona-female.png"" />
 
@@ -164,7 +164,7 @@ private int actionClickCount = 0;";
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Offline""
-            PresenceIcons=""_icons""
+            PresenceIconNames=""_iconNames""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/images/persona/persona-female.png"" />
 
@@ -172,7 +172,7 @@ private int actionClickCount = 0;";
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Online""
-            PresenceIcons=""_icons""
+            PresenceIconNames=""_iconNames""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/images/persona/persona-female.png"" />
 
@@ -180,7 +180,7 @@ private int actionClickCount = 0;";
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Away""
-            PresenceIcons=""_icons""
+            PresenceIconNames=""_iconNames""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/images/persona/persona-female.png"" />
 
@@ -188,7 +188,7 @@ private int actionClickCount = 0;";
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Dnd""
-            PresenceIcons=""_icons""
+            PresenceIconNames=""_iconNames""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/images/persona/persona-female.png"" />
 
@@ -203,11 +203,11 @@ private int actionClickCount = 0;";
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Busy""
-            PresenceIcons=""_icons""
+            PresenceIconNames=""_iconNames""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/images/persona/persona-female.png"" />";
     private readonly string example7CsharpCode = @"
-private Dictionary<BitPersonaPresence, string> _icons = new()
+private readonly Dictionary<BitPersonaPresence, string> _iconNames = new()
 {
     {BitPersonaPresence.Offline, BitIconName.UnavailableOffline},
     {BitPersonaPresence.Online, BitIconName.SkypeCheck},
@@ -222,9 +222,19 @@ private Dictionary<BitPersonaPresence, string> _icons = new()
             PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Online""
-            PresenceIcons=""_icons""
+            PresenceIconNames=""_iconNames""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
+    private readonly string example8CsharpCode = @"
+private readonly Dictionary<BitPersonaPresence, string> _iconNames = new()
+{
+    {BitPersonaPresence.Offline, BitIconName.UnavailableOffline},
+    {BitPersonaPresence.Online, BitIconName.SkypeCheck},
+    {BitPersonaPresence.Away, BitIconName.SkypeClock},
+    {BitPersonaPresence.Dnd, BitIconName.SkypeMinus},
+    {BitPersonaPresence.Blocked, BitIconName.BlockedSolid},
+    {BitPersonaPresence.Busy, BitIconName.Blocked2Solid}
+};";
 
 
     private readonly string example9RazorCode = @"
@@ -311,39 +321,39 @@ private Dictionary<BitPersonaPresence, string> _icons = new()
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Online""
-            PresenceIconsInfo=""_iconsInfo""
+            PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Busy""
-            PresenceIconsInfo=""_iconsInfo""
+            PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Away""
-            PresenceIconsInfo=""_iconsInfo""
+            PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Dnd""
-            PresenceIconsInfo=""_iconsInfo""
+            PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Offline""
-            PresenceIconsInfo=""_iconsInfo""
+            PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/images/persona/persona-female.png"" />";
     private readonly string example11CsharpCode = @"
-private Dictionary<BitPersonaPresence, BitIconInfo> _iconsInfo = new()
+private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
 {
     {BitPersonaPresence.Offline, BitIconInfo.Bi(""wifi-off"")},
     {BitPersonaPresence.Online, BitIconInfo.Bi(""check-circle-fill"")},

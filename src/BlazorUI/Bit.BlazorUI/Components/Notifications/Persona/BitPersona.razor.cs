@@ -130,12 +130,12 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// The icons to be used for the presence status with BitIconInfo.
     /// </summary>
-    [Parameter] public Dictionary<BitPersonaPresence, BitIconInfo>? PresenceIconsInfo { get; set; }
+    [Parameter] public Dictionary<BitPersonaPresence, BitIconInfo>? PresenceIcons { get; set; }
 
     /// <summary>
-    /// The icons to be used for the presence status.
+    /// The icon names to be used for the presence status.
     /// </summary>
-    [Parameter] public Dictionary<BitPersonaPresence, string>? PresenceIcons { get; set; }
+    [Parameter] public Dictionary<BitPersonaPresence, string>? PresenceIconNames { get; set; }
 
     /// <summary>
     /// Presence title to be shown as a tooltip on hover over the presence icon.
@@ -297,28 +297,18 @@ public partial class BitPersona : BitComponentBase
         return FormattableString.Invariant($"width:{presentationSize}px;height:{presentationSize}px;{position}{Styles?.Presence?.Trim(';')}");
     }
 
-    private BitIconInfo? GetPresentationIconInfo()
+    private BitIconInfo? GetPresentationIcon()
     {
         if (Size is BitPersonaSize.Size8 or BitPersonaSize.Size24 or BitPersonaSize.Size32) return null;
 
-        if (PresenceIconsInfo?.ContainsKey(Presence) ?? false)
-        {
-            return PresenceIconsInfo[Presence];
-        }
-
-        return null;
+        return PresenceIcons?.TryGetValue(Presence, out var icon) is true ? icon : null;
     }
 
-    private string? GetPresentationIcon()
+    private string? GetPresentationIconName()
     {
         if (Size is BitPersonaSize.Size8 or BitPersonaSize.Size24 or BitPersonaSize.Size32) return null;
 
-        if (PresenceIcons?.ContainsKey(Presence) ?? false)
-        {
-            return PresenceIcons[Presence];
-        }
-
-        return null;
+        return PresenceIconNames?.TryGetValue(Presence, out var iconName) is true ? iconName : null;
     }
 
     private string? GetCoinClass()

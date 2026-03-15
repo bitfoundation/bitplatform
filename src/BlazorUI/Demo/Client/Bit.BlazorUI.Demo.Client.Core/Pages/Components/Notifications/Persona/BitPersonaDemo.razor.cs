@@ -165,7 +165,7 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "PresenceIconsInfo",
+            Name = "PresenceIcons",
             Type = "Dictionary<BitPersonaPresence, BitIconInfo>?",
             DefaultValue = "null",
             Description = "The icons to be used for the presence status with BitIconInfo. Takes precedence over PresenceIcons when both are set.",
@@ -174,10 +174,10 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "PresenceIcons",
+            Name = "PresenceIconNames",
             Type = "Dictionary<BitPersonaPresence, string>?",
             DefaultValue = "null",
-            Description = "The icons to be used for the presence status.",
+            Description = "The icon names to be used for the presence status.",
         },
         new()
         {
@@ -712,23 +712,23 @@ public partial class BitPersonaDemo
     private int actionClickCount = 0;
     private bool isDetailsShown = true;
 
-    private Dictionary<BitPersonaPresence, BitIconInfo> _iconsInfo = new()
+    private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
     {
-        {BitPersonaPresence.Offline, BitIconInfo.Bi("wifi-off")},
-        {BitPersonaPresence.Online, BitIconInfo.Bi("check-circle-fill")},
-        {BitPersonaPresence.Away, BitIconInfo.Bi("clock-fill")},
-        {BitPersonaPresence.Dnd, BitIconInfo.Bi("dash-circle-fill")},
-        {BitPersonaPresence.Blocked, BitIconInfo.Bi("ban")},
-        {BitPersonaPresence.Busy, BitIconInfo.Bi("exclamation-circle-fill")}
+        { BitPersonaPresence.Offline, BitIconInfo.Bi("wifi-off") },
+        { BitPersonaPresence.Online, BitIconInfo.Bi("check-circle-fill") },
+        { BitPersonaPresence.Away, BitIconInfo.Bi("clock-fill") },
+        { BitPersonaPresence.Dnd, BitIconInfo.Bi("dash-circle-fill") },
+        { BitPersonaPresence.Blocked, BitIconInfo.Bi("ban") },
+        { BitPersonaPresence.Busy, BitIconInfo.Bi("exclamation-circle-fill") },
     };
 
-    private Dictionary<BitPersonaPresence, string> _icons = new()
+    private readonly Dictionary<BitPersonaPresence, string> _iconNames = new()
     {
-        {BitPersonaPresence.Offline, BitIconName.UnavailableOffline},
-        {BitPersonaPresence.Online, BitIconName.SkypeCheck},
-        {BitPersonaPresence.Away, BitIconName.SkypeClock},
-        {BitPersonaPresence.Dnd, BitIconName.SkypeMinus},
-        {BitPersonaPresence.Blocked, BitIconName.BlockedSolid},
-        {BitPersonaPresence.Busy, BitIconName.Blocked2Solid}
+        { BitPersonaPresence.Offline, BitIconName.UnavailableOffline },
+        { BitPersonaPresence.Online, BitIconName.SkypeCheck },
+        { BitPersonaPresence.Away, BitIconName.SkypeClock },
+        { BitPersonaPresence.Dnd, BitIconName.SkypeMinus },
+        { BitPersonaPresence.Blocked, BitIconName.BlockedSolid },
+        { BitPersonaPresence.Busy, BitIconName.Blocked2Solid },
     };
 }

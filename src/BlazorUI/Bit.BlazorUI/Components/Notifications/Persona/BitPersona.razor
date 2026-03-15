@@ -2,10 +2,10 @@
 @inherits BitComponentBase
 
 @{
+    var presentationIconName = GetPresentationIconName();
     var presentationIcon = GetPresentationIcon();
-    var presentationIconInfo = GetPresentationIconInfo();
 
-    var iconInfo = BitIconInfo.From(presentationIconInfo, presentationIcon);
+    var presenceIconInfo = BitIconInfo.From(presentationIcon, presentationIconName);
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -19,9 +19,9 @@
         {
             if (Presence is BitPersonaPresence.None)
             {
-                @if (iconInfo is not null)
+                @if (presenceIconInfo is not null)
                 {
-                    <i style="@Styles?.PresentationIcon" class="bit-prs-pic @iconInfo?.GetCssClasses() @Classes?.PresentationIcon" role="presentation" />
+                    <i style="@Styles?.PresentationIcon" class="bit-prs-pic @presenceIconInfo?.GetCssClasses() @Classes?.PresentationIcon" role="presentation" />
                 }
             }
             else
@@ -109,9 +109,9 @@
             else if (Presence is not BitPersonaPresence.None)
             {
                 <div title="@PresenceTitle" style="@GetPresentationStyle()" class="bit-prs-pre @GetPresentationClass() @Classes?.Presence">
-                    @if (iconInfo is not null)
+                    @if (presenceIconInfo is not null)
                     {
-                        <i style="@Styles?.PresentationIcon" class="@iconInfo?.GetCssClasses() @Classes?.PresentationIcon" role="presentation" />
+                        <i style="@Styles?.PresentationIcon" class="@presenceIconInfo?.GetCssClasses() @Classes?.PresentationIcon" role="presentation" />
                     }
                 </div>
             }

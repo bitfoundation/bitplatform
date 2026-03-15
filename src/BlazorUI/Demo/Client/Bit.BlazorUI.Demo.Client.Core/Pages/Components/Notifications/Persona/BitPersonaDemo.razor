@@ -1,4 +1,4 @@
-﻿@page "/components/persona"
+@page "/components/persona"
 
 <PageOutlet Url="components/persona"
             Title="Persona"
@@ -183,7 +183,7 @@
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.None"
-                    PresenceIcons="_icons"
+                    PresenceIconNames="_iconNames"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br /><br /><br />
@@ -191,7 +191,7 @@
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Offline"
-                    PresenceIcons="_icons"
+                    PresenceIconNames="_iconNames"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br /><br /><br />
@@ -199,7 +199,7 @@
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Online"
-                    PresenceIcons="_icons"
+                    PresenceIconNames="_iconNames"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br /><br /><br />
@@ -207,7 +207,7 @@
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Away"
-                    PresenceIcons="_icons"
+                    PresenceIconNames="_iconNames"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br /><br /><br />
@@ -215,7 +215,7 @@
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Dnd"
-                    PresenceIcons="_icons"
+                    PresenceIconNames="_iconNames"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br /><br /><br />
@@ -230,12 +230,12 @@
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Busy"
-                    PresenceIcons="_icons"
+                    PresenceIconNames="_iconNames"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
-    <DemoExample Title="Reversed" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Reversed" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>Adjust the texts position of BitPersona's image to be reversed.</div>
         <br />
         <div>
@@ -243,7 +243,7 @@
                         PrimaryText="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         Presence="BitPersonaPresence.Online"
-                        PresenceIcons="_icons"
+                        PresenceIconNames="_iconNames"
                         Size="BitPersonaSize.Size120"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         </div>
@@ -329,14 +329,18 @@
     </DemoExample>
 
     <DemoExample Title="External Icons" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>ActionIcon</b> and <b>PresenceIconsInfo</b> parameters.</div>
+        <div>
+            Use icons from external libraries like FontAwesome and Bootstrap Icons with the 
+            <b>ActionIcon</b> and <b>PresenceIcons</b> parameters.
+        </div>
 
         <br />
         <br />
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
 
-        <div>FontAwesome action icon (hover over the image):</div><br />
+        <div>FontAwesome action icon (hover over the image):</div>
+        <br />
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     TertiaryText="In a meeting"
@@ -352,39 +356,40 @@
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
-        <div>Bootstrap Icons presence icons:</div><br />
+        <div>Bootstrap Icons presence icons:</div>
+        <br />
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Online"
-                    PresenceIconsInfo="_iconsInfo"
+                    PresenceIcons="_icons"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br />
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Busy"
-                    PresenceIconsInfo="_iconsInfo"
+                    PresenceIcons="_icons"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br />
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Away"
-                    PresenceIconsInfo="_iconsInfo"
+                    PresenceIcons="_icons"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br />
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Dnd"
-                    PresenceIconsInfo="_iconsInfo"
+                    PresenceIcons="_icons"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br />
         <BitPersona PrimaryText="Annie Lindqvist"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Offline"
-                    PresenceIconsInfo="_iconsInfo"
+                    PresenceIcons="_icons"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
