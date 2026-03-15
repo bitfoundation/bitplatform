@@ -19,10 +19,9 @@
         {
             if (Presence is BitPersonaPresence.None)
             {
-                @if (presenceIconInfo is not null)
-                {
-                    <i style="@Styles?.PresentationIcon" class="bit-prs-pic @presenceIconInfo?.GetCssClasses() @Classes?.PresentationIcon" role="presentation" />
-                }
+                <i role="presentation"
+                   style="@Styles?.PresentationIcon"
+                   class="bit-prs-pic @presenceIconInfo?.GetCssClasses() @Classes?.PresentationIcon" />
             }
             else
             {
@@ -71,7 +70,7 @@
                             var dimension = GetPersonaImageDimension();
 
                             <img src="@ImageUrl"
-                                 style="display:@(_isLoaded ? "unset": "none");@Styles?.Image"
+                                 style="display:@(_isLoaded ? "unset" : "none");@Styles?.Image"
                                  class="bit-prs-img @Classes?.Image"
                                  alt="@ImageAlt"
                                  width="@dimension"
@@ -99,20 +98,17 @@
                 {
                     var actionIcon = BitIconInfo.From(ActionIcon, ActionIconName ?? "Edit");
                     <button @onclick="HandleActionClick" type="button" style="@Styles?.ActionButton" class="bit-prs-abt @Classes?.ActionButton" title="@ActionButtonTitle">
-                        @if (actionIcon is not null)
-                        {
-                            <i style="@Styles?.ActionButtonIcon" class="bit-prs-aic @actionIcon.GetCssClasses() @Classes?.ActionButtonIcon" />
-                        }
+                        <i style="@Styles?.ActionButtonIcon"
+                           class="bit-prs-aic @actionIcon?.GetCssClasses() @Classes?.ActionButtonIcon" />
                     </button>
                 }
             }
             else if (Presence is not BitPersonaPresence.None)
             {
                 <div title="@PresenceTitle" style="@GetPresentationStyle()" class="bit-prs-pre @GetPresentationClass() @Classes?.Presence">
-                    @if (presenceIconInfo is not null)
-                    {
-                        <i style="@Styles?.PresentationIcon" class="@presenceIconInfo?.GetCssClasses() @Classes?.PresentationIcon" role="presentation" />
-                    }
+                    <i role="presentation"
+                       style="@Styles?.PresentationIcon"
+                       class="@presenceIconInfo?.GetCssClasses() @Classes?.PresentationIcon" />
                 </div>
             }
         }
