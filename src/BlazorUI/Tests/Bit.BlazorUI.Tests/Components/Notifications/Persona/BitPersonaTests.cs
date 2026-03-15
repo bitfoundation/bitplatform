@@ -250,4 +250,31 @@ public class BitPersonaTests : BunitTestContext
         Assert.IsTrue(iconEl.ClassList.Contains("bit-icon"));
         Assert.IsFalse(iconEl.ClassList.Contains("bi"));
     }
+
+    [TestMethod]
+    public void BitPersonaShouldRenderNoPresenceIconWhenNoMappingExists()
+    {
+        var icons = new Dictionary<BitPersonaPresence, BitIconInfo>
+        {
+            // Define a presence different from the one used in the test to keep it unmapped.
+            { BitPersonaPresence.Online, BitIconInfo.Bi("check-circle-fill") }
+        };
+
+        var iconNames = new Dictionary<BitPersonaPresence, string>();
+        
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            // Use a presence that is not present in either dictionary.
+            parameters.Add(p => p.Presence, BitPersonaPresence.Busy);
+            parameters.Add(p => p.PresenceIcons, icons);
+            parameters.Add(p => p.PresenceIconNames, iconNames);
+            parameters.Add(p => p.Size, BitPersonaSize.Size48);
+        });
+        
+        var iconElements = component.FindAll(".bit-prs-pre i");
+        
+        // When neither PresenceIcons nor PresenceIconNames contains the current Presence,
+        // no presence icon should be rendered.
+        Assert.IsEmpty(iconElements);
+    }
 }
