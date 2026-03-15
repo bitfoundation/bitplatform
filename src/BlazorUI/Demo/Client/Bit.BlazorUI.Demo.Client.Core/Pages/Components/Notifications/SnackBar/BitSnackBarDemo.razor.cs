@@ -36,10 +36,19 @@ public partial class BitSnackBarDemo
         },
         new()
         {
+            Name = "DismissIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon of the dismiss button using custom CSS classes for external icon libraries. Takes precedence over DismissIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "DismissIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name of the dismiss button.",
+            Description = "The icon name of the dismiss button from the built-in Fluent UI icons.",
         },
         new()
         {
@@ -243,6 +252,35 @@ public partial class BitSnackBarDemo
 
     private readonly List<ComponentSubClass> componentSubClasses =
     [
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
         new()
         {
             Id = "class-styles",
@@ -498,6 +536,32 @@ public partial class BitSnackBarDemo
     private async Task OpenCustomizationSnackBar()
     {
         await customizationRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarColor);
+    }
+
+
+    private BitSnackBar dismissIconFaRef = default!;
+    private BitSnackBar dismissIconCssRef = default!;
+    private BitSnackBar dismissIconBiRef = default!;
+    private BitSnackBar dismissIconImplicitRef = default!;
+
+    private async Task OpenDismissIconFa()
+    {
+        await dismissIconFaRef.Info("Notification", "Click the FontAwesome dismiss icon to close.");
+    }
+
+    private async Task OpenDismissIconCss()
+    {
+        await dismissIconCssRef.Info("Notification", "Click the CSS class dismiss icon to close.");
+    }
+
+    private async Task OpenDismissIconBi()
+    {
+        await dismissIconBiRef.Info("Notification", "Click the Bootstrap dismiss icon to close.");
+    }
+
+    private async Task OpenDismissIconImplicit()
+    {
+        await dismissIconImplicitRef.Info("Notification", "Click the implicit CSS dismiss icon to close.");
     }
 
 

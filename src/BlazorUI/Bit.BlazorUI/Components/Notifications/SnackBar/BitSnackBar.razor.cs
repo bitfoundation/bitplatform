@@ -30,6 +30,11 @@ public partial class BitSnackBar : BitComponentBase
     [Parameter] public BitSnackBarClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The icon of the dismiss button.
+    /// </summary>
+    [Parameter] public BitIconInfo? DismissIcon { get; set; }
+
+    /// <summary>
     /// The icon name of the dismiss button.
     /// </summary>
     [Parameter] public string? DismissIconName { get; set; }

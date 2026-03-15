@@ -1,4 +1,4 @@
-﻿@page "/components/snackbar"
+@page "/components/snackbar"
 
 <PageOutlet Url="components/snackbar"
             Title="Snackbar"
@@ -114,7 +114,36 @@
         <BitButton OnClick="OpenBodyTemplate">Body Template</BitButton>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="External Icons" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>DismissIcon</b> parameter.
+        </div>
+
+        <br /><br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+        <div>FontAwesome:</div>
+        <br />
+        <BitSnackBar @ref="dismissIconFaRef" DismissIcon="@BitIconInfo.Fa("solid xmark")" />
+        <BitButton OnClick="OpenDismissIconFa">FontAwesome dismiss icon</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="dismissIconCssRef" DismissIcon="@BitIconInfo.Css("fa-solid fa-x")" />
+        <BitButton OnClick="OpenDismissIconCss">CSS classes dismiss icon</BitButton>
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap:</div>
+        <br />
+        <BitSnackBar @ref="dismissIconBiRef" DismissIcon="@BitIconInfo.Bi("x-lg")" />
+        <BitButton OnClick="OpenDismissIconBi">Bootstrap dismiss icon</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="dismissIconImplicitRef" DismissIcon="@("bi bi-x-circle")" />
+        <BitButton OnClick="OpenDismissIconImplicit">Implicit CSS dismiss icon</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
             <div>Item's Style & Class:</div><br />
             <BitSnackBar @ref="snackBarStyleRef" />
@@ -126,13 +155,13 @@
             <div>Styles & Classes:</div><br />
             <BitSnackBar @ref="snackBarStylesRef"
                          Styles="@(new() { Container = "width: 16rem; background-color: purple;",
-                                               Header = "background-color: rebeccapurple; padding: 0.2rem;" })" />
-            <BitButton OnClick="OpenSnackBarStyles">Custom styles</BitButton>
-            <br /><br />
+                                     Header = "background-color: rebeccapurple; padding: 0.2rem;" })" />
+                <BitButton OnClick="OpenSnackBarStyles">Custom styles</BitButton>
+                <br /><br />
             <BitSnackBar @ref="snackBarClassesRef" AutoDismiss
                          Classes="@(new() { Container = "custom-container",
-                                                ProgressBar = "custom-progress" })" />
+                                     ProgressBar = "custom-progress" })" />
             <BitButton OnClick="OpenSnackBarClasses">Custom classes</BitButton>
-        </div>
-    </DemoExample>
-</DemoPage>
+            </div>
+            </DemoExample>
+                </DemoPage>

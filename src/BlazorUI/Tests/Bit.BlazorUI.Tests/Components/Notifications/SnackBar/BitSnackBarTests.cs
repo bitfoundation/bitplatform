@@ -172,6 +172,116 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow("title", "fa-solid fa-xmark"),
+        DataRow("title", "bi bi-x-lg")
+    ]
+    public async Task BitSnackBarDismissIconParameterWithCssClassesTest(string title, string cssClasses)
+    {
+        var com = RenderComponent<BitSnackBar>(
+            parameters =>
+            {
+                parameters.Add(x => x.DismissIcon, (BitIconInfo)cssClasses!);
+            }
+        );
+
+        await com.Instance.Show(title);
+
+        var closeButtonIcon = com.Find(".bit-snb-cbt > i");
+
+        var classes = cssClasses.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var cls in classes)
+        {
+            Assert.IsTrue(closeButtonIcon.ClassList.Contains(cls), $"Dismiss icon should contain class '{cls}'");
+        }
+    }
+
+    [TestMethod,
+        DataRow("title")
+    ]
+    public async Task BitSnackBarDismissIconInfoCssHelperTest(string title)
+    {
+        var com = RenderComponent<BitSnackBar>(
+            parameters =>
+            {
+                parameters.Add(x => x.DismissIcon, BitIconInfo.Css("fa-solid fa-xmark"));
+            }
+        );
+
+        await com.Instance.Show(title);
+
+        var closeButtonIcon = com.Find(".bit-snb-cbt > i");
+
+        Assert.IsTrue(closeButtonIcon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(closeButtonIcon.ClassList.Contains("fa-xmark"));
+    }
+
+    [TestMethod,
+        DataRow("title")
+    ]
+    public async Task BitSnackBarDismissIconInfoFaHelperTest(string title)
+    {
+        var com = RenderComponent<BitSnackBar>(
+            parameters =>
+            {
+                parameters.Add(x => x.DismissIcon, BitIconInfo.Fa("solid xmark"));
+            }
+        );
+
+        await com.Instance.Show(title);
+
+        var closeButtonIcon = com.Find(".bit-snb-cbt > i");
+
+        Assert.IsTrue(closeButtonIcon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(closeButtonIcon.ClassList.Contains("fa-xmark"));
+    }
+
+    [TestMethod,
+        DataRow("title")
+    ]
+    public async Task BitSnackBarDismissIconInfoBiHelperTest(string title)
+    {
+        var com = RenderComponent<BitSnackBar>(
+            parameters =>
+            {
+                parameters.Add(x => x.DismissIcon, BitIconInfo.Bi("x-lg"));
+            }
+        );
+
+        await com.Instance.Show(title);
+
+        var closeButtonIcon = com.Find(".bit-snb-cbt > i");
+
+        Assert.IsTrue(closeButtonIcon.ClassList.Contains("bi"));
+        Assert.IsTrue(closeButtonIcon.ClassList.Contains("bi-x-lg"));
+    }
+
+    [TestMethod,
+        DataRow("title")
+    ]
+    public async Task BitSnackBarDismissIconTakesPrecedenceOverDismissIconNameTest(string title)
+    {
+        var com = RenderComponent<BitSnackBar>(
+            parameters =>
+            {
+                parameters.Add(x => x.DismissIcon, BitIconInfo.Fa("solid xmark"));
+                parameters.Add(x => x.DismissIconName, "Cancel");
+            }
+        );
+
+        await com.Instance.Show(title);
+
+        var closeButtonIcon = com.Find(".bit-snb-cbt > i");
+
+        // DismissIcon should take precedence
+        Assert.IsTrue(closeButtonIcon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(closeButtonIcon.ClassList.Contains("fa-xmark"));
+
+        // Should not contain DismissIconName classes
+        Assert.IsFalse(closeButtonIcon.ClassList.Contains("bit-icon"));
+        Assert.IsFalse(closeButtonIcon.ClassList.Contains("bit-icon--Cancel"));
+    }
+
+    [TestMethod,
         DataRow("title")
     ]
     public async Task BitSnackBarTitleTemplateTest(string title)

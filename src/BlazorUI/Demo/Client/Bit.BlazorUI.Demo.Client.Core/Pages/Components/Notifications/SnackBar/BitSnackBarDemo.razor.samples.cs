@@ -150,6 +150,49 @@ private async Task OpenBodyTemplate()
 }";
 
     private readonly string example5RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitSnackBar @ref=""dismissIconFaRef"" DismissIcon=""@BitIconInfo.Fa(""solid xmark"")""/>
+<BitButton OnClick=""OpenDismissIconFa"">FontAwesome dismiss icon</BitButton>
+
+<BitSnackBar @ref=""dismissIconCssRef"" DismissIcon=""@BitIconInfo.Css(""fa-solid fa-x"")""/>
+<BitButton OnClick=""OpenDismissIconCss"">CSS classes dismiss icon</BitButton>
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitSnackBar @ref=""dismissIconBiRef"" DismissIcon=""@BitIconInfo.Bi(""x-lg"")""/>
+<BitButton OnClick=""OpenDismissIconBi"">Bootstrap dismiss icon</BitButton>
+
+<BitSnackBar @ref=""dismissIconImplicitRef"" DismissIcon=""@(""bi bi-x-circle"")""/>
+<BitButton OnClick=""OpenDismissIconImplicit"">Implicit CSS dismiss icon</BitButton>";
+    private readonly string example5CsharpCode = @"
+private BitSnackBar dismissIconFaRef = default!;
+private BitSnackBar dismissIconCssRef = default!;
+private BitSnackBar dismissIconBiRef = default!;
+private BitSnackBar dismissIconImplicitRef = default!;
+
+private async Task OpenDismissIconFa()
+{
+    await dismissIconFaRef.Info(""Notification"", ""Click the FontAwesome dismiss icon to close."");
+}
+
+private async Task OpenDismissIconCss()
+{
+    await dismissIconCssRef.Info(""Notification"", ""Click the CSS class dismiss icon to close."");
+}
+
+private async Task OpenDismissIconBi()
+{
+    await dismissIconBiRef.Info(""Notification"", ""Click the Bootstrap dismiss icon to close."");
+}
+
+private async Task OpenDismissIconImplicit()
+{
+    await dismissIconImplicitRef.Info(""Notification"", ""Click the implicit CSS dismiss icon to close."");
+}";
+
+    private readonly string example6RazorCode = @"
 <style>
     .custom-class {
         background-color: tomato;
@@ -181,7 +224,7 @@ private async Task OpenBodyTemplate()
              Classes=""@(new() { Container = ""custom-container"",
                                 ProgressBar = ""custom-progress"" })"" />
 <BitButton OnClick=""OpenSnackBarClasses"">Custom classes</BitButton>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private BitSnackBar snackBarStyleRef = default!;
 private BitSnackBar snackBarClassRef = default!;
 private BitSnackBar snackBarStylesRef = default!;

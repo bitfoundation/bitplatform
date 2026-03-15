@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -19,7 +19,10 @@
                             type="button"
                             style="@Styles?.DismissButton"
                             class="bit-snb-cbt @Classes?.DismissButton">
-                        <i style="@Styles?.DismissIcon" class="bit-icon bit-icon--@(DismissIconName ?? "Cancel") @Classes?.DismissIcon" />
+                        @{
+                            var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
+                        }
+                        <i style="@Styles?.DismissIcon" class="@dismissIcon?.GetCssClasses() @Classes?.DismissIcon" />
                     </button>
                 }
 
