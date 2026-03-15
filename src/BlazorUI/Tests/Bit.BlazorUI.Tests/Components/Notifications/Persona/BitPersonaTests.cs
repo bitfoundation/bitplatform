@@ -1,5 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Notifications.Persona;
 
@@ -118,5 +121,102 @@ public class BitPersonaTests : BunitTestContext
         var title = presenceTitleClassName.GetAttribute("title");
 
         Assert.AreEqual(presenceTitle, title);
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldRenderActionIconCssClassesFromBitIconInfo()
+    {
+        var actionIcon = new BitIconInfo("camera", "fa", "fa-");
+
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.OnActionClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            parameters.Add(p => p.ActionIcon, actionIcon);
+            parameters.Add(p => p.Size, BitPersonaSize.Size120);
+        });
+
+        var iconEl = component.Find(".bit-prs-aic");
+
+        Assert.IsTrue(iconEl.ClassList.Contains("fa"));
+        Assert.IsTrue(iconEl.ClassList.Contains("fa-camera"));
+    }
+
+    [TestMethod]
+    public void BitPersonaActionIconShouldTakePrecedenceOverActionIconName()
+    {
+        var actionIcon = BitIconInfo.Bi("pencil-fill");
+
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.OnActionClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            parameters.Add(p => p.ActionIcon, actionIcon);
+            parameters.Add(p => p.ActionIconName, "Edit");
+            parameters.Add(p => p.Size, BitPersonaSize.Size120);
+        });
+
+        var iconEl = component.Find(".bit-prs-aic");
+
+        Assert.IsTrue(iconEl.ClassList.Contains("bi"));
+        Assert.IsTrue(iconEl.ClassList.Contains("bi-pencil-fill"));
+        Assert.IsFalse(iconEl.ClassList.Contains("bit-icon"));
+    }
+
+    [TestMethod,
+        DataRow(BitPersonaPresence.Online, "check-circle-fill"),
+        DataRow(BitPersonaPresence.Offline, "wifi-off"),
+        DataRow(BitPersonaPresence.Away, "clock-fill"),
+        DataRow(BitPersonaPresence.Dnd, "dash-circle-fill"),
+        DataRow(BitPersonaPresence.Busy, "exclamation-circle-fill")
+    ]
+    public void BitPersonaShouldRenderPresenceIconCssClassesFromPresenceIconsInfo(BitPersonaPresence presence, string iconName)
+    {
+        var iconsInfo = new Dictionary<BitPersonaPresence, BitIconInfo>
+        {
+            { BitPersonaPresence.Online, BitIconInfo.Bi("check-circle-fill") },
+            { BitPersonaPresence.Offline, BitIconInfo.Bi("wifi-off") },
+            { BitPersonaPresence.Away, BitIconInfo.Bi("clock-fill") },
+            { BitPersonaPresence.Dnd, BitIconInfo.Bi("dash-circle-fill") },
+            { BitPersonaPresence.Busy, BitIconInfo.Bi("exclamation-circle-fill") }
+        };
+
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, presence);
+            parameters.Add(p => p.PresenceIconsInfo, iconsInfo);
+            parameters.Add(p => p.Size, BitPersonaSize.Size48);
+        });
+
+        var iconEl = component.Find(".bit-prs-pre i");
+
+        Assert.IsTrue(iconEl.ClassList.Contains("bi"));
+        Assert.IsTrue(iconEl.ClassList.Contains($"bi-{iconName}"));
+    }
+
+    [TestMethod]
+    public void BitPersonaPresenceIconsInfoShouldTakePrecedenceOverPresenceIcons()
+    {
+        var iconsInfo = new Dictionary<BitPersonaPresence, BitIconInfo>
+        {
+            { BitPersonaPresence.Online, BitIconInfo.Bi("check-circle-fill") }
+        };
+
+        var icons = new Dictionary<BitPersonaPresence, string>
+        {
+            { BitPersonaPresence.Online, "SkypeCheck" }
+        };
+
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Presence, BitPersonaPresence.Online);
+            parameters.Add(p => p.PresenceIconsInfo, iconsInfo);
+            parameters.Add(p => p.PresenceIcons, icons);
+            parameters.Add(p => p.Size, BitPersonaSize.Size48);
+        });
+
+        var iconEl = component.Find(".bit-prs-pre i");
+
+        Assert.IsTrue(iconEl.ClassList.Contains("bi"));
+        Assert.IsTrue(iconEl.ClassList.Contains("bi-check-circle-fill"));
+        Assert.IsFalse(iconEl.ClassList.Contains("bit-icon"));
     }
 }

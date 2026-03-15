@@ -416,21 +416,24 @@ public partial class BitPersonaDemo
                    Name = "Name",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Gets or sets the name of the icon. For external icons, this can be the full CSS class name if BaseClass and Prefix are empty."
+                   Description = @"Gets or sets the name of the icon. 
+                                   For external icons, this can be the full CSS class name if ""BaseClass"" and ""Prefix"" are empty."
                },
                new()
                {
                    Name = "BaseClass",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+                   Description = @"Gets or sets the base CSS class for the icon.
+                                   For external icon libraries like FontAwesome, you might set this to ""fa"" or leave empty."
                },
                new()
                {
                    Name = "Prefix",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+                   Description = @"Gets or sets the CSS class prefix used before the icon name.
+                                   For external icon libraries, you might set this to ""fa-"" or leave empty."
                },
             ]
         }
