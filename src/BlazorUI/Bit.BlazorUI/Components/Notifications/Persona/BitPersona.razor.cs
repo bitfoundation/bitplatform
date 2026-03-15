@@ -142,14 +142,14 @@ public partial class BitPersona : BitComponentBase
     /// When both <see cref="PresenceIcons"/> and <see cref="PresenceIconNames"/> are provided, entries in
     /// <see cref="PresenceIcons"/> take precedence for the same <see cref="BitPersonaPresence"/> key.
     /// Use this dictionary when you need to configure presence icons using full <see cref="BitIconInfo"/> metadata
-    /// (for example, to use custom icon sources, ARIA attributes, or other advanced icon settings).
+    /// (for example, to use custom icon sources or other advanced icon settings supported by <see cref="BitIconInfo"/>).
     /// <para>
     /// Example:
     /// <code>
     /// PresenceIcons = new()
     /// {
-    ///     [BitPersonaPresence.Online] = new BitIconInfo { IconName = "SkypeCircleCheck" },
-    ///     [BitPersonaPresence.Offline] = new BitIconInfo { IconName = "SkypeCircleMinus" }
+    ///     [BitPersonaPresence.Online] = new BitIconInfo { Name = "SkypeCircleCheck" },
+    ///     [BitPersonaPresence.Offline] = new BitIconInfo { Name = "SkypeCircleMinus" }
     /// };
     /// </code>
     /// </para>
