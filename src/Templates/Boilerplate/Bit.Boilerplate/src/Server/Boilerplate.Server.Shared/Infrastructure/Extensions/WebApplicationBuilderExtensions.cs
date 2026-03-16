@@ -87,7 +87,7 @@ public static class WebApplicationBuilderExtensions
 
         services.AddFusionOutputCache(); // For ASP.NET Core Output Caching with FusionCache
 
-        // Registering Microsoft's IDistributedCache here doesn't mean you've to use it in your code. It's only for libraries that might rely on it.
+        // Registering Microsoft's IDistributedCache here doesn't mean you have to use it in your code. It's only for libraries that might rely on it.
         //#if(redis == true)
         services.AddStackExchangeRedisCache(options =>
         {
