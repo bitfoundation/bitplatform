@@ -1,10 +1,6 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-@{
-    var icon = BitIconInfo.From(Icon, IconName);
-}
-
 <div @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
      id="@_Id"
      aria-label="@AriaLabel"
@@ -17,6 +13,8 @@
     }
     else
     {
+        var icon = BitIconInfo.From(Icon, IconName);
+        
         @if (icon is not null)
         {
             <i style="@Styles?.Icon" class="bit-tag-icn @icon.GetCssClasses() @Classes?.Icon" />
