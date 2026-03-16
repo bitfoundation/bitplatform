@@ -91,7 +91,7 @@ public static class WebApplicationBuilderExtensions
         //#if(redis == true)
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration = configuration.GetConnectionString("redis-cache");
+            options.Configuration = configuration.GetRequiredConnectionString("redis-cache");
         });
         //#else
         services.AddDistributedMemoryCache();
