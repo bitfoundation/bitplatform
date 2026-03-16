@@ -435,7 +435,7 @@ private bool isDismissed;";
     private readonly string example8RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
-<BitTag Text=""FontAwesome house"" Icon=""@(""fa-solid fa-house"")"" />
+<BitTag Text=""House"" Icon=""@(""fa-solid fa-house"")"" />
 
 <BitTag Text=""Heart"" Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" />
 
@@ -446,7 +446,7 @@ private bool isDismissed;";
 
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
-<BitTag Text=""Bootstrap house"" Icon=""@(""bi bi-house-fill"")"" />
+<BitTag Text=""House"" Icon=""@(""bi bi-house-fill"")"" />
 
 <BitTag Text=""Heart"" Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"" />
 

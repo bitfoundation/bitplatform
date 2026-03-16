@@ -3,7 +3,6 @@
 
 @{
     var icon = BitIconInfo.From(Icon, IconName);
-    var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
@@ -31,13 +30,14 @@
 
     @if (OnDismiss.HasDelegate)
     {
+        var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
+
         <button @onclick="HandleOnDismissClick"
                 style="@Styles?.DismissButton"
                 class="bit-tag-cls @Classes?.DismissButton"
                 type="button"
                 title="Dismiss"
-                aria-label="Dismiss"
-                aria-describedby="Dismiss">
+                aria-label="Dismiss">
             <i style="@Styles?.DismissIcon" class="bit-tag-dsi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" />
         </button>
     }
