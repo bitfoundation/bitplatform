@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes" 
@@ -13,9 +13,12 @@
         @FirstPanel
     </div>
     <div class="bit-spl-gtr" @ref="_splitterGutterRef" @onpointerdown="OnPointerDown" @onpointerdown:preventDefault @ontouchstart="OnTouchStart" @ontouchstart:preventDefault>
-        @if (GutterIcon is not null)
+        @{
+            var icon = BitIconInfo.From(GutterIcon, GutterIconName);
+        }
+        @if (icon is not null)
         {
-            <i class="bit-icon bit-icon--@GutterIcon" />
+            <i class="bit-spl-gic @icon.GetCssClasses()" />
         }
         else
         {
