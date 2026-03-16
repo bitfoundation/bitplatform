@@ -32,9 +32,26 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// The icon to show inside the tag using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
     /// The icon to show inside the tag.
     /// </summary>
     public string? IconName { get; set; }
+
+    /// <summary>
+    /// The icon to use for the dismiss button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="DismissIconName"/> when both are set.
+    /// </summary>
+    public BitIconInfo? DismissIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon to use for the dismiss button from the built-in Fluent UI icons.
+    /// </summary>
+    public string? DismissIconName { get; set; }
 
     /// <summary>
     /// Reverses the direction flow of the content of the tag.
@@ -90,6 +107,21 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
         if (Color.HasValue && bitTag.HasNotBeenSet(nameof(Color)))
         {
             bitTag.Color = Color.Value;
+        }
+
+        if (DismissIcon is not null && bitTag.HasNotBeenSet(nameof(DismissIcon)))
+        {
+            bitTag.DismissIcon = DismissIcon;
+        }
+
+        if (DismissIconName.HasValue() && bitTag.HasNotBeenSet(nameof(DismissIconName)))
+        {
+            bitTag.DismissIconName = DismissIconName;
+        }
+
+        if (Icon is not null && bitTag.HasNotBeenSet(nameof(Icon)))
+        {
+            bitTag.Icon = Icon;
         }
 
         if (IconName.HasValue() && bitTag.HasNotBeenSet(nameof(IconName)))

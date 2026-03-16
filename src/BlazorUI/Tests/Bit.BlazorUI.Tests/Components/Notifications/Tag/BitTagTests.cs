@@ -32,6 +32,80 @@ public class BitTagTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTagShouldRenderIconWhenIconCssProvided()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Css("fa-solid fa-house"));
+        });
+
+        var icon = component.Find(".bit-tag-icn");
+        Assert.IsNotNull(icon);
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-house"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldRenderIconWhenIconFaProvided()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("solid rocket"));
+        });
+
+        var icon = component.Find(".bit-tag-icn");
+        Assert.IsNotNull(icon);
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-rocket"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldRenderIconWhenIconBiProvided()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Bi("github"));
+        });
+
+        var icon = component.Find(".bit-tag-icn");
+        Assert.IsNotNull(icon);
+        Assert.IsTrue(icon.ClassList.Contains("bi"));
+        Assert.IsTrue(icon.ClassList.Contains("bi-github"));
+    }
+
+    [TestMethod]
+    public void BitTagIconShouldTakePrecedenceOverIconName()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Css("fa-solid fa-house"));
+            parameters.Add(p => p.IconName, "Calendar");
+        });
+
+        var icon = component.Find(".bit-tag-icn");
+        Assert.IsNotNull(icon);
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-house"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Calendar"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldAcceptImplicitStringAsIcon()
+    {
+        // BitIconInfo has an implicit operator from string; the string becomes the raw CSS class
+        BitIconInfo? iconInfo = "fa-solid fa-star";
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Icon, iconInfo);
+        });
+
+        var icon = component.Find(".bit-tag-icn");
+        Assert.IsNotNull(icon);
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-star"));
+    }
+
+    [TestMethod]
     public void BitTagShouldRenderTextWhenTextProvided()
     {
         var text = "Sample";
@@ -193,5 +267,67 @@ public class BitTagTests : BunitTestContext
 
         var root = component.Find(".bit-tag");
         Assert.AreEqual(aria, root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTagDismissIconShouldDefaultToCancel()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => { }));
+        });
+
+        var dismissIcon = component.Find(".bit-tag-dsi");
+        Assert.IsNotNull(dismissIcon);
+        Assert.IsTrue(dismissIcon.ClassList.Contains("bit-icon"));
+        Assert.IsTrue(dismissIcon.ClassList.Contains("bit-icon--Cancel"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldRenderCustomDismissIconNameWhenProvided()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => { }));
+            parameters.Add(p => p.DismissIconName, "ChromeClose");
+        });
+
+        var dismissIcon = component.Find(".bit-tag-dsi");
+        Assert.IsNotNull(dismissIcon);
+        Assert.IsTrue(dismissIcon.ClassList.Contains("bit-icon--ChromeClose"));
+        Assert.IsFalse(dismissIcon.ClassList.Contains("bit-icon--Cancel"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldRenderCustomDismissIconWhenProvided()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => { }));
+            parameters.Add(p => p.DismissIcon, BitIconInfo.Css("fa-solid fa-xmark"));
+        });
+
+        var dismissIcon = component.Find(".bit-tag-dsi");
+        Assert.IsNotNull(dismissIcon);
+        Assert.IsTrue(dismissIcon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(dismissIcon.ClassList.Contains("fa-xmark"));
+        Assert.IsFalse(dismissIcon.ClassList.Contains("bit-icon--Cancel"));
+    }
+
+    [TestMethod]
+    public void BitTagDismissIconShouldTakePrecedenceOverDismissIconName()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => { }));
+            parameters.Add(p => p.DismissIcon, BitIconInfo.Css("fa-solid fa-xmark"));
+            parameters.Add(p => p.DismissIconName, "ChromeClose");
+        });
+
+        var dismissIcon = component.Find(".bit-tag-dsi");
+        Assert.IsNotNull(dismissIcon);
+        Assert.IsTrue(dismissIcon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(dismissIcon.ClassList.Contains("fa-xmark"));
+        Assert.IsFalse(dismissIcon.ClassList.Contains("bit-icon--ChromeClose"));
     }
 }
