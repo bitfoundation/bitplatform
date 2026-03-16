@@ -27,6 +27,7 @@
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.StackExchange.Redis" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="ZiggyCreatures.FusionCache.Backplane.StackExchangeRedis" />
+        <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="ZiggyCreatures.FusionCache.Locking.Distributed.Redis" />
         <PackageReference Include="OpenTelemetry.Resources.Azure" />
         <PackageReference Include="OpenTelemetry.Resources.Container" />
         <PackageReference Include="OpenTelemetry.Resources.Host" />

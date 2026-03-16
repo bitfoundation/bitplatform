@@ -359,8 +359,8 @@ public static IHealthChecksBuilder AddDefaultHealthChecks<TBuilder>(this TBuilde
     where TBuilder : IHostApplicationBuilder
 {
     return builder.Services.AddHealthChecks()
-        .AddDiskStorageHealthCheck(opt => 
-            opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, 
+        .AddDiskStorageHealthCheck(options => 
+            options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, 
             minimumFreeMegabytes: 5 * 1024), 
             tags: ["live"]);
 }
