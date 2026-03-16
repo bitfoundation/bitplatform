@@ -61,7 +61,7 @@ public class BitSplitterTests : BunitTestContext
         var iconName = "GripperDotsVertical";
         var component = RenderComponent<BitSplitter>(parameters =>
         {
-            parameters.Add(p => p.GutterIcon, new BitIconInfo(iconName, "bit-icon", "bit-icon--"));
+            parameters.Add(p => p.GutterIcon, BitIconInfo.Bit(iconName));
         });
 
         var icon = component.Find(".bit-spl-gic");
