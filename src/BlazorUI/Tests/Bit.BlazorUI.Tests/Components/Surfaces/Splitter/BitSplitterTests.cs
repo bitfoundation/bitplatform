@@ -64,7 +64,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterIcon, new BitIconInfo(iconName, "bit-icon", "bit-icon--"));
         });
 
-        var icon = component.Find(".bit-spl-gtr-ico");
+        var icon = component.Find(".bit-spl-gic");
 
         Assert.IsTrue(icon.ClassList.Contains("bit-icon"));
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
@@ -78,7 +78,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterIcon, BitIconInfo.Css("fa-solid fa-grip-vertical"));
         });
 
-        var icon = component.Find(".bit-spl-gtr-ico");
+        var icon = component.Find(".bit-spl-gic");
 
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
         Assert.IsTrue(icon.ClassList.Contains("fa-grip-vertical"));
@@ -92,7 +92,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterIcon, BitIconInfo.Fa("solid grip-lines-vertical"));
         });
 
-        var icon = component.Find(".bit-spl-gtr-ico");
+        var icon = component.Find(".bit-spl-gic");
 
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
         Assert.IsTrue(icon.ClassList.Contains("fa-grip-lines-vertical"));
@@ -106,14 +106,14 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterIcon, BitIconInfo.Bi("grip-vertical"));
         });
 
-        var icon = component.Find(".bit-spl-gtr-ico");
+        var icon = component.Find(".bit-spl-gic");
 
         Assert.IsTrue(icon.ClassList.Contains("bi"));
         Assert.IsTrue(icon.ClassList.Contains("bi-grip-vertical"));
     }
 
     [TestMethod]
-    public void BitSplitterIconShouldTakePrecedenceOverGutterIcon()
+    public void BitSplitterGutterIconShouldTakePrecedenceOverGutterIconName()
     {
         var component = RenderComponent<BitSplitter>(parameters =>
         {
@@ -121,9 +121,9 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterIconName, "GripperDotsVertical");
         });
 
-        var icon = component.Find(".bit-spl-gtr-ico");
+        var icon = component.Find(".bit-spl-gic");
 
-        // Icon (BitIconInfo.Css) should take precedence
+        // GutterIcon (BitIconInfo.Css) should take precedence
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
         Assert.IsTrue(icon.ClassList.Contains("fa-grip-vertical"));
         Assert.IsFalse(icon.ClassList.Contains("bit-icon"));
@@ -138,7 +138,7 @@ public class BitSplitterTests : BunitTestContext
             parameters.Add(p => p.GutterIconName, iconName);
         });
 
-        var icon = component.Find(".bit-spl-gtr-ico");
+        var icon = component.Find(".bit-spl-gic");
 
         Assert.IsNotNull(icon);
         Assert.IsTrue(icon.ClassList.Contains("bit-icon"));
