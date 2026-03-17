@@ -37,8 +37,56 @@ public partial class BitTag : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The icon to show inside the tag.
+    /// Gets or sets the icon to use for the dismiss button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="DismissIconName"/> when both are set.
+    /// Defaults to the built-in Cancel icon when neither is set.
     /// </summary>
+    /// <remarks>
+    /// Use this property to render a custom dismiss icon from external libraries like FontAwesome or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="DismissIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? DismissIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to use for the dismiss button from the built-in Fluent UI icons.
+    /// Defaults to <c>Cancel</c> when not set.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.ChromeClose</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="DismissIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? DismissIconName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="IconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="IconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: Icon="BitIconInfo.Bi("gear-fill")"
+    /// FontAwesome: Icon="BitIconInfo.Fa("solid house")"
+    /// Custom CSS: Icon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.AddFriend</c>).
+    /// <br />
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery: 
+    /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
+    /// <br />
+    /// The value is case-sensitive and must match a valid icon identifier. 
+    /// If not set or set to <c>null</c>, no icon will be rendered.
+    /// <br />
+    /// For external icon libraries, use <see cref="Icon"/> instead.
+    /// </remarks>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>

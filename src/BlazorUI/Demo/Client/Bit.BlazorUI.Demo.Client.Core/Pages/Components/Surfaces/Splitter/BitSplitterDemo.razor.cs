@@ -14,9 +14,20 @@ public partial class BitSplitterDemo
         new()
         {
             Name = "GutterIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon for the BitSplitter gutter using BitIconInfo for external icon library support. Takes precedence over GutterIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "GutterIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon of BitSplitter gutter.",
+            Description = "The name of the built-in Fluent UI icon to render in the BitSplitter gutter. Ignored when GutterIcon is also set.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
         },
         new()
         {
@@ -80,6 +91,41 @@ public partial class BitSplitterDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Sets the orientation of BitSplitter to vertical.",
+        },
+    ];
+
+
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
         },
     ];
 
@@ -229,7 +275,7 @@ private double gutterSize = 10;
 ";
 
     private readonly string example6RazorCode = @"
-<BitSplitter GutterIcon=""@BitIconName.GripperDotsVertical"">
+<BitSplitter GutterIconName=""@BitIconName.GripperDotsVertical"">
     <FirstPanel>
         <div style=""padding: 4px;"">
             First Panel
@@ -251,4 +297,98 @@ private double gutterSize = 10;
         </div>
     </SecondPanel>
 </BitSplitter>";
+
+    private readonly string example7RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitSplitter GutterIcon=""@(""fa-solid fa-arrows-left-right"")"">
+    <FirstPanel>
+        <div style=""padding: 4px;"">
+            First Panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+        </div>
+    </FirstPanel>
+    <SecondPanel>
+        <div style=""padding: 4px;"">
+            Second Panel
+            <br />
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            <br/>
+            ""fa-solid fa-arrows-left-right""
+        </div>
+    </SecondPanel>
+</BitSplitter>
+
+<BitSplitter GutterIcon=""@BitIconInfo.Css(""fa-solid fa-grip-vertical"")"">
+    <FirstPanel>
+        <div style=""padding: 4px;"">
+            First Panel
+            <br />
+            BitIconInfo.Css(""fa-solid fa-grip-vertical"")
+        </div>
+    </FirstPanel>
+    <SecondPanel>
+        <div style=""padding: 4px;"">
+            Second Panel
+            <br />
+            BitIconInfo.Css(""fa-solid fa-grip-vertical"")
+        </div>
+    </SecondPanel>
+</BitSplitter>
+
+<BitSplitter GutterIcon=""@BitIconInfo.Fa(""solid grip-lines-vertical"")"">
+    <FirstPanel>
+        <div style=""padding: 4px;"">
+            First Panel
+            <br />
+            BitIconInfo.Fa(""solid grip-lines-vertical"")
+        </div>
+    </FirstPanel>
+    <SecondPanel>
+        <div style=""padding: 4px;"">
+            Second Panel
+            <br />
+            BitIconInfo.Fa(""solid grip-lines-vertical"")
+        </div>
+    </SecondPanel>
+</BitSplitter>
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitSplitter GutterIcon=""@(""bi bi-grip-vertical"")"">
+    <FirstPanel>
+        <div style=""padding: 4px;"">
+            First Panel
+            <br />
+            Icon=@@(""bi bi-grip-vertical"")
+        </div>
+    </FirstPanel>
+    <SecondPanel>
+        <div style=""padding: 4px;"">
+            Second Panel
+            <br />
+            Icon=@@(""bi bi-grip-vertical"")
+        </div>
+    </SecondPanel>
+</BitSplitter>
+
+<BitSplitter GutterIcon=""@BitIconInfo.Bi(""arrow-left-right"")"">
+    <FirstPanel>
+        <div style=""padding: 4px;"">
+            First Panel
+            <br />
+            BitIconInfo.Bi(""arrow-left-right"")
+        </div>
+    </FirstPanel>
+    <SecondPanel>
+        <div style=""padding: 4px;"">
+            Second Panel
+            <br />
+            BitIconInfo.Bi(""arrow-left-right"")
+        </div>
+    </SecondPanel>
+</BitSplitter>";
+
 }

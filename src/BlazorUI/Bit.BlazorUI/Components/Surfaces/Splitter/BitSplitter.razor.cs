@@ -28,10 +28,33 @@ public partial class BitSplitter : BitComponentBase
     public int? GutterSize { get; set; }
 
     /// <summary>
-    /// The icon of BitSplitter gutter.
+    /// The icon for the BitSplitter gutter using <see cref="BitIconInfo"/> for external icon library support.
+    /// Takes precedence over <see cref="GutterIconName"/> when both are set.
     /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public string? GutterIcon { get; set; }
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="GutterIconName"/> instead.
+    /// When assigning a plain <see cref="string"/> to this property, it is converted to a <see cref="BitIconInfo"/> instance and
+    /// treated as the raw CSS class name(s) for the external icon (for example, <c>"fa fa-home"</c>), not as a Fluent UI icon name.
+    /// To render built-in Fluent UI icons, use <see cref="GutterIconName"/> instead; passing a Fluent icon name as a string to
+    /// <see cref="GutterIcon"/> will compile but will not render a Fluent icon unless you also configure
+    /// <see cref="BitIconInfo.BaseClass"/> and/or <see cref="BitIconInfo.Prefix"/> for a custom icon set.
+    /// </remarks>
+    [Parameter]
+    public BitIconInfo? GutterIcon { get; set; }
+
+    /// <summary>
+    /// The name of the built-in Fluent UI icon to render in the BitSplitter gutter.
+    /// Ignored when <see cref="GutterIcon"/> is also set.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.GripperDotsVertical</c>).
+    /// For external icon libraries, use <see cref="GutterIcon"/> instead, 
+    /// where string values are interpreted as CSS class name(s)
+    /// for the external icon rather than as Fluent UI icon identifiers.
+    /// </remarks>
+    [Parameter]
+    public string? GutterIconName { get; set; }
 
     /// <summary>
     /// The content for the first panel.

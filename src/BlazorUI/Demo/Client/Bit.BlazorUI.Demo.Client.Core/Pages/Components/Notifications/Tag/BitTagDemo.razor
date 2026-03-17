@@ -1,4 +1,4 @@
-﻿@page "/components/tag"
+@page "/components/tag"
 
 <PageOutlet Url="components/tag"
             Title="Tag"
@@ -145,7 +145,34 @@
         </BitTag>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="External Icons" RazorCode="@example8RazorCode" Id="example8">
+        <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>Icon</b> parameter and <b>BitIconInfo</b>.</div>
+
+        <br />
+        <br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+        <div>FontAwesome:</div>
+        <br />
+        <BitTag Text="House" Icon="@("fa-solid fa-house")" />&nbsp;
+        <BitTag Text="Heart" Icon="@BitIconInfo.Css("fa-solid fa-heart")" />&nbsp;
+        <BitTag Text="GitHub" Icon="@BitIconInfo.Fa("fa-brands fa-github")" />&nbsp;
+        <BitTag Text="Rocket" Icon="@BitIconInfo.Fa("solid rocket")" />
+
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap:</div>
+        <br />
+        <BitTag Text="House" Icon="@("bi bi-house-fill")" />&nbsp;
+        <BitTag Text="Heart" Icon="@BitIconInfo.Css("bi bi-heart-fill")" />&nbsp;
+        <BitTag Text="GitHub" Icon="@BitIconInfo.Bi("github")" />&nbsp;
+        <BitTag Text="Gear" Icon="@BitIconInfo.Bi("gear-fill")" />
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
         <div>Component's Style & Class:</div>

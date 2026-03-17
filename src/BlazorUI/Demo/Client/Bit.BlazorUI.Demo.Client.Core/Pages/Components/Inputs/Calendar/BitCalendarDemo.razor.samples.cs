@@ -167,6 +167,26 @@ private void HandleInvalidSubmit() { }";
 </BitCalendar>";
 
     private readonly string example12RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitCalendar GoToTodayIcon=""@BitIconInfo.Fa(""solid calendar-day"")""
+             PrevMonthNavIcon=""@BitIconInfo.Fa(""solid chevron-left"")""
+             NextMonthNavIcon=""@BitIconInfo.Fa(""solid chevron-right"")"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitCalendar ShowTimePicker=""true""
+             GoToTodayIcon=""@BitIconInfo.Bi(""calendar-check"")""
+             GoToNowIcon=""@BitIconInfo.Bi(""clock"")""
+             PrevMonthNavIcon=""@BitIconInfo.Bi(""chevron-left"")""
+             NextMonthNavIcon=""@BitIconInfo.Bi(""chevron-right"")""
+             TimePickerIncreaseHourIcon=""@BitIconInfo.Bi(""chevron-up"")""
+             TimePickerDecreaseHourIcon=""@BitIconInfo.Bi(""chevron-down"")""
+             TimePickerIncreaseMinuteIcon=""@BitIconInfo.Bi(""chevron-up"")""
+             TimePickerDecreaseMinuteIcon=""@BitIconInfo.Bi(""chevron-down"")"" />";
+
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -256,6 +276,6 @@ private void HandleInvalidSubmit() { }";
                              WeekNumbersHeader = ""custom-week-header"",
                              YearMonthPickerWrapper = ""custom-year-picker"" })"" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitCalendar Dir=""BitDir.Rtl"" />";
 }

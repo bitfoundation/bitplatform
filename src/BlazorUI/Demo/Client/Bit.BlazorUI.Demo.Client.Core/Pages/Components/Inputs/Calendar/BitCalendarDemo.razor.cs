@@ -57,6 +57,31 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "GoToNowIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the GoToNow button using custom CSS classes for external icon libraries. Takes precedence over GoToNowIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "GoToNowIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the GoToNow button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "GoToNowTitle",
+            Type = "string",
+            DefaultValue = "Go to now",
+            Description = "The title of the GoToNow button (tooltip)."
+        },
+        new()
+        {
             Name = "GoToPrevMonthTitle",
             Type = "string",
             DefaultValue = "Go to previous month",
@@ -78,6 +103,24 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "GoToTodayIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the GoToToday button using custom CSS classes for external icon libraries. Takes precedence over GoToTodayIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "GoToTodayIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the GoToToday button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
             Name = "GoToTodayTitle",
             Type = "string",
             DefaultValue = "Go to today",
@@ -85,10 +128,28 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "GoToNowTitle",
+            Name = "HideTimePickerIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the HideTimePicker button using custom CSS classes for external icon libraries. Takes precedence over HideTimePickerIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "HideTimePickerIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the HideTimePicker button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "HideTimePickerTitle",
             Type = "string",
-            DefaultValue = "Go to now",
-            Description = "The title of the GoToNow button (tooltip)."
+            DefaultValue = "Hide time picker",
+            Description = "The title of the HideTimePicker button (tooltip)."
         },
         new()
         {
@@ -106,10 +167,10 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "HideTimePickerTitle",
-            Type = "string",
-            DefaultValue = "Hide time picker",
-            Description = "The title of the HideTimePicker button (tooltip)."
+            Name = "HourStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for calendar's hour.",
         },
         new()
         {
@@ -117,13 +178,6 @@ public partial class BitCalendarDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The custom validation error message for the invalid value."
-        },
-        new()
-        {
-            Name = "ShowMonthPicker",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the month picker is shown or hidden."
         },
         new()
         {
@@ -141,6 +195,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "MinuteStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for calendar's minute.",
+        },
+        new()
+        {
             Name = "MonthCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
@@ -155,16 +216,117 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "ShowMonthPickerAsOverlay",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Show month picker on top of date picker when visible."
+            Name = "NextMonthNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the Go to next month button using custom CSS classes for external icon libraries. Takes precedence over NextMonthNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "NextMonthNavIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the Go to next month button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "NextYearNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the Go to next year button using custom CSS classes for external icon libraries. Takes precedence over NextYearNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "NextYearNavIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the Go to next year button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "NextYearRangeNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the Go to next year range button using custom CSS classes for external icon libraries. Takes precedence over NextYearRangeNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "NextYearRangeNavIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the Go to next year range button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
         },
         new()
         {
             Name = "OnSelectDate",
             Type = "EventCallback<DateTimeOffset?>",
             Description = "Callback for when the user selects a date."
+        },
+        new()
+        {
+            Name = "PrevMonthNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the Go to previous month button using custom CSS classes for external icon libraries. Takes precedence over PrevMonthNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "PrevMonthNavIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the Go to previous month button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "PrevYearNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the Go to previous year button using custom CSS classes for external icon libraries. Takes precedence over PrevYearNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "PrevYearNavIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the Go to previous year button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "PrevYearRangeNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the Go to previous year range button using custom CSS classes for external icon libraries. Takes precedence over PrevYearRangeNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "PrevYearRangeNavIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the Go to previous year range button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
         },
         new()
         {
@@ -175,6 +337,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "ShowGoToNow",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the GoToNow button should be shown or not."
+        },
+        new()
+        {
             Name = "ShowGoToToday",
             Type = "bool",
             DefaultValue = "true",
@@ -182,10 +351,42 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "ShowMonthPicker",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the month picker is shown or hidden."
+        },
+        new()
+        {
+            Name = "ShowMonthPickerAsOverlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Show month picker on top of date picker when visible."
+        },
+        new()
+        {
             Name = "ShowTimePicker",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the time picker should be shown or not."
+        },
+        new()
+        {
+            Name = "ShowTimePickerIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the ShowTimePicker button using custom CSS classes for external icon libraries. Takes precedence over ShowTimePickerIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "ShowTimePickerIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the ShowTimePicker button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
         },
         new()
         {
@@ -200,13 +401,6 @@ public partial class BitCalendarDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the week number (weeks 1 to 53) should be shown before each week row."
-        },
-        new()
-        {
-            Name = "ShowGoToNow",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the GoToNow button should be shown or not."
         },
         new()
         {
@@ -232,6 +426,78 @@ public partial class BitCalendarDemo
             Description = "The time format of the time-picker, 24H or 12H.",
             LinkType = LinkType.Link,
             Href = "#time-format-enum"
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseHourIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the decrease-hour button using custom CSS classes for external icon libraries. Takes precedence over TimePickerDecreaseHourIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseHourIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the decrease-hour button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseMinuteIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the decrease-minute button using custom CSS classes for external icon libraries. Takes precedence over TimePickerDecreaseMinuteIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseMinuteIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the decrease-minute button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseHourIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the increase-hour button using custom CSS classes for external icon libraries. Takes precedence over TimePickerIncreaseHourIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseHourIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the increase-hour button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseMinuteIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the increase-minute button using custom CSS classes for external icon libraries. Takes precedence over TimePickerIncreaseMinuteIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseMinuteIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the increase-minute button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
         },
         new()
         {
@@ -267,20 +533,6 @@ public partial class BitCalendarDemo
             Type = "string",
             DefaultValue = "{0} - {1}, change month",
             Description = "The title of the year range picker's toggle (tooltip)."
-        },
-        new()
-        {
-            Name = "HourStep",
-            Type = "int",
-            DefaultValue = "1",
-            Description = "Determines increment/decrement steps for calendar's hour.",
-        },
-        new()
-        {
-            Name = "MinuteStep",
-            Type = "int",
-            DefaultValue = "1",
-            Description = "Determines increment/decrement steps for calendar's minute.",
         }
     ];
 
@@ -332,7 +584,7 @@ public partial class BitCalendarDemo
                     Description="Show time pickers in 12 hours format.",
                     Value="1"
                 }
-            ]
+        ]
         }
     ];
 
@@ -653,7 +905,36 @@ public partial class BitCalendarDemo
                     Description = "Custom CSS classes/styles for each year button of the BitCalendar."
                 }
             ]
-        }
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
     ];
 
 

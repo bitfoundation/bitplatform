@@ -31,10 +31,39 @@ public partial class BitTagDemo
         },
         new()
         {
+            Name = "DismissIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to use for the dismiss button using custom CSS classes for external icon libraries. Takes precedence over DismissIconName when both are set. Defaults to the built-in Cancel icon when neither is set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "DismissIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to use for the dismiss button from the built-in Fluent UI icons. Defaults to Cancel when not set. For external icon libraries, use DismissIcon instead.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "Icon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display using custom CSS classes for external icon libraries. Takes precedence over IconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Sets the Icon to use in the tag."
+            Description = "Gets or sets the name of the icon to display from the built-in Fluent UI icons. For external icon libraries, use Icon instead.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
         },
         new()
         {
@@ -137,7 +166,36 @@ public partial class BitTagDemo
                    Description = "Custom CSS classes/styles for the dismiss icon of the BitTag."
                },
             ]
-        }
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -375,6 +433,28 @@ private bool isDismissed;";
 </BitTag>";
 
     private readonly string example8RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitTag Text=""House"" Icon=""@(""fa-solid fa-house"")"" />
+
+<BitTag Text=""Heart"" Icon=""@BitIconInfo.Css(""fa-solid fa-heart"")"" />
+
+<BitTag Text=""GitHub"" Icon=""@BitIconInfo.Fa(""fa-brands fa-github"")"" />
+
+<BitTag Text=""Rocket"" Icon=""@BitIconInfo.Fa(""solid rocket"")"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitTag Text=""House"" Icon=""@(""bi bi-house-fill"")"" />
+
+<BitTag Text=""Heart"" Icon=""@BitIconInfo.Css(""bi bi-heart-fill"")"" />
+
+<BitTag Text=""GitHub"" Icon=""@BitIconInfo.Bi(""github"")"" />
+
+<BitTag Text=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")"" />";
+
+    private readonly string example9RazorCode = @"
 <style>
     .custom-class {
         border-radius: 0.25rem;

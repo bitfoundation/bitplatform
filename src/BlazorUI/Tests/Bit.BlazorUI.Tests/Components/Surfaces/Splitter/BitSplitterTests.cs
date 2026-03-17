@@ -47,11 +47,101 @@ public class BitSplitterTests : BunitTestContext
         var iconName = "GripperDotsVertical";
         var component = RenderComponent<BitSplitter>(parameters =>
         {
-            parameters.Add(p => p.GutterIcon, iconName);
+            parameters.Add(p => p.GutterIconName, iconName);
         });
 
         var icon = component.Find(".bit-spl .bit-icon");
 
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
+    }
+
+    [TestMethod]
+    public void BitSplitterIconShouldRenderWithBitIconInfo()
+    {
+        var iconName = "GripperDotsVertical";
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.GutterIcon, BitIconInfo.Bit(iconName));
+        });
+
+        var icon = component.Find(".bit-spl-gic");
+
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon"));
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
+    }
+
+    [TestMethod]
+    public void BitSplitterIconShouldRenderExternalCssClasses()
+    {
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.GutterIcon, BitIconInfo.Css("fa-solid fa-grip-vertical"));
+        });
+
+        var icon = component.Find(".bit-spl-gic");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-grip-vertical"));
+    }
+
+    [TestMethod]
+    public void BitSplitterIconShouldRenderFontAwesomeClasses()
+    {
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.GutterIcon, BitIconInfo.Fa("solid grip-lines-vertical"));
+        });
+
+        var icon = component.Find(".bit-spl-gic");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-grip-lines-vertical"));
+    }
+
+    [TestMethod]
+    public void BitSplitterIconShouldRenderBootstrapIconClasses()
+    {
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.GutterIcon, BitIconInfo.Bi("grip-vertical"));
+        });
+
+        var icon = component.Find(".bit-spl-gic");
+
+        Assert.IsTrue(icon.ClassList.Contains("bi"));
+        Assert.IsTrue(icon.ClassList.Contains("bi-grip-vertical"));
+    }
+
+    [TestMethod]
+    public void BitSplitterGutterIconShouldTakePrecedenceOverGutterIconName()
+    {
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.GutterIcon, BitIconInfo.Css("fa-solid fa-grip-vertical"));
+            parameters.Add(p => p.GutterIconName, "GripperDotsVertical");
+        });
+
+        var icon = component.Find(".bit-spl-gic");
+
+        // GutterIcon (BitIconInfo.Css) should take precedence
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-grip-vertical"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon"));
+    }
+
+    [TestMethod]
+    public void BitSplitterIconShouldRenderGutterIconClassOnIconElement()
+    {
+        var iconName = "GripperDotsVertical";
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.GutterIconName, iconName);
+        });
+
+        var icon = component.Find(".bit-spl-gic");
+
+        Assert.IsNotNull(icon);
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon"));
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
