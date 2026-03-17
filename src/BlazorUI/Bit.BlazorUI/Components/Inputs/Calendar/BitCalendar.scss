@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-cal {
     margin: 0;
@@ -275,7 +275,7 @@
         background-color: transparent;
 
         .bit-icon,
-        .bit-cal-gti {
+        .bit-cal-ico {
             color: $clr-fg-dis;
         }
     }
