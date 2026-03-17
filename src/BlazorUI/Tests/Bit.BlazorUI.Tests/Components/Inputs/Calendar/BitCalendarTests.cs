@@ -102,22 +102,31 @@ public class BitCalendarTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow("bit-icon--Up", null, "bit-icon bit-icon--Up"),
+        DataRow("Up", null, "bit-icon bit-icon--Up"),
         DataRow(null, "chevron-left", "fa fa-chevron-left"),
-        DataRow("bit-icon--ChevronLeft", "chevron-left", "fa fa-chevron-left")]
+        DataRow("ChevronLeft", "chevron-left", "fa fa-chevron-left")]
     public void BitCalendarShouldRespectPrevMonthNavIconName(string? iconName, string? externalIconName, string expectedClass)
     {
         var component = RenderComponent<BitCalendar>(parameters =>
         {
             parameters.Add(p => p.ShowMonthPicker, false);
             if (iconName is not null)
+            {
                 parameters.Add(p => p.PrevMonthNavIconName, iconName);
+            }
+
             if (externalIconName is not null)
+            {
                 parameters.Add(p => p.PrevMonthNavIcon, new BitIconInfo(externalIconName, "fa", "fa-"));
+            }
         });
 
         var icon = component.Find(".bit-cal-nbt:first-child i");
-        Assert.IsTrue(icon.ClassList.Contains(expectedClass.Split(' ')[0]));
+
+        foreach (var expectedCls in expectedClass.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            Assert.IsTrue(icon.ClassList.Contains(expectedCls));
+        }
     }
 
     [TestMethod]
@@ -131,6 +140,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-nbt:first-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
     }
 
@@ -144,6 +154,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-gtb i");
+
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomTodayIcon"));
     }
 
@@ -157,6 +168,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-gtb i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
         Assert.IsTrue(icon.ClassList.Contains("fa-calendar-day"));
     }
@@ -172,6 +184,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-gtb i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-calendar-check"));
     }
 
@@ -188,6 +201,7 @@ public class BitCalendarTests : BunitTestContext
 
         // ShowTimePicker button uses bit-cal-nbt class (unlike GoToToday which uses bit-cal-gtb)
         var icon = component.Find(".bit-cal-nbc .bit-cal-nbt .bit-cal-gti");
+
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomClockIcon"));
     }
 
@@ -204,6 +218,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-nbc .bit-cal-nbt .bit-cal-gti");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
         Assert.IsTrue(icon.ClassList.Contains("fa-clock"));
     }
@@ -218,6 +233,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-gtn i");
+
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomNowIcon"));
     }
 
@@ -231,6 +247,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-gtn i");
+
         Assert.IsTrue(icon.ClassList.Contains("bi"));
         Assert.IsTrue(icon.ClassList.Contains("bi-clock"));
     }
@@ -245,6 +262,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-tpr:first-child .bit-cal-tbt:first-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomUpIcon"));
     }
 
@@ -258,6 +276,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-tpr:first-child .bit-cal-tbt:first-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("bi-chevron-up"));
     }
 
@@ -271,6 +290,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-tpr:first-child .bit-cal-tbt:last-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomDownIcon"));
     }
 
@@ -284,6 +304,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-tpr:first-child .bit-cal-tbt:last-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("bi-chevron-down"));
     }
 
@@ -297,6 +318,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-nbc .bit-cal-nbt:last-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomNextIcon"));
     }
 
@@ -310,6 +332,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-cal-nbc .bit-cal-nbt:last-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-chevron-right"));
     }
 }
