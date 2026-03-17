@@ -237,7 +237,43 @@
             </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
+            <div>
+                Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>GoToTodayIcon</b>, <b>GoToNowIcon</b>, <b>PrevMonthNavIcon</b>, <b>NextMonthNavIcon</b>, and other icon parameters.
+                <br /><br />
+                For built-in icons use the <b>IconName</b> variant of each parameter (e.g. <b>GoToTodayIconName</b>).
+                <br /><br />
+                The <b>Icon</b> parameters accept a
+                <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> value, created via helpers like <b>BitIconInfo.Fa(...)</b>, <b>BitIconInfo.Bi(...)</b>, or <b>BitIconInfo.Css(...)</b>.
+            </div>
+            <br /><br />
+
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+            <div>FontAwesome icons:</div>
+            <br />
+            <BitCalendar GoToTodayIcon="@BitIconInfo.Fa("solid calendar-day")"
+                         PrevMonthNavIcon="@BitIconInfo.Fa("solid chevron-left")"
+                         NextMonthNavIcon="@BitIconInfo.Fa("solid chevron-right")" />
+
+            <br /><br /><br />
+
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+            <div>Bootstrap icons (with ShowTimePicker):</div>
+            <br />
+            <BitCalendar ShowTimePicker="true"
+                         GoToTodayIcon="@BitIconInfo.Bi("calendar-check")"
+                         GoToNowIcon="@BitIconInfo.Bi("clock")"
+                         PrevMonthNavIcon="@BitIconInfo.Bi("chevron-left")"
+                         NextMonthNavIcon="@BitIconInfo.Bi("chevron-right")"
+                         TimePickerIncreaseHourIcon="@BitIconInfo.Bi("chevron-up")"
+                         TimePickerDecreaseHourIcon="@BitIconInfo.Bi("chevron-down")"
+                         TimePickerIncreaseMinuteIcon="@BitIconInfo.Bi("chevron-up")"
+                         TimePickerDecreaseMinuteIcon="@BitIconInfo.Bi("chevron-down")" />
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
             <div>Showcases custom styling and class usage for the calendar component.</div>
             <br /><br />
             <div>Component's Style & Class:</div>
@@ -275,7 +311,7 @@
             </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example13">
+    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
             <div>Use BitCalendar in right-to-left (RTL).</div>
             <br />
             <div class="example-content">

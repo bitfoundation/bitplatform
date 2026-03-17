@@ -100,4 +100,216 @@ public class BitCalendarTests : BunitTestContext
         Assert.AreEqual(DateTimeOffset.Now.Date, component.Instance.Value!.Value.Date);
         Assert.AreEqual(TimeZoneInfo.Local.GetUtcOffset(DateTimeOffset.Now), component.Instance.Value!.Value.Offset);
     }
+
+    [TestMethod,
+        DataRow("bit-icon--Up", null, "bit-icon bit-icon--Up"),
+        DataRow(null, "chevron-left", "fa fa-chevron-left"),
+        DataRow("bit-icon--ChevronLeft", "chevron-left", "fa fa-chevron-left")]
+    public void BitCalendarShouldRespectPrevMonthNavIconName(string? iconName, string? externalIconName, string expectedClass)
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowMonthPicker, false);
+            if (iconName is not null)
+                parameters.Add(p => p.PrevMonthNavIconName, iconName);
+            if (externalIconName is not null)
+                parameters.Add(p => p.PrevMonthNavIcon, new BitIconInfo(externalIconName, "fa", "fa-"));
+        });
+
+        var icon = component.Find(".bit-cal-nbt:first-child i");
+        Assert.IsTrue(icon.ClassList.Contains(expectedClass.Split(' ')[0]));
+    }
+
+    [TestMethod]
+    public void BitCalendarPrevMonthNavIconShouldTakePrecedenceOverIconName()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowMonthPicker, false);
+            parameters.Add(p => p.PrevMonthNavIconName, "bit-icon--Up");
+            parameters.Add(p => p.PrevMonthNavIcon, BitIconInfo.Css("fa-solid fa-arrow-left"));
+        });
+
+        var icon = component.Find(".bit-cal-nbt:first-child i");
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+    }
+
+    [TestMethod]
+    public void BitCalendarGoToTodayIconNameShouldRenderCustomIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowMonthPicker, false);
+            parameters.Add(p => p.GoToTodayIconName, "CustomTodayIcon");
+        });
+
+        var icon = component.Find(".bit-cal-gtb i");
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomTodayIcon"));
+    }
+
+    [TestMethod]
+    public void BitCalendarGoToTodayIconShouldRenderExternalIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowMonthPicker, false);
+            parameters.Add(p => p.GoToTodayIcon, BitIconInfo.Css("fa-solid fa-calendar-day"));
+        });
+
+        var icon = component.Find(".bit-cal-gtb i");
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-calendar-day"));
+    }
+
+    [TestMethod]
+    public void BitCalendarGoToTodayIconShouldTakePrecedenceOverIconName()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowMonthPicker, false);
+            parameters.Add(p => p.GoToTodayIconName, "GotoToday");
+            parameters.Add(p => p.GoToTodayIcon, BitIconInfo.Css("fa-solid fa-calendar-check"));
+        });
+
+        var icon = component.Find(".bit-cal-gtb i");
+        Assert.IsTrue(icon.ClassList.Contains("fa-calendar-check"));
+    }
+
+    [TestMethod]
+    public void BitCalendarShowTimePickerIconNameShouldRenderCustomIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.ShowTimePickerAsOverlay, true);
+            parameters.Add(p => p.ShowMonthPicker, false);
+            parameters.Add(p => p.ShowTimePickerIconName, "CustomClockIcon");
+        });
+
+        // ShowTimePicker button uses bit-cal-nbt class (unlike GoToToday which uses bit-cal-gtb)
+        var icon = component.Find(".bit-cal-nbc .bit-cal-nbt .bit-cal-gti");
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomClockIcon"));
+    }
+
+    [TestMethod]
+    public void BitCalendarShowTimePickerIconShouldRenderExternalIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.ShowTimePickerAsOverlay, true);
+            parameters.Add(p => p.ShowGoToToday, false);
+            parameters.Add(p => p.ShowMonthPicker, false);
+            parameters.Add(p => p.ShowTimePickerIcon, BitIconInfo.Css("fa-solid fa-clock"));
+        });
+
+        var icon = component.Find(".bit-cal-nbc .bit-cal-nbt .bit-cal-gti");
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-clock"));
+    }
+
+    [TestMethod]
+    public void BitCalendarGoToNowIconNameShouldRenderCustomIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.GoToNowIconName, "CustomNowIcon");
+        });
+
+        var icon = component.Find(".bit-cal-gtn i");
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomNowIcon"));
+    }
+
+    [TestMethod]
+    public void BitCalendarGoToNowIconShouldRenderExternalIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.GoToNowIcon, BitIconInfo.Css("bi bi-clock"));
+        });
+
+        var icon = component.Find(".bit-cal-gtn i");
+        Assert.IsTrue(icon.ClassList.Contains("bi"));
+        Assert.IsTrue(icon.ClassList.Contains("bi-clock"));
+    }
+
+    [TestMethod]
+    public void BitCalendarTimePickerIncreaseHourIconNameShouldRenderCustomIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimePickerIncreaseHourIconName, "CustomUpIcon");
+        });
+
+        var icon = component.Find(".bit-cal-tpr:first-child .bit-cal-tbt:first-child i");
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomUpIcon"));
+    }
+
+    [TestMethod]
+    public void BitCalendarTimePickerIncreaseHourIconShouldRenderExternalIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimePickerIncreaseHourIcon, BitIconInfo.Css("bi bi-chevron-up"));
+        });
+
+        var icon = component.Find(".bit-cal-tpr:first-child .bit-cal-tbt:first-child i");
+        Assert.IsTrue(icon.ClassList.Contains("bi-chevron-up"));
+    }
+
+    [TestMethod]
+    public void BitCalendarTimePickerDecreaseHourIconNameShouldRenderCustomIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimePickerDecreaseHourIconName, "CustomDownIcon");
+        });
+
+        var icon = component.Find(".bit-cal-tpr:first-child .bit-cal-tbt:last-child i");
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomDownIcon"));
+    }
+
+    [TestMethod]
+    public void BitCalendarTimePickerDecreaseHourIconShouldRenderExternalIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimePickerDecreaseHourIcon, BitIconInfo.Css("bi bi-chevron-down"));
+        });
+
+        var icon = component.Find(".bit-cal-tpr:first-child .bit-cal-tbt:last-child i");
+        Assert.IsTrue(icon.ClassList.Contains("bi-chevron-down"));
+    }
+
+    [TestMethod]
+    public void BitCalendarNextMonthNavIconNameShouldRenderCustomIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowMonthPicker, false);
+            parameters.Add(p => p.NextMonthNavIconName, "CustomNextIcon");
+        });
+
+        var icon = component.Find(".bit-cal-nbc .bit-cal-nbt:last-child i");
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--CustomNextIcon"));
+    }
+
+    [TestMethod]
+    public void BitCalendarNextMonthNavIconShouldRenderExternalIcon()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowMonthPicker, false);
+            parameters.Add(p => p.NextMonthNavIcon, BitIconInfo.Css("fa-solid fa-chevron-right"));
+        });
+
+        var icon = component.Find(".bit-cal-nbc .bit-cal-nbt:last-child i");
+        Assert.IsTrue(icon.ClassList.Contains("fa-chevron-right"));
+    }
 }
