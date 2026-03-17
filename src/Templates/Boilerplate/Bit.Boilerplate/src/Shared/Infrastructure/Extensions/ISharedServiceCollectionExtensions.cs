@@ -2,6 +2,7 @@
 using Boilerplate.Shared.Features.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -38,10 +39,11 @@ public static partial class ISharedServiceCollectionExtensions
         services.ConfigureAuthorizationCore();
 
         services.AddLocalization();
-        services.AddMemoryCache(options =>
+        services.Configure<MemoryCacheOptions>(options =>
         {
             configuration.GetRequiredSection("MemoryCache").Bind(options);
         });
+        services.AddMemoryCache();
 
         return services;
     }

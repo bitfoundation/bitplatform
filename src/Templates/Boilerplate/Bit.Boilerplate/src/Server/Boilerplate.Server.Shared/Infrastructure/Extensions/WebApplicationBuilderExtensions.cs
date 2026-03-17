@@ -59,9 +59,11 @@ public static class WebApplicationBuilderExtensions
         //#endif
 
         services.AddFusionCache()
+            .AsHybridCache()
+            .WithRegisteredMemoryCache()
             .WithDefaultEntryOptions(options => options.Size = 1)
             // Auto-clone cached objects to avoid further issues after scaling out and switching to distributed caching.
-            .WithOptions(opt => opt.DefaultEntryOptions.EnableAutoClone = true)
+            .WithOptions(options => options.DefaultEntryOptions.EnableAutoClone = true)
             //#if(redis == true)
             // Use Redis backplane for cache synchronization across multiple server instances
             .WithDistributedCache(sp =>
@@ -75,11 +77,25 @@ public static class WebApplicationBuilderExtensions
                 {
                     ConnectionMultiplexerFactory = async () => sp.GetRequiredKeyedService<StackExchange.Redis.IConnectionMultiplexer>("redis-cache"),
                 }))
+            .WithDistributedLocker(sp => new ZiggyCreatures.Caching.Fusion.Locking.Distributed.Redis.RedisDistributedLocker(new ZiggyCreatures.Caching.Fusion.Locking.Distributed.Redis.RedisDistributedLockerOptions
+            {
+                ConnectionMultiplexerFactory = async () => sp.GetRequiredKeyedService<StackExchange.Redis.IConnectionMultiplexer>("redis-cache"),
+            }))
             //#endif
             .WithSerializer(new FusionCacheSystemTextJsonSerializer())
             .WithCacheKeyPrefix("Boilerplate:Cache:");
 
         services.AddFusionOutputCache(); // For ASP.NET Core Output Caching with FusionCache
+
+        // Registering Microsoft's IDistributedCache here doesn't mean you have to use it in your code. It's only for libraries that might rely on it.
+        //#if(redis == true)
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = configuration.GetRequiredConnectionString("redis-cache");
+        });
+        //#else
+        services.AddDistributedMemoryCache();
+        //#endif
 
         services.AddHttpContextAccessor();
 
@@ -90,8 +106,8 @@ public static class WebApplicationBuilderExtensions
             opts.Providers.Add<BrotliCompressionProvider>();
             opts.Providers.Add<GzipCompressionProvider>();
         })
-            .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
-            .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
+            .Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest)
+            .Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
 
         services.AddAntiforgery();
 
@@ -251,6 +267,6 @@ public static class WebApplicationBuilderExtensions
             build: static policy => policy.Expire(TimeSpan.FromSeconds(10))));
 
         return builder.Services.AddHealthChecks()
-            .AddDiskStorageHealthCheck(opt => opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 5 * 1024), tags: ["live"]);
+            .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 5 * 1024), tags: ["live"]);
     }
 }
