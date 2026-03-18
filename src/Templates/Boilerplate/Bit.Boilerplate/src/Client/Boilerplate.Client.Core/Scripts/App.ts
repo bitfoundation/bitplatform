@@ -104,12 +104,8 @@ export class App {
     }
 
     //#if (signalR == true)
-    public static sanitizeMarkdown(markdown: string): string {
-        // Unlike RichTextEditor which sanitizes while storing content server-side,
-        // Markdown sanitization is done client-side while rendering the content that is getting streamed from the server incrementally.
-        // Even though AiChatbot content comes from the server and LLM, we sanitize to protect against
-        // XSS attacks (e.g., LLM prompt injection generating malicious markup, etc).
-        return DOMPurify.sanitize(markdown);
+    public static sanitizeHtml(html: string): string {
+        return DOMPurify.sanitize(html);
     }
     //#endif
 }

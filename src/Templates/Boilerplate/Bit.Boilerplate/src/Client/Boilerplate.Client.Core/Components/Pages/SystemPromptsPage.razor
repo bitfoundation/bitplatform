@@ -29,7 +29,7 @@
                             <BitMarkdownEditor @bind-Value="systemPrompt.Markdown" Class="md-editor" />
                         </AuthorizeView>
                         <BitMarkdownViewer Markdown="@systemPrompt.Markdown"
-                                           JsMiddlewareIdentifier="App.sanitizeMarkdown"
+                                           JsMiddlewareIdentifier="App.sanitizeHtml"
                                            Class="md-viewer" />
                     </BitStack>
                 </BitPivotItem>
