@@ -3,10 +3,12 @@
     "compilerOptions": {
         "strict": true,
         "target": "ES2019",
-        "module": "es2015",
+        "module": "ESNext",
         "noImplicitAny": true,
+        "moduleResolution": "bundler",
         "lib": [ "DOM", "ESNext" ],
-        "moduleResolution": "node",
-        "allowSyntheticDefaultImports": true
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
     }
 }
