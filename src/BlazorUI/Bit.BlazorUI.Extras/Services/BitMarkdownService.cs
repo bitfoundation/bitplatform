@@ -36,7 +36,7 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
     /// <param name="markdown">The markdown string to parse.</param>
     /// <param name="jsMiddleware">Optional JavaScript middleware identifier (fully qualified JS function path) to invoke via JS interop after parsing.</param>
     /// <param name="csMiddleware">Optional C# middleware to apply after the JavaScript middleware.</param>
-    /// <param name="noPrerender">Controls wether the parsing should be done in prerendering.</param>
+    /// <param name="noPrerender">Controls whether the parsing should be done in prerendering.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     public async Task<string> Parse(
         string? markdown,
