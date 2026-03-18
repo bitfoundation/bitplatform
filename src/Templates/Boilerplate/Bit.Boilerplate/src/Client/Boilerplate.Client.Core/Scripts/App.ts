@@ -1,5 +1,9 @@
 //+:cnd:noEmit
 
+//#if (signalR == true)
+import DOMPurify from 'dompurify';
+//#endif
+
 export class App {
     // For additional details, see the JsBridge.cs file.
     private static jsBridgeObj: DotNetObject;
@@ -98,5 +102,15 @@ export class App {
             document.cookie.split(';').forEach(c => document.cookie = c.split('=')[0].trim() + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/')
         ]);
     }
+
+    //#if (signalR == true)
+    public static sanitizeMarkdown(markdown: string): string {
+        // Unlike RichTextEditor which sanitizes while storing content server-side,
+        // Markdown sanitization is done client-side while rendering the content that is getting streamed from the server incrementally.
+        // Even though AiChatbot content comes from the server and LLM, we sanitize to protect against
+        // XSS attacks (e.g., LLM prompt injection generating malicious markup, etc).
+        return DOMPurify.sanitize(markdown);
+    }
+    //#endif
 }
 

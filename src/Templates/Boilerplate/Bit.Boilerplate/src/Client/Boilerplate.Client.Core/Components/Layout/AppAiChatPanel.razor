@@ -54,7 +54,7 @@
                             }
                             else
                             {
-                                <BitMarkdownViewer Markdown="@message.Content" />
+                                <BitMarkdownViewer Markdown="@message.Content" JsMiddlewareIdentifier="App.sanitizeMarkdown" />
                                 @if (message.Successful is false)
                                 {
                                     <BitTag Color="BitColor.Error" Size="BitSize.Small" Style="min-height:18px">
