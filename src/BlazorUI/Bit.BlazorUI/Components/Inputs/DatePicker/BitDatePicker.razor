@@ -1,6 +1,26 @@
 @namespace Bit.BlazorUI
 @inherits BitInputBase<DateTimeOffset?>
 
+@{
+    var iconCss = BitIconInfo.From(Icon, IconName ?? "CalendarMirrored")?.GetCssClasses();
+    var clearBtnIconCss = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel")?.GetCssClasses();
+    var closeButtonIconCss = BitIconInfo.From(CloseButtonIcon, CloseButtonIconName ?? "Cancel")?.GetCssClasses();
+    var prevMonthNavIconCss = BitIconInfo.From(PrevMonthNavIcon, PrevMonthNavIconName ?? "Up")?.GetCssClasses();
+    var nextMonthNavIconCss = BitIconInfo.From(NextMonthNavIcon, NextMonthNavIconName ?? "Up bit-ico-r180")?.GetCssClasses();
+    var goToTodayIconCss = BitIconInfo.From(GoToTodayIcon, GoToTodayIconName ?? "GotoToday")?.GetCssClasses();
+    var showTimePickerIconCss = BitIconInfo.From(ShowTimePickerIcon, ShowTimePickerIconName ?? "Clock")?.GetCssClasses();
+    var prevYearNavIconCss = BitIconInfo.From(PrevYearNavIcon, PrevYearNavIconName ?? "Up")?.GetCssClasses();
+    var nextYearNavIconCss = BitIconInfo.From(NextYearNavIcon, NextYearNavIconName ?? "Up bit-ico-r180")?.GetCssClasses();
+    var prevYearRangeNavIconCss = BitIconInfo.From(PrevYearRangeNavIcon, PrevYearRangeNavIconName ?? "Up")?.GetCssClasses();
+    var nextYearRangeNavIconCss = BitIconInfo.From(NextYearRangeNavIcon, NextYearRangeNavIconName ?? "Up bit-ico-r180")?.GetCssClasses();
+    var goToNowIconCss = BitIconInfo.From(GoToNowIcon, GoToNowIconName ?? "Clock")?.GetCssClasses();
+    var hideTimePickerIconCss = BitIconInfo.From(HideTimePickerIcon, HideTimePickerIconName ?? "CalendarMirrored")?.GetCssClasses();
+    var increaseHourIconCss = BitIconInfo.From(TimePickerIncreaseHourIcon, TimePickerIncreaseHourIconName ?? "ChevronDownSmall bit-ico-r180")?.GetCssClasses();
+    var decreaseHourIconCss = BitIconInfo.From(TimePickerDecreaseHourIcon, TimePickerDecreaseHourIconName ?? "ChevronDownSmall")?.GetCssClasses();
+    var increaseMinuteIconCss = BitIconInfo.From(TimePickerIncreaseMinuteIcon, TimePickerIncreaseMinuteIconName ?? "ChevronDownSmall bit-ico-r180")?.GetCssClasses();
+    var decreaseMinuteIconCss = BitIconInfo.From(TimePickerDecreaseMinuteIcon, TimePickerDecreaseMinuteIconName ?? "ChevronDownSmall")?.GetCssClasses();
+}
+
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
@@ -56,7 +76,7 @@
                             aria-hidden="true"
                             aria-label="Clear date"
                             disabled="@(CurrentValue.HasValue is false)">
-                        <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
+                        <i style="@Styles?.ClearButtonIcon" class="@clearBtnIconCss @Classes?.ClearButtonIcon" aria-hidden="true" />
                     </button>
                 }
 
@@ -66,8 +86,7 @@
                 }
                 else
                 {
-                    var icon = BitIconInfo.From(Icon, IconName ?? "CalendarMirrored");
-                    <i style="@Styles?.Icon" class="bit-dtp-ico @icon?.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
+                    <i style="@Styles?.Icon" class="bit-dtp-ico @iconCss @Classes?.Icon" aria-hidden="true" />
                 }
             </div>
         </div>
@@ -150,7 +169,7 @@
                                         aria-disabled="@prevDisabled">
                                     <i aria-hidden="true"
                                        style="@Styles?.PrevMonthNavIcon"
-                                       class="bit-icon bit-icon--Up @Classes?.PrevMonthNavIcon" />
+                                       class="@prevMonthNavIconCss @Classes?.PrevMonthNavIcon" />
                                 </button>
                                 @if (ShowGoToToday && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false)))
                                 {
@@ -165,7 +184,7 @@
                                             aria-disabled="@goToTodayDisabled">
                                         <i aria-hidden="true"
                                            style="@Styles?.GoToTodayIcon"
-                                           class="bit-dtp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                           class="bit-dtp-gti @goToTodayIconCss @Classes?.GoToTodayIcon" />
                                     </button>
                                 }
                                 <button @onclick="() => HandleMonthChange(true)"
@@ -177,7 +196,7 @@
                                         aria-disabled="@nextDisabled">
                                     <i aria-hidden="true"
                                        style="@Styles?.NextMonthNavIcon"
-                                       class="bit-icon bit-icon--Up bit-ico-r180 @Classes?.NextMonthNavIcon" />
+                                       class="@nextMonthNavIconCss @Classes?.NextMonthNavIcon" />
                                 </button>
                                 @if (ShowCloseButton && Standalone is false)
                                 {
@@ -189,7 +208,7 @@
                                             aria-label="@CloseDatePickerTitle">
                                         <i aria-hidden="true"
                                            style="@Styles?.CloseButtonIcon"
-                                           class="bit-icon bit-icon--Cancel @Classes?.CloseButtonIcon" />
+                                           class="@closeButtonIconCss @Classes?.CloseButtonIcon" />
                                     </button>
                                 }
                                 @if (_showMonthPickerAsOverlayInternal && _showTimePickerAsOverlayInternal && ShowTimePicker)
@@ -207,7 +226,7 @@
                                             class="bit-dtp-nbt @Classes?.ShowTimePickerButton">
                                         <i aria-hidden="true"
                                            style="@Styles?.ShowTimePickerIcon"
-                                           class="bit-dtp-gti bit-icon bit-icon--Clock @Classes?.ShowTimePickerIcon" />
+                                           class="bit-dtp-gti @showTimePickerIconCss @Classes?.ShowTimePickerIcon" />
                                     </button>
                                 }
                             </div>
@@ -321,7 +340,7 @@
                                             class="bit-dtp-nbt @Classes?.PrevYearNavButton">
                                         <i aria-hidden="true"
                                            style="@Styles?.PrevYearNavIcon"
-                                           class="bit-icon bit-icon--Up @Classes?.PrevYearNavIcon" />
+                                           class="@prevYearNavIconCss @Classes?.PrevYearNavIcon" />
                                     </button>
                                     @if (ShowGoToToday)
                                     {
@@ -337,7 +356,7 @@
                                                 class="bit-dtp-gtb @Classes?.GoToTodayButton">
                                             <i aria-hidden="true"
                                                style="@Styles?.GoToTodayIcon"
-                                               class="bit-dtp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                               class="bit-dtp-gti @goToTodayIconCss @Classes?.GoToTodayIcon" />
                                         </button>
                                     }
                                     <button @onclick="() => HandleYearChange(true)"
@@ -350,7 +369,7 @@
                                             class="bit-dtp-nbt @Classes?.NextYearNavButton">
                                         <i aria-hidden="true"
                                            style="@Styles?.NextYearNavIcon"
-                                           class="bit-icon bit-icon--Up bit-ico-r180 @Classes?.NextYearNavIcon" />
+                                           class="@nextYearNavIconCss @Classes?.NextYearNavIcon" />
                                     </button>
                                     @if (_showTimePickerAsOverlayInternal && ShowTimePicker)
                                     {
@@ -367,7 +386,7 @@
                                                 class="bit-dtp-nbt @Classes?.ShowTimePickerButton">
                                             <i aria-hidden="true"
                                                style="@Styles?.ShowTimePickerIcon"
-                                               class="bit-dtp-gti bit-icon bit-icon--Clock @Classes?.ShowTimePickerIcon" />
+                                               class="bit-dtp-gti @(BitIconInfo.From(ShowTimePickerIcon, ShowTimePickerIconName ?? "Clock")?.GetCssClasses()) @Classes?.ShowTimePickerIcon" />
                                         </button>
                                     }
                                 </div>
@@ -439,7 +458,7 @@
                                             class="bit-dtp-nbt @Classes?.PrevYearRangeNavButton">
                                         <i aria-hidden="true"
                                            style="@Styles?.PrevYearRangeNavIcon"
-                                           class="bit-icon bit-icon--Up @Classes?.PrevYearRangeNavIcon" />
+                                           class="@prevYearRangeNavIconCss @Classes?.PrevYearRangeNavIcon" />
                                     </button>
                                     @if (ShowGoToToday)
                                     {
@@ -455,7 +474,7 @@
                                                 class="bit-dtp-gtb @Classes?.GoToTodayButton">
                                             <i aria-hidden="true"
                                                style="@Styles?.GoToTodayIcon"
-                                               class="bit-dtp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                               class="bit-dtp-gti @goToTodayIconCss @Classes?.GoToTodayIcon" />
                                         </button>
                                     }
                                     <button @onclick="() => HandleYearRangeChange(true)"
@@ -468,7 +487,7 @@
                                             class="bit-dtp-nbt @Classes?.NextYearRangeNavButton">
                                         <i aria-hidden="true"
                                            style="@Styles?.NextYearRangeNavIcon"
-                                           class="bit-icon bit-icon--Up bit-ico-r180 @Classes?.NextYearRangeNavIcon" />
+                                           class="@nextYearRangeNavIconCss @Classes?.NextYearRangeNavIcon" />
                                     </button>
                                 </div>
                             </div>
@@ -530,7 +549,7 @@
                                             class="bit-dtp-gtn @Classes?.GoToNowButton">
                                         <i aria-hidden="true"
                                            style="@Styles?.GoToNowIcon"
-                                           class="bit-dtp-gti bit-icon bit-icon--Clock @Classes?.GoToNowIcon" />
+                                           class="bit-dtp-gti @goToNowIconCss @Classes?.GoToNowIcon" />
                                     </button>
                                 }
                                 @if (_isTimePickerOverlayOnTop)
@@ -542,7 +561,7 @@
                                             aria-disabled="@(IsEnabled is false)"
                                             style="@Styles?.HideTimePickerButton"
                                             class="bit-dtp-nbt @Classes?.HideTimePickerButton">
-                                        <i style="@Styles?.HideTimePickerIcon" class="bit-icon bit-icon--CalendarMirrored @Classes?.HideTimePickerIcon" aria-hidden="true" />
+                                        <i style="@Styles?.HideTimePickerIcon" class="@hideTimePickerIconCss @Classes?.HideTimePickerIcon" aria-hidden="true" />
                                     </button>
                                 }
                             </div>
@@ -557,7 +576,7 @@
                                         aria-disabled="@(IsEnabled is false)"
                                         style="@Styles?.TimePickerIncreaseHourButton"
                                         class="bit-dtp-tbt @Classes?.TimePickerIncreaseHourButton">
-                                    <i style="@Styles?.TimePickerIncreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall bit-ico-r180 @Classes?.TimePickerIncreaseHourIcon" aria-hidden="true" />
+                                    <i style="@Styles?.TimePickerIncreaseHourIcon" class="@increaseHourIconCss @Classes?.TimePickerIncreaseHourIcon" aria-hidden="true" />
                                 </button>
                                 <input @ref="_inputTimeHourRef"
                                        @bind="@_hourView"
@@ -581,7 +600,7 @@
                                         aria-disabled="@(IsEnabled is false)"
                                         style="@Styles?.TimePickerDecreaseHourButton"
                                         class="bit-dtp-tbt @Classes?.TimePickerDecreaseHourButton">
-                                    <i style="@Styles?.TimePickerDecreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerDecreaseHourIcon" aria-hidden="true" />
+                                    <i style="@Styles?.TimePickerDecreaseHourIcon" class="@decreaseHourIconCss @Classes?.TimePickerDecreaseHourIcon" aria-hidden="true" />
                                 </button>
                             </div>
                             <div style="@Styles?.TimePickerHourMinuteSeparator" class="bit-dtp-tpr bit-dtp-tdv @Classes?.TimePickerHourMinuteSeparator">:</div>
@@ -594,7 +613,7 @@
                                         aria-disabled="@(IsEnabled is false)"
                                         style="@Styles?.TimePickerIncreaseMinuteButton"
                                         class="bit-dtp-tbt @Classes?.TimePickerIncreaseMinuteButton">
-                                    <i style="@Styles?.TimePickerIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall bit-ico-r180 @Classes?.TimePickerIncreaseMinuteIcon" aria-hidden="true" />
+                                    <i style="@Styles?.TimePickerIncreaseMinuteIcon" class="@increaseMinuteIconCss @Classes?.TimePickerIncreaseMinuteIcon" aria-hidden="true" />
                                 </button>
                                 <input @ref="_inputTimeMinuteRef"
                                        @bind="@_minuteView"
@@ -618,7 +637,7 @@
                                         aria-disabled="@(IsEnabled is false)"
                                         style="@Styles?.TimePickerDecreaseMinuteButton"
                                         class="bit-dtp-tbt @Classes?.TimePickerDecreaseMinuteButton">
-                                    <i style="@Styles?.TimePickerDecreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerDecreaseMinuteIcon" aria-hidden="true" />
+                                    <i style="@Styles?.TimePickerDecreaseMinuteIcon" class="@decreaseMinuteIconCss @Classes?.TimePickerDecreaseMinuteIcon" aria-hidden="true" />
                                 </button>
                             </div>
 

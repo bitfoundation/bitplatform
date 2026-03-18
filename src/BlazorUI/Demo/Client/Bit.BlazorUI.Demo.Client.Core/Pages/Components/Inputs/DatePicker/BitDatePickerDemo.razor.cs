@@ -166,6 +166,262 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "ClearButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the clear button. Takes precedence over ClearButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ClearButtonIconName",
+            Type = "string?",
+            DefaultValue = "Cancel",
+            Description = "The name of the clear button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "CloseButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the close button. Takes precedence over CloseButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "CloseButtonIconName",
+            Type = "string?",
+            DefaultValue = "Cancel",
+            Description = "The name of the close button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "GoToNowIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the GoToNow button. Takes precedence over GoToNowIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "GoToNowIconName",
+            Type = "string?",
+            DefaultValue = "Clock",
+            Description = "The name of the GoToNow button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "GoToTodayIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the GoToToday button. Takes precedence over GoToTodayIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "GoToTodayIconName",
+            Type = "string?",
+            DefaultValue = "GotoToday",
+            Description = "The name of the GoToToday button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "HideTimePickerIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the HideTimePicker button. Takes precedence over HideTimePickerIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "HideTimePickerIconName",
+            Type = "string?",
+            DefaultValue = "CalendarMirrored",
+            Description = "The name of the HideTimePicker button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "NextMonthNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the next-month navigation button. Takes precedence over NextMonthNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "NextMonthNavIconName",
+            Type = "string?",
+            DefaultValue = "Up",
+            Description = "The name of the next-month navigation button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "NextYearNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the next-year navigation button. Takes precedence over NextYearNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "NextYearNavIconName",
+            Type = "string?",
+            DefaultValue = "Up",
+            Description = "The name of the next-year navigation button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "NextYearRangeNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the next-year-range navigation button. Takes precedence over NextYearRangeNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "NextYearRangeNavIconName",
+            Type = "string?",
+            DefaultValue = "Up",
+            Description = "The name of the next-year-range navigation button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "PrevMonthNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the previous-month navigation button. Takes precedence over PrevMonthNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "PrevMonthNavIconName",
+            Type = "string?",
+            DefaultValue = "Up",
+            Description = "The name of the previous-month navigation button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "PrevYearNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the previous-year navigation button. Takes precedence over PrevYearNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "PrevYearNavIconName",
+            Type = "string?",
+            DefaultValue = "Up",
+            Description = "The name of the previous-year navigation button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "PrevYearRangeNavIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the previous-year-range navigation button. Takes precedence over PrevYearRangeNavIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "PrevYearRangeNavIconName",
+            Type = "string?",
+            DefaultValue = "Up",
+            Description = "The name of the previous-year-range navigation button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "ShowTimePickerIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the ShowTimePicker button. Takes precedence over ShowTimePickerIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ShowTimePickerIconName",
+            Type = "string?",
+            DefaultValue = "Clock",
+            Description = "The name of the ShowTimePicker button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseHourIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the time-picker's decrease-hour button. Takes precedence over TimePickerDecreaseHourIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseHourIconName",
+            Type = "string?",
+            DefaultValue = "ChevronDownSmall",
+            Description = "The name of the time-picker's decrease-hour button icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseMinuteIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the time-picker's decrease-minute button. Takes precedence over TimePickerDecreaseMinuteIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseMinuteIconName",
+            Type = "string?",
+            DefaultValue = "ChevronDownSmall",
+            Description = "The name of the time-picker's decrease-minute button icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseHourIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the time-picker's increase-hour button. Takes precedence over TimePickerIncreaseHourIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseHourIconName",
+            Type = "string?",
+            DefaultValue = "ChevronDownSmall",
+            Description = "The name of the time-picker's increase-hour button icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseMinuteIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the time-picker's increase-minute button. Takes precedence over TimePickerIncreaseMinuteIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseMinuteIconName",
+            Type = "string?",
+            DefaultValue = "ChevronDownSmall",
+            Description = "The name of the time-picker's increase-minute button icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
             Name = "InvalidErrorMessage",
             Type = "string?",
             DefaultValue = "null",
