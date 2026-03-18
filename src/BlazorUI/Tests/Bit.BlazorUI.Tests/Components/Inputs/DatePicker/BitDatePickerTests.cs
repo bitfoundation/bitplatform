@@ -40,6 +40,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var bitDatePickerLabelChild = component.Find(".bit-dtp > label").ChildNodes;
+
         bitDatePickerLabelChild.MarkupMatches(labelTemplate);
     }
 
@@ -64,7 +65,9 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerShouldHandleOnClickEvent(bool isEnabled, int count)
     {
         int clickedValue = 0;
+
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
@@ -72,6 +75,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var bitDatePickerInput = component.Find(".bit-dtp-wrp");
+
         bitDatePickerInput.Click();
 
         Assert.AreEqual(count, clickedValue);
@@ -83,9 +87,11 @@ public class BitDatePickerTests : BunitTestContext
     ]
     public void BitDatePickerCalendarItemsShouldRespectIsEnabled(bool isEnabled, int count)
     {
-        var changedDateValue = 0;
         var isOpen = true;
+        var changedDateValue = 0;
+
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
@@ -97,15 +103,19 @@ public class BitDatePickerTests : BunitTestContext
 
         Random random = new();
         int randomNumber = random.Next(0, dateItems.Count - 1);
+
         dateItems[randomNumber].Click();
+
         Assert.AreEqual(count, changedDateValue);
     }
 
     [TestMethod]
     public void BitDatePickerCalendarSelectTodayDate()
     {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var isOpen = true;
+
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
@@ -115,6 +125,7 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsNull(component.Instance.Value);
 
         var today = component.Find(".bit-dtp-dtd");
+
         today.Click();
 
         Assert.IsNotNull(component.Instance.Value);
@@ -126,6 +137,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerValidationFormTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDatePickerValidationTest>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
@@ -133,6 +145,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var form = component.Find("form");
+
         form.Submit();
 
         Assert.AreEqual(0, component.Instance.ValidCount);
@@ -140,10 +153,12 @@ public class BitDatePickerTests : BunitTestContext
 
         //open date picker
         var datePicker = component.Find(".bit-dtp-wrp");
+
         datePicker.Click();
 
         //select today
         var today = component.Find(".bit-dtp-dtd");
+
         today.Click();
 
         form.Submit();
@@ -157,6 +172,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerValidationInvalidHtmlAttributeTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDatePickerValidationTest>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
@@ -164,9 +180,11 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var inputDate = component.Find("input[type='text']");
+
         Assert.IsFalse(inputDate.HasAttribute("aria-invalid"));
 
         var form = component.Find("form");
+
         form.Submit();
 
         Assert.IsTrue(inputDate.HasAttribute("aria-invalid"));
@@ -174,10 +192,12 @@ public class BitDatePickerTests : BunitTestContext
 
         //open date picker
         var datePicker = component.Find(".bit-dtp-wrp");
+
         datePicker.Click();
 
         //select today
         var today = component.Find(".bit-dtp-dtd");
+
         today.Click();
 
         form.Submit();
@@ -189,6 +209,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerValidationInvalidCssClassTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDatePickerValidationTest>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
@@ -200,16 +221,19 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsFalse(bitDatePicker.ClassList.Contains("bit-inv"));
 
         var form = component.Find("form");
+
         form.Submit();
 
         Assert.IsTrue(bitDatePicker.ClassList.Contains("bit-inv"));
 
         //open date picker
         var datePicker = component.Find(".bit-dtp-wrp");
+
         datePicker.Click();
 
         //select today
         var today = component.Find(".bit-dtp-dtd");
+
         today.Click();
 
         Assert.IsFalse(bitDatePicker.ClassList.Contains("bit-inv"));
@@ -219,6 +243,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerAriaLabelTest(string pickerAriaLabel)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.CalloutAriaLabel, pickerAriaLabel);
@@ -237,6 +262,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerShowGoToTodayTest(bool showGoToToday)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.ShowGoToToday, showGoToToday);
@@ -246,11 +272,11 @@ public class BitDatePickerTests : BunitTestContext
 
         if (showGoToToday)
         {
-            Assert.AreEqual(1, goToTodayBtnElms.Count);
+            Assert.HasCount(1, goToTodayBtnElms);
         }
         else
         {
-            Assert.AreEqual(0, goToTodayBtnElms.Count);
+            Assert.IsEmpty(goToTodayBtnElms);
         }
     }
 
@@ -285,6 +311,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerHighlightCurrentMonthTest(bool highlightCurrentMonth)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.HighlightCurrentMonth, highlightCurrentMonth);
@@ -294,11 +321,11 @@ public class BitDatePickerTests : BunitTestContext
 
         if (highlightCurrentMonth)
         {
-            Assert.AreEqual(1, currentMonthCells.Count);
+            Assert.HasCount(1, currentMonthCells);
         }
         else
         {
-            Assert.AreEqual(0, currentMonthCells.Count);
+            Assert.IsEmpty(currentMonthCells);
         }
     }
 
@@ -309,6 +336,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerHighlightSelectedMonthTest(bool highlightSelectedMonth)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.HighlightSelectedMonth, highlightSelectedMonth);
@@ -319,11 +347,11 @@ public class BitDatePickerTests : BunitTestContext
 
         if (highlightSelectedMonth)
         {
-            Assert.AreEqual(1, selectedMonthCells.Count);
+            Assert.HasCount(1, selectedMonthCells);
         }
         else
         {
-            Assert.AreEqual(0, selectedMonthCells.Count);
+            Assert.IsEmpty(selectedMonthCells);
         }
     }
 
@@ -331,6 +359,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerCalloutHtmlAttributesTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var calloutHtmlAttributes = new Dictionary<string, object>
         {
             {"style", "color: blue" }
@@ -349,6 +378,7 @@ public class BitDatePickerTests : BunitTestContext
 
     [TestMethod,
         DataRow("ChevronLeft", "fa-chevron-left"),
+        DataRow("ChevronLeft", "bit-icon--ChevronLeft"),
         DataRow(null, "bit-icon--Up")
     ]
     public void BitDatePickerPrevMonthNavIconNameTest(string? iconName, string expectedClass)
@@ -356,11 +386,15 @@ public class BitDatePickerTests : BunitTestContext
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.PrevMonthNavIconName, iconName);
+            }
         });
 
         var icon = component.Find(".bit-dtp-pkh .bit-dtp-nbt:first-child i");
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on PrevMonthNavIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -375,6 +409,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-dtp-pkh .bit-dtp-nbt:first-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on PrevMonthNavIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-chevron-left"),
@@ -390,11 +425,15 @@ public class BitDatePickerTests : BunitTestContext
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.NextMonthNavIconName, iconName);
+            }
         });
 
         var icon = component.Find(".bit-dtp-pkh .bit-dtp-nbt:last-child i");
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on NextMonthNavIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -409,6 +448,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-dtp-pkh .bit-dtp-nbt:last-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on NextMonthNavIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-chevron-right"),
@@ -425,11 +465,15 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowGoToToday, true);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.GoToTodayIconName, iconName);
+            }
         });
 
         var icon = component.Find(".bit-dtp-gti");
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on GoToTodayIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -445,6 +489,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-dtp-gti");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on GoToTodayIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-calendar-day"),
@@ -461,11 +506,15 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowCloseButton, true);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.CloseButtonIconName, iconName);
+            }
         });
 
         var icon = component.Find(".bit-dtp-nbt[title] i");
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on CloseButtonIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -481,6 +530,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-dtp-nbt[title] i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on CloseButtonIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-xmark"),
@@ -497,11 +547,15 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowClearButton, true);
             parameters.Add(p => p.Value, DateTimeOffset.Now);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.ClearButtonIconName, iconName);
+            }
         });
 
         var icon = component.Find(".bit-dtp-clr i");
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on ClearButtonIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -517,6 +571,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-dtp-clr i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on ClearButtonIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-xmark"),
@@ -534,11 +589,15 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
             parameters.Add(p => p.ShowGoToNow, true);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.GoToNowIconName, iconName);
+            }
         });
 
         var icon = component.Find(".bit-dtp-gtn i");
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on GoToNowIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -555,6 +614,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-dtp-gtn i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on GoToNowIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-clock"),
@@ -571,11 +631,15 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.TimePickerIncreaseHourIconName, iconName);
+            }
         });
 
         var icon = component.Find(".bit-dtp-tbt:first-child i");
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on TimePickerIncreaseHourIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -591,6 +655,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-dtp-tbt:first-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on TimePickerIncreaseHourIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-chevron-up"),
@@ -607,12 +672,16 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.TimePickerDecreaseHourIconName, iconName);
+            }
         });
 
         var tbtButtons = component.FindAll(".bit-dtp-tbt");
         var icon = tbtButtons[1].QuerySelector("i")!;
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on TimePickerDecreaseHourIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -629,6 +698,7 @@ public class BitDatePickerTests : BunitTestContext
 
         var tbtButtons = component.FindAll(".bit-dtp-tbt");
         var icon = tbtButtons[1].QuerySelector("i")!;
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on TimePickerDecreaseHourIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-chevron-down"),
@@ -645,12 +715,16 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.TimePickerIncreaseMinuteIconName, iconName);
+            }
         });
 
         var tbtButtons = component.FindAll(".bit-dtp-tbt");
         var icon = tbtButtons[2].QuerySelector("i")!;
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on TimePickerIncreaseMinuteIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -667,6 +741,7 @@ public class BitDatePickerTests : BunitTestContext
 
         var tbtButtons = component.FindAll(".bit-dtp-tbt");
         var icon = tbtButtons[2].QuerySelector("i")!;
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on TimePickerIncreaseMinuteIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-chevron-up"),
@@ -683,12 +758,16 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.TimePickerDecreaseMinuteIconName, iconName);
+            }
         });
 
         var tbtButtons = component.FindAll(".bit-dtp-tbt");
         var icon = tbtButtons[3].QuerySelector("i")!;
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on TimePickerDecreaseMinuteIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -705,6 +784,7 @@ public class BitDatePickerTests : BunitTestContext
 
         var tbtButtons = component.FindAll(".bit-dtp-tbt");
         var icon = tbtButtons[3].QuerySelector("i")!;
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on TimePickerDecreaseMinuteIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-chevron-down"),
@@ -720,12 +800,16 @@ public class BitDatePickerTests : BunitTestContext
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.PrevYearNavIconName, iconName);
+            }
         });
 
         // PrevYearNavIcon is in the month-picker header (year-month-picker wrapper)
         var icon = component.Find(".bit-dtp-mwp .bit-dtp-pkh .bit-dtp-nbt:first-child i");
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on PrevYearNavIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -740,6 +824,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-dtp-mwp .bit-dtp-pkh .bit-dtp-nbt:first-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on PrevYearNavIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-angles-left"),
@@ -755,11 +840,15 @@ public class BitDatePickerTests : BunitTestContext
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
+
             if (iconName is not null)
+            {
                 parameters.Add(p => p.NextYearNavIconName, iconName);
+            }
         });
 
         var icon = component.Find(".bit-dtp-mwp .bit-dtp-pkh .bit-dtp-nbt:last-child i");
+
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on NextYearNavIcon but got: {string.Join(' ', icon.ClassList)}");
     }
@@ -774,6 +863,7 @@ public class BitDatePickerTests : BunitTestContext
         });
 
         var icon = component.Find(".bit-dtp-mwp .bit-dtp-pkh .bit-dtp-nbt:last-child i");
+
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on NextYearNavIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-angles-right"),
