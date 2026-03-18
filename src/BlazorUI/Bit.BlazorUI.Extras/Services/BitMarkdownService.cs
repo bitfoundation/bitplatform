@@ -25,7 +25,7 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     public Task<string> Parse(string? markdown, CancellationToken cancellationToken)
     {
-        return Parse(markdown, null, null, cancellationToken);
+        return Parse(markdown, null, null, false, cancellationToken);
     }
 
     /// <summary>
@@ -36,14 +36,20 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
     /// <param name="markdown">The markdown string to parse.</param>
     /// <param name="jsMiddleware">Optional JavaScript middleware identifier (fully qualified JS function path) to invoke via JS interop after parsing.</param>
     /// <param name="csMiddleware">Optional C# middleware to apply after the JavaScript middleware.</param>
+    /// <param name="noPrerender">Controls wether the parsing should be done in prerendering.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
-    public async Task<string> Parse(string? markdown, string? jsMiddleware, Func<string, string>? csMiddleware, CancellationToken cancellationToken)
+    public async Task<string> Parse(
+        string? markdown,
+        string? jsMiddleware,
+        Func<string, Task<string>>? csMiddleware,
+        bool noPrerender,
+        CancellationToken cancellationToken)
     {
         if (markdown.HasNoValue()) return string.Empty;
 
         var html = string.Empty;
 
-        if (js.IsRuntimeInvalid()) // server (prerendering)
+        if (js.IsRuntimeInvalid() && noPrerender is false) // server (prerendering)
         {
             try
             {
@@ -74,7 +80,7 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
         {
             try
             {
-                html = csMiddleware(html);
+                html = await csMiddleware(html);
             }
             catch (Exception ex)
             {

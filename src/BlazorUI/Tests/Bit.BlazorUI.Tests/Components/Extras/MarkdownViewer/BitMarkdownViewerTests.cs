@@ -42,7 +42,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsTrue(root.InnerHtml.Contains(html));
+            Assert.Contains(html, root.InnerHtml);
             Assert.AreEqual(Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownViewer.parseAsync").Arguments[0], markdown);
         });
     }
@@ -55,7 +55,9 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         SetupMarkdownInterop(markdown, html);
 
-        bool parsingCalled = false, parsedCalled = false, renderedCalled = false;
+        var parsingCalled = false;
+        var parsedCalled = false;
+        var renderedCalled = false;
         string? parsedValue = null;
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
@@ -105,7 +107,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsTrue(component.Markup.Contains(html));
+            Assert.Contains(html, component.Markup);
         });
 
         markdown = "two";
@@ -120,7 +122,7 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsTrue(component.Markup.Contains(html));
+            Assert.Contains(html, component.Markup);
         });
     }
 
@@ -162,9 +164,10 @@ public class BitMarkdownViewerTests : BunitTestContext
 
         var middlewareCalled = false;
 
-        string middleware(string input)
+        async Task<string> middleware(string input)
         {
             middlewareCalled = input == html;
+            await Task.Delay(1);
             return processedHtml;
         }
 
@@ -190,6 +193,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         var jsMiddleware = "myApp.sanitize";
 
         SetupMarkdownInterop(markdown, html);
+
         Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown, jsMiddleware).SetResult(processedHtml);
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
@@ -222,10 +226,11 @@ public class BitMarkdownViewerTests : BunitTestContext
         var middlewareCalled = false;
         string? middlewareInput = null;
 
-        string csMiddleware(string input)
+        async Task<string> csMiddleware(string input)
         {
             middlewareCalled = true;
             middlewareInput = input;
+            await Task.Delay(1);
             return csharpProcessedHtml;
         }
 
