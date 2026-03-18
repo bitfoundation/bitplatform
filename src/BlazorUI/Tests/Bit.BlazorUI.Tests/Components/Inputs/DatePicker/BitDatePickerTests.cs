@@ -377,7 +377,6 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow("ChevronLeft", "fa-chevron-left"),
         DataRow("ChevronLeft", "bit-icon--ChevronLeft"),
         DataRow(null, "bit-icon--Up")
     ]
@@ -465,6 +464,7 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowGoToToday, true);
+            parameters.Add(p => p.Classes, new BitDatePickerClassStyles { GoToTodayIcon = "gtt-icon" });
 
             if (iconName is not null)
             {
@@ -472,7 +472,7 @@ public class BitDatePickerTests : BunitTestContext
             }
         });
 
-        var icon = component.Find(".bit-dtp-gti");
+        var icon = component.Find(".gtt-icon");
 
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on GoToTodayIcon but got: {string.Join(' ', icon.ClassList)}");
@@ -486,9 +486,10 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowGoToToday, true);
             parameters.Add(p => p.GoToTodayIcon, BitIconInfo.Css("fa-solid fa-calendar-day"));
+            parameters.Add(p => p.Classes, new BitDatePickerClassStyles { GoToTodayIcon = "gtt-icon" });
         });
 
-        var icon = component.Find(".bit-dtp-gti");
+        var icon = component.Find(".gtt-icon");
 
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on GoToTodayIcon but got: {string.Join(' ', icon.ClassList)}");
@@ -506,6 +507,7 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.Classes, new BitDatePickerClassStyles { CloseButtonIcon = "close-icon" });
 
             if (iconName is not null)
             {
@@ -513,7 +515,7 @@ public class BitDatePickerTests : BunitTestContext
             }
         });
 
-        var icon = component.Find(".bit-dtp-nbt[title] i");
+        var icon = component.Find(".close-icon");
 
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
             $"Expected class '{expectedClass}' on CloseButtonIcon but got: {string.Join(' ', icon.ClassList)}");
@@ -527,9 +529,10 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowCloseButton, true);
             parameters.Add(p => p.CloseButtonIcon, BitIconInfo.Css("fa-solid fa-xmark"));
+            parameters.Add(p => p.Classes, new BitDatePickerClassStyles { CloseButtonIcon = "close-icon" });
         });
 
-        var icon = component.Find(".bit-dtp-nbt[title] i");
+        var icon = component.Find(".close-icon");
 
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
             $"Expected 'fa-solid' on CloseButtonIcon but got: {string.Join(' ', icon.ClassList)}");
