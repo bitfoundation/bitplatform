@@ -539,7 +539,7 @@ public partial class BitDatePickerDemo
             Name = "ShowTimePickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show month picker on top of date picker when visible."
+            Description = "Show the time picker as an overlay on top of the date picker when visible."
         },
         new()
         {
