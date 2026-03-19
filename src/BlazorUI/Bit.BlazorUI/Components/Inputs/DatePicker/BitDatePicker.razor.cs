@@ -1513,46 +1513,18 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task ChangeHour(bool isNext)
     {
-        if (isNext)
-        {
-            _hour += HourStep;
-        }
-        else
-        {
-            _hour -= HourStep;
-        }
+        var hourStep = Math.Clamp(Math.Abs(HourStep), 1, 23);
 
-        if (_hour > 23)
-        {
-            _hour -= 24;
-        }
-        else if (_hour < 0)
-        {
-            _hour += 24;
-        }
+        _hour = (_hour + (isNext ? hourStep : -hourStep) + 24) % 24;
 
         await UpdateCurrentValue();
     }
 
     private async Task ChangeMinute(bool isNext)
     {
-        if (isNext)
-        {
-            _minute += MinuteStep;
-        }
-        else
-        {
-            _minute -= MinuteStep;
-        }
+        var minuteStep = Math.Clamp(Math.Abs(MinuteStep), 1, 59);
 
-        if (_minute > 59)
-        {
-            _minute -= 60;
-        }
-        else if (_minute < 0)
-        {
-            _minute += 60;
-        }
+        _minute = (_minute + (isNext ? minuteStep : -minuteStep) + 60) % 60;
 
         await UpdateCurrentValue();
     }
