@@ -510,7 +510,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     public bool ShowTimePicker { get; set; }
 
     /// <summary>
-    /// Show month picker on top of date picker when visible.
+    /// Show the time picker as an overlay on top of the date picker when visible.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]

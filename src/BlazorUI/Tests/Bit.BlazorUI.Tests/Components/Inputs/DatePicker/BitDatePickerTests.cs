@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 using Bunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.DatePicker;
 
@@ -871,5 +872,164 @@ public class BitDatePickerTests : BunitTestContext
             $"Expected 'fa-solid' on NextYearNavIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-angles-right"),
             $"Expected 'fa-angles-right' on NextYearNavIcon but got: {string.Join(' ', icon.ClassList)}");
+    }
+
+    [Ignore]
+    [TestMethod,
+         DataRow("ChevronLeft", "bit-icon--ChevronLeft")
+     ]
+    public void BitDatePickerPrevYearRangeNavIconNameTest(string iconName, string expectedClass)
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.PrevYearRangeNavIconName, iconName);
+        });
+        
+        var icon = component.FindAll("i")
+                            .FirstOrDefault(i => i.ClassList.Contains(expectedClass));
+        
+        Assert.IsNotNull(icon,
+            $"Expected class '{expectedClass}' on PrevYearRangeNavIcon but no matching icon element was found.");
+    }
+
+    [Ignore]
+    [TestMethod]
+    public void BitDatePickerPrevYearRangeNavIconTest()
+    {
+        var expectedClass = "bit-icon--ChevronLeft";
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.PrevYearRangeNavIcon, BitIconInfo.Bit("ChevronLeft"));
+        });
+
+        var icon = component.FindAll("i")
+                            .FirstOrDefault(i => i.ClassList.Contains(expectedClass));
+        
+        Assert.IsNotNull(icon,
+            $"Expected class '{expectedClass}' on PrevYearRangeNavIcon but no matching icon element was found.");
+    }
+
+    [Ignore]
+    [TestMethod,
+        DataRow("ChevronRight", "bit-icon--ChevronRight")
+    ]
+    public void BitDatePickerNextYearRangeNavIconNameTest(string iconName, string expectedClass)
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.NextYearRangeNavIconName, iconName);
+        });
+
+        var icon = component.FindAll("i")
+                            .FirstOrDefault(i => i.ClassList.Contains(expectedClass));
+        
+        Assert.IsNotNull(icon,
+            $"Expected class '{expectedClass}' on NextYearRangeNavIcon but no matching icon element was found.");
+    }
+
+    [Ignore]
+    [TestMethod]
+    public void BitDatePickerNextYearRangeNavIconTest()
+    {
+        var expectedClass = "bit-icon--ChevronRight";
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.NextYearRangeNavIcon, BitIconInfo.Bit("ChevronRight"));
+        });
+
+        var icon = component.FindAll("i")
+                            .FirstOrDefault(i => i.ClassList.Contains(expectedClass));
+        
+        Assert.IsNotNull(icon,
+            $"Expected class '{expectedClass}' on NextYearRangeNavIcon but no matching icon element was found.");
+    }
+
+    [Ignore]
+    [TestMethod,
+        DataRow("Clock", "bit-icon--Clock")
+    ]
+    public void BitDatePickerShowTimePickerIconNameTest(string iconName, string expectedClass)
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePickerIconName, iconName);
+        });
+
+        var icon = component.FindAll("i")
+                            .FirstOrDefault(i => i.ClassList.Contains(expectedClass));
+
+        Assert.IsNotNull(icon,
+            $"Expected class '{expectedClass}' on ShowTimePickerIcon but no matching icon element was found.");
+    }
+
+    [Ignore]
+    [TestMethod]
+    public void BitDatePickerShowTimePickerIconTest()
+    {
+        var expectedClass = "bit-icon--Clock";
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePickerIcon, BitIconInfo.Bit("Clock"));
+        });
+
+        var icon = component.FindAll("i")
+                            .FirstOrDefault(i => i.ClassList.Contains(expectedClass));
+
+        Assert.IsNotNull(icon,
+            $"Expected class '{expectedClass}' on ShowTimePickerIcon but no matching icon element was found.");
+    }
+
+    [Ignore]
+    [TestMethod,
+        DataRow("Cancel", "bit-icon--Cancel")
+    ]
+    public void BitDatePickerHideTimePickerIconNameTest(string iconName, string expectedClass)
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.ShowMonthPickerAsOverlay, true);
+            parameters.Add(p => p.HideTimePickerIconName, iconName);
+            parameters.Add(p => p.Classes, new BitDatePickerClassStyles { ShowTimePickerButton = "picker-button" });
+        });
+
+        var btn = component.Find(".picker-button");
+
+        btn.Click();
+
+        var icon = component.FindAll("i")
+                            .FirstOrDefault(i => i.ClassList.Contains(expectedClass));
+
+        Assert.IsNotNull(icon,
+            $"Expected class '{expectedClass}' on HideTimePickerIcon but no matching icon element was found.");
+    }
+
+    [Ignore]
+    [TestMethod]
+    public void BitDatePickerHideTimePickerIconTest()
+    {
+        var expectedClass = "bit-icon--Cancel";
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HideTimePickerIcon, BitIconInfo.Bit("Cancel"));
+        });
+
+        var icon = component.FindAll("i")
+                            .FirstOrDefault(i => i.ClassList.Contains(expectedClass));
+
+        Assert.IsNotNull(icon,
+            $"Expected class '{expectedClass}' on HideTimePickerIcon but no matching icon element was found.");
     }
 }
