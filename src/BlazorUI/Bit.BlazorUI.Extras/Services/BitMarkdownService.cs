@@ -49,8 +49,10 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
 
         var html = string.Empty;
 
-        if (js.IsRuntimeInvalid() && noPrerender is false) // server (prerendering)
+        if (js.IsRuntimeInvalid()) // server (prerendering)
         {
+            if (noPrerender) return string.Empty;
+
             try
             {
                 html = await Task.Run(async () => await RunJint(markdown, cancellationToken), cancellationToken);
@@ -65,6 +67,7 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
             {
                 Console.Error.WriteLine(ex.Message);
             }
+
         }
         else // client
         {
