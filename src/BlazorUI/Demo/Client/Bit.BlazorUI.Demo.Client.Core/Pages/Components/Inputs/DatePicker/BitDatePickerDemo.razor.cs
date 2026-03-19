@@ -479,7 +479,7 @@ public partial class BitDatePickerDemo
             Description = "The name of the previous-year-range navigation button's icon from the built-in Fluent UI icon set."
         },
         new()
-        { Name =
+        {
             Name = "Responsive",
             Type = "bool",
             DefaultValue = "false",
