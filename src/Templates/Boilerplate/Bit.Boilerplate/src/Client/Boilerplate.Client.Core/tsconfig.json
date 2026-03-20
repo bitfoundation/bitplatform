@@ -4,11 +4,14 @@
         "strict": true,
         "target": "ES2019",
         "module": "ESNext",
-        "noImplicitAny": true,
         "moduleResolution": "bundler",
+        "verbatimModuleSyntax": true,
+        "resolveJsonModule": true,
         "lib": [ "DOM", "ESNext" ],
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true
-    }
+    },
+    "include": [ "Scripts" ],
+    "exclude": [ "node_modules" ]
 }
