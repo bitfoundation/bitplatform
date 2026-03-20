@@ -21,7 +21,7 @@
         </PackageReference>
         <PackageReference Include="Jint" Version="4.6.3" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.1" />
-        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.4.0" />
+        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.4.1" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
         <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.5" />
@@ -31,7 +31,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />
         <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.5" />
-        <PackageReference Include="Microsoft.Extensions.AI" Version="10.4.0" />
+        <PackageReference Include="Microsoft.Extensions.AI" Version="10.4.1" />
         <PackageReference Include="Microsoft.Extensions.AI.AzureAIInference" Version="10.0.0-preview.1.25559.3" />
         <PackageReference Include="ModelContextProtocol" Version="1.1.0" />
     </ItemGroup>

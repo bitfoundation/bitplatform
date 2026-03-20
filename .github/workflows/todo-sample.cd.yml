@@ -456,7 +456,7 @@ jobs:
       with:
         node-version: 24
 
-    - uses: maxim-lobanov/setup-xcode@v1.6.0
+    - uses: maxim-lobanov/setup-xcode@v1.7.0
       with:
         xcode-version: '26.2'
 
