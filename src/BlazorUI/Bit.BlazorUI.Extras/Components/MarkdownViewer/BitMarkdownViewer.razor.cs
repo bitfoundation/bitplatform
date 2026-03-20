@@ -38,7 +38,13 @@ public partial class BitMarkdownViewer : BitComponentBase
     /// C# middleware is applied after JavaScript middleware.
     /// </summary>
     [Parameter, CallOnSet(nameof(OnMarkdownOrMiddlewareSet))]
-    public Func<string, string>? Middleware { get; set; }
+    public Func<string, Task<string>>? Middleware { get; set; }
+
+    /// <summary>
+    /// Disables parse and render of the markdown content in the prerendering phase.
+    /// </summary>
+    [Parameter]
+    public bool NoPrerender { get; set; }
 
     /// <summary>
     /// A callback that is called before starting to parse the markdown.
@@ -93,7 +99,7 @@ public partial class BitMarkdownViewer : BitComponentBase
 
         try
         {
-            _html = await _markdownService.Parse(Markdown, JsMiddlewareIdentifier, Middleware, _cts.Token);
+            _html = await _markdownService.Parse(Markdown, JsMiddlewareIdentifier, Middleware, NoPrerender, _cts.Token);
         }
         catch
         {

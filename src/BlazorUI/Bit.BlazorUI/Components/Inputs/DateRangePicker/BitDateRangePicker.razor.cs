@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 
@@ -202,6 +202,28 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public BitDateRangePickerClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The icon to display inside the clear button.
+    /// Takes precedence over <see cref="ClearButtonIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? ClearButtonIcon { get; set; }
+
+    /// <summary>
+    /// The name of the clear button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? ClearButtonIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the close button.
+    /// Takes precedence over <see cref="CloseButtonIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? CloseButtonIcon { get; set; }
+
+    /// <summary>
+    /// The name of the close button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? CloseButtonIconName { get; set; }
+
+    /// <summary>
     /// The title of the close button (tooltip).
     /// </summary>
     [Parameter] public string CloseButtonTitle { get; set; } = "Close date range picker";
@@ -254,14 +276,31 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string GoToPrevYearTitle { get; set; } = "Go to previous year {0}";
 
     /// <summary>
+    /// The icon to display inside the GoToToday button.
+    /// Takes precedence over <see cref="GoToTodayIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? GoToTodayIcon { get; set; }
+
+    /// <summary>
+    /// The name of the GoToToday button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? GoToTodayIconName { get; set; }
+
+    /// <summary>
     /// The title of the GoToToday button (tooltip).
     /// </summary>
     [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
 
     /// <summary>
-    /// The title of the ShowTimePicker button (tooltip).
+    /// The icon to display inside the HideTimePicker button.
+    /// Takes precedence over <see cref="HideTimePickerIconName"/> when both are set.
     /// </summary>
-    [Parameter] public string ShowTimePickerTitle { get; set; } = "Show time picker";
+    [Parameter] public BitIconInfo? HideTimePickerIcon { get; set; }
+
+    /// <summary>
+    /// The name of the HideTimePicker button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? HideTimePickerIconName { get; set; }
 
     /// <summary>
     /// The title of the HideTimePicker button (tooltip).
@@ -374,6 +413,39 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string MonthPickerToggleTitle { get; set; } = "{0}, change month";
 
     /// <summary>
+    /// The icon to display inside the next-month navigation button.
+    /// Takes precedence over <see cref="NextMonthNavIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? NextMonthNavIcon { get; set; }
+
+    /// <summary>
+    /// The name of the next-month navigation button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? NextMonthNavIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the next-year navigation button.
+    /// Takes precedence over <see cref="NextYearNavIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? NextYearNavIcon { get; set; }
+
+    /// <summary>
+    /// The name of the next-year navigation button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? NextYearNavIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the next-year-range navigation button.
+    /// Takes precedence over <see cref="NextYearRangeNavIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? NextYearRangeNavIcon { get; set; }
+
+    /// <summary>
+    /// The name of the next-year-range navigation button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? NextYearRangeNavIconName { get; set; }
+
+    /// <summary>
     /// The callback for clicking on the DateRangePicker's input.
     /// </summary>
     [Parameter] public EventCallback OnClick { get; set; }
@@ -397,6 +469,39 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// The placeholder text of the DateRangePicker's input.
     /// </summary>
     [Parameter] public string Placeholder { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The icon to display inside the previous-month navigation button.
+    /// Takes precedence over <see cref="PrevMonthNavIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? PrevMonthNavIcon { get; set; }
+
+    /// <summary>
+    /// The name of the previous-month navigation button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? PrevMonthNavIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the previous-year navigation button.
+    /// Takes precedence over <see cref="PrevYearNavIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? PrevYearNavIcon { get; set; }
+
+    /// <summary>
+    /// The name of the previous-year navigation button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? PrevYearNavIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the previous-year-range navigation button.
+    /// Takes precedence over <see cref="PrevYearRangeNavIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? PrevYearRangeNavIcon { get; set; }
+
+    /// <summary>
+    /// The name of the previous-year-range navigation button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? PrevYearRangeNavIconName { get; set; }
 
     /// <summary>
     /// Enables the responsive mode in small screens.
@@ -428,9 +533,149 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public bool ShowTimePicker { get; set; }
 
     /// <summary>
+    /// The icon to display inside the ShowTimePicker button.
+    /// Takes precedence over <see cref="ShowTimePickerIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? ShowTimePickerIcon { get; set; }
+
+    /// <summary>
+    /// The name of the ShowTimePicker button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? ShowTimePickerIconName { get; set; }
+
+    /// <summary>
+    /// The title of the ShowTimePicker button (tooltip).
+    /// </summary>
+    [Parameter] public string ShowTimePickerTitle { get; set; } = "Show time picker";
+
+    /// <summary>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
     /// </summary>
     [Parameter] public bool ShowWeekNumbers { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the start time-picker's decrease-hour button.
+    /// Takes precedence over <see cref="StartTimeDecreaseHourIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? StartTimeDecreaseHourIcon { get; set; }
+
+    /// <summary>
+    /// The name of the start time-picker's decrease-hour button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? StartTimeDecreaseHourIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the start time-picker's decrease-minute button.
+    /// Takes precedence over <see cref="StartTimeDecreaseMinuteIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? StartTimeDecreaseMinuteIcon { get; set; }
+
+    /// <summary>
+    /// The name of the start time-picker's decrease-minute button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? StartTimeDecreaseMinuteIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the start time-picker's increase-hour button.
+    /// Takes precedence over <see cref="StartTimeIncreaseHourIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? StartTimeIncreaseHourIcon { get; set; }
+
+    /// <summary>
+    /// The name of the start time-picker's increase-hour button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? StartTimeIncreaseHourIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the start time-picker's increase-minute button.
+    /// Takes precedence over <see cref="StartTimeIncreaseMinuteIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? StartTimeIncreaseMinuteIcon { get; set; }
+
+    /// <summary>
+    /// The name of the start time-picker's increase-minute button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? StartTimeIncreaseMinuteIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the end time-picker's decrease-hour button.
+    /// Takes precedence over <see cref="EndTimeDecreaseHourIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? EndTimeDecreaseHourIcon { get; set; }
+
+    /// <summary>
+    /// The name of the end time-picker's decrease-hour button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? EndTimeDecreaseHourIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the end time-picker's decrease-minute button.
+    /// Takes precedence over <see cref="EndTimeDecreaseMinuteIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? EndTimeDecreaseMinuteIcon { get; set; }
+
+    /// <summary>
+    /// The name of the end time-picker's decrease-minute button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? EndTimeDecreaseMinuteIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the end time-picker's increase-hour button.
+    /// Takes precedence over <see cref="EndTimeIncreaseHourIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? EndTimeIncreaseHourIcon { get; set; }
+
+    /// <summary>
+    /// The name of the end time-picker's increase-hour button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? EndTimeIncreaseHourIconName { get; set; }
+
+    /// <summary>
+    /// The icon to display inside the end time-picker's increase-minute button.
+    /// Takes precedence over <see cref="EndTimeIncreaseMinuteIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? EndTimeIncreaseMinuteIcon { get; set; }
+
+    /// <summary>
+    /// The name of the end time-picker's increase-minute button icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? EndTimeIncreaseMinuteIconName { get; set; }
+
+    /// <summary>
+    /// Determines increment/decrement steps for DateRangePicker's hour.
+    /// </summary>
+    [Parameter] public int HourStep { get; set; } = 1;
+
+    /// <summary>
+    /// The maximum range of day and times allowed for selection in DateRangePicker.
+    /// </summary>
+    [Parameter] public TimeSpan? MaxRange { get; set; }
+
+    /// <summary>
+    /// Whether the clear button should be shown or not when the DateRangePicker has a value.
+    /// </summary>
+    [Parameter] public bool ShowClearButton { get; set; }
+
+    /// <summary>
+    /// Show the time picker as an overlay on top of the date range picker when visible.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool ShowTimePickerAsOverlay { get; set; }
+
+    /// <summary>
+    /// Whether the DateRangePicker is rendered standalone or with the input component and callout.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool Standalone { get; set; }
+
+    /// <summary>
+    /// Specifies the date and time of the date and time picker when it is opened without any selected value.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public BitDateRangePickerValue? StartingValue { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitDateRangePicker component.
@@ -481,45 +726,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string YearRangePickerToggleTitle { get; set; } = "{0} - {1}, change month";
 
     /// <summary>
-    /// Show month picker on top of date range picker when visible.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public bool ShowTimePickerAsOverlay { get; set; }
-
-    /// <summary>
-    /// The maximum range of day and times allowed for selection in DateRangePicker.
-    /// </summary>
-    [Parameter] public TimeSpan? MaxRange { get; set; }
-
-    /// <summary>
-    /// Whether the clear button should be shown or not when the DateRangePicker has a value.
-    /// </summary>
-    [Parameter] public bool ShowClearButton { get; set; }
-
-    /// <summary>
-    /// Determines increment/decrement steps for DateRangePicker's hour.
-    /// </summary>
-    [Parameter] public int HourStep { get; set; } = 1;
-
-    /// <summary>
     /// Determines increment/decrement steps for DateRangePicker's minute.
     /// </summary>
     [Parameter] public int MinuteStep { get; set; } = 1;
-
-    /// <summary>
-    /// Specifies the date and time of the date and time picker when it is opened without any selected value.
-    /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public BitDateRangePickerValue? StartingValue { get; set; }
-
-    /// <summary>
-    /// Whether the DateRangePicker is rendered standalone or with the input component and callout.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    [CallOnSet(nameof(OnSetParameters))]
-    public bool Standalone { get; set; }
 
 
 

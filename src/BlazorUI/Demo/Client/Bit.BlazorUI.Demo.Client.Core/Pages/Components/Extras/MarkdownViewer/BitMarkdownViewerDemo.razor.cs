@@ -24,11 +24,18 @@ public partial class BitMarkdownViewerDemo
         new()
         {
            Name = "Middleware",
-           Type = "Func<string, string>?",
+           Type = "Func<string, Task<string>>?",
            DefaultValue = "null",
            Description = @"The C# function to run after parsing markdown and before rendering HTML.
                            The middleware receives the parsed HTML string and returns the processed HTML string.
                            C# middleware is applied after JavaScript middleware.",
+        },
+        new()
+        {
+           Name = "NoPrerender",
+           Type = "bool",
+           DefaultValue = "false",
+           Description = "Disables parse and render of the markdown content in the prerendering phase.",
         },
         new()
         {

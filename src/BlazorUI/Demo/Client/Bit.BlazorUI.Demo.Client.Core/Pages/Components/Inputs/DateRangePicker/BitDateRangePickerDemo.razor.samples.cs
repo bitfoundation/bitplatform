@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DateRangePicker;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DateRangePicker;
 
 public partial class BitDateRangePickerDemo
 {
@@ -164,7 +164,43 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
 
 <BitDateRangePicker Label=""Bootstrap (Css)"" Icon=""@BitIconInfo.Css(""bi bi-calendar-range"")"" />
 
-<BitDateRangePicker Label=""Bootstrap (Bi)"" Icon=""@BitIconInfo.Bi(""calendar3"")"" />";
+<BitDateRangePicker Label=""Bootstrap (Bi)"" Icon=""@BitIconInfo.Bi(""calendar3"")"" />
+
+
+<BitDateRangePicker Label=""Custom nav icons (FA)""
+                   PrevMonthNavIcon=""@BitIconInfo.Fa(""solid chevron-left"")""
+                   NextMonthNavIcon=""@BitIconInfo.Fa(""solid chevron-right"")""
+                   PrevYearNavIcon=""@BitIconInfo.Fa(""solid angles-left"")""
+                   NextYearNavIcon=""@BitIconInfo.Fa(""solid angles-right"")""
+                   PrevYearRangeNavIcon=""@BitIconInfo.Fa(""solid angles-left"")""
+                   NextYearRangeNavIcon=""@BitIconInfo.Fa(""solid angles-right"")""
+                   GoToTodayIcon=""@BitIconInfo.Fa(""solid calendar-day"")"" />
+
+<BitDateRangePicker Label=""TimePicker icons (FA)""
+                   ShowTimePicker
+                   ShowClearButton
+                   ShowTimePickerAsOverlay
+                   HideTimePickerIcon=""@BitIconInfo.Fa(""solid calendar"")""
+                   ShowTimePickerIcon=""@BitIconInfo.Fa(""solid clock"")""
+                   ClearButtonIcon=""@BitIconInfo.Fa(""solid xmark"")""
+                   StartTimeIncreaseHourIcon=""@BitIconInfo.Fa(""solid chevron-up"")""
+                   StartTimeDecreaseHourIcon=""@BitIconInfo.Fa(""solid chevron-down"")""
+                   StartTimeIncreaseMinuteIcon=""@BitIconInfo.Fa(""solid chevron-up"")""
+                   StartTimeDecreaseMinuteIcon=""@BitIconInfo.Fa(""solid chevron-down"")""
+                   EndTimeIncreaseHourIcon=""@BitIconInfo.Fa(""solid chevron-up"")""
+                   EndTimeDecreaseHourIcon=""@BitIconInfo.Fa(""solid chevron-down"")""
+                   EndTimeIncreaseMinuteIcon=""@BitIconInfo.Fa(""solid chevron-up"")""
+                   EndTimeDecreaseMinuteIcon=""@BitIconInfo.Fa(""solid chevron-down"")"" />
+
+
+<BitDateRangePicker Label=""Custom nav icons (Bootstrap)""
+                   PrevMonthNavIcon=""@BitIconInfo.Bi(""chevron-left"")""
+                   NextMonthNavIcon=""@BitIconInfo.Bi(""chevron-right"")""
+                   PrevYearNavIcon=""@BitIconInfo.Bi(""chevron-double-left"")""
+                   NextYearNavIcon=""@BitIconInfo.Bi(""chevron-double-right"")""
+                   PrevYearRangeNavIcon=""@BitIconInfo.Bi(""chevron-double-left"")""
+                   NextYearRangeNavIcon=""@BitIconInfo.Bi(""chevron-double-right"")""
+                   GoToTodayIcon=""@BitIconInfo.Bi(""calendar-event"")"" />";
 
     private readonly string example13RazorCode = @"
 <style>
