@@ -77,7 +77,9 @@
                             type="button"
                             aria-hidden="true"
                             aria-label="Clear date">
-                        <i style="@Styles?.ClearButtonIcon" class="bit-dtrp-clri @clearBtnIconCss @Classes?.ClearButtonIcon" aria-hidden="true" />
+                        <i aria-hidden="true"
+                           style="@Styles?.ClearButtonIcon"
+                           class="bit-dtrp-cli @clearBtnIconCss @Classes?.ClearButtonIcon" />
                     </button>
                 }
 
@@ -88,7 +90,9 @@
                 else
                 {
                     var icon = BitIconInfo.From(Icon, IconName ?? "CalendarMirrored");
-                    <i style="@Styles?.Icon" class="bit-dtrp-ico @icon?.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
+                    <i aria-hidden="true"
+                       style="@Styles?.Icon"
+                       class="bit-dtrp-ico @icon?.GetCssClasses() @Classes?.Icon" />
                 }
             </div>
         </div>
@@ -556,7 +560,9 @@
                                             aria-disabled="@(IsEnabled is false)"
                                             style="@Styles?.HideTimePickerButton"
                                             class="bit-dtrp-nbt @Classes?.HideTimePickerButton">
-                                        <i style="@Styles?.HideTimePickerIcon" class="@hideTimePickerIconCss @Classes?.HideTimePickerIcon" aria-hidden="true" />
+                                        <i aria-hidden="true"
+                                           style="@Styles?.HideTimePickerIcon"
+                                           class="@hideTimePickerIconCss @Classes?.HideTimePickerIcon" />
                                     </button>
                                 }
                             </div>

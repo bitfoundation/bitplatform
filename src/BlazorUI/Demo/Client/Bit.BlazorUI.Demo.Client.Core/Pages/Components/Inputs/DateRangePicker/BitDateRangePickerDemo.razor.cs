@@ -35,7 +35,7 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "Classes",
-            Type = "BitDateRangePickerClassStyles",
+            Type = "BitDateRangePickerClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the BitDateRangePicker.",
             Href = "#daterangepicker-class-styles",
@@ -677,7 +677,7 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "Styles",
-            Type = "BitDateRangePickerClassStyles",
+            Type = "BitDateRangePickerClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitDateRangePicker.",
             Href = "#daterangepicker-class-styles",
