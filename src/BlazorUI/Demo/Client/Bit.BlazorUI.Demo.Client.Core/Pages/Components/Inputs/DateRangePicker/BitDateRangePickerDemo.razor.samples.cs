@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DateRangePicker;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DateRangePicker;
 
 public partial class BitDateRangePickerDemo
 {
@@ -179,6 +179,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
 <BitDateRangePicker Label=""TimePicker icons (FA)""
                    ShowTimePicker
                    ShowClearButton
+                   ShowTimePickerAsOverlay
                    HideTimePickerIcon=""@BitIconInfo.Fa(""solid calendar"")""
                    ShowTimePickerIcon=""@BitIconInfo.Fa(""solid clock"")""
                    ClearButtonIcon=""@BitIconInfo.Fa(""solid xmark"")""

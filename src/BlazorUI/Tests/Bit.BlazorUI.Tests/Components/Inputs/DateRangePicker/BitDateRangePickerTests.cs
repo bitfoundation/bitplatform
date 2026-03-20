@@ -697,6 +697,7 @@ public class BitDateRangePickerTests : BunitTestContext
     public void BitDateRangePickerShowTimePickerIconNameTest(string? iconName, string expectedClass)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.ShowTimePicker, true);
@@ -718,6 +719,7 @@ public class BitDateRangePickerTests : BunitTestContext
     public void BitDateRangePickerShowTimePickerIconTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.ShowTimePicker, true);
@@ -740,6 +742,7 @@ public class BitDateRangePickerTests : BunitTestContext
     public void BitDateRangePickerHideTimePickerIconNameTest(string? iconName, string expectedClass)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.ShowTimePicker, true);
@@ -761,6 +764,7 @@ public class BitDateRangePickerTests : BunitTestContext
     public void BitDateRangePickerHideTimePickerIconTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.ShowTimePicker, true);

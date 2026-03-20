@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 
@@ -657,7 +657,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public bool ShowClearButton { get; set; }
 
     /// <summary>
-    /// Show month picker on top of date range picker when visible.
+    /// Show the time picker as an overlay on top of the date range picker when visible.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
