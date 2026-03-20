@@ -1017,6 +1017,175 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow("WindowsLogo"),
+        DataRow("ChevronUp"),
+        DataRow(null)
+    ]
+    public void BitDropdownChipsRemoveIconNameTest(string? iconName)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Chips, true);
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.DefaultValues, new[] { "f-app" });
+
+            if (iconName is not null)
+            {
+                parameters.Add(p => p.ChipsRemoveIconName, iconName);
+            }
+        });
+
+        var chipIcon = component.Find(".bit-drp-chp > i");
+
+        if (iconName is not null)
+        {
+            Assert.IsTrue(chipIcon.ClassList.Contains($"bit-icon--{iconName}"));
+        }
+        else
+        {
+            Assert.IsTrue(chipIcon.ClassList.Contains("bit-icon--Cancel"));
+        }
+    }
+
+    [TestMethod,
+        DataRow("WindowsLogo"),
+        DataRow("ChevronUp"),
+        DataRow(null)
+    ]
+    public void BitDropdownClearButtonIconNameTest(string? iconName)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, "f-app");
+            parameters.Add(p => p.Items, items);
+
+            if (iconName is not null)
+            {
+                parameters.Add(p => p.ClearButtonIconName, iconName);
+            }
+        });
+
+        var clearIcon = component.Find(".bit-drp-clr > i");
+
+        if (iconName is not null)
+        {
+            Assert.IsTrue(clearIcon.ClassList.Contains($"bit-icon--{iconName}"));
+        }
+        else
+        {
+            Assert.IsTrue(clearIcon.ClassList.Contains("bit-icon--Cancel"));
+        }
+    }
+
+    [TestMethod,
+        DataRow("WindowsLogo"),
+        DataRow("ChevronUp"),
+        DataRow(null)
+    ]
+    public void BitDropdownResponsiveCloseIconNameTest(string? iconName)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+
+            if (iconName is not null)
+            {
+                parameters.Add(p => p.ResponsiveCloseIconName, iconName);
+            }
+        });
+
+        var closeIcon = component.Find(".bit-drp-cls > span > i");
+
+        if (iconName is not null)
+        {
+            Assert.IsTrue(closeIcon.ClassList.Contains($"bit-icon--{iconName}"));
+        }
+        else
+        {
+            Assert.IsTrue(closeIcon.ClassList.Contains("bit-icon--Cancel"));
+        }
+    }
+
+    [TestMethod,
+        DataRow("WindowsLogo"),
+        DataRow("ChevronUp"),
+        DataRow(null)
+    ]
+    public void BitDropdownSearchBoxIconNameTest(string? iconName)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, items);
+
+            if (iconName is not null)
+            {
+                parameters.Add(p => p.SearchBoxIconName, iconName);
+            }
+        });
+
+        var searchIcon = component.Find(".bit-drp-sic > i");
+
+        if (iconName is not null)
+        {
+            Assert.IsTrue(searchIcon.ClassList.Contains($"bit-icon--{iconName}"));
+        }
+        else
+        {
+            Assert.IsTrue(searchIcon.ClassList.Contains("bit-icon--Search"));
+        }
+    }
+
+    [TestMethod,
+        DataRow("WindowsLogo"),
+        DataRow("ChevronUp"),
+        DataRow(null)
+    ]
+    public void BitDropdownSearchBoxClearIconNameTest(string? iconName)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, items);
+
+            if (iconName is not null)
+            {
+                parameters.Add(p => p.SearchBoxClearIconName, iconName);
+            }
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-sin").Input("app");
+
+        var clearIcon = component.Find(".bit-drp-sbc > span > i");
+
+        if (iconName is not null)
+        {
+            Assert.IsTrue(clearIcon.ClassList.Contains($"bit-icon--{iconName}"));
+        }
+        else
+        {
+            Assert.IsTrue(clearIcon.ClassList.Contains("bit-icon--Cancel"));
+        }
+    }
+
+    [TestMethod,
         DataRow(BitDir.Rtl),
         DataRow(BitDir.Ltr)
     ]

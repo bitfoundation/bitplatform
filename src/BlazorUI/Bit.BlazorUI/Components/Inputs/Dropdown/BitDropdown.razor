@@ -3,6 +3,16 @@
 @typeparam TItem
 @typeparam TValue
 
+@{
+    var chipsRemoveIconCss = BitIconInfo.From(ChipsRemoveIcon, ChipsRemoveIconName ?? "Cancel")?.GetCssClasses();
+    var clearButtonIconCss = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel")?.GetCssClasses();
+    var caretDownIconCss = BitIconInfo.From(CaretDownIcon, CaretDownIconName ?? "ChevronRight bit-ico-r90")?.GetCssClasses();
+    var responsiveCloseIconCss = BitIconInfo.From(ResponsiveCloseIcon, ResponsiveCloseIconName ?? "Cancel")?.GetCssClasses();
+    var searchBoxIconCss = BitIconInfo.From(SearchBoxIcon, SearchBoxIconName ?? "Search")?.GetCssClasses();
+    var searchBoxClearIconCss = BitIconInfo.From(SearchBoxClearIcon, SearchBoxClearIconName ?? "Cancel")?.GetCssClasses();
+    var comboBoxAddButtonIconCss = BitIconInfo.From(ComboBoxAddButtonIcon, ComboBoxAddButtonIconName ?? "Add")?.GetCssClasses();
+}
+
 @if ((Options ?? ChildContent) is not null)
 {
     <CascadingValue Value="this" IsFixed="true">
@@ -69,7 +79,7 @@
                 {
                     <span style="@Styles?.Chips" class="bit-drp-chp @Classes?.Chips">
                         @GetText(item)
-                        <i style="@Styles?.ChipsRemoveIcon" class="bit-icon bit-icon--Cancel @Classes?.ChipsRemoveIcon" @onclick="() => HandleOnClickUnselectItem(item)" @onclick:stopPropagation />
+                        <i style="@Styles?.ChipsRemoveIcon" class="@chipsRemoveIconCss @Classes?.ChipsRemoveIcon" @onclick="() => HandleOnClickUnselectItem(item)" @onclick:stopPropagation />
                     </span>
                 }
             }
@@ -119,7 +129,7 @@
                     type="button"
                     style="@Styles?.ClearButton"
                     class="bit-drp-icn bit-drp-clr @Classes?.ClearButton">
-                <i class="bit-icon bit-icon--Cancel" />
+                <i class="@clearButtonIconCss" />
             </button>
         }
 
@@ -130,10 +140,9 @@
             }
             else
             {
-                var icon = BitIconInfo.From(CaretDownIcon, CaretDownIconName ?? "ChevronRight bit-ico-r90");
                 <i aria-hidden="true"
                    style="@Styles?.CaretDownIcon"
-                   class="@icon?.GetCssClasses() @Classes?.CaretDownIcon" />
+                   class="@caretDownIconCss @Classes?.CaretDownIcon" />
             }
         </span>
 
@@ -188,7 +197,7 @@
                         class="bit-drp-cls @Classes?.ResponsiveCloseButton">
                     <span>
                         <i style="@Styles?.ResponsiveCloseIcon"
-                           class="bit-icon bit-icon--Cancel @Classes?.ResponsiveCloseIcon" />
+                           class="@responsiveCloseIconCss @Classes?.ResponsiveCloseIcon" />
                     </span>
                 </button>
             </div>
@@ -208,7 +217,7 @@
                      class="bit-drp-sic @Classes?.SearchBoxIconContainer">
                     <i aria-hidden="true"
                        style="@Styles?.SearchBoxIcon"
-                       class="bit-icon bit-icon--Search @Classes?.SearchBoxIcon" />
+                       class="@searchBoxIconCss @Classes?.SearchBoxIcon" />
                 </div>
                 <input @ref="_searchInputRef" @onfocusin="HandleSearchBoxFocusIn" @onfocusout="HandleSearchBoxFocusOut" @oninput="@HandleFilterChange"
                        type="text"
@@ -233,7 +242,7 @@
                             <span>
                                 <i aria-hidden="true"
                                    style="@Styles?.SearchBoxClearIcon"
-                                   class="bit-icon bit-icon--Cancel @Classes?.SearchBoxClearIcon" />
+                                   class="@searchBoxClearIconCss @Classes?.SearchBoxClearIcon" />
                             </span>
                         </button>
                     </div>
@@ -260,7 +269,7 @@
                         type="button"
                         style="@Styles?.ResponsiveComboAddButton"
                         class="bit-drp-icn bit-drp-cai @Classes?.ResponsiveComboAddButton">
-                    <i class="bit-icon bit-icon--Add" />
+                    <i class="@comboBoxAddButtonIconCss" />
                 </button>
             </div>
         }

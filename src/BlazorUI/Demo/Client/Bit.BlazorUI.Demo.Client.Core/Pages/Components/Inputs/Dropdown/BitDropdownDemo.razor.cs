@@ -13,17 +13,17 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "CalloutHeaderTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Custom template to render as a header in the callout.",
-        },
-        new()
-        {
             Name = "CalloutFooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "false",
             Description = "Custom template to render as a footer in the callout.",
+        },
+        new()
+        {
+            Name = "CalloutHeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template to render as a header in the callout.",
         },
         new()
         {
@@ -64,6 +64,22 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ChipsRemoveIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the remove button in the chips display. Takes precedence over ChipsRemoveIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ChipsRemoveIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name of the remove button in the chips display from the Fluent UI icon set.",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitDropdownClassStyles?",
             DefaultValue = "null",
@@ -73,10 +89,42 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ClearButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the clear button of the dropdown. Takes precedence over ClearButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ClearButtonIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name of the clear button of the dropdown from the Fluent UI icon set.",
+        },
+        new()
+        {
             Name = "Combo",
             Type = "bool",
             DefaultValue = "false",
             Description = "Activates the ComboBox feature in BitDropDown component.",
+        },
+        new()
+        {
+            Name = "ComboBoxAddButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the add button in the responsive ComboBox mode. Takes precedence over ComboBoxAddButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ComboBoxAddButtonIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name of the add button in the responsive ComboBox mode from the Fluent UI icon set.",
         },
         new()
         {
@@ -319,6 +367,54 @@ public partial class BitDropdownDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Enables the responsive mode of the component for small screens.",
+        },
+        new()
+        {
+            Name = "ResponsiveCloseIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the close button in the responsive mode callout. Takes precedence over ResponsiveCloseIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ResponsiveCloseIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name of the close button in the responsive mode callout from the Fluent UI icon set.",
+        },
+        new()
+        {
+            Name = "SearchBoxClearIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the clear icon in the SearchBox. Takes precedence over SearchBoxClearIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "SearchBoxClearIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name of the clear icon in the SearchBox from the Fluent UI icon set.",
+        },
+        new()
+        {
+            Name = "SearchBoxIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the search icon in the SearchBox. Takes precedence over SearchBoxIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "SearchBoxIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name of the search icon in the SearchBox from the Fluent UI icon set.",
         },
         new()
         {

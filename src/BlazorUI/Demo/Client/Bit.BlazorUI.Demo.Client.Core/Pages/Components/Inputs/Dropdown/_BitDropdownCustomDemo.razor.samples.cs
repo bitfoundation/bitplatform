@@ -1206,6 +1206,22 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item"" />
 
+<BitDropdown Label=""Clear button icon (external)""
+             ShowClearButton
+             ClearButtonIcon=""@BitIconInfo.Css(""fa-solid fa-circle-xmark"")""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             DefaultValue=""f-app""
+             Placeholder=""Select an item"" />
+
+<BitDropdown Label=""Search box icons (external)""
+             ShowSearchBox
+             SearchBoxIcon=""@BitIconInfo.Css(""fa-solid fa-magnifying-glass"")""
+             SearchBoxClearIcon=""@BitIconInfo.Css(""fa-solid fa-circle-xmark"")""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item"" />
+
 <BitDropdown Label=""Item icons (IconName - Fluent UI)""
              Items=""GetExternalIconCustoms()""
              NameSelectors=""nameSelectors""

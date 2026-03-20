@@ -42,14 +42,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public bool AutoFocusSearchBox { get; set; }
 
     /// <summary>
-    /// Custom template to render as a header in the callout.
-    /// </summary>
-    [Parameter] public RenderFragment? CalloutHeaderTemplate { get; set; }
-
-    /// <summary>
     /// Custom template to render as a footer in the callout.
     /// </summary>
     [Parameter] public RenderFragment? CalloutFooterTemplate { get; set; }
+
+    /// <summary>
+    /// Custom template to render as a header in the callout.
+    /// </summary>
+    [Parameter] public RenderFragment? CalloutHeaderTemplate { get; set; }
 
     /// <summary>
     /// The icon of the chevron down element of the dropdown.
@@ -87,14 +87,56 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     public bool Chips { get; set; }
 
     /// <summary>
+    /// The icon of the remove button in the chips display.
+    /// Takes precedence over <see cref="ChipsRemoveIconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ChipsRemoveIconName"/> instead.
+    /// </summary>
+    [Parameter] public BitIconInfo? ChipsRemoveIcon { get; set; }
+
+    /// <summary>
+    /// The icon name of the remove button in the chips display from the Fluent UI icon set.
+    /// For external icon libraries, use <see cref="ChipsRemoveIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? ChipsRemoveIconName { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitDropdown.
     /// </summary>
     [Parameter] public BitDropdownClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The icon of the clear button of the dropdown.
+    /// Takes precedence over <see cref="ClearButtonIconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ClearButtonIconName"/> instead.
+    /// </summary>
+    [Parameter] public BitIconInfo? ClearButtonIcon { get; set; }
+
+    /// <summary>
+    /// The icon name of the clear button of the dropdown from the Fluent UI icon set.
+    /// For external icon libraries, use <see cref="ClearButtonIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? ClearButtonIconName { get; set; }
+
+    /// <summary>
     /// Activates the ComboBox feature in BitDropDown component.
     /// </summary>
     [Parameter] public bool Combo { get; set; }
+
+    /// <summary>
+    /// The icon of the add button in the responsive ComboBox mode.
+    /// Takes precedence over <see cref="ComboBoxAddButtonIconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ComboBoxAddButtonIconName"/> instead.
+    /// </summary>
+    [Parameter] public BitIconInfo? ComboBoxAddButtonIcon { get; set; }
+
+    /// <summary>
+    /// The icon name of the add button in the responsive ComboBox mode from the Fluent UI icon set.
+    /// For external icon libraries, use <see cref="ComboBoxAddButtonIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? ComboBoxAddButtonIconName { get; set; }
 
     /// <summary>
     /// The default value that will be initially used to set selected item if the Value parameter is not set.
@@ -275,6 +317,48 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// Enables the responsive mode of the component for small screens.
     /// </summary>
     [Parameter] public bool Responsive { get; set; }
+
+    /// <summary>
+    /// The icon of the close button in the responsive mode callout.
+    /// Takes precedence over <see cref="ResponsiveCloseIconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ResponsiveCloseIconName"/> instead.
+    /// </summary>
+    [Parameter] public BitIconInfo? ResponsiveCloseIcon { get; set; }
+
+    /// <summary>
+    /// The icon name of the close button in the responsive mode callout from the Fluent UI icon set.
+    /// For external icon libraries, use <see cref="ResponsiveCloseIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? ResponsiveCloseIconName { get; set; }
+
+    /// <summary>
+    /// The icon of the clear icon in the SearchBox.
+    /// Takes precedence over <see cref="SearchBoxClearIconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="SearchBoxClearIconName"/> instead.
+    /// </summary>
+    [Parameter] public BitIconInfo? SearchBoxClearIcon { get; set; }
+
+    /// <summary>
+    /// The icon name of the clear icon in the SearchBox from the Fluent UI icon set.
+    /// For external icon libraries, use <see cref="SearchBoxClearIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? SearchBoxClearIconName { get; set; }
+
+    /// <summary>
+    /// The icon of the search icon in the SearchBox.
+    /// Takes precedence over <see cref="SearchBoxIconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="SearchBoxIconName"/> instead.
+    /// </summary>
+    [Parameter] public BitIconInfo? SearchBoxIcon { get; set; }
+
+    /// <summary>
+    /// The icon name of the search icon in the SearchBox from the Fluent UI icon set.
+    /// For external icon libraries, use <see cref="SearchBoxIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? SearchBoxIconName { get; set; }
 
     /// <summary>
     /// The placeholder text of the SearchBox input.

@@ -862,6 +862,30 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
     }
 </BitDropdown>
 
+<BitDropdown Label=""Clear button icon (external)""
+             ShowClearButton
+             ClearButtonIcon=""@BitIconInfo.Css(""fa-solid fa-circle-xmark"")""
+             DefaultValue=""f-app""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+
+<BitDropdown Label=""Search box icons (external)""
+             ShowSearchBox
+             SearchBoxIcon=""@BitIconInfo.Css(""fa-solid fa-magnifying-glass"")""
+             SearchBoxClearIcon=""@BitIconInfo.Css(""fa-solid fa-circle-xmark"")""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+
 <BitDropdown Label=""Item icons (IconName - Fluent UI)""
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
