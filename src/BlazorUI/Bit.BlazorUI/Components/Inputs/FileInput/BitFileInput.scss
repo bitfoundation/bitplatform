@@ -82,7 +82,7 @@
         }
     }
 
-    .bit-fin-us {
+    .bit-fin-msg {
         width: 100%;
         overflow: hidden;
         white-space: nowrap;
@@ -95,7 +95,7 @@
 }
 
 .bit-fin-inv {
-    .bit-fin-us {
+    .bit-fin-msg {
         color: $clr-err;
     }
 }
@@ -137,7 +137,7 @@
     text-overflow: ellipsis;
 }
 
-.bit-fin-usi {
+.bit-fin-rbt {
     display: flex;
     cursor: pointer;
     color: $clr-fg-pri;

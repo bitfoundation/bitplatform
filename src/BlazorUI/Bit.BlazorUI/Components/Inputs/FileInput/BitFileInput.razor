@@ -66,14 +66,14 @@
                                 </div>
                                 @if (file.IsValid is false)
                                 {
-                                    <div class="bit-fin-us">
+                                    <div class="bit-fin-msg">
                                         @file.Message
                                     </div>
                                 }
                             </div>
                             @if (ShowRemoveButton)
                             {
-                                <button class="bit-fin-usi" @onclick="() => RemoveFile(file)">
+                                <button class="bit-fin-rbt" @onclick="() => RemoveFile(file)">
                                     <i title="remove" class="@removeIcon?.GetCssClasses()" aria-hidden="true" />
                                 </button>
                             }
