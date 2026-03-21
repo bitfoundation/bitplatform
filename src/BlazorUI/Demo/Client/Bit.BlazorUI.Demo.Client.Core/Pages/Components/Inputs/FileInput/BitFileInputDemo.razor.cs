@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.FileInput;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.FileInput;
 
 public partial class BitFileInputDemo
 {
@@ -541,18 +541,30 @@ private BitFileInput publicApiFileInput = default!;";
     private readonly string example11RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
-<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIconName=""fa-solid fa-trash-can"" />
+<BitFileInput Label=""Browse or drop a file""
+              ShowRemoveButton
+              RemoveButtonIcon=""@(""fa-solid fa-trash-can"")"" />
 
-<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIcon=""@BitIconInfo.Css(""fa-solid fa-xmark"")"" />
+<BitFileInput Label=""Browse or drop a file""
+              ShowRemoveButton
+              RemoveButtonIcon=""@BitIconInfo.Css(""fa-solid fa-xmark"")"" />
 
-<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIcon=""@BitIconInfo.Fa(""solid trash"")"" />
+<BitFileInput Label=""Browse or drop a file""
+              ShowRemoveButton
+              RemoveButtonIcon=""@BitIconInfo.Fa(""solid trash"")"" />
 
 
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
-<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIconName=""bi bi-trash"" />
+<BitFileInput Label=""Browse or drop a file""
+              ShowRemoveButton
+              RemoveButtonIconName=""@(""bi bi-trash"")"" />
 
-<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIcon=""@BitIconInfo.Css(""bi bi-x-circle-fill"")"" />
+<BitFileInput Label=""Browse or drop a file""
+              ShowRemoveButton
+              RemoveButtonIcon=""@BitIconInfo.Css(""bi bi-x-circle-fill"")"" />
 
-<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIcon=""@BitIconInfo.Bi(""trash3-fill"")"" />";
+<BitFileInput Label=""Browse or drop a file""
+              ShowRemoveButton
+              RemoveButtonIcon=""@BitIconInfo.Bi(""trash3-fill"")"" />";
 }

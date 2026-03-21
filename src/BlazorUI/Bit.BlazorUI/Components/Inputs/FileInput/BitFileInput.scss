@@ -145,15 +145,16 @@
     align-items: center;
     height: spacing(4.5);
     justify-content: center;
+    background-color: $clr-bg-sec;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: $clr-bg-sec-hover;
         }
     }
 
     &:active {
-        background-color: $clr-bg-pri-active;
+        background-color: $clr-bg-sec-active;
     }
 
     i {
