@@ -558,7 +558,7 @@ private BitFileInput publicApiFileInput = default!;";
 
 <BitFileInput Label=""Browse or drop a file""
               ShowRemoveButton
-              RemoveButtonIconName=""@(""bi bi-trash"")"" />
+              RemoveButtonIcon=""@(""bi bi-trash"")"" />
 
 <BitFileInput Label=""Browse or drop a file""
               ShowRemoveButton
