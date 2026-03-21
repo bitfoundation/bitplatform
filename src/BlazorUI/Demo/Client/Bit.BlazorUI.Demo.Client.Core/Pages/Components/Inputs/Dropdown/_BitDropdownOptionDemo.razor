@@ -677,11 +677,19 @@
 </DemoExample>
 
 <DemoExample Title="External Icons" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
-    <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>CaretDownIcon</b>, <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>, <b>SearchBoxClearIcon</b>, and <b>ResponsiveCloseIcon</b> parameters on the dropdown and the <b>Icon</b> or <b>IconName</b> parameters on <b>BitDropdownOption</b>.</div>
+    <div>
+        Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>CaretDownIcon</b>, 
+        <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>, <b>SearchBoxClearIcon</b>, and 
+        <b>ResponsiveCloseIcon</b> parameters on the dropdown and the <b>Icon</b> or <b>IconName</b> 
+        parameters on <b>BitDropdownOption</b>.
+    </div>
+    
     <br />
     <br />
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    
     <div class="example-content">
         <BitDropdown Label="Caret down icon (external)"
                      CaretDownIcon="@BitIconInfo.Css("fa-solid fa-circle-chevron-down")"
@@ -692,7 +700,50 @@
                 <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
             }
         </BitDropdown>
+
         <br /><br />
+
+        <BitDropdown Label="Clear button icon (external)"
+                     ShowClearButton
+                     ClearButtonIcon="@BitIconInfo.Css("fa-solid fa-circle-xmark")"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+
+        <br /><br />
+
+        <BitDropdown Label="Chips remove icon (external)"
+                     Chips
+                     MultiSelect
+                     ChipsRemoveIcon="@BitIconInfo.Css("bi bi-x-circle")"
+                     Placeholder="Select items"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+
+        <br /><br />
+
+        <BitDropdown Label="Search box icons (external)"
+                     ShowSearchBox
+                     SearchBoxIcon="@BitIconInfo.Css("fa-solid fa-magnifying-glass")"
+                     SearchBoxClearIcon="@BitIconInfo.Css("fa-solid fa-circle-xmark")"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+
+        <br /><br />
+
         <BitDropdown Label="Item icons (IconName - Fluent UI)"
                      Placeholder="Select an item"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -707,7 +758,9 @@
             <BitDropdownOption Text="Carrot" Value="@("v-car")" IconName="@BitIconName.Add" />
             <BitDropdownOption Text="Lettuce" Value="@("v-let")" IconName="@BitIconName.ChevronDown" />
         </BitDropdown>
+
         <br /><br />
+
         <BitDropdown Label="Item icons (Icon - FontAwesome)"
                      Placeholder="Select an item"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -722,7 +775,9 @@
             <BitDropdownOption Text="Carrot" Value="@("v-car")" Icon="@BitIconInfo.Css("fa-solid fa-carrot")" />
             <BitDropdownOption Text="Lettuce" Value="@("v-let")" Icon="@BitIconInfo.Css("fa-solid fa-leaf")" />
         </BitDropdown>
+
         <br /><br />
+
         <BitDropdown Label="Item icons (Icon - Bootstrap Icons)"
                      Placeholder="Select an item"
                      TItem="BitDropdownOption<string>" TValue="string">

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
 public partial class BitDropdownDemo
 {
@@ -15,7 +15,7 @@ public partial class BitDropdownDemo
         {
             Name = "CalloutFooterTemplate",
             Type = "RenderFragment?",
-            DefaultValue = "false",
+            DefaultValue = "null",
             Description = "Custom template to render as a footer in the callout.",
         },
         new()
