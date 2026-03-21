@@ -64,7 +64,7 @@ SCSS is compiled to CSS during the same build pipeline. You'll also learn how to
 ### What Each Package Does
 
 - **`typescript`**: The TypeScript compiler (`tsc`) used for **type-checking only** (`noEmit: true`); it does not produce `.js` output
-- **`esbuild`**: Ultra-fast TypeScript bundler that transpiles and combines all `.ts` modules directly into a single `app.js` file
+- **`esbuild`**: Ultra-fast JavaScript bundler/build tool that transpiles TypeScript and combines all `.ts` modules directly into a single `app.js` file; it does not perform type-checking (that is handled by `tsc`)
 - **`sass`**: SCSS/Sass compiler that transforms `.scss` files to `.css`
 
 ---
