@@ -1,6 +1,10 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    var removeIcon = BitIconInfo.From(RemoveButtonIcon, RemoveButtonIconName ?? "Delete");
+}
+
 <div @ref="@RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
@@ -70,7 +74,7 @@
                             @if (ShowRemoveButton)
                             {
                                 <button class="bit-fin-usi" @onclick="() => RemoveFile(file)">
-                                    <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true" />
+                                    <i title="remove" class="@removeIcon?.GetCssClasses()" aria-hidden="true" />
                                 </button>
                             }
                         </div>

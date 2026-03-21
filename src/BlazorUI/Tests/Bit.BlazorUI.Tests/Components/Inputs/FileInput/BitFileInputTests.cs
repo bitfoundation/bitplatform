@@ -266,6 +266,82 @@ public class BitFileInputTests : BunitTestContext
         Assert.AreEqual(0, removeButtons.Count);
     }
 
+    [TestMethod,
+        DataRow("Trash"),
+        DataRow("Delete"),
+        DataRow("Cancel")
+    ]
+    public void BitFileInputShouldRespectRemoveButtonIconName(string iconName)
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowRemoveButton, true);
+            parameters.Add(p => p.RemoveButtonIconName, iconName);
+        });
+
+        var removeButton = component.Find(".bit-fin-usi");
+        var icon = removeButton.QuerySelector("i");
+
+        Assert.IsNotNull(icon);
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon"));
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldUseDefaultDeleteIconForRemoveButton()
+    {
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowRemoveButton, true);
+        });
+
+        var removeButton = component.Find(".bit-fin-usi");
+        var icon = removeButton.QuerySelector("i");
+
+        Assert.IsNotNull(icon);
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon"));
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--Delete"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRespectRemoveButtonIconWithBitIconInfo()
+    {
+        var iconInfo = new BitIconInfo("fa-solid fa-trash", baseClass: "", prefix: "");
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowRemoveButton, true);
+            parameters.Add(p => p.RemoveButtonIcon, iconInfo);
+        });
+
+        var removeButton = component.Find(".bit-fin-usi");
+        var icon = removeButton.QuerySelector("i");
+
+        Assert.IsNotNull(icon);
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-trash"));
+    }
+
+    [TestMethod]
+    public void BitFileInputRemoveButtonIconShouldTakePrecedenceOverIconName()
+    {
+        var iconInfo = new BitIconInfo("fa-solid fa-trash", baseClass: "", prefix: "");
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowRemoveButton, true);
+            parameters.Add(p => p.RemoveButtonIcon, iconInfo);
+            parameters.Add(p => p.RemoveButtonIconName, "Delete");
+        });
+
+        var removeButton = component.Find(".bit-fin-usi");
+        var icon = removeButton.QuerySelector("i");
+
+        Assert.IsNotNull(icon);
+        // Icon (BitIconInfo) takes precedence over IconName
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-trash"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Delete"));
+    }
+
     [TestMethod]
     public void BitFileInputPublicPropertiesShouldBeAccessible()
     {

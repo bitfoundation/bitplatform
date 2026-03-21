@@ -42,6 +42,12 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public bool AutoReset { get; set; }
 
     /// <summary>
+    /// Custom Razor template for rendering individual file items in the file list.
+    /// Receives a <see cref="BitFileInputInfo"/> context for each file.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFileInputInfo>? FileViewTemplate { get; set; }
+
+    /// <summary>
     /// Whether to hide the file list that displays the selected files in the UI.
     /// </summary>
     [Parameter] public bool HideFileList { get; set; }
@@ -90,15 +96,20 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public EventCallback<BitFileInputInfo[]> OnChange { get; set; }
 
     /// <summary>
+    /// Gets or sets the remove button icon using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="RemoveButtonIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? RemoveButtonIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the remove button icon from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? RemoveButtonIconName { get; set; }
+
+    /// <summary>
     /// Whether to display a remove button next to each file in the file list, allowing individual file removal.
     /// </summary>
     [Parameter] public bool ShowRemoveButton { get; set; }
-
-    /// <summary>
-    /// Custom Razor template for rendering individual file items in the file list.
-    /// Receives a <see cref="BitFileInputInfo"/> context for each file.
-    /// </summary>
-    [Parameter] public RenderFragment<BitFileInputInfo>? FileViewTemplate { get; set; }
 
 
 

@@ -178,4 +178,35 @@
         </div>
     </DemoExample>
 
+    <DemoExample Title="External Icons" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>RemoveButtonIcon</b> parameter.
+        </div>
+
+        <br />
+        <br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+        <div>FontAwesome:</div>
+        <br />
+        <BitFileInput Label="Browse or drop a file" ShowRemoveButton RemoveButtonIconName="fa-solid fa-trash-can" />
+        <br />
+        <BitFileInput Label="Browse or drop a file" ShowRemoveButton RemoveButtonIcon="@BitIconInfo.Css("fa-solid fa-xmark")" />
+        <br />
+        <BitFileInput Label="Browse or drop a file" ShowRemoveButton RemoveButtonIcon="@BitIconInfo.Fa("solid trash")" />
+
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap:</div>
+        <br />
+        <BitFileInput Label="Browse or drop a file" ShowRemoveButton RemoveButtonIconName="bi bi-trash" />
+        <br />
+        <BitFileInput Label="Browse or drop a file" ShowRemoveButton RemoveButtonIcon="@BitIconInfo.Css("bi bi-x-circle-fill")" />
+        <br />
+        <BitFileInput Label="Browse or drop a file" ShowRemoveButton RemoveButtonIcon="@BitIconInfo.Bi("trash3-fill")" />
+    </DemoExample>
+
 </DemoPage>

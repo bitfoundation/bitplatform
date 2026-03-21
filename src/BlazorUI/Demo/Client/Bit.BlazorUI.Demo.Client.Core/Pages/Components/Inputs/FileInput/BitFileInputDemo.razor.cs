@@ -34,6 +34,15 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "FileViewTemplate",
+            Type = "RenderFragment<BitFileInputInfo>?",
+            DefaultValue = "null",
+            Description = "Custom Razor template for rendering individual file items in the file list. Receives a BitFileInputInfo context for each file.",
+            LinkType = LinkType.Link,
+            Href = "#file-input-info"
+        },
+        new()
+        {
             Name = "HideFileList",
             Type = "bool",
             DefaultValue = "false",
@@ -98,20 +107,29 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "RemoveButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the remove button icon using custom CSS classes for external icon libraries. Takes precedence over RemoveButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "RemoveButtonIconName",
+            Type = "string?",
+            DefaultValue = "Delete",
+            Description = "Gets or sets the name of the remove button icon from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
             Name = "ShowRemoveButton",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether to display a remove button next to each file in the file list, allowing individual file removal."
         },
-        new()
-        {
-            Name = "FileViewTemplate",
-            Type = "RenderFragment<BitFileInputInfo>?",
-            DefaultValue = "null",
-            Description = "Custom Razor template for rendering individual file items in the file list. Receives a BitFileInputInfo context for each file.",
-            LinkType = LinkType.Link,
-            Href = "#file-input-info"
-        }
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -230,7 +248,36 @@ public partial class BitFileInputDemo
                    Description = "The file content as a byte array, populated by calling ReadContentAsync. This is null by default and only loaded on demand."
                }
             ]
-        }
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
     ];
 
 
@@ -490,4 +537,22 @@ private BitFileInput bitFileInput = default!;";
 <BitButton OnClick=""() => publicApiFileInput.Reset()"">Reset</BitButton>";
     private readonly string example10CsharpCode = @"
 private BitFileInput publicApiFileInput = default!;";
+
+    private readonly string example11RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIconName=""fa-solid fa-trash-can"" />
+
+<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIcon=""@BitIconInfo.Css(""fa-solid fa-xmark"")"" />
+
+<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIcon=""@BitIconInfo.Fa(""solid trash"")"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIconName=""bi bi-trash"" />
+
+<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIcon=""@BitIconInfo.Css(""bi bi-x-circle-fill"")"" />
+
+<BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIcon=""@BitIconInfo.Bi(""trash3-fill"")"" />";
 }
