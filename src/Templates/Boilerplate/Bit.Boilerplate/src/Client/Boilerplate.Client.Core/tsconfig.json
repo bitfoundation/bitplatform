@@ -11,6 +11,8 @@
         "module": "ESNext",
         "moduleResolution": "bundler",
         "verbatimModuleSyntax": true,
+        "isolatedModules": true,
+        "useDefineForClassFields": true,
         "resolveJsonModule": true,
         "lib": [ "DOM", "DOM.Iterable", "ES2019" ],
         "esModuleInterop": true,
