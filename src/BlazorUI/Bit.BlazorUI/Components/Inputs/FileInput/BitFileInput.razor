@@ -71,7 +71,7 @@
                             {
                                 var removeIcon = BitIconInfo.From(RemoveButtonIcon, RemoveButtonIconName ?? "Delete");
 
-                                <button class="bit-fin-rbt" @onclick="() => RemoveFile(file)">
+                                <button type="button" class="bit-fin-rbt" @onclick="() => RemoveFile(file)">
                                     <i title="remove" class="@removeIcon?.GetCssClasses()" aria-hidden="true" />
                                 </button>
                             }
