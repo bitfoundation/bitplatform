@@ -58,6 +58,28 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public bool AutoUpload { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to use for the cancel upload button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="CancelIconName"/> when both are set.
+    /// Defaults to the built-in Cancel icon when neither is set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render a custom cancel icon from external libraries like FontAwesome or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="CancelIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? CancelIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to use for the cancel upload button from the built-in Fluent UI icons.
+    /// Defaults to <c>Cancel</c> when not set.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Cancel</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="CancelIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? CancelIconName { get; set; }
+
+    /// <summary>
     /// Enables the chunked upload.
     /// </summary>
     [Parameter] public bool ChunkedUpload { get; set; }
@@ -78,6 +100,11 @@ public partial class BitFileUpload : BitComponentBase
     /// The message shown for failed file uploads.
     /// </summary>
     [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
+
+    /// <summary>
+    /// The custom file view template.
+    /// </summary>
+    [Parameter] public RenderFragment<BitFileInfo>? FileViewTemplate { get; set; }
 
     /// <summary>
     /// Hides the file view section of the file upload.
@@ -155,6 +182,50 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public EventCallback<BitFileInfo> OnUploadFailed { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to use for the pause upload button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="PauseIconName"/> when both are set.
+    /// Defaults to the built-in Pause icon when neither is set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render a custom pause icon from external libraries like FontAwesome or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="PauseIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? PauseIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to use for the pause upload button from the built-in Fluent UI icons.
+    /// Defaults to <c>Pause</c> when not set.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Pause</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="PauseIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? PauseIconName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to use for the remove file button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="RemoveIconName"/> when both are set.
+    /// Defaults to the built-in Delete icon when neither is set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render a custom remove icon from external libraries like FontAwesome or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="RemoveIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? RemoveIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to use for the remove file button from the built-in Fluent UI icons.
+    /// Defaults to <c>Delete</c> when not set.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Delete</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="RemoveIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? RemoveIconName { get; set; }
+
+    /// <summary>
     /// Custom http headers for remove request.
     /// </summary>
     [Parameter] public Dictionary<string, string>? RemoveRequestHttpHeaders { get; set; }
@@ -190,6 +261,28 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public string SuccessfulUploadMessage { get; set; } = "File upload succeed";
 
     /// <summary>
+    /// Gets or sets the icon to use for the upload button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="UploadIconName"/> when both are set.
+    /// Defaults to the built-in Play icon when neither is set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render a custom upload icon from external libraries like FontAwesome or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="UploadIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? UploadIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to use for the upload button from the built-in Fluent UI icons.
+    /// Defaults to <c>Play</c> when not set.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Play</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="UploadIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? UploadIconName { get; set; }
+
+    /// <summary>
     /// Custom http headers for upload request.
     /// </summary>
     [Parameter] public Dictionary<string, string>? UploadRequestHttpHeaders { get; set; }
@@ -218,11 +311,6 @@ public partial class BitFileUpload : BitComponentBase
     /// The provider function to create the URL of the server endpoint receiving the files.
     /// </summary>
     [Parameter] public Func<Task<string?>>? UploadUrlProvider { get; set; }
-
-    /// <summary>
-    /// The custom file view template.
-    /// </summary>
-    [Parameter] public RenderFragment<BitFileInfo>? FileViewTemplate { get; set; }
 
 
 

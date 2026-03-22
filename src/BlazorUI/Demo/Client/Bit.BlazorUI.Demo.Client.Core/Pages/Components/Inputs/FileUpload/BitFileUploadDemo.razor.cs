@@ -48,6 +48,24 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "CancelIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to use for the cancel upload button using custom CSS classes for external icon libraries. Takes precedence over CancelIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "CancelIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon to use for the cancel upload button from the built-in Fluent UI icons. Defaults to Cancel when not set.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
             Name = "ChunkedUpload",
             Type = "bool",
             DefaultValue = "false",
@@ -73,6 +91,13 @@ public partial class BitFileUploadDemo
             Type = "string",
             DefaultValue = "File upload failed",
             Description = "The message shown for failed file uploads."
+        },
+        new()
+        {
+            Name = "FileViewTemplate",
+            Type = "RenderFragment<BitFileInfo>?",
+            DefaultValue = "null",
+            Description = "The custom file view template."
         },
         new()
         {
@@ -189,6 +214,42 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "PauseIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to use for the pause upload button using custom CSS classes for external icon libraries. Takes precedence over PauseIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "PauseIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon to use for the pause upload button from the built-in Fluent UI icons. Defaults to Pause when not set.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "RemoveIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to use for the remove file button using custom CSS classes for external icon libraries. Takes precedence over RemoveIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "RemoveIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon to use for the remove file button from the built-in Fluent UI icons. Defaults to Delete when not set.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
             Name = "RemoveRequestHttpHeaders",
             Type = "Dictionary<string, string>?",
             DefaultValue = "null",
@@ -238,6 +299,24 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "UploadIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to use for the upload button using custom CSS classes for external icon libraries. Takes precedence over UploadIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "UploadIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon to use for the upload button from the built-in Fluent UI icons. Defaults to Play when not set.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
             Name = "UploadRequestHttpHeaders",
             Type = "Dictionary<string, string>?",
             DefaultValue = "null",
@@ -277,18 +356,40 @@ public partial class BitFileUploadDemo
             Type = "Func<Task<string?>>?",
             DefaultValue = "null",
             Description = "The provider function to create the URL of the server endpoint receiving the files."
-        },
-        new()
-        {
-            Name = "FileViewTemplate",
-            Type = "RenderFragment<BitFileInfo>?",
-            DefaultValue = "null",
-            Description = "The custom file view template."
         }
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
     [
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
         new()
         {
             Id = "file-info",
@@ -976,4 +1077,46 @@ private async Task HandleBrowseFileOnClick()
 {
     await bitFileUploadWithBrowseFile.Browse();
 }";
+
+    private readonly string example14RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<div>FontAwesome:</div>
+<br />
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" ShowRemoveButton RemoveUrl=""@RemoveUrl""
+               UploadIcon=""@(""fa-solid fa-upload"")""
+               PauseIcon=""@(""fa-solid fa-pause"")""
+               CancelIcon=""@(""fa-solid fa-xmark"")""
+               RemoveIcon=""@(""fa-solid fa-trash"")"" />
+
+<br /><br />
+
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" ShowRemoveButton RemoveUrl=""@RemoveUrl""
+               UploadIcon=""@BitIconInfo.Fa(""solid cloud-arrow-up"")""
+               PauseIcon=""@BitIconInfo.Fa(""solid circle-pause"")""
+               CancelIcon=""@BitIconInfo.Fa(""solid circle-xmark"")""
+               RemoveIcon=""@BitIconInfo.Fa(""solid trash-can"")"" />
+
+<br /><br /><br />
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<div>Bootstrap:</div>
+<br />
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" ShowRemoveButton RemoveUrl=""@RemoveUrl""
+               UploadIcon=""@(""bi bi-cloud-upload"")""
+               PauseIcon=""@(""bi bi-pause-circle"")""
+               CancelIcon=""@(""bi bi-x-circle"")""
+               RemoveIcon=""@(""bi bi-trash"")"" />
+
+<br /><br />
+
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" ShowRemoveButton RemoveUrl=""@RemoveUrl""
+               UploadIcon=""@BitIconInfo.Bi(""cloud-arrow-up"")""
+               PauseIcon=""@BitIconInfo.Bi(""pause-circle"")""
+               CancelIcon=""@BitIconInfo.Bi(""x-circle"")""
+               RemoveIcon=""@BitIconInfo.Bi(""trash"")"" />";
+    private readonly string example14CsharpCode = @"
+private string UploadUrl = ""/Upload"";
+private string RemoveUrl = ""/Remove"";";
 }

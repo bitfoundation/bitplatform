@@ -1,4 +1,4 @@
-﻿@page "/components/fileupload"
+@page "/components/fileupload"
 @page "/components/file-upload"
 
 <PageOutlet Url="components/fileupload"
@@ -162,6 +162,54 @@
                        RemoveUrl="@RemoveUrl" />
         <br />
         <BitButton OnClick="HandleBrowseFileOnClick">Browse file</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>UploadIcon</b>, 
+            <b>PauseIcon</b>, <b>CancelIcon</b>, and <b>RemoveIcon</b> parameters (<BitLink Href="#bit-icon-info">BitIconInfo</BitLink>).
+        </div>
+
+        <br />
+        <br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+        <div>FontAwesome:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" ShowRemoveButton RemoveUrl="@RemoveUrl"
+                       UploadIcon="@("fa-solid fa-upload")"
+                       PauseIcon="@("fa-solid fa-pause")"
+                       CancelIcon="@("fa-solid fa-xmark")"
+                       RemoveIcon="@("fa-solid fa-trash")" />
+
+        <br /><br />
+
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" ShowRemoveButton RemoveUrl="@RemoveUrl"
+                       UploadIcon="@BitIconInfo.Fa("solid cloud-arrow-up")"
+                       PauseIcon="@BitIconInfo.Fa("solid circle-pause")"
+                       CancelIcon="@BitIconInfo.Fa("solid circle-xmark")"
+                       RemoveIcon="@BitIconInfo.Fa("solid trash-can")" />
+
+        <br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" ShowRemoveButton RemoveUrl="@RemoveUrl"
+                       UploadIcon="@("bi bi-cloud-upload")"
+                       PauseIcon="@("bi bi-pause-circle")"
+                       CancelIcon="@("bi bi-x-circle")"
+                       RemoveIcon="@("bi bi-trash")" />
+
+        <br /><br />
+
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" ShowRemoveButton RemoveUrl="@RemoveUrl"
+                       UploadIcon="@BitIconInfo.Bi("cloud-arrow-up")"
+                       PauseIcon="@BitIconInfo.Bi("pause-circle")"
+                       CancelIcon="@BitIconInfo.Bi("x-circle")"
+                       RemoveIcon="@BitIconInfo.Bi("trash")" />
     </DemoExample>
 
 </DemoPage>

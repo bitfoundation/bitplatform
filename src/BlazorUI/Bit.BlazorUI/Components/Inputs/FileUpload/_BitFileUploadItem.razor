@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 
 @{
     var fileUploadPercent = GetFileUploadPercent(Item);
@@ -12,13 +12,22 @@
                 <div class="bit-upl-fn">@Item.Name</div>
             </div>
             <div class="bit-upl-fsc">
-                <span class="bit-upl-fs">@($"{GetFileUploadSize(Item)}/{FileSizeHumanizer.Humanize(Item.Size)}")</span>
-                <span class="bit-upl-pct">@fileUploadPercent%</span>
+                <span class="bit-upl-fs">
+                    @($"{GetFileUploadSize(Item)}/{FileSizeHumanizer.Humanize(Item.Size)}")
+                </span>
+                <span class="bit-upl-pct">
+                    @fileUploadPercent%
+                </span>
             </div>
             @if (Item.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
             {
                 <div class="bit-upl-pbc">
-                    <div class="bit-upl-pbr" role="progressbar" style="width:@fileUploadPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@fileUploadPercent"></div>
+                    <div role="progressbar"
+                         class="bit-upl-pbr"
+                         style="width:@fileUploadPercent%;"
+                         aria-valuemin="0"
+                         aria-valuemax="100"
+                         aria-valuenow="@fileUploadPercent"></div>
                 </div>
             }
             else
@@ -28,22 +37,25 @@
         </div>
         @if (Item.Status is BitFileUploadStatus.Pending or BitFileUploadStatus.Paused)
         {
+            var uploadIcon = BitIconInfo.From(FileUpload.UploadIcon, FileUpload.UploadIconName ?? "Play");
             <div class="bit-upl-usi" @onclick="() => FileUpload.Upload(Item)">
-                <i title="upload" class="bit-icon bit-icon--Play" aria-hidden="true" />
+                <i title="upload" class="@uploadIcon!.GetCssClasses()" aria-hidden="true" />
             </div>
         }
 
         @if (Item.Status == BitFileUploadStatus.InProgress)
         {
+            var pauseIcon = BitIconInfo.From(FileUpload.PauseIcon, FileUpload.PauseIconName ?? "Pause");
             <div class="bit-upl-usi" @onclick="() => FileUpload.PauseUpload(Item)">
-                <i title="pause" class="bit-icon bit-icon--Pause" aria-hidden="true" />
+                <i title="pause" class="@pauseIcon!.GetCssClasses()" aria-hidden="true" />
             </div>
         }
 
         @if (Item.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
         {
+            var cancelIcon = BitIconInfo.From(FileUpload.CancelIcon, FileUpload.CancelIconName ?? "Cancel");
             <div class="bit-upl-usi" @onclick="() => FileUpload.CancelUpload(Item)">
-                <i title="cancel" class="bit-icon bit-icon--Cancel" aria-hidden="true" />
+                <i title="cancel" class="@cancelIcon!.GetCssClasses()" aria-hidden="true" />
             </div>
         }
         else if (FileUpload.ShowRemoveButton)
@@ -56,8 +68,9 @@
             }
             else
             {
+                var removeIcon = BitIconInfo.From(FileUpload.RemoveIcon, FileUpload.RemoveIconName ?? "Delete");
                 <div class="bit-upl-usi" @onclick="() => FileUpload.RemoveFile(Item)">
-                    <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true" />
+                    <i title="remove" class="@removeIcon!.GetCssClasses()" aria-hidden="true" />
                 </div>
             }
         }
