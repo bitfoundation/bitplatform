@@ -35,6 +35,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var bitFileUpload = com.Find(".bit-upl-fi");
+
         Assert.AreEqual(isMultiple, bitFileUpload.HasAttribute("multiple"));
     }
 
@@ -42,6 +43,7 @@ public class BitFileUploadTests : BunitTestContext
     public void BitFileUploadAcceptAttributeTest()
     {
         var allowedExtensions = new List<string> { ".mp4", ".mp3" };
+
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
             parameters.Add(p => p.AllowedExtensions, allowedExtensions);
@@ -49,6 +51,7 @@ public class BitFileUploadTests : BunitTestContext
 
         var bitFileUpload = com.Find(".bit-upl-fi");
         var attribute = bitFileUpload.GetAttribute("accept");
+
         Assert.AreEqual(".mp4,.mp3", attribute);
     }
 
@@ -87,6 +90,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 
@@ -99,11 +103,12 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 
     [TestMethod]
-    public void BitFileUploadShouldAcceptUploadIconBitInfoParameter()
+    public void BitFileUploadShouldAcceptFontAwesomeUploadIconParameter()
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
@@ -111,6 +116,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 
@@ -123,6 +129,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 
@@ -135,6 +142,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 
@@ -147,6 +155,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 
@@ -159,6 +168,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 
@@ -171,6 +181,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 
@@ -183,6 +194,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 
@@ -195,6 +207,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 
@@ -207,6 +220,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 
@@ -219,6 +233,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         var root = com.Find(".bit-upl");
+
         Assert.IsNotNull(root);
     }
 }
