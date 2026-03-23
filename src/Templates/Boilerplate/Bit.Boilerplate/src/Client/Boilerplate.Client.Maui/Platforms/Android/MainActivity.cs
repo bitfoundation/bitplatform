@@ -6,7 +6,7 @@ using Android.Content;
 using Android.Content.PM;
 //#if (notification == true)
 using Android.Gms.Tasks;
-using Plugin.LocalNotification;
+using Plugin.LocalNotification.Core.Models;
 //#endif
 using Boilerplate.Client.Core.Components;
 
@@ -82,7 +82,7 @@ public partial class MainActivity : MauiAppCompatActivity
         if (intent is null)
             return;
 
-        var dataString = intent.GetStringExtra(LocalNotificationCenter.ReturnRequest);
+        var dataString = intent.GetStringExtra(RequestConstants.ReturnRequest);
         string? pageUrl = null;
         if (string.IsNullOrEmpty(dataString) is false)
         {

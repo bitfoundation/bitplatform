@@ -5,6 +5,7 @@
         "target": "ES2022",
         "noImplicitAny": true,
         "lib": [ "DOM", "ESNext" ],
-        "outFile": "wwwroot/scripts/app.js"
+        "outFile": "wwwroot/scripts/app.js",
+        "ignoreDeprecations": "6.0"
     }
 }

@@ -4,7 +4,8 @@
         "allowJs": true,
         "target": "ES2019",
         "lib": [ "DOM", "ESNext" ],
-        "outFile": "wwwroot/bit-butil.js"
+        "outFile": "wwwroot/bit-butil.js",
+        "ignoreDeprecations": "6.0"
     },
     "include": [ "./Scripts/*.ts" ]
 }
