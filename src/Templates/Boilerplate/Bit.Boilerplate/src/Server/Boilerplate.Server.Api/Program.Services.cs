@@ -139,13 +139,15 @@ public static partial class Program
         //#endif
 
         //#if (notification == true)
-        services.AddSingleton(_ =>
+        services.AddHttpClient("APNS"); // Apple Push Notification Service
+        services.AddHttpClient("Vapid"); // Web Push
+        services.AddSingleton(sp =>
         {
             var adsPushSenderBuilder = new AdsPushSenderBuilder();
 
             if (string.IsNullOrEmpty(appSettings.AdsPushAPNS?.P8PrivateKey) is false)
             {
-                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureApns(appSettings.AdsPushAPNS, null);
+                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureApns(appSettings.AdsPushAPNS, sp.GetRequiredService<IHttpClientFactory>().CreateClient("APNS"));
             }
 
             if (string.IsNullOrEmpty(appSettings.AdsPushFirebase?.PrivateKey) is false)
@@ -157,7 +159,7 @@ public static partial class Program
 
             if (string.IsNullOrEmpty(appSettings.AdsPushVapid?.PrivateKey) is false)
             {
-                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureVapid(appSettings.AdsPushVapid, null);
+                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureVapid(appSettings.AdsPushVapid, sp.GetRequiredService<IHttpClientFactory>().CreateClient("Vapid"));
             }
 
             return adsPushSenderBuilder
