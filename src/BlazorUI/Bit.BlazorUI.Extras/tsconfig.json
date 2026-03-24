@@ -5,8 +5,6 @@
         "target": "ES2019",
         "noImplicitAny": true,
         "lib": [ "DOM", "ESNext" ],
-        "outFile": "wwwroot/scripts/bit.blazorui.extras.js",
-        "rootDir": ".",
-        "ignoreDeprecations": "6.0"
+        "outFile": "wwwroot/scripts/bit.blazorui.extras.js"
     }
 }
