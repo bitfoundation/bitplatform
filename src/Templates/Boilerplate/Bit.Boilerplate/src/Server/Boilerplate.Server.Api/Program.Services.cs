@@ -159,6 +159,11 @@ public static partial class Program
 
             if (string.IsNullOrEmpty(appSettings.AdsPushVapid?.PrivateKey) is false)
             {
+                if (string.IsNullOrEmpty(appSettings.AdsPushVapid.PublicKey))
+                    throw new InvalidOperationException("VAPID public key is required");
+                if (string.IsNullOrEmpty(appSettings.AdsPushVapid.Subject) is false)
+                    throw new InvalidOperationException("VAPID subject is required"); // While it would work on Android, Windows, Linux, Apple requires subject, so we enforce it for all platforms to avoid confusion and potential issues.
+
                 adsPushSenderBuilder = adsPushSenderBuilder.ConfigureVapid(appSettings.AdsPushVapid, sp.GetRequiredService<IHttpClientFactory>().CreateClient("Vapid"));
             }
 
