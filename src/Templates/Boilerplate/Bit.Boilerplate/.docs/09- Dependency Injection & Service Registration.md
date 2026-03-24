@@ -28,7 +28,6 @@ Service registration is organized through `*ServiceCollectionExtensions.cs` and 
    services.AddScoped<IDateTimeProvider, DateTimeProvider>();
    services.AddSingleton<SharedSettings>();
    services.AddLocalization();
-   services.AddMemoryCache();
    ```
 
 2. **`IClientCoreServiceCollectionExtensions.cs`** ([`src/Client/Boilerplate.Client.Core/Extensions/`](/src/Client/Boilerplate.Client.Core/Extensions/IClientCoreServiceCollectionExtensions.cs))

@@ -39,11 +39,11 @@ public static partial class ISharedServiceCollectionExtensions
         services.ConfigureAuthorizationCore();
 
         services.AddLocalization();
+        services.AddSingleton<IMemoryCache, AppMemoryCache>(); // Extends services.AddMemoryCache()
         services.Configure<MemoryCacheOptions>(options =>
         {
             configuration.GetRequiredSection("MemoryCache").Bind(options);
         });
-        services.AddMemoryCache();
 
         return services;
     }
