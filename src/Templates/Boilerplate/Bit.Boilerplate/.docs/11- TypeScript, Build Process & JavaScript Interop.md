@@ -4,7 +4,8 @@ Welcome to Stage 11! In this stage, you'll learn how the project integrates Type
 
 ## Overview
 
-This project uses **TypeScript** for type-safe JavaScript development, along with automated build processes that compile TypeScript to JavaScript and SCSS to CSS during the build pipeline. You'll also learn how to add new npm packages and call JavaScript functions from your C# Blazor components.
+This project uses a **split pipeline** for TypeScript: the TypeScript compiler (`tsc`) performs **type-checking only** (with `noEmit: true`), while **esbuild** handles bundling directly from `.ts` source files into a single `app.js`.
+SCSS is compiled to CSS during the same build pipeline. You'll also learn how to add new npm packages and call JavaScript functions from your C# Blazor components.
 
 ---
 
@@ -17,11 +18,16 @@ This project uses **TypeScript** for type-safe JavaScript development, along wit
 
 ```jsonc
 {
-    "compileOnSave": true,
+    /* Note for Developers:
+        This project uses a split pipeline. TypeScript performs validation without 
+        generating files (noEmit: true), while the actual app.js is bundled by esbuild as part 
+        of the MSBuild process defined in the Boilerplate.Client.Core.csproj file's `BuildJavaScript` target.
+    */
     "compilerOptions": {
         "strict": true,
         "target": "ES2019",
         "module": "es2015",
+        "noEmit": true,
         // ...
     }
 }
@@ -29,12 +35,12 @@ This project uses **TypeScript** for type-safe JavaScript development, along wit
 
 ### Key Settings Explained
 
+- **`noEmit: true`**: TypeScript only performs type-checking and does **not** generate any `.js` output files. The actual bundling is handled by esbuild.
 - **`strict: true`**: Enables all strict type-checking options for better code quality
-- **`target: "ES2019"`**: Compiles TypeScript to ES2019 JavaScript
+- **`target: "ES2019"`**: Sets the type-checking language level to ES2019
 - **`module: "es2015"`**: Uses ES2015 module system (import/export)
-- **`noImplicitAny: true`**: Requires explicit type annotations, preventing implicit `any` types
-- **`lib: ["DOM", "ESNext"]`**: Includes DOM and modern JavaScript API type definitions
-- **`moduleResolution: "node"`**: Uses Node.js-style module resolution
+- **`lib: ["DOM", "DOM.Iterable", "ES2019"]`**: Includes DOM, DOM Iterable, and ES2019 API type definitions
+- **`moduleResolution: "bundler"`**: Uses bundler-style module resolution (compatible with esbuild)
 
 ---
 
@@ -57,8 +63,8 @@ This project uses **TypeScript** for type-safe JavaScript development, along wit
 
 ### What Each Package Does
 
-- **`typescript`**: The TypeScript compiler (`tsc`) that transforms `.ts` files to `.js`
-- **`esbuild`**: Ultra-fast JavaScript bundler that combines all JavaScript modules into a single minified `app.js` file
+- **`typescript`**: The TypeScript compiler (`tsc`) used for **type-checking only** (`noEmit: true`); it does not produce `.js` output
+- **`esbuild`**: Ultra-fast JavaScript bundler/build tool that transpiles TypeScript and combines all `.ts` modules directly into a single `app.js` file; it does not perform type-checking (that is handled by `tsc`)
 - **`sass`**: SCSS/Sass compiler that transforms `.scss` files to `.css`
 
 ---
@@ -89,7 +95,7 @@ The `.csproj` file defines custom MSBuild targets that run automatically during 
     ↓
 3. InstallNodejsDependencies
     ↓
-4. BuildJavaScript (TypeScript → JavaScript → Bundle)
+4. BuildJavaScript (TypeScript type-check → esbuild bundles .ts → app.js)
     ↓
 5. BuildCssFiles (SCSS → CSS)
 ```
@@ -113,18 +119,20 @@ The `.csproj` file defines custom MSBuild targets that run automatically during 
 <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;package.json" Outputs="wwwroot\scripts\app.js">
     <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
     <Exec Condition=" '$(Environment)' == 'Development' " 
-          Command="node_modules/.bin/esbuild Scripts/index.js --bundle --outfile=wwwroot/scripts/app.js" 
+          Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/app.js" 
           StandardOutputImportance="high" StandardErrorImportance="high" />
     <Exec Condition=" '$(Environment)' != 'Development' " 
-          Command="node_modules/.bin/esbuild Scripts/index.js --bundle --outfile=wwwroot/scripts/app.js --minify" 
+          Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/app.js --minify" 
           StandardOutputImportance="high" StandardErrorImportance="high" />
 </Target>
 ```
 
 **What it does:**
-1. **TypeScript Compilation**: Runs `tsc` (TypeScript compiler) to convert all `.ts` files to `.js` files
-2. **Bundling (Development)**: Uses `esbuild` to bundle all JavaScript modules into a single `wwwroot/scripts/app.js` file
+1. **TypeScript Type-Checking**: Runs `tsc` to validate types only (`noEmit: true` in `tsconfig.json` means no `.js` files are generated)
+2. **Bundling (Development)**: Uses `esbuild` to compile and bundle all TypeScript modules **directly from `.ts` source files** into a single `wwwroot/scripts/app.js` file, targeting Safari 15, Firefox 100, and Chrome 95
 3. **Bundling + Minification (Production/Staging)**: Same as above, but with `--minify` flag for smaller file size
+
+> **Note:** The `--target` flag tells esbuild which browser versions to support, ensuring the output JavaScript is compatible with those environments.
 
 **Incremental Build Optimization:**
 - Only rebuilds when TypeScript files, `tsconfig.json`, or `package.json` change
@@ -327,8 +335,8 @@ dotnet build
 
 The build process will:
 1. Install the new `uuid` package (via `npm install`)
-2. Compile `App.ts` to JavaScript (via `tsc`)
-3. Bundle all JavaScript including `uuid` into `app.js` (via `esbuild`)
+2. Type-check all TypeScript files (via `tsc` with `noEmit`)
+3. Bundle all TypeScript including `uuid` directly into `app.js` (via `esbuild` from `.ts` sources)
 
 ---
 

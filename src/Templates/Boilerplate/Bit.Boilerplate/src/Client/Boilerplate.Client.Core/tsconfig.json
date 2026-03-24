@@ -1,16 +1,24 @@
 {
-    "compileOnSave": true,
+    /* Note for Developers:
+        This project uses a split pipeline. TypeScript performs validation without 
+        generating files (noEmit: true), while the actual app.js is bundled by esbuild as part 
+        of the MSBuild process defined in the Boilerplate.Client.Core.csproj file's `BuildJavaScript` target.
+        For more information, check out .docs/11- TypeScript, Build Process & JavaScript Interop.md
+    */
     "compilerOptions": {
         "strict": true,
         "target": "ES2019",
         "module": "ESNext",
         "moduleResolution": "bundler",
         "verbatimModuleSyntax": true,
+        "isolatedModules": true,
+        "useDefineForClassFields": true,
         "resolveJsonModule": true,
-        "lib": [ "DOM", "ESNext" ],
+        "lib": [ "DOM", "DOM.Iterable", "ES2019" ],
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true
+        "forceConsistentCasingInFileNames": true,
+        "noEmit": true
     },
     "include": [ "Scripts" ],
     "exclude": [ "node_modules" ]
