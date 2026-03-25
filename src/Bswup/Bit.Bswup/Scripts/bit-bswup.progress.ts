@@ -1,4 +1,4 @@
-﻿window['bit-bswup.progress version'] = '10.4.3-pre-03';
+﻿window['bit-bswup.progress version'] = '10.4.3';
 
 (function () {
     const _config: IBswupProgressConfigs = {};
