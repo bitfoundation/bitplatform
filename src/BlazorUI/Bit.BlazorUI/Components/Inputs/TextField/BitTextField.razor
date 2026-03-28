@@ -101,6 +101,7 @@
 
                 @if (ShowClearButton && CurrentValue.HasValue())
                 {
+                    var clearButtonIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
                     <button @onclick="HandleOnClearButtonClick"
                             type="button"
                             aria-label="Clear text"
@@ -109,7 +110,7 @@
                             class="bit-tfl-cbt @Classes?.ClearButton">
                         <i aria-hidden="true" 
                            style="@Styles?.ClearButtonIcon" 
-                           class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" />
+                           class="@clearButtonIcon?.GetCssClasses() @Classes?.ClearButtonIcon" />
                     </button>
                 }
             }

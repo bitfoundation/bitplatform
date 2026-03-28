@@ -56,6 +56,29 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public BitTextFieldClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The icon to display inside the clear button.
+    /// Takes precedence over <see cref="ClearButtonIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ClearButtonIconName"/> instead.
+    /// </remarks>
+    /// <example>
+    /// Bootstrap: ClearButtonIcon="BitIconInfo.Bi("x-circle-fill")"
+    /// FontAwesome: ClearButtonIcon="BitIconInfo.Fa("solid xmark")"
+    /// Custom CSS: ClearButtonIcon="BitIconInfo.Css("my-icon-class")"
+    /// </example>
+    [Parameter] public BitIconInfo? ClearButtonIcon { get; set; }
+
+    /// <summary>
+    /// The name of the clear button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    /// <remarks>
+    /// For external icon libraries, use <see cref="ClearButtonIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? ClearButtonIconName { get; set; }
+
+    /// <summary>
     /// Default value of the text field. Only provide this if the text field is an uncontrolled component; otherwise, use the value property.
     /// </summary>
     [Parameter] public string? DefaultValue { get; set; }
