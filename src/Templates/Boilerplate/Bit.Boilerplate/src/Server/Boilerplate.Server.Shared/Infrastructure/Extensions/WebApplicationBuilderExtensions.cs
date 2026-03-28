@@ -16,6 +16,9 @@ using OpenTelemetry.Trace;
 using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 using Boilerplate.Server.Shared.Infrastructure.Services;
+//#if (redis == true)
+using ZiggyCreatures.Caching.Fusion.Locking.Distributed.Redis;
+//#endif
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -58,30 +61,23 @@ public static class WebApplicationBuilderExtensions
         builder.AddKeyedRedisClient("redis-cache", settings => settings.DisableTracing = true /*FusionCache is already handling cache traces*/);
         //#endif
 
-        services.AddFusionCache()
+        services
+            //#if (redis == true)
+            .AddFusionCacheRedisDistributedLocker()
+            .AddFusionCacheStackExchangeRedisBackplane()
+            .ConfigureRedisOptions()
+            //#endif
+            .AddFusionCache()
             .AsHybridCache()
             .WithRegisteredMemoryCache()
+            //#if (redis == true)
+            .WithRegisteredBackplane()
+            .WithRegisteredDistributedCache()
+            .WithRegisteredDistributedLocker()
+            //#endif
             .WithDefaultEntryOptions(options => options.Size = 1)
             // Auto-clone cached objects to avoid further issues after scaling out and switching to distributed caching.
             .WithOptions(options => options.DefaultEntryOptions.EnableAutoClone = true)
-            //#if(redis == true)
-            // Use Redis backplane for cache synchronization across multiple server instances
-            .WithDistributedCache(sp =>
-               new Caching.StackExchangeRedis.RedisCache(new Caching.StackExchangeRedis.RedisCacheOptions
-               {
-                   ConnectionMultiplexerFactory = async () => sp.GetRequiredKeyedService<StackExchange.Redis.IConnectionMultiplexer>("redis-cache"),
-               })
-            )
-            .WithBackplane(sp => new ZiggyCreatures.Caching.Fusion.Backplane.StackExchangeRedis.RedisBackplane(
-                new ZiggyCreatures.Caching.Fusion.Backplane.StackExchangeRedis.RedisBackplaneOptions
-                {
-                    ConnectionMultiplexerFactory = async () => sp.GetRequiredKeyedService<StackExchange.Redis.IConnectionMultiplexer>("redis-cache"),
-                }))
-            .WithDistributedLocker(sp => new ZiggyCreatures.Caching.Fusion.Locking.Distributed.Redis.RedisDistributedLocker(new ZiggyCreatures.Caching.Fusion.Locking.Distributed.Redis.RedisDistributedLockerOptions
-            {
-                ConnectionMultiplexerFactory = async () => sp.GetRequiredKeyedService<StackExchange.Redis.IConnectionMultiplexer>("redis-cache"),
-            }))
-            //#endif
             .WithSerializer(new FusionCacheSystemTextJsonSerializer())
             .WithCacheKeyPrefix("Boilerplate:Cache:");
 
@@ -89,10 +85,7 @@ public static class WebApplicationBuilderExtensions
 
         // Registering Microsoft's IDistributedCache here doesn't mean you have to use it in your code. It's only for libraries that might rely on it.
         //#if(redis == true)
-        services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = configuration.GetRequiredConnectionString("redis-cache");
-        });
+        services.AddStackExchangeRedisCache(_ => { });
         //#else
         services.AddDistributedMemoryCache();
         //#endif

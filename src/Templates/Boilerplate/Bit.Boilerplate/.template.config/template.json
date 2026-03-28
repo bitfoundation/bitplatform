@@ -597,6 +597,12 @@
                     ]
                 },
                 {
+                    "condition": "(redis == false)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppRedisConfigurator.cs"
+                    ]
+                },
+                {
                     "condition": "(ads != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Settings/UpgradeAccountSection*.*",
