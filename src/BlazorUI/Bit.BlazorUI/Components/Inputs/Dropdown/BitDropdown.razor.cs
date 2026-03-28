@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Linq.Expressions;
 using System.Diagnostics.CodeAnalysis;
 
@@ -570,11 +570,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await AddOrRemoveSelectedItem(item);
 
         StateHasChanged();
-    }
-
-    internal string? GetItemCheckIconCssClasses()
-    {
-        return BitIconInfo.From(ItemCheckIcon, ItemCheckIconName ?? "Accept")?.GetCssClasses();
     }
 
     internal string GetItemWrapperCssClasses(TItem item)
