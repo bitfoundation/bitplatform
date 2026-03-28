@@ -178,7 +178,7 @@ public static partial class Program
         //#if (redis == true)
         services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
         {
-            return new Medallion.Threading.Redis.RedisDistributedLock(lockKey, sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase());
+            return new Medallion.Threading.Redis.RedisDistributedLock(lockKey, sp.GetRequiredKeyedService<IConnectionMultiplexer>("redis-persistent").GetDatabase());
         }));
         //#else
         services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
@@ -570,7 +570,7 @@ public static partial class Program
             if (appSettings.Hangfire?.UseIsolatedStorage is not true)
             {
                 //#if (redis == true)
-                hangfireConfiguration.UseRedisStorage(sp.GetRequiredService<IConnectionMultiplexer>(), new RedisStorageOptions
+                hangfireConfiguration.UseRedisStorage(sp.GetRequiredKeyedService<IConnectionMultiplexer>("redis-persistent"), new RedisStorageOptions
                 {
                     Prefix = "Boilerplate:Hangfire:",
                     Db = 1, // Use a dedicated Redis database for Hangfire

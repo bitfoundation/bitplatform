@@ -7,10 +7,9 @@ using ZiggyCreatures.Caching.Fusion.Backplane.StackExchangeRedis;
 namespace Boilerplate.Server.Shared.Infrastructure.Services;
 
 /// <summary>
-/// Configures FusionCache L2, Distributed Locking, and Backplane to share a single Redis connection,
-/// which has logging, telemetry and retry policy.
+/// Configures FusionCache L2, Distributed Locking, and Backplane to share a single Redis connection enrhiched with logging and retry policies.
 /// </summary>
-public class AppRedisConfigurator(IConnectionMultiplexer connectionMultiplexer) : IPostConfigureOptions<RedisCacheOptions>,
+public class AppRedisCacheConfigurator([FromKeyedServices("redis-cache")] IConnectionMultiplexer connectionMultiplexer) : IPostConfigureOptions<RedisCacheOptions>,
     IPostConfigureOptions<RedisDistributedLockerOptions>,
     IPostConfigureOptions<RedisBackplaneOptions>
 {
@@ -34,9 +33,9 @@ public static class AppRedisConfiguratorExtensions
 {
     public static IServiceCollection ConfigureRedisOptions(this IServiceCollection services)
     {
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisCacheOptions>, AppRedisConfigurator>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisBackplaneOptions>, AppRedisConfigurator>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisDistributedLockerOptions>, AppRedisConfigurator>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisCacheOptions>, AppRedisCacheConfigurator>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisBackplaneOptions>, AppRedisCacheConfigurator>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisDistributedLockerOptions>, AppRedisCacheConfigurator>());
 
         return services;
     }
