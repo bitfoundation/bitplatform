@@ -44,7 +44,7 @@
                         <i aria-hidden="true"
                            aria-label="@text"
                            style="@Dropdown.Styles?.ItemCheckIcon"
-                           class="bit-drp-chm bit-icon bit-icon--Accept @Dropdown.Classes?.ItemCheckIcon" />
+                           class="bit-drp-chm @Dropdown.GetItemCheckIconCssClasses() @Dropdown.Classes?.ItemCheckIcon" />
                     </div>
 
                     @if (Dropdown.ItemTemplate is not null)

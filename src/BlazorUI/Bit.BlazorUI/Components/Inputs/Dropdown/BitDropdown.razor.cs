@@ -197,6 +197,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     public bool IsOpen { get; set; }
 
     /// <summary>
+    /// The icon of the check mark in the multi-select items.
+    /// Takes precedence over <see cref="ItemCheckIconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="ItemCheckIconName"/> instead.
+    /// </summary>
+    [Parameter] public BitIconInfo? ItemCheckIcon { get; set; }
+
+    /// <summary>
+    /// The icon name of the check mark in the multi-select items from the Fluent UI icon set.
+    /// For external icon libraries, use <see cref="ItemCheckIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? ItemCheckIconName { get; set; }
+
+    /// <summary>
     /// The list of items to display in the callout.
     /// </summary>
     [Parameter] public ICollection<TItem>? Items { get; set; }
@@ -556,6 +570,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await AddOrRemoveSelectedItem(item);
 
         StateHasChanged();
+    }
+
+    internal string? GetItemCheckIconCssClasses()
+    {
+        return BitIconInfo.From(ItemCheckIcon, ItemCheckIconName ?? "Accept")?.GetCssClasses();
     }
 
     internal string GetItemWrapperCssClasses(TItem item)
