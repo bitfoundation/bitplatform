@@ -599,7 +599,7 @@
                 {
                     "condition": "(redis == false)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppRedisConfigurator.cs"
+                        "src/Server/Boilerplate.Server.Shared/Infrastructure/Services/AppRedisCacheConfigurator.cs"
                     ]
                 },
                 {
