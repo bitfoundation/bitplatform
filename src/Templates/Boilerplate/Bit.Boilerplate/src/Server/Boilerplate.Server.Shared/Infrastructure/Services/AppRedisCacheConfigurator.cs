@@ -7,7 +7,7 @@ using ZiggyCreatures.Caching.Fusion.Backplane.StackExchangeRedis;
 namespace Boilerplate.Server.Shared.Infrastructure.Services;
 
 /// <summary>
-/// Configures FusionCache L2, Distributed Locking, and Backplane to share a single Redis connection enrhiched with logging and retry policies.
+/// Configures FusionCache L2, Distributed Locking, and Backplane to share a single Redis connection enriched with logging and retry policies.
 /// </summary>
 public class AppRedisCacheConfigurator([FromKeyedServices("redis-cache")] IConnectionMultiplexer connectionMultiplexer) : IPostConfigureOptions<RedisCacheOptions>,
     IPostConfigureOptions<RedisDistributedLockerOptions>,
