@@ -30,7 +30,7 @@ You will be working with the following key technologies:
 <!--#elif (database == "PostgreSQL")-->
 *   **PostgreSQL 18**: Primary database
 <!--#elif (database == "MySql")-->
-    **MySQL**: Primary database
+*   **MySQL**: Primary database
 <!--#endif-->
 
 ## 2. Project Structure
