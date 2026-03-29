@@ -203,6 +203,22 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ItemCheckIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the check mark in the multi-select items. Takes precedence over ItemCheckIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ItemCheckIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name of the check mark in the multi-select items from the Fluent UI icon set.",
+        },
+        new()
+        {
             Name = "Items",
             Type = "ICollection<TItem>?",
             DefaultValue = "null",
