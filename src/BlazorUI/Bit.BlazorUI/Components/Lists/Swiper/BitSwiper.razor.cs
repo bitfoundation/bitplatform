@@ -70,6 +70,46 @@ public partial class BitSwiper : BitComponentBase
     //[Parameter] public bool InfiniteScrolling { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to display in the next navigation button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="NextIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="NextIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? NextIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display in the next navigation button from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.ChevronRight</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="NextIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? NextIconName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon to display in the previous navigation button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="PrevIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="PrevIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? PrevIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display in the previous navigation button from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.ChevronLeft</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="PrevIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? PrevIconName { get; set; }
+
+    /// <summary>
     /// Number of items that is going to be changed on navigation.
     /// </summary>
     [Parameter] public int ScrollItemsCount { get; set; } = 1;

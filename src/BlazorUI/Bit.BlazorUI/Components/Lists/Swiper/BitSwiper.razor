@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes" @onpointerdown:preventDefault @onpointerup="HandlePointerUp" @onpointermove="HandlePointerMove" @onpointerdown="HandlePointerDown"
@@ -17,12 +17,15 @@
 
     @if (HideNextPrev is false)
     {
+        var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? "ChevronRight");
+        var prevIcon = BitIconInfo.From(PrevIcon, PrevIconName ?? "ChevronRight bit-ico-r180");
+
         <div class="bit-swp-rbt" @onclick="async() => await Go(true)" style="@_rightButtonStyle" @onpointerdown:stopPropagation>
-            <i class="bit-icon bit-icon--ChevronRight" />
+            <i class="@nextIcon?.GetCssClasses()" />
         </div>
 
         <div class="bit-swp-lbt" @onclick="async () => await Go(false)" style="@_leftButtonStyle" @onpointerdown:stopPropagation>
-            <i class="bit-swp-lbi bit-icon bit-icon--ChevronRight" />
+            <i class="@prevIcon?.GetCssClasses()" />
         </div>
     }
 

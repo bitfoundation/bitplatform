@@ -27,11 +27,80 @@ public partial class BitSwiperDemo
         },
         new()
         {
+            Name = "NextIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the next navigation button using custom CSS classes for external icon libraries. Takes precedence over NextIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "NextIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the next navigation button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "PrevIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the previous navigation button using custom CSS classes for external icon libraries. Takes precedence over PrevIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "PrevIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the previous navigation button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
             Name = "ScrollItemsCount",
             Type = "int",
             DefaultValue = "1",
             Description = "Number of items that is going to be changed on navigation."
         }
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
     ];
 
 
@@ -171,6 +240,36 @@ public partial class BitSwiperDemo
         var imageIndex = (index - 1) % 4 + 1;
         <BitSwiperItem Class=""item"">
             <div class=""number"">مورد @index</div>
+            <img class=""image"" src=""img@(imageIndex).jpg"" />
+        </BitSwiperItem>
+    }
+</BitSwiper>";
+
+    private readonly string example5RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitSwiper NextIcon=""@BitIconInfo.Fa(""solid chevron-right"")"" PrevIcon=""@BitIconInfo.Fa(""solid chevron-left"")"">
+    @for (int i = 1; i <= 8; i++)
+    {
+        var index = i;
+        var imageIndex = (index - 1) % 4 + 1;
+        <BitSwiperItem Class=""item"">
+            <div class=""number"">Item @index</div>
+            <img class=""image"" src=""img@(imageIndex).jpg"" />
+        </BitSwiperItem>
+    }
+</BitSwiper>
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitSwiper NextIcon=""@BitIconInfo.Bi(""arrow-right"")"" PrevIcon=""@BitIconInfo.Bi(""arrow-left"")"">
+    @for (int i = 1; i <= 8; i++)
+    {
+        var index = i;
+        var imageIndex = (index - 1) % 4 + 1;
+        <BitSwiperItem Class=""item"">
+            <div class=""number"">Item @index</div>
             <img class=""image"" src=""img@(imageIndex).jpg"" />
         </BitSwiperItem>
     }

@@ -102,4 +102,132 @@ public class BitSwiperTests : BunitTestContext
         Assert.AreEqual(1, component.FindAll(".bit-swp-lbt").Count);
         Assert.AreEqual(1, component.FindAll(".bit-swp-rbt").Count);
     }
+
+    [TestMethod]
+    public void BitSwiperShouldRenderDefaultIconsWithRotationOnPrev()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Observers.registerResize");
+        Context.JSInterop.SetupVoid("BitBlazorUI.Swiper.setup");
+
+        var component = RenderComponent<BitSwiper>();
+
+        var nextIcon = component.Find(".bit-swp-rbt i");
+        var prevIcon = component.Find(".bit-swp-lbt i");
+
+        Assert.IsTrue(nextIcon.ClassList.Contains("bit-icon--ChevronRight"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-icon--ChevronRight"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-ico-r180"));
+    }
+
+    [TestMethod]
+    public void BitSwiperShouldRenderCorrectNextIconNameWhenProvided()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Observers.registerResize");
+        Context.JSInterop.SetupVoid("BitBlazorUI.Swiper.setup");
+
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.NextIconName, "ChevronRightSmall");
+        });
+
+        var nextIcon = component.Find(".bit-swp-rbt i");
+
+        Assert.IsTrue(nextIcon.ClassList.Contains("bit-icon--ChevronRightSmall"));
+        Assert.IsTrue(nextIcon.ClassList.Contains("bit-icon"));
+    }
+
+    [TestMethod]
+    public void BitSwiperShouldRenderCorrectPrevIconNameWhenProvided()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Observers.registerResize");
+        Context.JSInterop.SetupVoid("BitBlazorUI.Swiper.setup");
+
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.PrevIconName, "ChevronLeft");
+        });
+
+        var prevIcon = component.Find(".bit-swp-lbt i");
+
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-icon"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-icon--ChevronLeft"));
+    }
+
+    [TestMethod]
+    public void BitSwiperShouldRenderCorrectNextIconWhenProvided()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Observers.registerResize");
+        Context.JSInterop.SetupVoid("BitBlazorUI.Swiper.setup");
+
+        var nextIconInfo = BitIconInfo.Fa("solid chevron-right");
+
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.NextIcon, nextIconInfo);
+        });
+
+        var nextIcon = component.Find(".bit-swp-rbt i");
+
+        Assert.IsTrue(nextIcon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(nextIcon.ClassList.Contains("fa-chevron-right"));
+    }
+
+    [TestMethod]
+    public void BitSwiperShouldRenderCorrectPrevIconWhenProvided()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Observers.registerResize");
+        Context.JSInterop.SetupVoid("BitBlazorUI.Swiper.setup");
+
+        var prevIconInfo = BitIconInfo.Fa("solid chevron-left");
+
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.PrevIcon, prevIconInfo);
+        });
+
+        var prevIcon = component.Find(".bit-swp-lbt i");
+
+        Assert.IsTrue(prevIcon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("fa-chevron-left"));
+    }
+
+    [TestMethod]
+    public void BitSwiperNextIconShouldTakePrecedenceOverNextIconName()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Observers.registerResize");
+        Context.JSInterop.SetupVoid("BitBlazorUI.Swiper.setup");
+
+        var nextIconInfo = BitIconInfo.Bi("arrow-right-circle");
+
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.NextIcon, nextIconInfo);
+            parameters.Add(p => p.NextIconName, "ChevronRight");
+        });
+
+        var nextIcon = component.Find(".bit-swp-rbt i");
+
+        Assert.IsTrue(nextIcon.ClassList.Contains("bi-arrow-right-circle"));
+        Assert.IsFalse(nextIcon.ClassList.Contains("bit-icon--ChevronRight"));
+    }
+
+    [TestMethod]
+    public void BitSwiperPrevIconShouldTakePrecedenceOverPrevIconName()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Observers.registerResize");
+        Context.JSInterop.SetupVoid("BitBlazorUI.Swiper.setup");
+
+        var prevIconInfo = BitIconInfo.Bi("arrow-left-circle");
+
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.PrevIcon, prevIconInfo);
+            parameters.Add(p => p.PrevIconName, "ChevronLeft");
+        });
+
+        var prevIcon = component.Find(".bit-swp-lbt i");
+
+        Assert.IsTrue(prevIcon.ClassList.Contains("bi-arrow-left-circle"));
+        Assert.IsFalse(prevIcon.ClassList.Contains("bit-icon--ChevronLeft"));
+    }
 }

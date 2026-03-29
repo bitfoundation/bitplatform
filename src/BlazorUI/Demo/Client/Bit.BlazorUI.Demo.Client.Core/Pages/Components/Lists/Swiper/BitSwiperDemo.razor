@@ -1,4 +1,4 @@
-﻿@page "/components/swiper"
+@page "/components/swiper"
 
 <PageOutlet Url="components/swiper"
             Title="Swiper"
@@ -8,6 +8,7 @@
           SecondaryNames="@(["TouchSlider"])"
           Description="Swipers (touch slider) let people show their slides in a swiping row."
           Parameters="componentParameters"
+          SubClasses="componentSubClasses"
           GitHubUrl="Lists/Swiper/BitSwiper.razor"
           GitHubDemoUrl="Lists/Swiper/BitSwiperDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
@@ -79,4 +80,50 @@
             </BitSwiper>
         </div>
     </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example5RazorCode" Id="example5">
+        <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>NextIcon</b> and <b>PrevIcon</b> parameters.</div>
+
+        <br />
+        <br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+        <div>FontAwesome:</div>
+        <br />
+        <div>
+            <BitSwiper NextIcon="@BitIconInfo.Fa("solid chevron-right")" PrevIcon="@BitIconInfo.Fa("solid chevron-left")">
+                @for (int i = 1; i <= 8; i++)
+                {
+                    var index = i;
+                    var imageIndex = (index - 1) % 4 + 1;
+                    <BitSwiperItem Class="item">
+                        <div class="number">Item @index</div>
+                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                    </BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap Icons:</div>
+        <br />
+        <div>
+            <BitSwiper NextIcon="@BitIconInfo.Bi("arrow-right")" PrevIcon="@BitIconInfo.Bi("arrow-left")">
+                @for (int i = 1; i <= 8; i++)
+                {
+                    var index = i;
+                    var imageIndex = (index - 1) % 4 + 1;
+                    <BitSwiperItem Class="item">
+                        <div class="number">Item @index</div>
+                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                    </BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
 </DemoPage>
