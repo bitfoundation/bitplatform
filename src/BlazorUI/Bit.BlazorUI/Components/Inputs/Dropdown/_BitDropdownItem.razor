@@ -42,9 +42,8 @@
                     <div style="@Dropdown.Styles?.ItemCheckBox"
                          class="bit-drp-chb @Dropdown.Classes?.ItemCheckBox">
                         <i aria-hidden="true"
-                           aria-label="@text"
                            style="@Dropdown.Styles?.ItemCheckIcon"
-                           class="bit-drp-chm bit-icon bit-icon--Accept @Dropdown.Classes?.ItemCheckIcon" />
+                           class="bit-drp-chm @ItemCheckIconCss @Dropdown.Classes?.ItemCheckIcon" />
                     </div>
 
                     @if (Dropdown.ItemTemplate is not null)
@@ -56,7 +55,8 @@
                         var itemIcon = Dropdown.GetIcon(Item);
                         @if (itemIcon is not null)
                         {
-                            <i style="@Dropdown.Styles?.ItemIcon" class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
+                            <i style="@Dropdown.Styles?.ItemIcon"
+                               class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
                         }
                         <span style="@Dropdown.Styles?.ItemText"
                               class="bit-drp-itx @Dropdown.Classes?.ItemText">
@@ -68,7 +68,7 @@
         }
         else
         {
-            <button @onclick="()=> Dropdown.HandleOnItemClick(Item)"
+            <button @onclick="() => Dropdown.HandleOnItemClick(Item)"
                     id="@id"
                     type="button"
                     role="option"
@@ -91,7 +91,8 @@
                     var itemIcon = Dropdown.GetIcon(Item);
                     @if (itemIcon is not null)
                     {
-                        <i style="@Dropdown.Styles?.ItemIcon" class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
+                        <i style="@Dropdown.Styles?.ItemIcon"
+                           class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
                     }
                     <span style="@Dropdown.Styles?.ItemText"
                           class="@Dropdown.Classes?.ItemText">

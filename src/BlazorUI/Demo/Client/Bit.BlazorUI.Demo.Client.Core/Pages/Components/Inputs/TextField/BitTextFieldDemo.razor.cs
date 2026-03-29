@@ -55,6 +55,22 @@ public partial class BitTextFieldDemo
         },
         new()
         {
+            Name = "ClearButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display on the clear button using custom CSS classes for external icon libraries. Takes precedence over ClearButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ClearButtonIconName",
+            Type = "string?",
+            DefaultValue = "Cancel",
+            Description = "Gets or sets the name of the icon to display on the clear button from the built-in Fluent UI icons.",
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "string?",
             DefaultValue = "null",
