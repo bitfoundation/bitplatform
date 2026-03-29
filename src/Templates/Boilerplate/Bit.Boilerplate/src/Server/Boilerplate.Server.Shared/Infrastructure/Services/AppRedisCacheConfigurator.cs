@@ -1,10 +1,10 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using StackExchange.Redis;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using ZiggyCreatures.Caching.Fusion.Locking.Distributed.Redis;
 using ZiggyCreatures.Caching.Fusion.Backplane.StackExchangeRedis;
-//#if (signalr == true)
+//#if (signalR == true)
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis;
 //#endif
 
@@ -18,7 +18,7 @@ public class AppRedisCacheConfigurator(
         IPostConfigureOptions<RedisCacheOptions>,
         IPostConfigureOptions<RedisDistributedLockerOptions>,
         IPostConfigureOptions<RedisBackplaneOptions>
-        //#if (signalr == true)
+        //#if (signalR == true)
         , IPostConfigureOptions<RedisOptions>
 //#endif
 {
@@ -40,7 +40,7 @@ public class AppRedisCacheConfigurator(
         options.ConnectionMultiplexerFactory = async () => redisCacheConnectionMultiplexer;
     }
 
-    //#if (signalr == true)
+    //#if (signalR == true)
     public void PostConfigure(string? name, RedisOptions options)
     {
         // Redis backplane for SignalR, used for scaling out SignalR across multiple server instances.
@@ -56,7 +56,7 @@ public static class AppRedisConfiguratorExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisCacheOptions>, AppRedisCacheConfigurator>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisBackplaneOptions>, AppRedisCacheConfigurator>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisDistributedLockerOptions>, AppRedisCacheConfigurator>());
-        //#if (signalr == true)
+        //#if (signalR == true)
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RedisOptions>, AppRedisCacheConfigurator>());
         //#endif
 
