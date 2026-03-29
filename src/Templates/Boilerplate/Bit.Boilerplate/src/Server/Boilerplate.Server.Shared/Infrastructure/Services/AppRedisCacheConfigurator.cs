@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using StackExchange.Redis;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.SignalR.StackExchangeRedis;
 namespace Boilerplate.Server.Shared.Infrastructure.Services;
 
 /// <summary>
-/// Configures FusionCache L2, Distributed Locking and Backplanes to share a single Redis connection enrhiched with logging and retry policies.
+/// Configures FusionCache L2, Distributed Locking and Backplanes to share a single Redis connection enriched with logging and retry policies.
 /// </summary>
 public class AppRedisCacheConfigurator(
     [FromKeyedServices("redis-cache")] IConnectionMultiplexer redisCacheConnectionMultiplexer) :
