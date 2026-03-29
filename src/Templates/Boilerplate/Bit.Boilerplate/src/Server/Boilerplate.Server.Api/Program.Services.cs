@@ -285,7 +285,7 @@ public static partial class Program
         else
         {
             // Use Redis as SignalR backplane for scaling out across multiple server instances
-            signalRBuilder.AddStackExchangeRedis(configuration.GetRequiredConnectionString("redis-cache"), options =>
+            signalRBuilder.AddStackExchangeRedis(options =>
             {
                 options.Configuration.ChannelPrefix = RedisChannel.Literal("Boilerplate:SignalR:");
             });
