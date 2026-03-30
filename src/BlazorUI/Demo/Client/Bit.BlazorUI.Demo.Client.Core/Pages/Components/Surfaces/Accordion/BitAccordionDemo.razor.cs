@@ -213,7 +213,7 @@ public partial class BitAccordionDemo
                 },
                 new()
                 {
-                    Name = "ExpanderIconWapper",
+                    Name = "ExpanderIconWrapper",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the expander icon wrapper of the BitAccordion."

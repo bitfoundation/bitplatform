@@ -34,10 +34,10 @@
                 }
             </div>
             <span style="@Styles?.ExpanderIconWrapper"
-                  class="bit-acd-eiw@(IsExpanded ? " bit-ico--r180" : "") @Classes?.ExpanderIconWrapper">
+                  class="bit-acd-eiw @Classes?.ExpanderIconWrapper @(IsExpanded ? "bit-ico--r180" : "")">
                 <i aria-hidden="true"
                    style="@Styles?.ExpanderIcon @(IsExpanded ? Styles?.ExpandedIcon : "")"
-                   class="@expanderIcon?.GetCssClasses() bit-acd-eic@(IsExpanded ? Classes?.ExpandedIcon : "") @Classes?.ExpanderIcon" />
+                   class="bit-acd-eic @expanderIcon?.GetCssClasses() @Classes?.ExpanderIcon @(IsExpanded ? Classes?.ExpandedIcon : "")" />
             </span>
         }
     </button>
