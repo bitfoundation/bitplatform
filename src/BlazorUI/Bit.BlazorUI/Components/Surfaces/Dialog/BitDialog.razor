@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @if (IsOpen)
@@ -31,15 +31,16 @@
 
                             @if (ShowCloseButton)
                             {
+                                var closeIcon = BitIconInfo.From(CloseIcon, CloseIconName ?? "Cancel");
+
                                 <button @onclick="HandleOnCloseClick"
                                         class="bit-dlg-cls"
                                         type="button"
+                                        title="Close"
                                         aria-label="Close"
-                                        aria-describedby="Close"
-                                        aria-hidden="Close"
-                                        title="Close">
+                                        aria-hidden="true">
                                     <span>
-                                        <i class="bit-icon bit-icon--Cancel" />
+                                        <i class="bit-dlg-cli @closeIcon?.GetCssClasses()" />
                                     </span>
                                 </button>
                             }

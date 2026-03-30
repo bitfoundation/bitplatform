@@ -212,7 +212,52 @@
         </BitDialog>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="External Icons" RazorCode="@example9RazorCode" Id="example9">
+        <div>Use icons from external libraries like FontAwesome and Bootstrap Icons for the close button with the <b>CloseIcon</b> parameter.</div>
+
+        <br />
+        <br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+        <div>FontAwesome:</div>
+        <br />
+        <BitButton OnClick="@(() => IsOpenExtIcon1 = true)">Open Dialog (CloseIcon = fa)</BitButton>
+        <BitDialog @bind-IsOpen="IsOpenExtIcon1"
+                   Title="FontAwesome Close Icon"
+                   Message="This dialog uses a FontAwesome icon for the close button."
+                   CloseIcon="@BitIconInfo.Fa("solid xmark")" />
+
+        <br /><br />
+
+        <BitButton OnClick="@(() => IsOpenExtIcon2 = true)">Open Dialog (CloseIcon = Css)</BitButton>
+        <BitDialog @bind-IsOpen="IsOpenExtIcon2"
+                   Title="Custom CSS Close Icon"
+                   Message="This dialog uses custom CSS classes for the close button icon."
+                   CloseIcon="@BitIconInfo.Css("fa-solid fa-circle-xmark")" />
+
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap:</div>
+        <br />
+        <BitButton OnClick="@(() => IsOpenExtIcon3 = true)">Open Dialog (CloseIcon = Bi)</BitButton>
+        <BitDialog @bind-IsOpen="IsOpenExtIcon3"
+                   Title="Bootstrap Close Icon"
+                   Message="This dialog uses a Bootstrap icon for the close button."
+                   CloseIcon="@BitIconInfo.Bi("x-lg")" />
+
+        <br /><br />
+
+        <BitButton OnClick="@(() => IsOpenExtIcon4 = true)">Open Dialog (CloseIconName)</BitButton>
+        <BitDialog @bind-IsOpen="IsOpenExtIcon4"
+                   Title="CloseIconName"
+                   Message="This dialog uses CloseIconName to set a built-in Fluent UI icon for the close button."
+                   CloseIconName="@BitIconName.ChromeClose" />
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div dir="rtl">
             <BitButton Dir="BitDir.Rtl" OnClick="@(() => IsOpen10 = true)">باز کردن پنجره پیام</BitButton>
             <BitDialog @bind-IsOpen="IsOpen10"

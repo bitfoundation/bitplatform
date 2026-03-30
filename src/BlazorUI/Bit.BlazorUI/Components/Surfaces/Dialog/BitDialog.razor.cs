@@ -49,6 +49,17 @@ public partial class BitDialog : BitComponentBase
     [Parameter] public BitDialogClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to display for the close button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="CloseIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? CloseIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display for the close button from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? CloseIconName { get; set; }
+
+    /// <summary>
     /// The CSS selector of the drag element. by default it's the Dialog container.
     /// </summary>
     [Parameter] public string? DragElementSelector { get; set; }

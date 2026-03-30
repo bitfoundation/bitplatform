@@ -50,6 +50,24 @@ public partial class BitDialogDemo
         },
         new()
         {
+            Name = "CloseIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display for the close button using custom CSS classes for external icon libraries. Takes precedence over CloseIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "CloseIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display for the close button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
             Name = "DragElementSelector",
             Type = "string?",
             DefaultValue = "null",
@@ -301,7 +319,36 @@ public partial class BitDialogDemo
                     Description = "Custom CSS classes/styles for the cancel button of the BitDialog."
                 }
             ]
-        }
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -352,6 +399,11 @@ public partial class BitDialogDemo
     private bool IsDraggable = false;
     private bool IsOpen8 = false;
     private bool IsOpen9 = false;
+
+    private bool IsOpenExtIcon1 = false;
+    private bool IsOpenExtIcon2 = false;
+    private bool IsOpenExtIcon3 = false;
+    private bool IsOpenExtIcon4 = false;
 
     private bool IsOpen10 = false;
 
@@ -626,6 +678,41 @@ private bool IsOpen9 = false;
 ";
 
     private readonly string example9RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitButton OnClick=""@(() => IsOpenExtIcon1 = true)"">Open Dialog (CloseIcon = fa)</BitButton>
+<BitDialog @bind-IsOpen=""IsOpenExtIcon1""
+           Title=""FontAwesome Close Icon""
+           Message=""This dialog uses a FontAwesome icon for the close button.""
+           CloseIcon=""@BitIconInfo.Fa(""solid xmark"")"" />
+
+<BitButton OnClick=""@(() => IsOpenExtIcon2 = true)"">Open Dialog (CloseIcon = Css)</BitButton>
+<BitDialog @bind-IsOpen=""IsOpenExtIcon2""
+           Title=""Custom CSS Close Icon""
+           Message=""This dialog uses custom CSS classes for the close button icon.""
+           CloseIcon=""@BitIconInfo.Css(""fa-solid fa-circle-xmark"")"" />
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitButton OnClick=""@(() => IsOpenExtIcon3 = true)"">Open Dialog (CloseIcon = Bi)</BitButton>
+<BitDialog @bind-IsOpen=""IsOpenExtIcon3""
+           Title=""Bootstrap Close Icon""
+           Message=""This dialog uses a Bootstrap icon for the close button.""
+           CloseIcon=""@BitIconInfo.Bi(""x-lg"")"" />
+
+<BitButton OnClick=""@(() => IsOpenExtIcon4 = true)"">Open Dialog (CloseIconName)</BitButton>
+<BitDialog @bind-IsOpen=""IsOpenExtIcon4""
+           Title=""CloseIconName""
+           Message=""This dialog uses CloseIconName to set a built-in Fluent UI icon for the close button.""
+           CloseIconName=""@BitIconName.ChromeClose"" />";
+    private readonly string example9CsharpCode = @"
+private bool IsOpenExtIcon1 = false;
+private bool IsOpenExtIcon2 = false;
+private bool IsOpenExtIcon3 = false;
+private bool IsOpenExtIcon4 = false;";
+
+    private readonly string example10RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" OnClick=""@(() => IsOpen10 = true)"">باز کردن پنجره پیام</BitButton>
 <BitDialog @bind-IsOpen=""IsOpen10"" 
            Dir=""BitDir.Rtl""
@@ -633,6 +720,6 @@ private bool IsOpen9 = false;
            OkText=""تایید""
            CancelText=""انصراف""
            Message=""آیا می خواهید این پیام را بدون موضوع ارسال کنید؟"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool IsOpen10 = false;";
 }

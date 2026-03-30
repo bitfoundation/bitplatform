@@ -155,4 +155,144 @@ public class BitDialogTests : BunitTestContext
 
         Assert.AreEqual(expected, roleDiv.GetAttribute("role"));
     }
+
+    [TestMethod]
+    public void BitDialogDefaultCloseIconShouldRenderCancelIcon()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+        });
+
+        var icon = component.Find(".bit-dlg-cli");
+
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon"));
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--Cancel"));
+    }
+
+    [TestMethod,
+        DataRow("ChromeClose"),
+        DataRow("Cancel")
+    ]
+    public void BitDialogCloseIconNameTest(string iconName)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.CloseIconName, iconName);
+        });
+
+        var icon = component.Find(".bit-dlg-cli");
+
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon"));
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
+    }
+
+    [TestMethod,
+        DataRow("fa-solid fa-xmark"),
+        DataRow("bi bi-x-lg")
+    ]
+    public void BitDialogCloseIconWithCssClassesTest(string cssClasses)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.CloseIcon, (BitIconInfo)cssClasses!);
+        });
+
+        var icon = component.Find(".bit-dlg-cli");
+
+        var classes = cssClasses.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
+        foreach (var cls in classes)
+        {
+            Assert.IsTrue(icon.ClassList.Contains(cls), $"Icon should contain class '{cls}'");
+        }
+    }
+
+    [TestMethod]
+    public void BitDialogCloseIconInfoCssHelperTest()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.CloseIcon, BitIconInfo.Css("fa-solid fa-circle-xmark"));
+        });
+
+        var icon = component.Find(".bit-dlg-cli");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-circle-xmark"));
+    }
+
+    [TestMethod]
+    public void BitDialogCloseIconInfoFaHelperTest()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.CloseIcon, BitIconInfo.Fa("solid xmark"));
+        });
+
+        var icon = component.Find(".bit-dlg-cli");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-xmark"));
+    }
+
+    [TestMethod]
+    public void BitDialogCloseIconInfoBiHelperTest()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.CloseIcon, BitIconInfo.Bi("x-lg"));
+        });
+
+        var icon = component.Find(".bit-dlg-cli");
+
+        Assert.IsTrue(icon.ClassList.Contains("bi"));
+        Assert.IsTrue(icon.ClassList.Contains("bi-x-lg"));
+    }
+
+    [TestMethod]
+    public void BitDialogCloseIconTakesPrecedenceOverCloseIconNameTest()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.CloseIcon, BitIconInfo.Fa("solid xmark"));
+            parameters.Add(p => p.CloseIconName, "Cancel");
+        });
+
+        var icon = component.Find(".bit-dlg-cli");
+
+        // CloseIcon parameter should take precedence
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-xmark"));
+
+        // Should not contain CloseIconName classes
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Cancel"));
+    }
 }
