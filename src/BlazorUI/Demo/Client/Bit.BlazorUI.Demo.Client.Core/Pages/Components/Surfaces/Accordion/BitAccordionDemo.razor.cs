@@ -213,10 +213,24 @@ public partial class BitAccordionDemo
                 },
                 new()
                 {
+                    Name = "ExpanderIconWapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the expander icon wrapper of the BitAccordion."
+                },
+                new()
+                {
                     Name = "ExpanderIcon",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the expander icon of the BitAccordion."
+                },
+                new()
+                {
+                    Name = "ExpandedIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the icon of the BitAccordion in expanded state."
                 },
                 new()
                 {

@@ -33,9 +33,19 @@ public class BitAccordionClassStyles
     public string? Description { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the expander icon wrapper of the BitAccordion.
+    /// </summary>
+    public string? ExpanderIconWrapper { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the expander icon of the BitAccordion.
     /// </summary>
     public string? ExpanderIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the icon of the BitAccordion in expanded state.
+    /// </summary>
+    public string? ExpandedIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the content container of the BitAccordion.

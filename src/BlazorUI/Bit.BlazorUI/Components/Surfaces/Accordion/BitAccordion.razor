@@ -33,9 +33,12 @@
                     </div>
                 }
             </div>
-            <i aria-hidden="true"
-               style="@Styles?.ExpanderIcon"
-               class="@expanderIcon?.GetCssClasses() bit-acd-exi@(IsExpanded ? " bit-acd-hex" : "") @Classes?.ExpanderIcon" />
+            <span style="@Styles?.ExpanderIconWrapper"
+                  class="bit-acd-eiw@(IsExpanded ? " bit-ico--r180" : "") @Classes?.ExpanderIconWrapper">
+                <i aria-hidden="true"
+                   style="@Styles?.ExpanderIcon @(IsExpanded ? Styles?.ExpandedIcon : "")"
+                   class="@expanderIcon?.GetCssClasses() bit-acd-eic@(IsExpanded ? Classes?.ExpandedIcon : "") @Classes?.ExpanderIcon" />
+            </span>
         }
     </button>
 

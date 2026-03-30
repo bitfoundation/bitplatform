@@ -1,4 +1,4 @@
-﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
@@ -80,7 +80,6 @@
             @include lt-lg {
                 min-width: unset;
                 width: rem2(42px);
-                padding: rem2(4px) rem2(20px);
 
                 .show-code-lbl {
                     display: none;

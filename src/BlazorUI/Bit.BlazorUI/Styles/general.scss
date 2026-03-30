@@ -1,4 +1,4 @@
-﻿@import "functions.scss";
+@import "functions.scss";
 
 @import "bit-css.scss";
 @import "components.scss";
@@ -43,6 +43,14 @@ button {
 
 .bit-ico-r180 {
     transform: rotate(180deg);
+}
+
+.bit-ico--r90 {
+    transform: rotate(-90deg);
+}
+
+.bit-ico--r180 {
+    transform: rotate(-180deg);
 }
 
 @keyframes bit-fade-show {
