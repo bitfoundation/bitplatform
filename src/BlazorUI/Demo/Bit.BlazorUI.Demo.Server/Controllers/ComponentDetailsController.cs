@@ -23,7 +23,7 @@ public partial class ComponentDetailsController : AppControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetParameters))]
-    [Description("Gets the properties of a specified component.")]
+    [Description("Gets the parameters of a specified component.")]
     public async Task<ComponentParameterDetailsDto[]> GetParameters(string componentName)
     {
         if (string.IsNullOrWhiteSpace(componentName))
