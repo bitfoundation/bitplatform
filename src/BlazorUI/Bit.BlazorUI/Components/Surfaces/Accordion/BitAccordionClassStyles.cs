@@ -33,9 +33,9 @@ public class BitAccordionClassStyles
     public string? Description { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the chevron down icon of the BitAccordion.
+    /// Custom CSS classes/styles for the expander icon of the BitAccordion.
     /// </summary>
-    public string? ChevronDownIcon { get; set; }
+    public string? ExpanderIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the content container of the BitAccordion.

@@ -43,6 +43,19 @@ public partial class BitAccordion : BitComponentBase
     [Parameter] public string? Description { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to display as expander using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="ExpanderIconName"/> when both are set.
+    /// Defaults to the ChevronRight icon if neither property is set.
+    /// </summary>
+    [Parameter] public BitIconInfo? ExpanderIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display as expander from the built-in Fluent UI icons.
+    /// Defaults to <c>ChevronRight</c> if not set.
+    /// </summary>
+    [Parameter] public string? ExpanderIconName { get; set; }
+
+    /// <summary>
     /// Used to customize the header of the accordion.
     /// </summary>
     [Parameter] public RenderFragment<bool>? HeaderTemplate { get; set; }

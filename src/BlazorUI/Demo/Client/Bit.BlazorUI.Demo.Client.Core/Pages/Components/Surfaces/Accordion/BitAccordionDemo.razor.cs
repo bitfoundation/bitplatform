@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Surfaces.Accordion;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Surfaces.Accordion;
 
 public partial class BitAccordionDemo
 {
@@ -58,6 +58,20 @@ public partial class BitAccordionDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "A short description in the header of the accordion."
+        },
+        new()
+        {
+            Name = "ExpanderIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display as expander using custom CSS classes for external icon libraries. Takes precedence over ExpanderIconName when both are set. Defaults to the ChevronRight icon if neither property is set."
+        },
+        new()
+        {
+            Name = "ExpanderIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display as expander from the built-in Fluent UI icons. Defaults to ChevronRight if not set."
         },
         new()
         {
@@ -199,10 +213,10 @@ public partial class BitAccordionDemo
                 },
                 new()
                 {
-                    Name = "ChevronDownIcon",
+                    Name = "ExpanderIcon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the chevron down icon of the BitAccordion."
+                    Description = "Custom CSS classes/styles for the expander icon of the BitAccordion."
                 },
                 new()
                 {
@@ -464,5 +478,14 @@ private bool AccordionToggleIsExpanded;";
     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
     چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
     و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+</BitAccordion>";
+
+    private readonly string example11RazorCode = @"
+<BitAccordion Title=""ExpanderIconName"" ExpanderIconName=""ChevronDown"">
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+</BitAccordion>
+
+<BitAccordion Title=""ExpanderIcon"" ExpanderIcon=""@BitIconInfo.Bit(""ChevronDownEnd"")"">
+    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
 }
