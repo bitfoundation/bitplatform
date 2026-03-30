@@ -214,6 +214,24 @@ public partial class BitPersona : BitComponentBase
     public bool Unknown { get; set; }
 
     /// <summary>
+    /// Icon for the unknown persona coin.
+    /// </summary>
+    /// <remarks>
+    /// When both <see cref="UnknownIcon"/> and <see cref="UnknownIconName"/> are provided, <see cref="UnknownIcon"/> takes precedence.
+    /// Use this property when you need to configure an external or custom icon (for example, when using a custom icon font or SVG).
+    /// </remarks>
+    [Parameter] public BitIconInfo? UnknownIcon { get; set; }
+
+    /// <summary>
+    /// Icon name for the unknown persona coin.
+    /// </summary>
+    /// <remarks>
+    /// This is a convenience property for specifying an icon from the built-in icon set.
+    /// If <see cref="UnknownIcon"/> is specified, this property is ignored and the value of <see cref="UnknownIcon"/> will be used instead.
+    /// </remarks>
+    [Parameter] public string? UnknownIconName { get; set; }
+
+    /// <summary>
     /// Reverses the texts and image location.
     /// </summary>
     [Parameter, ResetClassBuilder]

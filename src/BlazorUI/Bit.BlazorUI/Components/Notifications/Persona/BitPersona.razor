@@ -39,7 +39,9 @@
             <div style="@GetImageContainerStyle()" class="@GetImageContainerClass()" @onclick="HandleImageClick">
                 @if (Unknown)
                 {
-                    <i style="@Styles?.UnknownIcon" class="bit-icon bit-icon--Help @Classes?.UnknownIcon" role="presentation" />
+                    var unknownIconInfo = BitIconInfo.From(UnknownIcon, UnknownIconName ?? "Help");
+
+                    <i style="@Styles?.UnknownIcon" class="@unknownIconInfo?.GetCssClasses() @Classes?.UnknownIcon" role="presentation" />
                 }
                 else if (ImageUrl.HasValue() || CoinTemplate is not null)
                 {

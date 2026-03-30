@@ -230,6 +230,22 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "UnknownIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Icon for the unknown persona coin using BitIconInfo. Takes precedence over UnknownIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "UnknownIconName",
+            Type = "string?",
+            DefaultValue = "Help",
+            Description = "Icon name for the unknown persona coin.",
+        },
+        new()
+        {
             Name = "Reversed",
             Type = "bool",
             DefaultValue = "false",
