@@ -70,6 +70,8 @@ public class Middlewares
 
         app.MapControllers();
 
+        app.MapMcp("/mcp");
+
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
         var healthCheckSettings = appSettings.HealthCheckSettings;

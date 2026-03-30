@@ -1,48 +1,57 @@
 ﻿using System.Xml.Linq;
 using System.Reflection;
+using System.Collections;
+using System.ComponentModel;
+using ModelContextProtocol.Server;
 
 namespace Bit.BlazorUI.Demo.Server.Controllers;
 
+// Subject to change:
+// This controller / mcp endpoint is designed to be used for experimental purposes.
+
 [ApiController]
+[McpServerToolType]
 [Route("api/[controller]/[action]")]
 public partial class ComponentDetailsController : AppControllerBase
 {
     private static XDocument? SummariesXmlDocument = null;
-    private static readonly Assembly ComponentsAssembly = typeof(BitButton).Assembly;
+
+    private static readonly Assembly[] ComponentsAssemblies = [typeof(_Imports).Assembly, typeof(Extras._Imports).Assembly];
+
+    private static readonly Type[] ComponentTypes = [.. ComponentsAssemblies.SelectMany(asm => asm.GetExportedTypes()
+                                                        .Where(type => typeof(BitComponentBase).IsAssignableFrom(type) && !type.IsAbstract))];
 
     [HttpGet]
-    public async Task<ActionResult<List<ComponentPropertyDetailsDto>>> GetProperties(string name)
+    [McpServerTool(Name = nameof(GetParameters))]
+    [Description("Gets the properties of a specified component.")]
+    public async Task<ComponentParameterDetailsDto[]> GetParameters(string componentName)
     {
+        if (string.IsNullOrWhiteSpace(componentName))
+            return [];
+
         SummariesXmlDocument ??= await LoadSummariesXmlDocumentAsync();
 
-        if (string.IsNullOrWhiteSpace(name))
-            return BadRequest("Component Name is empty.");
+        var componentType = ComponentTypes.FirstOrDefault(type =>
+        {
+            var typeName = type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name;
 
-        var componentType = ComponentsAssembly.ExportedTypes
-                                              .FirstOrDefault(type =>
-                                              {
-                                                  if (type.IsGenericType)
-                                                  {
-                                                      var typeName = type.Name[..type.Name.IndexOf("`")];
-                                                      return typeName.Equals(name, StringComparison.InvariantCultureIgnoreCase);
-                                                  }
-
-                                                  return type.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase);
-                                              });
+            return typeName.Equals(componentName, StringComparison.InvariantCultureIgnoreCase);
+        });
 
         if (componentType is null)
-            return NotFound("No component type found.");
+            return [];
 
-        var concreteComponentType = componentType.IsGenericType ? componentType.MakeGenericType(typeof(string)) : componentType;
+        var concreteComponentType = componentType.IsGenericType ? componentType.MakeGenericType([.. Enumerable.Repeat(typeof(object), componentType.GetGenericArguments().Length)]) : componentType;
 
-        var componentInstance = Activator.CreateInstance(concreteComponentType);
+        var componentInstance = Activator.CreateInstance(concreteComponentType)
+            ?? throw new InvalidOperationException($"Could not create an instance of {concreteComponentType.FullName}.");
 
         var componentNamePrefix = $"{componentType.FullName}.";
 
         var baseComponentType = typeof(BitComponentBase);
         var baseComponentNamePrefix = $"{baseComponentType.FullName}.";
 
-        return Ok(componentType.GetProperties()
+        return [.. componentType.GetProperties()
                               .Where(p => Attribute.IsDefined(p, typeof(Microsoft.AspNetCore.Components.ParameterAttribute)))
                               .Select(prop =>
                               {
@@ -51,24 +60,44 @@ public partial class ComponentDetailsController : AppControllerBase
                                                             .FirstOrDefault(a => a.Value.Contains(componentNamePrefix + prop.Name) || a.Value.Contains(baseComponentNamePrefix + prop.Name));
 
                                   var typeName = GetTypeName(prop.PropertyType);
-                                  return new
+
+                                  return new ComponentParameterDetailsDto
                                   {
-                                      prop.Name,
+                                      Name = prop.Name,
                                       Type = typeName,
                                       DefaultValue = GetDefaultValue(prop, componentInstance!, typeName, concreteComponentType),
-                                      Description = xmlProperty?.Parent?.Element("summary")?.Value.Trim(),
+                                      Description = xmlProperty?.Parent?.Element("summary")?.Value?.Trim(),
                                   };
-                              }));
+                              })];
     }
 
     private static async Task<XDocument?> LoadSummariesXmlDocumentAsync()
     {
-        string path = Path.Combine(AppContext.BaseDirectory, $"{ComponentsAssembly.GetName().Name}.xml");
+        XDocument? mergedDoc = null;
 
-        if (System.IO.File.Exists(path) is false) return null;
+        foreach (var asm in ComponentsAssemblies)
+        {
+            string path = Path.Combine(AppContext.BaseDirectory, $"{asm.GetName().Name}.xml");
 
-        var stream = System.IO.File.OpenRead(path);
-        return await XDocument.LoadAsync(stream, LoadOptions.None, default);
+            using var stream = System.IO.File.OpenRead(path);
+
+            var doc = await XDocument.LoadAsync(stream, LoadOptions.None, default);
+
+            if (mergedDoc is null)
+            {
+                mergedDoc = doc;
+            }
+            else
+            {
+                var membersElement = doc.Root?.Element("members");
+                foreach (var member in membersElement!.Elements("member"))
+                {
+                    mergedDoc.Root!.Element("members")?.Add(member);
+                }
+            }
+        }
+
+        return mergedDoc;
     }
 
     private static string GetTypeName(Type type)
@@ -76,7 +105,7 @@ public partial class ComponentDetailsController : AppControllerBase
         if (type.IsGenericType)
         {
             var arguments = string.Join(", ", type.GetGenericArguments().Select(x => x.Name));
-            var mainType = type.Name[..type.Name.IndexOf('`')];
+            var mainType = type.Name[..type.Name.IndexOf('`', StringComparison.Ordinal)];
             return $"{mainType}<{GetTypeNameOrAlias(arguments)}>";
         }
 
@@ -112,10 +141,14 @@ public partial class ComponentDetailsController : AppControllerBase
             property = concreteComponentType.GetProperty(property!.Name);
         }
 
-        var value = property!.GetValue(instance)?.ToString();
+        if (property!.PropertyType?.Name?.Contains("EventCallback", StringComparison.Ordinal) is true) return null;
 
-        if (string.IsNullOrWhiteSpace(value) || property.PropertyType.IsGenericType is false) return value;
+        var value = property.GetValue(instance);
 
-        return $"new {typeName}()";
+        if (value is null) return null;
+        if (value is IList list && list.Count == 0) return "[]";
+        if (value is IDictionary dictionary && dictionary.Count == 0) return "[]";
+
+        return value.ToString();
     }
 }

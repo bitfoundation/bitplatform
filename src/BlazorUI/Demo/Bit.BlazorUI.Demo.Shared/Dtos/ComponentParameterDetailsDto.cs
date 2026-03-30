@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Shared.Dtos;
 
-public class ComponentPropertyDetailsDto
+public class ComponentParameterDetailsDto
 {
     public string? Name { get; set; }
     public string? DefaultValue { get; set; }

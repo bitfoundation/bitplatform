@@ -45,6 +45,10 @@ public static class Services
             options.EnableDetailedErrors = env.IsDevelopment();
         });
 
+        services.AddMcpServer()
+            .WithHttpTransport()
+            .WithToolsFromAssembly();
+
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.All;
