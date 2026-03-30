@@ -472,20 +472,58 @@ private bool AccordionToggleIsExpanded;";
 </BitAccordion>";
 
     private readonly string example10RazorCode = @"
-<BitAccordion Dir=""BitDir.Rtl"" 
-              Title=""تنظیمات"" 
-              Description=""من یک آکاردئون هستم!"">
-    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
-    و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-</BitAccordion>";
-
-    private readonly string example11RazorCode = @"
 <BitAccordion Title=""ExpanderIconName"" ExpanderIconName=""ChevronDown"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 
 <BitAccordion Title=""ExpanderIcon"" ExpanderIcon=""@BitIconInfo.Bit(""ChevronDownEnd"")"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+</BitAccordion>";
+
+    private readonly string example11RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitAccordion Title=""House"" ExpanderIcon=""@(""fa-solid fa-house"")"">
+    ExpanderIcon=@@(""fa-solid fa-house"")
+</BitAccordion>
+        
+<BitAccordion Title=""Heart"" ExpanderIcon=""@BitIconInfo.Css(""fa-solid fa-heart"")"">
+    ExpanderIcon=""@@BitIconInfo.Css(""fa-solid fa-heart"")""
+</BitAccordion>
+        
+<BitAccordion Title=""GitHub"" ExpanderIcon=""@BitIconInfo.Fa(""fa-brands fa-github"")"">
+    ExpanderIcon=""@@BitIconInfo.Fa(""fa-brands fa-github"")""
+</BitAccordion>
+        
+<BitAccordion Title=""Rocket"" ExpanderIcon=""@BitIconInfo.Fa(""solid rocket"")"">
+    ExpanderIcon=""@@BitIconInfo.Fa(""solid rocket"")""
+</BitAccordion>
+
+
+<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
+
+<BitAccordion Title=""House"" ExpanderIcon=""@(""bi bi-house-fill"")"">
+    ExpanderIcon=@@(""bi bi-house-fill"")
+</BitAccordion>
+        
+<BitAccordion Title=""Heart"" ExpanderIcon=""@BitIconInfo.Css(""bi bi-heart-fill"")"">
+    ExpanderIcon=""@@BitIconInfo.Css(""bi bi-heart-fill"")""
+</BitAccordion>
+        
+<BitAccordion Title=""GitHub"" ExpanderIcon=""@BitIconInfo.Bi(""github"")"">
+    ExpanderIcon=""@@BitIconInfo.Bi(""github"")""
+</BitAccordion>
+        
+<BitAccordion Title=""Gear"" ExpanderIcon=""@BitIconInfo.Bi(""gear-fill"")"">
+    ExpanderIcon=""@@BitIconInfo.Bi(""gear-fill"")""
+</BitAccordion>";
+
+    private readonly string example12RazorCode = @"
+<BitAccordion Dir=""BitDir.Rtl"" 
+              Title=""تنظیمات"" 
+              Description=""من یک آکاردئون هستم!"">
+    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+    چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است
+    و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
 </BitAccordion>";
 }
