@@ -497,39 +497,39 @@ private bool AccordionToggleIsExpanded;";
     private readonly string example11RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
-<BitAccordion Title=""House"" ExpanderIcon=""@(""fa-solid fa-house"")"">
-    ExpanderIcon=@@(""fa-solid fa-house"")
+<BitAccordion Title=""Chevron Down"" ExpanderIcon=""@(""fa-solid fa-chevron-down"")"">
+    ExpanderIcon=@@(""fa-solid fa-chevron-down"")
 </BitAccordion>
         
-<BitAccordion Title=""Heart"" ExpanderIcon=""@BitIconInfo.Css(""fa-solid fa-heart"")"">
-    ExpanderIcon=""@@BitIconInfo.Css(""fa-solid fa-heart"")""
+<BitAccordion Title=""Chevron Right"" ExpanderIcon=""@BitIconInfo.Css(""fa-solid fa-chevron-right"")"">
+    ExpanderIcon=""@@BitIconInfo.Css(""fa-solid fa-chevron-right"")""
 </BitAccordion>
         
-<BitAccordion Title=""GitHub"" ExpanderIcon=""@BitIconInfo.Fa(""fa-brands fa-github"")"">
-    ExpanderIcon=""@@BitIconInfo.Fa(""fa-brands fa-github"")""
+<BitAccordion Title=""Angle Down"" ExpanderIcon=""@BitIconInfo.Fa(""solid angle-down"")"">
+    ExpanderIcon=""@@BitIconInfo.Fa(""solid angle-down"")""
 </BitAccordion>
         
-<BitAccordion Title=""Rocket"" ExpanderIcon=""@BitIconInfo.Fa(""solid rocket"")"">
-    ExpanderIcon=""@@BitIconInfo.Fa(""solid rocket"")""
+<BitAccordion Title=""Caret Down"" ExpanderIcon=""@BitIconInfo.Fa(""solid caret-down"")"">
+    ExpanderIcon=""@@BitIconInfo.Fa(""solid caret-down"")""
 </BitAccordion>
 
 
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
-<BitAccordion Title=""House"" ExpanderIcon=""@(""bi bi-house-fill"")"">
-    ExpanderIcon=@@(""bi bi-house-fill"")
+<BitAccordion Title=""Chevron Down"" ExpanderIcon=""@(""bi bi-chevron-down"")"">
+    ExpanderIcon=@@(""bi bi-chevron-down"")
 </BitAccordion>
         
-<BitAccordion Title=""Heart"" ExpanderIcon=""@BitIconInfo.Css(""bi bi-heart-fill"")"">
-    ExpanderIcon=""@@BitIconInfo.Css(""bi bi-heart-fill"")""
+<BitAccordion Title=""Chevron Right"" ExpanderIcon=""@BitIconInfo.Css(""bi bi-chevron-right"")"">
+    ExpanderIcon=""@@BitIconInfo.Css(""bi bi-chevron-right"")""
 </BitAccordion>
         
-<BitAccordion Title=""GitHub"" ExpanderIcon=""@BitIconInfo.Bi(""github"")"">
-    ExpanderIcon=""@@BitIconInfo.Bi(""github"")""
+<BitAccordion Title=""Arrow Down"" ExpanderIcon=""@BitIconInfo.Bi(""arrow-down"")"">
+    ExpanderIcon=""@@BitIconInfo.Bi(""arrow-down"")""
 </BitAccordion>
         
-<BitAccordion Title=""Gear"" ExpanderIcon=""@BitIconInfo.Bi(""gear-fill"")"">
-    ExpanderIcon=""@@BitIconInfo.Bi(""gear-fill"")""
+<BitAccordion Title=""Caret Down Fill"" ExpanderIcon=""@BitIconInfo.Bi(""caret-down-fill"")"">
+    ExpanderIcon=""@@BitIconInfo.Bi(""caret-down-fill"")""
 </BitAccordion>";
 
     private readonly string example12RazorCode = @"
