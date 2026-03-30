@@ -35,7 +35,8 @@
                     </div>
                 }
             </div>
-            <i style="@Styles?.ExpanderIcon"
+            <i aria-hidden="true"
+               style="@Styles?.ExpanderIcon"
                class="@expanderIcon.GetCssClasses() bit-acd-exi@(IsExpanded ? " bit-acd-hex" : "") @Classes?.ExpanderIcon" />
         }
     </button>
