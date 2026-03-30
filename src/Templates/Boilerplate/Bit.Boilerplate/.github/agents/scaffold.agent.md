@@ -1,7 +1,6 @@
 ---
 name: scaffold
 description: Scaffolds complete CRUD entity implementations including entity model, EF configuration, DTO, Mapperly mapper, API controller, IAppController interface, resource strings, and Blazor pages.
-tools: ["read", "edit", "search", "terminal"]
 ---
 
 # Scaffold Complete Entity with Full CRUD

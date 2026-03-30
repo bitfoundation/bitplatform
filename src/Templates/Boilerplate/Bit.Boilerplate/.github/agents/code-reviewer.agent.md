@@ -1,7 +1,6 @@
 ---
 name: code-reviewer
 description: Reviews code changes against the project's coding conventions and best practices. Focuses on Bit.BlazorUI usage, theming, lifecycle methods, Mapperly conventions, structured logging, modern C#, error handling, security, and nullable awareness. Does not modify code.
-tools: ["read", "search"]
 ---
 
 # Project Code Reviewer
