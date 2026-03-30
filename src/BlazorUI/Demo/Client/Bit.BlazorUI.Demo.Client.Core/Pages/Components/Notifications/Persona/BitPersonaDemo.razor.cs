@@ -241,7 +241,7 @@ public partial class BitPersonaDemo
         {
             Name = "UnknownIconName",
             Type = "string?",
-            DefaultValue = "Help",
+            DefaultValue = "null",
             Description = "Icon name for the unknown persona coin.",
         },
         new()
