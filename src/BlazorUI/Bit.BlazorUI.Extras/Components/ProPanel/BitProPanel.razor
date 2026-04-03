@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <BitPanel AriaLabel="@AriaLabel"
@@ -43,10 +43,15 @@
             @if (ShowCloseButton)
             {
                 var closeIcon = BitIconInfo.From(CloseIcon, CloseIconName ?? "Cancel");
+
                 <button @onclick="ClosePanel"
+                        type="button"
+                        title="Close"
+                        aria-label="Close"
                         style="@Styles?.CloseButton"
                         class="bit-ppl-cls @Classes?.CloseButton">
-                    <i style="@Styles?.CloseIcon" class="bit-ppl-cli @closeIcon?.GetCssClasses() @Classes?.CloseIcon" />
+                    <i style="@Styles?.CloseIcon"
+                       class="@closeIcon?.GetCssClasses() @Classes?.CloseIcon" />
                 </button>
             }
         </div>

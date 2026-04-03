@@ -707,8 +707,8 @@ private bool isPanelClassesOpen;";
 private bool isExternalIconProPanelOpen;";
 
     private readonly string example8RazorCode = @"
-<BitButton OnClick=""() => isRtlPanelOpenStart = true"">آغاز</BitButton>
-<BitButton OnClick=""() => isRtlPanelOpenEnd = true"">پایان</BitButton>
+<BitButton OnClick=""() => isRtlProPanelOpenStart = true"">آغاز</BitButton>
+<BitButton OnClick=""() => isRtlProPanelOpenEnd = true"">پایان</BitButton>
 
 <BitProPanel @bind-IsOpen=""isRtlProPanelOpenStart""
              Dir=""BitDir.Rtl""
