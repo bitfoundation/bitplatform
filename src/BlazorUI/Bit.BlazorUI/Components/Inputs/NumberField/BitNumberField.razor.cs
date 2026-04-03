@@ -768,15 +768,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         if (value is double doubleValue)
         {
-            return (TValue)Convert.ChangeType(Math.Round(doubleValue, _precision), typeof(TValue));
+            return (TValue)Convert.ChangeType(Math.Round(doubleValue, _precision), _typeOfValue);
         }
         else if (value is float floatValue)
         {
-            return (TValue)Convert.ChangeType(Math.Round(floatValue, _precision), typeof(TValue));
+            return (TValue)Convert.ChangeType(Math.Round(floatValue, _precision), _typeOfValue);
         }
         else if (value is decimal decimalValue)
         {
-            return (TValue)Convert.ChangeType(Math.Round(decimalValue, _precision), typeof(TValue));
+            return (TValue)Convert.ChangeType(Math.Round(decimalValue, _precision), _typeOfValue);
         }
 
         return value;
