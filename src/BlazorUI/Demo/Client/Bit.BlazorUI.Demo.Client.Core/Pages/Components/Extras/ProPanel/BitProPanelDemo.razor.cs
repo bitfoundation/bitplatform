@@ -683,10 +683,10 @@ private BitTextField onDismissTextFieldRef = default!;";
     </div>
 </BitProPanel>";
     private readonly string example6CsharpCode = @"
-private bool isStyledPanelOpen;
-private bool isClassedPanelOpen;
-private bool isPanelStylesOpen;
-private bool isPanelClassesOpen;";
+private bool isStyledProPanelOpen;
+private bool isClassedProPanelOpen;
+private bool isProPanelStylesOpen;
+private bool isProPanelClassesOpen;";
 
     private readonly string example7RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
