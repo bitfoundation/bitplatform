@@ -35,6 +35,26 @@ public partial class BitProPanel : BitComponentBase
     [Parameter] public BitProPanelClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// Gets or sets the icon to display in the close button using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="CloseIconName"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// For built-in Fluent UI icons, use <see cref="CloseIconName"/> instead.
+    /// </remarks>
+    [Parameter] public BitIconInfo? CloseIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the icon to display in the close button from the built-in Fluent UI icons.
+    /// </summary>
+    /// <remarks>
+    /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Cancel</c>).
+    /// <br />
+    /// For external icon libraries, use <see cref="CloseIcon"/> instead.
+    /// </remarks>
+    [Parameter] public string? CloseIconName { get; set; }
+
+    /// <summary>
     /// The template used to render the footer section of the panel.
     /// </summary>
     [Parameter] public RenderFragment? Footer { get; set; }

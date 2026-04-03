@@ -43,6 +43,24 @@ public partial class BitProPanelDemo
         },
         new()
         {
+            Name = "CloseIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the icon to display in the close button using custom CSS classes for external icon libraries. Takes precedence over CloseIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "CloseIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the icon to display in the close button from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
             Name = "Footer",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -240,6 +258,35 @@ public partial class BitProPanelDemo
                    Description = "Custom CSS classes/styles for the footer container of the BitProPanel."
                }
             ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the name of the icon."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the base CSS class for the icon. For built-in Fluent UI icons, this defaults to \"bit-icon\". For external icon libraries like FontAwesome, you might set this to \"fa\" or leave empty."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Gets or sets the CSS class prefix used before the icon name. For built-in Fluent UI icons, this defaults to \"bit-icon--\". For external icon libraries, you might set this to \"fa-\" or leave empty."
+               },
+            ]
         }
     ];
 
@@ -290,6 +337,8 @@ public partial class BitProPanelDemo
     private bool isClassedProPanelOpen;
     private bool isProPanelStylesOpen;
     private bool isProPanelClassesOpen;
+
+    private bool isExternalIconProPanelOpen;
 
     private bool isRtlProPanelOpenStart;
     private bool isRtlProPanelOpenEnd;
@@ -640,6 +689,24 @@ private bool isPanelStylesOpen;
 private bool isPanelClassesOpen;";
 
     private readonly string example7RazorCode = @"
+<link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+<BitButton OnClick=""() => isExternalIconProPanelOpen = true"">Open ProPanel</BitButton>
+<BitProPanel @bind-IsOpen=""isExternalIconProPanelOpen""
+             ShowCloseButton
+             HeaderText=""External Close Icon""
+             CloseIcon=""@BitIconInfo.Fa(""solid xmark"")"">  
+    <div style=""max-width:300px"">
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+    </div>
+</BitProPanel>";
+    private readonly string example7CsharpCode = @"
+private bool isExternalIconProPanelOpen;";
+
+    private readonly string example8RazorCode = @"
 <BitButton OnClick=""() => isRtlPanelOpenStart = true"">آغاز</BitButton>
 <BitButton OnClick=""() => isRtlPanelOpenEnd = true"">پایان</BitButton>
 
@@ -665,7 +732,7 @@ private bool isPanelClassesOpen;";
         در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
     </div>
 </BitProPanel>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool isRtlProPanelOpenStart;
 private bool isRtlProPanelOpenEnd;";
 }

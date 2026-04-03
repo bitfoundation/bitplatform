@@ -322,7 +322,25 @@
                 </BitProPanel>
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <DemoExample Title="External Icon" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+                <div>Use icons from external libraries like FontAwesome to customize the close button icon with the <b>CloseIcon</b> parameter.</div>
+                <br /><br />
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+                <BitButton OnClick="() => isExternalIconProPanelOpen = true">Open ProPanel</BitButton>
+                <BitProPanel @bind-IsOpen="isExternalIconProPanelOpen"
+                             ShowCloseButton
+                             HeaderText="External Close Icon"
+                             CloseIcon="@BitIconInfo.Fa("solid xmark")">
+                    <div style="max-width:300px">
+                        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
+                        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
+                        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
+                        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+                    </div>
+                </BitProPanel>
+            </DemoExample>
+
+            <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
                 <div>Use BitProPanel in right-to-left (RTL).</div>
                 <br /><br />
                 <div>

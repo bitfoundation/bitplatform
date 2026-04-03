@@ -42,10 +42,11 @@
 
             @if (ShowCloseButton)
             {
+                var closeIcon = BitIconInfo.From(CloseIcon, CloseIconName ?? "Cancel");
                 <button @onclick="ClosePanel"
                         style="@Styles?.CloseButton"
                         class="bit-ppl-cls @Classes?.CloseButton">
-                    <i style="@Styles?.CloseIcon" class="bit-icon bit-icon--Cancel @Classes?.CloseIcon" />
+                    <i style="@Styles?.CloseIcon" class="bit-ppl-cli @closeIcon?.GetCssClasses() @Classes?.CloseIcon" />
                 </button>
             }
         </div>
