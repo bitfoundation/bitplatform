@@ -13,7 +13,6 @@
         <PackageVersion Include="Bit.SourceGenerators" Version="10.4.4-pre-01" />
         <PackageVersion Include="DistributedLock.FileSystem" Version="1.0.3" />
         <PackageVersion Include="Fido2.AspNet" Version="4.0.1" />
-        <PackageVersion Include="Fido2.Models" Version="4.0.0" />
         <PackageVersion Include="HtmlSanitizer" Version="9.0.892" />
         <PackageVersion Include="libphonenumber-csharp" Version="9.0.27" />
         <PackageVersion Include="Meziantou.Framework.Win32.Jobs" Version="3.5.4" />
