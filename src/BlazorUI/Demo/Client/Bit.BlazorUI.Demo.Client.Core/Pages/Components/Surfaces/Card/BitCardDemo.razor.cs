@@ -31,6 +31,13 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "Elevation",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Sets the shadow elevation level of the card (1-24). Maps to theme shadow variables (--bit-shd-1 to --bit-shd-24).",
+        },
+        new()
+        {
             Name = "FullHeight",
             Type = "bool",
             DefaultValue = "false",
@@ -98,6 +105,7 @@ public partial class BitCardDemo
 
 
 
+    private double elevation = 4;
     private BitColorKind backgroundColorKind = BitColorKind.Primary;
     private BitColorKind borderColorKind = BitColorKind.Primary;
     private int size = 0;
@@ -116,6 +124,21 @@ public partial class BitCardDemo
 </BitCard>";
 
     private readonly string example2RazorCode = @"
+<BitSlider @bind-Value=""elevation"" Min=""1"" Max=""24"" Step=""1"" Label=""Elevation"" />
+
+<BitCard Elevation=""(int)elevation"">
+    <BitStack HorizontalAlign=""BitAlignment.Start"">
+        <BitText Typography=""BitTypography.H4"">bit BlazorUI</BitText>
+        <BitText Typography=""BitTypography.Body1"">
+            bit BlazorUI components are native, easy-to-customize, and ...
+        </BitText>
+        <BitLink Href=""https://blazorui.bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
+    </BitStack>
+</BitCard>";
+    private readonly string example2CSharpCode = @"
+private double elevation = 4;";
+
+    private readonly string example3RazorCode = @"
 <BitCard NoShadow>
     <BitStack HorizontalAlign=""BitAlignment.Start"">
         <BitText Typography=""BitTypography.H4"">bit BlazorUI</BitText>
@@ -126,7 +149,7 @@ public partial class BitCardDemo
     </BitStack>
 </BitCard>";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitChoiceGroup @bind-Value=""backgroundColorKind"" Horizontal
                 TItem=""BitChoiceGroupOption<BitColorKind>"" TValue=""BitColorKind"">
     <BitChoiceGroupOption Text=""Primary"" Value=""BitColorKind.Primary"" />
@@ -146,10 +169,10 @@ public partial class BitCardDemo
         </BitStack>
     </BitCard>
 </div>";
-    private readonly string example3CSharpCode = @"
+    private readonly string example4CSharpCode = @"
 private BitColorKind backgroundColorKind = BitColorKind.Primary;";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitChoiceGroup @bind-Value=""borderColorKind"" Horizontal
                 TItem=""BitChoiceGroupOption<BitColorKind>"" TValue=""BitColorKind"">
     <BitChoiceGroupOption Text=""Primary"" Value=""BitColorKind.Primary"" />
@@ -167,10 +190,10 @@ private BitColorKind backgroundColorKind = BitColorKind.Primary;";
         <BitLink Href=""https://blazorui.bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
     </BitStack>
 </BitCard>";
-    private readonly string example4CSharpCode = @"
+    private readonly string example5CSharpCode = @"
 private BitColorKind borderColorKind = BitColorKind.Primary;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitChoiceGroup @bind-Value=""size"" Horizontal
                 TItem=""BitChoiceGroupOption<int>"" TValue=""int"">
     <BitChoiceGroupOption Text=""FullSize"" Value=""0"" />
@@ -189,6 +212,6 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
         </BitStack>
     </BitCard>
 </div>";
-    private readonly string example5CSharpCode = @"
+    private readonly string example6CSharpCode = @"
 private int size = 0;";
 }

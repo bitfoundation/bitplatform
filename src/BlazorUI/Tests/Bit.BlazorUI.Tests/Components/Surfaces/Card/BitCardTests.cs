@@ -157,4 +157,39 @@ public class BitCardTests : BunitTestContext
             Assert.IsFalse(card.ClassList.Contains("bit-crd-nsd"));
         }
     }
+
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(12)]
+    [DataRow(24)]
+    public void BitCardElevationShouldApplyCorrectClass(int elevation)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Elevation, elevation);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains($"bit-crd-e{elevation}"));
+    }
+
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(25)]
+    [DataRow(-1)]
+    public void BitCardElevationOutOfRangeShouldBeIgnored(int elevation)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Elevation, elevation);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        for (var i = 1; i <= 24; i++)
+        {
+            Assert.IsFalse(card.ClassList.Contains($"bit-crd-e{i}"));
+        }
+    }
 }

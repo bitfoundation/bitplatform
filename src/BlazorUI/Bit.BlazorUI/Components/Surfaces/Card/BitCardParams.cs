@@ -33,6 +33,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public BitColorKind? Border { get; set; }
 
     /// <summary>
+    /// Sets the shadow elevation level of the card (1-24).
+    /// </summary>
+    public int? Elevation { get; set; }
+
+    /// <summary>
     /// Makes the card height 100% of its parent container.
     /// </summary>
     public bool? FullHeight { get; set; }
@@ -81,6 +86,13 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (Border.HasValue && bitCard.HasNotBeenSet(nameof(Border)))
         {
             bitCard.Border = Border.Value;
+
+            bitCard.ClassBuilder.Reset();
+        }
+
+        if (Elevation.HasValue && bitCard.HasNotBeenSet(nameof(Elevation)))
+        {
+            bitCard.Elevation = Elevation.Value;
 
             bitCard.ClassBuilder.Reset();
         }

@@ -38,6 +38,12 @@ public partial class BitCard : BitComponentBase
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Sets the shadow elevation level of the card (1-24). Maps to theme shadow variables (--bit-shd-1 to --bit-shd-24).
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public int? Elevation { get; set; }
+
+    /// <summary>
     /// Makes the card height 100% of its parent container.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -87,6 +93,8 @@ public partial class BitCard : BitComponentBase
 
         ClassBuilder.Register(() => FullSize || FullHeight ? "bit-crd-fhe" : string.Empty);
         ClassBuilder.Register(() => FullSize || FullWidth ? "bit-crd-fwi" : string.Empty);
+
+        ClassBuilder.Register(() => Elevation is >= 1 and <= 24 ? $"bit-crd-e{Elevation}" : string.Empty);
 
         ClassBuilder.Register(() => NoShadow ? "bit-crd-nsd" : string.Empty);
     }
