@@ -214,4 +214,26 @@ public class BitCardTests : BunitTestContext
             Assert.IsFalse(card.ClassList.Contains("bit-crd-otl"));
         }
     }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitCardSquareTest(bool square)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Square, square);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        if (square)
+        {
+            Assert.IsTrue(card.ClassList.Contains("bit-crd-sqr"));
+        }
+        else
+        {
+            Assert.IsFalse(card.ClassList.Contains("bit-crd-sqr"));
+        }
+    }
 }

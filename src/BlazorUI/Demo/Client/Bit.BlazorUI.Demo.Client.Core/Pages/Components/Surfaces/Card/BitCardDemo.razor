@@ -104,7 +104,19 @@
         </BitCard>
     </DemoExample>
 
-    <DemoExample Title="FullSize" RazorCode="@example7RazorCode" CSharpCode="@example7CSharpCode" Id="example7">
+    <DemoExample Title="Square" RazorCode="@example7RazorCode" Id="example7">
+        <BitCard Square Outlined>
+            <BitStack HorizontalAlign="BitAlignment.Start">
+                <BitText Typography="BitTypography.H4">bit BlazorUI</BitText>
+                <BitText Typography="BitTypography.Body1">
+                    bit BlazorUI components are native, easy-to-customize, and ...
+                </BitText>
+                <BitLink Href="https://blazorui.bitplatform.dev" Target="_blank">Learn more</BitLink>
+            </BitStack>
+        </BitCard>
+    </DemoExample>
+
+    <DemoExample Title="FullSize" RazorCode="@example8RazorCode" CSharpCode="@example8CSharpCode" Id="example8">
         <BitChoiceGroup @bind-Value="size" Horizontal
                         TItem="BitChoiceGroupOption<int>" TValue="int">
             <BitChoiceGroupOption Text="FullSize" Value="0" />

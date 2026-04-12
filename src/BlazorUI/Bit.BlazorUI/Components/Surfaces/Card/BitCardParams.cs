@@ -62,6 +62,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     /// </summary>
     public bool? Outlined { get; set; }
 
+    /// <summary>
+    /// Removes the border-radius from the card, rendering it with sharp corners.
+    /// </summary>
+    public bool? Square { get; set; }
+
 
 
     /// <summary>
@@ -133,6 +138,13 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (Outlined.HasValue && bitCard.HasNotBeenSet(nameof(Outlined)))
         {
             bitCard.Outlined = Outlined.Value;
+
+            bitCard.ClassBuilder.Reset();
+        }
+
+        if (Square.HasValue && bitCard.HasNotBeenSet(nameof(Square)))
+        {
+            bitCard.Square = Square.Value;
 
             bitCard.ClassBuilder.Reset();
         }

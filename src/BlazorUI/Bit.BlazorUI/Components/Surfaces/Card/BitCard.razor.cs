@@ -73,6 +73,12 @@ public partial class BitCard : BitComponentBase
     [Parameter, ResetClassBuilder]
     public bool Outlined { get; set; }
 
+    /// <summary>
+    /// Removes the border-radius from the card, rendering it with sharp corners.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Square { get; set; }
+
 
 
     protected override string RootElementClass => "bit-crd";
@@ -105,6 +111,8 @@ public partial class BitCard : BitComponentBase
         ClassBuilder.Register(() => NoShadow ? "bit-crd-nsd" : string.Empty);
 
         ClassBuilder.Register(() => Outlined ? "bit-crd-otl" : string.Empty);
+
+        ClassBuilder.Register(() => Square ? "bit-crd-sqr" : string.Empty);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCardParams))]
