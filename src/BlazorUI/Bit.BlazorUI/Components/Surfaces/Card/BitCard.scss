@@ -162,3 +162,11 @@
 .bit-crd-nsd {
     box-shadow: none;
 }
+
+
+.bit-crd-otl {
+    box-shadow: none;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-color: $clr-brd-pri;
+}

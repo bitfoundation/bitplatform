@@ -57,6 +57,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     /// </summary>
     public bool? NoShadow { get; set; }
 
+    /// <summary>
+    /// Renders the card with no shadow and a primary border.
+    /// </summary>
+    public bool? Outlined { get; set; }
+
 
 
     /// <summary>
@@ -121,6 +126,13 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (NoShadow.HasValue && bitCard.HasNotBeenSet(nameof(NoShadow)))
         {
             bitCard.NoShadow = NoShadow.Value;
+
+            bitCard.ClassBuilder.Reset();
+        }
+
+        if (Outlined.HasValue && bitCard.HasNotBeenSet(nameof(Outlined)))
+        {
+            bitCard.Outlined = Outlined.Value;
 
             bitCard.ClassBuilder.Reset();
         }

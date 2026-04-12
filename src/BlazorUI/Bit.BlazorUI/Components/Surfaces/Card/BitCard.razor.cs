@@ -67,6 +67,12 @@ public partial class BitCard : BitComponentBase
     [Parameter, ResetClassBuilder]
     public bool NoShadow { get; set; }
 
+    /// <summary>
+    /// Renders the card with no shadow and a primary border.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Outlined { get; set; }
+
 
 
     protected override string RootElementClass => "bit-crd";
@@ -97,6 +103,8 @@ public partial class BitCard : BitComponentBase
         ClassBuilder.Register(() => Elevation is >= 1 and <= 24 ? $"bit-crd-e{Elevation}" : string.Empty);
 
         ClassBuilder.Register(() => NoShadow ? "bit-crd-nsd" : string.Empty);
+
+        ClassBuilder.Register(() => Outlined ? "bit-crd-otl" : string.Empty);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCardParams))]

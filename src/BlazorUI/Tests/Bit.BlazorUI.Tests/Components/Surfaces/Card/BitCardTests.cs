@@ -192,4 +192,26 @@ public class BitCardTests : BunitTestContext
             Assert.IsFalse(card.ClassList.Contains($"bit-crd-e{i}"));
         }
     }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitCardOutlinedTest(bool outlined)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Outlined, outlined);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        if (outlined)
+        {
+            Assert.IsTrue(card.ClassList.Contains("bit-crd-otl"));
+        }
+        else
+        {
+            Assert.IsFalse(card.ClassList.Contains("bit-crd-otl"));
+        }
+    }
 }

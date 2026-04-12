@@ -64,6 +64,13 @@ public partial class BitCardDemo
             DefaultValue = "false",
             Description = "Removes the default shadow around the card.",
         },
+        new()
+        {
+            Name = "Outlined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the card with no shadow and a primary border.",
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -194,6 +201,17 @@ private BitColorKind backgroundColorKind = BitColorKind.Primary;";
 private BitColorKind borderColorKind = BitColorKind.Primary;";
 
     private readonly string example6RazorCode = @"
+<BitCard Outlined>
+    <BitStack HorizontalAlign=""BitAlignment.Start"">
+        <BitText Typography=""BitTypography.H4"">bit BlazorUI</BitText>
+        <BitText Typography=""BitTypography.Body1"">
+            bit BlazorUI components are native, easy-to-customize, and ...
+        </BitText>
+        <BitLink Href=""https://blazorui.bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
+    </BitStack>
+</BitCard>";
+
+    private readonly string example7RazorCode = @"
 <BitChoiceGroup @bind-Value=""size"" Horizontal
                 TItem=""BitChoiceGroupOption<int>"" TValue=""int"">
     <BitChoiceGroupOption Text=""FullSize"" Value=""0"" />
@@ -212,6 +230,6 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
         </BitStack>
     </BitCard>
 </div>";
-    private readonly string example6CSharpCode = @"
+    private readonly string example7CSharpCode = @"
 private int size = 0;";
 }
