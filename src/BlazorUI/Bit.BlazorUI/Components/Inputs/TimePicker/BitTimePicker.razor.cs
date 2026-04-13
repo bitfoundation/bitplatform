@@ -670,6 +670,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         if (IsEnabled is false) return;
 
         await ChangeTime(isNext, isHour);
+
+        if (IsDisposed) return;
+
         ResetCts();
 
         var cts = _cancellationTokenSource;
@@ -685,9 +688,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task ContinuousChangeTime(bool isNext, bool isHour, CancellationTokenSource cts)
     {
-        if (cts.IsCancellationRequested) return;
+        if (cts.IsCancellationRequested || IsDisposed) return;
 
         await ChangeTime(isNext, isHour);
+
+        if (IsDisposed) return;
 
         StateHasChanged();
 
@@ -714,6 +719,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private void ResetCts()
     {
+        if (IsDisposed) return;
+
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = new();
@@ -753,6 +760,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         await base.DisposeAsync(disposing);
 
+        _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 

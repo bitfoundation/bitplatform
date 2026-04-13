@@ -277,6 +277,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
         if (_globalCts is not null)
         {
+            _globalCts.Cancel();
             _globalCts.Dispose();
             _globalCts = null;
         }

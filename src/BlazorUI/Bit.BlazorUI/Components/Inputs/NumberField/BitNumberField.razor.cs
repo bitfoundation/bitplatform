@@ -537,6 +537,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
 
         await ChangeValueAndInvokeEvents(isIncrement);
+
+        if (IsDisposed) return;
+
         ResetCts();
 
         var cts = _continuousChangeValueCts;
@@ -585,9 +588,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task ContinuousChangeValue(bool isIncrement, CancellationTokenSource cts)
     {
-        if (cts.IsCancellationRequested) return;
+        if (cts.IsCancellationRequested || IsDisposed) return;
 
         await ChangeValueAndInvokeEvents(isIncrement);
+
+        if (IsDisposed) return;
 
         StateHasChanged();
 
@@ -657,6 +662,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void ResetCts()
     {
+        if (IsDisposed) return;
+
         _continuousChangeValueCts?.Cancel();
         _continuousChangeValueCts?.Dispose();
         _continuousChangeValueCts = new();
@@ -829,6 +836,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         OnValueChanged -= HandleOnValueChanged;
 
+        _continuousChangeValueCts?.Cancel();
         _continuousChangeValueCts?.Dispose();
 
         await base.DisposeAsync(disposing);

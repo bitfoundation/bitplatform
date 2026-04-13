@@ -1815,6 +1815,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (IsEnabled is false) return;
 
         await ChangeTime(isNext, isHour, isStartTime);
+
+        if (IsDisposed) return;
+
         ResetCts();
 
         var cts = _cancellationTokenSource;
@@ -1830,9 +1833,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task ContinuousChangeTime(bool isNext, bool isHour, bool isStartTime, CancellationTokenSource cts)
     {
-        if (cts.IsCancellationRequested) return;
+        if (cts.IsCancellationRequested || IsDisposed) return;
 
         await ChangeTime(isNext, isHour, isStartTime);
+
+        if (IsDisposed) return;
 
         StateHasChanged();
 
@@ -1859,6 +1864,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private void ResetCts()
     {
+        if (IsDisposed) return;
+
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = new();
@@ -2195,6 +2202,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         await base.DisposeAsync(disposing);
 
+        _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 

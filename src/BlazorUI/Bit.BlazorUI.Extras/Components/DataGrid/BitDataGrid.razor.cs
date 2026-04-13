@@ -501,6 +501,9 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     {
         if (_disposed || disposing is false) return;
 
+        _pendingDataLoadCancellationTokenSource?.Cancel();
+        _pendingDataLoadCancellationTokenSource?.Dispose();
+
         _currentPageItemsChanged.Dispose();
 
         try

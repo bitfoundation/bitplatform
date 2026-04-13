@@ -200,6 +200,21 @@ public partial class BitTooltip : BitComponentBase
         }
     }
 
+    protected override ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return ValueTask.CompletedTask;
+
+        _showDelayTokenSource?.Cancel();
+        _showDelayTokenSource?.Dispose();
+        _showDelayTokenSource = null;
+
+        _hideDelayTokenSource?.Cancel();
+        _hideDelayTokenSource?.Dispose();
+        _hideDelayTokenSource = null;
+
+        return base.DisposeAsync(disposing);
+    }
+
     private string GetTooltipClasses()
     {
         StringBuilder className = new StringBuilder();

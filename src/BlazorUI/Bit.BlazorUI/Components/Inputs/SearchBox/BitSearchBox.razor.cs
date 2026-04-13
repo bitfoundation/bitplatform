@@ -659,6 +659,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         await base.DisposeAsync(disposing);
 
+        _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
 
         OnValueChanged -= HandleOnValueChanged;
