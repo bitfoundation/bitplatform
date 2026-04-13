@@ -53,6 +53,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public bool? FullWidth { get; set; }
 
     /// <summary>
+    /// Sets the height of the card explicitly.
+    /// </summary>
+    public string? Height { get; set; }
+
+    /// <summary>
     /// Removes the default padding of the card.
     /// </summary>
     public bool? NoPadding { get; set; }
@@ -71,6 +76,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     /// Removes the border-radius from the card, rendering it with sharp corners.
     /// </summary>
     public bool? Square { get; set; }
+
+    /// <summary>
+    /// Sets the width of the card explicitly.
+    /// </summary>
+    public string? Width { get; set; }
 
 
 
@@ -159,6 +169,20 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.Square = Square.Value;
 
             bitCard.ClassBuilder.Reset();
+        }
+
+        if (Height is not null && bitCard.HasNotBeenSet(nameof(Height)))
+        {
+            bitCard.Height = Height;
+
+            bitCard.StyleBuilder.Reset();
+        }
+
+        if (Width is not null && bitCard.HasNotBeenSet(nameof(Width)))
+        {
+            bitCard.Width = Width;
+
+            bitCard.StyleBuilder.Reset();
         }
     }
 }

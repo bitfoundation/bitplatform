@@ -59,6 +59,13 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "Height",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Sets the height of the card explicitly.",
+        },
+        new()
+        {
             Name = "NoPadding",
             Type = "bool",
             DefaultValue = "false",
@@ -84,6 +91,13 @@ public partial class BitCardDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Removes the border-radius from the card, rendering it with sharp corners.",
+        },
+        new()
+        {
+            Name = "Width",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Sets the width of the card explicitly.",
         },
     ];
 
@@ -127,6 +141,8 @@ public partial class BitCardDemo
 
 
     private double elevation = 4;
+    private double cardWidth = 300;
+    private double cardHeight = 200;
     private BitColorKind backgroundColorKind = BitColorKind.Primary;
     private BitColorKind borderColorKind = BitColorKind.Primary;
     private int size = 0;
@@ -248,6 +264,23 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
 </BitCard>";
 
     private readonly string example9RazorCode = @"
+<BitSlider @bind-Value=""cardWidth"" Min=""100"" Max=""600"" Step=""10"" Label=""Width (px)"" />
+<BitSlider @bind-Value=""cardHeight"" Min=""100"" Max=""400"" Step=""10"" Label=""Height (px)"" />
+
+<BitCard Width=""@($""{(int)cardWidth}px"")"" Height=""@($""{(int)cardHeight}px"")"" Outlined>
+    <BitStack HorizontalAlign=""BitAlignment.Start"">
+        <BitText Typography=""BitTypography.H4"">bit BlazorUI</BitText>
+        <BitText Typography=""BitTypography.Body1"">
+            bit BlazorUI components are native, easy-to-customize, and ...
+        </BitText>
+        <BitLink Href=""https://blazorui.bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
+    </BitStack>
+</BitCard>";
+    private readonly string example9CSharpCode = @"
+private double cardWidth = 300;
+private double cardHeight = 200;";
+
+    private readonly string example10RazorCode = @"
 <BitChoiceGroup @bind-Value=""size"" Horizontal
                 TItem=""BitChoiceGroupOption<int>"" TValue=""int"">
     <BitChoiceGroupOption Text=""FullSize"" Value=""0"" />
@@ -266,6 +299,6 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
         </BitStack>
     </BitCard>
 </div>";
-    private readonly string example9CSharpCode = @"
+    private readonly string example10CSharpCode = @"
 private int size = 0;";
 }

@@ -128,7 +128,22 @@
         </BitCard>
     </DemoExample>
 
-    <DemoExample Title="FullSize" RazorCode="@example9RazorCode" CSharpCode="@example9CSharpCode" Id="example9">
+    <DemoExample Title="Width & Height" RazorCode="@example9RazorCode" CSharpCode="@example9CSharpCode" Id="example9">
+        <BitSlider @bind-Value="cardWidth" Min="100" Max="600" Step="10" Label="Width (px)" />
+        <BitSlider @bind-Value="cardHeight" Min="100" Max="400" Step="10" Label="Height (px)" />
+        <br />
+        <BitCard Width="@($"{(int)cardWidth}px")" Height="@($"{(int)cardHeight}px")" Outlined Style="overflow:hidden">
+            <BitStack HorizontalAlign="BitAlignment.Start">
+                <BitText Typography="BitTypography.H4">bit BlazorUI</BitText>
+                <BitText Typography="BitTypography.Body1">
+                    bit BlazorUI components are native, easy-to-customize, and ...
+                </BitText>
+                <BitLink Href="https://blazorui.bitplatform.dev" Target="_blank">Learn more</BitLink>
+            </BitStack>
+        </BitCard>
+    </DemoExample>
+
+    <DemoExample Title="FullSize" RazorCode="@example10RazorCode" CSharpCode="@example10CSharpCode" Id="example10">
         <BitChoiceGroup @bind-Value="size" Horizontal
                         TItem="BitChoiceGroupOption<int>" TValue="int">
             <BitChoiceGroupOption Text="FullSize" Value="0" />

@@ -258,4 +258,59 @@ public class BitCardTests : BunitTestContext
             Assert.IsFalse(card.ClassList.Contains("bit-crd-sqr"));
         }
     }
+
+    [TestMethod]
+    [DataRow("300px")]
+    [DataRow("50%")]
+    [DataRow("20rem")]
+    public void BitCardWidthShouldApplyCorrectStyle(string width)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Width, width);
+        });
+
+        var card = component.Find(".bit-crd");
+        Assert.IsTrue(card.GetAttribute("style")!.Contains($"width:{width}"));
+    }
+
+    [TestMethod]
+    [DataRow("200px")]
+    [DataRow("50%")]
+    [DataRow("10rem")]
+    public void BitCardHeightShouldApplyCorrectStyle(string height)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Height, height);
+        });
+
+        var card = component.Find(".bit-crd");
+        Assert.IsTrue(card.GetAttribute("style")!.Contains($"height:{height}"));
+    }
+
+    [TestMethod]
+    public void BitCardWidthAndHeightShouldApplyBothStyles()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Width, "300px");
+            parameters.Add(p => p.Height, "200px");
+        });
+
+        var card = component.Find(".bit-crd");
+        var style = card.GetAttribute("style")!;
+        Assert.IsTrue(style.Contains("width:300px"));
+        Assert.IsTrue(style.Contains("height:200px"));
+    }
+
+    [TestMethod]
+    public void BitCardWidthAndHeightShouldNotRenderWhenNull()
+    {
+        var component = RenderComponent<BitCard>();
+
+        var card = component.Find(".bit-crd");
+        var style = card.GetAttribute("style");
+        Assert.IsTrue(style is null || (style.Contains("width") is false && style.Contains("height") is false));
+    }
 }

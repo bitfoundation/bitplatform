@@ -62,6 +62,12 @@ public partial class BitCard : BitComponentBase
     public bool FullWidth { get; set; }
 
     /// <summary>
+    /// Sets the height of the card explicitly.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? Height { get; set; }
+
+    /// <summary>
     /// Removes the default padding of the card.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -84,6 +90,12 @@ public partial class BitCard : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Square { get; set; }
+
+    /// <summary>
+    /// Sets the width of the card explicitly.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? Width { get; set; }
 
 
 
@@ -121,6 +133,13 @@ public partial class BitCard : BitComponentBase
         ClassBuilder.Register(() => Outlined ? "bit-crd-otl" : string.Empty);
 
         ClassBuilder.Register(() => Square ? "bit-crd-sqr" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Height.HasNoValue() ? null : $"height:{Height}");
+
+        StyleBuilder.Register(() => Width.HasNoValue() ? null : $"width:{Width}");
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCardParams))]
