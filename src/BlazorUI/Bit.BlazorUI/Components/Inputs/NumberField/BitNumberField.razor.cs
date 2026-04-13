@@ -543,14 +543,18 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         ResetCts();
 
         var cts = _continuousChangeValueCts;
-        await Task.Run(async () =>
+        try
         {
-            await InvokeAsync(async () =>
+            await Task.Run(async () =>
             {
-                await Task.Delay(400);
-                await ContinuousChangeValue(isIncrement, cts);
-            });
-        }, cts.Token);
+                await InvokeAsync(async () =>
+                {
+                    await Task.Delay(400);
+                    await ContinuousChangeValue(isIncrement, cts);
+                });
+            }, cts.Token);
+        }
+        catch (OperationCanceledException) { }
     }
 
     private async Task HandleOnPointerUpOrOut()

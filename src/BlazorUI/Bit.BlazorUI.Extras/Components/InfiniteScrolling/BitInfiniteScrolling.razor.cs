@@ -145,6 +145,9 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         if (ItemsProvider is null || _globalCts is not null) return [];
 
         var items = _currentItems;
+
+        if (IsDisposed) return items;
+
         var localCts = new CancellationTokenSource();
 
         _globalCts = localCts;
@@ -177,6 +180,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         }
 
         StateHasChanged();
+        
         return items;
     }
 

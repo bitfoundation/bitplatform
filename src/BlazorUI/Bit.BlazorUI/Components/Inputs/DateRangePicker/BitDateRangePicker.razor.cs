@@ -1821,14 +1821,18 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         ResetCts();
 
         var cts = _cancellationTokenSource;
-        await Task.Run(async () =>
+        try
         {
-            await InvokeAsync(async () =>
+            await Task.Run(async () =>
             {
-                await Task.Delay(400);
-                await ContinuousChangeTime(isNext, isHour, isStartTime, cts);
-            });
-        }, cts.Token);
+                await InvokeAsync(async () =>
+                {
+                    await Task.Delay(400);
+                    await ContinuousChangeTime(isNext, isHour, isStartTime, cts);
+                });
+            }, cts.Token);
+        }
+        catch (OperationCanceledException) { }
     }
 
     private async Task ContinuousChangeTime(bool isNext, bool isHour, bool isStartTime, CancellationTokenSource cts)

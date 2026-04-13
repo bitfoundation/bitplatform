@@ -124,10 +124,16 @@ public partial class BitTooltip : BitComponentBase
         {
             _showDelayTokenSource = new CancellationTokenSource();
 
-            await Task.Delay(ShowDelay, _showDelayTokenSource.Token);
-
-            _showDelayTokenSource.Dispose();
-            _showDelayTokenSource = null;
+            try
+            {
+                await Task.Delay(ShowDelay, _showDelayTokenSource.Token);
+            }
+            catch (TaskCanceledException) { return; }
+            finally
+            {
+                _showDelayTokenSource?.Dispose();
+                _showDelayTokenSource = null;
+            }
         }
 
         await AssignIsShown(true);
@@ -142,10 +148,16 @@ public partial class BitTooltip : BitComponentBase
         {
             _hideDelayTokenSource = new CancellationTokenSource();
 
-            await Task.Delay(HideDelay, _hideDelayTokenSource.Token);
-
-            _hideDelayTokenSource.Dispose();
-            _hideDelayTokenSource = null;
+            try
+            {
+                await Task.Delay(HideDelay, _hideDelayTokenSource.Token);
+            }
+            catch (TaskCanceledException) { return; }
+            finally
+            {
+                _hideDelayTokenSource?.Dispose();
+                _hideDelayTokenSource = null;
+            }
         }
 
         await AssignIsShown(false);

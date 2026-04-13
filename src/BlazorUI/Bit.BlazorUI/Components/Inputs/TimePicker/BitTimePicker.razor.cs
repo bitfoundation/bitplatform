@@ -676,14 +676,18 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         ResetCts();
 
         var cts = _cancellationTokenSource;
-        await Task.Run(async () =>
+        try
         {
-            await InvokeAsync(async () =>
+            await Task.Run(async () =>
             {
-                await Task.Delay(400);
-                await ContinuousChangeTime(isNext, isHour, cts);
-            });
-        }, cts.Token);
+                await InvokeAsync(async () =>
+                {
+                    await Task.Delay(400);
+                    await ContinuousChangeTime(isNext, isHour, cts);
+                });
+            }, cts.Token);
+        }
+        catch (OperationCanceledException) { }
     }
 
     private async Task ContinuousChangeTime(bool isNext, bool isHour, CancellationTokenSource cts)

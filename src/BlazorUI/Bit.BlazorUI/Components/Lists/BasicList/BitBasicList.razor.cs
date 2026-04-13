@@ -178,7 +178,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
                 if (LoadMore)
                 {
-                    await PerformLoadMore(true);
+                    await LoadMoreItems(true);
                 }
             }
         }
@@ -189,7 +189,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
             if (LoadMore && ItemsProvider is not null)
             {
-                await PerformLoadMore(true);
+                await LoadMoreItems(true);
             }
         }
 
@@ -197,7 +197,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
     }
 
 
-    private async Task PerformLoadMore(bool reset)
+    private async Task LoadMoreItems(bool reset)
     {
         if (reset)
         {
@@ -208,7 +208,10 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
         if (LoadMore is false || _globalCts is not null) return;
 
+        if (IsDisposed) return;
+
         var localCts = new CancellationTokenSource();
+
         _globalCts = localCts;
 
         try

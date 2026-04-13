@@ -529,7 +529,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();
             _cancellationTokenSource = new();
-            _viewSuggestedItems = [.. (await SuggestItemsProvider(new(CurrentValue, MaxSuggestCount, _cancellationTokenSource.Token))).Take(MaxSuggestCount)];
+            try
+            {
+                _viewSuggestedItems = [.. (await SuggestItemsProvider(new(CurrentValue, MaxSuggestCount, _cancellationTokenSource.Token))).Take(MaxSuggestCount)];
+            }
+            catch (OperationCanceledException) { }
         }
         else if (SuggestItems is not null)
         {
