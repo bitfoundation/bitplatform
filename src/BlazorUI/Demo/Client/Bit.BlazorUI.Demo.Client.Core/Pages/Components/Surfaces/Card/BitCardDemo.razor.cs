@@ -289,7 +289,7 @@ private double cardHeight = 200;";
 </BitChoiceGroup>
 
 <div style=""padding:2rem;background:gray;height:500px"">
-    <BitCard FullSize=""size==0"" FullWidth=""size==1"" FullHeight=""size==2"">
+    <BitCard FullSize=""size == 0"" FullWidth=""size == 1"" FullHeight=""size == 2"">
         <BitStack HorizontalAlign=""BitAlignment.Start"">
             <BitText Typography=""BitTypography.H4"">bit BlazorUI</BitText>
             <BitText Typography=""BitTypography.Body1"">
