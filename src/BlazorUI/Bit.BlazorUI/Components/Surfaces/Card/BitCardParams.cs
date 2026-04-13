@@ -53,6 +53,11 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public bool? FullWidth { get; set; }
 
     /// <summary>
+    /// Removes the default padding of the card.
+    /// </summary>
+    public bool? NoPadding { get; set; }
+
+    /// <summary>
     /// Removes the default shadow around the card.
     /// </summary>
     public bool? NoShadow { get; set; }
@@ -124,6 +129,13 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (FullWidth.HasValue && bitCard.HasNotBeenSet(nameof(FullWidth)))
         {
             bitCard.FullWidth = FullWidth.Value;
+
+            bitCard.ClassBuilder.Reset();
+        }
+
+        if (NoPadding.HasValue && bitCard.HasNotBeenSet(nameof(NoPadding)))
+        {
+            bitCard.NoPadding = NoPadding.Value;
 
             bitCard.ClassBuilder.Reset();
         }

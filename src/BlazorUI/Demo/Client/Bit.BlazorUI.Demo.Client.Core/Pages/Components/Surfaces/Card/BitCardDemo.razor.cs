@@ -59,6 +59,13 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "NoPadding",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the default padding of the card.",
+        },
+        new()
+        {
             Name = "NoShadow",
             Type = "bool",
             DefaultValue = "false",
@@ -230,6 +237,17 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
 </BitCard>";
 
     private readonly string example8RazorCode = @"
+<BitCard NoPadding Outlined>
+    <BitStack HorizontalAlign=""BitAlignment.Start"">
+        <BitText Typography=""BitTypography.H4"">bit BlazorUI</BitText>
+        <BitText Typography=""BitTypography.Body1"">
+            bit BlazorUI components are native, easy-to-customize, and ...
+        </BitText>
+        <BitLink Href=""https://blazorui.bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
+    </BitStack>
+</BitCard>";
+
+    private readonly string example9RazorCode = @"
 <BitChoiceGroup @bind-Value=""size"" Horizontal
                 TItem=""BitChoiceGroupOption<int>"" TValue=""int"">
     <BitChoiceGroupOption Text=""FullSize"" Value=""0"" />
@@ -248,6 +266,6 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
         </BitStack>
     </BitCard>
 </div>";
-    private readonly string example8CSharpCode = @"
+    private readonly string example9CSharpCode = @"
 private int size = 0;";
 }

@@ -196,6 +196,28 @@ public class BitCardTests : BunitTestContext
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
+    public void BitCardNoPaddingTest(bool noPadding)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.NoPadding, noPadding);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        if (noPadding)
+        {
+            Assert.IsTrue(card.ClassList.Contains("bit-crd-npd"));
+        }
+        else
+        {
+            Assert.IsFalse(card.ClassList.Contains("bit-crd-npd"));
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
     public void BitCardOutlinedTest(bool outlined)
     {
         var component = RenderComponent<BitCard>(parameters =>

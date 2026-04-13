@@ -62,6 +62,12 @@ public partial class BitCard : BitComponentBase
     public bool FullWidth { get; set; }
 
     /// <summary>
+    /// Removes the default padding of the card.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoPadding { get; set; }
+
+    /// <summary>
     /// Removes the default shadow around the card.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -107,6 +113,8 @@ public partial class BitCard : BitComponentBase
         ClassBuilder.Register(() => FullSize || FullWidth ? "bit-crd-fwi" : string.Empty);
 
         ClassBuilder.Register(() => Elevation is >= 1 and <= 24 ? $"bit-crd-e{Elevation}" : string.Empty);
+
+        ClassBuilder.Register(() => NoPadding ? "bit-crd-npd" : string.Empty);
 
         ClassBuilder.Register(() => NoShadow ? "bit-crd-nsd" : string.Empty);
 
