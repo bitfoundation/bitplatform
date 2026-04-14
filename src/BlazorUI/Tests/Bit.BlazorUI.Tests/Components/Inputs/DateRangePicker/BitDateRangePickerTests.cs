@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -1137,5 +1138,16 @@ public class BitDateRangePickerTests : BunitTestContext
             $"Expected 'fa-solid' on EndTimeDecreaseMinuteIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-chevron-down"),
             $"Expected 'fa-chevron-down' on EndTimeDecreaseMinuteIcon but got: {string.Join(' ', icon.ClassList)}");
+    }
+
+    [TestMethod]
+    public async Task BitDateRangePickerDisposeShouldNotThrow()
+    {
+        var component = RenderComponent<BitDateRangePicker>(p =>
+        {
+            p.Add(x => x.ShowTimePicker, true);
+        });
+
+        await component.Instance.DisposeAsync();
     }
 }

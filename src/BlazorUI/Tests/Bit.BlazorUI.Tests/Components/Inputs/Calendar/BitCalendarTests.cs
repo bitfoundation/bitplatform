@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -661,5 +662,17 @@ public class BitCalendarTests : BunitTestContext
 
         Assert.Contains("bi-chevron-down", markup);
         Assert.IsFalse(markup.Contains("bit-icon--ShouldNotRender", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task BitCalendarDisposeShouldNotThrow()
+    {
+        var component = RenderComponent<BitCalendar>(p =>
+        {
+            p.Add(x => x.Value, DateTimeOffset.UtcNow);
+            p.Add(x => x.ShowTimePicker, true);
+        });
+
+        await component.Instance.DisposeAsync();
     }
 }

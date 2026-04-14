@@ -959,4 +959,56 @@ public class BitNumberFieldTests : BunitTestContext
 
     private void HandleValueChanged(int value)
         => BitNumberFieldTwoWayBoundValue = value;
+
+    [TestMethod]
+    public async Task BitNumberFieldDisposeShouldNotThrow()
+    {
+        var component = RenderComponent<BitNumberField<int>>(p =>
+        {
+            p.Add(x => x.Mode, BitSpinButtonMode.Compact);
+            p.Add(x => x.Value, 1);
+        });
+
+        await component.Instance.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task BitNumberFieldDisposeDuringPointerDownShouldNotThrow()
+    {
+        var component = RenderComponent<BitNumberField<int>>(p =>
+        {
+            p.Add(x => x.Mode, BitSpinButtonMode.Compact);
+            p.Add(x => x.Value, 1);
+        });
+
+        var buttons = component.FindAll("button");
+        Assert.IsTrue(buttons.Count >= 2);
+
+        await component.InvokeAsync(() => buttons[0].TriggerEvent("onpointerdown", new PointerEventArgs()));
+
+        await component.Instance.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task BitNumberFieldDisposeFromCallbackShouldNotThrow()
+    {
+        IRenderedComponent<BitNumberField<int>>? comp = null;
+
+        comp = RenderComponent<BitNumberField<int>>(p =>
+        {
+            p.Add(x => x.Mode, BitSpinButtonMode.Spread);
+            p.Add(x => x.Value, 5);
+            p.Add(x => x.OnIncrement, async v =>
+            {
+                if (comp is not null)
+                {
+                    await comp.Instance.DisposeAsync();
+                }
+            });
+        });
+
+        var buttons = comp.FindAll("button");
+
+        await comp.InvokeAsync(() => buttons[^1].TriggerEvent("onpointerdown", new PointerEventArgs()));
+    }
 }

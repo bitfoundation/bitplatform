@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.SearchBox;
@@ -267,5 +269,19 @@ public class BitSearchBoxTests : BunitTestContext
         }
 
         Assert.AreEqual(isInvalid is false, bitSearchBox.ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxDisposeShouldNotThrow()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitSearchBox>(p =>
+        {
+            p.Add(x => x.SuggestItemsProvider, (BitSearchBoxSuggestItemsProviderRequest req) =>
+                ValueTask.FromResult<IEnumerable<string>>(new List<string> { "a", "b" }));
+        });
+
+        await component.Instance.DisposeAsync();
     }
 }

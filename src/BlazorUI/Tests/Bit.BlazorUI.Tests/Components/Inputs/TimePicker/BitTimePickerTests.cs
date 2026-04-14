@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -168,5 +170,16 @@ public class BitTimePickerTests : BunitTestContext
         var calloutStyle = callout.GetAttribute("style");
 
         Assert.AreEqual("color: blue", calloutStyle);
+    }
+
+    [TestMethod]
+    public async Task BitTimePickerDisposeShouldNotThrow()
+    {
+        var component = RenderComponent<BitTimePicker>(p =>
+        {
+            p.Add(x => x.Value, TimeSpan.Zero);
+        });
+
+        await component.Instance.DisposeAsync();
     }
 }

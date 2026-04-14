@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Threading.Tasks;
+using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -90,5 +91,53 @@ public class BitTooltipTests : BunitTestContext
 
         wrapper = component.Find(".bit-ttp-wrp");
         Assert.IsFalse(wrapper.ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipDisposeShouldNotThrow()
+    {
+        var component = RenderComponent<BitTooltip>(p =>
+        {
+            p.Add(x => x.Text, "Tip");
+            p.Add(x => x.ShowDelay, 500);
+            p.Add(x => x.HideDelay, 500);
+        });
+
+        await component.Instance.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task BitTooltipDisposeDuringShowDelayShouldNotThrow()
+    {
+        var component = RenderComponent<BitTooltip>(p =>
+        {
+            p.Add(x => x.Text, "Tip");
+            p.Add(x => x.ShowDelay, 5000);
+            p.Add(x => x.ShowOnHover, true);
+            p.AddChildContent("<button>Hover me</button>");
+        });
+
+        var root = component.Find(".bit-ttp");
+        await component.InvokeAsync(() => root.TriggerEvent("onpointerenter", new PointerEventArgs()));
+
+        await component.Instance.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task BitTooltipDisposeDuringHideDelayShouldNotThrow()
+    {
+        var component = RenderComponent<BitTooltip>(p =>
+        {
+            p.Add(x => x.Text, "Tip");
+            p.Add(x => x.DefaultIsShown, true);
+            p.Add(x => x.HideDelay, 5000);
+            p.Add(x => x.ShowOnHover, true);
+            p.AddChildContent("<button>Hover me</button>");
+        });
+
+        var root = component.Find(".bit-ttp");
+        await component.InvokeAsync(() => root.TriggerEvent("onpointerleave", new PointerEventArgs()));
+
+        await component.Instance.DisposeAsync();
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -126,5 +128,40 @@ public class BitBasicListTests : BunitTestContext
             });
         }
         return people;
+    }
+
+    [TestMethod]
+    public async Task BitBasicListDisposeShouldNotThrow()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitBasicList<int>>(p =>
+        {
+            p.Add(x => x.Items, new List<int> { 1, 2, 3 });
+            p.Add(x => x.RowTemplate, (RenderFragment<int>)(item =>
+                builder => builder.AddContent(0, $"Item {item}")));
+        });
+
+        await component.Instance.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task BitBasicListDisposeDuringLoadMoreShouldNotThrow()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var tcs = new TaskCompletionSource<BitBasicListItemsProviderResult<int>>();
+
+        var component = RenderComponent<BitBasicList<int>>(p =>
+        {
+            p.Add(x => x.LoadMore, true);
+            p.Add(x => x.ItemsProvider, _ => new ValueTask<BitBasicListItemsProviderResult<int>>(tcs.Task));
+            p.Add(x => x.RowTemplate, (RenderFragment<int>)(item =>
+                builder => builder.AddContent(0, $"Item {item}")));
+        });
+
+        await component.Instance.DisposeAsync();
+
+        tcs.TrySetCanceled();
     }
 }

@@ -106,4 +106,42 @@ public class BitInfiniteScrollingTests : BunitTestContext
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.dispose");
     }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingDisposeShouldNotThrow()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.InfiniteScrolling.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.InfiniteScrolling.dispose");
+
+        var component = RenderComponent<BitInfiniteScrolling<int>>(p =>
+        {
+            p.Add(x => x.ItemsProvider, _ =>
+                ValueTask.FromResult<IEnumerable<int>>(new List<int> { 1, 2, 3 }));
+            p.Add(x => x.ItemTemplate, (RenderFragment<int>)(item =>
+                builder => builder.AddContent(0, $"Item {item}")));
+        });
+
+        await component.Instance.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task BitInfiniteScrollingDisposeDuringLoadShouldNotThrow()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.InfiniteScrolling.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.InfiniteScrolling.dispose");
+
+        var tcs = new TaskCompletionSource<IEnumerable<int>>();
+
+        var component = RenderComponent<BitInfiniteScrolling<int>>(p =>
+        {
+            p.Add(x => x.ItemsProvider, _ => new ValueTask<IEnumerable<int>>(tcs.Task));
+            p.Add(x => x.ItemTemplate, (RenderFragment<int>)(item =>
+                builder => builder.AddContent(0, $"Item {item}")));
+            p.Add(x => x.Preload, true);
+        });
+
+        await component.Instance.DisposeAsync();
+
+        tcs.TrySetCanceled();
+    }
 }
