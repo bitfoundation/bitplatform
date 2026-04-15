@@ -168,12 +168,14 @@
                             var disabled = IsEnabled is false || IsWeekDayOutOfMinAndMaxDate(date);
                             var isSelected = IsSelectedDate(date);
                             var (style, klass) = GetDayButtonCss(date);
-                            <button @onclick="() => SelectDate(date)"
+                            var dayEvents = GetDayEvents(date);
+                            <button @onclick="() => HandleDayClick(date, dayEvents)"
                                     type="button"
                                     role="gridcell"
                                     disabled="@disabled"
                                     aria-readonly="true"
                                     aria-disabled="@disabled"
+                                    title="@(dayEvents.Count > 0 ? GetEventTooltip(dayEvents) : null)"
                                     style="@style @Styles?.DayButton"
                                     class="bit-cal-dbt@(klass) @Classes?.DayButton"
                                     tabindex="@(isSelected ? 0 : -1)"
@@ -185,6 +187,12 @@
                                 else
                                 {
                                     @GetDayOfCurrentMonth(date)
+                                }
+                                @if (dayEvents.Count > 0)
+                                {
+                                    <span style="@Styles?.EventIndicator"
+                                          class="bit-cal-evi @Classes?.EventIndicator">
+                                    </span>
                                 }
                             </button>
                         }
@@ -567,4 +575,52 @@
             </div>
         }
     </div>
+
+    @if (_showEventModal)
+    {
+        <div class="bit-cal-eov @Classes?.EventModalOverlay"
+             style="@Styles?.EventModalOverlay"
+             @onclick="CloseEventModal">
+            <div class="bit-cal-emc @Classes?.EventModalContainer"
+                 style="@Styles?.EventModalContainer"
+                 @onclick:stopPropagation="true">
+                <div class="bit-cal-emh @Classes?.EventModalHeader"
+                     style="@Styles?.EventModalHeader">
+                    <span>@_eventModalDate.ToString("MMMM d, yyyy")</span>
+                    <button type="button"
+                            @onclick="CloseEventModal"
+                            style="@Styles?.EventModalCloseButton"
+                            class="bit-cal-emx @Classes?.EventModalCloseButton">&times;</button>
+                </div>
+                @foreach (var evt in _eventModalEvents)
+                {
+                    <div class="bit-cal-emi @Classes?.EventItem"
+                         style="@Styles?.EventItem">
+                        <div class="bit-cal-eit @Classes?.EventItemTitle"
+                             style="@Styles?.EventItemTitle">@evt.Title</div>
+                        @if (evt.StartTime.HasValue || evt.EndTime.HasValue)
+                        {
+                            <div class="bit-cal-eis @Classes?.EventItemTime"
+                                 style="@Styles?.EventItemTime">
+                                @if (evt.StartTime.HasValue && evt.EndTime.HasValue)
+                                {
+                                    @($"{evt.StartTime:HH:mm} \u2013 {evt.EndTime:HH:mm}")
+                                }
+                                else if (evt.StartTime.HasValue)
+                                {
+                                    @($"From {evt.StartTime:HH:mm}")
+                                }
+                                else
+                                {
+                                    @($"Until {evt.EndTime:HH:mm}")
+                                }
+                            </div>
+                        }
+                        <div class="bit-cal-eib @Classes?.EventItemBody"
+                             style="@Styles?.EventItemBody">@evt.Body</div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 </div>

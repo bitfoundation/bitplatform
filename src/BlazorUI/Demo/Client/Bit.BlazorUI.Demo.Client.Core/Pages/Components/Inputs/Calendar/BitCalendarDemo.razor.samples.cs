@@ -74,6 +74,30 @@ private bool showMonthPickerAsOverlay;";
 private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;";
 
     private readonly string example10RazorCode = @"
+<BitCalendar Events=""@calendarEvents"" />";
+    private readonly string example10CsharpCode = @"
+private List<BitCalendarEvent> calendarEvents =
+[
+    new() { Title = ""Team standup"",
+            Body = ""Daily sync with the engineering team."",
+            Date = DateOnly.FromDateTime(DateTime.Today),
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(9, 30) },
+    new() { Title = ""Product review"",
+            Body = ""Quarterly product review \u2014 prepare slides beforehand."",
+            Date = DateOnly.FromDateTime(DateTime.Today),
+            StartTime = new TimeOnly(14, 0),
+            EndTime = new TimeOnly(15, 0) },
+    new() { Title = ""All-day workshop"",
+            Body = ""Full-day frontend architecture workshop."",
+            Date = DateOnly.FromDateTime(DateTime.Today.AddDays(3)) },
+    new() { Title = ""Client call"",
+            Body = ""Introductory call with the new client."",
+            Date = DateOnly.FromDateTime(DateTime.Today.AddDays(7)),
+            StartTime = new TimeOnly(11, 30) }
+];";
+
+    private readonly string example11RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -92,7 +116,7 @@ private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;";
         Reset
     </BitButton>
 </EditForm>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class BitCalendarValidationModel
 {
     [Required]
@@ -104,7 +128,7 @@ private BitCalendarValidationModel validationModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .day-cell {
         width: 28px;
@@ -166,7 +190,7 @@ private void HandleInvalidSubmit() { }";
     </YearCellTemplate>
 </BitCalendar>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitCalendar GoToTodayIcon=""@BitIconInfo.Fa(""solid calendar-day"")""
@@ -186,7 +210,7 @@ private void HandleInvalidSubmit() { }";
              TimePickerIncreaseMinuteIcon=""@BitIconInfo.Bi(""chevron-up"")""
              TimePickerDecreaseMinuteIcon=""@BitIconInfo.Bi(""chevron-down"")"" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -276,6 +300,6 @@ private void HandleInvalidSubmit() { }";
                              WeekNumbersHeader = ""custom-week-header"",
                              YearMonthPickerWrapper = ""custom-year-picker"" })"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitCalendar Dir=""BitDir.Rtl"" />";
 }

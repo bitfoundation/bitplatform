@@ -19,6 +19,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private bool _showYearPicker;
     private bool _showTimePicker;
     private bool _showMonthPicker;
+    private bool _showEventModal;
+    private DateOnly _eventModalDate;
+    private List<BitCalendarEvent> _eventModalEvents = [];
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
     private string _monthTitle = string.Empty;
@@ -120,6 +123,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// Used to customize how content inside the day cell is rendered.
     /// </summary>
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
+
+    /// <summary>
+    /// The list of events to display on calendar days.
+    /// </summary>
+    [Parameter] public IEnumerable<BitCalendarEvent>? Events { get; set; }
 
     /// <summary>
     /// The title of the Go to next month button (tooltip).
@@ -993,6 +1001,41 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
         var date = _culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0);
         CurrentValue = new(date, _timeZone.GetUtcOffset(date));
+    }
+
+    private List<BitCalendarEvent> GetDayEvents(DateTime date)
+    {
+        if (Events is null) return [];
+        var dateOnly = DateOnly.FromDateTime(date);
+        return Events.Where(e => e.Date == dateOnly).ToList();
+    }
+
+    private static string GetEventTooltip(List<BitCalendarEvent> events)
+    {
+        return string.Join("\n", events.Select(e =>
+            e.StartTime.HasValue ? $"{e.Title} ({e.StartTime:HH:mm})" : e.Title));
+    }
+
+    private async Task HandleDayClick(DateTime date, List<BitCalendarEvent> events)
+    {
+        if (events.Count > 0)
+        {
+            OpenEventModal(date, events);
+        }
+        
+        await SelectDate(date);
+    }
+
+    private void OpenEventModal(DateTime date, List<BitCalendarEvent> events)
+    {
+        _eventModalDate = DateOnly.FromDateTime(date);
+        _eventModalEvents = events;
+        _showEventModal = true;
+    }
+
+    private void CloseEventModal()
+    {
+        _showEventModal = false;
     }
 
     private DateTime GetDateTime(DateTimeOffset dateTimeOffset)

@@ -36,6 +36,15 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "Events",
+            Type = "IEnumerable<BitCalendarEvent>?",
+            DefaultValue = "null",
+            Description = "The list of events to display on calendar days. Days with events show an indicator dot that reveals a tooltip on hover and a detail modal on click.",
+            Href = "#calendar-event",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
             Name = "GoToNextMonthTitle",
             Type = "string",
             DefaultValue = "Go to next month",
@@ -903,6 +912,112 @@ public partial class BitCalendarDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for each year button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "EventIndicator",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the event indicator dot of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "EventModalOverlay",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the event modal overlay of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "EventModalContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the event modal container of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "EventModalHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the event modal header of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "EventModalCloseButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the event modal close button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "EventItem",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for each event item in the event modal of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "EventItemTitle",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the event item title in the event modal of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "EventItemTime",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the event item time range in the event modal of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "EventItemBody",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the event item body in the event modal of the BitCalendar."
+                }
+            ]
+        },
+        new()
+        {
+            Id = "calendar-event",
+            Title = "BitCalendarEvent",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Title",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "The title of the event."
+                },
+                new()
+                {
+                    Name = "Body",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "The full body/description text of the event."
+                },
+                new()
+                {
+                    Name = "Date",
+                    Type = "DateOnly",
+                    DefaultValue = "default",
+                    Description = "The date on which the event occurs."
+                },
+                new()
+                {
+                    Name = "StartTime",
+                    Type = "TimeOnly?",
+                    DefaultValue = "null",
+                    Description = "The optional start time of the event."
+                },
+                new()
+                {
+                    Name = "EndTime",
+                    Type = "TimeOnly?",
+                    DefaultValue = "null",
+                    Description = "The optional end time of the event."
                 }
             ]
         },
@@ -941,6 +1056,27 @@ public partial class BitCalendarDemo
 
 
     private DateTimeOffset? selectedDate = new DateTimeOffset(2023, 8, 19, 0, 0, 0, DateTimeOffset.Now.Offset);
+
+    private List<BitCalendarEvent> calendarEvents =
+    [
+        new() { Title = "Team standup",
+                Body = "Daily sync with the engineering team.",
+                Date = DateOnly.FromDateTime(DateTime.Today),
+                StartTime = new TimeOnly(9, 0),
+                EndTime = new TimeOnly(9, 30) },
+        new() { Title = "Product review",
+                Body = "Quarterly product review \u2014 prepare slides beforehand.",
+                Date = DateOnly.FromDateTime(DateTime.Today),
+                StartTime = new TimeOnly(14, 0),
+                EndTime = new TimeOnly(15, 0) },
+        new() { Title = "All-day workshop",
+                Body = "Full-day frontend architecture workshop.",
+                Date = DateOnly.FromDateTime(DateTime.Today.AddDays(3)) },
+        new() { Title = "Client call",
+                Body = "Introductory call with the new client.",
+                Date = DateOnly.FromDateTime(DateTime.Today.AddDays(7)),
+                StartTime = new TimeOnly(11, 30) }
+    ];
 
     private CultureInfo culture = CultureInfo.CurrentUICulture;
 

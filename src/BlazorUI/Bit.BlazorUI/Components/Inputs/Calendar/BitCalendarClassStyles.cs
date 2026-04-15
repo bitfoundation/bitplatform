@@ -326,4 +326,49 @@ public class BitCalendarClassStyles
     /// Custom CSS classes/styles for each year button of the BitCalendar.
     /// </summary>
     public string? YearButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the event indicator dot of the BitCalendar.
+    /// </summary>
+    public string? EventIndicator { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the event modal overlay of the BitCalendar.
+    /// </summary>
+    public string? EventModalOverlay { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the event modal container of the BitCalendar.
+    /// </summary>
+    public string? EventModalContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the event modal header of the BitCalendar.
+    /// </summary>
+    public string? EventModalHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the event modal close button of the BitCalendar.
+    /// </summary>
+    public string? EventModalCloseButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for each event item in the event modal of the BitCalendar.
+    /// </summary>
+    public string? EventItem { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the event item title in the event modal of the BitCalendar.
+    /// </summary>
+    public string? EventItemTitle { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the event item time range in the event modal of the BitCalendar.
+    /// </summary>
+    public string? EventItemTime { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the event item body in the event modal of the BitCalendar.
+    /// </summary>
+    public string? EventItemBody { get; set; }
 }
