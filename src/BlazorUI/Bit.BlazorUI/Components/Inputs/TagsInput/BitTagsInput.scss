@@ -1,0 +1,141 @@
+@import "../../../Styles/functions.scss";
+
+.bit-tgi {
+    font-weight: 400;
+    position: relative;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+
+    &.bit-dis {
+        .bit-tgi-lbl {
+            color: $clr-fg-dis;
+        }
+
+        .bit-tgi-cnt {
+            cursor: default;
+            color: $clr-fg-dis;
+            border-color: $clr-brd-dis;
+            background-color: $clr-bg-dis;
+        }
+    }
+
+    &.bit-inv {
+        .bit-tgi-cnt {
+            border-color: $clr-err;
+        }
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) {
+            .bit-tgi-cnt {
+                border-color: $clr-brd-pri-hover;
+            }
+        }
+    }
+}
+
+.bit-tgi-nbd {
+    .bit-tgi-cnt {
+        border-color: transparent;
+    }
+}
+
+.bit-tgi-fcs {
+    .bit-tgi-cnt {
+        border-color: $clr-pri;
+        outline: none;
+
+        &::after {
+            content: "";
+            height: 2px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            position: absolute;
+            background-color: $clr-pri;
+            border-radius: 0 0 $shp-border-radius $shp-border-radius;
+        }
+    }
+}
+
+.bit-tgi-lbl {
+    display: block;
+    font-weight: 600;
+    font-size: spacing(1.75);
+    line-height: spacing(2.5);
+    padding: spacing(0.625) 0;
+    color: $clr-fg-pri;
+}
+
+.bit-tgi-cnt {
+    display: flex;
+    flex-wrap: wrap;
+    cursor: text;
+    position: relative;
+    align-items: center;
+    gap: spacing(0.375);
+    min-height: spacing(4.5);
+    padding: spacing(0.375) spacing(0.5);
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-tgi-tag {
+    display: inline-flex;
+    align-items: baseline;
+    gap: spacing(0.375);
+    line-height: spacing(2.25);
+    padding: spacing(0.125) spacing(0.5);
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-sec;
+    color: $clr-fg-pri;
+    font-size: spacing(1.5);
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.bit-tgi-ttx {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    line-height: spacing(2.25);
+}
+
+.bit-tgi-dbt {
+    padding: 0;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: inherit;
+    background-color: transparent;
+    font-size: spacing(1.25);
+    line-height: 1;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-sec;
+        }
+    }
+}
+
+.bit-tgi-dsi {
+    font-size: inherit;
+}
+
+.bit-tgi-inp {
+    flex: 1 1 auto;
+    min-width: spacing(5);
+    border: none;
+    outline: none;
+    padding: spacing(0.125) spacing(0.25);
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    line-height: spacing(2.25);
+    background: none transparent;
+    color: $clr-fg-pri;
+    font-family: $tg-font-family;
+}

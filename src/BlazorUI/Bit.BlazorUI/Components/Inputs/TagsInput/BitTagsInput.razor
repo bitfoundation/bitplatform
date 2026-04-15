@@ -1,0 +1,76 @@
+@namespace Bit.BlazorUI
+@inherits BitInputBase<ICollection<string>?>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (LabelTemplate is not null)
+    {
+        <label id="@_labelId" for="@_inputId">@LabelTemplate</label>
+    }
+    else if (Label.HasValue())
+    {
+        <label id="@_labelId"
+               for="@_inputId"
+               style="@Styles?.Label"
+               class="bit-tgi-lbl @Classes?.Label">
+            @Label
+        </label>
+    }
+
+    <div @onclick="HandleContainerClick"
+         style="@Styles?.InputContainer"
+         class="bit-tgi-cnt @Classes?.InputContainer">
+        @if (CurrentValue is not null)
+        {
+            @foreach (var tag in CurrentValue)
+            {
+                <div style="@Styles?.Tag" class="bit-tgi-tag @Classes?.Tag">
+                    @if (TagTemplate is not null)
+                    {
+                        @TagTemplate(tag)
+                    }
+                    else
+                    {
+                        <span style="@Styles?.TagText" class="bit-tgi-ttx @Classes?.TagText">@tag</span>
+                    }
+
+                    @if (ReadOnly is false && IsEnabled)
+                    {
+                        var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
+                        <button @onclick="() => HandleRemoveTag(tag)"
+                                @onclick:stopPropagation="true"
+                                type="button"
+                                title="Remove"
+                                aria-label="Remove @tag"
+                                style="@Styles?.DismissButton"
+                                class="bit-tgi-dbt @Classes?.DismissButton">
+                            <i style="@Styles?.DismissIcon" class="bit-tgi-dsi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" aria-hidden="true" />
+                        </button>
+                    }
+                </div>
+            }
+        }
+
+        <input @ref="InputElement"
+               @onkeydown="HandleOnKeyDown"
+               @onkeydown:preventDefault="@_preventKeyDown"
+               @onfocusin="HandleOnFocusIn"
+               @onfocusout="HandleOnFocusOut"
+               @oninput="HandleOnInput"
+               type="text"
+               name="@Name"
+               id="@_inputId"
+               readonly="@ReadOnly"
+               value="@_inputText"
+               style="@Styles?.Input"
+               autofocus="@AutoFocus"
+               aria-label="@AriaLabel"
+               placeholder="@_currentPlaceholder"
+               disabled="@(IsEnabled is false)"
+               class="bit-tgi-inp @Classes?.Input"
+               aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)" />
+    </div>
+</div>

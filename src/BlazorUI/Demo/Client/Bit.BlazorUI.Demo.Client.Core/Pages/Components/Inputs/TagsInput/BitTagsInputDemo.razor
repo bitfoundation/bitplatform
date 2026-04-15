@@ -1,0 +1,167 @@
+@page "/components/tagsinput"
+@page "/components/tags-input"
+
+<PageOutlet Url="components/tagsinput"
+            Title="TagsInput"
+            Description="tagsinput component of the bit BlazorUI components" />
+
+<div>
+    <DemoPage Name="TagsInput"
+              Description="A tags input (TagsInput) provides an input field for adding and managing tags (keywords)."
+              Parameters="componentParameters"
+              SubClasses="componentSubClasses"
+              PublicMembers="componentPublicMembers"
+              GitHubUrl="Inputs/TagsInput/BitTagsInput.razor"
+              GitHubDemoUrl="Inputs/TagsInput/BitTagsInputDemo.razor">
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>Basic examples of BitTagsInput including a default, read-only, and disabled state.</div><br />
+            <div class="example-box">
+                <BitTagsInput Placeholder="Add tag..." />
+                <br />
+                <BitTagsInput Placeholder="ReadOnly" ReadOnly Value="@(new List<string> { "Tag 1", "Tag 2" })" />
+                <br />
+                <BitTagsInput Placeholder="Disabled" IsEnabled="false" Value="@(new List<string> { "Tag 1", "Tag 2" })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Label" RazorCode="@example2RazorCode" Id="example2">
+            <div>Demonstrating BitTagsInput with a label displayed above the input.</div><br />
+            <div class="example-box">
+                <BitTagsInput Label="Tags" Placeholder="Add tag..." />
+                <br />
+                <BitTagsInput Placeholder="Add tag...">
+                    <LabelTemplate>
+                        <BitStack Horizontal Gap="0.5rem">
+                            <BitIcon IconName="@BitIconName.Tag" />
+                            <BitText Typography="BitTypography.Body1">Custom label</BitText>
+                        </BitStack>
+                    </LabelTemplate>
+                </BitTagsInput>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="NoBorder" RazorCode="@example3RazorCode" Id="example3">
+            <div>Demonstrating the no-border style of BitTagsInput.</div><br />
+            <div class="example-box">
+                <BitTagsInput Placeholder="NoBorder" NoBorder />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>Demonstrating two-way binding and event callbacks for BitTagsInput.</div><br />
+            <div class="example-box">
+                <BitTagsInput Placeholder="Add tag..." @bind-Value="boundTags" />
+                <div>Tags: @(boundTags is not null ? string.Join(", ", boundTags) : "null")</div>
+                <br />
+                <BitTagsInput Placeholder="Add tag..."
+                              @bind-Value="eventTags"
+                              OnAdd="tag => addedTag = tag"
+                              OnRemove="tag => removedTag = tag" />
+                <div>Added: @addedTag</div>
+                <div>Removed: @removedTag</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Duplicates" RazorCode="@example5RazorCode" Id="example5">
+            <div>Demonstrating BitTagsInput with duplicate tags allowed.</div><br />
+            <div class="example-box">
+                <BitTagsInput Placeholder="Duplicates allowed" Duplicates />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="MaxTags" RazorCode="@example6RazorCode" Id="example6">
+            <div>Limiting the maximum number of tags.</div><br />
+            <div class="example-box">
+                <BitTagsInput Placeholder="Max 3 tags" MaxTags="3" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Separators" RazorCode="@example7RazorCode" Id="example7">
+            <div>Using custom separator characters to add tags by typing.</div><br />
+            <div class="example-box">
+                <BitTagsInput Placeholder="Use comma or semicolon" Separators="@(new[] { ",", ";" })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="TagTemplate" RazorCode="@example8RazorCode" Id="example8">
+            <div>Customizing the appearance of individual tags using a template.</div><br />
+            <div class="example-box">
+                <BitTagsInput Placeholder="Add tag...">
+                    <TagTemplate Context="tag">
+                        <BitIcon IconName="@BitIconName.Tag" Style="font-size: 0.75rem;" />
+                        <span style="font-weight: 600;">@tag</span>
+                    </TagTemplate>
+                </BitTagsInput>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="MaxLength" RazorCode="@example9RazorCode" Id="example9">
+            <div>Limiting the maximum number of characters per tag.</div><br />
+            <div class="example-box">
+                <BitTagsInput Placeholder="Max 10 chars per tag" MaxLength="10" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Paste splitting" RazorCode="@example10RazorCode" Id="example10">
+            <div>Pasting text with separators automatically splits it into multiple tags.</div><br />
+            <div class="example-box">
+                <BitTagsInput Placeholder="Paste comma-separated text" Separators="@(new[] { "," })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>Using OnBeforeAdd, OnBeforeRemove, and OnTagExists callbacks.</div><br />
+            <div class="example-box">
+                <BitTagsInput Placeholder="Type 'block' to test OnBeforeAdd"
+                              OnBeforeAdd="HandleBeforeAdd"
+                              OnBeforeRemove="HandleBeforeRemove"
+                              OnTagExists="HandleTagExists" />
+                <div>Status: @eventsStatus</div>
+                @if (tagExistsMsg is not null)
+                {
+                    <div style="color: red;">@tagExistsMsg</div>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="CancelConfirmKeysOnEmpty" RazorCode="@example12RazorCode" Id="example12">
+            <div>Allow pressing Enter to submit a form when the tag input is empty.</div><br />
+            <div class="example-box">
+                <EditForm Model="cancelModel" OnValidSubmit="() => cancelFormSubmitted = true">
+                    <DataAnnotationsValidator />
+                    <BitTagsInput Label="Tags" Placeholder="Add tags, then submit with Enter when empty"
+                                  @bind-Value="cancelModel.Tags"
+                                  CancelConfirmKeysOnEmpty />
+                    <br />
+                    <div>Form submitted: @cancelFormSubmitted</div>
+                </EditForm>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>Demonstrating form validation with BitTagsInput.</div><br />
+            <div class="example-box">
+                <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <BitTagsInput Label="Tags (required)" Placeholder="Add tag..." @bind-Value="validationModel.Tags" />
+                    <ValidationMessage For="() => validationModel.Tags" />
+                    <br />
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                </EditForm>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
+            <div>Customizing the appearance using Styles and Classes.</div><br />
+            <div class="example-box">
+                <BitTagsInput Placeholder="Custom styles"
+                              Styles="@(new() { Tag = "background: #0078d4; color: white; border-radius: 12px; padding: 2px 8px;",
+                                                DismissButton = "color: white;" })" />
+                <br />
+                <BitTagsInput Placeholder="Custom styles"
+                              Styles="@(new() { InputContainer = "border-color: #0078d4;",
+                                                Input = "color: #0078d4;" })" />
+            </div>
+        </DemoExample>
+    </DemoPage>
+</div>
