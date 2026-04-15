@@ -563,6 +563,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     internal async Task HandleOnItemClick(TItem item)
     {
+        if (ReadOnly) return;
         if (GetItemType(item) != BitDropdownItemType.Normal) return;
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
@@ -1026,6 +1027,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task AddOrRemoveSelectedItem(TItem? item, bool addDynamic = false)
     {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
         if (item is null) return;
 
         if (MultiSelect)
@@ -1224,8 +1228,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task ClearComboBoxInput()
     {
-        if (IsEnabled is false) return;
+        if (ReadOnly) return;
         if (Combo is false) return;
+        if (IsEnabled is false) return;
         if (_searchText.HasNoValue()) return;
 
         _searchText = null;
@@ -1283,6 +1288,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task HandleOnClearClick()
     {
+        if (ReadOnly) return;
         if (IsEnabled is false) return;
 
         if (MultiSelect)
@@ -1306,6 +1312,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task HandleOnAddItemComboClick()
     {
+        if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
 
         await AddDynamicItem();
@@ -1439,6 +1446,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task HandleOnComboInput(ChangeEventArgs e)
     {
+        if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
 
         _searchText = e.Value?.ToString();
@@ -1459,6 +1467,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task RemoveLastSelectedItem()
     {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
         if (_selectedItems.Any() is false) return;
 
         if (MultiSelect)
@@ -1474,6 +1485,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async Task AddDynamicItem()
     {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
         if (_searchText.HasNoValue()) return;
 
         if (_selectedItems.Count > 0)
