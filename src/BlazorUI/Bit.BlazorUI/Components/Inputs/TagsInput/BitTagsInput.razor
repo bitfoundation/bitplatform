@@ -71,6 +71,7 @@
                placeholder="@_currentPlaceholder"
                disabled="@(IsEnabled is false)"
                class="bit-tgi-inp @Classes?.Input"
+               data-separators="@_separatorsJson"
                aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)" />
     </div>
 </div>

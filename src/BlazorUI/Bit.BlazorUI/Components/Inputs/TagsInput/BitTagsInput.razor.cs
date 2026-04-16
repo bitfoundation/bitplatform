@@ -5,12 +5,15 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 {
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
     private bool _hasFocus;
     private bool _preventKeyDown;
     private string _inputText = string.Empty;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string? _currentPlaceholder;
+    private string? _separatorsJson;
 
 
 
@@ -160,6 +163,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        _separatorsJson = Separators is not null
+            ? System.Text.Json.JsonSerializer.Serialize(Separators)
+            : null;
+
+        await base.OnParametersSetAsync();
+    }
+
     protected override async Task OnInitializedAsync()
     {
         _inputId = $"BitTagsInput-{UniqueId}-input";
@@ -174,9 +186,14 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender && AutoFocus && IsEnabled)
+        if (firstRender)
         {
-            await InputElement.FocusAsync();
+            await _js.BitTagsInputSetup(InputElement);
+
+            if (AutoFocus && IsEnabled)
+            {
+                await InputElement.FocusAsync();
+            }
         }
     }
 
@@ -280,7 +297,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         }
         else if (e.Key == "Tab" && _inputText.Trim().Length > 0)
         {
-            _preventKeyDown = true;
+            // JS already prevented focus move in capture phase; just add the tag
+            _preventKeyDown = false;
+            await TryAddTag();
+        }
+        else if (Separators is not null && e.Key.Length == 1 && Separators.Any(s => s == e.Key))
+        {
+            // JS already prevented the separator char from being typed in capture phase;
+            // consume the event here and add the current input text as a tag
+            _preventKeyDown = false;
             await TryAddTag();
         }
         else
