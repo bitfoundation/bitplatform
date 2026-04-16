@@ -55,6 +55,7 @@
         }
 
         <input @ref="InputElement"
+               @attributes="InputHtmlAttributes"
                @onkeydown="HandleOnKeyDown"
                @onkeydown:preventDefault="@_preventKeyDown"
                @onfocusin="HandleOnFocusIn"

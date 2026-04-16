@@ -144,6 +144,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         _inputText = string.Empty;
         await SetCurrentValueAsync(null);
         UpdatePlaceholder();
+        StateHasChanged();
     }
 
 
