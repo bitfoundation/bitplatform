@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// TagsInput is an input component that allows users to add tags (keywords) by typing text and pressing Enter.
@@ -8,7 +8,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     private bool _hasFocus;
-    private bool _preventKeyDown;
     private string _inputText = string.Empty;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
@@ -77,12 +76,12 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     public bool NoBorder { get; set; }
 
     /// <summary>
-    /// Callback invoked before a tag is added. Return false to cancel the add.
+    /// Callback invoked before a tag is added. Set <c>args.Cancel = true</c> to cancel the add.
     /// </summary>
     [Parameter] public EventCallback<BitTagsInputBeforeArgs> OnBeforeAdd { get; set; }
 
     /// <summary>
-    /// Callback invoked before a tag is removed. Return false to cancel the remove.
+    /// Callback invoked before a tag is removed. Set <c>args.Cancel = true</c> to cancel the remove.
     /// </summary>
     [Parameter] public EventCallback<BitTagsInputBeforeArgs> OnBeforeRemove { get; set; }
 
@@ -178,6 +177,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         _inputId = $"BitTagsInput-{UniqueId}-input";
         _labelId = $"BitTagsInput-{UniqueId}-label";
 
+        OnValueChanged += HandleOnValueChanged;
+
         UpdatePlaceholder();
 
         await base.OnInitializedAsync();
@@ -211,6 +212,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     }
 
 
+
+    private void HandleOnValueChanged(object? sender, EventArgs args)
+    {
+        UpdatePlaceholder();
+    }
 
     private void UpdatePlaceholder()
     {
@@ -278,40 +284,28 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly)
-        {
-            _preventKeyDown = false;
-            return;
-        }
+        if (IsEnabled is false || ReadOnly) return;
 
         if (e.Key == "Enter")
         {
-            var hasText = _inputText.Trim().Length > 0;
-            // Prevent the key event (e.g. form submit) unless input was empty and CancelConfirmKeysOnEmpty is true
-            _preventKeyDown = hasText || CancelConfirmKeysOnEmpty is false;
+            // JS capture-phase listener already called preventDefault() as needed;
+            // just process the tag addition here.
             await TryAddTag();
         }
         else if (e.Key == "Backspace" && _inputText.Length == 0)
         {
-            _preventKeyDown = false;
             await RemoveLastTag();
         }
         else if (e.Key == "Tab" && _inputText.Trim().Length > 0)
         {
-            // JS already prevented focus move in capture phase; just add the tag
-            _preventKeyDown = false;
+            // JS already prevented focus move in capture phase; add the tag.
             await TryAddTag();
         }
         else if (Separators is not null && e.Key.Length == 1 && Separators.Any(s => s == e.Key))
         {
             // JS already prevented the separator char from being typed in capture phase;
-            // consume the event here and add the current input text as a tag
-            _preventKeyDown = false;
+            // add the current input text as a tag.
             await TryAddTag();
-        }
-        else
-        {
-            _preventKeyDown = false;
         }
     }
 
@@ -424,5 +418,16 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         await SetCurrentValueAsync(list.Count > 0 ? list : null);
         UpdatePlaceholder();
         await OnRemove.InvokeAsync(lastTag);
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        OnValueChanged -= HandleOnValueChanged;
+
+        await base.DisposeAsync(disposing);
     }
 }

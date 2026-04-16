@@ -2,13 +2,25 @@ namespace BitBlazorUI {
     export class TagsInput {
         public static setup(input: HTMLInputElement) {
             input.addEventListener('keydown', (e: KeyboardEvent) => {
-                // Prevent Tab from moving focus when the input has uncommitted text
-                if (e.key === 'Tab' && input.value.trim().length > 0) {
+                const hasText = input.value.trim().length > 0;
+
+                // Enter: prevent default (form submit / browser action) unless input is empty
+                // and CancelConfirmKeysOnEmpty is enabled.
+                if (e.key === 'Enter') {
+                    const cancelOnEmpty = input.dataset.cancelConfirmKeysOnEmpty === 'true';
+                    if (hasText || !cancelOnEmpty) {
+                        e.preventDefault();
+                    }
+                    return;
+                }
+
+                // Tab: prevent focus loss when the input has uncommitted text
+                if (e.key === 'Tab' && hasText) {
                     e.preventDefault();
                     return;
                 }
 
-                // Prevent single-char separator keys from being typed into the input
+                // Single-char separator keys: prevent the character from being typed
                 const separatorsJson = input.dataset.separators;
                 if (!separatorsJson) return;
 

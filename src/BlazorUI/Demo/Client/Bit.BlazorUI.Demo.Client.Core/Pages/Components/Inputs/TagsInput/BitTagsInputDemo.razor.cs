@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TagsInput;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TagsInput;
 
 public partial class BitTagsInputDemo
 {
@@ -89,7 +89,7 @@ public partial class BitTagsInputDemo
         {
             Name = "OnBeforeAdd",
             Type = "EventCallback<BitTagsInputBeforeArgs>",
-            Description = "Callback invoked before a tag is added. Set Cancel = true on the args to prevent the add.",
+            Description = "Callback invoked before a tag is added. Set args.Cancel = true to cancel the add.",
             LinkType = LinkType.Link,
             Href = "#before-args",
         },
@@ -97,7 +97,7 @@ public partial class BitTagsInputDemo
         {
             Name = "OnBeforeRemove",
             Type = "EventCallback<BitTagsInputBeforeArgs>",
-            Description = "Callback invoked before a tag is removed. Set Cancel = true on the args to prevent the remove.",
+            Description = "Callback invoked before a tag is removed. Set args.Cancel = true to cancel the remove.",
             LinkType = LinkType.Link,
             Href = "#before-args",
         },
@@ -350,7 +350,6 @@ public partial class BitTagsInputDemo
     private void HandleBeforeRemove(BitTagsInputBeforeArgs args)
     {
         eventsStatus = $"Removing '{args.Tag}'.";
-        tagExistsMsg = null;
         tagExistsMsg = null;
     }
 }

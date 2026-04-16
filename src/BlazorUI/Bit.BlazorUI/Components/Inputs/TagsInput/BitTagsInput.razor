@@ -57,7 +57,6 @@
         <input @ref="InputElement"
                @attributes="InputHtmlAttributes"
                @onkeydown="HandleOnKeyDown"
-               @onkeydown:preventDefault="@_preventKeyDown"
                @onfocusin="HandleOnFocusIn"
                @onfocusout="HandleOnFocusOut"
                @oninput="HandleOnInput"
@@ -73,6 +72,7 @@
                disabled="@(IsEnabled is false)"
                class="bit-tgi-inp @Classes?.Input"
                data-separators="@_separatorsJson"
+               data-cancel-confirm-keys-on-empty="@CancelConfirmKeysOnEmpty.ToString().ToLower()"
                aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)" />
     </div>
 </div>
