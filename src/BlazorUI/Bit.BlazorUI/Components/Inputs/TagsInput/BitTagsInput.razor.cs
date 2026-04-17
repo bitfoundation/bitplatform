@@ -142,7 +142,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         _inputText = string.Empty;
         await SetCurrentValueAsync(null);
-        UpdatePlaceholder();
         StateHasChanged();
     }
 
@@ -341,7 +340,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         _inputText = string.Empty;
 
         await SetCurrentValueAsync(list);
-        UpdatePlaceholder();
         await OnAdd.InvokeAsync([text]);
     }
 
@@ -376,7 +374,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         _inputText = string.Empty;
         await SetCurrentValueAsync(list);
-        UpdatePlaceholder();
         await OnAdd.InvokeAsync(addedTags);
     }
 
@@ -395,7 +392,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         list.RemoveAt(index);
 
         await SetCurrentValueAsync(list.Count > 0 ? list : null);
-        UpdatePlaceholder();
         await OnRemove.InvokeAsync(tag);
     }
 
@@ -416,7 +412,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         list.RemoveAt(list.Count - 1);
 
         await SetCurrentValueAsync(list.Count > 0 ? list : null);
-        UpdatePlaceholder();
         await OnRemove.InvokeAsync(lastTag);
     }
 
