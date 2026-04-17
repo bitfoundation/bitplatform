@@ -86,9 +86,9 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public EventCallback<BitTagsInputBeforeArgs> OnBeforeRemove { get; set; }
 
     /// <summary>
-    /// Callback for when a tag is added.
+    /// Callback for when one or more tags are added. Receives the list of all newly added tags.
     /// </summary>
-    [Parameter] public EventCallback<string> OnAdd { get; set; }
+    [Parameter] public EventCallback<IReadOnlyList<string>> OnAdd { get; set; }
 
     /// <summary>
     /// Callback fired when a duplicate tag entry is attempted (and <see cref="Duplicates"/> is false).
@@ -342,13 +342,13 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         await SetCurrentValueAsync(list);
         UpdatePlaceholder();
-        await OnAdd.InvokeAsync(text);
+        await OnAdd.InvokeAsync([text]);
     }
 
     private async Task TryAddTags(string[] tags)
     {
         var list = CurrentValue is not null ? new List<string>(CurrentValue) : [];
-        var added = false;
+        var addedTags = new List<string>();
 
         foreach (var tag in tags)
         {
@@ -369,18 +369,18 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             }
 
             list.Add(text);
-            added = true;
-            await OnAdd.InvokeAsync(text);
+            addedTags.Add(text);
         }
 
-        if (added is false) return;
+        if (addedTags.Count == 0) return;
 
         _inputText = string.Empty;
         await SetCurrentValueAsync(list);
         UpdatePlaceholder();
+        await OnAdd.InvokeAsync(addedTags);
     }
 
-    private async Task HandleRemoveTag(string tag)
+    private async Task HandleRemoveTag(int index, string tag)
     {
         if (IsEnabled is false || ReadOnly) return;
 
@@ -392,7 +392,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         }
 
         var list = CurrentValue is not null ? new List<string>(CurrentValue) : [];
-        list.Remove(tag);
+        list.RemoveAt(index);
 
         await SetCurrentValueAsync(list.Count > 0 ? list : null);
         UpdatePlaceholder();

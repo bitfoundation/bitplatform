@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -139,7 +141,7 @@ public class BitTagsInputTests : BunitTestContext
 
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
-            parameters.Add(p => p.OnAdd, (string tag) => addedTag = tag);
+            parameters.Add(p => p.OnAdd, (Action<IReadOnlyList<string>>)(tags => addedTag = tags.FirstOrDefault()));
         });
 
         var input = com.Find(".bit-tgi-inp");
@@ -198,7 +200,7 @@ public class BitTagsInputTests : BunitTestContext
             parameters.Add(p => p.Value, tags);
             parameters.Add(p => p.Duplicates, true);
             parameters.Add(p => p.OnTagExists, (string tag) => existsTag = tag);
-            parameters.Add(p => p.OnAdd, (string tag) => addedTag = tag);
+            parameters.Add(p => p.OnAdd, (Action<IReadOnlyList<string>>)(addedTags => addedTag = addedTags.FirstOrDefault()));
         });
 
         var input = com.Find(".bit-tgi-inp");
@@ -219,7 +221,7 @@ public class BitTagsInputTests : BunitTestContext
         {
             parameters.Add(p => p.Value, tags);
             parameters.Add(p => p.MaxTags, 2);
-            parameters.Add(p => p.OnAdd, (string tag) => addedTag = tag);
+            parameters.Add(p => p.OnAdd, (Action<IReadOnlyList<string>>)(addedTags => addedTag = addedTags.FirstOrDefault()));
         });
 
         var input = com.Find(".bit-tgi-inp");
@@ -237,7 +239,7 @@ public class BitTagsInputTests : BunitTestContext
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
             parameters.Add(p => p.MaxLength, 5);
-            parameters.Add(p => p.OnAdd, (string tag) => addedTag = tag);
+            parameters.Add(p => p.OnAdd, (Action<IReadOnlyList<string>>)(addedTags => addedTag = addedTags.FirstOrDefault()));
         });
 
         var input = com.Find(".bit-tgi-inp");
@@ -256,7 +258,7 @@ public class BitTagsInputTests : BunitTestContext
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
             parameters.Add(p => p.OnBeforeAdd, (BitTagsInputBeforeArgs args) => args.Cancel = true);
-            parameters.Add(p => p.OnAdd, (string tag) => addedTag = tag);
+            parameters.Add(p => p.OnAdd, (Action<IReadOnlyList<string>>)(addedTags => addedTag = addedTags.FirstOrDefault()));
         });
 
         var input = com.Find(".bit-tgi-inp");

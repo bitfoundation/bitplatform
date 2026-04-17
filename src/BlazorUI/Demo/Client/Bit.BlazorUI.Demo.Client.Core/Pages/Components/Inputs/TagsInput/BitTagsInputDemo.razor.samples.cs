@@ -28,7 +28,7 @@ public partial class BitTagsInputDemo
 
 <BitTagsInput Placeholder=""Add tag...""
               @bind-Value=""eventTags""
-              OnAdd=""tag => addedTag = tag""
+              OnAdd=""tags => addedTag = tags.LastOrDefault()""
               OnRemove=""tag => removedTag = tag"" />
 <div>Added: @addedTag</div>
 <div>Removed: @removedTag</div>";

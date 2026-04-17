@@ -25,7 +25,7 @@
          class="bit-tgi-cnt @Classes?.InputContainer">
         @if (CurrentValue is not null)
         {
-            @foreach (var tag in CurrentValue)
+            @foreach (var (tag, index) in CurrentValue.Select((t, i) => (t, i)))
             {
                 <div style="@Styles?.Tag" class="bit-tgi-tag @Classes?.Tag">
                     @if (TagTemplate is not null)
@@ -40,7 +40,7 @@
                     @if (ReadOnly is false && IsEnabled)
                     {
                         var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
-                        <button @onclick="() => HandleRemoveTag(tag)"
+                        <button @onclick="() => HandleRemoveTag(index, tag)"
                                 @onclick:stopPropagation="true"
                                 type="button"
                                 title="Remove"

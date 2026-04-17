@@ -104,8 +104,8 @@ public partial class BitTagsInputDemo
         new()
         {
             Name = "OnAdd",
-            Type = "EventCallback<string>",
-            Description = "Callback for when a tag is added.",
+            Type = "EventCallback<IReadOnlyList<string>>",
+            Description = "Callback for when one or more tags are added. Receives the list of all newly added tags.",
         },
         new()
         {
