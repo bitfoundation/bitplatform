@@ -21,7 +21,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private bool _showMonthPicker;
     private bool _showEventModal;
     private DateOnly _eventModalDate;
-    private List<BitCalendarEvent> _eventModalEvents = [];
+    private IReadOnlyList<BitCalendarEvent> _eventModalEvents = [];
     private Dictionary<DateOnly, List<BitCalendarEvent>> _eventsByDate = [];
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
@@ -1028,10 +1028,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             : Events.GroupBy(e => e.Date).ToDictionary(g => g.Key, g => g.ToList());
     }
 
-    private List<BitCalendarEvent> GetDayEvents(DateTime date)
+    private IReadOnlyList<BitCalendarEvent> GetDayEvents(DateTime date)
     {
         var dateOnly = DateOnly.FromDateTime(date);
-        return _eventsByDate.TryGetValue(dateOnly, out var list) ? list : [];
+
+        return _eventsByDate.TryGetValue(dateOnly, out var list) ? list : Array.Empty<BitCalendarEvent>();
     }
 
     private string FormatEventTime(TimeOnly time)
@@ -1045,13 +1046,13 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return date.ToDateTime(TimeOnly.MinValue).ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture);
     }
 
-    private string GetEventTooltip(List<BitCalendarEvent> events)
+    private string GetEventTooltip(IReadOnlyList<BitCalendarEvent> events)
     {
         return string.Join("\n", events.Select(e =>
             e.StartTime.HasValue ? $"{e.Title} ({FormatEventTime(e.StartTime.Value)})" : e.Title));
     }
 
-    private async Task HandleDayClick(DateTime date, List<BitCalendarEvent> events)
+    private async Task HandleDayClick(DateTime date, IReadOnlyList<BitCalendarEvent> events)
     {
         if (events.Count > 0)
         {
@@ -1061,7 +1062,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         await SelectDate(date);
     }
 
-    private void OpenEventModal(DateTime date, List<BitCalendarEvent> events)
+    private void OpenEventModal(DateTime date, IReadOnlyList<BitCalendarEvent> events)
     {
         _eventModalDate = DateOnly.FromDateTime(date);
         _eventModalEvents = events;
