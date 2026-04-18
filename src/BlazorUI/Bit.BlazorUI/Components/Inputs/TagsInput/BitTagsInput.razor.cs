@@ -264,18 +264,18 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         if (Separators is not null)
         {
-            foreach (var separator in Separators)
+            var separatorArray = Separators.ToArray();
+
+            if (separatorArray.Any(s => _inputText.Contains(s)))
             {
-                if (_inputText.Contains(separator))
+                var textWithoutSeparators = separatorArray.Aggregate(_inputText, (t, s) => t.Replace(s, string.Empty)).Trim();
+
+                await TryAddTags(_inputText.Split(separatorArray, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+                
+                // If all adds were rejected (e.g. duplicates), strip separators from _inputText
+                if (_inputText.Length > 0)
                 {
-                    var textWithoutSeparator = _inputText.Replace(separator, string.Empty).Trim();
-                    await TryAddTags(_inputText.Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
-                    // If add was rejected (e.g. duplicate), _inputText still has the separator; strip it
-                    if (_inputText.Length > 0)
-                    {
-                        _inputText = textWithoutSeparator;
-                    }
-                    return;
+                    _inputText = textWithoutSeparators;
                 }
             }
         }

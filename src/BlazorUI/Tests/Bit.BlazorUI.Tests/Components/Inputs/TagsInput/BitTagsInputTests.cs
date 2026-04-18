@@ -288,6 +288,25 @@ public class BitTagsInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitTagsInputMixedSeparatorPasteTest()
+    {
+        IReadOnlyList<string>? addedTags = null;
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.Separators, new[] { ",", ";" });
+            parameters.Add(p => p.OnAdd, (Action<IReadOnlyList<string>>)(t => addedTags = t));
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "a,b;c" });
+
+        Assert.IsNotNull(addedTags);
+        Assert.AreEqual(3, addedTags.Count);
+        CollectionAssert.AreEquivalent(new[] { "a", "b", "c" }, addedTags.ToArray());
+    }
+
+    [TestMethod]
     public async Task BitTagsInputClearMethodTest()
     {
         ICollection<string>? tags = new List<string> { "apple", "banana" };
