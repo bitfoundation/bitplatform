@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using ErrorEventArgs = Microsoft.AspNetCore.Components.Web.ErrorEventArgs;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// A BitPersona is a visual representation of a person across products, typically showcasing the image that person has chosen to upload themselves. The control can also be used to show that person's online status.
@@ -39,6 +41,13 @@ public partial class BitPersona : BitComponentBase
     [Parameter] public RenderFragment? ActionTemplate { get; set; }
 
     /// <summary>
+    /// If true, automatically generates a coin background color derived from the person's name or initials.
+    /// When set, this takes effect only when <see cref="CoinColor"/> is not explicitly provided.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool AutoCoinColor { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitPersona component.
     /// </summary>
     [Parameter] public BitPersonaClassStyles? Classes { get; set; }
@@ -48,12 +57,6 @@ public partial class BitPersona : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? CoinColor { get; set; }
-
-    /// <summary>
-    /// The shape of the coin.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitPersonaCoinShape? CoinShape { get; set; }
 
     /// <summary>
     /// Optional custom persona coin size in pixel.
@@ -89,7 +92,8 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// The user's initials to display in the image area when there is no image.
     /// </summary>
-    [Parameter] public string? ImageInitials { get; set; }
+    [Parameter, ResetClassBuilder]
+    public string? ImageInitials { get; set; }
 
     /// <summary>
     /// Optional Custom template for the image overlay.
@@ -100,6 +104,16 @@ public partial class BitPersona : BitComponentBase
     /// The text of the image overlay.
     /// </summary>
     [Parameter] public string ImageOverlayText { get; set; } = "Edit image";
+
+    /// <summary>
+    /// Specifies the loading behavior of the image (e.g., "lazy" or "eager").
+    /// </summary>
+    [Parameter] public string? ImageLoading { get; set; }
+
+    /// <summary>
+    /// A set of image source URLs for different display densities or sizes (maps to the img srcset attribute).
+    /// </summary>
+    [Parameter] public string? ImageSrcSet { get; set; }
 
     /// <summary>
     /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
@@ -118,6 +132,16 @@ public partial class BitPersona : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public EventCallback<MouseEventArgs> OnImageClick { get; set; }
+
+    /// <summary>
+    /// Callback for when the image fails to load.
+    /// </summary>
+    [Parameter] public EventCallback<ErrorEventArgs> OnImageError { get; set; }
+
+    /// <summary>
+    /// Callback for when the image successfully loads.
+    /// </summary>
+    [Parameter] public EventCallback<ProgressEventArgs> OnImageLoad { get; set; }
 
     /// <summary>
     /// Optional text to display, usually a custom message set.
@@ -184,7 +208,8 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// Primary text to display, usually the name of the person.
     /// </summary>
-    [Parameter] public string? PrimaryText { get; set; }
+    [Parameter, ResetClassBuilder]
+    public string? PrimaryText { get; set; }
 
     /// <summary>
     /// Custom primary text template.
@@ -205,6 +230,12 @@ public partial class BitPersona : BitComponentBase
     /// If true renders the initials while the image is loading. This only applies when an imageUrl is provided.
     /// </summary>
     [Parameter] public bool ShowInitialsUntilImageLoads { get; set; }
+
+    /// <summary>
+    /// If true, renders the coin with a square shape instead of the default circular shape.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Squared { get; set; }
 
     /// <summary>
     /// If true, show the special coin for unknown persona. 
@@ -308,15 +339,11 @@ public partial class BitPersona : BitComponentBase
             BitColor.PrimaryBorder => "bit-prs-pbr",
             BitColor.SecondaryBorder => "bit-prs-sbr",
             BitColor.TertiaryBorder => "bit-prs-tbr",
+            null when AutoCoinColor => GetAutoCoinColorClass(),
             _ => "bit-prs-inf"
         });
 
-        ClassBuilder.Register(() => CoinShape switch
-        {
-            BitPersonaCoinShape.Circular => "bit-prs-crl",
-            BitPersonaCoinShape.Square => "bit-prs-sqr",
-            _ => "bit-prs-crl"
-        });
+        ClassBuilder.Register(() => Squared ? "bit-prs-sqr" : null);
     }
 
     protected override void RegisterCssStyles()
@@ -346,7 +373,7 @@ public partial class BitPersona : BitComponentBase
 
         string? position = null;
         var presentationSize = CoinSize.Value / 3D;
-        if (CoinShape == BitPersonaCoinShape.Square)
+        if (Squared)
         {
             var presentationPosition = presentationSize / 3D;
             position = FormattableString.Invariant($"right:-{presentationPosition}px;bottom:-{presentationPosition}px;");
@@ -385,6 +412,23 @@ public partial class BitPersona : BitComponentBase
         if (CoinSize is null) return null;
 
         return $"width:{CoinSize.Value}px;";
+    }
+
+    private static readonly string[] _autoCoinColorClasses = ["bit-prs-pri", "bit-prs-sec", "bit-prs-ter", "bit-prs-suc", "bit-prs-wrn", "bit-prs-err", "bit-prs-inf"];
+
+    private string GetAutoCoinColorClass()
+    {
+        var text = (ImageInitials.HasValue() ? ImageInitials : PrimaryText)?.Trim() ?? string.Empty;
+        if (text.HasNoValue()) return "bit-prs-inf";
+
+        // Stable DJB2 hash — not affected by .NET's randomized GetHashCode
+        uint hash = 5381;
+        foreach (var c in text)
+        {
+            hash = ((hash << 5) + hash) + c;
+        }
+
+        return _autoCoinColorClasses[hash % (uint)_autoCoinColorClasses.Length];
     }
 
     private string GetInitials()
@@ -440,6 +484,13 @@ public partial class BitPersona : BitComponentBase
         };
     }
 
+    private string? GetImageStyle()
+    {
+        var hidden = _isLoaded ? null : "opacity:0;";
+        var style = $"{hidden}{Styles?.Image}";
+        return style.HasValue() ? style : null;
+    }
+
     private string? GetImageContainerClass()
     {
         var klass = $"{(CoinTemplate is null ? "bit-prs-imc" : null)} {GetCoinClass()} {Classes?.ImageContainer}".Trim();
@@ -463,21 +514,24 @@ public partial class BitPersona : BitComponentBase
         await OnImageClick.InvokeAsync(e);
     }
 
-    private void HandleOnError(Microsoft.AspNetCore.Components.Web.ErrorEventArgs e)
+    private async Task HandleOnError(ErrorEventArgs e)
     {
         _hasError = true;
         _isLoaded = true;
+        await OnImageError.InvokeAsync(e);
         StateHasChanged();
     }
 
-    private void HandleOnLoad(ProgressEventArgs e)
+    private async Task HandleOnLoad(ProgressEventArgs e)
     {
         _isLoaded = true;
+        await OnImageLoad.InvokeAsync(e);
         StateHasChanged();
     }
 
     private void OnSetImageUrl()
     {
         _hasError = false;
+        _isLoaded = false;
     }
 }

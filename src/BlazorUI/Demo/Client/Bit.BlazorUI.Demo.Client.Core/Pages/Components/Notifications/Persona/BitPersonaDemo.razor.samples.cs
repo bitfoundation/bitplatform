@@ -105,16 +105,15 @@ private bool isDetailsShown = true;";
 
     private readonly string example4RazorCode = @"
 <BitPersona PrimaryText=""Saleh Xafan""
-            SecondaryText=""Developer""
+            SecondaryText=""Circle""
             Size=""BitPersonaSize.Size72""
-            CoinShape=""BitPersonaCoinShape.Circular""
-            ImageUrl=""/images/persona/persona-female.png"" />
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<BitPersona PrimaryText=""Saleh Xafan""
-            SecondaryText=""Developer""
+<BitPersona Squared
+            PrimaryText=""Saleh Xafan""
+            SecondaryText=""Square""
             Size=""BitPersonaSize.Size72""
-            CoinShape=""BitPersonaCoinShape.Square""
-            ImageUrl=""/images/persona/persona-female.png"" />";
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
 
     private readonly string example5RazorCode = @"
 <BitPersona PrimaryText=""Annie Lindqvist""
@@ -362,8 +361,81 @@ private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
     {BitPersonaPresence.Blocked, BitIconInfo.Bi(""ban"")},
     {BitPersonaPresence.Busy, BitIconInfo.Bi(""exclamation-circle-fill"")}
 };";
-
     private readonly string example12RazorCode = @"
+<BitPersona AutoCoinColor
+            PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Size=""BitPersonaSize.Size72"" />
+
+<BitPersona AutoCoinColor
+            PrimaryText=""Saleh Khafan""
+            SecondaryText=""Developer""
+            Size=""BitPersonaSize.Size72"" />
+
+<BitPersona AutoCoinColor
+            PrimaryText=""Ted Randall""
+            SecondaryText=""Designer""
+            Size=""BitPersonaSize.Size72"" />
+
+<BitPersona AutoCoinColor
+            PrimaryText=""Carlos Slattery""
+            SecondaryText=""Manager""
+            Size=""BitPersonaSize.Size72"" />
+
+<BitPersona AutoCoinColor
+            PrimaryText=""Elvia Atkins""
+            SecondaryText=""QA Engineer""
+            Size=""BitPersonaSize.Size72"" />
+
+<BitPersona AutoCoinColor
+            ImageInitials=""ZZ""
+            PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Size=""BitPersonaSize.Size72"" />
+
+<BitPersona AutoCoinColor
+            CoinColor=""BitColor.Success""
+            PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Always green""
+            Size=""BitPersonaSize.Size72"" />";
+
+    private readonly string example13RazorCode = @"
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Size=""BitPersonaSize.Size72""
+            OnImageLoad=""() => imageLoadCount++""
+            ImageUrl=""/images/persona/persona-female.png"" />
+<p>Image Load Count: @imageLoadCount</p>
+
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Size=""BitPersonaSize.Size72""
+            OnImageError=""() => imageErrorCount++""
+            ImageUrl=""invalid-image-url"" />
+<p>Image Error Count: @imageErrorCount</p>";
+    private readonly string example13CsharpCode = @"
+private int imageLoadCount = 0;
+private int imageErrorCount = 0;";
+
+    private readonly string example14RazorCode = @"
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Lazy loaded""
+            Size=""BitPersonaSize.Size72""
+            ImageLoading=""lazy""
+            ImageUrl=""/images/persona/persona-female.png"" />
+
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Eagerly loaded""
+            Size=""BitPersonaSize.Size72""
+            ImageLoading=""eager""
+            ImageUrl=""/images/persona/persona-female.png"" />
+
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Size=""BitPersonaSize.Size72""
+            ImageUrl=""/images/persona/persona-female.png""
+            ImageSrcSet=""/images/persona/persona-female.png 1x, /images/persona/persona-female.png 2x"" />";
+    private readonly string example15RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -402,7 +474,7 @@ private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
             Classes=""@(new() { ImageContainer = ""custom-img-container"",
                                PrimaryTextContainer = ""custom-primary-text"" })"" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitPersona Dir=""BitDir.Rtl""
             PrimaryText=""صالح یوسف نژاد""
             SecondaryText=""مهندس نرم افزار""

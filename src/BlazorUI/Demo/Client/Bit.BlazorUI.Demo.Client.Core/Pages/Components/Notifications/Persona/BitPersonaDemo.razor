@@ -125,17 +125,16 @@
                     CoinVariant="BitVariant.Text" />
     </DemoExample>
 
-    <DemoExample Title="Shape" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Squared" RazorCode="@example4RazorCode" Id="example4">
         <BitPersona PrimaryText="Saleh Xafan"
-                    SecondaryText="Developer"
+                    SecondaryText="Circle"
                     Size="BitPersonaSize.Size72"
-                    CoinShape="BitPersonaCoinShape.Circular"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br />
-        <BitPersona PrimaryText="Saleh Xafan"
-                    SecondaryText="Developer"
+        <BitPersona Squared
+                    PrimaryText="Saleh Xafan"
+                    SecondaryText="Square"
                     Size="BitPersonaSize.Size72"
-                    CoinShape="BitPersonaCoinShape.Square"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
@@ -394,7 +393,73 @@
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
-    <DemoExample Title="Style &amp; Class" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="AutoCoinColor" RazorCode="@example12RazorCode" Id="example12">
+        <div>Different people each get a distinct, consistent coin color automatically:</div>
+        <br />
+        <BitPersona AutoCoinColor PrimaryText="Annie Lindqvist" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor PrimaryText="Saleh Khafan" SecondaryText="Developer" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor PrimaryText="Ted Randall" SecondaryText="Designer" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor PrimaryText="Carlos Slattery" SecondaryText="Manager" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor PrimaryText="Elvia Atkins" SecondaryText="QA Engineer" Size="BitPersonaSize.Size72" />
+        <br /><br /><br /><br />
+        <div>Custom ImageInitials also influence the generated color:</div>
+        <br />
+        <BitPersona AutoCoinColor ImageInitials="ZZ" PrimaryText="Annie Lindqvist" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" />
+        <br /><br /><br /><br />
+        <div>CoinColor takes precedence over AutoCoinColor when set explicitly:</div>
+        <br />
+        <BitPersona AutoCoinColor CoinColor="BitColor.Success" PrimaryText="Annie Lindqvist" SecondaryText="Always green" Size="BitPersonaSize.Size72" />
+    </DemoExample>
+
+    <DemoExample Title="Image Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>OnImageLoad — callback invoked when the image loads successfully:</div>
+        <br />
+        <BitPersona PrimaryText="Annie Lindqvist"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size72"
+                    OnImageLoad="() => imageLoadCount++"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <p>Image Load Count: @imageLoadCount</p>
+        <br /><br /><br /><br />
+        <div>OnImageError — callback invoked when the image fails to load:</div>
+        <br />
+        <BitPersona PrimaryText="Annie Lindqvist"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size72"
+                    OnImageError="() => imageErrorCount++"
+                    ImageUrl="invalid-image-url" />
+        <p>Image Error Count: @imageErrorCount</p>
+    </DemoExample>
+
+    <DemoExample Title="Image Loading" RazorCode="@example14RazorCode" Id="example14">
+        <div>ImageLoading controls when the browser fetches the image (maps to the HTML <b>loading</b> attribute):</div>
+        <br />
+        <BitPersona PrimaryText="Annie Lindqvist"
+                    SecondaryText="Lazy loaded"
+                    Size="BitPersonaSize.Size72"
+                    ImageLoading="lazy"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Annie Lindqvist"
+                    SecondaryText="Eagerly loaded"
+                    Size="BitPersonaSize.Size72"
+                    ImageLoading="eager"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>ImageSrcSet provides alternate image sources for different screen densities (maps to the HTML <b>srcset</b> attribute):</div>
+        <br />
+        <BitPersona PrimaryText="Annie Lindqvist"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"
+                    ImageSrcSet="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 1x, /_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 2x" />
+    </DemoExample>
+
+    <DemoExample Title="Style &amp; Class" RazorCode="@example15RazorCode" Id="example15">
         <div>Component's Style & Class:</div><br />
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72"
@@ -416,7 +481,7 @@
                                                PrimaryTextContainer = "custom-primary-text" })" />
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
         <div dir="rtl">
             <BitPersona Dir="BitDir.Rtl"
                         PrimaryText="صالح یوسف نژاد"

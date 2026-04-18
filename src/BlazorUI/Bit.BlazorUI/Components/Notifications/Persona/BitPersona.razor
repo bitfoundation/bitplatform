@@ -82,8 +82,10 @@
                                  alt="@ImageAlt"
                                  width="@dimension"
                                  height="@dimension"
+                                 loading="@ImageLoading"
+                                 srcset="@ImageSrcSet"
                                  class="bit-prs-img @Classes?.Image"
-                                 style="display:@(_isLoaded ? "unset" : "none");@Styles?.Image" />
+                                 style="@(_isLoaded ? null : "opacity:0;" + Styles?.Image)" />
                         }
                     }
                 }

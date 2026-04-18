@@ -37,6 +37,7 @@
     overflow: hidden;
     font-weight: 600;
     position: relative;
+    border-radius: 50%;
     align-items: center;
     justify-content: center;
     border-width: $shp-border-width;
@@ -51,12 +52,6 @@
     .bit-prs-imc {
         border: none;
         border-width: 0;
-    }
-}
-
-.bit-prs-crl {
-    .bit-prs-imc {
-        border-radius: 50%;
     }
 }
 
@@ -85,10 +80,13 @@
 }
 
 .bit-prs-img {
+    top: 0;
+    left: 0;
     opacity: 1;
     width: 100%;
     height: 100%;
     display: block;
+    position: absolute;
     object-fit: cover;
 }
 
@@ -130,7 +128,6 @@
 .bit-prs-ttx,
 .bit-prs-otx {
     overflow: hidden;
-    color: $clr-fg-pri;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
@@ -234,14 +231,6 @@
 }
 
 .bit-prs-s24 {
-    .bit-prs-ima {
-        flex: 0 0 auto;
-        width: spacing(3);
-        height: spacing(3);
-        position: relative;
-        text-align: center;
-    }
-
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(3);
@@ -260,14 +249,6 @@
 }
 
 .bit-prs-s32 {
-    .bit-prs-ima {
-        flex: 0 0 auto;
-        width: spacing(4);
-        height: spacing(4);
-        position: relative;
-        text-align: center;
-    }
-
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(4);
@@ -286,14 +267,6 @@
 }
 
 .bit-prs-s40 {
-    .bit-prs-ima {
-        flex: 0 0 auto;
-        width: spacing(5);
-        height: spacing(5);
-        position: relative;
-        text-align: center;
-    }
-
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(5);
@@ -345,14 +318,6 @@
 }
 
 .bit-prs-s48 {
-    .bit-prs-ima {
-        flex: 0 0 auto;
-        width: spacing(6);
-        height: spacing(6);
-        position: relative;
-        text-align: center;
-    }
-
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(6);
@@ -403,14 +368,6 @@
 }
 
 .bit-prs-s56 {
-    .bit-prs-ima {
-        flex: 0 0 auto;
-        width: spacing(7);
-        height: spacing(7);
-        position: relative;
-        text-align: center;
-    }
-
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(7);
@@ -461,14 +418,6 @@
 }
 
 .bit-prs-s72 {
-    .bit-prs-ima {
-        flex: 0 0 auto;
-        width: spacing(9);
-        height: spacing(9);
-        position: relative;
-        text-align: center;
-    }
-
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(9);
@@ -521,14 +470,6 @@
 }
 
 .bit-prs-s100 {
-    .bit-prs-ima {
-        flex: 0 0 auto;
-        position: relative;
-        text-align: center;
-        width: spacing(12.5);
-        height: spacing(12.5);
-    }
-
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(12.5);
@@ -583,14 +524,6 @@
 }
 
 .bit-prs-s120 {
-    .bit-prs-ima {
-        flex: 0 0 auto;
-        width: spacing(15);
-        position: relative;
-        text-align: center;
-        height: spacing(15);
-    }
-
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(15);

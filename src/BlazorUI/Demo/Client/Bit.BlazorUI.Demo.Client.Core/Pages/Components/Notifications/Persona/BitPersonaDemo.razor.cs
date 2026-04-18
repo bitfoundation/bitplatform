@@ -36,6 +36,13 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "AutoCoinColor",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, automatically generates a stable coin background color derived from the person's name or initials. Only takes effect when CoinColor is not explicitly set.",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitPersonaClassStyles",
             DefaultValue = "null",
@@ -54,12 +61,10 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "CoinShape",
-            Type = "BitPersonaCoinShape?",
-            DefaultValue = "null",
-            Description = "The shape of the coin.",
-            LinkType = LinkType.Link,
-            Href = "#shape-enum",
+            Name = "Squared",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, renders the coin with a square shape instead of the default circular shape.",
         },
         new()
         {
@@ -107,6 +112,13 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "ImageLoading",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Specifies the loading behavior of the image. Maps to the HTML loading attribute (e.g., \"lazy\" or \"eager\").",
+        },
+        new()
+        {
             Name = "ImageOverlayTemplate",
             Type = "RenderFragment?",
             DefaultValue = "",
@@ -117,7 +129,14 @@ public partial class BitPersonaDemo
             Name = "ImageOverlayText",
             Type = "string?",
             DefaultValue = "Edit image",
-            Description = "The user's initials to display in the image area when there is no image.",
+            Description = "The text of the image overlay.",
+        },
+        new()
+        {
+            Name = "ImageSrcSet",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A set of image source URLs for different display densities or sizes. Maps to the HTML img srcset attribute.",
         },
         new()
         {
@@ -139,6 +158,20 @@ public partial class BitPersonaDemo
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "null",
             Description = "Callback for when the image clicked.",
+        },
+        new()
+        {
+            Name = "OnImageError",
+            Type = "EventCallback<ErrorEventArgs>",
+            DefaultValue = "null",
+            Description = "Callback for when the image fails to load.",
+        },
+        new()
+        {
+            Name = "OnImageLoad",
+            Type = "EventCallback<ProgressEventArgs>",
+            DefaultValue = "null",
+            Description = "Callback for when the image successfully loads.",
         },
         new()
         {
@@ -564,26 +597,6 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Id = "shape-enum",
-            Name = "BitPersonaCoinShape",
-            Items =
-            [
-                new()
-                {
-                    Name = "Circular",
-                    Description = "Represents the traditional round shape of a coin.",
-                    Value = "",
-                },
-                new()
-                {
-                    Name = "Square",
-                    Description = "Represents a square-shaped coin.",
-                    Value = "",
-                }
-            ]
-        },
-        new()
-        {
             Id = "color-enum",
             Name = "BitColor",
             Description = "Defines the general colors available in the bit BlazorUI.",
@@ -726,6 +739,8 @@ public partial class BitPersonaDemo
 
     private int imageClickCount = 0;
     private int actionClickCount = 0;
+    private int imageLoadCount = 0;
+    private int imageErrorCount = 0;
     private bool isDetailsShown = true;
 
     private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
