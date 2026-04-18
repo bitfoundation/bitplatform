@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ErrorEventArgs = Microsoft.AspNetCore.Components.Web.ErrorEventArgs;
 
 namespace Bit.BlazorUI.Tests.Components.Notifications.Persona;
 
@@ -276,5 +278,221 @@ public class BitPersonaTests : BunitTestContext
         // When neither PresenceIcons nor PresenceIconNames contains the current Presence,
         // no presence icon should be rendered.
         Assert.IsEmpty(iconElements);
+    }
+
+    [TestMethod]
+    public void BitPersonaSquaredShouldApplySquaredClass()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Squared, true);
+        });
+
+        var persona = component.Find(".bit-prs");
+
+        Assert.IsTrue(persona.ClassList.Contains("bit-prs-sqr"));
+        Assert.IsFalse(persona.ClassList.Contains("bit-prs-crl"));
+    }
+
+    [TestMethod]
+    public void BitPersonaDefaultShapeShouldBeCircular()
+    {
+        var component = RenderComponent<BitPersona>();
+
+        var persona = component.Find(".bit-prs");
+
+        Assert.IsTrue(persona.ClassList.Contains("bit-prs-crl"));
+        Assert.IsFalse(persona.ClassList.Contains("bit-prs-sqr"));
+    }
+
+    [TestMethod]
+    public void BitPersonaAutoCoinColorShouldApplyAColorClassFromKnownPalette()
+    {
+        var colorClasses = new[] { "bit-prs-pri", "bit-prs-sec", "bit-prs-ter", "bit-prs-suc", "bit-prs-wrn", "bit-prs-err", "bit-prs-inf" };
+
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.AutoCoinColor, true);
+            parameters.Add(p => p.PrimaryText, "Annie Lindqvist");
+        });
+
+        var persona = component.Find(".bit-prs");
+
+        Assert.IsTrue(colorClasses.Any(c => persona.ClassList.Contains(c)));
+    }
+
+    [TestMethod]
+    public void BitPersonaAutoCoinColorShouldBeDeterministicForSameName()
+    {
+        var colorClasses = new[] { "bit-prs-pri", "bit-prs-sec", "bit-prs-ter", "bit-prs-suc", "bit-prs-wrn", "bit-prs-err", "bit-prs-inf" };
+
+        var component1 = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.AutoCoinColor, true);
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        var component2 = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.AutoCoinColor, true);
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+        });
+
+        var class1 = colorClasses.First(c => component1.Find(".bit-prs").ClassList.Contains(c));
+        var class2 = colorClasses.First(c => component2.Find(".bit-prs").ClassList.Contains(c));
+
+        Assert.AreEqual(class1, class2);
+    }
+
+    [TestMethod]
+    public void BitPersonaCoinColorShouldTakePrecedenceOverAutoCoinColor()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.AutoCoinColor, true);
+            parameters.Add(p => p.CoinColor, BitColor.Warning);
+            parameters.Add(p => p.PrimaryText, "Annie Lindqvist");
+        });
+
+        var persona = component.Find(".bit-prs");
+
+        Assert.IsTrue(persona.ClassList.Contains("bit-prs-wrn"));
+    }
+
+    [TestMethod,
+        DataRow("lazy"),
+        DataRow("eager")
+    ]
+    public void BitPersonaImageLoadingAttributeShouldBeSet(string loading)
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+            parameters.Add(p => p.ImageLoading, loading);
+        });
+
+        var img = component.Find(".bit-prs-img");
+
+        Assert.AreEqual(loading, img.GetAttribute("loading"));
+    }
+
+    [TestMethod]
+    public void BitPersonaImageSrcSetAttributeShouldBeSet()
+    {
+        var srcSet = "img-1x.png 1x, img-2x.png 2x";
+
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+            parameters.Add(p => p.ImageSrcSet, srcSet);
+        });
+
+        var img = component.Find(".bit-prs-img");
+
+        Assert.AreEqual(srcSet, img.GetAttribute("srcset"));
+    }
+
+    [TestMethod]
+    public void BitPersonaImageShouldBeHiddenUntilLoaded()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+        });
+
+        var img = component.Find(".bit-prs-img");
+        Assert.IsTrue(img.GetAttribute("style")?.Contains("opacity:0") ?? false);
+
+        img.TriggerEvent("onload", new ProgressEventArgs());
+
+        img = component.Find(".bit-prs-img");
+        Assert.IsFalse(img.GetAttribute("style")?.Contains("opacity:0") ?? false);
+    }
+
+    [TestMethod]
+    public void BitPersonaImageShouldBeHiddenAgainWhenImageUrlChanges()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "image-1.png");
+        });
+
+        component.Find(".bit-prs-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.IsFalse(component.Find(".bit-prs-img").GetAttribute("style")?.Contains("opacity:0") ?? false);
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "image-2.png");
+        });
+
+        Assert.IsTrue(component.Find(".bit-prs-img").GetAttribute("style")?.Contains("opacity:0") ?? false);
+    }
+
+    [TestMethod]
+    public void BitPersonaOnImageLoadShouldBeInvoked()
+    {
+        var loaded = false;
+
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+            parameters.Add(p => p.OnImageLoad, EventCallback.Factory.Create<ProgressEventArgs>(this, _ => loaded = true));
+        });
+
+        component.Find(".bit-prs-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.IsTrue(loaded);
+    }
+
+    [TestMethod]
+    public void BitPersonaOnImageErrorShouldBeInvoked()
+    {
+        var errored = false;
+
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.ImageUrl, "invalid-url.png");
+            parameters.Add(p => p.OnImageError, EventCallback.Factory.Create<ErrorEventArgs>(this, _ => errored = true));
+        });
+
+        component.Find(".bit-prs-img").TriggerEvent("onerror", new ErrorEventArgs());
+
+        Assert.IsTrue(errored);
+    }
+
+    [TestMethod]
+    public void BitPersonaOnImageErrorShouldFallbackToInitials()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Annie Lindqvist");
+            parameters.Add(p => p.ImageUrl, "invalid.png");
+        });
+
+        Assert.IsNotNull(component.Find(".bit-prs-img"));
+        Assert.IsEmpty(component.FindAll(".bit-prs-ini"));
+
+        component.Find(".bit-prs-img").TriggerEvent("onerror", new ErrorEventArgs());
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-img"));
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-ini"));
+    }
+
+    [TestMethod]
+    public void BitPersonaShowInitialsUntilImageLoadsShouldShowInitialsWhileLoading()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Annie Lindqvist");
+            parameters.Add(p => p.ImageUrl, "some-image.png");
+            parameters.Add(p => p.ShowInitialsUntilImageLoads, true);
+        });
+
+        Assert.IsNotEmpty(component.FindAll(".bit-prs-ini"));
+
+        component.Find(".bit-prs-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.IsEmpty(component.FindAll(".bit-prs-ini"));
     }
 }
