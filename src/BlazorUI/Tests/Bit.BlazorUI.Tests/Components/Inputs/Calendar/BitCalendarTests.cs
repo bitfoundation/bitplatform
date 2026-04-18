@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -674,5 +675,333 @@ public class BitCalendarTests : BunitTestContext
         });
 
         await component.Instance.DisposeAsync();
+    }
+
+    // ── Events feature ────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void BitCalendarEventsShouldShowIndicatorOnDayWithEvent()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Meeting", Body = "Details", Date = new DateOnly(2024, 1, 15) }
+            ]);
+        });
+
+        var day15 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
+
+        Assert.IsNotNull(day15.QuerySelector(".bit-cal-evi"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsShouldNotShowIndicatorOnDayWithoutEvent()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Meeting", Body = "Details", Date = new DateOnly(2024, 1, 15) }
+            ]);
+        });
+
+        var day10 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "10");
+
+        Assert.IsNull(day10.QuerySelector(".bit-cal-evi"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsShouldShowNoIndicatorsWhenNoEvents()
+    {
+        var component = RenderComponent<BitCalendar>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-cal-evi").Count);
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsDayButtonShouldHaveTooltipWithEventTitle()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Team Standup", Body = "Details", Date = new DateOnly(2024, 1, 15) }
+            ]);
+        });
+
+        var day15 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
+
+        Assert.IsTrue(day15.GetAttribute("title")?.Contains("Team Standup"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsTooltipShouldIncludeStartTimeWhenPresent()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Sync", Body = "Details", Date = new DateOnly(2024, 1, 15), StartTime = new TimeOnly(9, 30) }
+            ]);
+        });
+
+        var day15 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
+        var title = day15.GetAttribute("title");
+
+        Assert.IsTrue(title?.Contains("Sync"));
+        Assert.IsTrue(title?.Contains("09:30"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsClickingDayWithEventShouldOpenModal()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Meeting", Body = "Details", Date = new DateOnly(2024, 1, 15) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        Assert.IsNotNull(component.Find(".bit-cal-eov"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsModalShouldShowEventTitle()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Sprint Review", Body = "Demo day", Date = new DateOnly(2024, 1, 15) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        Assert.AreEqual("Sprint Review", component.Find(".bit-cal-eit").TextContent);
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsModalShouldShowEventBody()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Meeting", Body = "Room 3A", Date = new DateOnly(2024, 1, 15) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        Assert.AreEqual("Room 3A", component.Find(".bit-cal-eib").TextContent);
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsModalShouldShowMultipleEvents()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Event A", Body = "Body A", Date = new DateOnly(2024, 1, 15) },
+                new BitCalendarEvent { Title = "Event B", Body = "Body B", Date = new DateOnly(2024, 1, 15) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        Assert.AreEqual(2, component.FindAll(".bit-cal-emi").Count);
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsModalShouldShowBothTimesWithSeparator()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Workshop", Body = "Details", Date = new DateOnly(2024, 1, 15), StartTime = new TimeOnly(9, 0), EndTime = new TimeOnly(11, 30) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        var timeEl = component.Find(".bit-cal-eis");
+        Assert.IsTrue(timeEl.TextContent.Contains("09:00"));
+        Assert.IsTrue(timeEl.TextContent.Contains("11:30"));
+        Assert.IsTrue(timeEl.TextContent.Contains("\u2013"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsModalShouldShowFromTextForStartOnlyTime()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Event", Body = "Details", Date = new DateOnly(2024, 1, 15), StartTime = new TimeOnly(10, 0) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        var timeEl = component.Find(".bit-cal-eis");
+        Assert.IsTrue(timeEl.TextContent.Contains("From"));
+        Assert.IsTrue(timeEl.TextContent.Contains("10:00"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsModalShouldShowUntilTextForEndOnlyTime()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Deadline", Body = "Submit by", Date = new DateOnly(2024, 1, 15), EndTime = new TimeOnly(17, 0) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        var timeEl = component.Find(".bit-cal-eis");
+        Assert.IsTrue(timeEl.TextContent.Contains("Until"));
+        Assert.IsTrue(timeEl.TextContent.Contains("17:00"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsModalShouldNotShowTimeRowWhenTimesAbsent()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Reminder", Body = "All day", Date = new DateOnly(2024, 1, 15) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        Assert.AreEqual(0, component.FindAll(".bit-cal-eis").Count);
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsCloseButtonShouldCloseModal()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Meeting", Body = "Details", Date = new DateOnly(2024, 1, 15) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+        Assert.IsNotNull(component.Find(".bit-cal-eov"));
+
+        component.Find(".bit-cal-emx").Click();
+
+        Assert.AreEqual(0, component.FindAll(".bit-cal-eov").Count);
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsClickingOverlayShouldCloseModal()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Meeting", Body = "Details", Date = new DateOnly(2024, 1, 15) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+        Assert.IsNotNull(component.Find(".bit-cal-eov"));
+
+        component.Find(".bit-cal-eov").Click();
+
+        Assert.AreEqual(0, component.FindAll(".bit-cal-eov").Count);
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsCustomFromTextShouldAppearInModal()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.EventTimeFromText, "Ab");
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Event", Body = "Details", Date = new DateOnly(2024, 1, 15), StartTime = new TimeOnly(9, 0) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        var timeEl = component.Find(".bit-cal-eis");
+        Assert.IsTrue(timeEl.TextContent.Contains("Ab"));
+        Assert.IsFalse(timeEl.TextContent.Contains("From"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsCustomUntilTextShouldAppearInModal()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.EventTimeUntilText, "Bis");
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Deadline", Body = "Details", Date = new DateOnly(2024, 1, 15), EndTime = new TimeOnly(18, 0) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        var timeEl = component.Find(".bit-cal-eis");
+        Assert.IsTrue(timeEl.TextContent.Contains("Bis"));
+        Assert.IsFalse(timeEl.TextContent.Contains("Until"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsTwelveHourFormatShouldUseAmPmInModal()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Lunch", Body = "Details", Date = new DateOnly(2024, 1, 15), StartTime = new TimeOnly(14, 30) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        var timeText = component.Find(".bit-cal-eis").TextContent;
+        Assert.IsFalse(timeText.Contains("14:30"), "Should not use 24h format for 12h mode");
+        Assert.IsTrue(timeText.Contains("2:30"), "Should show 12h time");
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsLookupShouldUpdateWhenEventsParamChanges()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-cal-evi").Count);
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "New Event", Body = "Details", Date = new DateOnly(2024, 1, 15) }
+            ]);
+        });
+
+        Assert.IsTrue(component.FindAll(".bit-cal-evi").Count > 0);
     }
 }

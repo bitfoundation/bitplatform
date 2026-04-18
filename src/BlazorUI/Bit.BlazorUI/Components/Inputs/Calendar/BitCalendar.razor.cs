@@ -22,6 +22,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private bool _showEventModal;
     private DateOnly _eventModalDate;
     private List<BitCalendarEvent> _eventModalEvents = [];
+    private Dictionary<DateOnly, List<BitCalendarEvent>> _eventsByDate = [];
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
     private string _monthTitle = string.Empty;
@@ -127,7 +128,19 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// The list of events to display on calendar days.
     /// </summary>
-    [Parameter] public IEnumerable<BitCalendarEvent>? Events { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(BuildEventsLookup))]
+    public IEnumerable<BitCalendarEvent>? Events { get; set; }
+
+    /// <summary>
+    /// The text shown before the start time of an event when only a start time is present (e.g. "From 09:00").
+    /// </summary>
+    [Parameter] public string EventTimeFromText { get; set; } = "From";
+
+    /// <summary>
+    /// The text shown before the end time of an event when only an end time is present (e.g. "Until 17:00").
+    /// </summary>
+    [Parameter] public string EventTimeUntilText { get; set; } = "Until";
 
     /// <summary>
     /// The title of the Go to next month button (tooltip).
@@ -1003,17 +1016,34 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         CurrentValue = new(date, _timeZone.GetUtcOffset(date));
     }
 
-    private List<BitCalendarEvent> GetDayEvents(DateTime date)
+    private void BuildEventsLookup()
     {
-        if (Events is null) return [];
-        var dateOnly = DateOnly.FromDateTime(date);
-        return Events.Where(e => e.Date == dateOnly).ToList();
+        _eventsByDate = Events is null
+            ? []
+            : Events.GroupBy(e => e.Date).ToDictionary(g => g.Key, g => g.ToList());
     }
 
-    private static string GetEventTooltip(List<BitCalendarEvent> events)
+    private List<BitCalendarEvent> GetDayEvents(DateTime date)
+    {
+        var dateOnly = DateOnly.FromDateTime(date);
+        return _eventsByDate.TryGetValue(dateOnly, out var list) ? list : [];
+    }
+
+    private string FormatEventTime(TimeOnly time)
+    {
+        var format = TimeFormat == BitTimeFormat.TwelveHours ? "h:mm tt" : "HH:mm";
+        return time.ToString(format, _culture);
+    }
+
+    private string FormatEventModalDate(DateOnly date)
+    {
+        return date.ToDateTime(TimeOnly.MinValue).ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture);
+    }
+
+    private string GetEventTooltip(List<BitCalendarEvent> events)
     {
         return string.Join("\n", events.Select(e =>
-            e.StartTime.HasValue ? $"{e.Title} ({e.StartTime:HH:mm})" : e.Title));
+            e.StartTime.HasValue ? $"{e.Title} ({FormatEventTime(e.StartTime.Value)})" : e.Title));
     }
 
     private async Task HandleDayClick(DateTime date, List<BitCalendarEvent> events)

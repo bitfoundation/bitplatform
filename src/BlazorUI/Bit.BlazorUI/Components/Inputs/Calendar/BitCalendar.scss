@@ -43,8 +43,8 @@
     outline: transparent;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    border-radius: $shp-border-radius;
     font-family: $tg-font-family;
+    border-radius: $shp-border-radius;
 }
 
 .bit-cal-sdt {
@@ -89,6 +89,7 @@
     padding: 0;
     border: none;
     font-weight: 400;
+    color: $clr-fg-pri;
     position: relative;
     text-align: center;
     width: spacing(3.5);
@@ -98,7 +99,6 @@
     animation-fill-mode: both;
     animation-duration: 0.267s;
     animation-name: bit-fade-in;
-    color: $clr-fg-pri;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
@@ -108,6 +108,7 @@
     display: flex;
     cursor: pointer;
     overflow: visible;
+    color: $clr-fg-pri;
     position: relative;
     width: spacing(3.5);
     align-items: center;
@@ -119,7 +120,6 @@
     line-height: spacing(3);
     justify-content: center;
     background-color: transparent;
-    color: $clr-fg-pri;
     border-radius: $shp-border-radius;
 
     @media (hover: hover) {
@@ -133,9 +133,9 @@
     }
 
     &:disabled {
+        color: $clr-fg-dis;
         pointer-events: none;
         background-color: transparent;
-        color: $clr-fg-dis;
     }
 }
 
@@ -176,6 +176,7 @@
     margin: 0;
     display: flex;
     font-weight: 400;
+    color: $clr-fg-sec;
     width: spacing(3.5);
     align-items: center;
     height: spacing(3.5);
@@ -183,7 +184,6 @@
     font-size: spacing(1.5);
     justify-content: center;
     padding: spacing(0.375) 0 0 0;
-    color: $clr-fg-sec;
     background-color: $clr-bg-sec;
     border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
 }
@@ -209,6 +209,7 @@
     overflow: hidden;
     font-weight: 600;
     text-align: start;
+    color: $clr-fg-pri;
     position: relative;
     white-space: nowrap;
     align-items: center;
@@ -222,7 +223,6 @@
     animation-duration: 0.267s;
     animation-name: bit-fade-show;
     background-color: transparent;
-    color: $clr-fg-pri;
     border-radius: $shp-border-radius;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
@@ -251,6 +251,7 @@
     display: block;
     cursor: pointer;
     overflow: visible;
+    color: $clr-fg-pri;
     position: relative;
     text-align: center;
     width: spacing(3.5);
@@ -261,7 +262,6 @@
     min-height: spacing(3.5);
     line-height: spacing(3.5);
     background-color: transparent;
-    color: $clr-fg-pri;
     border-radius: $shp-border-radius;
 
     @media (hover: hover) {
@@ -285,7 +285,9 @@
     padding: 0;
     border: none;
     cursor: pointer;
+    aspect-ratio: 1;
     overflow: visible;
+    color: $clr-fg-pri;
     position: relative;
     text-align: center;
     width: spacing(3.75);
@@ -293,9 +295,7 @@
     line-height: spacing(3.75);
     font-size: spacing(1.5);
     background-color: transparent;
-    color: $clr-fg-pri;
     border-radius: $shp-border-radius;
-    aspect-ratio: 1;
 
     @media (hover: hover) {
         &:hover {
@@ -357,6 +357,7 @@
     cursor: pointer;
     overflow: hidden;
     width: spacing(6);
+    color: $clr-fg-pri;
     position: relative;
     white-space: nowrap;
     outline: transparent;
@@ -365,7 +366,6 @@
     text-overflow: ellipsis;
     line-height: spacing(5.17);
     background-color: transparent;
-    color: $clr-fg-pri;
     border-radius: $shp-border-radius;
 
     @media (hover: hover) {
@@ -375,9 +375,9 @@
     }
 
     &:disabled {
+        color: $clr-fg-dis;
         pointer-events: none;
         background-color: transparent;
-        color: $clr-fg-dis;
     }
 }
 
@@ -420,26 +420,26 @@
 
 .bit-cal-tpr {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
     gap: spacing(0.25);
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .bit-cal-tdv {
     display: flex;
-    justify-content: center;
     align-items: center;
     font-size: spacing(2.5);
+    justify-content: center;
     font-weight: $tg-font-weight;
 }
 
 .bit-cal-am-pm {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    margin-left: spacing(2);
     padding: spacing(1.6) 0;
+    margin-left: spacing(2);
+    justify-content: space-between;
 }
 
 .bit-cal-tin {
@@ -447,17 +447,17 @@
     padding: 0;
     border: none;
     cursor: pointer;
+    aspect-ratio: 1;
+    overflow: hidden;
     text-align: center;
     align-items: center;
     width: spacing(3.75);
     box-sizing: border-box;
     justify-content: center;
-    -moz-appearance: textfield; // Firefox
-    background-color: $clr-bg-pri;
     font-size: spacing(2.28);
+    -moz-appearance: textfield; // Firefox
     font-weight: $tg-font-weight;
-    overflow: hidden;
-    aspect-ratio: 1;
+    background-color: $clr-bg-pri;
 
     &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
     &::-webkit-outer-spin-button {
@@ -472,8 +472,8 @@
 
     &:focus {
         border: none;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
         outline: none;
+        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
     }
 }
 
@@ -512,20 +512,18 @@
     flex-flow: column nowrap;
 }
 
-// Event indicator dot rendered inside a day button
 .bit-cal-evi {
     left: 50%;
-    bottom: spacing(0.125);
-    width: spacing(0.5);
-    height: spacing(0.5);
     position: absolute;
     border-radius: 50%;
-    transform: translateX(-50%);
+    width: spacing(0.5);
+    height: spacing(0.5);
+    bottom: spacing(0.125);
     background-color: $clr-pri;
+    transform: translateX(-50%);
     transition: transform 0.15s ease;
 }
 
-// Overlay backdrop covering the whole .bit-cal
 .bit-cal-eov {
     inset: 0;
     z-index: 100;
@@ -538,22 +536,20 @@
     background-color: rgba(0, 0, 0, 0.25);
 }
 
-// Event modal container
 .bit-cal-emc {
     cursor: default;
-    overflow-y: auto;
     max-height: 80%;
+    overflow-y: auto;
+    color: $clr-fg-pri;
     padding: spacing(1.5);
     min-width: spacing(20);
     max-width: spacing(30);
-    color: $clr-fg-pri;
     background-color: $clr-bg-pri;
     border-radius: $shp-border-radius;
     border: $shp-border-width $shp-border-style $clr-brd-sec;
     box-shadow: 0 spacing(0.25) spacing(1) rgba(0, 0, 0, 0.2);
 }
 
-// Modal header row (date + close button)
 .bit-cal-emh {
     display: flex;
     font-weight: 600;
@@ -563,15 +559,14 @@
     justify-content: space-between;
 }
 
-// Modal close button
 .bit-cal-emx {
-    padding: spacing(0.25) spacing(0.5);
     border: none;
     cursor: pointer;
+    color: $clr-fg-sec;
     font-size: spacing(1.75);
     background-color: transparent;
-    color: $clr-fg-sec;
     border-radius: $shp-border-radius;
+    padding: spacing(0.25) spacing(1);
 
     @media (hover: hover) {
         &:hover {
@@ -580,32 +575,28 @@
     }
 }
 
-// Single event item row
 .bit-cal-emi {
     padding: spacing(0.75) 0;
     border-top: $shp-border-width $shp-border-style $clr-brd-sec;
 
     &:first-of-type {
-        border-top: none;
         padding-top: 0;
+        border-top: none;
     }
 }
 
-// Event title
 .bit-cal-eit {
     font-weight: 600;
     font-size: spacing(1.75);
     margin-bottom: spacing(0.25);
 }
 
-// Event time range
 .bit-cal-eis {
     color: $clr-fg-sec;
     font-size: spacing(1.5);
     margin-bottom: spacing(0.25);
 }
 
-// Event body text
 .bit-cal-eib {
     font-size: spacing(1.5);
     color: $clr-fg-pri;

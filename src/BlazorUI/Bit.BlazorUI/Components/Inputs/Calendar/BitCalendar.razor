@@ -586,7 +586,7 @@
                  @onclick:stopPropagation="true">
                 <div class="bit-cal-emh @Classes?.EventModalHeader"
                      style="@Styles?.EventModalHeader">
-                    <span>@_eventModalDate.ToString("MMMM d, yyyy")</span>
+                    <span>@FormatEventModalDate(_eventModalDate)</span>
                     <button type="button"
                             @onclick="CloseEventModal"
                             style="@Styles?.EventModalCloseButton"
@@ -604,15 +604,15 @@
                                  style="@Styles?.EventItemTime">
                                 @if (evt.StartTime.HasValue && evt.EndTime.HasValue)
                                 {
-                                    @($"{evt.StartTime:HH:mm} \u2013 {evt.EndTime:HH:mm}")
+                                    @($"{FormatEventTime(evt.StartTime.Value)} \u2013 {FormatEventTime(evt.EndTime.Value)}")
                                 }
                                 else if (evt.StartTime.HasValue)
                                 {
-                                    @($"From {evt.StartTime:HH:mm}")
+                                    @($"{EventTimeFromText} {FormatEventTime(evt.StartTime.Value)}")
                                 }
                                 else
                                 {
-                                    @($"Until {evt.EndTime:HH:mm}")
+                                    @($"{EventTimeUntilText} {FormatEventTime(evt.EndTime!.Value)}")
                                 }
                             </div>
                         }

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Represents an event to be displayed on a calendar day.
@@ -13,7 +13,7 @@ public class BitCalendarEvent
     /// <summary>
     /// The full body/description of the event.
     /// </summary>
-    public required string Body { get; set; }
+    public string Body { get; set; } = string.Empty;
 
     /// <summary>
     /// The date on which the event occurs.

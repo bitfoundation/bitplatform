@@ -45,6 +45,20 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "EventTimeFromText",
+            Type = "string",
+            DefaultValue = "From",
+            Description = "The text shown before the start time of an event when only a start time is present (e.g. \"From 09:00\"). Supports localization."
+        },
+        new()
+        {
+            Name = "EventTimeUntilText",
+            Type = "string",
+            DefaultValue = "Until",
+            Description = "The text shown before the end time of an event when only an end time is present (e.g. \"Until 17:00\"). Supports localization."
+        },
+        new()
+        {
             Name = "GoToNextMonthTitle",
             Type = "string",
             DefaultValue = "Go to next month",
