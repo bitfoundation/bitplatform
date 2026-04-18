@@ -142,6 +142,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
     /// Executes passed action that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>
     public virtual Action WrapHandled(Action action,
+        [CallerArgumentExpression("action")] string? argExpression = null,
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "")
@@ -154,7 +155,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                HandleException(exp, null, lineNumber, memberName, filePath);
+                HandleException(exp, null, argExpression, lineNumber, memberName, filePath);
             }
         };
     }
@@ -163,6 +164,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
     /// Executes passed action that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>
     public virtual Action<T> WrapHandled<T>(Action<T> func,
+        [CallerArgumentExpression("func")] string? argExpression = null,
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "")
@@ -175,7 +177,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                HandleException(exp, null, lineNumber, memberName, filePath);
+                HandleException(exp, null, argExpression, lineNumber, memberName, filePath);
             }
         };
     }
@@ -184,6 +186,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
     /// Executes passed action that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>
     public virtual Func<Task> WrapHandled(Func<Task> func,
+        [CallerArgumentExpression("func")] string? argExpression = null,
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "")
@@ -196,7 +199,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                HandleException(exp, null, lineNumber, memberName, filePath);
+                HandleException(exp, null, argExpression, lineNumber, memberName, filePath);
             }
         };
     }
@@ -205,6 +208,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
     /// Executes passed action that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>
     public virtual Func<Task<T>> WrapHandled<T>(Func<Task<T>> func,
+        [CallerArgumentExpression("func")] string? argExpression = null,
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "")
@@ -217,7 +221,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                HandleException(exp, null, lineNumber, memberName, filePath);
+                HandleException(exp, null, argExpression, lineNumber, memberName, filePath);
                 return default;
             }
         };
@@ -227,6 +231,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
     /// Executes passed action that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>
     public virtual Func<T, Task> WrapHandled<T>(Func<T, Task> func,
+        [CallerArgumentExpression("func")] string? argExpression = null,
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "")
@@ -239,7 +244,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                HandleException(exp, null, lineNumber, memberName, filePath);
+                HandleException(exp, null, argExpression, lineNumber, memberName, filePath);
             }
         };
     }
@@ -284,6 +289,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
 
     private void HandleException(Exception exp,
         Dictionary<string, object?>? parameters = null,
+        string? argExpression = null,
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "")
@@ -293,6 +299,10 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         if (AppPlatform.IsBlazorHybridOrBrowser is false)
         {
             parameters[nameof(InPrerenderSession)] = InPrerenderSession;
+        }
+        if (string.IsNullOrEmpty(argExpression) is false)
+        {
+            parameters["Expression"] = argExpression;
         }
         parameters["ComponentType"] = GetType().FullName;
 
