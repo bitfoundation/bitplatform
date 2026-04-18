@@ -128,9 +128,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// The list of events to display on calendar days.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(BuildEventsLookup))]
-    public IEnumerable<BitCalendarEvent>? Events { get; set; }
+    [Parameter] public IEnumerable<BitCalendarEvent>? Events { get; set; }
 
     /// <summary>
     /// The text shown before the start time of an event when only a start time is present (e.g. "From 09:00").
@@ -511,6 +509,13 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         OnSetParameters();
 
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        BuildEventsLookup();
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)

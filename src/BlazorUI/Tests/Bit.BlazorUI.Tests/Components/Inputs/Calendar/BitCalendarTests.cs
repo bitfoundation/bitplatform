@@ -980,8 +980,11 @@ public class BitCalendarTests : BunitTestContext
         component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
 
         var timeText = component.Find(".bit-cal-eis").TextContent;
+        var pmDesignator = System.Globalization.CultureInfo.CurrentUICulture.DateTimeFormat.PMDesignator;
+
         Assert.IsFalse(timeText.Contains("14:30"), "Should not use 24h format for 12h mode");
-        Assert.IsTrue(timeText.Contains("2:30"), "Should show 12h time");
+        Assert.IsTrue(timeText.Contains("2:30"), "Should show 12h hour");
+        Assert.IsTrue(timeText.Contains(pmDesignator), $"Should include culture PM designator '{pmDesignator}'");
     }
 
     [TestMethod]
