@@ -425,6 +425,7 @@
                     Size="BitPersonaSize.Size72"
                     OnImageLoad="() => imageLoadCount++"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br />
         <p>Image Load Count: @imageLoadCount</p>
         <br /><br /><br /><br />
         <div>OnImageError — callback invoked when the image fails to load:</div>
@@ -434,10 +435,11 @@
                     Size="BitPersonaSize.Size72"
                     OnImageError="() => imageErrorCount++"
                     ImageUrl="invalid-image-url" />
+        <br />
         <p>Image Error Count: @imageErrorCount</p>
     </DemoExample>
 
-    <DemoExample Title="Image Loading" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="ImageLoading" RazorCode="@example14RazorCode" Id="example14">
         <div>ImageLoading controls when the browser fetches the image (maps to the HTML <b>loading</b> attribute):</div>
         <br />
         <BitPersona PrimaryText="Xafan Salina"
@@ -451,7 +453,9 @@
                     Size="BitPersonaSize.Size72"
                     ImageLoading="BitImageLoading.Eager"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
+    </DemoExample>
+
+    <DemoExample Title="ImageSrcSet" RazorCode="@example15RazorCode" Id="example15">
         <div>ImageSrcSet provides alternate image sources for different screen densities (maps to the HTML <b>srcset</b> attribute):</div>
         <br />
         <BitPersona PrimaryText="Xafan Salina"
@@ -461,7 +465,7 @@
                     ImageSrcSet="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 1x, /_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 2x" />
     </DemoExample>
 
-    <DemoExample Title="Style &amp; Class" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Style &amp; Class" RazorCode="@example16RazorCode" Id="example16">
         <div>Component's Style & Class:</div><br />
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72"
@@ -483,7 +487,7 @@
                                                PrimaryTextContainer = "custom-primary-text" })" />
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
         <div dir="rtl">
             <BitPersona Dir="BitDir.Rtl"
                         PrimaryText="صالح یوسف نژاد"

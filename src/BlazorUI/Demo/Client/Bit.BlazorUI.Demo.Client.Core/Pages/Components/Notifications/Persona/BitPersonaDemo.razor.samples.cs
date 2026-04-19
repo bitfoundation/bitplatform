@@ -360,6 +360,7 @@ private readonly Dictionary<BitPersonaPresence, BitIconInfo> _icons = new()
     {BitPersonaPresence.Blocked, BitIconInfo.Bi(""ban"")},
     {BitPersonaPresence.Busy, BitIconInfo.Bi(""exclamation-circle-fill"")}
 };";
+
     private readonly string example12RazorCode = @"
 <BitPersona AutoCoinColor
             PrimaryText=""Xafan Salina""
@@ -420,21 +421,23 @@ private int imageErrorCount = 0;";
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Lazy loaded""
             Size=""BitPersonaSize.Size72""
-            ImageLoading=""lazy""
+            ImageLoading=""BitImageLoading.Lazy""
             ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Eagerly loaded""
             Size=""BitPersonaSize.Size72""
-            ImageLoading=""eager""
-            ImageUrl=""/images/persona/persona-female.png"" />
+            ImageLoading=""BitImageLoading.Eager""
+            ImageUrl=""/images/persona/persona-female.png"" />";
 
+    private readonly string example15RazorCode = @"
 <BitPersona PrimaryText=""Xafan Salina""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size72""
             ImageUrl=""/images/persona/persona-female.png""
             ImageSrcSet=""/images/persona/persona-female.png 1x, /images/persona/persona-female.png 2x"" />";
-    private readonly string example15RazorCode = @"
+
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -473,7 +476,7 @@ private int imageErrorCount = 0;";
             Classes=""@(new() { ImageContainer = ""custom-img-container"",
                                PrimaryTextContainer = ""custom-primary-text"" })"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitPersona Dir=""BitDir.Rtl""
             PrimaryText=""صالح یوسف نژاد""
             SecondaryText=""مهندس نرم افزار""
