@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Timeline;
 
 public partial class _BitTimelineOptionDemo
 {
@@ -105,7 +105,7 @@ public partial class _BitTimelineOptionDemo
 <BitTimeline TItem=""BitTimelineOption"">
     <BitTimelineOption>
         <PrimaryContent>
-            <BitPersona PrimaryText=""Annie Lindqvist""
+            <BitPersona PrimaryText=""Xafan Salina""
                         Size=""@BitPersonaSize.Size32""
                         Presence=""@BitPersonaPresence.Online""
                         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
@@ -165,7 +165,7 @@ public partial class _BitTimelineOptionDemo
 <BitTimeline TItem=""BitTimelineOption"" Horizontal>
     <BitTimelineOption>
         <PrimaryContent>
-            <BitPersona PrimaryText=""Annie Lindqvist""
+            <BitPersona PrimaryText=""Xafan Salina""
                         Size=""@BitPersonaSize.Size32""
                         Presence=""@BitPersonaPresence.Online""
                         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />

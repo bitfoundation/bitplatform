@@ -309,7 +309,7 @@ private bool isDataLoaded;";
         <BitImage Height=""8rem"" Alt=""bit logo""
                   Src=""/images/bit-logo-blue.png"" />
         <br />
-        <BitPersona PrimaryText=""Annie Lindqvist""
+        <BitPersona PrimaryText=""Xafan Salina""
                     SecondaryText=""Software Engineer""
                     Size=""@BitPersonaSize.Size56""
                     Presence=""@BitPersonaPresence.Online""

@@ -507,28 +507,30 @@ public partial class BitPersona : BitComponentBase
         await OnImageClick.InvokeAsync(e);
     }
 
-    private async Task HandleOnError(ErrorEventArgs e)
+    private void HandleOnError(ErrorEventArgs e)
     {
         _hasError = true;
         _isLoaded = true;
         
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
 
-        await OnImageError.InvokeAsync(e);
+        OnImageError.InvokeAsync(e);
     }
 
-    private async Task HandleOnLoad(ProgressEventArgs e)
+    private void HandleOnLoad(ProgressEventArgs e)
     {
         _isLoaded = true;
         
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
 
-        await OnImageLoad.InvokeAsync(e);
+        OnImageLoad.InvokeAsync(e);
     }
 
     private void OnSetImageUrl()
     {
         _hasError = false;
         _isLoaded = false;
+
+        StateHasChanged();
     }
 }

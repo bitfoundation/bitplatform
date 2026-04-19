@@ -199,7 +199,7 @@ private List<Event> templateItems =
 [
     new()
     {
-        FirstContent = (item => @<BitPersona PrimaryText=""Annie Lindqvist""
+        FirstContent = (item => @<BitPersona PrimaryText=""Xafan Salina""
                                              Size=""@BitPersonaSize.Size32""
                                              Presence=""@BitPersonaPresence.Online""
                                              ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />),

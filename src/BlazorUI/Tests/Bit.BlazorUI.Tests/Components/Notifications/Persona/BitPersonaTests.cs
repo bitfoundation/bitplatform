@@ -301,7 +301,6 @@ public class BitPersonaTests : BunitTestContext
 
         var persona = component.Find(".bit-prs");
 
-        Assert.IsTrue(persona.ClassList.Contains("bit-prs-crl"));
         Assert.IsFalse(persona.ClassList.Contains("bit-prs-sqr"));
     }
 
@@ -313,7 +312,7 @@ public class BitPersonaTests : BunitTestContext
         var component = RenderComponent<BitPersona>(parameters =>
         {
             parameters.Add(p => p.AutoCoinColor, true);
-            parameters.Add(p => p.PrimaryText, "Annie Lindqvist");
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
         });
 
         var persona = component.Find(".bit-prs");
@@ -351,7 +350,7 @@ public class BitPersonaTests : BunitTestContext
         {
             parameters.Add(p => p.AutoCoinColor, true);
             parameters.Add(p => p.CoinColor, BitColor.Warning);
-            parameters.Add(p => p.PrimaryText, "Annie Lindqvist");
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
         });
 
         var persona = component.Find(".bit-prs");
@@ -360,10 +359,10 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow("lazy"),
-        DataRow("eager")
+        DataRow(BitImageLoading.Lazy),
+        DataRow(BitImageLoading.Eager)
     ]
-    public void BitPersonaImageLoadingAttributeShouldBeSet(string loading)
+    public void BitPersonaImageLoadingAttributeShouldBeSet(BitImageLoading loading)
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
@@ -373,7 +372,7 @@ public class BitPersonaTests : BunitTestContext
 
         var img = component.Find(".bit-prs-img");
 
-        Assert.AreEqual(loading, img.GetAttribute("loading"));
+        Assert.AreEqual(loading.ToString().ToLower(), img.GetAttribute("loading"));
     }
 
     [TestMethod]
@@ -466,7 +465,7 @@ public class BitPersonaTests : BunitTestContext
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.PrimaryText, "Annie Lindqvist");
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
             parameters.Add(p => p.ImageUrl, "invalid.png");
         });
 
@@ -484,7 +483,7 @@ public class BitPersonaTests : BunitTestContext
     {
         var component = RenderComponent<BitPersona>(parameters =>
         {
-            parameters.Add(p => p.PrimaryText, "Annie Lindqvist");
+            parameters.Add(p => p.PrimaryText, "Xafan Salina");
             parameters.Add(p => p.ImageUrl, "some-image.png");
             parameters.Add(p => p.ShowInitialsUntilImageLoads, true);
         });

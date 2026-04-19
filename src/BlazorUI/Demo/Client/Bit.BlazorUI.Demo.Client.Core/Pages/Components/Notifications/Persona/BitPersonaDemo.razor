@@ -16,7 +16,7 @@
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72" />
         <br /><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     Size="BitPersonaSize.Size72"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br />
@@ -26,89 +26,7 @@
                     Unknown />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <BitCheckbox @bind-Value="isDetailsShown" Label="Include BitPersona details" />
-        <br /><br /><br /><br />
-        <div>Size 8 Persona:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Secondary"
-                    Size="BitPersonaSize.Size8"
-                    HidePersonaDetails="!isDetailsShown"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Size 24 Persona:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Secondary"
-                    Size="BitPersonaSize.Size24"
-                    HidePersonaDetails="!isDetailsShown"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Size 32 Persona:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Secondary"
-                    Size=@BitPersonaSize.Size32
-                    HidePersonaDetails="!isDetailsShown"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Size 40 Persona:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    Size="BitPersonaSize.Size40"
-                    HidePersonaDetails="!isDetailsShown"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Size 48 Persona:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    Size="BitPersonaSize.Size48"
-                    HidePersonaDetails="!isDetailsShown"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Size 56 Persona:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    Size="BitPersonaSize.Size56"
-                    HidePersonaDetails="!isDetailsShown"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Size 72 Persona:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    TertiaryText="In a meeting"
-                    Size="BitPersonaSize.Size72"
-                    HidePersonaDetails="!isDetailsShown"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Size 100 Persona:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    TertiaryText="Off"
-                    OptionalText="Available at 4:00pm"
-                    Size="BitPersonaSize.Size100"
-                    HidePersonaDetails="!isDetailsShown"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Size 120 Persona:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    TertiaryText="In a meeting"
-                    OptionalText="Available at 4:00pm"
-                    Size="BitPersonaSize.Size120"
-                    HidePersonaDetails="!isDetailsShown"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>CoinSize 150:</div><br />
-        <BitPersona CoinSize="150"
-                    PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    TertiaryText="In a meeting"
-                    OptionalText="Available at 4:00pm"
-                    Size="BitPersonaSize.Size120"
-                    HidePersonaDetails="!isDetailsShown"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-    </DemoExample>
-
-    <DemoExample Title="Variant" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Variant" RazorCode="@example2RazorCode" Id="example2">
         <BitPersona PrimaryText="Saleh Xafan"
                     SecondaryText="Developer"
                     Size="BitPersonaSize.Size72"
@@ -125,7 +43,7 @@
                     CoinVariant="BitVariant.Text" />
     </DemoExample>
 
-    <DemoExample Title="Squared" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Squared" RazorCode="@example3RazorCode" Id="example3">
         <BitPersona PrimaryText="Saleh Xafan"
                     SecondaryText="Circle"
                     Size="BitPersonaSize.Size72"
@@ -138,9 +56,163 @@
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
-    <DemoExample Title="Action" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Presence" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>None:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Presence="BitPersonaPresence.None"
+                    PresenceIconNames="_iconNames"
+                    Size="BitPersonaSize.Size120"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Offline:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Presence="BitPersonaPresence.Offline"
+                    PresenceIconNames="_iconNames"
+                    Size="BitPersonaSize.Size120"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Online:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Presence="BitPersonaPresence.Online"
+                    PresenceIconNames="_iconNames"
+                    Size="BitPersonaSize.Size120"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Away:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Presence="BitPersonaPresence.Away"
+                    PresenceIconNames="_iconNames"
+                    Size="BitPersonaSize.Size120"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Do not Disturb (Dnd):</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Presence="BitPersonaPresence.Dnd"
+                    PresenceIconNames="_iconNames"
+                    Size="BitPersonaSize.Size120"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Blocked:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Presence="BitPersonaPresence.Blocked"
+                    Size="BitPersonaSize.Size120"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Busy:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Presence="BitPersonaPresence.Busy"
+                    PresenceIconNames="_iconNames"
+                    Size="BitPersonaSize.Size120"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <BitCheckbox @bind-Value="isDetailsShown" Label="Include BitPersona details" />
+        <br /><br /><br /><br />
+        <div>Size 8 Persona:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Secondary"
+                    Size="BitPersonaSize.Size8"
+                    HidePersonaDetails="!isDetailsShown"
+                    Presence="BitPersonaPresence.Online"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Size 24 Persona:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Secondary"
+                    Size="BitPersonaSize.Size24"
+                    HidePersonaDetails="!isDetailsShown"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Size 32 Persona:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Secondary"
+                    Size=@BitPersonaSize.Size32
+                    HidePersonaDetails="!isDetailsShown"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Size 40 Persona:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size40"
+                    HidePersonaDetails="!isDetailsShown"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Size 48 Persona:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size48"
+                    HidePersonaDetails="!isDetailsShown"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Size 56 Persona:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size56"
+                    HidePersonaDetails="!isDetailsShown"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Size 72 Persona:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    TertiaryText="In a meeting"
+                    Size="BitPersonaSize.Size72"
+                    HidePersonaDetails="!isDetailsShown"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Size 100 Persona:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    TertiaryText="Off"
+                    OptionalText="Available at 4:00pm"
+                    Size="BitPersonaSize.Size100"
+                    HidePersonaDetails="!isDetailsShown"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Size 120 Persona:</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    TertiaryText="In a meeting"
+                    OptionalText="Available at 4:00pm"
+                    Size="BitPersonaSize.Size120"
+                    HidePersonaDetails="!isDetailsShown"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>CoinSize 150:</div><br />
+        <BitPersona CoinSize="150"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    TertiaryText="In a meeting"
+                    OptionalText="Available at 4:00pm"
+                    Size="BitPersonaSize.Size120"
+                    HidePersonaDetails="!isDetailsShown"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+    </DemoExample>
+
+    <DemoExample Title="Reversed" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>Adjust the texts position of BitPersona's image to be reversed.</div>
+        <br />
+        <div>
+            <BitPersona Reversed
+                        PrimaryText="Xafan Salina"
+                        SecondaryText="Software Engineer"
+                        Presence="BitPersonaPresence.Online"
+                        PresenceIconNames="_iconNames"
+                        Size="BitPersonaSize.Size120"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Action" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>Custom action can be revealed by hovering on the bottom of the image:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     TertiaryText="In a meeting"
                     OptionalText="Available at 4:00pm"
@@ -149,10 +221,11 @@
                     OnActionClick="() => actionClickCount++"
                     ActionIconName="@BitIconName.CloudUpload"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br />
         <p>Action Click Count: @actionClickCount</p>
         <br /><br /><br /><br />
         <div>Hover over the image to reveal the image click action:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     TertiaryText="In a meeting"
                     OptionalText="Available at 4:00pm"
@@ -160,10 +233,11 @@
                     Presence="BitPersonaPresence.Online"
                     OnImageClick="() => imageClickCount++"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br />
         <p>Image Click Count: @imageClickCount</p>
     </DemoExample>
 
-    <DemoExample Title="Initials" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Initials" RazorCode="@example8RazorCode" Id="example8">
         <div>Invalid ImageUrl:</div><br />
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72"
@@ -177,85 +251,13 @@
         <BitPersona Size="BitPersonaSize.Size72" PrimaryText="Saleh Khafan" ImageInitials="S" />
     </DemoExample>
 
-    <DemoExample Title="PersonaPresence" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>None:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.None"
-                    PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Offline:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Offline"
-                    PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Online:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Online"
-                    PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Away:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Away"
-                    PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Do not Disturb (Dnd):</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Dnd"
-                    PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Blocked:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Blocked"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Busy:</div><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Busy"
-                    PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-    </DemoExample>
-
-    <DemoExample Title="Reversed" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>Adjust the texts position of BitPersona's image to be reversed.</div>
-        <br />
-        <div>
-            <BitPersona Reversed
-                        PrimaryText="Annie Lindqvist"
-                        SecondaryText="Software Engineer"
-                        Presence="BitPersonaPresence.Online"
-                        PresenceIconNames="_iconNames"
-                        Size="BitPersonaSize.Size120"
-                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        </div>
-    </DemoExample>
-
-
     <DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9">
         <div>Text templates:</div><br />
         <div>
             <BitPersona Size="BitPersonaSize.Size100" ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" OnImageClick="() => {}">
                 <PrimaryTextTemplate>
                     <BitIcon IconName="@BitIconName.Contact" Class="custom-ico" />
-                    Annie Lindqvist
+                    Xafan Salina
                 </PrimaryTextTemplate>
                 <SecondaryTextTemplate>
                     <BitIcon IconName="@BitIconName.Suitcase" Class="custom-ico" />
@@ -278,7 +280,7 @@
         <br /><br /><br /><br />
         <div>Coin template:</div><br />
         <div>
-            <BitPersona Size="BitPersonaSize.Size100" PrimaryText="Annie Lindqvist" SecondaryText="Software Engineer" Presence="BitPersonaPresence.Online" CoinVariant="BitVariant.Text">
+            <BitPersona Size="BitPersonaSize.Size100" PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Presence="BitPersonaPresence.Online" CoinVariant="BitVariant.Text">
                 <CoinTemplate>
                     <img src="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" width="100px" height="100px" class="custom-coin" />
                 </CoinTemplate>
@@ -340,7 +342,7 @@
 
         <div>FontAwesome action icon (hover over the image):</div>
         <br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     TertiaryText="In a meeting"
                     OptionalText="Available at 4:00pm"
@@ -357,35 +359,35 @@
 
         <div>Bootstrap Icons presence icons:</div>
         <br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Online"
                     PresenceIcons="_icons"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Busy"
                     PresenceIcons="_icons"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Away"
                     PresenceIcons="_icons"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Dnd"
                     PresenceIcons="_icons"
                     Size="BitPersonaSize.Size120"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Offline"
                     PresenceIcons="_icons"
@@ -396,7 +398,7 @@
     <DemoExample Title="AutoCoinColor" RazorCode="@example12RazorCode" Id="example12">
         <div>Different people each get a distinct, consistent coin color automatically:</div>
         <br />
-        <BitPersona AutoCoinColor PrimaryText="Annie Lindqvist" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" />
+        <BitPersona AutoCoinColor PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" />
         <br /><br />
         <BitPersona AutoCoinColor PrimaryText="Saleh Khafan" SecondaryText="Developer" Size="BitPersonaSize.Size72" />
         <br /><br />
@@ -408,17 +410,17 @@
         <br /><br /><br /><br />
         <div>Custom ImageInitials also influence the generated color:</div>
         <br />
-        <BitPersona AutoCoinColor ImageInitials="ZZ" PrimaryText="Annie Lindqvist" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" />
+        <BitPersona AutoCoinColor ImageInitials="ZZ" PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" />
         <br /><br /><br /><br />
         <div>CoinColor takes precedence over AutoCoinColor when set explicitly:</div>
         <br />
-        <BitPersona AutoCoinColor CoinColor="BitColor.Success" PrimaryText="Annie Lindqvist" SecondaryText="Always green" Size="BitPersonaSize.Size72" />
+        <BitPersona AutoCoinColor CoinColor="BitColor.Success" PrimaryText="Xafan Salina" SecondaryText="Always green" Size="BitPersonaSize.Size72" />
     </DemoExample>
 
     <DemoExample Title="Image Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>OnImageLoad — callback invoked when the image loads successfully:</div>
         <br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     Size="BitPersonaSize.Size72"
                     OnImageLoad="() => imageLoadCount++"
@@ -427,7 +429,7 @@
         <br /><br /><br /><br />
         <div>OnImageError — callback invoked when the image fails to load:</div>
         <br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     Size="BitPersonaSize.Size72"
                     OnImageError="() => imageErrorCount++"
@@ -438,13 +440,13 @@
     <DemoExample Title="Image Loading" RazorCode="@example14RazorCode" Id="example14">
         <div>ImageLoading controls when the browser fetches the image (maps to the HTML <b>loading</b> attribute):</div>
         <br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Lazy loaded"
                     Size="BitPersonaSize.Size72"
                     ImageLoading="BitImageLoading.Lazy"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Eagerly loaded"
                     Size="BitPersonaSize.Size72"
                     ImageLoading="BitImageLoading.Eager"
@@ -452,7 +454,7 @@
         <br /><br /><br /><br />
         <div>ImageSrcSet provides alternate image sources for different screen densities (maps to the HTML <b>srcset</b> attribute):</div>
         <br />
-        <BitPersona PrimaryText="Annie Lindqvist"
+        <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     Size="BitPersonaSize.Size72"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"
