@@ -82,10 +82,10 @@
                                  alt="@ImageAlt"
                                  width="@dimension"
                                  height="@dimension"
-                                 loading="@ImageLoading"
                                  srcset="@ImageSrcSet"
                                  class="bit-prs-img @Classes?.Image"
-                                 style="@(_isLoaded ? null : "opacity:0;" + Styles?.Image)" />
+                                 loading="@ImageLoading?.ToString().ToLower()"
+                                 style="@($"{(_isLoaded ? null : "opacity:0;")}{Styles?.Image}")" />
                         }
                     }
                 }

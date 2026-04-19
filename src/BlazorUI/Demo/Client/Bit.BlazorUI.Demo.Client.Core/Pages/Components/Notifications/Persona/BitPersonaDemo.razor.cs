@@ -113,9 +113,11 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "ImageLoading",
-            Type = "string?",
+            Type = "BitImageLoading?",
             DefaultValue = "null",
             Description = "Specifies the loading behavior of the image. Maps to the HTML loading attribute (e.g., \"lazy\" or \"eager\").",
+            LinkType = LinkType.Link,
+            Href = "#image-loading"
         },
         new()
         {
@@ -127,7 +129,7 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "ImageOverlayText",
-            Type = "string?",
+            Type = "string",
             DefaultValue = "Edit image",
             Description = "The text of the image overlay.",
         },
@@ -731,6 +733,27 @@ public partial class BitPersonaDemo
                     Description = "Text styled variant.",
                     Value = "2",
                 },
+            ]
+        },
+        new()
+        {
+            Id = "image-loading",
+            Name = "BitImageLoading",
+            Description = "Represents the img loading attribute values explained here: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading",
+            Items =
+            [
+                new()
+                {
+                    Name= "Eager",
+                    Description="The default behavior, eager tells the browser to load the image as soon as the img element is processed.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Lazy",
+                    Description="Tells the user agent to hold off on loading the image until the browser estimates that it will be needed imminently.",
+                    Value="1",
+                }
             ]
         },
     ];

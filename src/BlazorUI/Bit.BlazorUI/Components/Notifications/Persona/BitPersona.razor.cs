@@ -96,6 +96,11 @@ public partial class BitPersona : BitComponentBase
     public string? ImageInitials { get; set; }
 
     /// <summary>
+    /// Specifies the loading behavior of the image (e.g., "lazy" or "eager").
+    /// </summary>
+    [Parameter] public BitImageLoading? ImageLoading { get; set; }
+
+    /// <summary>
     /// Optional Custom template for the image overlay.
     /// </summary>
     [Parameter] public RenderFragment? ImageOverlayTemplate { get; set; }
@@ -104,11 +109,6 @@ public partial class BitPersona : BitComponentBase
     /// The text of the image overlay.
     /// </summary>
     [Parameter] public string ImageOverlayText { get; set; } = "Edit image";
-
-    /// <summary>
-    /// Specifies the loading behavior of the image (e.g., "lazy" or "eager").
-    /// </summary>
-    [Parameter] public string? ImageLoading { get; set; }
 
     /// <summary>
     /// A set of image source URLs for different display densities or sizes (maps to the img srcset attribute).
@@ -484,13 +484,6 @@ public partial class BitPersona : BitComponentBase
         };
     }
 
-    private string? GetImageStyle()
-    {
-        var hidden = _isLoaded ? null : "opacity:0;";
-        var style = $"{hidden}{Styles?.Image}";
-        return style.HasValue() ? style : null;
-    }
-
     private string? GetImageContainerClass()
     {
         var klass = $"{(CoinTemplate is null ? "bit-prs-imc" : null)} {GetCoinClass()} {Classes?.ImageContainer}".Trim();
@@ -518,15 +511,19 @@ public partial class BitPersona : BitComponentBase
     {
         _hasError = true;
         _isLoaded = true;
+        
+        await InvokeAsync(StateHasChanged);
+
         await OnImageError.InvokeAsync(e);
-        StateHasChanged();
     }
 
     private async Task HandleOnLoad(ProgressEventArgs e)
     {
         _isLoaded = true;
+        
+        await InvokeAsync(StateHasChanged);
+
         await OnImageLoad.InvokeAsync(e);
-        StateHasChanged();
     }
 
     private void OnSetImageUrl()
