@@ -778,6 +778,11 @@ private string comboBoxValueSample3 = default!;
 private string comboBoxValueSample4 = default!;
 private ICollection<string?> comboBoxValues3 = [];
 
+private void HandleOnDynamicAdd(BitDropdownItem<string> item)
+{
+    comboBoxItems.Add(item);
+}
+
 private List<BitDropdownItem<string>> comboBoxItems = new()
 {
     new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
