@@ -8,6 +8,7 @@ namespace Bit.BlazorUI;
 public partial class BitTextField : BitTextInputBase<string?>
 {
     private bool _hasFocus;
+    private bool _scrollToEndAfterRender;
     private string? _oldValue;
     private string? _inputMode;
     private bool _isPasswordRevealed;
@@ -294,6 +295,20 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter, ResetClassBuilder]
     public bool Underlined { get; set; }
 
+    /// <summary>
+    /// The ghost/suggestion text displayed inline after the current cursor position.
+    /// Update this value from outside (e.g. from an AI or autocomplete suggestion) to show a faded
+    /// inline suggestion. The user can accept it by pressing Tab or clicking/touching the ghost text.
+    /// </summary>
+    [Parameter] public string? GhostText { get; set; }
+
+    /// <summary>
+    /// Callback invoked when the ghost text is accepted (via Tab key or click/touch on the ghost text).
+    /// The accepted ghost text string is passed as the argument.
+    /// Use this to clear or update the GhostText parameter after acceptance.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnGhostTextAccepted { get; set; }
+
 
 
     public void ToggleRevealPassword()
@@ -400,6 +415,8 @@ public partial class BitTextField : BitTextInputBase<string?>
             {
                 await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter);
             }
+
+            await _js.BitTextFieldSetupGhostText(_Id, InputElement);
         }
         else
         {
@@ -407,6 +424,12 @@ public partial class BitTextField : BitTextInputBase<string?>
             {
                 _oldValue = Value;
                 await _js.BitTextFieldAdjustHeight(InputElement);
+            }
+
+            if (_scrollToEndAfterRender)
+            {
+                _scrollToEndAfterRender = false;
+                await _js.BitTextFieldScrollToEnd(InputElement);
             }
         }
     }
@@ -507,6 +530,16 @@ public partial class BitTextField : BitTextInputBase<string?>
         await InputElement.FocusAsync();
 
         await OnClear.InvokeAsync();
+    }
+
+    private async Task HandleGhostTextAccept()
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        var accepted = GhostText;
+        await SetCurrentValueAsStringAsync((CurrentValueAsString ?? "") + GhostText);
+        _scrollToEndAfterRender = true;
+        await OnGhostTextAccepted.InvokeAsync(accepted);
     }
 
 

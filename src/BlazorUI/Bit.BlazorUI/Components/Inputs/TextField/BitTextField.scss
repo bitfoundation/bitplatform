@@ -252,6 +252,27 @@
         height: auto;
         align-items: stretch;
     }
+
+    .bit-tfl-ghw {
+        flex-grow: 1;
+    }
+
+    .bit-tfl-gho {
+        display: block;
+        overflow: auto;
+        align-items: initial;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        line-height: spacing(2.125);
+        padding: spacing(0.75) spacing(1);
+    }
+
+    .bit-tfl-ghv,
+    .bit-tfl-ghs {
+        display: inline;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
 }
 
 .bit-tfl-mln {
@@ -359,6 +380,47 @@
     .bit-tfl-fgp {
         border: none;
     }
+}
+
+.bit-tfl-ghw {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    position: relative;
+    align-items: stretch;
+}
+
+.bit-tfl-gho {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    overflow: hidden;
+    position: absolute;
+    align-items: center;
+    user-select: none;
+    pointer-events: none;
+    padding: 0 spacing(1);
+    font-size: spacing(1.75);
+    font-weight: 400;
+    font-family: $tg-font-family;
+    box-sizing: border-box;
+}
+
+.bit-tfl-ghv {
+    flex-shrink: 0;
+    white-space: pre;
+    color: transparent;
+}
+
+.bit-tfl-ghs {
+    flex-shrink: 0;
+    white-space: pre;
+    cursor: pointer;
+    pointer-events: auto;
+    color: $clr-fg-ter;
 }
 
 
