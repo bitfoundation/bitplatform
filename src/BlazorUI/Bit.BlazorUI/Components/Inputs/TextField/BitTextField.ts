@@ -80,8 +80,7 @@
                 inputElement.dispatchEvent(new Event('input', { bubbles: true }));
             }, { signal });
 
-            // Scroll sync: mirror input scroll position to the overlay
-            inputElement.addEventListener('scroll', () => {
+            const syncScroll = () => {
                 const wrapper = inputElement.parentElement;
                 if (!wrapper) return;
 
@@ -90,7 +89,25 @@
 
                 overlay.scrollTop = inputElement.scrollTop;
                 overlay.scrollLeft = inputElement.scrollLeft;
+            };
+
+            // Update the transparent value span synchronously on every input event so
+            // its width is always correct before we sync the scroll offset. This mirrors
+            // the index3.html pattern where overlay content is owned by JS and kept in
+            // sync immediately, avoiding the Blazor async re-render timing gap.
+            inputElement.addEventListener('input', () => {
+                const wrapper = inputElement.parentElement;
+                if (!wrapper) return;
+
+                const valueSpan = wrapper.querySelector<HTMLElement>('.bit-tfl-ghv');
+                if (valueSpan) valueSpan.textContent = inputElement.value;
+
+                syncScroll();
             }, { signal });
+
+            // Also sync on the scroll event (covers programmatic scrolls and cursor
+            // navigation that doesn't trigger an input event).
+            inputElement.addEventListener('scroll', syncScroll, { signal });
         }
 
         public static scrollToEnd(inputElement: HTMLInputElement) {

@@ -105,7 +105,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.IconName, iconName);
         });
 
-        var bitTextFieldIcon = component.Find(".bit-tfl-inp + .bit-icon");
+        var bitTextFieldIcon = component.Find(".bit-tfl-ghw + .bit-icon");
 
         Assert.IsTrue(bitTextFieldIcon.ClassList.Contains($"bit-icon--{iconName}"));
     }
@@ -667,5 +667,231 @@ public class BitTextFieldTests : BunitTestContext
         input.Change(value);
 
         Assert.AreEqual(value.Trim(), component.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(false, "suggestion"),
+        DataRow(true, "suggestion"),
+    ]
+    public void BitTextFieldGhostTextIsRenderedWhenProvided(bool multiline, string ghostText)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.GhostText, ghostText);
+        });
+
+        var ghostOverlay = component.Find(".bit-tfl-gho");
+        Assert.IsNotNull(ghostOverlay);
+
+        var ghostSpan = component.Find(".bit-tfl-ghs");
+        Assert.AreEqual(ghostText, ghostSpan.TextContent);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldGhostTextIsNotRenderedWhenNotProvided(bool multiline)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+        });
+
+        var ghostOverlays = component.FindAll(".bit-tfl-gho");
+        Assert.AreEqual(0, ghostOverlays.Count);
+    }
+
+    [TestMethod,
+        DataRow(false, "hello", " world"),
+        DataRow(true, "hello", " world"),
+    ]
+    public void BitTextFieldGhostTextValueSpanMirrorsCurrentValue(bool multiline, string value, string ghostText)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.GhostText, ghostText);
+        });
+
+        var valueSpan = component.Find(".bit-tfl-ghv");
+        Assert.AreEqual(value, valueSpan.TextContent);
+    }
+
+    [TestMethod,
+        DataRow(false, "hello", " world"),
+        DataRow(true, "hello", " world"),
+    ]
+    public void BitTextFieldGhostTextAcceptedOnClickUpdatesValue(bool multiline, string value, string ghostText)
+    {
+        string? acceptedGhost = null;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.OnChange, _ => { });
+            parameters.Add(p => p.GhostText, ghostText);
+            parameters.Add(p => p.OnGhostTextAccepted, (string? g) => acceptedGhost = g);
+        });
+
+        var ghostSpan = component.Find(".bit-tfl-ghs");
+        ghostSpan.Click();
+
+        Assert.AreEqual(ghostText, acceptedGhost);
+        Assert.AreEqual(value + ghostText, component.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(false, "hello", " world"),
+        DataRow(true, "hello", " world"),
+    ]
+    public void BitTextFieldGhostTextAcceptFiresOnGhostTextAcceptedCallback(bool multiline, string value, string ghostText)
+    {
+        int callCount = 0;
+        string? lastAccepted = null;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.GhostText, ghostText);
+            parameters.Add(p => p.OnGhostTextAccepted, (string? g) => { callCount++; lastAccepted = g; });
+        });
+
+        var ghostSpan = component.Find(".bit-tfl-ghs");
+        ghostSpan.Click();
+
+        Assert.AreEqual(1, callCount);
+        Assert.AreEqual(ghostText, lastAccepted);
+    }
+
+    [TestMethod,
+        DataRow(false, "hello", " world"),
+        DataRow(true, "hello", " world"),
+    ]
+    public void BitTextFieldGhostTextNotAcceptedWhenDisabled(bool multiline, string value, string ghostText)
+    {
+        string? acceptedGhost = null;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.GhostText, ghostText);
+            parameters.Add(p => p.OnGhostTextAccepted, (string? g) => acceptedGhost = g);
+        });
+
+        var ghostSpan = component.Find(".bit-tfl-ghs");
+        ghostSpan.Click();
+
+        Assert.IsNull(acceptedGhost);
+        Assert.AreEqual(value, component.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(false, "hello", " world"),
+        DataRow(true, "hello", " world"),
+    ]
+    public void BitTextFieldGhostTextNotAcceptedWhenReadOnly(bool multiline, string value, string ghostText)
+    {
+        string? acceptedGhost = null;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.GhostText, ghostText);
+            parameters.Add(p => p.OnGhostTextAccepted, (string? g) => acceptedGhost = g);
+        });
+
+        var ghostSpan = component.Find(".bit-tfl-ghs");
+        ghostSpan.Click();
+
+        Assert.IsNull(acceptedGhost);
+        Assert.AreEqual(value, component.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(false, "hello", " world"),
+        DataRow(true, "hello", " world"),
+    ]
+    public void BitTextFieldGhostTextAcceptAppendsToExistingValue(bool multiline, string value, string ghostText)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.OnChange, _ => { });
+            parameters.Add(p => p.GhostText, ghostText);
+        });
+
+        var ghostSpan = component.Find(".bit-tfl-ghs");
+        ghostSpan.Click();
+
+        Assert.AreEqual(value + ghostText, component.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(false, null, " world"),
+        DataRow(true, null, " world"),
+    ]
+    public void BitTextFieldGhostTextAcceptWithNullCurrentValue(bool multiline, string? value, string ghostText)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.GhostText, ghostText);
+        });
+
+        var ghostSpan = component.Find(".bit-tfl-ghs");
+        ghostSpan.Click();
+
+        Assert.AreEqual(ghostText, component.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(false, "suggestion"),
+        DataRow(true, "suggestion"),
+    ]
+    public void BitTextFieldGhostTextOverlayHasAriaHidden(bool multiline, string ghostText)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.GhostText, ghostText);
+        });
+
+        var ghostOverlay = component.Find(".bit-tfl-gho");
+        Assert.IsTrue(ghostOverlay.HasAttribute("aria-hidden"));
+        Assert.AreEqual("true", ghostOverlay.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod,
+        DataRow(false, "suggestion", "my-ghost-wrapper", "my-ghost-overlay", "my-ghost-text"),
+        DataRow(true, "suggestion", "my-ghost-wrapper", "my-ghost-overlay", "my-ghost-text"),
+    ]
+    public void BitTextFieldGhostTextCustomClassesAreApplied(bool multiline, string ghostText, string wrapperClass, string overlayClass, string ghostClass)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.GhostText, ghostText);
+            parameters.Add(p => p.Classes, new BitTextFieldClassStyles
+            {
+                GhostTextWrapper = wrapperClass,
+                GhostTextOverlay = overlayClass,
+                GhostText = ghostClass,
+            });
+        });
+
+        var wrapper = component.Find(".bit-tfl-ghw");
+        Assert.IsTrue(wrapper.ClassList.Contains(wrapperClass));
+
+        var overlay = component.Find(".bit-tfl-gho");
+        Assert.IsTrue(overlay.ClassList.Contains(overlayClass));
+
+        var ghostSpan = component.Find(".bit-tfl-ghs");
+        Assert.IsTrue(ghostSpan.ClassList.Contains(ghostClass));
     }
 }
