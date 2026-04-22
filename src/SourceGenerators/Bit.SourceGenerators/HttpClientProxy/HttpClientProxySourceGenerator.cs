@@ -1,95 +1,246 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Web;
+using DoLess.UriTemplates;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Bit.SourceGenerators;
 
 [Generator]
-public class HttpClientProxySourceGenerator : ISourceGenerator
+public class HttpClientProxySourceGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context)
+    // ASCII control-character separators (never appear in C# identifiers or type display strings)
+    private const char ActionSep = '\x1E';   // RS – between action records
+    private const char FieldSep = '\x1F';    // US – between fields inside one action record
+    private const char ParamSep = '\x1D';    // GS – between parameters inside one action record
+    private const char SubFieldSep = '\x1C'; // FS – between sub-fields inside one parameter entry
+
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterForSyntaxNotifications(() => new HttpClientProxySyntaxReceiver());
+        var controllerProvider = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: static (node, _) => node is InterfaceDeclarationSyntax iface &&
+                    iface.BaseList is not null &&
+                    iface.BaseList.Types.Any(t => t.Type.ToString() == "IAppController"),
+                transform: static (ctx, ct) => TransformController(ctx, ct))
+            .Where(static c => c is not null)
+            .Select(static (c, _) => c!.Value);
+
+        context.RegisterSourceOutput(controllerProvider.Collect(), static (spc, controllers) => Execute(spc, controllers));
     }
 
-    public void Execute(GeneratorExecutionContext context)
+    // ── Transform ─────────────────────────────────────────────────────────────
+
+    private static ControllerEntry? TransformController(GeneratorSyntaxContext ctx, CancellationToken ct)
     {
-        if (context.SyntaxContextReceiver is not HttpClientProxySyntaxReceiver receiver || receiver.IControllers.Any() is false)
+        var interfaceDecl = (InterfaceDeclarationSyntax)ctx.Node;
+        var model = ctx.SemanticModel;
+        var controllerSymbol = model.GetDeclaredSymbol(interfaceDecl, ct) as ITypeSymbol;
+        if (controllerSymbol is null) return null;
+        if (!controllerSymbol.IsIController()) return null;
+
+        var controllerName = controllerSymbol.Name[1..].Replace("Controller", string.Empty);
+
+        var route = controllerSymbol
+            .GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Name.StartsWith("Route") is true)?
+            .ConstructorArguments
+            .FirstOrDefault()
+            .Value?
+            .ToString()
+            ?.Replace("[controller]", controllerName) ?? string.Empty;
+
+        var stringSpecialType = model.Compilation.GetSpecialType(SpecialType.System_String);
+
+        var actionBuilders = new List<string>();
+
+        foreach (var method in controllerSymbol.GetMembers().OfType<IMethodSymbol>().Where(m => m.MethodKind == MethodKind.Ordinary))
         {
-            return;
+            ct.ThrowIfCancellationRequested();
+
+            var httpMethod = method.GetHttpMethod();
+
+            // Build URL from route template
+            var actionSpecificRoute = method
+                .GetAttributes()
+                .FirstOrDefault(a => a.AttributeClass?.Name.StartsWith("Route") is true)?
+                .ConstructorArguments
+                .FirstOrDefault()
+                .Value?
+                .ToString()
+                ?.Replace("[controller]", controllerName)
+                ?.Replace("~/", string.Empty);
+
+            var uriTemplate = UriTemplate.For(
+                $"{actionSpecificRoute ?? route}{method.GetAttributes()
+                    .FirstOrDefault(a => a.AttributeClass?.Name.StartsWith("Http") is true)?
+                    .ConstructorArguments.FirstOrDefault().Value?.ToString()}"
+                .Replace("[action]", method.Name));
+
+            var rawParameters = method.Parameters.Select(y => (y.Name, Type: y.Type)).ToList();
+            foreach (var (pName, _) in rawParameters)
+                uriTemplate.WithParameter(pName, $"{{{pName}}}");
+
+            string url = HttpUtility.UrlDecode(uriTemplate.ExpandToString()).TrimEnd('/');
+
+            var ctParam = rawParameters.FirstOrDefault(p => p.Type.ToDisplayString() == "System.Threading.CancellationToken");
+            var ctName = ctParam == default ? null : ctParam.Name;
+
+            var bodyParam = rawParameters.FirstOrDefault(p =>
+                p.Type.ToDisplayString() is not "System.Threading.CancellationToken" &&
+                !url.Contains($"{{{p.Name}}}"));
+
+            var returnType = method.ReturnType;
+            var returnDisplay = returnType.ToDisplayString();
+            bool doesReturnSomething = returnDisplay is not ("System.Threading.Tasks.Task" or "System.Threading.Tasks.ValueTask");
+            bool doesReturnString = doesReturnSomething && returnDisplay is "System.Threading.Tasks.Task<string>" or "System.Threading.Tasks.ValueTask<string>";
+            bool doesReturnIAsyncEnum = doesReturnSomething && returnDisplay.Contains("IAsyncEnumerable");
+            var returnUnderlyingNoNull = returnType.GetUnderlyingType().ToDisplayString(NullableFlowState.None);
+
+            // Encode parameters: "name\x1CfullType\x1CtypeNoNull\x1CisString" joined by \x1D
+            var encodedParams = string.Join(
+                ParamSep.ToString(),
+                rawParameters.Select(p =>
+                    $"{p.Name}{SubFieldSep}{p.Type.ToDisplayString()}{SubFieldSep}{p.Type.ToDisplayString(NullableFlowState.None)}{SubFieldSep}{(SymbolEqualityComparer.Default.Equals(p.Type, stringSpecialType) ? "1" : "0")}"));
+
+            // Action fields joined by \x1F
+            actionBuilders.Add(string.Join(
+                FieldSep.ToString(),
+                method.Name,
+                returnDisplay,
+                returnUnderlyingNoNull,
+                doesReturnSomething ? "1" : "0",
+                doesReturnString ? "1" : "0",
+                doesReturnIAsyncEnum ? "1" : "0",
+                httpMethod,
+                url,
+                ctName is not null ? "1" : "0",
+                ctName ?? "",
+                encodedParams,
+                bodyParam == default ? "" : bodyParam.Name,
+                bodyParam == default ? "" : bodyParam.Type.ToDisplayString(NullableFlowState.None)));
         }
+
+        return new ControllerEntry(
+            SymbolDisplay: controllerSymbol.ToDisplayString(),
+            SymbolDisplayNoNull: controllerSymbol.ToDisplayString(NullableFlowState.None),
+            ClassName: controllerSymbol.Name[1..],
+            EncodedActions: string.Join(ActionSep.ToString(), actionBuilders));
+    }
+
+    // ── Code generation ───────────────────────────────────────────────────────
+
+    private static void Execute(SourceProductionContext spc, ImmutableArray<ControllerEntry> controllers)
+    {
+        if (controllers.IsEmpty) return;
 
         StringBuilder generatedClasses = new();
 
-        foreach (var iController in receiver.IControllers)
+        foreach (var controller in controllers)
         {
             StringBuilder generatedMethods = new();
 
-            foreach (var action in iController.Actions)
+            foreach (var actionEncoded in controller.EncodedActions.Split(ActionSep))
             {
-                string parameters = string.Join(", ", action.Parameters.Select(p => $"{p.Type.ToDisplayString()} {p.Name}"));
+                if (string.IsNullOrEmpty(actionEncoded)) continue;
 
-                var hasQueryString = action.Url.Contains('?');
+                var fields = actionEncoded.Split(FieldSep);
+                // fields[0]  methodName
+                // fields[1]  returnTypeDisplay
+                // fields[2]  returnTypeUnderlyingNoNull
+                // fields[3]  doesReturnSomething
+                // fields[4]  doesReturnString
+                // fields[5]  doesReturnIAsyncEnumerable
+                // fields[6]  httpMethod
+                // fields[7]  url
+                // fields[8]  hasCancellationToken
+                // fields[9]  ctParamName
+                // fields[10] encodedParams
+                // fields[11] bodyParamName
+                // fields[12] bodyParamTypeNoNull
 
-                List<string> jsonReadParametersList = [];
-                if (action.DoesReturnSomething && action.DoesReturnString is false)
+                var methodName = fields[0];
+                var returnTypeDisplay = fields[1];
+                var returnUnderlyingNoNull = fields[2];
+                var doesReturnSomething = fields[3] == "1";
+                var doesReturnString = fields[4] == "1";
+                var doesReturnIAsyncEnum = fields[5] == "1";
+                var httpMethod = fields[6];
+                var url = fields[7];
+                var hasCt = fields[8] == "1";
+                var ctName = fields[9];
+                var bodyParamName = string.IsNullOrEmpty(fields[11]) ? null : fields[11];
+                var bodyParamTypeNoNull = string.IsNullOrEmpty(fields[12]) ? null : fields[12];
+
+                // Decode parameters
+                var parameters = new List<(string Name, string TypeDisplay, string TypeDisplayNoNull, bool IsString)>();
+                if (!string.IsNullOrEmpty(fields[10]))
                 {
-                    jsonReadParametersList.Add($"options.GetTypeInfo<{action.ReturnType.GetUnderlyingType().ToDisplayString()}>()");
+                    foreach (var pEnc in fields[10].Split(ParamSep))
+                    {
+                        var sf = pEnc.Split(SubFieldSep);
+                        if (sf.Length < 4) continue;
+                        parameters.Add((sf[0], sf[1], sf[2], sf[3] == "1"));
+                    }
                 }
-                if (action.HasCancellationToken)
-                {
-                    jsonReadParametersList.Add(action.CancellationTokenParameterName!);
-                }
+
+                string parameterList = string.Join(", ", parameters.Select(p => $"{p.TypeDisplay} {p.Name}"));
+
+                List<string> jsonReadParametersList = new();
+                if (doesReturnSomething && !doesReturnString)
+                    jsonReadParametersList.Add($"options.GetTypeInfo<{returnUnderlyingNoNull}>()");
+                if (hasCt)
+                    jsonReadParametersList.Add(ctName!);
                 var jsonReadParameters = string.Join(", ", jsonReadParametersList);
 
                 var requestOptions = new StringBuilder();
-                requestOptions.AppendLine($"__request.Options.TryAdd(\"IControllerType\", typeof({iController.Symbol.ToDisplayString(NullableFlowState.None)}));");
-                requestOptions.AppendLine($"__request.Options.TryAdd(\"ActionName\", \"{action.Method.Name}\");");
+                requestOptions.AppendLine($"__request.Options.TryAdd(\"IControllerType\", typeof({controller.SymbolDisplayNoNull}));");
+                requestOptions.AppendLine($"__request.Options.TryAdd(\"ActionName\", \"{methodName}\");");
                 requestOptions.AppendLine($@"__request.Options.TryAdd(""ActionParametersInfo"", new Dictionary<string, Type>
                 {{
-                    {string.Join(", ", action.Parameters.Select(p => $"{{ \"{p.Name}\", typeof({p.Type.ToDisplayString(NullableFlowState.None)})  }}"))}
+                    {string.Join(", ", parameters.Select(p => $"{{ \"{p.Name}\", typeof({p.TypeDisplayNoNull})  }}"))}
                 }});");
-                if (action.BodyParameter is not null)
-                {
-                    requestOptions.AppendLine($"__request.Options.TryAdd(\"RequestType\", typeof({action.BodyParameter.Type.ToDisplayString(NullableFlowState.None)}));");
-                }
-                if (action.DoesReturnSomething)
-                {
-                    requestOptions.AppendLine($"__request.Options.TryAdd(\"ResponseType\", typeof({action.ReturnType.GetUnderlyingType().ToDisplayString(NullableFlowState.None)}));");
-                }
+                if (bodyParamName is not null)
+                    requestOptions.AppendLine($"__request.Options.TryAdd(\"RequestType\", typeof({bodyParamTypeNoNull}));");
+                if (doesReturnSomething)
+                    requestOptions.AppendLine($"__request.Options.TryAdd(\"ResponseType\", typeof({returnUnderlyingNoNull}));");
 
-                var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
-
-                var encodeStringRouteParameters = string.Join(Environment.NewLine, action.Parameters
-                    .Where(p => SymbolEqualityComparer.Default.Equals(p.Type, stringType))
-                    .Select(p => $"{p.Name} = Uri.EscapeDataString(Uri.UnescapeDataString({p.Name} ?? string.Empty));"));
+                var encodeStringRouteParameters = string.Join(
+                    Environment.NewLine,
+                    parameters
+                        .Where(p => p.IsString)
+                        .Select(p => $"{p.Name} = Uri.EscapeDataString(Uri.UnescapeDataString({p.Name} ?? string.Empty));"));
 
                 generatedMethods.AppendLine($@"
-        public async {action.ReturnType.ToDisplayString()} {action.Method.Name}({parameters})
+        public async {returnTypeDisplay} {methodName}({parameterList})
         {{
             {encodeStringRouteParameters}
-            {$@"var __url = $""{action.Url}"";"}
+            {$@"var __url = $""{url}"";"}
             var dynamicQS = GetDynamicQueryString();
             if (dynamicQS is not null)
             {{
-                __url += {(action.Url.Contains('?') ? "'&'" : "'?'")} + dynamicQS;
+                __url += {(url.Contains('?') ? "'&'" : "'?'")} + dynamicQS;
             }}
-            {(action.DoesReturnSomething ? $@"return (await prerenderStateService.GetValue(__url, async () =>
+            {(doesReturnSomething ? $@"return (await prerenderStateService.GetValue(__url, async () =>
             {{" : string.Empty)}
-                using var __request = new HttpRequestMessage(HttpMethod.{action.HttpMethod}, __url);
+                using var __request = new HttpRequestMessage(HttpMethod.{httpMethod}, __url);
                 {requestOptions}
-                {(action.BodyParameter is not null ? $@"__request.Content = JsonContent.Create({action.BodyParameter.Name}, options.GetTypeInfo<{action.BodyParameter.Type.ToDisplayString()}>());" : string.Empty)}
-                {(action.DoesReturnIAsyncEnumerable ? "" : "using ")}var __response = await httpClient.SendAsync(__request, HttpCompletionOption.ResponseHeadersRead {(action.HasCancellationToken ? $", {action.CancellationTokenParameterName}" : string.Empty)});
-                {(action.DoesReturnSomething ? ($"return {(action.DoesReturnIAsyncEnumerable ? "" : "await")} __response.Content.{(action.DoesReturnIAsyncEnumerable ? "ReadFromJsonAsAsyncEnumerable" : action.DoesReturnString ? "ReadAsStringAsync" : "ReadFromJsonAsync")}({jsonReadParameters});" +
+                {(bodyParamName is not null ? $@"__request.Content = JsonContent.Create({bodyParamName}, options.GetTypeInfo<{bodyParamTypeNoNull}>());" : string.Empty)}
+                {(doesReturnIAsyncEnum ? "" : "using ")}var __response = await httpClient.SendAsync(__request, HttpCompletionOption.ResponseHeadersRead {(hasCt ? $", {ctName}" : string.Empty)});
+                {(doesReturnSomething ? ($"return {(doesReturnIAsyncEnum ? "" : "await")} __response.Content.{(doesReturnIAsyncEnum ? "ReadFromJsonAsAsyncEnumerable" : doesReturnString ? "ReadAsStringAsync" : "ReadFromJsonAsync")}({jsonReadParameters});" +
           $"}}))!;") : string.Empty)}
         }}
 ");
             }
 
             generatedClasses.AppendLine($@"
-    internal class {iController.ClassName}(HttpClient httpClient, JsonSerializerOptions options, IPrerenderStateService prerenderStateService) : AppControllerBase, {iController.Symbol.ToDisplayString()}
+    internal class {controller.ClassName}(HttpClient httpClient, JsonSerializerOptions options, IPrerenderStateService prerenderStateService) : AppControllerBase, {controller.SymbolDisplay}
     {{
         {generatedMethods}
     }}");
@@ -110,7 +261,7 @@ public static class IHttpClientServiceCollectionExtensions
 {{
     public static void AddTypedHttpClients(this IServiceCollection services)
     {{
-{string.Join(Environment.NewLine, receiver.IControllers.Select(i => $"        services.TryAddTransient<{i.Symbol.ToDisplayString()}, {i.ClassName}>();"))}
+{string.Join(Environment.NewLine, controllers.Select(i => $"        services.TryAddTransient<{i.SymbolDisplay}, {i.ClassName}>();"))}
     }}
 
 internal class AppControllerBase
@@ -144,6 +295,6 @@ internal class AppControllerBase
 
 }}
 ");
-        context.AddSource($"HttpClientProxy.cs", finalSource.ToString());
+        spc.AddSource("HttpClientProxy.cs", SourceText.From(finalSource.ToString(), Encoding.UTF8));
     }
 }

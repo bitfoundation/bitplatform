@@ -1,16 +1,16 @@
-﻿using Microsoft.CodeAnalysis;
+﻿namespace Bit.BlazorUI.SourceGenerators.Component;
 
-namespace Bit.BlazorUI.SourceGenerators.Component;
-
-public class BlazorParameter(IPropertySymbol propertySymbol, bool resetClassBuilder, bool resetStyleBuilder, bool isTwoWayBound)
-{
-    public IPropertySymbol PropertySymbol { get; set; } = propertySymbol;
-
-    public bool IsTwoWayBound { get; set; } = isTwoWayBound;
-
-    public bool ResetClassBuilder { get; set; } = resetClassBuilder;
-    public bool ResetStyleBuilder { get; set; } = resetStyleBuilder;
-
-    public string? CallOnSetMethodName { get; set; }
-    public string? CallOnSetAsyncMethodName { get; set; }
-}
+internal readonly record struct BlazorParameter(
+    string ContainingTypeFullName,
+    string ClassName,
+    string ClassNameForCode,
+    string ClassNamespace,
+    bool IsBaseTypeComponentBase,
+    bool InheritsFromBitComponentBase,
+    string PropertyName,
+    string PropertyType,
+    bool ResetClassBuilder,
+    bool ResetStyleBuilder,
+    bool IsTwoWayBound,
+    string? CallOnSetMethodName,
+    string? CallOnSetAsyncMethodName);
