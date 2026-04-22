@@ -866,7 +866,7 @@ public partial class BitTextFieldDemo
         if (string.IsNullOrEmpty(value)) return null;
 
         var lastWord = value.Split(' ').LastOrDefault();
-        //var lastWord = value.Split([' ', '\t', '\r', '\n']).LastOrDefault();
+
         if (string.IsNullOrEmpty(lastWord)) return null;
 
         var match = _suggestions.FirstOrDefault(s => s.StartsWith(lastWord, StringComparison.OrdinalIgnoreCase));
@@ -978,7 +978,7 @@ private string? throttleValue;";
               Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
               @bind-Value=""ghostTextValue""
               GhostText=""@ghostSuggestion""
-              OnGhostTextAccepted=""@(() => ghostSuggestion = null)""
+              OnGhostTextAccepted=""@((v) => ghostSuggestion = null)""
               Immediate
               OnChange=""@(v => ghostSuggestion = GetGhostSuggestion(v))"" />
 <div>Value: [@ghostTextValue]</div>
@@ -989,7 +989,7 @@ private string? throttleValue;";
               Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
               @bind-Value=""ghostMultilineValue""
               GhostText=""@ghostMultilineSuggestion""
-              OnGhostTextAccepted=""@(() => ghostMultilineSuggestion = null)""
+              OnGhostTextAccepted=""@((v) => ghostMultilineSuggestion = null)""
               Immediate
               OnChange=""@(v => ghostMultilineSuggestion = GetGhostSuggestion(v))"" />
 <div>Value: [@ghostMultilineValue]</div>";
@@ -1012,7 +1012,8 @@ private static string? GetGhostSuggestion(string? value)
 {
     if (string.IsNullOrEmpty(value)) return null;
 
-    var lastWord = value.Split(' ', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+    var lastWord = value.Split(' ').LastOrDefault();
+    
     if (string.IsNullOrEmpty(lastWord)) return null;
 
     var match = _suggestions.FirstOrDefault(s => s.StartsWith(lastWord, StringComparison.OrdinalIgnoreCase));

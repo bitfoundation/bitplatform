@@ -184,7 +184,7 @@
                           Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
                           @bind-Value="ghostTextValue"
                           GhostText="@ghostSuggestion"
-                          OnGhostTextAccepted="@(() => ghostSuggestion = null)"
+                          OnGhostTextAccepted="@((v) => ghostSuggestion = null)"
                           Immediate
                           OnChange="@(v => ghostSuggestion = GetGhostSuggestion(v))" />
             <div>Value: [@ghostTextValue]</div>
@@ -195,7 +195,7 @@
                           Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
                           @bind-Value="ghostMultilineValue"
                           GhostText="@ghostMultilineSuggestion"
-                          OnGhostTextAccepted="@(() => ghostMultilineSuggestion = null)"
+                          OnGhostTextAccepted="@((v) => ghostMultilineSuggestion = null)"
                           Immediate
                           OnChange="@(v => ghostMultilineSuggestion = GetGhostSuggestion(v))" />
             <div>Value: [@ghostMultilineValue]</div>

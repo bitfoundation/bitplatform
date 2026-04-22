@@ -40,6 +40,11 @@
             border: $shp-border-width $shp-border-style $clr-brd-dis;
         }
 
+        .bit-tfl-ghs {
+            cursor: default;
+            pointer-events: none;
+        }
+
         &.bit-tfl-und {
             .bit-tfl-wrp {
                 width: 100%;
@@ -92,12 +97,12 @@
     display: block;
     box-shadow: none;
     font-weight: 600;
+    color: $clr-fg-pri;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    line-height: spacing(2.5);
     padding: spacing(0.625) 0;
+    line-height: spacing(2.5);
     overflow-wrap: break-word;
-    color: $clr-fg-pri;
 }
 
 .bit-tfl-fgp {
@@ -109,8 +114,8 @@
     position: relative;
     align-items: center;
     flex-flow: row nowrap;
-    min-height: spacing(4);
     box-sizing: border-box;
+    min-height: spacing(4);
     border-radius: $shp-border-radius;
     background-color: var(--bit-tfl-clr-bg);
     border: $shp-border-width $shp-border-style var(--bit-tfl-clr-brd);
@@ -126,13 +131,13 @@
     font-weight: 400;
     border-radius: 0;
     box-shadow: none;
+    color: $clr-fg-pri;
     padding: 0 spacing(1);
     box-sizing: border-box;
     text-overflow: ellipsis;
     font-size: spacing(1.75);
     min-height: spacing(3.75);
     background: none transparent;
-    color: $clr-fg-pri;
     font-family: $tg-font-family;
 
     &[type="password"]::-ms-reveal,
@@ -223,8 +228,8 @@
 
 .bit-tfl-des {
     span {
-        font-size: spacing(1.25);
         color: $clr-fg-pri;
+        font-size: spacing(1.25);
     }
 }
 
@@ -233,12 +238,12 @@
     height: 100%;
     display: flex;
     flex-shrink: 0;
+    color: $clr-fg-pri;
     align-items: center;
     white-space: nowrap;
+    background: $clr-bg-sec;
     padding: 0 spacing(1.25);
     min-height: spacing(3.75);
-    color: $clr-fg-pri;
-    background: $clr-bg-sec;
 
     span {
         font-size: spacing(1.75);
@@ -261,8 +266,9 @@
         display: block;
         overflow: auto;
         align-items: initial;
-        white-space: pre-wrap;
         word-wrap: break-word;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
         line-height: spacing(2.125);
         padding: spacing(0.75) spacing(1);
     }
@@ -270,8 +276,8 @@
     .bit-tfl-ghv,
     .bit-tfl-ghs {
         display: inline;
-        white-space: pre-wrap;
         word-wrap: break-word;
+        white-space: pre-wrap;
     }
 }
 
@@ -369,10 +375,10 @@
 .bit-tfl-rnl {
     .bit-tfl-fgp::before {
         content: "*";
+        color: $clr-req;
         position: absolute;
         top: spacing(-0.625);
         right: spacing(-1.25);
-        color: $clr-req;
     }
 }
 
@@ -398,15 +404,15 @@
     z-index: 2;
     display: flex;
     overflow: hidden;
+    font-weight: 400;
+    user-select: none;
     position: absolute;
     align-items: center;
-    user-select: none;
     pointer-events: none;
     padding: 0 spacing(1);
-    font-size: spacing(1.75);
-    font-weight: 400;
-    font-family: $tg-font-family;
     box-sizing: border-box;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
 }
 
 .bit-tfl-ghv {
@@ -417,10 +423,17 @@
 
 .bit-tfl-ghs {
     flex-shrink: 0;
-    white-space: pre;
     cursor: pointer;
-    pointer-events: auto;
+    white-space: pre;
     color: $clr-fg-ter;
+    pointer-events: auto;
+}
+
+.bit-tfl-rdl {
+    .bit-tfl-ghs {
+        cursor: default;
+        pointer-events: none;
+    }
 }
 
 

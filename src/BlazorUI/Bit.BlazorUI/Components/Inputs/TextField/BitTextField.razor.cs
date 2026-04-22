@@ -10,6 +10,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     private bool _hasFocus;
     private bool _scrollToEndAfterRender;
     private string? _oldValue;
+    private DotNetObjectReference<BitTextField>? _dotnetObj;
     private string? _inputMode;
     private bool _isPasswordRevealed;
     private BitInputType? _elementType;
@@ -311,6 +312,20 @@ public partial class BitTextField : BitTextInputBase<string?>
 
 
 
+    /// <summary>
+    /// Called by JavaScript when the ghost text is accepted via the Tab key.
+    /// </summary>
+    [JSInvokable("OnGhostAccepted")]
+    public async Task _NotifyTabGhostAccepted(string acceptedText)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        _scrollToEndAfterRender = true;
+        await OnGhostTextAccepted.InvokeAsync(acceptedText);
+    }
+
+
+
     public void ToggleRevealPassword()
     {
         _isPasswordRevealed = _isPasswordRevealed is false;
@@ -336,6 +351,8 @@ public partial class BitTextField : BitTextInputBase<string?>
         ClassBuilder.Register(() => Underlined ? "bit-tfl-und" : string.Empty);
 
         ClassBuilder.Register(() => NoBorder ? "bit-tfl-nbd" : string.Empty);
+
+        ClassBuilder.Register(() => ReadOnly ? "bit-tfl-rdl" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-tfl-fcs {Classes?.Focused}" : string.Empty);
 
@@ -416,7 +433,8 @@ public partial class BitTextField : BitTextInputBase<string?>
                 await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter);
             }
 
-            await _js.BitTextFieldSetupGhostText(_Id, InputElement);
+            _dotnetObj = DotNetObjectReference.Create(this);
+            await _js.BitTextFieldSetupGhostText(_Id, InputElement, _dotnetObj);
         }
         else
         {
@@ -532,22 +550,13 @@ public partial class BitTextField : BitTextInputBase<string?>
         await OnClear.InvokeAsync();
     }
 
-    private async Task HandleGhostTextAccept()
-    {
-        if (IsEnabled is false || ReadOnly) return;
-
-        var accepted = GhostText;
-        await SetCurrentValueAsStringAsync((CurrentValueAsString ?? "") + GhostText);
-        _scrollToEndAfterRender = true;
-        await OnGhostTextAccepted.InvokeAsync(accepted);
-    }
-
-
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
 
         await base.DisposeAsync(disposing);
+
+        _dotnetObj?.Dispose();
 
         try
         {
