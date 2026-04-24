@@ -49,6 +49,15 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
 
     // ── Data models ──────────────────────────────────────────────────────────
 
+    private readonly record struct LocationInfo(
+        string FilePath,
+        int SpanStart,
+        int SpanLength,
+        int StartLine,
+        int StartChar,
+        int EndLine,
+        int EndChar);
+
     private readonly record struct DirectEntry(
         string ContainingTypeFullName,
         string ClassName,
@@ -58,7 +67,8 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
         bool IsPartial,
         AutoInjectMember Member,
         // Base class members encoded as "F\tname\ttype\tnullable|..." for structural equality
-        string EncodedBaseMembers);
+        string EncodedBaseMembers,
+        LocationInfo? ClassLocation);
 
     private readonly record struct DerivedEntry(
         string ContainingTypeFullName,
@@ -67,7 +77,8 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
         string ClassNamespace,
         AutoInjectClassType ClassType,
         bool IsPartial,
-        string EncodedBaseMembers);
+        string EncodedBaseMembers,
+        LocationInfo? ClassLocation);
 
     // ── Transforms ───────────────────────────────────────────────────────────
 
@@ -101,6 +112,16 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
         var isPartial = IsSymbolPartial(containingType);
         var classType = IsRazorComponent(containingType) ? AutoInjectClassType.RazorComponent : AutoInjectClassType.NormalClass;
 
+        LocationInfo? classLocation = null;
+        foreach (var syntaxRef in containingType.DeclaringSyntaxReferences)
+        {
+            if (syntaxRef.GetSyntax() is ClassDeclarationSyntax classDecl)
+            {
+                classLocation = GetLocationInfo(classDecl.Identifier);
+                break;
+            }
+        }
+
         return new DirectEntry(
             ContainingTypeFullName: containingType.ToDisplayString(),
             ClassName: containingType.Name,
@@ -109,7 +130,8 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
             ClassType: classType,
             IsPartial: isPartial,
             Member: member,
-            EncodedBaseMembers: EncodeMembers(baseMembers));
+            EncodedBaseMembers: EncodeMembers(baseMembers),
+            ClassLocation: classLocation);
     }
 
     private static DerivedEntry? TransformDerivedClass(GeneratorSyntaxContext ctx, CancellationToken ct)
@@ -148,6 +170,16 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
         var baseMembers = AutoInjectHelper.GetBaseClassEligibleMembers(classSymbol, attrSymbol);
         var classType = IsRazorComponent(classSymbol) ? AutoInjectClassType.RazorComponent : AutoInjectClassType.NormalClass;
 
+        LocationInfo? classLocation = null;
+        foreach (var syntaxRef in classSymbol.DeclaringSyntaxReferences)
+        {
+            if (syntaxRef.GetSyntax() is ClassDeclarationSyntax classDecl2)
+            {
+                classLocation = GetLocationInfo(classDecl2.Identifier);
+                break;
+            }
+        }
+
         return new DerivedEntry(
             ContainingTypeFullName: classSymbol.ToDisplayString(),
             ClassName: classSymbol.Name,
@@ -155,7 +187,8 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
             ClassNamespace: classSymbol.ContainingNamespace.ToDisplayString(),
             ClassType: classType,
             IsPartial: true, // predicate already checked for partial keyword
-            EncodedBaseMembers: EncodeMembers(baseMembers));
+            EncodedBaseMembers: EncodeMembers(baseMembers),
+            ClassLocation: classLocation);
     }
 
     // ── Code generation ───────────────────────────────────────────────────────
@@ -179,7 +212,8 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
 
             if (!first.IsPartial)
             {
-                spc.ReportDiagnostic(Diagnostic.Create(NonPartialClassError, Location.None, first.ClassName));
+                var loc = first.ClassLocation.HasValue ? ToLocation(first.ClassLocation.Value) : Location.None;
+                spc.ReportDiagnostic(Diagnostic.Create(NonPartialClassError, loc, first.ClassName));
                 continue;
             }
 
@@ -205,7 +239,8 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
 
             if (!entry.IsPartial)
             {
-                spc.ReportDiagnostic(Diagnostic.Create(NonPartialClassError, Location.None, entry.ClassName));
+                var loc = entry.ClassLocation.HasValue ? ToLocation(entry.ClassLocation.Value) : Location.None;
+                spc.ReportDiagnostic(Diagnostic.Create(NonPartialClassError, loc, entry.ClassName));
                 continue;
             }
 
@@ -281,4 +316,30 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
 
     private static string EscapeForHint(string fullyQualifiedName)
         => fullyQualifiedName.Replace('<', '[').Replace('>', ']').Replace(' ', '_');
+
+    private static LocationInfo? GetLocationInfo(SyntaxToken token)
+    {
+        var location = token.GetLocation();
+
+        if (location.SourceTree is null) return null;
+
+        var lineSpan = location.GetLineSpan();
+
+        return new LocationInfo(
+            FilePath: location.SourceTree.FilePath,
+            SpanStart: location.SourceSpan.Start,
+            SpanLength: location.SourceSpan.Length,
+            StartLine: lineSpan.StartLinePosition.Line,
+            StartChar: lineSpan.StartLinePosition.Character,
+            EndLine: lineSpan.EndLinePosition.Line,
+            EndChar: lineSpan.EndLinePosition.Character);
+    }
+
+    private static Location ToLocation(LocationInfo info)
+        => Location.Create(
+            info.FilePath,
+            new TextSpan(info.SpanStart, info.SpanLength),
+            new LinePositionSpan(
+                new LinePosition(info.StartLine, info.StartChar),
+                new LinePosition(info.EndLine, info.EndChar)));
 }
