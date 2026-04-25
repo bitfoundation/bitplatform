@@ -123,6 +123,7 @@ public class BitCalendarValidationModel
     public DateTimeOffset? Date { get; set; }
 }
 
+private string SuccessMessage = string.Empty;
 private BitCalendarValidationModel validationModel = new();
 
 private void HandleValidSubmit() { }
