@@ -177,7 +177,7 @@ private void HandleInvalidSubmit() { }";
 <BitCalendar>
     <MonthCellTemplate>
         <div style=""width:28px;padding:3px;color:black;background:@(context.Month == 1 ? ""lightcoral"" : ""yellowgreen"")"">
-            @Culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+            @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
         </div>
     </MonthCellTemplate>
 </BitCalendar>
