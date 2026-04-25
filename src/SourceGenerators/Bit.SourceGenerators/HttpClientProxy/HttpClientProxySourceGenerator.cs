@@ -165,6 +165,8 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 // fields[11] bodyParamName
                 // fields[12] bodyParamTypeNoNull
 
+                if (fields.Length < 13) continue;
+
                 var methodName = fields[0];
                 var returnTypeDisplay = fields[1];
                 var returnUnderlyingNoNull = fields[2];

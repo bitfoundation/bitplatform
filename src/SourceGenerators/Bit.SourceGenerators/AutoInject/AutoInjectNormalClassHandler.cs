@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Bit.SourceGenerators;
 
-public static class AutoInjectNormalClassHandler
+internal static class AutoInjectNormalClassHandler
 {
     public static string? Generate(
         string classNamespace,

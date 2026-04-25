@@ -5,7 +5,7 @@ using Bit.SourceGenerators;
 
 namespace Bit.BlazorUI.SourceGenerators.AutoInject;
 
-public static class AutoInjectNormalClassHandler
+internal static class AutoInjectNormalClassHandler
 {
     public static string? Generate(
         string classNamespace,

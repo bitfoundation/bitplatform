@@ -4,7 +4,7 @@ using Bit.SourceGenerators;
 
 namespace Bit.BlazorUI.SourceGenerators.AutoInject;
 
-public static class AutoInjectRazorComponentHandler
+internal static class AutoInjectRazorComponentHandler
 {
     public static string? Generate(
         string classNamespace,
