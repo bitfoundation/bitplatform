@@ -21,8 +21,8 @@ private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 
 <BitCalendar ShowTimePicker=""true"" MinuteStep=""15"" />";
 
     private readonly string example4RazorCode = @"
-<BitCalendar GoToToday=""برو به امروز"" Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
-<BitCalendar GoToToday=""Boro be emrouz"" Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
+<BitCalendar GoToTodayTitle=""برو به امروز"" Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
+<BitCalendar GoToTodayTitle=""Boro be emrouz"" Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
 
     private readonly string example5RazorCode = @"
 <BitCalendar @bind-Value=""@timeZoneDate1"" ShowTimePicker />
