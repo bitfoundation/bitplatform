@@ -785,11 +785,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         ClassBuilder.Register(() => (Dir is null && _culture.TextInfo.IsRightToLeft) ? "bit-rtl" : string.Empty);
 
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lic" : string.Empty);
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-dtrp-lic" : string.Empty);
 
-        ClassBuilder.Register(() => Underlined ? $"{RootElementClass}-und" : string.Empty);
+        ClassBuilder.Register(() => Underlined ? "bit-dtrp-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
+        ClassBuilder.Register(() => HasBorder is false ? "bit-dtrp-nbd" : string.Empty);
 
         ClassBuilder.Register(() => Standalone ? "bit-dtrp-sta" : string.Empty);
 
@@ -911,6 +911,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             CheckCurrentCalendarMatchesCurrentValue();
         }
 
+        StateHasChanged();
+
         await ToggleCallout();
 
         await OnClick.InvokeAsync();
@@ -951,11 +953,35 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (IsEnabled is false || InvalidValueBinding()) return;
         if (AllowTextInput is false) return;
 
+        if (CurrentValue is null)
+        {
+            CurrentValueAsString = e.Value?.ToString();
+            return;
+        }
+
+        var oldStartValue = CurrentValue.StartDate.GetValueOrDefault(DateTimeOffset.Now);
+        var oldEndValue = CurrentValue.EndDate.GetValueOrDefault(DateTimeOffset.Now);
+
         CurrentValueAsString = e.Value?.ToString();
+
+        var curStartValue = CurrentValue.StartDate.GetValueOrDefault(DateTimeOffset.Now);
+        var curEndValue = CurrentValue.EndDate.GetValueOrDefault(DateTimeOffset.Now);
+
+        if (IsOpen && (oldStartValue != curStartValue || oldEndValue != curEndValue))
+        {
+            CheckCurrentCalendarMatchesCurrentValue();
+
+            if (curStartValue.Year != oldStartValue.Year || curEndValue.Year != oldEndValue.Year)
+            {
+                _currentYear = curStartValue.Year;
+                ChangeYearRanges(_currentYear - 1);
+            }
+        }
     }
 
     private async Task HandleOnClearButtonClick()
     {
+        if (ReadOnly) return;
         if (IsEnabled is false) return;
 
         CurrentValue = null;
@@ -1060,6 +1086,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         var curValue = CurrentValue ?? new();
 
+        // reset the current state if both start and end dates have values!
         if (curValue.StartDate.HasValue && curValue.EndDate.HasValue)
         {
             curValue.StartDate = null;
@@ -1128,7 +1155,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         GenerateMonthData(_currentYear, _currentMonth);
 
-        if (_showMonthPickerAsOverlayInternal)
+        if (_showMonthPickerAsOverlayInternal || ShowTimePicker)
         {
             ToggleMonthPickerOverlay();
         }
@@ -1328,7 +1355,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private DayOfWeek GetDayOfWeek(int index)
     {
-        int dayOfWeek = (int)(_culture.DateTimeFormat.FirstDayOfWeek) + index;
+        int dayOfWeek = (int)_culture.DateTimeFormat.FirstDayOfWeek + index;
 
         if (dayOfWeek > 6)
         {
@@ -1513,11 +1540,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private bool IsYearOutOfMinAndMaxDate(int year)
     {
-        return (MaxDate.HasValue && year > _culture.Calendar.GetYear(MaxDate.Value.DateTime))
-            || (MinDate.HasValue && year < _culture.Calendar.GetYear(MinDate.Value.DateTime))
-            || (MaxRange.HasValue && MaxRange.Value.TotalDays > 0 && CurrentValue?.StartDate is not null && CurrentValue!.EndDate.HasValue is false &&
-                (year > _culture.Calendar.GetYear(GetMaxEndDate()) ||
-                 year < _culture.Calendar.GetYear(GetMinEndDate())));
+        return (MaxDate.HasValue && year > _culture.Calendar.GetYear(MaxDate.Value.DateTime)) || 
+               (MinDate.HasValue && year < _culture.Calendar.GetYear(MinDate.Value.DateTime)) || 
+               (MaxRange.HasValue && MaxRange.Value.TotalDays > 0 && CurrentValue?.StartDate is not null && CurrentValue!.EndDate.HasValue is false &&
+                (year > _culture.Calendar.GetYear(GetMaxEndDate()) || year < _culture.Calendar.GetYear(GetMinEndDate())));
     }
 
     private void CheckCurrentCalendarMatchesCurrentValue()
@@ -1746,14 +1772,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task HandleOnHourInputFocus(bool isStartTime)
     {
-        if (IsEnabled is false || ShowTimePicker is false) return;
+        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
 
         await _js.BitUtilsSelectText(isStartTime ? _startTimeHourInputRef : _endTimeHourInputRef);
     }
 
     private async Task HandleOnMinuteInputFocus(bool isStartTime)
     {
-        if (IsEnabled is false || ShowTimePicker is false) return;
+        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
 
         await _js.BitUtilsSelectText(isStartTime ? _startTimeMinuteInputRef : _endTimeMinuteInputRef);
     }
