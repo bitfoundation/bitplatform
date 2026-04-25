@@ -32,11 +32,10 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
             .Where(static e => e is not null)
             .Select(static (e, _) => e!.Value);
 
-        // Provider 2: partial classes whose base type uses [AutoInject] but they don't
+        // Provider 2: classes whose base type uses [AutoInject] but they don't (including non-partial, to report diagnostic)
         var derivedClassProvider = context.SyntaxProvider
             .CreateSyntaxProvider(
-                predicate: static (node, _) => node is ClassDeclarationSyntax cls &&
-                    cls.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)),
+                predicate: static (node, _) => node is ClassDeclarationSyntax,
                 transform: static (ctx, ct) => TransformDerivedClass(ctx, ct))
             .Where(static e => e is not null)
             .Select(static (e, _) => e!.Value);
@@ -186,7 +185,7 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
             ClassNameForCode: AutoInjectHelper.GenerateClassName(classSymbol),
             ClassNamespace: classSymbol.ContainingNamespace.ToDisplayString(),
             ClassType: classType,
-            IsPartial: true, // predicate already checked for partial keyword
+            IsPartial: IsSymbolPartial(classSymbol),
             EncodedBaseMembers: EncodeMembers(baseMembers),
             ClassLocation: classLocation);
     }
