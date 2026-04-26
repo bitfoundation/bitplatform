@@ -148,12 +148,11 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
 
         var attrFqn = AutoInjectHelper.AutoInjectAttributeFullName;
 
-        var isBaseTypeUseAutoInject = classSymbol.BaseType
-            .GetMembers()
-            .Any(m => (m.Kind == SymbolKind.Field || m.Kind == SymbolKind.Property) &&
-                       m.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == attrFqn));
+        var attrSymbol = ctx.SemanticModel.Compilation.GetTypeByMetadataName(attrFqn);
+        if (attrSymbol is null) return null;
 
-        if (!isBaseTypeUseAutoInject) return null;
+        var baseMembers = AutoInjectHelper.GetBaseClassEligibleMembers(classSymbol, attrSymbol);
+        if (baseMembers.Count == 0) return null;
 
         var isCurrentClassUseAutoInject = classSymbol
             .GetMembers()
@@ -162,11 +161,6 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
 
         // Let the direct-member provider handle classes that have their own [AutoInject] members
         if (isCurrentClassUseAutoInject) return null;
-
-        var attrSymbol = ctx.SemanticModel.Compilation.GetTypeByMetadataName(attrFqn);
-        if (attrSymbol is null) return null;
-
-        var baseMembers = AutoInjectHelper.GetBaseClassEligibleMembers(classSymbol, attrSymbol);
         var classType = IsRazorComponent(classSymbol) ? AutoInjectClassType.RazorComponent : AutoInjectClassType.NormalClass;
 
         LocationInfo? classLocation = null;

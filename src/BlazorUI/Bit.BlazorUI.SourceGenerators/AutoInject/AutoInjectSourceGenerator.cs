@@ -95,9 +95,14 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
 
         var attrSymbol = ctx.SemanticModel.Compilation.GetTypeByMetadataName(AutoInjectHelper.AutoInjectAttributeFullName);
 
-        var member = symbol is IFieldSymbol f
-            ? new AutoInjectMember(f.Name, f.Type.ToDisplayString(), IsField: true)
-            : new AutoInjectMember(((IPropertySymbol)symbol).Name, ((IPropertySymbol)symbol).Type.ToDisplayString(), IsField: false);
+        AutoInjectMember member;
+        if (symbol is IFieldSymbol f)
+            member = new AutoInjectMember(f.Name, f.Type.ToDisplayString(), IsField: true, IsNullable: f.NullableAnnotation is NullableAnnotation.Annotated);
+        else
+        {
+            var p = (IPropertySymbol)symbol;
+            member = new AutoInjectMember(p.Name, p.Type.ToDisplayString(), IsField: false, IsNullable: p.NullableAnnotation is NullableAnnotation.Annotated);
+        }
 
         var baseMembers = attrSymbol is null
             ? (IReadOnlyCollection<ISymbol>)new List<ISymbol>()
@@ -143,12 +148,11 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
 
         var attrFqn = AutoInjectHelper.AutoInjectAttributeFullName;
 
-        var isBaseTypeUseAutoInject = classSymbol.BaseType
-            .GetMembers()
-            .Any(m => (m.Kind == SymbolKind.Field || m.Kind == SymbolKind.Property) &&
-                       m.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == attrFqn));
+        var attrSymbol = ctx.SemanticModel.Compilation.GetTypeByMetadataName(attrFqn);
+        if (attrSymbol is null) return null;
 
-        if (!isBaseTypeUseAutoInject) return null;
+        var baseMembers = AutoInjectHelper.GetBaseClassEligibleMembers(classSymbol, attrSymbol);
+        if (baseMembers.Count == 0) return null;
 
         var isCurrentClassUseAutoInject = classSymbol
             .GetMembers()
@@ -157,11 +161,6 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
 
         // Let the direct-member provider handle classes that have their own [AutoInject] members
         if (isCurrentClassUseAutoInject) return null;
-
-        var attrSymbol = ctx.SemanticModel.Compilation.GetTypeByMetadataName(attrFqn);
-        if (attrSymbol is null) return null;
-
-        var baseMembers = AutoInjectHelper.GetBaseClassEligibleMembers(classSymbol, attrSymbol);
         var classType = IsRazorComponent(classSymbol) ? AutoInjectClassType.RazorComponent : AutoInjectClassType.NormalClass;
 
         return new DerivedEntry(
@@ -273,13 +272,9 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
             }
             
             if (m is IFieldSymbol f)
-            {
-                sb.Append('F').Append(':').Append(f.Name).Append(':').Append(f.Type.ToDisplayString());
-            }
+                sb.Append('F').Append('\t').Append(f.Name).Append('\t').Append(f.Type.ToDisplayString()).Append('\t').Append(f.NullableAnnotation is NullableAnnotation.Annotated ? '1' : '0');
             else if (m is IPropertySymbol p)
-            {
-                sb.Append('P').Append(':').Append(p.Name).Append(':').Append(p.Type.ToDisplayString());
-            }
+                sb.Append('P').Append('\t').Append(p.Name).Append('\t').Append(p.Type.ToDisplayString()).Append('\t').Append(p.NullableAnnotation is NullableAnnotation.Annotated ? '1' : '0');
         }
         return sb.ToString();
     }
@@ -291,18 +286,14 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
 
         foreach (var part in encoded.Split('|'))
         {
-            // format: "F:name:type" or "P:name:type" (type may itself contain ':')
-            var colonIdx = part.IndexOf(':');
-            if (colonIdx < 0) continue;
-
-            var kind = part[0];
-            var rest = part.Substring(colonIdx + 1);
-            var secondColon = rest.IndexOf(':');
-            if (secondColon < 0) continue;
-
-            var name = rest.Substring(0, secondColon);
-            var typeDisplay = rest.Substring(secondColon + 1);
-            result.Add(new AutoInjectMember(name, typeDisplay, IsField: kind == 'F'));
+            // format: "F\tname\ttype\tnullable" (4 tab-separated fields)
+            var fields = part.Split('\t');
+            if (fields.Length < 4) continue;
+            var kind = fields[0][0];
+            var name = fields[1];
+            var typeDisplay = fields[2];
+            var isNullable = fields[3] == "1";
+            result.Add(new AutoInjectMember(name, typeDisplay, IsField: kind == 'F', IsNullable: isNullable));
         }
 
         return result;
