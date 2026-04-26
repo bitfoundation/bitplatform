@@ -225,6 +225,7 @@ public class BitDatePickerValidationModel
     public DateTimeOffset? Date { get; set; }
 }
 
+private string SuccessMessage = string.Empty;
 private BitDatePickerValidationModel validationModel = new();
 
 private void HandleValidSubmit() { }
