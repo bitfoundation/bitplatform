@@ -66,7 +66,7 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
         bool IsPartial,
         LocationInfo? ClassLocation,
         AutoInjectMember Member,
-        // Base class members encoded as "F:name:type|P:name:type" for structural equality
+        // Base class members encoded as "F\tname\ttype\tnullable|..." for structural equality
         string EncodedBaseMembers);
 
     private readonly record struct DerivedEntry(

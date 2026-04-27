@@ -83,8 +83,7 @@ namespace {classNamespace}
         foreach (var member in allMembers)
         {
             var nullValue = member.IsNullable ? " = null" : string.Empty;
-            stringBuilder.Append(
-                $@"{'\n'}{"\t\t\t"}{member.TypeDisplay} autoInjected{AutoInjectHelper.FormatMemberName(member.Name)} {nullValue},");
+            stringBuilder.Append($@"{'\n'}{"\t\t\t"}{member.TypeDisplay} autoInjected{AutoInjectHelper.FormatMemberName(member.Name)} {nullValue},");
         }
 
         stringBuilder.Length--;
