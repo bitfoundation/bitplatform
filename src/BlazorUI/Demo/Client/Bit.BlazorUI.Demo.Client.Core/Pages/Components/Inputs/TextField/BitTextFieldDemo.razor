@@ -177,27 +177,51 @@
     </DemoExample>
 
     <DemoExample Title="GhostText" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <div>Demonstrates the ghost text (inline suggestion) feature. Set the <b>GhostText</b> parameter to show a faded inline suggestion after the cursor position. Press <b>Tab</b> or click/touch the ghost text to accept it and append it to the current value.</div>
+        <div>Demonstrates the ghost text (inline suggestion) feature. Set the <b>GhostText</b> parameter to show a faded inline suggestion after the cursor position. Press <b>Tab</b>, <b>Enter</b>, or click/touch to accept it and append it to the current value.</div>
         <br />
         <div class="example-box">
-            <BitTextField Label="Single-line"
-                          Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
-                          @bind-Value="ghostTextValue"
-                          GhostText="@ghostSuggestion"
-                          OnGhostTextAccepted="@((v) => ghostSuggestion = null)"
+            <div><b>Basic (non-async)</b></div>
+            <BitTextField @bind-Value="ghostBasicTextValue"
                           Immediate
-                          OnChange="@(v => ghostSuggestion = GetGhostSuggestion(v))" />
+                          Label="Basic Single-line"
+                          GhostText="@ghostBasicSuggestion"
+                          Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
+                          OnGhostTextAccepted="(_ => ghostBasicSuggestion = null)"
+                          OnChange="(v => ghostBasicSuggestion = GetGhostSuggestion(v))" />
+            <div>Value: [@ghostBasicTextValue]</div>
+            <br />
+            <BitTextField @bind-Value="ghostBasicMultilineValue"
+                          Multiline
+                          Resizable
+                          Rows="5"
+                          Immediate
+                          Label="Basic Multiline"
+                          GhostText="@ghostBasicMultilineSuggestion"
+                          Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
+                          OnGhostTextAccepted="(_ => ghostBasicMultilineSuggestion = null)"
+                          OnChange="(v => ghostBasicMultilineSuggestion = GetGhostSuggestion(v))" />
+            <div>Value: [@ghostBasicMultilineValue]</div>
+            <br /><br />
+            <div><b>Advanced (async + cancellation)</b></div>
+            <BitTextField @bind-Value="ghostTextValue"
+                          Immediate
+                          Label="Single-line"
+                          GhostText="@ghostSuggestion"
+                          Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
+                          OnGhostTextAccepted="(_ => ClearGhostSuggestion(isMultiline: false))"
+                          OnChange="(v => SetGhostSuggestionAsync(v, isMultiline: false))" />
             <div>Value: [@ghostTextValue]</div>
             <br />
-            <BitTextField Label="Multiline"
+            <BitTextField @bind-Value="ghostMultilineValue"
                           Multiline
-                          Rows="3"
-                          Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
-                          @bind-Value="ghostMultilineValue"
-                          GhostText="@ghostMultilineSuggestion"
-                          OnGhostTextAccepted="@((v) => ghostMultilineSuggestion = null)"
+                          Resizable
+                          Rows="5"
                           Immediate
-                          OnChange="@(v => ghostMultilineSuggestion = GetGhostSuggestion(v))" />
+                          Label="Multiline"
+                          GhostText="@ghostMultilineSuggestion"
+                          Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
+                          OnGhostTextAccepted="(_ => ClearGhostSuggestion(isMultiline: true))"
+                          OnChange="(v => SetGhostSuggestionAsync(v, isMultiline: true))" />
             <div>Value: [@ghostMultilineValue]</div>
         </div>
     </DemoExample>

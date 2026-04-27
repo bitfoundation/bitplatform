@@ -17,9 +17,9 @@ internal static class BitTextFieldJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setupGhostText", id, input, dotnetObj);
     }
 
-    internal static ValueTask BitTextFieldScrollToEnd(this IJSRuntime jsRuntime, ElementReference input)
+    internal static ValueTask BitTextFieldSetGhostText(this IJSRuntime jsRuntime, string id, string ghostText)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.scrollToEnd", input);
+        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setGhostText", id, ghostText);
     }
 
     internal static ValueTask BitTextFieldDispose(this IJSRuntime jsRuntime, string id)
