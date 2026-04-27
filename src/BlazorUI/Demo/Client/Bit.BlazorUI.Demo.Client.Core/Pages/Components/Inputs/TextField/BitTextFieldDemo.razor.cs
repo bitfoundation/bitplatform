@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TextField;
 
-public partial class BitTextFieldDemo
+public partial class BitTextFieldDemo : IDisposable
 {
     private readonly List<ComponentParameter> componentParameters =
     [
@@ -847,11 +847,20 @@ public partial class BitTextFieldDemo
 
 
 
+    private string? ghostBasicTextValue;
+    private string? ghostBasicSuggestion;
+
+    private string? ghostBasicMultilineValue;
+    private string? ghostBasicMultilineSuggestion;
+
     private string? ghostTextValue;
     private string? ghostSuggestion;
 
     private string? ghostMultilineValue;
     private string? ghostMultilineSuggestion;
+
+    private CancellationTokenSource? _ghostSuggestionCts;
+    private CancellationTokenSource? _ghostMultilineSuggestionCts;
 
     private static readonly string[] _suggestions =
     [
@@ -861,16 +870,90 @@ public partial class BitTextFieldDemo
         "dog training guide"
     ];
 
+    private async Task SetGhostSuggestionAsync(string? value, bool isMultiline)
+    {
+        var cts = new CancellationTokenSource();
+
+        if (isMultiline)
+        {
+            CancelAndDispose(ref _ghostMultilineSuggestionCts);
+            _ghostMultilineSuggestionCts = cts;
+            ghostMultilineSuggestion = null;
+        }
+        else
+        {
+            CancelAndDispose(ref _ghostSuggestionCts);
+            _ghostSuggestionCts = cts;
+            ghostSuggestion = null;
+        }
+
+        try
+        {
+            var suggestion = await GetGhostSuggestionAsync(value, cts.Token);
+
+            if (cts.IsCancellationRequested) return;
+
+            if (isMultiline)
+            {
+                ghostMultilineSuggestion = suggestion;
+            }
+            else
+            {
+                ghostSuggestion = suggestion;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // A newer request started and canceled this one.
+        }
+    }
+
+    private void ClearGhostSuggestion(bool isMultiline)
+    {
+        if (isMultiline)
+        {
+            CancelAndDispose(ref _ghostMultilineSuggestionCts);
+            ghostMultilineSuggestion = null;
+        }
+        else
+        {
+            CancelAndDispose(ref _ghostSuggestionCts);
+            ghostSuggestion = null;
+        }
+    }
+
+    private static void CancelAndDispose(ref CancellationTokenSource? cts)
+    {
+        cts?.Cancel();
+        cts?.Dispose();
+        cts = null;
+    }
+
     private static string? GetGhostSuggestion(string? value)
     {
         if (string.IsNullOrEmpty(value)) return null;
 
-        var lastWord = value.Split(' ').LastOrDefault();
+        if (char.IsWhiteSpace(value[^1])) return null;
+
+        var lastWord = value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
 
         if (string.IsNullOrEmpty(lastWord)) return null;
 
         var match = _suggestions.FirstOrDefault(s => s.StartsWith(lastWord, StringComparison.OrdinalIgnoreCase));
-        return match is null ? null : match[lastWord.Length..];
+        return match?[lastWord.Length..];
+    }
+
+    private static async Task<string?> GetGhostSuggestionAsync(string? value, CancellationToken cancellationToken)
+    {
+        await Task.Delay(300, cancellationToken);
+
+        return GetGhostSuggestion(value);
+    }
+
+    public void Dispose()
+    {
+        CancelAndDispose(ref _ghostSuggestionCts);
+        CancelAndDispose(ref _ghostMultilineSuggestionCts);
     }
 
 
@@ -974,31 +1057,63 @@ private string? debounceValue;
 private string? throttleValue;";
 
     private readonly string example11RazorCode = @"
-<BitTextField Label=""Single-line""
-              Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
-              @bind-Value=""ghostTextValue""
-              GhostText=""@ghostSuggestion""
-              OnGhostTextAccepted=""@((v) => ghostSuggestion = null)""
+<BitTextField @bind-Value=""ghostBasicTextValue""
               Immediate
-              OnChange=""@(v => ghostSuggestion = GetGhostSuggestion(v))"" />
+              Label=""Basic Single-line""
+              GhostText=""@ghostBasicSuggestion""
+              Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              OnGhostTextAccepted=""(_ => ghostBasicSuggestion = null)""
+              OnChange=""(v => ghostBasicSuggestion = GetGhostSuggestion(v))"" />
+<div>Value: [@ghostBasicTextValue]</div>
+
+<BitTextField @bind-Value=""ghostBasicMultilineValue""
+              Multiline
+              Resizable
+              Rows=""3""
+              Immediate
+              Label=""Basic Multiline""
+              GhostText=""@ghostBasicMultilineSuggestion""
+              Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              OnGhostTextAccepted=""(_ => ghostBasicMultilineSuggestion = null)""
+              OnChange=""(v => ghostBasicMultilineSuggestion = GetGhostSuggestion(v))"" />
+<div>Value: [@ghostBasicMultilineValue]</div>
+
+
+<BitTextField @bind-Value=""ghostTextValue""
+              Immediate
+              Label=""Single-line""
+              GhostText=""@ghostSuggestion""
+              Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              OnGhostTextAccepted=""(_ => ClearGhostSuggestion(isMultiline: false))""
+              OnChange=""(v => SetGhostSuggestionAsync(v, isMultiline: false))"" />
 <div>Value: [@ghostTextValue]</div>
 
-<BitTextField Label=""Multiline""
+<BitTextField @bind-Value=""ghostMultilineValue""
               Multiline
+              Resizable
               Rows=""3""
-              Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
-              @bind-Value=""ghostMultilineValue""
-              GhostText=""@ghostMultilineSuggestion""
-              OnGhostTextAccepted=""@((v) => ghostMultilineSuggestion = null)""
               Immediate
-              OnChange=""@(v => ghostMultilineSuggestion = GetGhostSuggestion(v))"" />
+              Label=""Multiline""
+              GhostText=""@ghostMultilineSuggestion""
+              Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              OnGhostTextAccepted=""(_ => ClearGhostSuggestion(isMultiline: true))""
+              OnChange=""(v => SetGhostSuggestionAsync(v, isMultiline: true))"" />
 <div>Value: [@ghostMultilineValue]</div>";
     private readonly string example11CsharpCode = @"
+private string? ghostBasicTextValue;
+private string? ghostBasicSuggestion;
+
+private string? ghostBasicMultilineValue;
+private string? ghostBasicMultilineSuggestion;
+
 private string? ghostTextValue;
 private string? ghostSuggestion;
 
 private string? ghostMultilineValue;
 private string? ghostMultilineSuggestion;
+
+private CancellationTokenSource? _ghostSuggestionCts;
+private CancellationTokenSource? _ghostMultilineSuggestionCts;
 
 private static readonly string[] _suggestions =
 [
@@ -1012,12 +1127,77 @@ private static string? GetGhostSuggestion(string? value)
 {
     if (string.IsNullOrEmpty(value)) return null;
 
-    var lastWord = value.Split(' ').LastOrDefault();
-    
+    if (char.IsWhiteSpace(value[^1])) return null;
+
+    var lastWord = value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+
     if (string.IsNullOrEmpty(lastWord)) return null;
 
     var match = _suggestions.FirstOrDefault(s => s.StartsWith(lastWord, StringComparison.OrdinalIgnoreCase));
-    return match is null ? null : match[lastWord.Length..];
+    return match?[lastWord.Length..];
+}
+
+private async Task SetGhostSuggestionAsync(string? value, bool isMultiline)
+{
+    var cts = new CancellationTokenSource();
+
+    if (isMultiline)
+    {
+        CancelAndDispose(ref _ghostMultilineSuggestionCts);
+        _ghostMultilineSuggestionCts = cts;
+        ghostMultilineSuggestion = null;
+    }
+    else
+    {
+        CancelAndDispose(ref _ghostSuggestionCts);
+        _ghostSuggestionCts = cts;
+        ghostSuggestion = null;
+    }
+
+    try
+    {
+        var suggestion = await GetGhostSuggestionAsync(value, cts.Token);
+
+        if (isMultiline)
+        {
+            ghostMultilineSuggestion = suggestion;
+        }
+        else
+        {
+            ghostSuggestion = suggestion;
+        }
+    }
+    catch (OperationCanceledException)
+    {
+    }
+}
+
+private void ClearGhostSuggestion(bool isMultiline)
+{
+    if (isMultiline)
+    {
+        CancelAndDispose(ref _ghostMultilineSuggestionCts);
+        ghostMultilineSuggestion = null;
+    }
+    else
+    {
+        CancelAndDispose(ref _ghostSuggestionCts);
+        ghostSuggestion = null;
+    }
+}
+
+private static void CancelAndDispose(ref CancellationTokenSource? cts)
+{
+    cts?.Cancel();
+    cts?.Dispose();
+    cts = null;
+}
+
+private static async Task<string?> GetGhostSuggestionAsync(string? value, CancellationToken cancellationToken)
+{
+    await Task.Delay(300, cancellationToken);
+
+    return GetGhostSuggestion(value);
 }";
 
     private readonly string example12RazorCode = @"

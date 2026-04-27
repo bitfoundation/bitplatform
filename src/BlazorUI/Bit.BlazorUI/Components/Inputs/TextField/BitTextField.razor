@@ -69,14 +69,11 @@
                               aria-label="@AriaLabel"
                               aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                               aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
-                    @if (GhostText.HasValue())
+                    @if (GhostText.HasValue() || OnGhostTextAccepted.HasDelegate)
                     {
                         <div aria-hidden="true"
                              class="bit-tfl-gho @Classes?.GhostTextOverlay"
                              style="@Styles?.GhostTextOverlay">
-                            <span class="bit-tfl-ghv">@CurrentValueAsString</span><span
-                                  class="bit-tfl-ghs @Classes?.GhostText"
-                                  style="@Styles?.GhostText">@GhostText</span>
                         </div>
                     }
                 </div>
@@ -111,14 +108,11 @@
                            aria-label="@AriaLabel"
                            aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                            aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
-                    @if (GhostText.HasValue())
+                    @if (GhostText.HasValue() || OnGhostTextAccepted.HasDelegate)
                     {
                         <div aria-hidden="true"
                              class="bit-tfl-gho @Classes?.GhostTextOverlay"
                              style="@Styles?.GhostTextOverlay">
-                            <span class="bit-tfl-ghv">@CurrentValueAsString</span><span
-                                  class="bit-tfl-ghs @Classes?.GhostText"
-                                  style="@Styles?.GhostText">@GhostText</span>
                         </div>
                     }
                 </div>

@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -10,6 +10,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     private bool _hasFocus;
     private bool _scrollToEndAfterRender;
     private string? _oldValue;
+    private string? _oldGhostText;
     private DotNetObjectReference<BitTextField>? _dotnetObj;
     private string? _inputMode;
     private bool _isPasswordRevealed;
@@ -298,13 +299,13 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     /// <summary>
     /// The ghost/suggestion text displayed inline after the current cursor position.
-    /// Update this value from outside (e.g. from an AI or autocomplete suggestion) to show a faded
-    /// inline suggestion. The user can accept it by pressing Tab or clicking/touching the ghost text.
+    /// Update this value from outside (e.g. from an AI or autocomplete suggestion) when a new
+    /// delayed suggestion is available. The overlay rendering is owned by JavaScript.
     /// </summary>
     [Parameter] public string? GhostText { get; set; }
 
     /// <summary>
-    /// Callback invoked when the ghost text is accepted (via Tab key or click/touch on the ghost text).
+    /// Callback invoked when the ghost text is accepted via Tab, Enter, or click/touch.
     /// The accepted ghost text string is passed as the argument.
     /// Use this to clear or update the GhostText parameter after acceptance.
     /// </summary>
@@ -313,10 +314,10 @@ public partial class BitTextField : BitTextInputBase<string?>
 
 
     /// <summary>
-    /// Called by JavaScript when the ghost text is accepted via the Tab key.
+    /// Called by JavaScript when the ghost text is accepted.
     /// </summary>
-    [JSInvokable("OnGhostAccepted")]
-    public async Task _NotifyTabGhostAccepted(string acceptedText)
+    [JSInvokable("OnGhostTextAccepted")]
+    public async Task _NotifyGhostTextAccepted(string acceptedText)
     {
         if (IsEnabled is false || ReadOnly) return;
 
@@ -435,9 +436,17 @@ public partial class BitTextField : BitTextInputBase<string?>
 
             _dotnetObj = DotNetObjectReference.Create(this);
             await _js.BitTextFieldSetupGhostText(_Id, InputElement, _dotnetObj);
+            _oldGhostText = GhostText;
+            await _js.BitTextFieldSetGhostText(_Id, GhostText ?? string.Empty);
         }
         else
         {
+            if (GhostText != _oldGhostText)
+            {
+                _oldGhostText = GhostText;
+                await _js.BitTextFieldSetGhostText(_Id, GhostText ?? string.Empty);
+            }
+
             if (Multiline && AutoHeight && _oldValue != Value)
             {
                 _oldValue = Value;
@@ -447,7 +456,7 @@ public partial class BitTextField : BitTextInputBase<string?>
             if (_scrollToEndAfterRender)
             {
                 _scrollToEndAfterRender = false;
-                await _js.BitTextFieldScrollToEnd(InputElement);
+                //await _js.BitTextFieldScrollToEnd(InputElement);
             }
         }
     }
