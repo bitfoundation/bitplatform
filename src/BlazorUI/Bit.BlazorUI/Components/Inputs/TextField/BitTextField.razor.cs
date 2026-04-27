@@ -299,12 +299,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// The ghost/suggestion text displayed inline after the current cursor position.
     /// Update this value from outside (e.g. from an AI or autocomplete suggestion) to show a faded
-    /// inline suggestion. The user can accept it by pressing Tab or clicking/touching the ghost text.
+    /// inline suggestion. The user can accept it by pressing Tab or Enter, or clicking/touching the ghost text.
     /// </summary>
     [Parameter] public string? GhostText { get; set; }
 
     /// <summary>
-    /// Callback invoked when the ghost text is accepted (via Tab key or click/touch on the ghost text).
+    /// Callback invoked when the ghost text is accepted (via Tab key, Enter key, or click/touch on the ghost text).
     /// The accepted ghost text string is passed as the argument.
     /// Use this to clear or update the GhostText parameter after acceptance.
     /// </summary>

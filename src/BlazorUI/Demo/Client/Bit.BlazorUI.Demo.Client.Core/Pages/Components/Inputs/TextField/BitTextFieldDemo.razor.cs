@@ -58,7 +58,7 @@ public partial class BitTextFieldDemo
             Name = "ClearButtonIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
-            Description = "Gets or sets the icon to display on the clear button using custom CSS classes for external icon libraries. Takes precedence over ClearButtonIconName when both are set.",
+            Description = "The icon to display inside the clear button. Takes precedence over ClearButtonIconName when both are set.",
             LinkType = LinkType.Link,
             Href = "#bit-icon-info",
         },
@@ -102,7 +102,7 @@ public partial class BitTextFieldDemo
             Name = "GhostText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The ghost/suggestion text displayed inline after the current cursor position. Update this value to show a faded inline suggestion. Press Tab or click/touch the ghost text to accept it and append it to the current value.",
+            Description = "The ghost/suggestion text displayed inline after the current cursor position. Update this value from outside (e.g. from an AI or autocomplete suggestion) to show a faded inline suggestion. The user can accept it by pressing Tab or Enter, or clicking/touching the ghost text.",
         },
         new()
         {
@@ -178,7 +178,7 @@ public partial class BitTextFieldDemo
             Name = "NoBorder",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the text field is borderless.",
+            Description = "Removes the border of the text input.",
         },
         new()
         {
@@ -220,7 +220,7 @@ public partial class BitTextFieldDemo
         {
             Name = "OnGhostTextAccepted",
             Type = "EventCallback<string?>",
-            Description = "Callback invoked when the ghost text is accepted via Tab key or click/touch. The accepted ghost text string is passed as the argument.",
+            Description = "Callback invoked when the ghost text is accepted via Tab or Enter key, or click/touch. The accepted ghost text string is passed as the argument.",
         },
         new()
         {
@@ -339,8 +339,8 @@ public partial class BitTextFieldDemo
         new()
         {
             Name = "Type",
-            Type = "BitInputType",
-            DefaultValue = "BitInputType.Text",
+            Type = "BitInputType?",
+            DefaultValue = "null",
             Description = "Input type.",
             LinkType = LinkType.Link,
             Href = "#input-type-enum"
