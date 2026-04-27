@@ -255,6 +255,9 @@ private Task AutoLoadingReclick(bool isLoading)
 private string? floatOffset;
 private BitPosition floatPosition = BitPosition.BottomRight;
 
+[Inject] private IJSRuntime _js { get; set; } = default!;
+private async Task ScrollToFloat() => await _js.ScrollToElement(""example10"");
+
 private readonly List<BitDropdownItem<BitPosition>> floatPositionList = Enum.GetValues<BitPosition>()
                                                                             .Cast<BitPosition>()
                                                                             .Select(enumValue => new BitDropdownItem<BitPosition>
