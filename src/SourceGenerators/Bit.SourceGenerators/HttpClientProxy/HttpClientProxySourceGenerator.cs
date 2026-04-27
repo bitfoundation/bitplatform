@@ -100,7 +100,7 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
             var returnDisplay = returnType.ToDisplayString();
             bool doesReturnSomething = returnDisplay is not ("System.Threading.Tasks.Task" or "System.Threading.Tasks.ValueTask");
             bool doesReturnString = doesReturnSomething && returnDisplay is "System.Threading.Tasks.Task<string>" or "System.Threading.Tasks.ValueTask<string>";
-            bool doesReturnIAsyncEnum = doesReturnSomething && returnDisplay.Contains("IAsyncEnumerable");
+            bool doesReturnIAsyncEnum = doesReturnSomething && (returnDisplay.Contains("System.Collections.Generic.IAsyncEnumerable<") || returnDisplay.Contains("System.Threading.Tasks.Task<System.Collections.Generic.IAsyncEnumerable<") || returnDisplay.Contains("System.Threading.Tasks.ValueTask<System.Collections.Generic.IAsyncEnumerable<"));
             var returnUnderlyingNoNull = returnType.GetUnderlyingType().ToDisplayString(NullableFlowState.None);
 
             // Encode parameters: "name\x1CfullType\x1CtypeNoNull\x1CisString" joined by \x1D

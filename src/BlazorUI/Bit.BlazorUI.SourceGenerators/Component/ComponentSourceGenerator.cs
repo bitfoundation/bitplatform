@@ -41,8 +41,8 @@ public class ComponentSourceGenerator : IIncrementalGenerator
     private static bool IsPartialClassProperty(SyntaxNode node)
     {
         return node is PropertyDeclarationSyntax prop &&
-               prop.Parent is ClassDeclarationSyntax cls &&
-               cls.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+               prop.Parent is (ClassDeclarationSyntax or RecordDeclarationSyntax) and TypeDeclarationSyntax typeDecl &&
+               typeDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
     }
 
     private static BlazorParameter? ExtractBlazorParameter(GeneratorAttributeSyntaxContext ctx, CancellationToken ct)
@@ -105,6 +105,7 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var doesSupporteParametersViewCache = classInfo.InheritsFromBitComponentBase;
 
         StringBuilder builder = new StringBuilder($@"using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
