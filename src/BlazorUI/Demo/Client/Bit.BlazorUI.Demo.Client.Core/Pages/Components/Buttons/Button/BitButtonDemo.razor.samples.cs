@@ -324,7 +324,7 @@ private async Task HandleValidSubmit()
     <PrimaryTemplate>
         <BitIcon IconName=""@BitIconName.Airplane"" />
         <span>A primary template</span>
-        <BitRippleLoading Size=""20"" />
+        <BitRippleLoading CustomSize=""20"" />
     </PrimaryTemplate>
     <SecondaryTemplate>
         <BitIcon IconName=""@BitIconName.Accept"" />
