@@ -502,13 +502,6 @@ public partial class BitTextFieldDemo : IDisposable
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the BitTextField's ghost text overlay container."
-                },
-                new()
-                {
-                    Name = "GhostText",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the BitTextField's ghost text span."
                 }
             ]
         },

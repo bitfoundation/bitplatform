@@ -67,6 +67,8 @@ namespace BitBlazorUI {
 
             // Accept the stored ghost text at the current caret position.
             const acceptGhost = () => {
+                if (inputElement.readOnly || inputElement.disabled) return;
+
                 const ghost = TextField._ghostTexts[id] ?? '';
                 if (!ghost) return;
 
@@ -85,6 +87,7 @@ namespace BitBlazorUI {
                 TextField._ghostTexts[id] = '';
                 const overlay = getOverlay();
                 if (overlay) overlay.textContent = inputElement.value;
+                syncScroll();
 
                 inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 dotnetObj.invokeMethodAsync('OnGhostTextAccepted', ghost);
@@ -104,6 +107,8 @@ namespace BitBlazorUI {
                 const isAcceptKey = e.key === 'Tab' || e.key === 'Enter';
 
                 if (isAcceptKey && hasGhost()) {
+                    if (inputElement.readOnly || inputElement.disabled) return;
+
                     e.preventDefault();
                     acceptGhost();
                     return;
@@ -121,6 +126,8 @@ namespace BitBlazorUI {
             // Click/touch accept: when there is a ghost suggestion and the caret is at
             // the end of the current value, treat click/touch as accepting the suggestion.
             const acceptGhostOnPointer = () => {
+                if (inputElement.readOnly || inputElement.disabled) return;
+
                 if (!hasGhost()) return;
 
                 const start = inputElement.selectionStart ?? inputElement.value.length;
@@ -148,20 +155,8 @@ namespace BitBlazorUI {
             const overlay = inputElement.parentElement?.querySelector<HTMLElement>('.bit-tfl-gho');
             if (!overlay) return;
             overlay.textContent = inputElement.value + (ghostText ?? '');
-        }
-
-        public static scrollToEnd(inputElement: HTMLInputElement) {
-            if (!inputElement) return;
-
-            const len = inputElement.value.length;
-            inputElement.focus();
-            inputElement.setSelectionRange(len, len);
-
-            if (inputElement.tagName.toLowerCase() === 'textarea') {
-                inputElement.scrollTo(0, inputElement.scrollHeight);
-            } else {
-                inputElement.scrollTo(inputElement.scrollWidth, 0);
-            }
+            overlay.scrollTop = inputElement.scrollTop;
+            overlay.scrollLeft = inputElement.scrollLeft;
         }
 
         public static dispose(id: string) {

@@ -8,7 +8,6 @@ namespace Bit.BlazorUI;
 public partial class BitTextField : BitTextInputBase<string?>
 {
     private bool _hasFocus;
-    private bool _scrollToEndAfterRender;
     private string? _oldValue;
     private string? _oldGhostText;
     private DotNetObjectReference<BitTextField>? _dotnetObj;
@@ -317,11 +316,10 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Called by JavaScript when the ghost text is accepted.
     /// </summary>
     [JSInvokable("OnGhostTextAccepted")]
-    public async Task _NotifyGhostTextAccepted(string acceptedText)
+    public async Task _NotifyGhostTextAccepted(string? acceptedText)
     {
         if (IsEnabled is false || ReadOnly) return;
 
-        _scrollToEndAfterRender = true;
         await OnGhostTextAccepted.InvokeAsync(acceptedText);
     }
 
@@ -451,12 +449,6 @@ public partial class BitTextField : BitTextInputBase<string?>
             {
                 _oldValue = Value;
                 await _js.BitTextFieldAdjustHeight(InputElement);
-            }
-
-            if (_scrollToEndAfterRender)
-            {
-                _scrollToEndAfterRender = false;
-                //await _js.BitTextFieldScrollToEnd(InputElement);
             }
         }
     }

@@ -723,7 +723,7 @@ public class BitTextFieldTests : BunitTestContext
         DataRow(false, "hello", " world"),
         DataRow(true, "hello", " world"),
     ]
-    public void BitTextFieldGhostTextAcceptedOnClickUpdatesValue(bool multiline, string value, string ghostText)
+    public void BitTextFieldGhostTextAcceptedInvokesOnGhostTextAcceptedCallback(bool multiline, string value, string ghostText)
     {
         string? acceptedGhost = null;
         var component = RenderComponent<BitTextField>(parameters =>
@@ -864,10 +864,10 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(false, "suggestion", "my-ghost-wrapper", "my-ghost-overlay", "my-ghost-text"),
-        DataRow(true, "suggestion", "my-ghost-wrapper", "my-ghost-overlay", "my-ghost-text"),
+        DataRow(false, "suggestion", "my-ghost-wrapper", "my-ghost-overlay"),
+        DataRow(true, "suggestion", "my-ghost-wrapper", "my-ghost-overlay"),
     ]
-    public void BitTextFieldGhostTextCustomClassesAreApplied(bool multiline, string ghostText, string wrapperClass, string overlayClass, string ghostClass)
+    public void BitTextFieldGhostTextCustomClassesAreApplied(bool multiline, string ghostText, string wrapperClass, string overlayClass)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
@@ -877,7 +877,6 @@ public class BitTextFieldTests : BunitTestContext
             {
                 GhostTextWrapper = wrapperClass,
                 GhostTextOverlay = overlayClass,
-                GhostText = ghostClass,
             });
         });
 

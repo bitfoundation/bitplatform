@@ -101,9 +101,4 @@ public class BitTextFieldClassStyles
     /// Custom CSS classes/styles for the BitTextField's ghost text overlay container.
     /// </summary>
     public string? GhostTextOverlay { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the BitTextField's ghost text span.
-    /// </summary>
-    public string? GhostText { get; set; }
 }
