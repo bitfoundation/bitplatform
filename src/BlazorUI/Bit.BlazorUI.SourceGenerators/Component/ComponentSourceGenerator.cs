@@ -102,7 +102,7 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var className = classInfo.ClassNameForCode;
         var twoWayParameters = parameters.Where(p => p.IsTwoWayBound).ToArray();
         var isBaseTypeComponentBase = classInfo.IsBaseTypeComponentBase;
-        var doesSupporteParametersViewCache = classInfo.InheritsFromBitComponentBase;
+        var doesSupportParametersViewCache = classInfo.InheritsFromBitComponentBase;
 
         StringBuilder builder = new StringBuilder($@"using System;
 using System.Linq;
@@ -133,7 +133,7 @@ namespace {namespaceName}
         {
             builder.AppendLine($"            {par.PropertyName}HasBeenSet = false;");
         }
-        if (doesSupporteParametersViewCache)
+        if (doesSupportParametersViewCache)
         {
             builder.AppendLine("            var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object>);");
         }
@@ -199,7 +199,7 @@ namespace {namespaceName}
         }
         else
         {
-            if (doesSupporteParametersViewCache)
+            if (doesSupportParametersViewCache)
             {
                 builder.AppendLine("            await base.SetParametersAsync(ParameterView.Empty);");
             }

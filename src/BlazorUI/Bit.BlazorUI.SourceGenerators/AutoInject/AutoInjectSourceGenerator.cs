@@ -215,8 +215,12 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
         }
 
         // Emit one file per derived class (pass-through constructor / empty inject list)
-        foreach (var entry in derivedEntries)
+        // Group by ContainingTypeFullName to collapse multi-file partial declarations that
+        // produce duplicate DerivedEntry records (same full name, different ClassLocation).
+        foreach (var group in derivedEntries.GroupBy(e => e.ContainingTypeFullName))
         {
+            var entry = group.First();
+
             // Skip if already handled by the direct provider
             if (directGroups.ContainsKey(entry.ContainingTypeFullName)) continue;
 
