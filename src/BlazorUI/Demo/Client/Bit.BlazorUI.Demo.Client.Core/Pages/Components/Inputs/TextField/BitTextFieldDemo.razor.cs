@@ -1069,7 +1069,7 @@ private string? throttleValue;";
 <BitTextField @bind-Value=""ghostBasicMultilineValue""
               Multiline
               Resizable
-              Rows=""3""
+              Rows=""5""
               Immediate
               Label=""Basic Multiline""
               GhostText=""@ghostBasicMultilineSuggestion""
@@ -1091,7 +1091,7 @@ private string? throttleValue;";
 <BitTextField @bind-Value=""ghostMultilineValue""
               Multiline
               Resizable
-              Rows=""3""
+              Rows=""5""
               Immediate
               Label=""Multiline""
               GhostText=""@ghostMultilineSuggestion""
