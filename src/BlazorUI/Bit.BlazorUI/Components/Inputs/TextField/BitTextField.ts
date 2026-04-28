@@ -129,6 +129,10 @@ namespace BitBlazorUI {
                 if (isAcceptKey && hasGhost()) {
                     if (inputElement.readOnly || inputElement.disabled) return;
 
+                    const { start, end } = getSelection();
+                    const atEnd = start === inputElement.value.length && end === start;
+                    if (!atEnd) return;
+
                     e.preventDefault();
                     acceptGhost();
                     return;
@@ -169,10 +173,13 @@ namespace BitBlazorUI {
         // Stores the new ghost text and refreshes the overlay to show value + ghost.
         public static setGhostText(id: string, ghostText: string) {
             TextField._ghostTexts[id] = ghostText ?? '';
+            
             const inputElement = TextField._inputElements[id];
             if (!inputElement) return;
+
             const overlay = inputElement.parentElement?.querySelector<HTMLElement>('.bit-tfl-gho');
             if (!overlay) return;
+
             overlay.textContent = inputElement.value + (ghostText ?? '');
             overlay.scrollTop = inputElement.scrollTop;
             overlay.scrollLeft = inputElement.scrollLeft;

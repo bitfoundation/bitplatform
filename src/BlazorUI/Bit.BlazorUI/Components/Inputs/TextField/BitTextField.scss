@@ -63,7 +63,6 @@
     }
 
     &.bit-inv {
-
         .bit-tfl-fgp,
         .bit-tfl-wrp {
             border-color: $clr-err;
@@ -85,6 +84,13 @@
 
 .bit-tfl-fwd {
     width: 100%;
+}
+
+.bit-tfl-pgt {
+    .bit-tfl-gho,
+    textarea.bit-tfl-inp {
+        scrollbar-gutter: stable;
+    }
 }
 
 .bit-tfl-lbl {

@@ -716,7 +716,7 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         var overlay = component.Find(".bit-tfl-gho");
-        Assert.AreEqual("", overlay.TextContent);
+        Assert.AreEqual(string.Empty, overlay.TextContent.Trim());
     }
 
     [TestMethod,

@@ -236,6 +236,13 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "PermanentGhost",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables permanent ghost mode that forces the scrollbar-gutter to always be present, preventing layout shift of the ghost text rendering.",
+        },
+        new()
+        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
