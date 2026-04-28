@@ -1151,6 +1151,8 @@ private async Task SetGhostSuggestionAsync(string? value, bool isMultiline)
     {
         var suggestion = await GetGhostSuggestionAsync(value, cts.Token);
 
+        if (cts.IsCancellationRequested) return;
+
         if (isMultiline)
         {
             ghostMultilineSuggestion = suggestion;
