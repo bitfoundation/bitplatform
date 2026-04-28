@@ -176,7 +176,59 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Trim" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="GhostText" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>Demonstrates the ghost text (inline suggestion) feature. Set the <b>GhostText</b> parameter to show a faded inline suggestion after the cursor position. Press <b>Tab</b>, <b>Enter</b>, or click/touch to accept it and append it to the current value.</div>
+        <br />
+        <div class="example-box">
+            <div><b>Basic (non-async)</b></div>
+            <BitTextField @bind-Value="ghostBasicTextValue"
+                          Immediate
+                          Label="Basic Single-line"
+                          GhostText="@ghostBasicSuggestion"
+                          Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
+                          OnGhostTextAccepted="(_ => ghostBasicSuggestion = null)"
+                          OnChange="(v => ghostBasicSuggestion = GetGhostSuggestion(v))" />
+            <div>Value: [@ghostBasicTextValue]</div>
+            <br />
+            <BitTextField @bind-Value="ghostBasicMultilineValue"
+                          Multiline
+                          Resizable
+                          Rows="5"
+                          Immediate
+                          PermanentGhost
+                          Label="Basic Multiline"
+                          GhostText="@ghostBasicMultilineSuggestion"
+                          Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
+                          OnGhostTextAccepted="(_ => ghostBasicMultilineSuggestion = null)"
+                          OnChange="(v => ghostBasicMultilineSuggestion = GetGhostSuggestion(v))" />
+            <div>Value: [@ghostBasicMultilineValue]</div>
+            <br /><br />
+            <div><b>Advanced (async + cancellation)</b></div>
+            <BitTextField @bind-Value="ghostTextValue"
+                          Immediate
+                          Label="Single-line"
+                          GhostText="@ghostSuggestion"
+                          Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
+                          OnGhostTextAccepted="(_ => ClearGhostSuggestion(isMultiline: false))"
+                          OnChange="(v => SetGhostSuggestionAsync(v, isMultiline: false))" />
+            <div>Value: [@ghostTextValue]</div>
+            <br />
+            <BitTextField @bind-Value="ghostMultilineValue"
+                          Multiline
+                          Resizable
+                          Rows="5"
+                          Immediate
+                          PermanentGhost
+                          Label="Multiline"
+                          GhostText="@ghostMultilineSuggestion"
+                          Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
+                          OnGhostTextAccepted="(_ => ClearGhostSuggestion(isMultiline: true))"
+                          OnChange="(v => SetGhostSuggestionAsync(v, isMultiline: true))" />
+            <div>Value: [@ghostMultilineValue]</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Trim" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>Demonstrates various binding scenarios with BitTextField, including one-way, two-way, on-change events, and immediate, debounce, and throttle options.</div>
         <br />
         <div class="example-box">
@@ -190,7 +242,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>Demonstrates how validation can be applied to BitTextField, including required fields, numeric input, character constraints, email validation, and range validation.</div>
         <br />
         <div class="example-box">
@@ -227,7 +279,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Background" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Background" RazorCode="@example14RazorCode" Id="example14">
         <div>Providing a range of color kinds for the background of the text field.</div>
         <br />
         <div class="example-box" style="background:var(--bit-clr-bg-dis);padding:1rem">
@@ -241,7 +293,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Border" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Border" RazorCode="@example15RazorCode" Id="example15">
         <div>Providing a range of color kinds for the border of the text field.</div>
         <br />
         <div class="example-box" style="background:var(--bit-clr-bg-dis);padding:1rem">
@@ -255,7 +307,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accent" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Accent" RazorCode="@example16RazorCode" Id="example16">
         <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
         <br />
         <div class="example-box">
@@ -297,7 +349,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
 
         <br />
@@ -344,7 +396,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+    <DemoExample Title="Style &amp; Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
         <div>Explores styling and class customization for BitTextField, including component styles, custom classes, and detailed style options.</div>
         <br /><br />
         <div class="example-box">
@@ -373,7 +425,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>Use BitTextField in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

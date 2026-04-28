@@ -63,7 +63,6 @@
     }
 
     &.bit-inv {
-
         .bit-tfl-fgp,
         .bit-tfl-wrp {
             border-color: $clr-err;
@@ -87,17 +86,24 @@
     width: 100%;
 }
 
+.bit-tfl-pgt {
+    .bit-tfl-gho,
+    textarea.bit-tfl-inp {
+        scrollbar-gutter: stable;
+    }
+}
+
 .bit-tfl-lbl {
     margin: 0;
     display: block;
     box-shadow: none;
     font-weight: 600;
+    color: $clr-fg-pri;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    line-height: spacing(2.5);
     padding: spacing(0.625) 0;
+    line-height: spacing(2.5);
     overflow-wrap: break-word;
-    color: $clr-fg-pri;
 }
 
 .bit-tfl-fgp {
@@ -109,8 +115,8 @@
     position: relative;
     align-items: center;
     flex-flow: row nowrap;
-    min-height: spacing(4);
     box-sizing: border-box;
+    min-height: spacing(4);
     border-radius: $shp-border-radius;
     background-color: var(--bit-tfl-clr-bg);
     border: $shp-border-width $shp-border-style var(--bit-tfl-clr-brd);
@@ -126,13 +132,13 @@
     font-weight: 400;
     border-radius: 0;
     box-shadow: none;
+    color: $clr-fg-pri;
     padding: 0 spacing(1);
     box-sizing: border-box;
     text-overflow: ellipsis;
     font-size: spacing(1.75);
     min-height: spacing(3.75);
     background: none transparent;
-    color: $clr-fg-pri;
     font-family: $tg-font-family;
 
     &[type="password"]::-ms-reveal,
@@ -223,8 +229,8 @@
 
 .bit-tfl-des {
     span {
-        font-size: spacing(1.25);
         color: $clr-fg-pri;
+        font-size: spacing(1.25);
     }
 }
 
@@ -233,12 +239,12 @@
     height: 100%;
     display: flex;
     flex-shrink: 0;
+    color: $clr-fg-pri;
     align-items: center;
     white-space: nowrap;
+    background: $clr-bg-sec;
     padding: 0 spacing(1.25);
     min-height: spacing(3.75);
-    color: $clr-fg-pri;
-    background: $clr-bg-sec;
 
     span {
         font-size: spacing(1.75);
@@ -251,6 +257,21 @@
     .bit-tfl-fgp {
         height: auto;
         align-items: stretch;
+    }
+
+    .bit-tfl-ghw {
+        flex-grow: 1;
+    }
+
+    .bit-tfl-gho {
+        display: block;
+        overflow: auto;
+        align-items: initial;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+        line-height: spacing(2.125);
+        padding: spacing(0.75) spacing(1);
     }
 }
 
@@ -348,10 +369,10 @@
 .bit-tfl-rnl {
     .bit-tfl-fgp::before {
         content: "*";
+        color: $clr-req;
         position: absolute;
         top: spacing(-0.625);
         right: spacing(-1.25);
-        color: $clr-req;
     }
 }
 
@@ -359,6 +380,48 @@
     .bit-tfl-fgp {
         border: none;
     }
+}
+
+.bit-tfl-rdl {
+    .bit-tfl-fgp,
+    .bit-tfl-inp {
+        cursor: default;
+    }
+}
+
+.bit-tfl-ghw {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    position: relative;
+    align-items: stretch;
+
+    .bit-tfl-inp {
+        z-index: 1;
+        position: relative;
+        background: transparent;
+    }
+}
+
+.bit-tfl-gho {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    display: flex;
+    overflow: hidden;
+    font-weight: 400;
+    user-select: none;
+    position: absolute;
+    align-items: center;
+    pointer-events: none;
+    white-space: pre;
+    color: $clr-fg-ter;
+    padding: 0 spacing(1);
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
 }
 
 

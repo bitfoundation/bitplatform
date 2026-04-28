@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -9,6 +9,8 @@ public partial class BitTextField : BitTextInputBase<string?>
 {
     private bool _hasFocus;
     private string? _oldValue;
+    private string? _oldGhostText;
+    private DotNetObjectReference<BitTextField>? _dotnetObj;
     private string? _inputMode;
     private bool _isPasswordRevealed;
     private BitInputType? _elementType;
@@ -99,6 +101,24 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public bool FullWidth { get; set; }
 
     /// <summary>
+    /// The ghost/suggestion text displayed inline after the current cursor position.
+    /// Update this value from outside (e.g. from an AI or autocomplete suggestion) to show a faded
+    /// inline suggestion. The user can accept it by pressing Tab or Enter, or clicking/touching the ghost text.
+    /// </summary>
+    [Parameter] public string? GhostText { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon for the reveal password button when password is shown using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="HidePasswordIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? HidePasswordIcon { get; set; }
+
+    /// <summary>
+    /// The icon name for the reveal password button when password is shown from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? HidePasswordIconName { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
@@ -187,6 +207,13 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
     /// <summary>
+    /// Callback invoked when the ghost text is accepted via Tab, Enter, or click/touch.
+    /// The accepted ghost text string is passed as the argument.
+    /// Use this to clear or update the GhostText parameter after acceptance.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnGhostTextAccepted { get; set; }
+
+    /// <summary>
     /// Callback for when a keyboard key is pressed
     /// </summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
@@ -195,6 +222,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Callback for When a keyboard key is released
     /// </summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
+
+    /// <summary>
+    /// Enables permanent ghost mode that forces the scrollbar-gutter to always be present, preventing layout shift of the ghost text rendering.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool PermanentGhost { get; set; }
 
     /// <summary>
     /// Input placeholder text.
@@ -238,17 +271,6 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// The icon name for the reveal password button when password is hidden from the built-in Fluent UI icons.
     /// </summary>
     [Parameter] public string? RevealPasswordIconName { get; set; }
-
-    /// <summary>
-    /// Gets or sets the icon for the reveal password button when password is shown using custom CSS classes for external icon libraries.
-    /// Takes precedence over <see cref="HidePasswordIconName"/> when both are set.
-    /// </summary>
-    [Parameter] public BitIconInfo? HidePasswordIcon { get; set; }
-
-    /// <summary>
-    /// The icon name for the reveal password button when password is shown from the built-in Fluent UI icons.
-    /// </summary>
-    [Parameter] public string? HidePasswordIconName { get; set; }
 
     /// <summary>
     /// For multiline text, Number of rows.
@@ -296,6 +318,19 @@ public partial class BitTextField : BitTextInputBase<string?>
 
 
 
+    /// <summary>
+    /// Called by JavaScript when the ghost text is accepted.
+    /// </summary>
+    [JSInvokable("OnGhostTextAccepted")]
+    public async Task _NotifyGhostTextAccepted(string? acceptedText)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        await OnGhostTextAccepted.InvokeAsync(acceptedText);
+    }
+
+
+
     public void ToggleRevealPassword()
     {
         _isPasswordRevealed = _isPasswordRevealed is false;
@@ -322,11 +357,15 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => NoBorder ? "bit-tfl-nbd" : string.Empty);
 
+        ClassBuilder.Register(() => ReadOnly ? "bit-tfl-rdl" : string.Empty);
+
         ClassBuilder.Register(() => _hasFocus ? $"bit-tfl-fcs {Classes?.Focused}" : string.Empty);
 
         ClassBuilder.Register(() => Required && Label is null ? "bit-tfl-rnl" : string.Empty);
 
         ClassBuilder.Register(() => FullWidth ? "bit-tfl-fwd" : string.Empty);
+
+        ClassBuilder.Register(() => PermanentGhost ? "bit-tfl-pgt" : string.Empty);
 
         ClassBuilder.Register(() => Accent switch
         {
@@ -400,9 +439,20 @@ public partial class BitTextField : BitTextInputBase<string?>
             {
                 await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter);
             }
+
+            _dotnetObj = DotNetObjectReference.Create(this);
+            await _js.BitTextFieldSetupGhostText(_Id, InputElement, _dotnetObj);
+            _oldGhostText = GhostText;
+            await _js.BitTextFieldSetGhostText(_Id, GhostText ?? string.Empty);
         }
         else
         {
+            if (GhostText != _oldGhostText)
+            {
+                _oldGhostText = GhostText;
+                await _js.BitTextFieldSetGhostText(_Id, GhostText ?? string.Empty);
+            }
+
             if (Multiline && AutoHeight && _oldValue != Value)
             {
                 _oldValue = Value;
@@ -509,12 +559,13 @@ public partial class BitTextField : BitTextInputBase<string?>
         await OnClear.InvokeAsync();
     }
 
-
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
 
         await base.DisposeAsync(disposing);
+
+        _dotnetObj?.Dispose();
 
         try
         {

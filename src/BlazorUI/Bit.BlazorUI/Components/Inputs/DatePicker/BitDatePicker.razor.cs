@@ -685,7 +685,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
 
 
-    protected override string RootElementClass { get; } = "bit-dtp";
+    protected override string RootElementClass => "bit-dtp";
 
     protected override void RegisterCssClasses()
     {
@@ -1057,17 +1057,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         GenerateCalendarData(DateTime.Now);
     }
 
-    private async Task HandleGoToNow()
-    {
-        if (ReadOnly) return;
-        if (IsEnabled is false) return;
-
-        _hour = DateTime.Now.Hour;
-        _minute = DateTime.Now.Minute;
-
-        await UpdateCurrentValue();
-    }
-
     private void GenerateCalendarData(DateTime dateTime)
     {
         _currentMonth = _culture.Calendar.GetMonth(dateTime);
@@ -1208,6 +1197,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeMonth(bool isNext)
     {
+        if (IsEnabled is false) return false;
+
         if (isNext && MaxDate.HasValue)
         {
             var MaxDateYear = _culture.Calendar.GetYear(MaxDate.Value.DateTime);
@@ -1230,6 +1221,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeYear(bool isNext)
     {
+        if (IsEnabled is false) return false;
+
         return (
                 (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(MaxDate.Value.DateTime) == _currentYear) ||
                 (isNext is false && MinDate.HasValue && _culture.Calendar.GetYear(MinDate.Value.DateTime) == _currentYear)
@@ -1641,6 +1634,17 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
 
         return string.Join(' ', classes).Trim();
+    }
+
+    private async Task HandleGoToNow()
+    {
+        if (ReadOnly) return;
+        if (IsEnabled is false) return;
+
+        _hour = DateTime.Now.Hour;
+        _minute = DateTime.Now.Minute;
+
+        await UpdateCurrentValue();
     }
 
 

@@ -21,8 +21,8 @@ private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 
 <BitCalendar ShowTimePicker=""true"" MinuteStep=""15"" />";
 
     private readonly string example4RazorCode = @"
-<BitCalendar GoToToday=""برو به امروز"" Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
-<BitCalendar GoToToday=""Boro be emrouz"" Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
+<BitCalendar GoToTodayTitle=""برو به امروز"" Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
+<BitCalendar GoToTodayTitle=""Boro be emrouz"" Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
 
     private readonly string example5RazorCode = @"
 <BitCalendar @bind-Value=""@timeZoneDate1"" ShowTimePicker />
@@ -123,6 +123,7 @@ public class BitCalendarValidationModel
     public DateTimeOffset? Date { get; set; }
 }
 
+private string SuccessMessage = string.Empty;
 private BitCalendarValidationModel validationModel = new();
 
 private void HandleValidSubmit() { }
@@ -176,7 +177,7 @@ private void HandleInvalidSubmit() { }";
 <BitCalendar>
     <MonthCellTemplate>
         <div style=""width:28px;padding:3px;color:black;background:@(context.Month == 1 ? ""lightcoral"" : ""yellowgreen"")"">
-            @Culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+            @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
         </div>
     </MonthCellTemplate>
 </BitCalendar>

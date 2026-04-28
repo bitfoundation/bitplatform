@@ -1,6 +1,6 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TextField;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TextField;
 
-public partial class BitTextFieldDemo
+public partial class BitTextFieldDemo : IDisposable
 {
     private readonly List<ComponentParameter> componentParameters =
     [
@@ -58,7 +58,7 @@ public partial class BitTextFieldDemo
             Name = "ClearButtonIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
-            Description = "Gets or sets the icon to display on the clear button using custom CSS classes for external icon libraries. Takes precedence over ClearButtonIconName when both are set.",
+            Description = "The icon to display inside the clear button. Takes precedence over ClearButtonIconName when both are set.",
             LinkType = LinkType.Link,
             Href = "#bit-icon-info",
         },
@@ -96,6 +96,13 @@ public partial class BitTextFieldDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Forces the text field fill 100% of its container width.",
+        },
+        new()
+        {
+            Name = "GhostText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The ghost/suggestion text displayed inline after the current cursor position. Update this value from outside (e.g. from an AI or autocomplete suggestion) to show a faded inline suggestion. The user can accept it by pressing Tab or Enter, or clicking/touching the ghost text.",
         },
         new()
         {
@@ -171,7 +178,7 @@ public partial class BitTextFieldDemo
             Name = "NoBorder",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the text field is borderless.",
+            Description = "Removes the border of the text input.",
         },
         new()
         {
@@ -211,6 +218,12 @@ public partial class BitTextFieldDemo
         },
         new()
         {
+            Name = "OnGhostTextAccepted",
+            Type = "EventCallback<string?>",
+            Description = "Callback invoked when the ghost text is accepted via Tab or Enter key, or click/touch. The accepted ghost text string is passed as the argument.",
+        },
+        new()
+        {
             Name = "OnKeyDown",
             Type = "EventCallback<KeyboardEventArgs>",
             Description = "Callback for when a keyboard key is pressed.",
@@ -220,6 +233,13 @@ public partial class BitTextFieldDemo
             Name = "OnKeyUp",
             Type = "EventCallback<KeyboardEventArgs>",
             Description = "Callback for When a keyboard key is released.",
+        },
+        new()
+        {
+            Name = "PermanentGhost",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables permanent ghost mode that forces the scrollbar-gutter to always be present, preventing layout shift of the ghost text rendering.",
         },
         new()
         {
@@ -326,8 +346,8 @@ public partial class BitTextFieldDemo
         new()
         {
             Name = "Type",
-            Type = "BitInputType",
-            DefaultValue = "BitInputType.Text",
+            Type = "BitInputType?",
+            DefaultValue = "null",
             Description = "Input type.",
             LinkType = LinkType.Link,
             Href = "#input-type-enum"
@@ -475,6 +495,20 @@ public partial class BitTextFieldDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the BitTextField's description."
+                },
+                new()
+                {
+                    Name = "GhostTextWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's ghost text wrapper element."
+                },
+                new()
+                {
+                    Name = "GhostTextOverlay",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's ghost text overlay container."
                 }
             ]
         },
@@ -813,6 +847,117 @@ public partial class BitTextFieldDemo
 
 
 
+    private string? ghostBasicTextValue;
+    private string? ghostBasicSuggestion;
+
+    private string? ghostBasicMultilineValue;
+    private string? ghostBasicMultilineSuggestion;
+
+    private string? ghostTextValue;
+    private string? ghostSuggestion;
+
+    private string? ghostMultilineValue;
+    private string? ghostMultilineSuggestion;
+
+    private CancellationTokenSource? _ghostSuggestionCts;
+    private CancellationTokenSource? _ghostMultilineSuggestionCts;
+
+    private static readonly string[] _suggestions =
+    [
+        "application form",
+        "banana smoothie",
+        "car repair manual",
+        "dog training guide"
+    ];
+
+    private async Task SetGhostSuggestionAsync(string? value, bool isMultiline)
+    {
+        var cts = new CancellationTokenSource();
+
+        if (isMultiline)
+        {
+            CancelAndDispose(ref _ghostMultilineSuggestionCts);
+            _ghostMultilineSuggestionCts = cts;
+            ghostMultilineSuggestion = null;
+        }
+        else
+        {
+            CancelAndDispose(ref _ghostSuggestionCts);
+            _ghostSuggestionCts = cts;
+            ghostSuggestion = null;
+        }
+
+        try
+        {
+            var suggestion = await GetGhostSuggestionAsync(value, cts.Token);
+
+            if (cts.IsCancellationRequested) return;
+
+            if (isMultiline)
+            {
+                ghostMultilineSuggestion = suggestion;
+            }
+            else
+            {
+                ghostSuggestion = suggestion;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // A newer request started and canceled this one.
+        }
+    }
+
+    private void ClearGhostSuggestion(bool isMultiline)
+    {
+        if (isMultiline)
+        {
+            CancelAndDispose(ref _ghostMultilineSuggestionCts);
+            ghostMultilineSuggestion = null;
+        }
+        else
+        {
+            CancelAndDispose(ref _ghostSuggestionCts);
+            ghostSuggestion = null;
+        }
+    }
+
+    private static void CancelAndDispose(ref CancellationTokenSource? cts)
+    {
+        cts?.Cancel();
+        cts?.Dispose();
+        cts = null;
+    }
+
+    private static string? GetGhostSuggestion(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return null;
+
+        if (char.IsWhiteSpace(value[^1])) return null;
+
+        var lastWord = value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+
+        if (string.IsNullOrEmpty(lastWord)) return null;
+
+        var match = _suggestions.FirstOrDefault(s => s.StartsWith(lastWord, StringComparison.OrdinalIgnoreCase));
+        return match?[lastWord.Length..];
+    }
+
+    private static async Task<string?> GetGhostSuggestionAsync(string? value, CancellationToken cancellationToken)
+    {
+        await Task.Delay(300, cancellationToken);
+
+        return GetGhostSuggestion(value);
+    }
+
+    public void Dispose()
+    {
+        CancelAndDispose(ref _ghostSuggestionCts);
+        CancelAndDispose(ref _ghostMultilineSuggestionCts);
+    }
+
+
+
     private readonly string example1RazorCode = @"
 <BitTextField Label=""Basic"" />
 <BitTextField Label=""Placeholder"" Placeholder=""Enter a text..."" />
@@ -912,16 +1057,164 @@ private string? debounceValue;
 private string? throttleValue;";
 
     private readonly string example11RazorCode = @"
+<BitTextField @bind-Value=""ghostBasicTextValue""
+              Immediate
+              Label=""Basic Single-line""
+              GhostText=""@ghostBasicSuggestion""
+              Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              OnGhostTextAccepted=""(_ => ghostBasicSuggestion = null)""
+              OnChange=""(v => ghostBasicSuggestion = GetGhostSuggestion(v))"" />
+<div>Value: [@ghostBasicTextValue]</div>
+
+<BitTextField @bind-Value=""ghostBasicMultilineValue""
+              Multiline
+              Resizable
+              Rows=""5""
+              Immediate
+              PermanentGhost
+              Label=""Basic Multiline""
+              GhostText=""@ghostBasicMultilineSuggestion""
+              Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              OnGhostTextAccepted=""(_ => ghostBasicMultilineSuggestion = null)""
+              OnChange=""(v => ghostBasicMultilineSuggestion = GetGhostSuggestion(v))"" />
+<div>Value: [@ghostBasicMultilineValue]</div>
+
+
+<BitTextField @bind-Value=""ghostTextValue""
+              Immediate
+              Label=""Single-line""
+              GhostText=""@ghostSuggestion""
+              Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              OnGhostTextAccepted=""(_ => ClearGhostSuggestion(isMultiline: false))""
+              OnChange=""(v => SetGhostSuggestionAsync(v, isMultiline: false))"" />
+<div>Value: [@ghostTextValue]</div>
+
+<BitTextField @bind-Value=""ghostMultilineValue""
+              Multiline
+              Resizable
+              Rows=""5""
+              Immediate
+              PermanentGhost
+              Label=""Multiline""
+              GhostText=""@ghostMultilineSuggestion""
+              Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              OnGhostTextAccepted=""(_ => ClearGhostSuggestion(isMultiline: true))""
+              OnChange=""(v => SetGhostSuggestionAsync(v, isMultiline: true))"" />
+<div>Value: [@ghostMultilineValue]</div>";
+    private readonly string example11CsharpCode = @"
+private string? ghostBasicTextValue;
+private string? ghostBasicSuggestion;
+
+private string? ghostBasicMultilineValue;
+private string? ghostBasicMultilineSuggestion;
+
+private string? ghostTextValue;
+private string? ghostSuggestion;
+
+private string? ghostMultilineValue;
+private string? ghostMultilineSuggestion;
+
+private CancellationTokenSource? _ghostSuggestionCts;
+private CancellationTokenSource? _ghostMultilineSuggestionCts;
+
+private static readonly string[] _suggestions =
+[
+    ""application form"",
+    ""banana smoothie"",
+    ""car repair manual"",
+    ""dog training guide""
+];
+
+private static string? GetGhostSuggestion(string? value)
+{
+    if (string.IsNullOrEmpty(value)) return null;
+
+    if (char.IsWhiteSpace(value[^1])) return null;
+
+    var lastWord = value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+
+    if (string.IsNullOrEmpty(lastWord)) return null;
+
+    var match = _suggestions.FirstOrDefault(s => s.StartsWith(lastWord, StringComparison.OrdinalIgnoreCase));
+    return match?[lastWord.Length..];
+}
+
+private async Task SetGhostSuggestionAsync(string? value, bool isMultiline)
+{
+    var cts = new CancellationTokenSource();
+
+    if (isMultiline)
+    {
+        CancelAndDispose(ref _ghostMultilineSuggestionCts);
+        _ghostMultilineSuggestionCts = cts;
+        ghostMultilineSuggestion = null;
+    }
+    else
+    {
+        CancelAndDispose(ref _ghostSuggestionCts);
+        _ghostSuggestionCts = cts;
+        ghostSuggestion = null;
+    }
+
+    try
+    {
+        var suggestion = await GetGhostSuggestionAsync(value, cts.Token);
+
+        if (cts.IsCancellationRequested) return;
+
+        if (isMultiline)
+        {
+            ghostMultilineSuggestion = suggestion;
+        }
+        else
+        {
+            ghostSuggestion = suggestion;
+        }
+    }
+    catch (OperationCanceledException)
+    {
+    }
+}
+
+private void ClearGhostSuggestion(bool isMultiline)
+{
+    if (isMultiline)
+    {
+        CancelAndDispose(ref _ghostMultilineSuggestionCts);
+        ghostMultilineSuggestion = null;
+    }
+    else
+    {
+        CancelAndDispose(ref _ghostSuggestionCts);
+        ghostSuggestion = null;
+    }
+}
+
+private static void CancelAndDispose(ref CancellationTokenSource? cts)
+{
+    cts?.Cancel();
+    cts?.Dispose();
+    cts = null;
+}
+
+private static async Task<string?> GetGhostSuggestionAsync(string? value, CancellationToken cancellationToken)
+{
+    await Task.Delay(300, cancellationToken);
+
+    return GetGhostSuggestion(value);
+}";
+
+    private readonly string example12RazorCode = @"
 <BitTextField Label=""Trimmed"" Trim @bind-Value=""trimmedValue"" />
 <pre>[@trimmedValue]</pre>
 
 <BitTextField Label=""Not Trimmed"" @bind-Value=""notTrimmedValue"" />
 <pre>[@notTrimmedValue]</pre>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string trimmedValue;
 private string notTrimmedValue;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -949,7 +1242,7 @@ private string notTrimmedValue;";
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 public class ValidationTextFieldModel
 {
     [Required(ErrorMessage = ""This field is required."")]
@@ -973,19 +1266,19 @@ private ValidationTextFieldModel validationTextFieldModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitTextField Label=""Primary"" Background=""BitColorKind.Primary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Secondary"" Background=""BitColorKind.Secondary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Tertiary"" Background=""BitColorKind.Tertiary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Transparent"" Background=""BitColorKind.Transparent"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitTextField Label=""Primary"" Border=""BitColorKind.Primary"" />
 <BitTextField Label=""Secondary"" Border=""BitColorKind.Secondary"" />
 <BitTextField Label=""Tertiary"" Border=""BitColorKind.Tertiary"" />
 <BitTextField Label=""Transparent"" Border=""BitColorKind.Transparent"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitTextField Label=""Primary"" Accent=""BitColor.Primary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Secondary"" Accent=""BitColor.Secondary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Tertiary"" Accent=""BitColor.Tertiary"" IconName=""@BitIconName.Calendar"" />
@@ -1008,7 +1301,7 @@ private void HandleInvalidSubmit() { }";
 <BitTextField Label=""SecondaryBorder"" Accent=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""TertiaryBorder"" Accent=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitTextField Label=""House"" Icon=""@(""fa-solid fa-house"")"" />
@@ -1030,7 +1323,7 @@ private void HandleInvalidSubmit() { }";
 
 <BitTextField Label=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -1139,10 +1432,10 @@ private void HandleInvalidSubmit() { }";
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : "" custom-label-top"")}"" })"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private string? classesValue;";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitTextField Dir=""BitDir.Rtl""
               Placeholder=""پست الکترونیکی""
               IconName=""@BitIconName.EditMail"" />

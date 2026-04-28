@@ -5,7 +5,7 @@ public partial class BitPersonaDemo
     private readonly string example1RazorCode = @"
 <BitPersona PrimaryText=""Saleh Khafan"" Size=""BitPersonaSize.Size72"" />
 
-<BitPersona PrimaryText=""Saleh Khafan""
+<BitPersona PrimaryText=""Xafan Salina""
             Size=""BitPersonaSize.Size72""
             ImageUrl=""/images/persona/persona-female.png"" />
 

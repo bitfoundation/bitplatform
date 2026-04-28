@@ -42,62 +42,80 @@
 
             @if (Multiline && Type is null or BitInputType.Text)
             {
-                <textarea @ref="InputElement" @attributes="InputHtmlAttributes"
-                          @onclick="@HandleOnClick"
-                          @onkeyup="@HandleOnKeyUp"
-                          @onfocus="@HandleOnFocus"
-                          @onkeydown="@HandleOnKeyDown"
-                          @onfocusin="@HandleOnFocusIn"
-                          @onfocusout="@HandleOnFocusOut"
-                          @onchange="@HandleOnStringValueChangeAsync"
-                          @oninput="@HandleOnStringValueInputAsync"
-                          name="@Name"
-                          id="@_inputId"
-                          rows="@(Rows ?? 1)"
-                          tabindex="@TabIndex"
-                          readonly="@ReadOnly"
-                          required="@Required"
-                          style="@Styles?.Input"
-                          autofocus="@AutoFocus"
-                          maxlength="@MaxLength"
-                          inputmode="@_inputMode"
-                          placeholder="@Placeholder"
-                          value="@CurrentValueAsString"
-                          disabled=@(IsEnabled is false)
-                          class="bit-tfl-inp @Classes?.Input"
-                          aria-label="@AriaLabel"
-                          aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                          aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
+                <div class="bit-tfl-ghw @Classes?.GhostTextWrapper" style="@Styles?.GhostTextWrapper">
+                    <textarea @ref="InputElement" @attributes="InputHtmlAttributes"
+                              @onclick="@HandleOnClick"
+                              @onkeyup="@HandleOnKeyUp"
+                              @onfocus="@HandleOnFocus"
+                              @onkeydown="@HandleOnKeyDown"
+                              @onfocusin="@HandleOnFocusIn"
+                              @onfocusout="@HandleOnFocusOut"
+                              @onchange="@HandleOnStringValueChangeAsync"
+                              @oninput="@HandleOnStringValueInputAsync"
+                              name="@Name"
+                              id="@_inputId"
+                              rows="@(Rows ?? 1)"
+                              tabindex="@TabIndex"
+                              readonly="@ReadOnly"
+                              required="@Required"
+                              style="@Styles?.Input"
+                              autofocus="@AutoFocus"
+                              maxlength="@MaxLength"
+                              inputmode="@_inputMode"
+                              placeholder="@Placeholder"
+                              value="@CurrentValueAsString"
+                              disabled=@(IsEnabled is false)
+                              class="bit-tfl-inp @Classes?.Input"
+                              aria-label="@AriaLabel"
+                              aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+                              aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
+                    @if (GhostText.HasValue())
+                    {
+                        <div aria-hidden="true"
+                             class="bit-tfl-gho @Classes?.GhostTextOverlay"
+                             style="@Styles?.GhostTextOverlay">
+                        </div>
+                    }
+                </div>
             }
             else
             {
-                <input @ref="@InputElement" @attributes="InputHtmlAttributes"
-                       @onclick="@HandleOnClick"
-                       @onfocus="@HandleOnFocus"
-                       @onkeyup="@HandleOnKeyUp"
-                       @onkeydown="@HandleOnKeyDown"
-                       @onfocusin="@HandleOnFocusIn"
-                       @onfocusout="@HandleOnFocusOut"
-                       @onchange="@HandleOnStringValueChangeAsync"
-                       @oninput="@HandleOnStringValueInputAsync"
-                       name="@Name"
-                       id="@_inputId"
-                       type="@_inputType"
-                       readonly="@ReadOnly"
-                       required="@Required"
-                       tabindex="@TabIndex"
-                       style="@Styles?.Input"
-                       autofocus="@AutoFocus"
-                       maxlength="@MaxLength"
-                       inputmode="@_inputMode"
-                       placeholder="@Placeholder"
-                       autocomplete="@AutoComplete"
-                       value="@CurrentValueAsString"
-                       disabled=@(IsEnabled is false)
-                       class="bit-tfl-inp @Classes?.Input"
-                       aria-label="@AriaLabel"
-                       aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                       aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
+                <div class="bit-tfl-ghw @Classes?.GhostTextWrapper" style="@Styles?.GhostTextWrapper">
+                    <input @ref="@InputElement" @attributes="InputHtmlAttributes"
+                           @onclick="@HandleOnClick"
+                           @onfocus="@HandleOnFocus"
+                           @onkeyup="@HandleOnKeyUp"
+                           @onkeydown="@HandleOnKeyDown"
+                           @onfocusin="@HandleOnFocusIn"
+                           @onfocusout="@HandleOnFocusOut"
+                           @onchange="@HandleOnStringValueChangeAsync"
+                           @oninput="@HandleOnStringValueInputAsync"
+                           name="@Name"
+                           id="@_inputId"
+                           type="@_inputType"
+                           readonly="@ReadOnly"
+                           required="@Required"
+                           tabindex="@TabIndex"
+                           style="@Styles?.Input"
+                           autofocus="@AutoFocus"
+                           maxlength="@MaxLength"
+                           inputmode="@_inputMode"
+                           placeholder="@Placeholder"
+                           autocomplete="@AutoComplete"
+                           value="@CurrentValueAsString"
+                           disabled=@(IsEnabled is false)
+                           class="bit-tfl-inp @Classes?.Input"
+                           aria-label="@AriaLabel"
+                           aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+                           aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
+                    @if (GhostText.HasValue())
+                    {
+                        <div aria-hidden="true"
+                             class="bit-tfl-gho @Classes?.GhostTextOverlay"
+                             style="@Styles?.GhostTextOverlay">
+                        </div>
+                    }
+                </div>
 
                 @if (ShowClearButton && CurrentValue.HasValue())
                 {

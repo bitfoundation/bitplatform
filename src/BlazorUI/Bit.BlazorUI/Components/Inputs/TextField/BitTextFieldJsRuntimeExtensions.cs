@@ -12,6 +12,16 @@ internal static class BitTextFieldJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.TextField.adjustHeight", input);
     }
 
+    internal static ValueTask BitTextFieldSetupGhostText(this IJSRuntime jsRuntime, string id, ElementReference input, DotNetObjectReference<BitTextField> dotnetObj)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setupGhostText", id, input, dotnetObj);
+    }
+
+    internal static ValueTask BitTextFieldSetGhostText(this IJSRuntime jsRuntime, string id, string ghostText)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setGhostText", id, ghostText);
+    }
+
     internal static ValueTask BitTextFieldDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.TextField.dispose", id);
