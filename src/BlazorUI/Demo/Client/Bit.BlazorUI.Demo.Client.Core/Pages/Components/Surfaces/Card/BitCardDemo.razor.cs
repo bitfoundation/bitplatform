@@ -172,7 +172,7 @@ public partial class BitCardDemo
         <BitLink Href=""https://blazorui.bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
     </BitStack>
 </BitCard>";
-    private readonly string example2CSharpCode = @"
+    private readonly string example2CsharpCode = @"
 private double elevation = 4;";
 
     private readonly string example3RazorCode = @"
@@ -206,7 +206,7 @@ private double elevation = 4;";
         </BitStack>
     </BitCard>
 </div>";
-    private readonly string example4CSharpCode = @"
+    private readonly string example4CsharpCode = @"
 private BitColorKind backgroundColorKind = BitColorKind.Primary;";
 
     private readonly string example5RazorCode = @"
@@ -227,7 +227,7 @@ private BitColorKind backgroundColorKind = BitColorKind.Primary;";
         <BitLink Href=""https://blazorui.bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
     </BitStack>
 </BitCard>";
-    private readonly string example5CSharpCode = @"
+    private readonly string example5CsharpCode = @"
 private BitColorKind borderColorKind = BitColorKind.Primary;";
 
     private readonly string example6RazorCode = @"
@@ -276,7 +276,7 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
         <BitLink Href=""https://blazorui.bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
     </BitStack>
 </BitCard>";
-    private readonly string example9CSharpCode = @"
+    private readonly string example9CsharpCode = @"
 private double cardWidth = 300;
 private double cardHeight = 200;";
 
@@ -299,6 +299,6 @@ private double cardHeight = 200;";
         </BitStack>
     </BitCard>
 </div>";
-    private readonly string example10CSharpCode = @"
+    private readonly string example10CsharpCode = @"
 private int size = 0;";
 }
