@@ -1071,6 +1071,7 @@ private string? throttleValue;";
               Resizable
               Rows=""5""
               Immediate
+              PermanentGhost
               Label=""Basic Multiline""
               GhostText=""@ghostBasicMultilineSuggestion""
               Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
@@ -1093,6 +1094,7 @@ private string? throttleValue;";
               Resizable
               Rows=""5""
               Immediate
+              PermanentGhost
               Label=""Multiline""
               GhostText=""@ghostMultilineSuggestion""
               Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""

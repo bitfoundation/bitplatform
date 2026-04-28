@@ -134,6 +134,7 @@ namespace BitBlazorUI {
                     if (!atEnd) return;
 
                     e.preventDefault();
+                    e.stopPropagation();
                     acceptGhost();
                     return;
                 }
