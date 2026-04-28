@@ -45,7 +45,10 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
         if (controllerSymbol is null) return null;
         if (!controllerSymbol.IsIController()) return null;
 
-        var controllerName = controllerSymbol.Name[1..].Replace("Controller", string.Empty);
+        var interfaceNameWithoutPrefix = controllerSymbol.Name[1..];
+        var controllerName = interfaceNameWithoutPrefix.EndsWith("Controller", StringComparison.Ordinal)
+            ? interfaceNameWithoutPrefix[..^"Controller".Length]
+            : interfaceNameWithoutPrefix;
 
         var route = controllerSymbol
             .GetAttributes()

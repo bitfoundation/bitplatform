@@ -17,7 +17,7 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
         id: "BITBLAZORUIGEN001",
         title: "The class needs to be partial",
         messageFormat: "{0} is not partial. The AutoInject attribute needs to be used only in partial classes.",
-        category: "Bit.SourceGenerators",
+        category: "Bit.BlazorUI.SourceGenerators",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 

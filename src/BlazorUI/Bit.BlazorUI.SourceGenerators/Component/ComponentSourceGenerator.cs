@@ -135,13 +135,13 @@ namespace {namespaceName}
         }
         if (doesSupportParametersViewCache)
         {
-            builder.AppendLine("            var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object>);");
+            builder.AppendLine("            var parametersDictionary = ParametersCache ??= new Dictionary<string, object?>(parameters.ToDictionary());");
         }
         else
         {
-            builder.AppendLine("            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;");
+            builder.AppendLine("            var parametersDictionary = new Dictionary<string, object?>(parameters.ToDictionary());");
         }
-        builder.AppendLine("            foreach (var parameter in parametersDictionary!.ToArray())");
+        builder.AppendLine("            foreach (var parameter in parametersDictionary.ToArray())");
         builder.AppendLine("            {");
         builder.AppendLine("                switch (parameter.Key)");
         builder.AppendLine("                {");
@@ -205,7 +205,7 @@ namespace {namespaceName}
             }
             else
             {
-                builder.AppendLine("            await base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary as IDictionary<string, object?>));");
+                builder.AppendLine("            await base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary));");
             }
         }
         builder.AppendLine(@"        }");
@@ -264,7 +264,7 @@ namespace {namespaceName}
     {
         if (classSymbol.IsGenericType)
         {
-            var typeArgs = string.Join(", ", classSymbol.TypeArguments.Select(s => s.Name));
+            var typeArgs = string.Join(", ", classSymbol.TypeParameters.Select(s => s.Name));
             return $"{classSymbol.Name}<{typeArgs}>";
         }
         return classSymbol.Name;

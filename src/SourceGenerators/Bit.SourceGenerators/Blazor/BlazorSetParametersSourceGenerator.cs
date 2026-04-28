@@ -135,7 +135,7 @@ namespace {namespaceName}
     {
         if (classSymbol.IsGenericType)
         {
-            var typeArgs = string.Join(", ", classSymbol.TypeArguments.Select(s => s.Name));
+            var typeArgs = string.Join(", ", classSymbol.TypeParameters.Select(s => s.Name));
             return $"{classSymbol.Name}<{typeArgs}>";
         }
         return classSymbol.Name;
