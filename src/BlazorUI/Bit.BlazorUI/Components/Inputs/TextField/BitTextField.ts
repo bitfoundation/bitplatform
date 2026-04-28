@@ -57,6 +57,21 @@ namespace BitBlazorUI {
 
             const getOverlay = () => inputElement.parentElement?.querySelector<HTMLElement>('.bit-tfl-gho') ?? null;
             const hasGhost = () => (TextField._ghostTexts[id] ?? '').length > 0;
+            const getSelection = () => {
+                try {
+                    const start = inputElement.selectionStart;
+                    const end = inputElement.selectionEnd;
+
+                    if (typeof start === 'number' && typeof end === 'number') {
+                        return { start, end, supportsSelection: true };
+                    }
+                } catch {
+                    // Some input types (e.g. number) may throw when reading selection APIs.
+                }
+
+                const fallback = inputElement.value.length;
+                return { start: fallback, end: fallback, supportsSelection: false };
+            };
 
             const syncScroll = () => {
                 const overlay = getOverlay();
@@ -72,8 +87,7 @@ namespace BitBlazorUI {
                 const ghost = TextField._ghostTexts[id] ?? '';
                 if (!ghost) return;
 
-                const start = inputElement.selectionStart ?? inputElement.value.length;
-                const end = inputElement.selectionEnd ?? start;
+                const { start, end, supportsSelection } = getSelection();
 
                 inputElement.value =
                     inputElement.value.substring(0, start) +
@@ -81,7 +95,13 @@ namespace BitBlazorUI {
                     inputElement.value.substring(end);
 
                 const newPos = start + ghost.length;
-                inputElement.setSelectionRange(newPos, newPos);
+                if (supportsSelection) {
+                    try {
+                        inputElement.setSelectionRange(newPos, newPos);
+                    } catch {
+                        // Ignore unsupported selection range operations.
+                    }
+                }
 
                 // Clear ghost immediately after acceptance.
                 TextField._ghostTexts[id] = '';
@@ -130,8 +150,7 @@ namespace BitBlazorUI {
 
                 if (!hasGhost()) return;
 
-                const start = inputElement.selectionStart ?? inputElement.value.length;
-                const end = inputElement.selectionEnd ?? start;
+                const { start, end } = getSelection();
                 const atEnd = start === inputElement.value.length && end === start;
 
                 if (!atEnd) return;

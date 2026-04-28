@@ -108,7 +108,7 @@
                            aria-label="@AriaLabel"
                            aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                            aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
-                    @if (GhostText.HasValue() || OnGhostTextAccepted.HasDelegate)
+                    @if (GhostText.HasValue())
                     {
                         <div aria-hidden="true"
                              class="bit-tfl-gho @Classes?.GhostTextOverlay"
