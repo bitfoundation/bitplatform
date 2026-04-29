@@ -33,7 +33,12 @@ public class ComponentSourceGenerator : IIncrementalGenerator
 
         var combined = parameterProvider.Collect()
             .Combine(cascadingProvider.Collect())
-            .Select(static (pair, _) => pair.Left.AddRange(pair.Right));
+            .Select(static (pair, _) =>
+                pair.Left
+                    .AddRange(pair.Right)
+                    .GroupBy(static p => (p.ContainingTypeFullName, p.PropertyName))
+                    .Select(static g => g.First())
+                    .ToImmutableArray());
 
         context.RegisterSourceOutput(combined, static (spc, parameters) => Execute(spc, parameters));
     }
@@ -52,7 +57,9 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var containingType = prop.ContainingType;
         if (containingType is null) return null;
 
-        if (containingType.GetMembers().Any(m => m.Name == "SetParametersAsync")) return null;
+        if (InheritsFromComponentBase(containingType) is false) return null;
+
+        if (TypeDeclaresSetParametersAsync(containingType)) return null;
 
         var attrs = prop.GetAttributes();
         var resetClassBuilder = attrs.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.ResetClassBuilderAttribute");
@@ -276,6 +283,31 @@ namespace {namespaceName}
         if (typeSymbol.TypeKind is not TypeKind.Class) return false;
         if (typeSymbol.Name == "BitComponentBase") return true;
         return InheritsFromBitComponentBase(typeSymbol.BaseType);
+    }
+
+    private static bool InheritsFromComponentBase(INamedTypeSymbol? typeSymbol)
+    {
+        if (typeSymbol is null) return false;
+        if (typeSymbol.TypeKind is not TypeKind.Class) return false;
+        var baseType = typeSymbol.BaseType;
+        if (baseType is null) return false;
+        if (baseType.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase") return true;
+        return InheritsFromComponentBase(baseType);
+    }
+
+    private static bool TypeDeclaresSetParametersAsync(INamedTypeSymbol containingType)
+    {
+        const string parameterViewDisplayName = "Microsoft.AspNetCore.Components.ParameterView";
+        foreach (var member in containingType.GetMembers())
+        {
+            if (member is not IMethodSymbol method) continue;
+            if (method.Name != "SetParametersAsync") continue;
+            if (method.Parameters.Length != 1) continue;
+            if (method.Parameters[0].Type.ToDisplayString() != parameterViewDisplayName) continue;
+            return true;
+        }
+
+        return false;
     }
 
     private static string EscapeForHint(string fullyQualifiedName)

@@ -157,7 +157,7 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
         var isCurrentClassUseAutoInject = classSymbol
             .GetMembers()
             .Any(m => (m.Kind == SymbolKind.Field || m.Kind == SymbolKind.Property) &&
-                       m.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == attrFqn));
+                       m.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, attrSymbol)));
 
         // Let the direct-member provider handle classes that have their own [AutoInject] members
         if (isCurrentClassUseAutoInject) return null;

@@ -60,6 +60,11 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
             ?.Replace("[controller]", controllerName) ?? string.Empty;
 
         var stringSpecialType = model.Compilation.GetSpecialType(SpecialType.System_String);
+        var taskType = model.Compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+        var genericTaskType = model.Compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
+        var valueTaskType = model.Compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
+        var genericValueTaskType = model.Compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
+        var asyncEnumerableType = model.Compilation.GetTypeByMetadataName("System.Collections.Generic.IAsyncEnumerable`1");
 
         var actionBuilders = new List<string>();
 
@@ -77,11 +82,16 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 .FirstOrDefault()
                 .Value?
                 .ToString()
-                ?.Replace("[controller]", controllerName)
-                ?.Replace("~/", string.Empty);
+                ?.Replace("[controller]", controllerName);
+
+            var resolvedRoute = actionSpecificRoute is null
+                ? route
+                : actionSpecificRoute.StartsWith("/") || actionSpecificRoute.StartsWith("~/")
+                    ? actionSpecificRoute
+                    : CombineRouteTemplates(route, actionSpecificRoute);
 
             var uriTemplate = UriTemplate.For(
-                $"{actionSpecificRoute ?? route}{method.GetAttributes()
+                $"{resolvedRoute}{method.GetAttributes()
                     .FirstOrDefault(a => a.AttributeClass?.Name.StartsWith("Http") is true)?
                     .ConstructorArguments.FirstOrDefault().Value?.ToString()}"
                 .Replace("[action]", method.Name));
@@ -101,9 +111,33 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
 
             var returnType = method.ReturnType;
             var returnDisplay = returnType.ToDisplayString();
-            bool doesReturnSomething = returnDisplay is not ("System.Threading.Tasks.Task" or "System.Threading.Tasks.ValueTask");
-            bool doesReturnString = doesReturnSomething && returnDisplay is "System.Threading.Tasks.Task<string>" or "System.Threading.Tasks.ValueTask<string>";
-            bool doesReturnIAsyncEnum = doesReturnSomething && (returnDisplay.Contains("System.Collections.Generic.IAsyncEnumerable<") || returnDisplay.Contains("System.Threading.Tasks.Task<System.Collections.Generic.IAsyncEnumerable<") || returnDisplay.Contains("System.Threading.Tasks.ValueTask<System.Collections.Generic.IAsyncEnumerable<"));
+            var unwrappedReturnType = returnType;
+            var isTaskLikeWithoutResult = false;
+
+            if (returnType is INamedTypeSymbol namedReturnType)
+            {
+                if ((taskType is not null && SymbolEqualityComparer.Default.Equals(namedReturnType, taskType))
+                    || (valueTaskType is not null && SymbolEqualityComparer.Default.Equals(namedReturnType, valueTaskType)))
+                {
+                    isTaskLikeWithoutResult = true;
+                }
+                else if (namedReturnType.IsGenericType
+                         && ((genericTaskType is not null && SymbolEqualityComparer.Default.Equals(namedReturnType.OriginalDefinition, genericTaskType))
+                             || (genericValueTaskType is not null && SymbolEqualityComparer.Default.Equals(namedReturnType.OriginalDefinition, genericValueTaskType))))
+                {
+                    unwrappedReturnType = namedReturnType.TypeArguments[0];
+                }
+            }
+
+            bool doesReturnSomething = isTaskLikeWithoutResult is false;
+            bool doesReturnIAsyncEnum = doesReturnSomething
+                                        && unwrappedReturnType is INamedTypeSymbol namedUnwrappedReturnType
+                                        && namedUnwrappedReturnType.IsGenericType
+                                        && asyncEnumerableType is not null
+                                        && SymbolEqualityComparer.Default.Equals(namedUnwrappedReturnType.OriginalDefinition, asyncEnumerableType);
+            bool doesReturnString = doesReturnSomething
+                                    && doesReturnIAsyncEnum is false
+                                    && SymbolEqualityComparer.Default.Equals(unwrappedReturnType, stringSpecialType);
             var returnUnderlyingNoNull = returnType.GetUnderlyingType().ToDisplayString(NullableFlowState.None);
 
             // Encode parameters: "name\x1CfullType\x1CtypeNoNull\x1CisString" joined by \x1D
@@ -135,6 +169,16 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
             SymbolDisplayNoNull: controllerSymbol.ToDisplayString(NullableFlowState.None),
             ClassName: controllerSymbol.Name[1..],
             EncodedActions: string.Join(ActionSep.ToString(), actionBuilders));
+    }
+
+    private static string CombineRouteTemplates(string controllerRoute, string actionRoute)
+    {
+        if (string.IsNullOrWhiteSpace(controllerRoute)) return actionRoute;
+        if (string.IsNullOrWhiteSpace(actionRoute)) return controllerRoute;
+
+        var normalizedControllerRoute = controllerRoute.TrimEnd('/');
+        var normalizedActionRoute = actionRoute.TrimStart('/');
+        return $"{normalizedControllerRoute}/{normalizedActionRoute}";
     }
 
     // ── Code generation ───────────────────────────────────────────────────────

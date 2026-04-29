@@ -33,7 +33,12 @@ public class BlazorSetParametersSourceGenerator : IIncrementalGenerator
 
         var combined = parameterProvider.Collect()
             .Combine(cascadingProvider.Collect())
-            .Select(static (pair, _) => pair.Left.AddRange(pair.Right));
+            .Select(static (pair, _) =>
+                pair.Left
+                    .AddRange(pair.Right)
+                    .GroupBy(static p => (p.ContainingTypeFullName, p.PropertyName))
+                    .Select(static g => g.First())
+                    .ToImmutableArray());
 
         context.RegisterSourceOutput(combined, static (spc, properties) => Execute(spc, properties));
     }
@@ -52,7 +57,9 @@ public class BlazorSetParametersSourceGenerator : IIncrementalGenerator
         var containingType = prop.ContainingType;
         if (containingType is null) return null;
 
-        if (containingType.GetMembers().Any(m => m.Name == "SetParametersAsync")) return null;
+        if (InheritsFromComponentBase(containingType) is false) return null;
+
+        if (TypeDeclaresSetParametersAsync(containingType)) return null;
 
         var classNameForCode = BuildClassNameForCode(containingType);
         var isBaseTypeComponentBase = containingType.BaseType?.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase";
@@ -139,6 +146,43 @@ namespace {namespaceName}
             return $"{classSymbol.Name}<{typeArgs}>";
         }
         return classSymbol.Name;
+    }
+
+    private static bool InheritsFromComponentBase(INamedTypeSymbol? typeSymbol)
+    {
+        if (typeSymbol is null) return false;
+        
+        if (typeSymbol.TypeKind is not TypeKind.Class) return false;
+
+        var baseType = typeSymbol.BaseType;
+        if (baseType is null) return false;
+
+        if (baseType.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase") return true;
+        
+        return InheritsFromComponentBase(baseType);
+    }
+
+    private static bool TypeDeclaresSetParametersAsync(INamedTypeSymbol containingType)
+    {
+        foreach (var member in containingType.GetMembers())
+        {
+            if (member is not IMethodSymbol method) continue;
+            if (method.Name != "SetParametersAsync") continue;
+            if (method.Parameters.Length != 1) continue;
+            
+            var parameterType = method.Parameters[0].Type;
+            var isParameterView = parameterType.ToDisplayString() == "Microsoft.AspNetCore.Components.ParameterView" || 
+                                  parameterType.Name == "ParameterView";
+            if (isParameterView is false) continue;
+
+            var returnsTask = method.ReturnType.ToDisplayString() == "System.Threading.Tasks.Task" || 
+                              method.ReturnType.Name == "Task";
+            if (returnsTask is false) continue;
+
+            return true;
+        }
+
+        return false;
     }
 
     private static string EscapeForHint(string fullyQualifiedName)
