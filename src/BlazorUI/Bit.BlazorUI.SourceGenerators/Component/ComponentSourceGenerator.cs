@@ -57,9 +57,13 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var containingType = prop.ContainingType;
         if (containingType is null) return null;
 
-        if (InheritsFromComponentBase(containingType) is false) return null;
+        var compilation = ctx.SemanticModel.Compilation;
+        var componentBaseType = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
 
-        if (TypeDeclaresSetParametersAsync(containingType)) return null;
+        // Legacy syntax receiver did not filter by base type; omitting that preserves parity with ISyntaxContextReceiver output volume.
+
+        // Legacy syntax receiver skipped when any member was named SetParametersAsync (method, property, etc.).
+        if (ContainingTypeDeclaresSetParametersAsyncName(containingType)) return null;
 
         var attrs = prop.GetAttributes();
         var resetClassBuilder = attrs.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.ResetClassBuilderAttribute");
@@ -73,7 +77,9 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var callOnSetAsyncName = callOnSetAsyncAttr?.ConstructorArguments.FirstOrDefault().Value as string;
 
         var classNameForCode = BuildClassNameForCode(containingType);
-        var isBaseTypeComponentBase = containingType.BaseType?.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase";
+        var isBaseTypeComponentBase = containingType.BaseType is not null &&
+            componentBaseType is not null &&
+            SymbolEqualityComparer.Default.Equals(containingType.BaseType, componentBaseType);
         var inheritsFromBit = InheritsFromBitComponentBase(containingType);
 
         return new BlazorParameter(
@@ -271,7 +277,8 @@ namespace {namespaceName}
     {
         if (classSymbol.IsGenericType)
         {
-            var typeArgs = string.Join(", ", classSymbol.TypeParameters.Select(s => s.Name));
+            // Same as legacy GetClassName: use resolved type arguments for generic arity display.
+            var typeArgs = string.Join(", ", classSymbol.TypeArguments.Select(s => s.Name));
             return $"{classSymbol.Name}<{typeArgs}>";
         }
         return classSymbol.Name;
@@ -285,30 +292,11 @@ namespace {namespaceName}
         return InheritsFromBitComponentBase(typeSymbol.BaseType);
     }
 
-    private static bool InheritsFromComponentBase(INamedTypeSymbol? typeSymbol)
-    {
-        if (typeSymbol is null) return false;
-        if (typeSymbol.TypeKind is not TypeKind.Class) return false;
-        var baseType = typeSymbol.BaseType;
-        if (baseType is null) return false;
-        if (baseType.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase") return true;
-        return InheritsFromComponentBase(baseType);
-    }
-
-    private static bool TypeDeclaresSetParametersAsync(INamedTypeSymbol containingType)
-    {
-        const string parameterViewDisplayName = "Microsoft.AspNetCore.Components.ParameterView";
-        foreach (var member in containingType.GetMembers())
-        {
-            if (member is not IMethodSymbol method) continue;
-            if (method.Name != "SetParametersAsync") continue;
-            if (method.Parameters.Length != 1) continue;
-            if (method.Parameters[0].Type.ToDisplayString() != parameterViewDisplayName) continue;
-            return true;
-        }
-
-        return false;
-    }
+    /// <summary>
+    /// Matches the legacy syntax receiver: skip if the declaring type has any member named SetParametersAsync.
+    /// </summary>
+    private static bool ContainingTypeDeclaresSetParametersAsyncName(INamedTypeSymbol containingType)
+        => containingType.GetMembers().Any(m => m.Name == "SetParametersAsync");
 
     private static string EscapeForHint(string fullyQualifiedName)
         => fullyQualifiedName.Replace('<', '[').Replace('>', ']').Replace(' ', '_');

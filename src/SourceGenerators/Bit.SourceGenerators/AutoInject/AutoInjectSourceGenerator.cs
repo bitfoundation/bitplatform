@@ -27,7 +27,8 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
         var directMemberProvider = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 AutoInjectHelper.AutoInjectAttributeFullName,
-                predicate: static (node, _) => node is FieldDeclarationSyntax or PropertyDeclarationSyntax,
+                // Field [AutoInject] targets VariableDeclaratorSyntax in this API; property targets PropertyDeclarationSyntax.
+                predicate: static (node, _) => node is FieldDeclarationSyntax or PropertyDeclarationSyntax or VariableDeclaratorSyntax,
                 transform: static (ctx, ct) => TransformDirectMember(ctx, ct))
             .Where(static e => e is not null)
             .Select(static (e, _) => e!.Value);

@@ -75,6 +75,8 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
             var httpMethod = method.GetHttpMethod();
 
             // Build URL from route template
+            // Match legacy HttpClientProxySyntaxReceiver: method Route replaces [controller], strips "~/" (ASP.NET root),
+            // and uses (actionRoute ?? controllerRoute) — no CombineRouteTemplates (avoids corrupting absolute URLs).
             var actionSpecificRoute = method
                 .GetAttributes()
                 .FirstOrDefault(a => a.AttributeClass?.Name.StartsWith("Route") is true)?
@@ -82,13 +84,10 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 .FirstOrDefault()
                 .Value?
                 .ToString()
-                ?.Replace("[controller]", controllerName);
+                ?.Replace("[controller]", controllerName)
+                ?.Replace("~/", string.Empty);
 
-            var resolvedRoute = actionSpecificRoute is null
-                ? route
-                : actionSpecificRoute.StartsWith("/") || actionSpecificRoute.StartsWith("~/")
-                    ? actionSpecificRoute
-                    : CombineRouteTemplates(route, actionSpecificRoute);
+            var resolvedRoute = actionSpecificRoute ?? route;
 
             var uriTemplate = UriTemplate.For(
                 $"{resolvedRoute}{method.GetAttributes()
@@ -169,16 +168,6 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
             SymbolDisplayNoNull: controllerSymbol.ToDisplayString(NullableFlowState.None),
             ClassName: controllerSymbol.Name[1..],
             EncodedActions: string.Join(ActionSep.ToString(), actionBuilders));
-    }
-
-    private static string CombineRouteTemplates(string controllerRoute, string actionRoute)
-    {
-        if (string.IsNullOrWhiteSpace(controllerRoute)) return actionRoute;
-        if (string.IsNullOrWhiteSpace(actionRoute)) return controllerRoute;
-
-        var normalizedControllerRoute = controllerRoute.TrimEnd('/');
-        var normalizedActionRoute = actionRoute.TrimStart('/');
-        return $"{normalizedControllerRoute}/{normalizedActionRoute}";
     }
 
     // ── Code generation ───────────────────────────────────────────────────────
