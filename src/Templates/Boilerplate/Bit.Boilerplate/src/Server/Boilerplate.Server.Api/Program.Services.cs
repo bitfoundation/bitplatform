@@ -70,7 +70,8 @@ public static partial class Program
         builder.AddDefaultHealthChecks()
             .AddDbContextCheck<AppDbContext>(tags: ["live"])
             .AddHangfire(setup => setup.MinimumAvailableServers = 1, tags: ["live"])
-            .AddCheck<AppStorageHealthCheck>("storage", tags: ["live"]);
+            .AddCheck<AppStorageHealthCheck>("storage", tags: ["live"])
+            .AddCheck<TwilioHealthCheck>("sms", tags: ["live"]); ;
         // TODO: Sms, Email, Push notification, AI, Google reCaptcha, Cloudflare
 
         ServerApiSettings appSettings = new();
