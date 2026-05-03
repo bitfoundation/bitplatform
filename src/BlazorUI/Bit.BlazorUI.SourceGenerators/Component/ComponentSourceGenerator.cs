@@ -59,6 +59,7 @@ public class ComponentSourceGenerator : IIncrementalGenerator
 
         var compilation = ctx.SemanticModel.Compilation;
         var componentBaseType = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
+        var bitComponentBaseType = compilation.GetTypeByMetadataName("Bit.BlazorUI.BitComponentBase");
 
         // Legacy syntax receiver did not filter by base type; omitting that preserves parity with ISyntaxContextReceiver output volume.
 
@@ -80,7 +81,7 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var isBaseTypeComponentBase = containingType.BaseType is not null &&
             componentBaseType is not null &&
             SymbolEqualityComparer.Default.Equals(containingType.BaseType, componentBaseType);
-        var inheritsFromBit = InheritsFromBitComponentBase(containingType);
+        var inheritsFromBit = InheritsFromBitComponentBase(containingType, bitComponentBaseType);
 
         return new BlazorParameter(
             ContainingTypeFullName: containingType.ToDisplayString(),
@@ -148,7 +149,8 @@ namespace {namespaceName}
         }
         if (doesSupportParametersViewCache)
         {
-            builder.AppendLine("            var parametersDictionary = ParametersCache ??= new Dictionary<string, object?>(parameters.ToDictionary());");
+            builder.AppendLine("            var parametersDictionary = new Dictionary<string, object?>(parameters.ToDictionary());");
+            builder.AppendLine("            ParametersCache = parametersDictionary;");
         }
         else
         {
@@ -284,12 +286,13 @@ namespace {namespaceName}
         return classSymbol.Name;
     }
 
-    private static bool InheritsFromBitComponentBase(INamedTypeSymbol? typeSymbol)
+    private static bool InheritsFromBitComponentBase(INamedTypeSymbol? typeSymbol, INamedTypeSymbol? frameworkBitComponentBaseSymbol)
     {
         if (typeSymbol is null) return false;
         if (typeSymbol.TypeKind is not TypeKind.Class) return false;
-        if (typeSymbol.Name == "BitComponentBase") return true;
-        return InheritsFromBitComponentBase(typeSymbol.BaseType);
+        if (frameworkBitComponentBaseSymbol is null) return false;
+        if (SymbolEqualityComparer.Default.Equals(typeSymbol, frameworkBitComponentBaseSymbol)) return true;
+        return InheritsFromBitComponentBase(typeSymbol.BaseType, frameworkBitComponentBaseSymbol);
     }
 
     /// <summary>

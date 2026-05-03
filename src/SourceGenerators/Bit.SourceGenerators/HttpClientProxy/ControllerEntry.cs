@@ -14,5 +14,5 @@ namespace Bit.SourceGenerators;
 internal readonly record struct ControllerEntry(
     string SymbolDisplay,       // e.g. "IMyController"
     string SymbolDisplayNoNull, // same without nullable annotation
-    string ClassName,           // e.g. "MyController"  (used as class name of the generated proxy)
+    string ClassName,           // sanitized full type path, e.g. "MyApp_Controllers_IUsersController" (generated proxy class name)
     string EncodedActions);     // all action data encoded with the separators above

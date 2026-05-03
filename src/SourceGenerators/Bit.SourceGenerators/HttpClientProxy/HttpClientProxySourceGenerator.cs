@@ -74,9 +74,8 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
 
             var httpMethod = method.GetHttpMethod();
 
-            // Build URL from route template
-            // Match legacy HttpClientProxySyntaxReceiver: method Route replaces [controller], strips "~/" (ASP.NET root),
-            // and uses (actionRoute ?? controllerRoute) — no CombineRouteTemplates (avoids corrupting absolute URLs).
+            // Build URL from route template: method Route replaces [controller], strips "~/" (ASP.NET root),
+            // and uses (actionRoute ?? controllerRoute). HTTP verb templates are merged with a "/" unless absolute.
             var actionSpecificRoute = method
                 .GetAttributes()
                 .FirstOrDefault(a => a.AttributeClass?.Name.StartsWith("Route") is true)?
@@ -89,11 +88,30 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
 
             var resolvedRoute = actionSpecificRoute ?? route;
 
-            var uriTemplate = UriTemplate.For(
-                $"{resolvedRoute}{method.GetAttributes()
-                    .FirstOrDefault(a => a.AttributeClass?.Name.StartsWith("Http") is true)?
-                    .ConstructorArguments.FirstOrDefault().Value?.ToString()}"
-                .Replace("[action]", method.Name));
+            var httpVerbAttribute = method.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name.StartsWith("Http") is true);
+            var actionTemplate = httpVerbAttribute?.ConstructorArguments.FirstOrDefault().Value?.ToString();
+
+            string combinedTemplate;
+            if (string.IsNullOrEmpty(actionTemplate))
+            {
+                combinedTemplate = resolvedRoute;
+            }
+            else
+            {
+                var t = actionTemplate!;
+                if (t.StartsWith("/", StringComparison.Ordinal) || t.StartsWith("~/", StringComparison.Ordinal))
+                {
+                    combinedTemplate = t.StartsWith("~/", StringComparison.Ordinal)
+                        ? t["~/".Length..]
+                        : t.TrimStart('/');
+                }
+                else
+                {
+                    combinedTemplate = CombineRouteTemplates(resolvedRoute, t);
+                }
+            }
+
+            var uriTemplate = UriTemplate.For(combinedTemplate.Replace("[action]", method.Name));
 
             var rawParameters = method.Parameters.Select(y => (y.Name, Type: y.Type)).ToList();
             foreach (var (pName, _) in rawParameters)
@@ -166,8 +184,56 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
         return new ControllerEntry(
             SymbolDisplay: controllerSymbol.ToDisplayString(),
             SymbolDisplayNoNull: controllerSymbol.ToDisplayString(NullableFlowState.None),
-            ClassName: controllerSymbol.Name[1..],
+            ClassName: BuildProxyClassName(controllerSymbol),
             EncodedActions: string.Join(ActionSep.ToString(), actionBuilders));
+    }
+
+    // Generated proxy class name: full type display (namespace + nesting + interface), sanitized.
+    private static string BuildProxyClassName(ITypeSymbol controllerSymbol)
+    {
+        var display = controllerSymbol.ToDisplayString(NullableFlowState.None);
+        return SanitizeDisplayStringToTypeIdentifier(display);
+    }
+
+    private static string SanitizeDisplayStringToTypeIdentifier(string display)
+    {
+        if (string.IsNullOrEmpty(display))
+            return "_HttpClientProxy";
+
+        var sb = new StringBuilder(display.Length);
+        var pendingUnderscore = false;
+        foreach (var c in display)
+        {
+            var isIdChar = c == '_' || char.IsLetter(c) || char.IsDigit(c);
+            if (isIdChar)
+            {
+                if (pendingUnderscore && sb.Length > 0)
+                    sb.Append('_');
+                pendingUnderscore = false;
+                sb.Append(c);
+            }
+            else
+            {
+                if (sb.Length > 0)
+                    pendingUnderscore = true;
+            }
+        }
+
+        var result = sb.ToString().TrimEnd('_');
+        if (result.Length == 0)
+            return "_HttpClientProxy";
+        if (char.IsDigit(result[0]))
+            return "_" + result;
+        return result;
+    }
+
+    private static string CombineRouteTemplates(string prefix, string suffix)
+    {
+        prefix = prefix.TrimEnd('/');
+        suffix = suffix.TrimStart('/');
+        if (string.IsNullOrEmpty(prefix)) return suffix;
+        if (string.IsNullOrEmpty(suffix)) return prefix;
+        return $"{prefix}/{suffix}";
     }
 
     // ── Code generation ───────────────────────────────────────────────────────
@@ -249,10 +315,14 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 if (doesReturnSomething)
                     requestOptions.AppendLine($"__request.Options.TryAdd(\"ResponseType\", typeof({returnUnderlyingNoNull}));");
 
+                var jsonStreamReturn = doesReturnIAsyncEnum
+                    ? $"return WrapWithResponseDisposal(__response.Content.ReadFromJsonAsAsyncEnumerable({jsonReadParameters}), __response);"
+                    : $"return await __response.Content.{(doesReturnString ? "ReadAsStringAsync" : "ReadFromJsonAsync")}({jsonReadParameters});";
+
                 var encodeStringRouteParameters = string.Join(
                     Environment.NewLine,
                     parameters
-                        .Where(p => p.IsString)
+                        .Where(p => p.IsString && url.Contains($"{{{p.Name}}}", StringComparison.Ordinal))
                         .Select(p => $"{p.Name} = Uri.EscapeDataString(Uri.UnescapeDataString({p.Name} ?? string.Empty));"));
 
                 generatedMethods.AppendLine($@"
@@ -271,7 +341,7 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
                 {requestOptions}
                 {(bodyParamName is not null ? $@"__request.Content = JsonContent.Create({bodyParamName}, options.GetTypeInfo<{bodyParamTypeNoNull}>());" : string.Empty)}
                 {(doesReturnIAsyncEnum ? "" : "using ")}var __response = await httpClient.SendAsync(__request, HttpCompletionOption.ResponseHeadersRead {(hasCt ? $", {ctName}" : string.Empty)});
-                {(doesReturnSomething ? ($"return {(doesReturnIAsyncEnum ? "" : "await")} __response.Content.{(doesReturnIAsyncEnum ? "ReadFromJsonAsAsyncEnumerable" : doesReturnString ? "ReadAsStringAsync" : "ReadFromJsonAsync")}({jsonReadParameters});" +
+                {(doesReturnSomething ? ($"{jsonStreamReturn}" +
           $"}}))!;") : string.Empty)}
         }}
 ");
@@ -287,7 +357,10 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
         StringBuilder finalSource = new(@$"
 using System.Web;
 using System.Text.Json;
+using System.Net.Http;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -326,6 +399,23 @@ internal class AppControllerBase
         queryString.Clear();
 
         return result;
+    }}
+
+    /// <summary>Disposes <paramref name=""response""/> after the JSON stream is fully consumed, faulted, canceled, or the enumerator is disposed.</summary>
+    protected static async System.Collections.Generic.IAsyncEnumerable<T> WrapWithResponseDisposal<T>(
+        System.Collections.Generic.IAsyncEnumerable<T> source,
+        HttpResponseMessage response,
+        [EnumeratorCancellation] System.Threading.CancellationToken cancellationToken = default)
+    {{
+        try
+        {{
+            await foreach (var item in source.WithCancellation(cancellationToken))
+                yield return item;
+        }}
+        finally
+        {{
+            response.Dispose();
+        }}
     }}
 }}
 
