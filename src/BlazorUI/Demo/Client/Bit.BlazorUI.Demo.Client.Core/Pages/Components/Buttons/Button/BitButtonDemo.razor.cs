@@ -104,8 +104,8 @@ public partial class BitButtonDemo
         new()
         {
             Name = "FloatPosition",
-            Type = "bool",
-            DefaultValue = "false",
+            Type = "BitPosition?",
+            DefaultValue = "null",
             Description = "Specifies the position of the floating button.",
             LinkType = LinkType.Link,
             Href = "#button-position"
