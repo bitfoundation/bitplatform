@@ -21,7 +21,7 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "ButtonType",
-            Type = "BitButtonType",
+            Type = "BitButtonType?",
             DefaultValue = "null",
             Description = "The value of the type attribute of the menu button.",
             LinkType = LinkType.Link,
