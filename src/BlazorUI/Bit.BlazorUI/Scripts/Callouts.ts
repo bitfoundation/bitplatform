@@ -3,6 +3,13 @@ namespace BitBlazorUI {
         private static readonly DEFAULT_CALLOUT: BitCallout = { calloutId: '' };
 
         public static current = Callouts.DEFAULT_CALLOUT;
+        private static _calloutOriginalParents: Map<string, {
+            parent: Element,
+            nextSibling: Node | null,
+            overlay: HTMLElement | null,
+            overlayParent: Element | null,
+            overlayNextSibling: Node | null
+        }> = new Map();
 
         public static toggle(
             dotnetObj: DotNetObject,
@@ -10,6 +17,7 @@ namespace BitBlazorUI {
             component: HTMLElement | null,
             calloutId: string,
             callout: HTMLElement | null,
+            overlayId: string,
             isCalloutOpen: boolean,
             responsiveMode: BitResponsiveMode,
             dropDirection: BitDropDirection,
@@ -38,9 +46,12 @@ namespace BitBlazorUI {
                 } else {
                     callout.style.display = 'none';
                 }
+                Callouts.restoreCalloutToOriginalParent(calloutId, callout);
                 Callouts.reset();
                 return false;
             }
+
+            Callouts.moveCalloutToBody(calloutId, callout, overlayId);
 
             const scrollContainer = (scrollContainerId
                 ? document.getElementById(scrollContainerId)
@@ -157,6 +168,46 @@ namespace BitBlazorUI {
             Callouts.current = Callouts.DEFAULT_CALLOUT;
         }
 
+        private static moveCalloutToBody(calloutId: string, callout: HTMLElement, overlayId: string) {
+            if (callout.parentElement === document.body) return;
+
+            const overlay = overlayId ? document.getElementById(overlayId) : null;
+
+            Callouts._calloutOriginalParents.set(calloutId, {
+                parent: callout.parentElement!,
+                nextSibling: callout.nextSibling,
+                overlay: overlay,
+                overlayParent: overlay?.parentElement ?? null,
+                overlayNextSibling: overlay?.nextSibling ?? null
+            });
+
+            document.body.appendChild(callout);
+            if (overlay) {
+                document.body.appendChild(overlay);
+            }
+        }
+
+        private static restoreCalloutToOriginalParent(calloutId: string, callout: HTMLElement) {
+            const original = Callouts._calloutOriginalParents.get(calloutId);
+            if (!original) return;
+
+            Callouts._calloutOriginalParents.delete(calloutId);
+
+            if (original.nextSibling) {
+                original.parent.insertBefore(callout, original.nextSibling);
+            } else {
+                original.parent.appendChild(callout);
+            }
+
+            if (original.overlay && original.overlayParent) {
+                if (original.overlayNextSibling) {
+                    original.overlayParent.insertBefore(original.overlay, original.overlayNextSibling);
+                } else {
+                    original.overlayParent.appendChild(original.overlay);
+                }
+            }
+        }
+
         public static replaceCurrent(callout?: BitCallout) {
             callout = callout || Callouts.DEFAULT_CALLOUT;
             const current = Callouts.current;
@@ -169,7 +220,10 @@ namespace BitBlazorUI {
             //close the previous one
             if (callout.calloutId !== current.calloutId) {
                 const previousCallout = document.getElementById(current.calloutId);
-                previousCallout && (previousCallout.style.display = 'none');
+                if (previousCallout) {
+                    previousCallout.style.display = 'none';
+                    Callouts.restoreCalloutToOriginalParent(current.calloutId, previousCallout);
+                }
 
                 const overlay = current.overlayId && document.getElementById(current.overlayId);
                 overlay && (overlay.style.display = 'none');

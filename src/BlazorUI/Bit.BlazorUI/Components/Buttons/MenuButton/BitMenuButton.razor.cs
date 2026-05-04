@@ -10,6 +10,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     private List<TItem> _items = [];
     private BitButtonType _buttonType;
     private string _calloutId = default!;
+    private string _overlayId = default!;
     private IEnumerable<TItem> _oldItems = default!;
     private DotNetObjectReference<BitMenuButton<TItem>> _dotnetObj = default!;
 
@@ -271,6 +272,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     protected override async Task OnInitializedAsync()
     {
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
+        _overlayId = $"BitMenuButton-{UniqueId}-overlay";
 
         if (Sticky && SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
         {
@@ -617,6 +619,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             component: null,
             calloutId: _calloutId,
             callout: null,
+            overlayId: _overlayId,
             isCalloutOpen: IsOpen,
             responsiveMode: BitResponsiveMode.None,
             dropDirection: BitDropDirection.TopAndBottom,

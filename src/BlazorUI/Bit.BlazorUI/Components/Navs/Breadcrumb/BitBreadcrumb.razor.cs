@@ -15,6 +15,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     private DotNetObjectReference<BitBreadcrumb<TItem>> _dotnetObj = default!;
 
     private string _calloutId = default!;
+    private string _overlayId = default!;
     private string _overflowAnchorId = default!;
     private string _scrollContainerId = default!;
 
@@ -166,6 +167,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     protected override Task OnInitializedAsync()
     {
         _calloutId = $"BitBreadcrumb-{UniqueId}-callout";
+        _overlayId = $"BitBreadcrumb-{UniqueId}-overlay";
         _overflowAnchorId = $"BitBreadcrumb-{UniqueId}-overflow-anchor";
         _scrollContainerId = $"BitBreadcrumb-{UniqueId}-scroll-container";
 
@@ -638,6 +640,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             component: null,
             calloutId: _calloutId,
             callout: null,
+            overlayId: _overlayId,
             isCalloutOpen: _isCalloutOpen,
             responsiveMode: BitResponsiveMode.None,
             dropDirection: BitDropDirection.TopAndBottom,

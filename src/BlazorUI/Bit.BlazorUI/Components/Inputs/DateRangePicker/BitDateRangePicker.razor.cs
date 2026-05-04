@@ -35,6 +35,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private string? _labelId;
     private string? _inputId;
     private string _calloutId = string.Empty;
+    private string _overlayId = string.Empty;
     private string _dateRangePickerId = string.Empty;
     private ElementReference _startTimeHourInputRef = default!;
     private ElementReference _startTimeMinuteInputRef = default!;
@@ -810,6 +811,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _dateRangePickerId = $"DateRangePicker-{UniqueId}";
         _labelId = $"{_dateRangePickerId}-label";
         _calloutId = $"{_dateRangePickerId}-callout";
+        _overlayId = $"{_dateRangePickerId}-overlay";
         _inputId = $"{_dateRangePickerId}-input";
 
         OnValueChanged += HandleOnValueChanged;
@@ -2280,6 +2282,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             component: null,
             calloutId: _calloutId,
             callout: null,
+            overlayId: _overlayId,
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
             dropDirection: BitDropDirection.TopAndBottom,

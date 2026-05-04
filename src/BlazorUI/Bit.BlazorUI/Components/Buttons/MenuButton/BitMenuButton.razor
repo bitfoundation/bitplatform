@@ -88,52 +88,53 @@
             <i style="@Styles?.ChevronDown" class="@chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
         </button>
     }
-
-    <div @onclick="CloseCallout" @onclick:stopPropagation
-         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
-         class="bit-mnb-ovl @Classes?.Overlay"></div>
-
-    <div id="@_calloutId"
-         style="@Styles?.Callout"
-         class="bit-mnb-cal @Classes?.Callout">
-        <ul role="presentation" style="@Styles?.CalloutContainer" class="bit-mnb-cul @Classes?.CalloutContainer">
-            @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
-            {
-                if (Sticky && item == SelectedItem) continue;
-
-                var template = GetTemplate(item);
-                var isEnabled = GetIsEnabled(item);
-                <li role="presentation" @key="@GetItemKey(item, idx.ToString())" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
-                    <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
-                            role="menuitem"
-                            type="@_buttonType.GetValue()"
-                            tabindex="@(isEnabled ? 0 : -1)"
-                            disabled="@(isEnabled is false)"
-                            aria-disabled="@(isEnabled is false)"
-                            style="@GetStyle(item);@Styles?.ItemButton"
-                            class="bit-mnb-itm @GetClass(item) @Classes?.ItemButton">
-                        @if (template is not null)
-                        {
-                            @template(item)
-                        }
-                        else if (ItemTemplate is not null)
-                        {
-                            @ItemTemplate(item)
-                        }
-                        else
-                        {
-                            var itemIcon = GetIcon(item);
-                            @if (itemIcon is not null)
-                            {
-                                <i style="@Styles?.ItemIcon" class="bit-mnb-iic @itemIcon.GetCssClasses() @Classes?.ItemIcon" />
-                            }
-                            <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
-                                @GetText(item)
-                            </span>
-                        }
-                    </button>
-                </li>
-            }
-        </ul>
-    </div>
 </div>
+
+<div @onclick="CloseCallout" @onclick:stopPropagation
+     style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+     id="@_overlayId"
+     class="bit-mnb-ovl @Classes?.Overlay"></div>
+
+<div id="@_calloutId"
+     style="@Styles?.Callout"
+     class="bit-mnb-cal @Classes?.Callout">
+    <ul role="presentation" style="@Styles?.CalloutContainer" class="bit-mnb-cul @Classes?.CalloutContainer">
+        @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
+        {
+            if (Sticky && item == SelectedItem) continue;
+
+            var template = GetTemplate(item);
+            var isEnabled = GetIsEnabled(item);
+            <li role="presentation" @key="@GetItemKey(item, idx.ToString())" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
+                <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
+                        role="menuitem"
+                        type="@_buttonType.GetValue()"
+                        tabindex="@(isEnabled ? 0 : -1)"
+                        disabled="@(isEnabled is false)"
+                        aria-disabled="@(isEnabled is false)"
+                        style="@GetStyle(item);@Styles?.ItemButton"
+                        class="bit-mnb-itm @GetClass(item) @Classes?.ItemButton">
+                    @if (template is not null)
+                    {
+                        @template(item)
+                    }
+                    else if (ItemTemplate is not null)
+                    {
+                        @ItemTemplate(item)
+                    }
+                    else
+                    {
+                        var itemIcon = GetIcon(item);
+                        @if (itemIcon is not null)
+                        {
+                            <i style="@Styles?.ItemIcon" class="bit-mnb-iic @itemIcon.GetCssClasses() @Classes?.ItemIcon" />
+                        }
+                        <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
+                            @GetText(item)
+                        </span>
+                    }
+                </button>
+            </li>
+        }
+    </ul>
+</div>

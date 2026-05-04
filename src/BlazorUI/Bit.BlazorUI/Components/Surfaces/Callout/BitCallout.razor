@@ -16,15 +16,16 @@
             @Anchor
         </div>
     }
+</div>
 
-    <div @onclick="CloseCallout" @onclick:stopPropagation
-         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
-         class="bit-clo-ovl @Classes?.Overlay">
-    </div>
+<div @onclick="CloseCallout" @onclick:stopPropagation
+     id="@_overlayId"
+     style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+     class="bit-clo-ovl @Classes?.Overlay">
+</div>
 
-    <div id="@_contentId"
-         style="@Styles?.Content"
-         class="bit-clo-cal @Classes?.Content">
-        @(Content ?? ChildContent)
-    </div>
+<div id="@_contentId"
+     style="@Styles?.Content"
+     class="bit-clo-cal @Classes?.Content">
+    @(Content ?? ChildContent)
 </div>

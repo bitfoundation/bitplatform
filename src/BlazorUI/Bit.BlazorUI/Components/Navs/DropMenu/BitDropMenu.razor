@@ -39,14 +39,15 @@
                class="@chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
         }
     </button>
-
-    <div @onclick="CloseCallout" @onclick:stopPropagation
-         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
-         class="bit-drm-ovl @Classes?.Overlay"></div>
-
-    <div id="@_calloutId"
-         style="@Styles?.Callout"
-         class="@GetCalloutCssClasses()">
-        @(Body ?? ChildContent)
-    </div>
 </div>
+
+<div @onclick="CloseCallout" @onclick:stopPropagation
+     style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+     id="@_overlayId"
+     class="bit-drm-ovl @Classes?.Overlay"></div>
+
+<div id="@_calloutId"
+     style="@Styles?.Callout"
+     class="@GetCalloutCssClasses()">
+    @(Body ?? ChildContent)
+</div>
