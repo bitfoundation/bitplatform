@@ -27,4 +27,10 @@
         <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="..\..\Bit.BlazorUI\Styles\theme-variables.scss" Link="theme-variables.scss">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
 </Project>

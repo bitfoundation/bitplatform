@@ -222,6 +222,80 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
             <br />
 
             <CodeBox Language="csharp">var currentTheme = await _bitThemeManager.GetCurrentThemeAsync();</CodeBox>
+
+            <br />
+
+            <BitText Typography="BitTypography.H5">Precedence</BitText>
+            <BitText>
+                <BitTag>SetThemeAsync</BitTag> updates the <BitTag>bit-theme</BitTag> attribute on the document root so the packaged Fluent stylesheets supply the base token values.
+                <BitTag>ApplyBitThemeAsync</BitTag> writes CSS variables onto an element (default: <BitTag>body</BitTag>), which overrides those tokens for the subtree because inline styles win over stylesheet rules for the same property.
+                Use a named preset (see <BitTag>BitThemePresets</BitTag>) with <BitTag>SetThemeAsync</BitTag>, then call <BitTag>ApplyBitThemeAsync</BitTag> with a partial <BitTag>BitTheme</BitTag> for runtime brand tweaks.
+            </BitText>
+
+            <br />
+
+            <BitText Typography="BitTypography.H5">Presets, utilities, SSR</BitText>
+            <BitText>
+                <BitTag>BitThemePresets</BitTag> exposes well-known <BitTag>bit-theme</BitTag> names (for example <BitTag>BitThemePresets.FluentDark</BitTag>).
+                <BitTag>BitThemeUtilities.ToCssVariables</BitTag> maps a <BitTag>BitTheme</BitTag> to a dictionary of CSS custom properties; <BitTag>BitThemeUtilities.Merge</BitTag> merges a child theme over a parent (same rules as <BitTag>BitThemeProvider</BitTag>).
+                <BitTag>BitThemeSerialization</BitTag> serializes or deserializes a theme as JSON for storage.
+                <BitTag>BitThemeColorDerivation.FillColorRoleFromMain</BitTag> can fill unset steps on <BitTag>BitThemeColorVariants</BitTag> from a single main hex color.
+                <BitTag>Bit.BlazorUI.Extras</BitTag> reuses the same design tokens (for example <BitTag>$clr-pri</BitTag> in SCSS) so preset and <BitTag>BitTheme</BitTag> overrides apply consistently.
+                For an optional early <BitTag>head</BitTag> script that reduces theme flash with persistence, see the <BitTag>BitThemeSsr</BitTag> section below.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">await _bitThemeManager.SetThemeAsync(BitThemePresets.FluentDark);
+
+var json = BitThemeSerialization.Serialize(myTheme);
+var copy = BitThemeSerialization.Deserialize(json);
+
+BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");</CodeBox>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">BitThemeSsr</BitText>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitThemeSsr</BitTag> helps reduce the wrong-theme flash on first paint when you use <BitTag>bit-theme-persist</BitTag> (and optional <BitTag>bit-theme</BitTag>, <BitTag>bit-theme-default</BitTag>, <BitTag>bit-theme-light</BitTag>, <BitTag>bit-theme-dark</BitTag> on <BitTag>&lt;html&gt;</BitTag>).
+                It injects a tiny script at the very start of <BitTag>&lt;head&gt;</BitTag> so <BitTag>bit-theme</BitTag> is restored from <BitTag>localStorage</BitTag> (when persist is enabled) or resolved for <BitTag>system</BitTag> before your Fluent stylesheets run.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                Place it at the start of <BitTag>&lt;head&gt;</BitTag>, before bit BlazorUI / Fluent CSS links, so selectors such as <BitTag>:root[bit-theme="…"]</BitTag> match immediately.
+            </BitText>
+
+            <br />
+
+            <BitText>In a Blazor Web App root document (for example <BitTag>Components/App.razor</BitTag>), emit the full script tag:</BitText>
+
+            <br />
+
+            <CodeBox Language="razor">&lt;head&gt;
+    @@((MarkupString)@@BitThemeSsr.InlineHeadScript)
+    @@* stylesheet links after this *@@
+&lt;/head&gt;</CodeBox>
+
+            <br />
+
+            <BitText>If you prefer your own <BitTag>&lt;script&gt;</BitTag> wrapper, use only the JavaScript body:</BitText>
+
+            <br />
+
+            <CodeBox Language="razor">&lt;script&gt;@@BitThemeSsr.InlineHeadScriptBody&lt;/script&gt;</CodeBox>
+
+            <br />
+
+            <BitText>
+                Behavior matches the client <BitTag>BitTheme</BitTag> script: with <BitTag>bit-theme-persist</BitTag>, the stored key <BitTag>bit-current-theme</BitTag> is read; if the value is <BitTag>system</BitTag>, <BitTag>prefers-color-scheme</BitTag> picks the light or dark name from <BitTag>bit-theme-light</BitTag> / <BitTag>bit-theme-dark</BitTag> (defaulting to <BitTag>light</BitTag> and <BitTag>dark</BitTag> when those attributes are omitted).
+            </BitText>
         </BitCard>
 
         <br />

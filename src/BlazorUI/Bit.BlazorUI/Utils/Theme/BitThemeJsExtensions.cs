@@ -17,7 +17,7 @@ internal static class BitThemeJsExtensions
         return js.Invoke<string>("BitTheme.toggleDarkLight");
     }
 
-    internal static ValueTask BitThemeApplyBitTheme(this IJSRuntime js, Dictionary<string, string> theme, ElementReference? element)
+    internal static ValueTask BitThemeApplyBitTheme(this IJSRuntime js, IReadOnlyDictionary<string, string> theme, ElementReference? element)
     {
         return js.InvokeVoid("BitTheme.applyBitTheme", theme, element);
     }

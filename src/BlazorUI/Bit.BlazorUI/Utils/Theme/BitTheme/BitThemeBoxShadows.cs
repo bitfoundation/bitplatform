@@ -3,6 +3,14 @@
 public class BitThemeBoxShadows
 {
     public string? Callout { get; set; }
+    public string? Callout2 { get; set; }
+    public string? Sm { get; set; }
+    public string? Nm { get; set; }
+    public string? Md { get; set; }
+    public string? Lg { get; set; }
+    public string? Xl { get; set; }
+    public string? Xxl { get; set; }
+    public string? Inner { get; set; }
     public string? S1 { get; set; }
     public string? S2 { get; set; }
     public string? S3 { get; set; }

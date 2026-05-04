@@ -18,7 +18,8 @@ public partial class BitThemeProvider : ComponentBase
     [Parameter] public BitTheme? Theme { get; set; }
 
     /// <summary>
-    /// The name of the cascading BitTheme value.
+    /// Optional name for <see cref="CascadingValue{T}"/>; when set, consumers use <c>[CascadingParameter(Name = …)]</c>.
+    /// The cascaded <see cref="BitTheme"/> is the merge of <see cref="Theme"/> with <see cref="ParentTheme"/> (same as inline CSS variables on this provider’s root).
     /// </summary>
     [Parameter] public string? ThemeName { get; set; }
 
@@ -44,7 +45,7 @@ public partial class BitThemeProvider : ComponentBase
             mergedTheme = BitThemeMapper.Merge(Theme, ParentTheme);
         }
 
-        var cssVars = BitThemeMapper.MapToCssVariables(Theme);
+        var cssVars = BitThemeMapper.MapToCssVariables(mergedTheme);
         var cssVarStyle = string.Join(';', cssVars.Select(kv => $"{kv.Key}:{kv.Value}"));
 
         builder.OpenElement(seq++, RootElement ?? "div");
@@ -54,7 +55,7 @@ public partial class BitThemeProvider : ComponentBase
         if (ThemeName is not null)
         {
             builder.AddAttribute(seq++, "Name", ThemeName);
-            builder.AddAttribute(seq++, "Value", Theme);
+            builder.AddAttribute(seq++, "Value", mergedTheme);
         }
         else
         {

@@ -36,12 +36,30 @@ public class BitThemeGeneralColorVariants
     public string? Primary { get; set; }
     public string? PrimaryHover { get; set; }
     public string? PrimaryActive { get; set; }
+    public string? PrimaryDark { get; set; }
+    public string? PrimaryDarkHover { get; set; }
+    public string? PrimaryDarkActive { get; set; }
+    public string? PrimaryLight { get; set; }
+    public string? PrimaryLightHover { get; set; }
+    public string? PrimaryLightActive { get; set; }
     public string? Secondary { get; set; }
     public string? SecondaryHover { get; set; }
     public string? SecondaryActive { get; set; }
+    public string? SecondaryDark { get; set; }
+    public string? SecondaryDarkHover { get; set; }
+    public string? SecondaryDarkActive { get; set; }
+    public string? SecondaryLight { get; set; }
+    public string? SecondaryLightHover { get; set; }
+    public string? SecondaryLightActive { get; set; }
     public string? Tertiary { get; set; }
     public string? TertiaryHover { get; set; }
     public string? TertiaryActive { get; set; }
+    public string? TertiaryDark { get; set; }
+    public string? TertiaryDarkHover { get; set; }
+    public string? TertiaryDarkActive { get; set; }
+    public string? TertiaryLight { get; set; }
+    public string? TertiaryLightHover { get; set; }
+    public string? TertiaryLightActive { get; set; }
     public string? Disabled { get; set; }
 }
 
