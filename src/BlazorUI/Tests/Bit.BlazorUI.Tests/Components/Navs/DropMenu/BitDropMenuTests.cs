@@ -72,14 +72,14 @@ public class BitDropMenuTests : BunitTestContext
 
         component.MarkupMatches(@"
 <div data-val-test=""bit"" type=""button"" class=""bit-drm"" tabindex=""0"" id:ignore>
-    <button type=""button"" class=""bit-drm-btn"">
+    <button type=""button"" class=""bit-drm-btn "">
         <div class=""bit-drm-txt "">Menu</div>
-        <i class=""bit-icon bit-icon--ChevronRight bit-ico-r90""></i>
+        <i class=""bit-icon bit-icon--ChevronRight bit-ico-r90 ""></i>
     </button>
-    <div style=""display:none;"" class=""bit-drm-ovl ""></div>
-    <div class=""bit-drm-cal bit-drm-end"" id:ignore>
-        <div>Body</div>
-    </div>
+</div>
+<div style=""display:none;"" class=""bit-drm-ovl "" id:ignore></div>
+<div class=""bit-drm-cal bit-drm-end"" id:ignore>
+    <div>Body</div>
 </div>");
 
         var markup = component.Markup;
