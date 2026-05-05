@@ -30,8 +30,8 @@ public partial class BitTooltipDemo
         new()
         {
             Name = "DefaultIsShown",
-            Type = "bool",
-            DefaultValue = "false",
+            Type = "bool?",
+            DefaultValue = "null",
             Description = "Default value of the IsShown."
         },
         new()

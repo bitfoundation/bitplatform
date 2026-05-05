@@ -2,109 +2,89 @@
 using System.Linq;
 using System.Text;
 using Bit.SourceGenerators;
-using Microsoft.CodeAnalysis;
 
 namespace Bit.BlazorUI.SourceGenerators.AutoInject;
 
-public static class AutoInjectNormalClassHandler
+internal static class AutoInjectNormalClassHandler
 {
-    public static string? Generate(INamedTypeSymbol? attributeSymbol, INamedTypeSymbol? classSymbol, IReadOnlyCollection<ISymbol> eligibleMembers)
+    public static string? Generate(
+        string classNamespace,
+        string classNameForCode,
+        string className,
+        IReadOnlyCollection<AutoInjectMember> directMembers,
+        IReadOnlyCollection<AutoInjectMember> baseMembers)
     {
-        if (classSymbol is null)
-        {
-            return null;
-        }
-
-        if (AutoInjectHelper.IsContainingSymbolEqualToContainingNamespace(classSymbol) is false)
-        {
-            return null;
-        }
-
-        string classNamespace = classSymbol.ContainingNamespace.ToDisplayString();
-
-        IReadOnlyCollection<ISymbol> baseEligibleMembers = AutoInjectHelper.GetBaseClassEligibleMembers(classSymbol, attributeSymbol);
-        IReadOnlyCollection<ISymbol> sortedMembers = eligibleMembers.OrderBy(o => o.Name).ToList();
+        var sortedMembers = directMembers.OrderBy(o => o.Name).ToList();
 
         string source = $@"
 namespace {classNamespace}
 {{
-    public partial class {AutoInjectHelper.GenerateClassName(classSymbol)}
+    public partial class {classNameForCode}
     {{
-        {GenerateConstructor(classSymbol, sortedMembers, baseEligibleMembers)}
+        {GenerateConstructor(className, sortedMembers, baseMembers)}
     }}
 }}";
         return source;
     }
 
-    private static string GenerateConstructor(INamedTypeSymbol classSymbol, IReadOnlyCollection<ISymbol> eligibleMembers, IReadOnlyCollection<ISymbol> baseEligibleMembers)
+    private static string GenerateConstructor(string className, IReadOnlyCollection<AutoInjectMember> directMembers, IReadOnlyCollection<AutoInjectMember> baseMembers)
     {
         string generateConstructor = $@"
         [global::System.CodeDom.Compiler.GeneratedCode(""Bit.SourceGenerators"",""{BitSourceGeneratorUtil.GetPackageVersion()}"")]
         [global::System.Diagnostics.DebuggerNonUserCode]
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-{"\t\t"}public {classSymbol.Name}({GenerateConstructorParameters(eligibleMembers, baseEligibleMembers)}){PassParametersToBaseClass(baseEligibleMembers)}
+{"\t\t"}public {className}({GenerateConstructorParameters(directMembers, baseMembers)}){PassParametersToBaseClass(baseMembers)}
 {"\t\t"}{{
-{AssignedInjectedParametersToMembers(eligibleMembers)}
+{AssignMembersFromParameters(directMembers)}
 {"\t\t"}}}
 ";
         return generateConstructor;
     }
 
-    private static string PassParametersToBaseClass(IReadOnlyCollection<ISymbol> baseEligibleMembers)
+    private static string PassParametersToBaseClass(IReadOnlyCollection<AutoInjectMember> baseMembers)
     {
-        if (baseEligibleMembers.Any() is false)
+        if (baseMembers.Any() is false)
             return string.Empty;
 
         StringBuilder baseConstructor = new();
-
         baseConstructor.Append(": base(");
 
-        foreach (ISymbol symbol in baseEligibleMembers)
+        foreach (var member in baseMembers)
         {
-            baseConstructor.Append($@"{'\n'}{"\t\t\t\t\t\t"}autoInjected{AutoInjectHelper.FormatMemberName(symbol.Name)},");
+            baseConstructor.Append($@"{'\n'}{"\t\t\t\t\t\t"}autoInjected{AutoInjectHelper.FormatMemberName(member.Name)},");
         }
 
         baseConstructor.Length--;
-
         baseConstructor.Append(')');
 
         return baseConstructor.ToString();
     }
 
-    private static string AssignedInjectedParametersToMembers(IReadOnlyCollection<ISymbol> eligibleMembers)
+    private static string AssignMembersFromParameters(IReadOnlyCollection<AutoInjectMember> directMembers)
     {
         StringBuilder stringBuilder = new();
-        foreach (ISymbol symbol in eligibleMembers)
+        foreach (var member in directMembers)
         {
             if (stringBuilder.Length > 0)
             {
                 stringBuilder.Append('\n');
             }
             stringBuilder.Append("\t\t\t")
-                .Append($@"{symbol.Name} = autoInjected{AutoInjectHelper.FormatMemberName(symbol.Name)};");
+                .Append($@"{member.Name} = autoInjected{AutoInjectHelper.FormatMemberName(member.Name)};");
         }
 
         return stringBuilder.ToString();
     }
 
-    private static string GenerateConstructorParameters(IReadOnlyCollection<ISymbol> eligibleMembers, IReadOnlyCollection<ISymbol> baseEligibleMembers)
+    private static string GenerateConstructorParameters(IReadOnlyCollection<AutoInjectMember> directMembers, IReadOnlyCollection<AutoInjectMember> baseMembers)
     {
         StringBuilder stringBuilder = new();
-        List<ISymbol> members = new(eligibleMembers.Count + baseEligibleMembers.Count);
+        var allMembers = directMembers.Concat(baseMembers).OrderBy(o => o.Name).ToList();
 
-        members.AddRange(eligibleMembers);
-        members.AddRange(baseEligibleMembers);
-        members = members.OrderBy(o => o.Name).ToList();
-
-        foreach (ISymbol member in members)
+        foreach (var member in allMembers)
         {
-            if (member is IFieldSymbol fieldSymbol)
-                stringBuilder.Append(
-                    $@"{'\n'}{"\t\t\t"}{fieldSymbol.Type} autoInjected{AutoInjectHelper.FormatMemberName(fieldSymbol.Name)},");
-
-            if (member is IPropertySymbol propertySymbol)
-                stringBuilder.Append(
-                    $@"{'\n'}{"\t\t\t"}{propertySymbol.Type} autoInjected{AutoInjectHelper.FormatMemberName(propertySymbol.Name)},");
+            var nullValue = member.IsNullable ? " = null" : string.Empty;
+            stringBuilder.Append($@"{'\n'}{"\t\t\t"}{member.TypeDisplay} autoInjected{AutoInjectHelper.FormatMemberName(member.Name)}{nullValue},");
         }
 
         stringBuilder.Length--;
@@ -112,3 +92,4 @@ namespace {classNamespace}
         return stringBuilder.ToString();
     }
 }
+

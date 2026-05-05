@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Bit.BlazorUI.SourceGenerators.AutoInject;
 
-public static class AutoInjectHelper
+internal static class AutoInjectHelper
 {
     public static readonly string AutoInjectAttributeFullName = "Microsoft.Extensions.DependencyInjection.AutoInjectAttribute"; //typeof(AutoInjectAttribute).FullName;
 

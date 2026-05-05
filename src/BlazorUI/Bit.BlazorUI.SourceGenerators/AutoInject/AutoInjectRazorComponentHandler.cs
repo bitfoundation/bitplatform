@@ -1,60 +1,43 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Bit.SourceGenerators;
-using Microsoft.CodeAnalysis;
 
 namespace Bit.BlazorUI.SourceGenerators.AutoInject;
 
-public static class AutoInjectRazorComponentHandler
+internal static class AutoInjectRazorComponentHandler
 {
-    public static string? Generate(INamedTypeSymbol? classSymbol, IReadOnlyCollection<ISymbol> eligibleMembers)
+    public static string? Generate(
+        string classNamespace,
+        string classNameForCode,
+        IReadOnlyCollection<AutoInjectMember> directMembers)
     {
-        if (classSymbol is null)
-        {
-            return null;
-        }
-
-        if (AutoInjectHelper.IsContainingSymbolEqualToContainingNamespace(classSymbol) is false)
-        {
-            return null;
-        }
-
-        string classNamespace = classSymbol.ContainingNamespace.ToDisplayString();
-
-        IReadOnlyCollection<ISymbol> sortedMembers = eligibleMembers.OrderBy(o => o.Name).ToList();
-
         string source = $@"
 using Microsoft.AspNetCore.Components;
 using System.ComponentModel;
 
 namespace {classNamespace}
 {{
-    public partial class {AutoInjectHelper.GenerateClassName(classSymbol)}
+    public partial class {classNameForCode}
     {{
-        {GenerateInjectableProperties(sortedMembers)}
+        {GenerateInjectableProperties(directMembers)}
     }}
 }}";
         return source;
     }
 
-    private static string GenerateInjectableProperties(IReadOnlyCollection<ISymbol> eligibleMembers)
+    private static string GenerateInjectableProperties(IReadOnlyCollection<AutoInjectMember> members)
     {
         StringBuilder stringBuilder = new StringBuilder();
 
-        foreach (ISymbol member in eligibleMembers)
+        foreach (var member in members)
         {
-            if (member is IFieldSymbol fieldSymbol)
-                stringBuilder.Append(GenerateProperty(fieldSymbol.Type, fieldSymbol.Name));
-
-            if (member is IPropertySymbol propertySymbol)
-                stringBuilder.Append(GenerateProperty(propertySymbol.Type, propertySymbol.Name));
+            stringBuilder.Append(GenerateProperty(member.TypeDisplay, member.Name));
         }
 
         return stringBuilder.ToString();
     }
 
-    private static string GenerateProperty(ITypeSymbol @type, string name)
+    private static string GenerateProperty(string typeDisplay, string name)
     {
         return $@"
         [global::System.CodeDom.Compiler.GeneratedCode(""Bit.SourceGenerators"",""{BitSourceGeneratorUtil.GetPackageVersion()}"")]
@@ -62,6 +45,7 @@ namespace {classNamespace}
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 {"\t\t"}[Inject]
 {"\t\t"}[EditorBrowsable(EditorBrowsableState.Never)]
-{"\t\t"}private {@type} ____{AutoInjectHelper.FormatMemberName(name)} {{ get => {name}; set => {name} = value; }}";
+{"\t\t"}private {typeDisplay} ____{AutoInjectHelper.FormatMemberName(name)} {{ get => {name}; set => {name} = value; }}";
     }
 }
+

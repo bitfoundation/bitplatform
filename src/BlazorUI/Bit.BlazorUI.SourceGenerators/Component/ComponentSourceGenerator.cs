@@ -1,43 +1,125 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
-using System.Collections.Generic;
+using System.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Bit.BlazorUI.SourceGenerators.Component;
 
 [Generator]
-public class ComponentSourceGenerator : ISourceGenerator
+public class ComponentSourceGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterForSyntaxNotifications(() => new ComponentSyntaxContextReceiver());
+        var parameterProvider = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                "Microsoft.AspNetCore.Components.ParameterAttribute",
+                predicate: static (node, _) => IsPartialClassProperty(node),
+                transform: static (ctx, ct) => ExtractBlazorParameter(ctx, ct))
+            .Where(static p => p is not null)
+            .Select(static (p, _) => p!.Value);
+
+        var cascadingProvider = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                "Microsoft.AspNetCore.Components.CascadingParameterAttribute",
+                predicate: static (node, _) => IsPartialClassProperty(node),
+                transform: static (ctx, ct) => ExtractBlazorParameter(ctx, ct))
+            .Where(static p => p is not null)
+            .Select(static (p, _) => p!.Value);
+
+        var combined = parameterProvider.Collect()
+            .Combine(cascadingProvider.Collect())
+            .Select(static (pair, _) =>
+                pair.Left
+                    .AddRange(pair.Right)
+                    .GroupBy(static p => (p.ContainingTypeFullName, p.PropertyName))
+                    .Select(static g => g.First())
+                    .ToImmutableArray());
+
+        context.RegisterSourceOutput(combined, static (spc, parameters) => Execute(spc, parameters));
     }
 
-    public void Execute(GeneratorExecutionContext context)
+    private static bool IsPartialClassProperty(SyntaxNode node)
     {
-        if (context.SyntaxContextReceiver is not ComponentSyntaxContextReceiver receiver) return;
+        return node is PropertyDeclarationSyntax prop &&
+               prop.Parent is (ClassDeclarationSyntax or RecordDeclarationSyntax) and TypeDeclarationSyntax typeDecl &&
+               typeDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+    }
 
-        foreach (var parametersGroup in receiver.Parameters.GroupBy(p => p.PropertySymbol.ContainingType, SymbolEqualityComparer.Default))
+    private static BlazorParameter? ExtractBlazorParameter(GeneratorAttributeSyntaxContext ctx, CancellationToken ct)
+    {
+        if (ctx.TargetSymbol is not IPropertySymbol prop) return null;
+
+        var containingType = prop.ContainingType;
+        if (containingType is null) return null;
+
+        var compilation = ctx.SemanticModel.Compilation;
+        var componentBaseType = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
+        var bitComponentBaseType = compilation.GetTypeByMetadataName("Bit.BlazorUI.BitComponentBase");
+
+        // Legacy syntax receiver did not filter by base type; omitting that preserves parity with ISyntaxContextReceiver output volume.
+
+        // Legacy syntax receiver skipped when any member was named SetParametersAsync (method, property, etc.).
+        if (ContainingTypeDeclaresSetParametersAsyncName(containingType)) return null;
+
+        var attrs = prop.GetAttributes();
+        var resetClassBuilder = attrs.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.ResetClassBuilderAttribute");
+        var resetStyleBuilder = attrs.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.ResetStyleBuilderAttribute");
+        var isTwoWayBound = attrs.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.TwoWayBoundAttribute");
+
+        var callOnSetAttr = attrs.SingleOrDefault(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.CallOnSetAttribute");
+        var callOnSetName = callOnSetAttr?.ConstructorArguments.FirstOrDefault().Value as string;
+
+        var callOnSetAsyncAttr = attrs.SingleOrDefault(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.CallOnSetAsyncAttribute");
+        var callOnSetAsyncName = callOnSetAsyncAttr?.ConstructorArguments.FirstOrDefault().Value as string;
+
+        var classNameForCode = BuildClassNameForCode(containingType);
+        var isBaseTypeComponentBase = containingType.BaseType is not null &&
+            componentBaseType is not null &&
+            SymbolEqualityComparer.Default.Equals(containingType.BaseType, componentBaseType);
+        var inheritsFromBit = InheritsFromBitComponentBase(containingType, bitComponentBaseType);
+
+        return new BlazorParameter(
+            ContainingTypeFullName: containingType.ToDisplayString(),
+            ClassName: containingType.Name,
+            ClassNameForCode: classNameForCode,
+            ClassNamespace: containingType.ContainingNamespace.ToDisplayString(),
+            IsBaseTypeComponentBase: isBaseTypeComponentBase,
+            InheritsFromBitComponentBase: inheritsFromBit,
+            PropertyName: prop.Name,
+            PropertyType: prop.Type.ToDisplayString(),
+            ResetClassBuilder: resetClassBuilder,
+            ResetStyleBuilder: resetStyleBuilder,
+            IsTwoWayBound: isTwoWayBound,
+            CallOnSetMethodName: callOnSetName,
+            CallOnSetAsyncMethodName: callOnSetAsyncName);
+    }
+
+    private static void Execute(SourceProductionContext spc, ImmutableArray<BlazorParameter> parameters)
+    {
+        foreach (var group in parameters.GroupBy(p => p.ContainingTypeFullName))
         {
-            var parameters = parametersGroup.ToList();
-
-            if (parametersGroup.Key == null) continue;
-
-            string classSource = GeneratePartialClass((INamedTypeSymbol)parametersGroup.Key, parameters);
-            context.AddSource($"{parametersGroup.Key.Name}_SetParametersAsync.AutoGenerated.cs", SourceText.From(classSource, Encoding.UTF8));
+            var list = group.ToList();
+            var first = list[0];
+            string source = GeneratePartialClass(first, list);
+            spc.AddSource($"{EscapeForHint(first.ContainingTypeFullName)}_SetParametersAsync.AutoGenerated.cs", SourceText.From(source, Encoding.UTF8));
         }
     }
 
-    private static string GeneratePartialClass(INamedTypeSymbol classSymbol, List<BlazorParameter> parameters)
+    private static string GeneratePartialClass(BlazorParameter classInfo, List<BlazorParameter> parameters)
     {
-        var namespaceName = classSymbol.ContainingNamespace.ToDisplayString();
-        var className = GetClassName(classSymbol);
+        var namespaceName = classInfo.ClassNamespace;
+        var className = classInfo.ClassNameForCode;
         var twoWayParameters = parameters.Where(p => p.IsTwoWayBound).ToArray();
-        var isBaseTypeComponentBase = classSymbol.BaseType?.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase";
-        var doesSupporteParametersViewCache = InheritsFromBitComponentBase(classSymbol);
+        var isBaseTypeComponentBase = classInfo.IsBaseTypeComponentBase;
+        var doesSupportParametersViewCache = classInfo.InheritsFromBitComponentBase;
 
         StringBuilder builder = new StringBuilder($@"using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
@@ -52,9 +134,8 @@ namespace {namespaceName}
         builder.AppendLine("");
         foreach (var par in twoWayParameters)
         {
-            var sym = par.PropertySymbol;
-            builder.AppendLine($"        private bool {sym.Name}HasBeenSet;");
-            builder.AppendLine($"        [Parameter] public EventCallback<{sym.Type.ToDisplayString()}> {sym.Name}Changed {{ get; set; }}");
+            builder.AppendLine($"        private bool {par.PropertyName}HasBeenSet;");
+            builder.AppendLine($"        [Parameter] public EventCallback<{par.PropertyType}> {par.PropertyName}Changed {{ get; set; }}");
         }
         if (twoWayParameters.Length > 0) builder.AppendLine("");
         builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
@@ -64,26 +145,26 @@ namespace {namespaceName}
         builder.AppendLine($"            __assignedParameters.Clear();");
         foreach (var par in twoWayParameters)
         {
-            builder.AppendLine($"            {par.PropertySymbol.Name}HasBeenSet = false;");
+            builder.AppendLine($"            {par.PropertyName}HasBeenSet = false;");
         }
-        if (doesSupporteParametersViewCache)
+        if (doesSupportParametersViewCache)
         {
-            builder.AppendLine("            var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object>);");
+            builder.AppendLine("            var parametersDictionary = new Dictionary<string, object?>(parameters.ToDictionary());");
+            builder.AppendLine("            ParametersCache = parametersDictionary;");
         }
         else
         {
-            builder.AppendLine("            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;");
+            builder.AppendLine("            var parametersDictionary = new Dictionary<string, object?>(parameters.ToDictionary());");
         }
-        builder.AppendLine("            foreach (var parameter in parametersDictionary!)");
+        builder.AppendLine("            foreach (var parameter in parametersDictionary.ToArray())");
         builder.AppendLine("            {");
         builder.AppendLine("                switch (parameter.Key)");
         builder.AppendLine("                {");
         foreach (var par in parameters)
         {
-            var sym = par.PropertySymbol;
-            var paramName = sym.Name;
-            var varName = $"@{paramName.ToLower()}";
-            var paramType = sym.Type.ToDisplayString();
+            var paramName = par.PropertyName;
+            var varName = $"@{paramName.ToLowerInvariant()}";
+            var paramType = par.PropertyType;
             builder.AppendLine($"                    case nameof({paramName}):");
             builder.AppendLine($"                       __assignedParameters.Add(nameof({paramName}));");
             if (par.IsTwoWayBound)
@@ -116,11 +197,11 @@ namespace {namespaceName}
             builder.AppendLine("                       break;");
             if (par.IsTwoWayBound)
             {
-                paramName = $"{paramName}Changed";
-                varName = $"@{paramName.ToLower()}";
-                builder.AppendLine($"                    case nameof({paramName}):");
-                builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : (EventCallback<{sym.Type.ToDisplayString()}>)parameter.Value;");
-                builder.AppendLine($"                       {paramName} = {varName};");
+                var changedName = $"{paramName}Changed";
+                var changedVarName = $"@{changedName.ToLowerInvariant()}";
+                builder.AppendLine($"                    case nameof({changedName}):");
+                builder.AppendLine($"                       var {changedVarName} = parameter.Value is null ? default! : (EventCallback<{paramType}>)parameter.Value;");
+                builder.AppendLine($"                       {changedName} = {changedVarName};");
                 builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
                 builder.AppendLine("                       break;");
             }
@@ -133,13 +214,13 @@ namespace {namespaceName}
         }
         else
         {
-            if (doesSupporteParametersViewCache)
+            if (doesSupportParametersViewCache)
             {
                 builder.AppendLine("            await base.SetParametersAsync(ParameterView.Empty);");
             }
             else
             {
-                builder.AppendLine("            await base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary as IDictionary<string, object?>));");
+                builder.AppendLine("            await base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary));");
             }
         }
         builder.AppendLine(@"        }");
@@ -156,8 +237,8 @@ namespace {namespaceName}
         if (twoWayParameters.Length > 0) builder.AppendLine("");
         foreach (var par in twoWayParameters)
         {
-            var paramName = par.PropertySymbol.Name;
-            var paramType = par.PropertySymbol.Type.ToDisplayString();
+            var paramName = par.PropertyName;
+            var paramType = par.PropertyType;
             builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public async Task<bool> Assign{paramName}({paramType} value)
@@ -194,31 +275,32 @@ namespace {namespaceName}
         return builder.ToString();
     }
 
-    private static string GetClassName(INamedTypeSymbol classSymbol)
+    private static string BuildClassNameForCode(INamedTypeSymbol classSymbol)
     {
-        StringBuilder sbName = new StringBuilder(classSymbol.Name);
-
         if (classSymbol.IsGenericType)
         {
-            sbName.Append('<');
-            sbName.Append(string.Join(", ", classSymbol.TypeArguments.Select(s => s.Name)));
-            sbName.Append('>');
+            // Same as legacy GetClassName: use resolved type arguments for generic arity display.
+            var typeArgs = string.Join(", ", classSymbol.TypeArguments.Select(s => s.Name));
+            return $"{classSymbol.Name}<{typeArgs}>";
         }
-
-        return sbName.ToString();
+        return classSymbol.Name;
     }
 
-    private static bool InheritsFromBitComponentBase(INamedTypeSymbol? typeSymbol)
+    private static bool InheritsFromBitComponentBase(INamedTypeSymbol? typeSymbol, INamedTypeSymbol? frameworkBitComponentBaseSymbol)
     {
-        if (typeSymbol is null)
-            return false;
-
-        if (typeSymbol.TypeKind is not TypeKind.Class)
-            return false;
-
-        if (typeSymbol.Name == "BitComponentBase")
-            return true;
-
-        return InheritsFromBitComponentBase(typeSymbol.BaseType);
+        if (typeSymbol is null) return false;
+        if (typeSymbol.TypeKind is not TypeKind.Class) return false;
+        if (frameworkBitComponentBaseSymbol is null) return false;
+        if (SymbolEqualityComparer.Default.Equals(typeSymbol, frameworkBitComponentBaseSymbol)) return true;
+        return InheritsFromBitComponentBase(typeSymbol.BaseType, frameworkBitComponentBaseSymbol);
     }
+
+    /// <summary>
+    /// Matches the legacy syntax receiver: skip if the declaring type has any member named SetParametersAsync.
+    /// </summary>
+    private static bool ContainingTypeDeclaresSetParametersAsyncName(INamedTypeSymbol containingType)
+        => containingType.GetMembers().Any(m => m.Name == "SetParametersAsync");
+
+    private static string EscapeForHint(string fullyQualifiedName)
+        => fullyQualifiedName.Replace('<', '[').Replace('>', ']').Replace(' ', '_');
 }
