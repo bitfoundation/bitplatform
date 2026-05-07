@@ -67,12 +67,7 @@ public static partial class Program
 
         builder.AddServerSharedServices();
 
-        builder.AddDefaultHealthChecks()
-            .AddDbContextCheck<AppDbContext>(tags: ["live"])
-            .AddHangfire(setup => setup.MinimumAvailableServers = 1, tags: ["live"])
-            .AddCheck<AppStorageHealthCheck>("storage", tags: ["live"])
-            .AddCheck<TwilioHealthCheck>("sms", tags: ["live"]); ;
-        // TODO: Sms, Email, Push notification, AI, Google reCaptcha, Cloudflare
+        builder.AddServerApiHealthChecks();
 
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
@@ -762,5 +757,44 @@ public static partial class Program
                 return part[$"{key}=".Length..];
         }
         return defaultValue ?? throw new ArgumentException($"Invalid connection string: '{key}' not found.");
+    }
+    
+    private static WebApplicationBuilder AddServerApiHealthChecks(this WebApplicationBuilder builder)
+    {
+        var configuration = builder.Configuration;
+
+        ServerApiSettings appSettings = new();
+        configuration.Bind(appSettings);
+
+        var healthChecksBuilder = builder.AddDefaultHealthChecks()
+            .AddDbContextCheck<AppDbContext>(tags: ["live"])
+            .AddHangfire(setup => setup.MinimumAvailableServers = 1, tags: ["live"])
+            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", tags: ["live"])
+            .AddCheck<TwilioHealthCheck>("sms", tags: ["live"]);
+
+        //#if (cloudflare == true)
+        // Cloudflare Cache Purge API
+        if (appSettings.Cloudflare?.Configured is true)
+        {
+            var cloudflareApiToken = appSettings.Cloudflare.ApiToken;
+            healthChecksBuilder.AddUrlGroup(
+                new Uri($"https://api.cloudflare.com/client/v4/zones/{appSettings.Cloudflare.ZoneId}"),
+                name: "cloudflare",
+                tags: ["ready"],
+                configureClient: (_, client) => client.DefaultRequestHeaders.Add("Authorization", $"Bearer {cloudflareApiToken}"));
+        }
+        //#endif
+
+        var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];
+        if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
+        {
+            var realm = configuration["Authentication:Keycloak:Realm"] ?? "dev";
+            healthChecksBuilder.AddUrlGroup(
+                new Uri($"{keycloakBaseUrl.TrimEnd('/')}/realms/{realm}/.well-known/openid-configuration"),
+                name: "keycloakIdentity",
+                tags: ["ready"]);
+        }
+
+        return builder;
     }
 }

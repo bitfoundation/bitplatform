@@ -6,7 +6,7 @@ namespace Boilerplate.Server.Api.Infrastructure.Services;
 /// <summary>
 /// Checks underlying S3, Azure blob storage, or local file system storage is healthy.
 /// </summary>
-public partial class AppStorageHealthCheck : IHealthCheck
+public partial class UserProfileImagesStorageHealthCheck : IHealthCheck
 {
     [AutoInject] private IBlobStorage blobStorage = default!;
     [AutoInject] private ServerApiSettings settings = default!;
@@ -21,11 +21,11 @@ public partial class AppStorageHealthCheck : IHealthCheck
                 MaxResults = 1
             }, cancellationToken);
 
-            return HealthCheckResult.Healthy("Storage is healthy");
+            return HealthCheckResult.Healthy("User profile images storage is healthy");
         }
         catch (Exception exp)
         {
-            return HealthCheckResult.Unhealthy("Storage is unhealthy", exp);
+            return HealthCheckResult.Unhealthy("User profile images storage is unhealthy", exp);
         }
     }
 }
