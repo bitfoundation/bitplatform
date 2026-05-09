@@ -781,7 +781,11 @@ public static partial class Program
                 new Uri($"https://api.cloudflare.com/client/v4/zones/{appSettings.Cloudflare.ZoneId}"),
                 name: "cloudflare",
                 tags: ["ready"],
-                configureClient: (_, client) => client.DefaultRequestHeaders.Add("Authorization", $"Bearer {cloudflareApiToken}"));
+                configureClient: (_, client) =>
+                {
+                    client.Timeout = TimeSpan.FromSeconds(10);
+                    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {cloudflareApiToken}");
+                });
         }
         //#endif
 
@@ -792,7 +796,8 @@ public static partial class Program
             healthChecksBuilder.AddUrlGroup(
                 new Uri($"{keycloakBaseUrl.TrimEnd('/')}/realms/{realm}/.well-known/openid-configuration"),
                 name: "keycloakIdentity",
-                tags: ["ready"]);
+                tags: ["ready"],
+                configureClient: (_, client) => client.Timeout = TimeSpan.FromSeconds(10));
         }
 
         return builder;
