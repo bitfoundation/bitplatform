@@ -738,13 +738,13 @@
     display: flex;
     flex-flow: column;
     align-items: flex-start;
+}
 
-    .bit-dtp-cal {
-        display: block;
-        z-index: unset;
-        animation: none;
-        position: relative;
-    }
+.bit-dtp-cal.bit-dtp-sta {
+    display: block;
+    z-index: unset;
+    animation: none;
+    position: relative;
 }
 
 .bit-dtp-req {

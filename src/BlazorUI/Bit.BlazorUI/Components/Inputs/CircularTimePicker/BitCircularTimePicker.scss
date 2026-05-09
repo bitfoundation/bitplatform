@@ -381,13 +381,13 @@
 
 .bit-ctp-sta {
     width: fit-content;
+}
 
-    .bit-ctp-cal {
-        display: block;
-        z-index: unset;
-        animation: none;
-        position: relative;
-    }
+.bit-ctp-cal.bit-ctp-sta {
+    display: block;
+    z-index: unset;
+    animation: none;
+    position: relative;
 }
 
 .bit-ctp-req {

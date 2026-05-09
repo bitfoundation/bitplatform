@@ -712,6 +712,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             classes.Add(Classes.Callout);
         }
 
+        if (Standalone)
+        {
+            classes.Add("bit-ctp-sta");
+        }
+
         if (Responsive)
         {
             classes.Add("bit-ctp-res");

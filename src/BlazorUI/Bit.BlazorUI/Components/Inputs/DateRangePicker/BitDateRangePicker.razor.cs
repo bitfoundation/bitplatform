@@ -2300,6 +2300,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         List<string> classes = ["bit-dtrp-cal"];
 
+        if (Standalone)
+        {
+            classes.Add("bit-dtrp-sta");
+        }
+
         if (Classes?.Callout is not null)
         {
             classes.Add(Classes.Callout);

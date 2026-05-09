@@ -1631,6 +1631,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             classes.Add(Classes.Callout);
         }
 
+        if (Standalone)
+        {
+            classes.Add("bit-dtp-sta");
+        }
+
         if (Responsive)
         {
             classes.Add("bit-dtp-res");

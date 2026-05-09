@@ -69,7 +69,7 @@
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
                                 disabled="@(GetIsEnabled(item) is false)"
                                 style="@GetStyles(item, false)"
-                                class="bit-brc-itm @GetClasses(item, true)" @onclick="() => HandleOnItemClick(item)">
+                                class="bit-brc-itm @GetClasses(item, false)" @onclick="() => HandleOnItemClick(item)">
                             @if (template is not null)
                             {
                                 @template(item)
@@ -229,4 +229,4 @@
             </li>
         }
     </ul>
-</div>
+</div>

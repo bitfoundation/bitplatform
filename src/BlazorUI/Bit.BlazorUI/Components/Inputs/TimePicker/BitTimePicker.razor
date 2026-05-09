@@ -80,19 +80,17 @@
                readonly="@(AllowTextInput is false)" />
     }
 
-</div>
+    @if (Standalone is false)
+    {
+        <div @onclick="CloseCallout"
+             style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
+             id="@_overlayId"
+             class="bit-tpc-ovl @Classes?.Overlay"></div>
+    }
 
-@if (Standalone is false)
-{
-    <div @onclick="CloseCallout"
-         style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
-         id="@_overlayId"
-     class="bit-tpc-ovl @Classes?.Overlay"></div>
-}
-
-<div id="@_calloutId"
-     style="@Styles?.Callout"
-     class="@GetCalloutCssClasses()">
+    <div id="@_calloutId"
+         style="@Styles?.Callout"
+         class="@GetCalloutCssClasses()">
     <div style="@Styles?.CalloutContainer" class="bit-tpc-cac @Classes?.CalloutContainer" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
         <div style="@Styles?.TimeInputContainer" class="bit-tpc-tic @Classes?.TimeInputContainer">
             <div style="@Styles?.HourInputContainer" class="bit-tpc-tpr @Classes?.HourInputContainer">
@@ -196,5 +194,6 @@
                 <i style="@Styles?.CloseButtonIcon" class="@closeIcon?.GetCssClasses() @Classes?.CloseButtonIcon" aria-hidden="true" />
             </button>
         }
+    </div>
     </div>
 </div>
