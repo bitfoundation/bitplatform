@@ -36,17 +36,19 @@ public sealed class BitThemeColorDerivationTests
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "not-a-color");
-        // The catch block silences errors; all variants must remain null.
-        Assert.IsNull(v.Main,        "Main");
-        Assert.IsNull(v.Dark,        "Dark");
-        Assert.IsNull(v.Light,       "Light");
-        Assert.IsNull(v.Text,        "Text");
-        Assert.IsNull(v.MainHover,   "MainHover");
-        Assert.IsNull(v.MainActive,  "MainActive");
-        Assert.IsNull(v.DarkHover,   "DarkHover");
-        Assert.IsNull(v.DarkActive,  "DarkActive");
-        Assert.IsNull(v.LightHover,  "LightHover");
-        Assert.IsNull(v.LightActive, "LightActive");
+        // BitInternalColor silently falls back to white when the format is unrecognised
+        // (its own catch resets R/G/B to 255 without rethrowing), so FillColorRoleFromMain's
+        // outer catch never fires and all variants are populated with white-derived values.
+        Assert.IsNotNull(v.Main,        "Main");
+        Assert.IsNotNull(v.Dark,        "Dark");
+        Assert.IsNotNull(v.Light,       "Light");
+        Assert.IsNotNull(v.Text,        "Text");
+        Assert.IsNotNull(v.MainHover,   "MainHover");
+        Assert.IsNotNull(v.MainActive,  "MainActive");
+        Assert.IsNotNull(v.DarkHover,   "DarkHover");
+        Assert.IsNotNull(v.DarkActive,  "DarkActive");
+        Assert.IsNotNull(v.LightHover,  "LightHover");
+        Assert.IsNotNull(v.LightActive, "LightActive");
     }
 
     // ── All slots populated ────────────────────────────────────────────────────
