@@ -34,10 +34,8 @@ public class BitThemeManager
     }
 
     /// <summary>Applies <paramref name="bitTheme"/> as CSS custom properties on <paramref name="element"/> (default: body), overriding stylesheet tokens for that subtree.</summary>
-    public async ValueTask ApplyBitThemeAsync(BitTheme bitTheme, ElementReference? element = null)
+    public async ValueTask ApplyBitThemeAsync(BitTheme? bitTheme, ElementReference? element = null)
     {
-        if (bitTheme is null) return;
-
         await _js.BitThemeApplyBitTheme(BitThemeUtilities.ToCssVariables(bitTheme), element);
     }
 

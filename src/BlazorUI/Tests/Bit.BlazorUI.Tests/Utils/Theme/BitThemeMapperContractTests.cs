@@ -47,6 +47,37 @@ public sealed class BitThemeMapperContractTests
     }
 
     [TestMethod]
+    public void BitThemeSerialization_OmitsEmptyNestedObjects()
+    {
+        var theme = new BitTheme();
+        theme.Color.Primary.Main = "#ABCDEF";
+
+        var json = BitThemeSerialization.Serialize(theme);
+
+        Assert.IsFalse(json.Contains("\"secondary\"", StringComparison.Ordinal));
+        Assert.IsTrue(json.Contains("\"main\"", StringComparison.Ordinal));
+        Assert.IsTrue(json.Length < 500, "Sparse theme JSON should stay compact.");
+    }
+
+    [TestMethod]
+    public void BitThemeSerialization_EmptyThemeSerializesToEmptyObject()
+    {
+        var json = BitThemeSerialization.Serialize(new BitTheme());
+        Assert.AreEqual("{}", json.Trim().Replace("\r", "").Replace("\n", "").Replace(" ", ""));
+    }
+
+    [TestMethod]
+    public void BitThemeSerialization_DeserializeMergeAfterSparseJson_DoesNotThrow()
+    {
+        var sparse = new BitTheme();
+        sparse.Color.Primary.Main = "#112233";
+        var json = BitThemeSerialization.Serialize(sparse);
+        var roundTrip = BitThemeSerialization.Deserialize(json);
+        var merged = BitThemeUtilities.Merge(roundTrip, new BitTheme());
+        Assert.AreEqual("#112233", merged.Color.Primary.Main);
+    }
+
+    [TestMethod]
     public void MergeChildOverridesParentForSingleProperty()
     {
         var parent = new BitTheme();

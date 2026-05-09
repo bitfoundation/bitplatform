@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 public static class BitThemeColorDerivation
 {
     /// <summary>Fills unset <see cref="BitThemeColorVariants"/> fields from <paramref name="mainHex"/>.</summary>
-    public static void FillColorRoleFromMain(BitThemeColorVariants variants, string mainHex)
+    public static void FillColorRoleFromMain(BitThemeColorVariants? variants, string? mainHex)
     {
         if (variants is null || string.IsNullOrWhiteSpace(mainHex)) return;
 
