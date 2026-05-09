@@ -65,7 +65,7 @@ namespace BitBlazorUI {
                 ? document.getElementById(footerId)
                 : { getBoundingClientRect: () => ({ height: 0 }) })!;
 
-            Callouts.replaceCurrent({ dotnetObj, calloutId, responsiveMode, scrollContainerId });
+            Callouts.replaceCurrent({ dotnetObj, calloutId, overlayId, responsiveMode, scrollContainerId });
             callout.style.display = 'block';
 
             //clear last style
@@ -193,14 +193,14 @@ namespace BitBlazorUI {
 
             Callouts._calloutOriginalParents.delete(calloutId);
 
-            if (original.nextSibling) {
+            if (original.nextSibling && original.nextSibling.parentNode === original.parent) {
                 original.parent.insertBefore(callout, original.nextSibling);
             } else {
                 original.parent.appendChild(callout);
             }
 
             if (original.overlay && original.overlayParent) {
-                if (original.overlayNextSibling) {
+                if (original.overlayNextSibling && original.overlayNextSibling.parentNode === original.overlayParent) {
                     original.overlayParent.insertBefore(original.overlay, original.overlayNextSibling);
                 } else {
                     original.overlayParent.appendChild(original.overlay);
