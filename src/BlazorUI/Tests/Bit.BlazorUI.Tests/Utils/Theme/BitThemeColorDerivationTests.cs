@@ -36,7 +36,17 @@ public sealed class BitThemeColorDerivationTests
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "not-a-color");
-        // The catch block silences errors; variants remain null.
+        // The catch block silences errors; all variants must remain null.
+        Assert.IsNull(v.Main,        "Main");
+        Assert.IsNull(v.Dark,        "Dark");
+        Assert.IsNull(v.Light,       "Light");
+        Assert.IsNull(v.Text,        "Text");
+        Assert.IsNull(v.MainHover,   "MainHover");
+        Assert.IsNull(v.MainActive,  "MainActive");
+        Assert.IsNull(v.DarkHover,   "DarkHover");
+        Assert.IsNull(v.DarkActive,  "DarkActive");
+        Assert.IsNull(v.LightHover,  "LightHover");
+        Assert.IsNull(v.LightActive, "LightActive");
     }
 
     // ── All slots populated ────────────────────────────────────────────────────

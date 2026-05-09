@@ -15,7 +15,7 @@ public static class BitThemeSsr
         "dk=r.getAttribute('bit-theme-dark')||'dark',m=window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches," +
         "base=r.getAttribute('bit-theme')||r.getAttribute('bit-theme-default')||'light';" +
         "if(r.hasAttribute('bit-theme-system')){base=m?dk:lt;}" +
-        "var cur=r.hasAttribute('bit-theme-persist')?(localStorage.getItem(k)||base):base;" +
+        "var cur=base;if(r.hasAttribute('bit-theme-persist')){try{cur=localStorage.getItem(k)||base;}catch(e){}}" +
         "if(cur==='system'){cur=m?dk:lt;}" +
         "r.setAttribute('bit-theme',cur);})();";
 

@@ -8,7 +8,7 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Serialize and deserialize <see cref="BitTheme"/> for storage, admin UIs, or sharing brand tokens.
-/// Serialization omits empty nested JSON objects so sparse themes stay compact; deserialization restores
+/// Serialization omits empty nested JSON objects so sparse themes contain fewer properties; deserialization restores
 /// the usual eagerly-initialized graph so callers (for example <see cref="BitThemeUtilities.Merge"/>) never see null branches.
 /// </summary>
 public static class BitThemeSerialization
@@ -16,21 +16,19 @@ public static class BitThemeSerialization
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    private static readonly JsonSerializerOptions JsonNodeWriteOptions = new()
-    {
-        WriteIndented = true,
-    };
+    private static readonly JsonSerializerOptions IndentedOptions = new(Options) { WriteIndented = true };
+    private static readonly JsonSerializerOptions JsonNodeIndentedWriteOptions = new() { WriteIndented = true };
 
-    public static string Serialize(BitTheme? theme)
+    public static string Serialize(BitTheme? theme, bool writeIndented = false)
     {
-        var raw = JsonSerializer.Serialize(theme ?? new BitTheme(), Options);
+        var serializeOptions = writeIndented ? IndentedOptions : Options;
+        var raw = JsonSerializer.Serialize(theme ?? new BitTheme(), serializeOptions);
         var node = JsonNode.Parse(raw);
         PruneEmptyObjectNodes(node);
-        return node!.ToJsonString(JsonNodeWriteOptions);
+        return node!.ToJsonString(writeIndented ? JsonNodeIndentedWriteOptions : null);
     }
 
     public static BitTheme Deserialize(string? json)
