@@ -1,5 +1,4 @@
 using System;
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Utils.Theme;
