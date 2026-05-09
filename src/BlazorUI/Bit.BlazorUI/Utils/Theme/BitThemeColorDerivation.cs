@@ -21,9 +21,9 @@ public static class BitThemeColorDerivation
             variants.Dark ??= ToHex(h, s, ScaleV(v, 0.82));
             variants.DarkHover ??= ToHex(h, s, ScaleV(v, 0.76));
             variants.DarkActive ??= ToHex(h, s, ScaleV(v, 0.70));
-            variants.Light ??= ToHex(h, s, ScaleV(v, 1.08));
-            variants.LightHover ??= ToHex(h, s, ScaleV(v, 1.12));
-            variants.LightActive ??= ToHex(h, s, ScaleV(v, 1.16));
+            variants.Light ??= ToHex(h, s, AddV(v, 0.08));
+            variants.LightHover ??= ToHex(h, s, AddV(v, 0.12));
+            variants.LightActive ??= ToHex(h, s, AddV(v, 0.16));
             variants.Text ??= SuggestOnColorText(baseColor);
         }
         catch
@@ -36,6 +36,8 @@ public static class BitThemeColorDerivation
         => new BitInternalColor(h, s, Clamp01(v), a).Hex!;
 
     private static double ScaleV(double v, double factor) => Clamp01(v * factor);
+
+    private static double AddV(double v, double delta) => Clamp01(v + delta);
 
     private static double Clamp01(double v) => v < 0 ? 0 : v > 1 ? 1 : v;
 
