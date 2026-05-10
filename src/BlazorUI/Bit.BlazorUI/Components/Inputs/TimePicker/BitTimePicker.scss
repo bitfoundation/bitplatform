@@ -44,10 +44,13 @@
     }
 
     &.bit-rtl {
-        .bit-tpc-cbn {
-            left: 0;
-            right: unset;
-        }
+    }
+}
+
+.bit-tpc-cal.bit-tpc-rtl {
+    .bit-tpc-cbn {
+        left: 0;
+        right: unset;
     }
 }
 

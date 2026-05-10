@@ -1641,6 +1641,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             classes.Add("bit-drp-res");
         }
 
+        if (Dir is BitDir.Rtl)
+        {
+            classes.Add("bit-drp-rtl");
+        }
+
         return string.Join(' ', classes).Trim();
     }
 

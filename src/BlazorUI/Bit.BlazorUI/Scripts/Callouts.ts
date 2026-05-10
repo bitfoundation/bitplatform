@@ -4,7 +4,7 @@ namespace BitBlazorUI {
 
         public static current = Callouts.DEFAULT_CALLOUT;
         private static _calloutOriginalParents: Map<string, {
-            parent: Element,
+            parent: Element | null,
             nextSibling: Node | null,
             overlay: HTMLElement | null,
             overlayParent: Element | null,
@@ -172,10 +172,12 @@ namespace BitBlazorUI {
             if (callout.parentElement === document.body) return;
 
             const overlay = overlayId ? document.getElementById(overlayId) : null;
+            const parent = callout.parentElement;
+            const nextSibling = parent ? callout.nextSibling : null;
 
             Callouts._calloutOriginalParents.set(calloutId, {
-                parent: callout.parentElement!,
-                nextSibling: callout.nextSibling,
+                parent: parent,
+                nextSibling: nextSibling,
                 overlay: overlay,
                 overlayParent: overlay?.parentElement ?? null,
                 overlayNextSibling: overlay?.nextSibling ?? null
@@ -193,10 +195,12 @@ namespace BitBlazorUI {
 
             Callouts._calloutOriginalParents.delete(calloutId);
 
-            if (original.nextSibling && original.nextSibling.parentNode === original.parent) {
-                original.parent.insertBefore(callout, original.nextSibling);
-            } else {
-                original.parent.appendChild(callout);
+            if (original.parent) {
+                if (original.nextSibling && original.nextSibling.parentNode === original.parent) {
+                    original.parent.insertBefore(callout, original.nextSibling);
+                } else {
+                    original.parent.appendChild(callout);
+                }
             }
 
             if (original.overlay && original.overlayParent) {

@@ -77,9 +77,9 @@
 @if (Standalone is false)
 {
     <div @onclick="CloseCallout"
-         style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
          id="@_overlayId"
-     class="bit-ctp-ovl @Classes?.Overlay"></div>
+         style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
+         class="bit-ctp-ovl @Classes?.Overlay"></div>
 }
 
 <div id="@_calloutId"

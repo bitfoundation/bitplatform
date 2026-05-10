@@ -756,6 +756,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             classes.Add("bit-tpc-res");
         }
 
+        if (Dir is BitDir.Rtl)
+        {
+            classes.Add("bit-tpc-rtl");
+        }
+
         return string.Join(' ', classes).Trim();
     }
 

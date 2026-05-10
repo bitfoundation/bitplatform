@@ -789,12 +789,10 @@
     }
 }
 
-.bit-rtl {
-    .bit-drp-res {
-        @include lt-sm {
-            left: 0;
-            right: unset;
-            transform: translateX(-100%);
-        }
+.bit-drp-res.bit-drp-rtl {
+    @include lt-sm {
+        left: 0;
+        right: unset;
+        transform: translateX(-100%);
     }
 }

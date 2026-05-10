@@ -302,6 +302,11 @@ public partial class BitDropMenu : BitComponentBase
             _ => "bit-drm-end"
         });
 
+        if (Dir is BitDir.Rtl)
+        {
+            classes.Add("bit-drm-rtl");
+        }
+
         return string.Join(' ', classes).Trim();
     }
 

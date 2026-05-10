@@ -53,10 +53,13 @@
     }
 
     &.bit-rtl {
-        .bit-dtrp-am-pm {
-            order: -1;
-            direction: rtl;
-        }
+    }
+}
+
+.bit-dtrp-cal.bit-dtrp-rtl {
+    .bit-dtrp-am-pm {
+        order: -1;
+        direction: rtl;
     }
 }
 

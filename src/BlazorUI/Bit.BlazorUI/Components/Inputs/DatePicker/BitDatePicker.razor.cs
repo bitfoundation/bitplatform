@@ -1641,6 +1641,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             classes.Add("bit-dtp-res");
         }
 
+        if (Dir is BitDir.Rtl || (Dir is null && _culture.TextInfo.IsRightToLeft))
+        {
+            classes.Add("bit-dtp-rtl");
+        }
+
         return string.Join(' ', classes).Trim();
     }
 

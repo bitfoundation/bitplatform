@@ -2315,6 +2315,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             classes.Add("bit-dtrp-res");
         }
 
+        if (Dir is BitDir.Rtl || (Dir is null && _culture.TextInfo.IsRightToLeft))
+        {
+            classes.Add("bit-dtrp-rtl");
+        }
+
         return string.Join(' ', classes).Trim();
     }
 

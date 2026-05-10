@@ -84,6 +84,11 @@
     border-radius: $shp-border-radius;
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    --bit-drm-transform-factor: 1;
+}
+
+.bit-drm-cal.bit-drm-rtl {
+    --bit-drm-transform-factor: -1;
 }
 
 .bit-drm-res {
