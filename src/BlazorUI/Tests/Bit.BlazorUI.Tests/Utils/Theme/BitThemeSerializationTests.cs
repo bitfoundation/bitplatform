@@ -9,7 +9,7 @@ public sealed class BitThemeSerializationTests
     // ── Serialize ──────────────────────────────────────────────────────────────
 
     [TestMethod]
-    public void Serialize_DefaultTheme_ProducesEmptyJsonObject()
+    public void SerializeDefaultThemeProducesEmptyJsonObject()
     {
         var json = BitThemeSerialization.Serialize(new BitTheme());
 
@@ -17,7 +17,7 @@ public sealed class BitThemeSerializationTests
     }
 
     [TestMethod]
-    public void Serialize_NullTheme_ProducesEmptyJsonObject()
+    public void SerializeNullThemeProducesEmptyJsonObject()
     {
         var json = BitThemeSerialization.Serialize(null!);
 
@@ -25,7 +25,7 @@ public sealed class BitThemeSerializationTests
     }
 
     [TestMethod]
-    public void Serialize_SingleTokenSet_ContainsOnlyThatToken()
+    public void SerializeSingleTokenSetContainsOnlyThatToken()
     {
         var theme = new BitTheme();
         theme.Color.Primary.Main = "#FF0000";
@@ -50,7 +50,7 @@ public sealed class BitThemeSerializationTests
     }
 
     [TestMethod]
-    public void Serialize_UnsetSiblingVariantsOmitted()
+    public void SerializeUnsetSiblingVariantsOmitted()
     {
         var theme = new BitTheme();
         theme.Color.Primary.Main = "#111";
@@ -67,7 +67,7 @@ public sealed class BitThemeSerializationTests
     }
 
     [TestMethod]
-    public void Serialize_TypographyTokenSet_EmitsOnlyThatVariant()
+    public void SerializeTypographyTokenSetEmitsOnlyThatVariant()
     {
         var theme = new BitTheme();
         theme.Typography.H1.FontSize = "2rem";
@@ -84,7 +84,7 @@ public sealed class BitThemeSerializationTests
     }
 
     [TestMethod]
-    public void Serialize_UsesCamelCase()
+    public void SerializeUsesCamelCase()
     {
         var theme = new BitTheme();
         theme.Color.Primary.MainHover = "#AAA";
@@ -100,7 +100,7 @@ public sealed class BitThemeSerializationTests
     }
 
     [TestMethod]
-    public void Serialize_BoxShadowTokenSet_EmitsBoxShadow()
+    public void SerializeBoxShadowTokenSetEmitsBoxShadow()
     {
         var theme = new BitTheme();
         theme.BoxShadow.Sm = "0 1px 3px rgba(0,0,0,.12)";
@@ -117,7 +117,7 @@ public sealed class BitThemeSerializationTests
     // ── Deserialize ────────────────────────────────────────────────────────────
 
     [TestMethod]
-    public void Deserialize_EmptyJson_ReturnsDefaultTheme()
+    public void DeserializeEmptyJsonReturnsDefaultTheme()
     {
         var theme = BitThemeSerialization.Deserialize("{}");
 
@@ -126,7 +126,7 @@ public sealed class BitThemeSerializationTests
     }
 
     [TestMethod]
-    public void Deserialize_NullOrWhitespace_ReturnsDefaultTheme()
+    public void DeserializeNullOrWhitespaceReturnsDefaultTheme()
     {
         Assert.IsNotNull(BitThemeSerialization.Deserialize(null!));
         Assert.IsNotNull(BitThemeSerialization.Deserialize(""));
@@ -134,7 +134,7 @@ public sealed class BitThemeSerializationTests
     }
 
     [TestMethod]
-    public void Deserialize_ValidJson_RestoresTokenValue()
+    public void DeserializeValidJsonRestoresTokenValue()
     {
         const string json = """{"color":{"primary":{"main":"#ABCDEF"}}}""";
 
@@ -146,7 +146,7 @@ public sealed class BitThemeSerializationTests
     // ── Round-trip ─────────────────────────────────────────────────────────────
 
     [TestMethod]
-    public void RoundTrip_SingleToken_PreservesValue()
+    public void RoundTripSingleTokenPreservesValue()
     {
         var original = new BitTheme();
         original.Color.Primary.Main = "#ABCDEF";
@@ -157,7 +157,7 @@ public sealed class BitThemeSerializationTests
     }
 
     [TestMethod]
-    public void RoundTrip_MultipleTokensAcrossSections_AllPreserved()
+    public void RoundTripMultipleTokensAcrossSectionsAllPreserved()
     {
         var original = new BitTheme();
         original.Color.Primary.Main = "#111";
@@ -174,7 +174,7 @@ public sealed class BitThemeSerializationTests
     }
 
     [TestMethod]
-    public void RoundTrip_DefaultTheme_ProducesEmptyJsonAndRestoresDefaults()
+    public void RoundTripDefaultThemeProducesEmptyJsonAndRestoresDefaults()
     {
         var json = BitThemeSerialization.Serialize(new BitTheme());
         var roundTrip = BitThemeSerialization.Deserialize(json);

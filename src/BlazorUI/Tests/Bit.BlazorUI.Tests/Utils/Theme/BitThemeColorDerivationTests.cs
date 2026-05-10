@@ -9,14 +9,14 @@ public sealed class BitThemeColorDerivationTests
     // ── Guard clauses ──────────────────────────────────────────────────────────
 
     [TestMethod]
-    public void FillColorRoleFromMain_NullVariants_DoesNotThrow()
+    public void FillColorRoleFromMainNullVariantsDoesNotThrow()
     {
         // Should return silently – no exception expected.
         BitThemeColorDerivation.FillColorRoleFromMain(null!, "#FF0000");
     }
 
     [TestMethod]
-    public void FillColorRoleFromMain_NullHex_DoesNotThrow()
+    public void FillColorRoleFromMainNullHexDoesNotThrow()
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, null!);
@@ -24,7 +24,7 @@ public sealed class BitThemeColorDerivationTests
     }
 
     [TestMethod]
-    public void FillColorRoleFromMain_EmptyHex_DoesNotThrow()
+    public void FillColorRoleFromMainEmptyHexDoesNotThrow()
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "");
@@ -32,7 +32,7 @@ public sealed class BitThemeColorDerivationTests
     }
 
     [TestMethod]
-    public void FillColorRoleFromMain_InvalidHex_DoesNotThrow()
+    public void FillColorRoleFromMainInvalidHexDoesNotThrow()
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "not-a-color");
@@ -54,7 +54,7 @@ public sealed class BitThemeColorDerivationTests
     // ── All slots populated ────────────────────────────────────────────────────
 
     [TestMethod]
-    public void FillColorRoleFromMain_ValidColor_AllVariantsPopulated()
+    public void FillColorRoleFromMainValidColorAllVariantsPopulated()
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#3060A0");
@@ -74,7 +74,7 @@ public sealed class BitThemeColorDerivationTests
     // ── Pre-set values are never overwritten ───────────────────────────────────
 
     [TestMethod]
-    public void FillColorRoleFromMain_PresetMainNotOverwritten()
+    public void FillColorRoleFromMainPresetMainNotOverwritten()
     {
         const string preset = "#AABBCC";
         var v = new BitThemeColorVariants { Main = preset };
@@ -83,7 +83,7 @@ public sealed class BitThemeColorDerivationTests
     }
 
     [TestMethod]
-    public void FillColorRoleFromMain_PresetLightNotOverwritten()
+    public void FillColorRoleFromMainPresetLightNotOverwritten()
     {
         const string preset = "#FFFFFF";
         var v = new BitThemeColorVariants { Light = preset };
@@ -91,10 +91,82 @@ public sealed class BitThemeColorDerivationTests
         Assert.AreEqual(preset, v.Light);
     }
 
+    [TestMethod]
+    public void FillColorRoleFromMainPresetMainHoverNotOverwritten()
+    {
+        const string preset = "#AABBCC";
+        var v = new BitThemeColorVariants { MainHover = preset };
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#FF0000");
+        Assert.AreEqual(preset, v.MainHover);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainPresetMainActiveNotOverwritten()
+    {
+        const string preset = "#AABBCC";
+        var v = new BitThemeColorVariants { MainActive = preset };
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#FF0000");
+        Assert.AreEqual(preset, v.MainActive);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainPresetDarkNotOverwritten()
+    {
+        const string preset = "#AABBCC";
+        var v = new BitThemeColorVariants { Dark = preset };
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#FF0000");
+        Assert.AreEqual(preset, v.Dark);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainPresetDarkHoverNotOverwritten()
+    {
+        const string preset = "#AABBCC";
+        var v = new BitThemeColorVariants { DarkHover = preset };
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#FF0000");
+        Assert.AreEqual(preset, v.DarkHover);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainPresetDarkActiveNotOverwritten()
+    {
+        const string preset = "#AABBCC";
+        var v = new BitThemeColorVariants { DarkActive = preset };
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#FF0000");
+        Assert.AreEqual(preset, v.DarkActive);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainPresetLightHoverNotOverwritten()
+    {
+        const string preset = "#AABBCC";
+        var v = new BitThemeColorVariants { LightHover = preset };
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#FF0000");
+        Assert.AreEqual(preset, v.LightHover);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainPresetLightActiveNotOverwritten()
+    {
+        const string preset = "#AABBCC";
+        var v = new BitThemeColorVariants { LightActive = preset };
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#FF0000");
+        Assert.AreEqual(preset, v.LightActive);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainPresetTextNotOverwritten()
+    {
+        const string preset = "#AABBCC";
+        var v = new BitThemeColorVariants { Text = preset };
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#FF0000");
+        Assert.AreEqual(preset, v.Text);
+    }
+
     // ── Hex format ────────────────────────────────────────────────────────────
 
     [TestMethod]
-    public void FillColorRoleFromMain_ValidColor_HexValuesStartWithHash()
+    public void FillColorRoleFromMainValidColorHexValuesStartWithHash()
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#3060A0");
@@ -110,6 +182,7 @@ public sealed class BitThemeColorDerivationTests
             ("Light",       v.Light),
             ("LightHover",  v.LightHover),
             ("LightActive", v.LightActive),
+            ("Text",        v.Text),
         })
         {
             Assert.IsTrue(value!.StartsWith('#'), $"{name} should start with '#' but was '{value}'");
@@ -119,7 +192,7 @@ public sealed class BitThemeColorDerivationTests
     // ── Dark variants are darker than Main ────────────────────────────────────
 
     [TestMethod]
-    public void FillColorRoleFromMain_DarkVariants_AreDarkerThanMain()
+    public void FillColorRoleFromMainDarkVariantsAreDarkerThanMain()
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#3060A0");
@@ -137,21 +210,25 @@ public sealed class BitThemeColorDerivationTests
     // ── Light variants are lighter than Main ──────────────────────────────────
 
     [TestMethod]
-    public void FillColorRoleFromMain_LightVariants_AreLighterThanMain()
+    public void FillColorRoleFromMainLightVariantsAreLighterThanMain()
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#3060A0");
 
-        var mainLum  = Luminance(v.Main!);
-        var lightLum = Luminance(v.Light!);
+        var mainLum      = Luminance(v.Main!);
+        var lightLum     = Luminance(v.Light!);
+        var lHoverLum    = Luminance(v.LightHover!);
+        var lActiveLum   = Luminance(v.LightActive!);
 
-        Assert.IsTrue(lightLum > mainLum, "Light should be lighter than Main");
+        Assert.IsTrue(lightLum   > mainLum,   "Light should be lighter than Main");
+        Assert.IsTrue(lHoverLum  > lightLum,  "LightHover should be lighter than Light");
+        Assert.IsTrue(lActiveLum > lHoverLum, "LightActive should be lighter than LightHover");
     }
 
     // ── Light steps are distinct even for high-brightness colors ──────────────
 
     [TestMethod]
-    public void FillColorRoleFromMain_HighBrightnessColor_LightStepsAreDistinct()
+    public void FillColorRoleFromMainHighBrightnessColorLightStepsAreDistinct()
     {
         // Pure white or near-white causes multiplicative scaling to collapse;
         // additive offsets must keep steps distinguishable.
@@ -165,7 +242,7 @@ public sealed class BitThemeColorDerivationTests
     }
 
     [TestMethod]
-    public void FillColorRoleFromMain_HighBrightnessColor_LightStepsMutuallyDistinct()
+    public void FillColorRoleFromMainHighBrightnessColorLightStepsMutuallyDistinct()
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#B0C8E0"); // mid-high brightness
@@ -176,7 +253,7 @@ public sealed class BitThemeColorDerivationTests
     }
 
     [TestMethod]
-    public void FillColorRoleFromMain_VeryHighBrightnessColor_LightStepsMutuallyDistinct()
+    public void FillColorRoleFromMainVeryHighBrightnessColorLightStepsMutuallyDistinct()
     {
         // #D0D0D0 → v ≈ 0.816; all three additive steps (0.08/0.12/0.16) stay below 1.0
         // and produce distinct hex values.  Colors with v > 0.84 may still have LightActive
@@ -191,7 +268,7 @@ public sealed class BitThemeColorDerivationTests
     // ── Text contrast suggestion ───────────────────────────────────────────────
 
     [TestMethod]
-    public void FillColorRoleFromMain_DarkBaseColor_TextIsWhite()
+    public void FillColorRoleFromMainDarkBaseColorTextIsWhite()
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#1A1A2E");
@@ -199,7 +276,7 @@ public sealed class BitThemeColorDerivationTests
     }
 
     [TestMethod]
-    public void FillColorRoleFromMain_LightBaseColor_TextIsBlack()
+    public void FillColorRoleFromMainLightBaseColorTextIsBlack()
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#F0F0F0");
@@ -209,7 +286,7 @@ public sealed class BitThemeColorDerivationTests
     // ── Whitespace trimming ───────────────────────────────────────────────────
 
     [TestMethod]
-    public void FillColorRoleFromMain_HexWithWhitespace_ParsedCorrectly()
+    public void FillColorRoleFromMainHexWithWhitespaceParsedCorrectly()
     {
         var v1 = new BitThemeColorVariants();
         var v2 = new BitThemeColorVariants();
