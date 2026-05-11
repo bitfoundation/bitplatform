@@ -6,7 +6,8 @@ namespace Bit.BlazorUI;
 public static class BitThemeColorDerivation
 {
     /// <summary>Fills unset <see cref="BitThemeColorVariants"/> fields from <paramref name="mainHex"/>.</summary>
-    public static void FillColorRoleFromMain(BitThemeColorVariants? variants, string? mainHex)
+    /// <param name="adjustTextForWcagAa">When true, flips suggested on-color text if contrast vs <see cref="BitThemeColorVariants.Main"/> fails WCAG AA for normal text.</param>
+    public static void FillColorRoleFromMain(BitThemeColorVariants? variants, string? mainHex, bool adjustTextForWcagAa = false)
     {
         if (variants is null || string.IsNullOrWhiteSpace(mainHex)) return;
 
@@ -25,6 +26,15 @@ public static class BitThemeColorDerivation
             variants.LightHover ??= ToHex(h, s, AddV(v, 0.12));
             variants.LightActive ??= ToHex(h, s, AddV(v, 0.16));
             variants.Text ??= SuggestOnColorText(baseColor);
+
+            if (adjustTextForWcagAa && variants.Main is not null && variants.Text is not null)
+            {
+                var ratio = BitThemeColorContrast.GetContrastRatio(variants.Text, variants.Main);
+                if (!BitThemeColorContrast.MeetsWcagAaNormalText(ratio))
+                {
+                    variants.Text = variants.Text.Equals("#000000", StringComparison.OrdinalIgnoreCase) ? "#FFFFFF" : "#000000";
+                }
+            }
         }
         catch
         {

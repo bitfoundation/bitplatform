@@ -31,4 +31,19 @@ internal static class BitThemeJsExtensions
     {
         return js.Invoke<string>("BitTheme.getPersisted");
     }
+
+    internal static ValueTask BitThemeClearAppliedBitTheme(this IJSRuntime js, ElementReference? element)
+    {
+        return js.InvokeVoid("BitTheme.clearAppliedBitTheme", element);
+    }
+
+    internal static ValueTask BitThemeRegisterDotNetNotifier(this IJSRuntime js, DotNetObjectReference<BitThemeJsNotifierReceiver> dotNetRef)
+    {
+        return js.InvokeVoid("BitTheme.registerDotNetNotifier", dotNetRef);
+    }
+
+    internal static ValueTask BitThemeUnregisterDotNetNotifier(this IJSRuntime js)
+    {
+        return js.InvokeVoid("BitTheme.unregisterDotNetNotifier");
+    }
 }

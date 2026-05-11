@@ -1,0 +1,32 @@
+// Windows High Contrast / forced-colors: preserve readability with system palette.
+@media (forced-colors: active) {
+    :root {
+        --bit-clr-fg-pri: CanvasText;
+        --bit-clr-fg-sec: CanvasText;
+        --bit-clr-fg-ter: CanvasText;
+        --bit-clr-bg-pri: Canvas;
+        --bit-clr-bg-sec: Canvas;
+        --bit-clr-bg-ter: Canvas;
+        --bit-clr-brd-pri: CanvasText;
+        --bit-clr-brd-sec: CanvasText;
+        --bit-clr-pri: LinkText;
+        --bit-clr-pri-hover: LinkText;
+        --bit-clr-pri-active: LinkText;
+        --bit-clr-pri-text: Canvas;
+        --bit-clr-err: CanvasText;
+        --bit-clr-suc: CanvasText;
+        --bit-clr-wrn: CanvasText;
+        --bit-shd-cal: none;
+        --bit-shd-sm: none;
+        --bit-shd-nm: none;
+        --bit-shd-md: none;
+        --bit-shd-lg: none;
+    }
+}
+
+// Stronger contrast preference (non-forced): deepen borders and primary text slightly.
+@media (prefers-contrast: more) {
+    :root {
+        --bit-shp-brd-width: max(var(--bit-shp-brd-width, 1px), 1px);
+    }
+}

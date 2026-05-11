@@ -1,0 +1,10 @@
+// Semantic aliases over primitive tokens — use in app CSS instead of raw --bit-clr-* where intent matters.
+:root {
+    --bit-sem-surface-page: var(--bit-clr-bg-pri);
+    --bit-sem-surface-elevated: var(--bit-clr-bg-sec);
+    --bit-sem-surface-muted: var(--bit-clr-bg-ter);
+    --bit-sem-text-primary: var(--bit-clr-fg-pri);
+    --bit-sem-text-secondary: var(--bit-clr-fg-sec);
+    --bit-sem-border-default: var(--bit-clr-brd-pri);
+    --bit-sem-accent-primary: var(--bit-clr-pri);
+}

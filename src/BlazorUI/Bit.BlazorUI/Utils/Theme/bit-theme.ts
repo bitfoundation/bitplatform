@@ -10,11 +10,17 @@ interface BitThemeOptions {
     onChange?: onThemeChangeType;
 }
 
+interface BitThemeSetOptions {
+    /** When true, startup init so resolved light/dark does not disable OS sync from bit-theme-system. */
+    fromInit?: boolean;
+    /** Reserved for internal OS refresh paths (same as normal set without touching follow-system flags). */
+    internalOsRefresh?: boolean;
+}
+
 class BitTheme {
     private static SYSTEM_THEME = 'system';
     private static THEME_ATTRIBUTE = 'bit-theme';
     private static THEME_STORAGE_KEY = 'bit-current-theme';
-
 
     private static _persist = false;
     private static _darkTheme: string = 'dark';
@@ -23,6 +29,15 @@ class BitTheme {
     private static _currentTheme = BitTheme._lightTheme;
     private static _onThemeChange: onThemeChangeType = () => { };
 
+    /** When true, user pinned an explicit theme via set (not system); disables following OS until set('system'). */
+    private static _stopFollowingSystem = false;
+
+    private static _schemeMediaQuery: MediaQueryList | null = null;
+    private static _onSchemeChange = () => BitTheme.applyResolvedSystemThemeFromOs();
+
+    private static _dotnetNotifier: DotNetObject | null = null;
+
+    private static _appliedVarKeys = new WeakMap<HTMLElement, string[]>();
 
     public static init(options: BitThemeOptions) {
         Object.assign(BitTheme._initOptions, options);
@@ -50,7 +65,8 @@ class BitTheme {
             theme = BitTheme.getPersisted() || theme;
         }
 
-        BitTheme.set(theme);
+        BitTheme.set(theme, { fromInit: true });
+        BitTheme.syncSystemThemeListener();
     }
 
     public static onChange(fn: onThemeChangeType) {
@@ -68,7 +84,18 @@ class BitTheme {
         return BitTheme._currentTheme;
     }
 
-    public static set(themeName: string) {
+    public static set(themeName: string, options?: BitThemeSetOptions) {
+        const fromInit = options?.fromInit === true;
+        const internalOs = options?.internalOsRefresh === true;
+
+        if (!fromInit && !internalOs) {
+            if (themeName === BitTheme.SYSTEM_THEME) {
+                BitTheme._stopFollowingSystem = false;
+            } else {
+                BitTheme._stopFollowingSystem = true;
+            }
+        }
+
         BitTheme._currentTheme = BitTheme.getActualTheme(themeName)!;
 
         if (BitTheme._persist) {
@@ -79,7 +106,9 @@ class BitTheme {
 
         document.documentElement.setAttribute(BitTheme.THEME_ATTRIBUTE, BitTheme._currentTheme);
 
-        BitTheme._onThemeChange?.(BitTheme._currentTheme, oldTheme);
+        BitTheme.dispatchThemeChange(BitTheme._currentTheme, oldTheme);
+
+        BitTheme.syncSystemThemeListener();
 
         return BitTheme._currentTheme;
     }
@@ -94,9 +123,26 @@ class BitTheme {
         return BitTheme._currentTheme;
     }
 
-    public static applyBitTheme(theme: any, element?: HTMLElement) {
+    /** Pins storage (when persist is on) to <c>system</c> and follows OS light/dark until an explicit preset is set. */
+    public static useSystem() {
+        return BitTheme.set(BitTheme.SYSTEM_THEME);
+    }
+
+    public static applyBitTheme(theme: Record<string, string>, element?: HTMLElement) {
         const el = element || document.body;
-        Object.keys(theme).forEach(key => el.style.setProperty(key, theme[key]));
+        const keys = Object.keys(theme);
+        const prev = BitTheme._appliedVarKeys.get(el) || [];
+        keys.forEach(key => el.style.setProperty(key, theme[key]));
+        BitTheme._appliedVarKeys.set(el, [...new Set([...prev, ...keys])]);
+    }
+
+    /** Removes --bit-* properties previously applied by applyBitTheme on the target (default document.body). */
+    public static clearAppliedBitTheme(element?: HTMLElement) {
+        const el = element || document.body;
+        const keys = BitTheme._appliedVarKeys.get(el);
+        if (!keys || keys.length === 0) return;
+        keys.forEach(k => el.style.removeProperty(k));
+        BitTheme._appliedVarKeys.delete(el);
     }
 
     public static isSystemDark() {
@@ -109,12 +155,89 @@ class BitTheme {
         return localStorage.getItem(BitTheme.THEME_STORAGE_KEY);
     }
 
+    public static registerDotNetNotifier(dotNetRef: DotNetObject) {
+        BitTheme._dotnetNotifier = dotNetRef;
+    }
+
+    public static unregisterDotNetNotifier() {
+        BitTheme._dotnetNotifier = null;
+    }
+
+    private static shouldFollowSystem(): boolean {
+        if (typeof document === 'undefined') return false;
+        if (BitTheme._stopFollowingSystem) return false;
+        if (BitTheme._persist && BitTheme.getPersisted() === BitTheme.SYSTEM_THEME) return true;
+        if (document.documentElement.hasAttribute('bit-theme-system')) return true;
+        return false;
+    }
+
+    private static syncSystemThemeListener() {
+        BitTheme.detachSystemThemeListener();
+        if (!BitTheme.shouldFollowSystem()) return;
+        BitTheme.attachSystemThemeListener();
+    }
+
+    private static attachSystemThemeListener() {
+        if (!window.matchMedia) return;
+        BitTheme._schemeMediaQuery = matchMedia('(prefers-color-scheme: dark)');
+        BitTheme._schemeMediaQuery.addEventListener('change', BitTheme._onSchemeChange);
+        const legacy = BitTheme._schemeMediaQuery as unknown as { addListener?: (cb: () => void) => void };
+        legacy.addListener?.(BitTheme._onSchemeChange);
+    }
+
+    private static detachSystemThemeListener() {
+        if (!BitTheme._schemeMediaQuery) return;
+        BitTheme._schemeMediaQuery.removeEventListener('change', BitTheme._onSchemeChange);
+        const legacy = BitTheme._schemeMediaQuery as unknown as { removeListener?: (cb: () => void) => void };
+        legacy.removeListener?.(BitTheme._onSchemeChange);
+        BitTheme._schemeMediaQuery = null;
+    }
+
+    private static applyResolvedSystemThemeFromOs() {
+        if (!BitTheme.shouldFollowSystem()) return;
+
+        const resolved = BitTheme.isSystemDark() ? BitTheme._darkTheme : BitTheme._lightTheme;
+        const oldTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
+
+        if (resolved === oldTheme) return;
+
+        BitTheme._currentTheme = resolved;
+        document.documentElement.setAttribute(BitTheme.THEME_ATTRIBUTE, resolved);
+        BitTheme.dispatchThemeChange(resolved, oldTheme);
+    }
+
+    private static dispatchThemeChange(newTheme: string, oldTheme: string) {
+        BitTheme._onThemeChange?.(newTheme, oldTheme);
+        const n = BitTheme._dotnetNotifier;
+        if (n) {
+            void n.invokeMethodAsync('NotifyThemeChangedFromJs', newTheme, oldTheme);
+        }
+    }
+
     private static getActualTheme(theme: string | null) {
         if (theme === BitTheme.SYSTEM_THEME) {
             return BitTheme.isSystemDark() ? BitTheme._darkTheme : BitTheme._lightTheme;
         }
 
         return theme;
+    }
+}
+
+/** Attach or swap alternate theme stylesheets at runtime (prefer same-origin / trusted URLs). */
+class BitExternalTheme {
+    public static attach(linkId: string, href: string) {
+        let el = document.getElementById(linkId) as HTMLLinkElement | null;
+        if (!el) {
+            el = document.createElement('link');
+            el.id = linkId;
+            el.rel = 'stylesheet';
+            document.head.appendChild(el);
+        }
+        el.href = href;
+    }
+
+    public static detach(linkId: string) {
+        document.getElementById(linkId)?.remove();
     }
 }
 
@@ -132,3 +255,4 @@ class BitTheme {
 }());
 
 (window as any).BitTheme = BitTheme;
+(window as any).BitExternalTheme = BitExternalTheme;

@@ -572,6 +572,52 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
 
         <br />
 
+        <BitCard>
+            <BitText Typography="BitTypography.H4">Advanced theming (API overview)</BitText>
+            <br />
+            <BitText Typography="BitTypography.Body1">
+                <strong>OS appearance:</strong> When <BitTag>bit-theme-system</BitTag> is on <BitTag>&lt;html&gt;</BitTag> or the persisted key is <BitTag>system</BitTag>, the client script listens for <BitTag>prefers-color-scheme</BitTag> changes and updates <BitTag>bit-theme</BitTag> without a reload. Call <BitTag>BitTheme.useSystem()</BitTag> or <BitTag>SetThemeAsync(&quot;system&quot;)</BitTag> to follow the OS again after choosing an explicit preset.
+            </BitText>
+            <br />
+            <BitText Typography="BitTypography.Body1">
+                <strong>.NET notifications:</strong> Inject <BitTag>BitThemeNotifications</BitTag> and subscribe to <BitTag>ThemeChanged</BitTag>. Use any method on <BitTag>BitThemeManager</BitTag> once per circuit so the script registers the JS bridge (or call <BitTag>EnsureThemeNotificationsRegisteredAsync</BitTag>).
+            </BitText>
+            <br />
+            <BitText Typography="BitTypography.Body1">
+                <strong>Clearing token overrides:</strong> <BitTag>ClearBitThemeOverridesAsync</BitTag> removes variables previously applied by <BitTag>ApplyBitThemeAsync</BitTag>. Prefer scoping brand tweaks inside <BitTag>BitThemeProvider</BitTag> instead of <BitTag>document.body</BitTag>.
+            </BitText>
+            <br />
+            <BitText Typography="BitTypography.Body1">
+                <strong>Accessibility:</strong> Fluent bundles include <BitTag>forced-colors</BitTag> / <BitTag>prefers-contrast</BitTag> guards and motion tokens (<BitTag>--bit-mot-*</BitTag>) with <BitTag>prefers-reduced-motion</BitTag>. Use <BitTag>BitThemeColorContrast</BitTag> for WCAG ratios and optional <BitTag>FillColorRoleFromMain(..., adjustTextForWcagAa: true)</BitTag>.
+            </BitText>
+            <br />
+            <BitText Typography="BitTypography.Body1">
+                <strong>Layout tokens:</strong> <BitTag>BitTheme.Motion</BitTag>, <BitTag>BitTheme.Layout</BitTag> (direction, density scale, breakpoints) map to <BitTag>--bit-mot-*</BitTag>, <BitTag>--bit-layout-*</BitTag>, <BitTag>--bit-bp-*</BitTag>. Defaults include <BitTag>BitThemeBreakpointDefaults</BitTag>; compact presets via <BitTag>BitThemeDensityPresets.CreateCompactOverlay()</BitTag>. Semantic aliases such as <BitTag>--bit-sem-surface-page</BitTag> point at primitive tokens.
+            </BitText>
+            <br />
+            <BitText Typography="BitTypography.Body1">
+                <strong>RTL:</strong> Set <BitTag>dir=&quot;rtl&quot;</BitTag> on <BitTag>&lt;html&gt;</BitTag> or a root element, and optionally <BitTag>Layout.Direction</BitTag> on <BitTag>BitTheme</BitTag> for <BitTag>--bit-layout-dir</BitTag>. Use logical properties in your app CSS where needed.
+            </BitText>
+            <br />
+            <BitText Typography="BitTypography.Body1">
+                <strong>Accent samples:</strong> <BitTag>BitAccentColorPresets</BitTag> lists starter hex values for primary branding.
+            </BitText>
+            <br />
+            <BitText Typography="BitTypography.Body1">
+                <strong>External CSS bundles:</strong> <BitTag>BitExternalThemeLoader</BitTag> attaches or removes a stylesheet link by id (<BitTag>BitExternalTheme.attach</BitTag> in JS). Use trusted URLs only.
+            </BitText>
+            <br />
+            <BitText Typography="BitTypography.Body1">
+                <strong>SSR cookies:</strong> <BitTag>BitThemeCookie.PreferenceCookieName</BitTag> documents a conventional cookie for server-rendered first paint; combine with your host reading the cookie and emitting the same theme key the client will use.
+            </BitText>
+            <br />
+            <BitText Typography="BitTypography.Body1">
+                <strong>Component defaults:</strong> Use cascading <BitTag>BitParams</BitTag> for per-tree defaults; a single global &quot;component defaults registry&quot; in <BitTag>BitTheme</BitTag> would need a design pass to avoid duplicating that model.
+            </BitText>
+        </BitCard>
+
+        <br />
+
         <FeedbackSection Url="ThemingPage.razor" />
     </BitParams>
 </section>

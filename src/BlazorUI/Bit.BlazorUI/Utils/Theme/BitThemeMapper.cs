@@ -357,6 +357,19 @@ internal static class BitThemeMapper
         addCssVar("--bit-tpg-subtitle2-line-height", bitTheme.Typography.Subtitle2.LineHeight);
         addCssVar("--bit-tpg-subtitle2-letter-spacing", bitTheme.Typography.Subtitle2.LetterSpacing);
 
+        addCssVar("--bit-mot-duration", bitTheme.Motion.Duration);
+        addCssVar("--bit-mot-duration-short", bitTheme.Motion.DurationShort);
+        addCssVar("--bit-mot-duration-long", bitTheme.Motion.DurationLong);
+        addCssVar("--bit-mot-easing", bitTheme.Motion.EasingStandard);
+
+        addCssVar("--bit-layout-dir", bitTheme.Layout.Direction);
+        addCssVar("--bit-layout-density-scale", bitTheme.Layout.DensityScale);
+        addCssVar("--bit-bp-xs", bitTheme.Layout.Breakpoints.Xs);
+        addCssVar("--bit-bp-sm", bitTheme.Layout.Breakpoints.Sm);
+        addCssVar("--bit-bp-md", bitTheme.Layout.Breakpoints.Md);
+        addCssVar("--bit-bp-lg", bitTheme.Layout.Breakpoints.Lg);
+        addCssVar("--bit-bp-xl", bitTheme.Layout.Breakpoints.Xl);
+
         return result;
 
         void addCssVar(string key, string? value) { if (value is not null) result!.Add(key, value); }
@@ -714,6 +727,19 @@ internal static class BitThemeMapper
         result.Typography.Subtitle2.FontSize = bitTheme.Typography.Subtitle2.FontSize ?? other.Typography.Subtitle2.FontSize;
         result.Typography.Subtitle2.LineHeight = bitTheme.Typography.Subtitle2.LineHeight ?? other.Typography.Subtitle2.LineHeight;
         result.Typography.Subtitle2.LetterSpacing = bitTheme.Typography.Subtitle2.LetterSpacing ?? other.Typography.Subtitle2.LetterSpacing;
+
+        result.Motion.Duration = bitTheme.Motion.Duration ?? other.Motion.Duration;
+        result.Motion.DurationShort = bitTheme.Motion.DurationShort ?? other.Motion.DurationShort;
+        result.Motion.DurationLong = bitTheme.Motion.DurationLong ?? other.Motion.DurationLong;
+        result.Motion.EasingStandard = bitTheme.Motion.EasingStandard ?? other.Motion.EasingStandard;
+
+        result.Layout.Direction = bitTheme.Layout.Direction ?? other.Layout.Direction;
+        result.Layout.DensityScale = bitTheme.Layout.DensityScale ?? other.Layout.DensityScale;
+        result.Layout.Breakpoints.Xs = bitTheme.Layout.Breakpoints.Xs ?? other.Layout.Breakpoints.Xs;
+        result.Layout.Breakpoints.Sm = bitTheme.Layout.Breakpoints.Sm ?? other.Layout.Breakpoints.Sm;
+        result.Layout.Breakpoints.Md = bitTheme.Layout.Breakpoints.Md ?? other.Layout.Breakpoints.Md;
+        result.Layout.Breakpoints.Lg = bitTheme.Layout.Breakpoints.Lg ?? other.Layout.Breakpoints.Lg;
+        result.Layout.Breakpoints.Xl = bitTheme.Layout.Breakpoints.Xl ?? other.Layout.Breakpoints.Xl;
 
         return result;
     }

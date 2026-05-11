@@ -1,0 +1,15 @@
+:root {
+    --bit-mot-duration: 200ms;
+    --bit-mot-duration-short: 100ms;
+    --bit-mot-duration-long: 300ms;
+    --bit-mot-easing: cubic-bezier(0.33, 0, 0.67, 1);
+    --bit-layout-density-scale: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --bit-mot-duration: 0.01ms;
+        --bit-mot-duration-short: 0.01ms;
+        --bit-mot-duration-long: 0.01ms;
+    }
+}
