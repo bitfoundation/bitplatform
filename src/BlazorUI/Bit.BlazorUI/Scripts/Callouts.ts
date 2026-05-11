@@ -47,7 +47,9 @@ namespace BitBlazorUI {
                     callout.style.display = 'none';
                 }
                 Callouts.restoreCalloutToOriginalParent(calloutId, callout);
-                Callouts.reset();
+                if (Callouts.current.calloutId === calloutId) {
+                    Callouts.reset();
+                }
                 return false;
             }
 
