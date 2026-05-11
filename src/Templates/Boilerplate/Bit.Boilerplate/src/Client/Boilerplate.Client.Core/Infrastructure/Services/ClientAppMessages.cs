@@ -8,7 +8,7 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 /// shared app messages used for messaging between Blazor components, JavaScript and Web Service Worker.
 /// </summary>
 public partial class ClientAppMessages
-    //#if (signalR == true)
+//#if (signalR == true)
     : SharedAppMessages
 //#endif
 {
@@ -38,37 +38,30 @@ public partial class ClientAppMessages
     public const string CLOSE_NAV_PANEL = nameof(CLOSE_NAV_PANEL);
 
     /// <summary>
-    /// A publisher that sends this message announces that the subscriber should navigate to a specific page.
-    /// </summary>
-    public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
-
-    /// <summary>
     /// A publisher that sends this message announces that the subscriber should show the diagnostic modal.
     /// </summary>
     public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);
 
-    //#if(module == "Sales")
+//#if(module == "Sales")
     /// <summary>
     /// A publisher that sends this message announces that the subscriber should open the AI chat panel with product search prompt.
     /// When a user taps on search bar, this message is published to open the AI chat panel with product search prompt.
     /// </summary>
     public const string SEARCH_PRODUCTS = nameof(SEARCH_PRODUCTS);
-    //#endif
+//#endif
 
-    //#if(ads == true)
+//#if(ads == true)
     /// <summary>
     /// A publisher that sends this message announces that the subscriber should open the AI chat panel with ad help prompt.
     /// When a user has trouble with ads, this message is published to open the AI chat panel with ad help prompt.
     /// </summary>
     public const string AD_HAVE_TROUBLE = nameof(AD_HAVE_TROUBLE);
-    //#endif
+//#endif
 
     /// <summary>
     /// A publisher that sends this message announces that the subscriber should force the app to check for updates and install them.
     /// </summary>
     public const string FORCE_UPDATE = nameof(FORCE_UPDATE);
-
-
 
 
 
@@ -98,7 +91,7 @@ public partial class ClientAppMessages
     /// </summary>
     public const string ROUTE_DATA_UPDATED = nameof(ROUTE_DATA_UPDATED);
 
-    //#if (signalR != true)
+//#if (signalR != true)
     /// <summary>
     /// A publisher that publishes this message notifies that the subscriber's user's profile has been changed.
     /// </summary>
@@ -109,7 +102,12 @@ public partial class ClientAppMessages
     /// This would let the client know about the progress of a job (Typically a long-running hangfire background job).
     /// </summary>
     public const string BACKGROUND_JOB_PROGRESS = nameof(BACKGROUND_JOB_PROGRESS);
-    //#endif
+
+    /// <summary>
+    /// A publisher that sends this message announces that the subscriber should navigate to a specific page.
+    /// </summary>
+    public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
+//#endif
 
     /// <summary>
     /// A publisher that publishes this message notifies that the user's external sign-in process has completed.
