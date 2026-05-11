@@ -36,7 +36,7 @@
             else
             {
                 var icon = GetIcon(_selectedItem);
-                @if (icon is not null)
+                @if (!NoIcon && icon is not null)
                 {
                     <i style="@Styles?.OperatorButtonIcon" class="@icon.GetCssClasses() @Classes?.OperatorButtonIcon" />
                 }
@@ -54,7 +54,7 @@
             }
             else
             {
-                @if (headerIcon is not null)
+                @if (!NoIcon && headerIcon is not null)
                 {
                     <i style="@Styles?.Icon" class="@headerIcon.GetCssClasses() @Classes?.Icon" />
                 }
@@ -99,10 +99,9 @@
         <ul role="presentation" style="@Styles?.CalloutContainer" class="bit-mnb-cul @Classes?.CalloutContainer">
             @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
             {
-                if (Sticky && item == SelectedItem) continue;
-
                 var template = GetTemplate(item);
                 var isEnabled = GetIsEnabled(item);
+                var isSelected = Sticky && item == SelectedItem;
                 <li role="presentation" @key="@GetItemKey(item, idx.ToString())" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
                     <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                             role="menuitem"
@@ -111,7 +110,7 @@
                             disabled="@(isEnabled is false)"
                             aria-disabled="@(isEnabled is false)"
                             style="@GetStyle(item);@Styles?.ItemButton"
-                            class="bit-mnb-itm @GetClass(item) @Classes?.ItemButton">
+                            class="bit-mnb-itm @(isSelected ? "bit-mnb-sel" : "") @GetClass(item) @Classes?.ItemButton">
                         @if (template is not null)
                         {
                             @template(item)

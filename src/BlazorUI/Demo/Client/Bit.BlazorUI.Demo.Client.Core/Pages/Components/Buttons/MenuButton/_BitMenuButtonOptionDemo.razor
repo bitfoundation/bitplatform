@@ -962,7 +962,124 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9">
+<DemoExample Title="Background" RazorCode="@example9RazorCode" Id="example9">
+    <div>Use the Background parameter to control the background color of the callout using BitColorKind values.</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Primary" TItem="BitMenuButtonOption" Background="BitColorKind.Primary">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+        <BitMenuButton Text="Secondary" TItem="BitMenuButtonOption" Background="BitColorKind.Secondary">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+        <BitMenuButton Text="Tertiary" TItem="BitMenuButtonOption" Background="BitColorKind.Tertiary">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+        <BitMenuButton Text="Transparent" TItem="BitMenuButtonOption" Background="BitColorKind.Transparent">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Toggle" RazorCode="@example10RazorCode" Id="example10">
+    <div>Enable toggle behavior on the header button in Split mode. Clicking the operator button will toggle the IsToggled state instead of opening the callout.</div>
+    <br />
+    <div>Toggle:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Toggle" TItem="BitMenuButtonOption" Split Toggle>
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+    </div>
+    <br /><br />
+    <div>DefaultIsToggled:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="DefaultIsToggled" TItem="BitMenuButtonOption" Split Toggle DefaultIsToggled="true">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+    </div>
+    <br /><br />
+    <div>Two-way binding:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Two-way" TItem="BitMenuButtonOption" Split Toggle @bind-IsToggled="optionIsToggled">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+        <BitCheckbox Label="IsToggled" @bind-Value="optionIsToggled" />
+    </div>
+    <br /><br />
+    <div>OnToggleChange: @optionToggledValue</div>
+    <br />
+    <BitMenuButton Text="OnToggleChange" TItem="BitMenuButtonOption" Split Toggle OnToggleChange="v => optionToggledValue = v">
+        <BitMenuButtonOption Text="Option A" Key="A" />
+        <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+        <BitMenuButtonOption Text="Option C" Key="C" />
+    </BitMenuButton>
+</DemoExample>
+
+<DemoExample Title="NoIcon" RazorCode="@example11RazorCode" Id="example11">
+    <div>Use the NoIcon parameter to hide the header icon of the menu button.</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="With icon" TItem="BitMenuButtonOption" IconName="@BitIconName.Edit">
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+        <BitMenuButton Text="No icon" TItem="BitMenuButtonOption" IconName="@BitIconName.Edit" NoIcon>
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+    </div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Sticky TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+        <BitMenuButton Sticky TItem="BitMenuButtonOption" NoIcon>
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+    </div>
+</DemoExample>
+
+<DemoExample Title="SelectedItem" RazorCode="@example12RazorCode" Id="example12">
+    <div>In Sticky mode, the currently selected item is visually highlighted in the callout with a distinct background color.</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Sticky TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" IsSelected="true" />
+        </BitMenuButton>
+        <BitMenuButton Sticky Split TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" IsSelected="true" />
+        </BitMenuButton>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Templates" RazorCode="@example13RazorCode" Id="example13">
     <div>Explore BitMenuButton's customization capabilities.</div>
     <div>Note that if <strong>Sticky</strong> set to true, HeaderTemplate and Text will be ignored.</div>
     <br />
@@ -1008,7 +1125,7 @@
     </BitMenuButton>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Events" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>Demonstrate BitMenuButton instances highlighting item click events, offering versatile interactions within the menu buttons.</div>
     <br />
     <div>Non-Sticky</div>
@@ -1053,7 +1170,7 @@
     <div>Clicked option: @exampleClickedOption</div>
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Binding" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>This example demonstrates different ways to handle item selection and changes within the component.</div>
     <br /><br /><br /><br />
     <div>
@@ -1110,7 +1227,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
     <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
     
     <br />
@@ -1190,7 +1307,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+<DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
     <div>Use BitMenuButton in right-to-left (RTL).</div>
     <br />
     <div class="example-content" dir="rtl">

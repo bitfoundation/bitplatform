@@ -20,6 +20,15 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "Background",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The background color kind of the callout.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum",
+        },
+        new()
+        {
             Name = "ButtonType",
             Type = "BitButtonType?",
             DefaultValue = "null",
@@ -77,6 +86,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "DefaultIsToggled",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Default value of the IsToggled parameter in toggle mode.",
+        },
+        new()
+        {
             Name = "HeaderTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -107,6 +123,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "IsToggled",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the header button is in the toggled state when Toggle is enabled.",
+        },
+        new()
+        {
             Name = "Items",
             Type = "IEnumerable<TItem>",
             DefaultValue = "new List<TItem>()",
@@ -132,6 +155,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "NoIcon",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the icon of the header button is hidden.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "The callback is called when the menu button header is clicked."
@@ -141,6 +171,12 @@ public partial class BitMenuButtonDemo
             Name = "OnChange",
             Type = "EventCallback<TItem>",
             Description = "The callback that is called when the selected item has changed."
+        },
+        new()
+        {
+            Name = "OnToggleChange",
+            Type = "EventCallback<bool>",
+            Description = "The callback that is called when the IsToggled value changes in toggle mode.",
         },
         new()
         {
@@ -194,6 +230,13 @@ public partial class BitMenuButtonDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The text to show inside the header of menu button."
+        },
+        new()
+        {
+            Name = "Toggle",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, enables toggle behavior on the header button in Split mode.",
         },
         new()
         {
@@ -493,6 +536,13 @@ public partial class BitMenuButtonDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the text of the BitMenuButton."
                },
+               new()
+               {
+                   Name = "Toggled",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the toggled state of the BitMenuButton."
+               },
             ],
         },
         new()
@@ -637,6 +687,39 @@ public partial class BitMenuButtonDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        new()
+        {
+            Id = "color-kind-enum",
+            Name = "BitColorKind",
+            Description = "Defines the color kinds available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Primary",
+                    Description = "The primary color kind.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Secondary",
+                    Description = "The secondary color kind.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Tertiary",
+                    Description = "The tertiary color kind.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Transparent",
+                    Description = "The transparent color kind.",
+                    Value = "3",
+                },
+            ]
+        },
         new()
         {
             Id = "button-type-enum",

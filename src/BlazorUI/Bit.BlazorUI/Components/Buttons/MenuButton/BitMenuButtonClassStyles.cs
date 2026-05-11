@@ -8,6 +8,11 @@ public class BitMenuButtonClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the checked/toggled state of the BitMenuButton.
+    /// </summary>
+    public string? Toggled { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the opened callout state of the BitMenuButton.
     /// </summary>
     public string? Opened { get; set; }
