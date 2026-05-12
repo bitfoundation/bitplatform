@@ -7,6 +7,7 @@ public partial class BitCallout : BitComponentBase
 {
     private string _anchorId = default!;
     private string _contentId = default!;
+    private string _overlayId = default!;
     private DotNetObjectReference<BitCallout> _dotnetObj = default!;
 
 
@@ -152,6 +153,7 @@ public partial class BitCallout : BitComponentBase
     {
         _anchorId = $"BitCallout-{UniqueId}-anchor";
         _contentId = $"BitCallout-{UniqueId}-content";
+        _overlayId = $"BitCallout-{UniqueId}-overlay";
 
         await base.OnInitializedAsync();
     }
@@ -196,6 +198,7 @@ public partial class BitCallout : BitComponentBase
             component: AnchorEl is null ? null : AnchorEl(),
             calloutId: _contentId,
             callout: null,
+            overlayId: _overlayId,
             isCalloutOpen: IsOpen,
             responsiveMode: ResponsiveMode ?? BitResponsiveMode.None,
             dropDirection: Direction ?? BitDropDirection.TopAndBottom,

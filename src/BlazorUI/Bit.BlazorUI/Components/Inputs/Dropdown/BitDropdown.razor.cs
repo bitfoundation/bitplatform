@@ -24,6 +24,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
     private string _calloutId = string.Empty;
+    private string _overlayId = string.Empty;
     private string _dropdownId = string.Empty;
 
     private ElementReference _searchInputRef;
@@ -941,6 +942,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
+        _overlayId = $"{_dropdownId}-overlay";
         _scrollContainerId = $"{_dropdownId}-scroll-container";
         _headerId = $"{_dropdownId}-header";
         _footerId = $"{_dropdownId}-footer";
@@ -1339,6 +1341,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             component: null,
             calloutId: _calloutId,
             callout: null,
+            overlayId: _overlayId,
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
             dropDirection: DropDirection,
@@ -1636,6 +1639,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (Responsive)
         {
             classes.Add("bit-drp-res");
+        }
+
+        if (Dir is BitDir.Rtl)
+        {
+            classes.Add("bit-drp-rtl");
         }
 
         return string.Join(' ', classes).Trim();

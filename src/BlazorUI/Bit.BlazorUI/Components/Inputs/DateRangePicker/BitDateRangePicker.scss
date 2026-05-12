@@ -53,10 +53,13 @@
     }
 
     &.bit-rtl {
-        .bit-dtrp-am-pm {
-            order: -1;
-            direction: rtl;
-        }
+    }
+}
+
+.bit-dtrp-cal.bit-dtrp-rtl {
+    .bit-dtrp-am-pm {
+        order: -1;
+        direction: rtl;
     }
 }
 
@@ -782,13 +785,13 @@
     flex-flow: column;
     width: fit-content;
     align-items: flex-start;
+}
 
-    .bit-dtrp-cal {
-        display: block;
-        z-index: unset;
-        animation: none;
-        position: relative;
-    }
+.bit-dtrp-cal.bit-dtrp-sta {
+    display: block;
+    z-index: unset;
+    animation: none;
+    position: relative;
 }
 
 .bit-dtrp-req {

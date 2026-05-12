@@ -110,55 +110,57 @@
         </button>
     }
 
-    @if ((SuggestItems?.Any() ?? false) || SuggestItemsProvider is not null)
-    {
-        if (Modeless is false)
-        {
-            <div @onclick="CloseCallout"
-                 class="bit-srb-ovl @Classes?.Overlay"
-                 style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay" />
-        }
-
-        <div id="@_calloutId"
-             tabindex="0"
-             role="listbox"
-             style="@Styles?.Callout"
-             class="bit-srb-cal @Classes?.Callout">
-
-            <div id="@_scrollContainerId"
-                 style="@Styles?.ScrollContainer"
-                 class="bit-srb-scn @Classes?.ScrollContainer">
-                @foreach (var text in _viewSuggestedItems)
-                {
-                    var isSelected = GetIsSelected(text);
-                    <div style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
-                        <button @onclick="() => HandleOnSuggestedItemClick(text)"
-                                tabindex="0"
-                                type="button"
-                                role="option"
-                                title="@text"
-                                aria-label="@text"
-                                aria-setsize="@GetTotalItems()"
-                                style="@Styles?.SuggestItemButton"
-                                aria-posinset="@GetItemPosInSet(text)"
-                                aria-selected="@(isSelected ? "true" : "false")"
-                                class="bit-srb-itm@(isSelected ? " bit-srb-sel" : "") @Classes?.SuggestItemButton">
-                            @if (SuggestItemTemplate is not null)
-                            {
-                                @SuggestItemTemplate(text)
-                            }
-                            else
-                            {
-                                <span style="@Styles?.SuggestItemText"
-                                      class="@Classes?.SuggestItemText">
-                                    @text
-                                </span>
-                            }
-                        </button>
-                    </div>
-                }
-            </div>
-
-        </div>
-    }
 </div>
+
+@if ((SuggestItems?.Any() ?? false) || SuggestItemsProvider is not null)
+{
+    if (Modeless is false)
+    {
+        <div @onclick="CloseCallout"
+             id="@_overlayId"
+             class="bit-srb-ovl @Classes?.Overlay"
+             style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay" />
+    }
+
+    <div id="@_calloutId"
+         tabindex="0"
+         role="listbox"
+         style="@Styles?.Callout"
+         class="bit-srb-cal @Classes?.Callout">
+
+        <div id="@_scrollContainerId"
+             style="@Styles?.ScrollContainer"
+             class="bit-srb-scn @Classes?.ScrollContainer">
+            @foreach (var text in _viewSuggestedItems)
+            {
+                var isSelected = GetIsSelected(text);
+                <div style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
+                    <button @onclick="() => HandleOnSuggestedItemClick(text)"
+                            tabindex="0"
+                            type="button"
+                            role="option"
+                            title="@text"
+                            aria-label="@text"
+                            aria-setsize="@GetTotalItems()"
+                            style="@Styles?.SuggestItemButton"
+                            aria-posinset="@GetItemPosInSet(text)"
+                            aria-selected="@(isSelected ? "true" : "false")"
+                            class="bit-srb-itm@(isSelected ? " bit-srb-sel" : "") @Classes?.SuggestItemButton">
+                        @if (SuggestItemTemplate is not null)
+                        {
+                            @SuggestItemTemplate(text)
+                        }
+                        else
+                        {
+                            <span style="@Styles?.SuggestItemText"
+                                  class="@Classes?.SuggestItemText">
+                                @text
+                            </span>
+                        }
+                    </button>
+                </div>
+            }
+        </div>
+
+    </div>
+}

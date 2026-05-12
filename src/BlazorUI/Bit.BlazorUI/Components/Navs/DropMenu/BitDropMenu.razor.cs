@@ -6,6 +6,7 @@ namespace Bit.BlazorUI;
 public partial class BitDropMenu : BitComponentBase
 {
     private string _calloutId = default!;
+    private string _overlayId = default!;
     private DotNetObjectReference<BitDropMenu> _dotnetObj = default!;
 
 
@@ -191,6 +192,7 @@ public partial class BitDropMenu : BitComponentBase
     protected override void OnInitialized()
     {
         _calloutId = $"BitDropMenu-{UniqueId}-callout";
+        _overlayId = $"BitDropMenu-{UniqueId}-overlay";
 
         base.OnInitialized();
     }
@@ -251,6 +253,7 @@ public partial class BitDropMenu : BitComponentBase
             component: null,
             calloutId: _calloutId,
             callout: null,
+            overlayId: _overlayId,
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
             dropDirection: BitDropDirection.TopAndBottom,
@@ -298,6 +301,11 @@ public partial class BitDropMenu : BitComponentBase
             BitPanelPosition.Bottom => "bit-drm-btm",
             _ => "bit-drm-end"
         });
+
+        if (Dir is BitDir.Rtl)
+        {
+            classes.Add("bit-drm-rtl");
+        }
 
         return string.Join(' ', classes).Trim();
     }

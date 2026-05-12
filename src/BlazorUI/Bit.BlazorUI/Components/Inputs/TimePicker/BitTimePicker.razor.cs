@@ -12,6 +12,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private string? _labelId;
     private string? _inputId;
     private string _calloutId = string.Empty;
+    private string _overlayId = string.Empty;
     private string _timePickerId = string.Empty;
     private ElementReference _inputHourRef = default!;
     private ElementReference _inputMinuteRef = default!;
@@ -409,6 +410,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         _labelId = $"BitTimePicker-{UniqueId}-label";
         _inputId = $"BitTimePicker-{UniqueId}-input";
         _calloutId = $"BitTimePicker-{UniqueId}-callout";
+        _overlayId = $"BitTimePicker-{UniqueId}-overlay";
 
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;
@@ -514,6 +516,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             component: null,
             calloutId: _calloutId,
             callout: null,
+            overlayId: _overlayId,
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
             dropDirection: DropDirection,
@@ -751,6 +754,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         if (Responsive)
         {
             classes.Add("bit-tpc-res");
+        }
+
+        if (Dir is BitDir.Rtl)
+        {
+            classes.Add("bit-tpc-rtl");
         }
 
         return string.Join(' ', classes).Trim();

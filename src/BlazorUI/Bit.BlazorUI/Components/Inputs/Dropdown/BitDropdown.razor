@@ -160,163 +160,6 @@
             </span>
         }
     </div>
-
-    <div @onclick="CloseCallout"
-         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
-         class="bit-drp-ovl @Classes?.Overlay"></div>
-
-    <div id="@_calloutId"
-         tabindex="0"
-         role="listbox"
-         style="@Styles?.Callout"
-         class="@GetCalloutCssClasses()"
-         aria-labelledby="@_labelId">
-
-        @if (Responsive)
-        {
-            <div style="@Styles?.ResponsiveLabelContainer"
-                 class="bit-drp-rlc @Classes?.ResponsiveLabelContainer">
-                @if (LabelTemplate is not null)
-                {
-                    @LabelTemplate
-                }
-                else if (Label.HasValue())
-                {
-                    <label style="@Styles?.ResponsiveLabel"
-                           class="bit-drp-lbl @Classes?.ResponsiveLabel">
-                        @Label
-                    </label>
-                }
-
-                <button @onclick="CloseCallout"
-                        type="button"
-                        title="Close"
-                        aria-label="Close"
-                        aria-hidden="Close"
-                        aria-describedby="Close"
-                        style="@Styles?.ResponsiveCloseButton"
-                        class="bit-drp-cls @Classes?.ResponsiveCloseButton">
-                    <span>
-                        <i style="@Styles?.ResponsiveCloseIcon"
-                           class="@responsiveCloseIconCss @Classes?.ResponsiveCloseIcon" />
-                    </span>
-                </button>
-            </div>
-        }
-
-        @if (CalloutHeaderTemplate is not null)
-        {
-            <div id="@_headerId">@CalloutHeaderTemplate</div>
-        }
-
-        @if (ShowSearchBox && Combo is false)
-        {
-            <div style="@Styles?.SearchBoxContainer"
-                 class="@GetSearchBoxClasses() @Classes?.SearchBoxContainer">
-                <div aria-hidden="true"
-                     style="@Styles?.SearchBoxIconContainer"
-                     class="bit-drp-sic @Classes?.SearchBoxIconContainer">
-                    <i aria-hidden="true"
-                       style="@Styles?.SearchBoxIcon"
-                       class="@searchBoxIconCss @Classes?.SearchBoxIcon" />
-                </div>
-                <input @ref="_searchInputRef" @onfocusin="HandleSearchBoxFocusIn" @onfocusout="HandleSearchBoxFocusOut" @oninput="@HandleFilterChange"
-                       type="text"
-                       role="searchbox"
-                       value="@_searchText"
-                       aria-label="Search text"
-                       placeholder="@SearchBoxPlaceholder"
-                       style="@Styles?.SearchBoxInput"
-                       class="bit-drp-sin @Classes?.SearchBoxInput" />
-
-                @if (_searchText.HasValue())
-                {
-                    <div style="@Styles?.SearchBoxClearButtonContainer"
-                         class="bit-drp-sbcc @Classes?.SearchBoxClearButtonContainer">
-                        <button @onclick="HandleSearchBoxOnClear"
-                                type="button"
-                                style="@Styles?.SearchBoxClearButton"
-                                class="bit-drp-sbc @Classes?.SearchBoxClearButton"
-                                aria-hidden="true"
-                                aria-label="Clear text"
-                                disabled="@(_searchText.HasNoValue())">
-                            <span>
-                                <i aria-hidden="true"
-                                   style="@Styles?.SearchBoxClearIcon"
-                                   class="@searchBoxClearIconCss @Classes?.SearchBoxClearIcon" />
-                            </span>
-                        </button>
-                    </div>
-                }
-            </div>
-        }
-
-        @if (Combo && _isResponsiveMode)
-        {
-            <div style="@Styles?.ResponsiveComboInputContainer"
-                 class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
-                <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput"
-                       style="@Styles?.ComboBoxInput"
-                       class="bit-drp-icb @Classes?.ComboBoxInput"
-                       type="text"
-                       role="combobox"
-                       value="@_searchText"
-                       aria-label="@AriaLabel"
-                       placeholder="@Placeholder"
-                       autocomplete="@BitAutoCompleteValue.NewPassword"
-                       disabled="@(IsEnabled is false)" />
-
-                <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
-                        type="button"
-                        style="@Styles?.ResponsiveComboAddButton"
-                        class="bit-drp-icn bit-drp-cai @Classes?.ResponsiveComboAddButton">
-                    <i class="@comboBoxAddButtonIconCss" />
-                </button>
-            </div>
-        }
-
-        <div id="@_scrollContainerId"
-             style="@Styles?.ScrollContainer"
-             class="bit-drp-scn @Classes?.ScrollContainer">
-            @if (Virtualize)
-            {
-                if (ItemsProvider is null)
-                {
-                    <Virtualize Items="GetSearchedItems()"
-                                Context="item"
-                                ItemSize="ItemSize"
-                                OverscanCount="OverscanCount"
-                                Placeholder="VirtualizePlaceholder">
-                        <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
-                    </Virtualize>
-                }
-                else
-                {
-                    <Virtualize @ref="_virtualizeElement"
-                                Context="item"
-                                OverscanCount="OverscanCount"
-                                Placeholder="VirtualizePlaceholder"
-                                ItemsProvider="InternalItemsProvider">
-                        <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
-                    </Virtualize>
-                }
-            }
-            else
-            {
-                @foreach (var item in GetSearchedItems())
-                {
-                    <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
-                }
-            }
-        </div>
-
-        @if (CalloutFooterTemplate is not null)
-        {
-            <div id="@_footerId">@CalloutFooterTemplate</div>
-        }
-
-    </div>
-
     <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
         @foreach (var item in _selectedItems)
         {
@@ -324,3 +167,158 @@
         }
     </select>
 </div>
+
+<div @onclick="CloseCallout"
+     style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+     id="@_overlayId"
+     class="bit-drp-ovl @Classes?.Overlay"></div>
+
+<div id="@_calloutId"
+     tabindex="0"
+     role="listbox"
+     style="@Styles?.Callout"
+     class="@GetCalloutCssClasses()"
+     aria-labelledby="@_labelId">
+
+    @if (Responsive)
+    {
+        <div style="@Styles?.ResponsiveLabelContainer"
+             class="bit-drp-rlc @Classes?.ResponsiveLabelContainer">
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else if (Label.HasValue())
+            {
+                <label style="@Styles?.ResponsiveLabel"
+                       class="bit-drp-lbl @Classes?.ResponsiveLabel">
+                    @Label
+                </label>
+            }
+
+            <button @onclick="CloseCallout"
+                    type="button"
+                    title="Close"
+                    aria-label="Close"
+                    style="@Styles?.ResponsiveCloseButton"
+                    class="bit-drp-cls @Classes?.ResponsiveCloseButton">
+                <span>
+                    <i style="@Styles?.ResponsiveCloseIcon"
+                       class="@responsiveCloseIconCss @Classes?.ResponsiveCloseIcon" />
+                </span>
+            </button>
+        </div>
+    }
+
+    @if (CalloutHeaderTemplate is not null)
+    {
+        <div id="@_headerId">@CalloutHeaderTemplate</div>
+    }
+
+    @if (ShowSearchBox && Combo is false)
+    {
+        <div style="@Styles?.SearchBoxContainer"
+             class="@GetSearchBoxClasses() @Classes?.SearchBoxContainer">
+            <div aria-hidden="true"
+                 style="@Styles?.SearchBoxIconContainer"
+                 class="bit-drp-sic @Classes?.SearchBoxIconContainer">
+                <i aria-hidden="true"
+                   style="@Styles?.SearchBoxIcon"
+                   class="@searchBoxIconCss @Classes?.SearchBoxIcon" />
+            </div>
+            <input @ref="_searchInputRef" @onfocusin="HandleSearchBoxFocusIn" @onfocusout="HandleSearchBoxFocusOut" @oninput="@HandleFilterChange"
+                   type="text"
+                   role="searchbox"
+                   value="@_searchText"
+                   aria-label="Search text"
+                   placeholder="@SearchBoxPlaceholder"
+                   style="@Styles?.SearchBoxInput"
+                   class="bit-drp-sin @Classes?.SearchBoxInput" />
+
+            @if (_searchText.HasValue())
+            {
+                <div style="@Styles?.SearchBoxClearButtonContainer"
+                     class="bit-drp-sbcc @Classes?.SearchBoxClearButtonContainer">
+                    <button @onclick="HandleSearchBoxOnClear"
+                            type="button"
+                            style="@Styles?.SearchBoxClearButton"
+                            class="bit-drp-sbc @Classes?.SearchBoxClearButton"
+                            aria-label="Clear text"
+                            disabled="@(_searchText.HasNoValue())">
+                        <span>
+                            <i aria-hidden="true"
+                               style="@Styles?.SearchBoxClearIcon"
+                               class="@searchBoxClearIconCss @Classes?.SearchBoxClearIcon" />
+                        </span>
+                    </button>
+                </div>
+            }
+        </div>
+    }
+
+    @if (Combo && _isResponsiveMode)
+    {
+        <div style="@Styles?.ResponsiveComboInputContainer"
+             class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
+            <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput"
+                   style="@Styles?.ComboBoxInput"
+                   class="bit-drp-icb @Classes?.ComboBoxInput"
+                   type="text"
+                   role="combobox"
+                   value="@_searchText"
+                   aria-label="@AriaLabel"
+                   placeholder="@Placeholder"
+                   autocomplete="@BitAutoCompleteValue.NewPassword"
+                   disabled="@(IsEnabled is false)" />
+
+            <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
+                    type="button"
+                    style="@Styles?.ResponsiveComboAddButton"
+                    class="bit-drp-icn bit-drp-cai @Classes?.ResponsiveComboAddButton">
+                <i class="@comboBoxAddButtonIconCss" />
+            </button>
+        </div>
+    }
+
+    <div id="@_scrollContainerId"
+         style="@Styles?.ScrollContainer"
+         class="bit-drp-scn @Classes?.ScrollContainer">
+        @if (Virtualize)
+        {
+            if (ItemsProvider is null)
+            {
+                <Virtualize Items="GetSearchedItems()"
+                            Context="item"
+                            ItemSize="ItemSize"
+                            OverscanCount="OverscanCount"
+                            Placeholder="VirtualizePlaceholder">
+                    <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                </Virtualize>
+            }
+            else
+            {
+                <Virtualize @ref="_virtualizeElement"
+                            Context="item"
+                            OverscanCount="OverscanCount"
+                            Placeholder="VirtualizePlaceholder"
+                            ItemsProvider="InternalItemsProvider">
+                    <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+                </Virtualize>
+            }
+        }
+        else
+        {
+            @foreach (var item in GetSearchedItems())
+            {
+                <_BitDropdownItem Item="item" Dropdown="this" ItemCheckIconCss="@itemCheckIconCss" />
+            }
+        }
+    </div>
+
+    @if (CalloutFooterTemplate is not null)
+    {
+        <div id="@_footerId">@CalloutFooterTemplate</div>
+    }
+
+</div>
+

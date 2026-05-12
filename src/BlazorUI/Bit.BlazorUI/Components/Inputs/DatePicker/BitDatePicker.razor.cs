@@ -35,6 +35,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private string? _labelId;
     private string? _inputId;
     private string _calloutId = string.Empty;
+    private string _overlayId = string.Empty;
     private string _datePickerId = string.Empty;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
@@ -718,6 +719,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _datePickerId = $"DatePicker-{UniqueId}";
         _labelId = $"{_datePickerId}-label";
         _calloutId = $"{_datePickerId}-callout";
+        _overlayId = $"{_datePickerId}-overlay";
         _inputId = $"{_datePickerId}-input";
 
         OnValueChanged += HandleOnValueChanged;
@@ -1606,6 +1608,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             component: null,
             calloutId: _calloutId,
             callout: null,
+            overlayId: _overlayId,
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
             dropDirection: BitDropDirection.TopAndBottom,
@@ -1628,9 +1631,19 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             classes.Add(Classes.Callout);
         }
 
+        if (Standalone)
+        {
+            classes.Add("bit-dtp-sta");
+        }
+
         if (Responsive)
         {
             classes.Add("bit-dtp-res");
+        }
+
+        if (Dir is BitDir.Rtl || (Dir is null && _culture.TextInfo.IsRightToLeft))
+        {
+            classes.Add("bit-dtp-rtl");
         }
 
         return string.Join(' ', classes).Trim();

@@ -58,10 +58,6 @@
                 }
             </div>
         </div>
-
-        <div @onclick="CloseCallout"
-             style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
-             class="bit-ctp-ovl @Classes?.Overlay"></div>
     }
     else
     {
@@ -76,125 +72,133 @@
                readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
-    <div id="@_calloutId"
-         style="@Styles?.Callout"
-         class="@GetCalloutCssClasses()">
-        <div @attributes=@CalloutHtmlAttributes 
-             role="dialog" 
-             aria-label="@CalloutAriaLabel"
-             style="@Styles?.CalloutContainer" 
-             class="bit-ctp-cac @Classes?.CalloutContainer" >
-            <div style="@Styles?.Toolbar" 
-                 class="bit-ctp-tbr @Classes?.Toolbar">
-                <div style="@Styles?.HourMinuteContainer" 
-                     class="bit-ctp-hmc @Classes?.HourMinuteContainer">
-                    @if (EditMode == BitCircularTimePickerEditMode.Normal)
-                    {
-                        <button @onclick="HandleOnHourClick"
-                                type="button"
-                                style="@GetHourButtonStyle()"
-                                disabled="@(IsEnabled is false)"
-                                class="bit-ctp-txt @(_showHourView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.HourButton">
-                            @GetHourString()
-                        </button>
-                        <span style="@Styles?.HourMinuteSeparator" 
-                              class="bit-ctp-txt @Classes?.HourMinuteSeparator">:</span>
-                        <button @onclick="HandleOnMinuteClick"
-                                type="button"
-                                style="@GetMinuteButtonStyle()"
-                                disabled="@(IsEnabled is false)"
-                                class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.MinuteButton">
-                            @GetMinuteString()
-                        </button>
-                    }
-                    else
-                    {
-                        <span style="@Styles?.HourMinuteText" class="bit-ctp-txt @Classes?.HourMinuteText">@GetHourString():@GetMinuteString()</span>
-                    }
-                </div>
-                @if (TimeFormat == BitTimeFormat.TwelveHours)
+</div>
+
+@if (Standalone is false)
+{
+    <div @onclick="CloseCallout"
+         id="@_overlayId"
+         style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
+         class="bit-ctp-ovl @Classes?.Overlay"></div>
+}
+
+<div id="@_calloutId"
+     style="@Styles?.Callout"
+     class="@GetCalloutCssClasses()">
+    <div @attributes=@CalloutHtmlAttributes 
+         role="dialog" 
+         aria-label="@CalloutAriaLabel"
+         style="@Styles?.CalloutContainer" 
+         class="bit-ctp-cac @Classes?.CalloutContainer" >
+        <div style="@Styles?.Toolbar" 
+             class="bit-ctp-tbr @Classes?.Toolbar">
+            <div style="@Styles?.HourMinuteContainer" 
+                 class="bit-ctp-hmc @Classes?.HourMinuteContainer">
+                @if (EditMode == BitCircularTimePickerEditMode.Normal)
                 {
-                    var isAm = IsAm();
-                    <div style="@Styles?.AmPmContainer" class="bit-ctp-apc @Classes?.AmPmContainer">
-                        <button @onclick="HandleOnAmClick"
-                                type="button"
-                                style="@GetAmButtonStyle(isAm)"
-                                disabled="@(IsEnabled is false)"
-                                class="bit-ctp-apb @(isAm ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.AmButton">
-                            @_culture.DateTimeFormat.AMDesignator
-                        </button>
-                        <button @onclick="HandleOnPmClick"
-                                type="button"
-                                style="@GetPmButtonStyle(isAm)"
-                                disabled="@(IsEnabled is false)"
-                                class="bit-ctp-apb @(isAm ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.PmButton">
-                            @_culture.DateTimeFormat.PMDesignator
-                        </button>
-                    </div>
+                    <button @onclick="HandleOnHourClick"
+                            type="button"
+                            style="@GetHourButtonStyle()"
+                            disabled="@(IsEnabled is false)"
+                            class="bit-ctp-txt @(_showHourView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.HourButton">
+                        @GetHourString()
+                    </button>
+                    <span style="@Styles?.HourMinuteSeparator" 
+                          class="bit-ctp-txt @Classes?.HourMinuteSeparator">:</span>
+                    <button @onclick="HandleOnMinuteClick"
+                            type="button"
+                            style="@GetMinuteButtonStyle()"
+                            disabled="@(IsEnabled is false)"
+                            class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.MinuteButton">
+                        @GetMinuteString()
+                    </button>
+                }
+                else
+                {
+                    <span style="@Styles?.HourMinuteText" class="bit-ctp-txt @Classes?.HourMinuteText">@GetHourString():@GetMinuteString()</span>
                 }
             </div>
-            <div style="@Styles?.ClockContainer" class="bit-ctp-clk @Classes?.ClockContainer">
-                <div @ref="_clockRef" style="@Styles?.ClockFace" class="bit-ctp-clf @Classes?.ClockFace" @onpointerdown="HandleOnPointerDown">
-                    <div style="@Styles?.ClockPin" class="bit-ctp-pin @Classes?.ClockPin"></div>
+            @if (TimeFormat == BitTimeFormat.TwelveHours)
+            {
+                var isAm = IsAm();
+                <div style="@Styles?.AmPmContainer" class="bit-ctp-apc @Classes?.AmPmContainer">
+                    <button @onclick="HandleOnAmClick"
+                            type="button"
+                            style="@GetAmButtonStyle(isAm)"
+                            disabled="@(IsEnabled is false)"
+                            class="bit-ctp-apb @(isAm ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.AmButton">
+                        @_culture.DateTimeFormat.AMDesignator
+                    </button>
+                    <button @onclick="HandleOnPmClick"
+                            type="button"
+                            style="@GetPmButtonStyle(isAm)"
+                            disabled="@(IsEnabled is false)"
+                            class="bit-ctp-apb @(isAm ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.PmButton">
+                        @_culture.DateTimeFormat.PMDesignator
+                    </button>
+                </div>
+            }
+        </div>
+        <div style="@Styles?.ClockContainer" class="bit-ctp-clk @Classes?.ClockContainer">
+            <div @ref="_clockRef" style="@Styles?.ClockFace" class="bit-ctp-clf @Classes?.ClockFace" @onpointerdown="HandleOnPointerDown">
+                <div style="@Styles?.ClockPin" class="bit-ctp-pin @Classes?.ClockPin"></div>
 
-                    @if (_showHourView)
+                @if (_showHourView)
+                {
+                    if (TimeFormat == BitTimeFormat.TwelveHours)
                     {
-                        if (TimeFormat == BitTimeFormat.TwelveHours)
+                        for (int i = 1; i <= 12; i++)
                         {
-                            for (int i = 1; i <= 12; i++)
-                            {
-                                <p style="@GetHoursMinutesStyle(i, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(i)">@i</p>
-                            }
-                        }
-                        else
-                        {
-                            @*Hours from 13 to 24 (00)*@
-                            for (int i = 1; i <= 12; i++)
-                            {
-                                var hour = (i + 12) % 24;
-                                <p style="@GetHoursMinutesStyle(hour, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(hour)">@(hour.ToString("D2"))</p>
-                            }
-                            @*Hours from 1 to 12*@
-                            for (int i = 1; i <= 12; i++)
-                            {
-                                <p style="@GetHoursMinutesStyle(i, i, 74, 0, 40)" class="bit-ctp-num @GetHoursMinutesClass(i)">@(i.ToString("D2"))</p>
-                            }
+                            <p style="@GetHoursMinutesStyle(i, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(i)">@i</p>
                         }
                     }
                     else
                     {
-                        @for (int i = 0; i < 12; i++)
+                        @*Hours from 13 to 24 (00)*@
+                        for (int i = 1; i <= 12; i++)
                         {
-                            var minute = i * 5;
-                            <p style="@GetHoursMinutesStyle(minute, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(minute)">@(minute.ToString("D2"))</p>
+                            var hour = (i + 12) % 24;
+                            <p style="@GetHoursMinutesStyle(hour, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(hour)">@(hour.ToString("D2"))</p>
+                        }
+                        @*Hours from 1 to 12*@
+                        for (int i = 1; i <= 12; i++)
+                        {
+                            <p style="@GetHoursMinutesStyle(i, i, 74, 0, 40)" class="bit-ctp-num @GetHoursMinutesClass(i)">@(i.ToString("D2"))</p>
                         }
                     }
-
-                    @{
-                        var deg = GetPointerDegree();
-                        var isMinute = deg % 30 == 0;
+                }
+                else
+                {
+                    @for (int i = 0; i < 12; i++)
+                    {
+                        var minute = i * 5;
+                        <p style="@GetHoursMinutesStyle(minute, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(minute)">@(minute.ToString("D2"))</p>
                     }
-                    <div style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg); @Classes?.ClockPointer"
-                         class="bit-ctp-ptr@(_isPointerDown ? "" : " bit-ctp-ani") @Classes?.ClockPointer">
-                        <div style="@GetClockPointerThumbStyle(isMinute)"
-                             class="bit-ctp-pth@(isMinute ? "" : $" bit-ctp-ptm {Classes?.ClockPointerThumbMinute}") @Classes?.ClockPointerThumb"></div>
-                    </div>
+                }
+
+                @{
+                    var deg = GetPointerDegree();
+                    var isMinute = deg % 30 == 0;
+                }
+                <div style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg); @Classes?.ClockPointer"
+                     class="bit-ctp-ptr@(_isPointerDown ? "" : " bit-ctp-ani") @Classes?.ClockPointer">
+                    <div style="@GetClockPointerThumbStyle(isMinute)"
+                         class="bit-ctp-pth@(isMinute ? "" : $" bit-ctp-ptm {Classes?.ClockPointerThumbMinute}") @Classes?.ClockPointerThumb"></div>
                 </div>
             </div>
-
-            @if (ShowCloseButton && Standalone is false)
-            {
-                var closeButtonIcon = BitIconInfo.From(CloseButtonIcon, CloseButtonIconName ?? "Cancel");
-                <button @onclick="CloseCallout"
-                        type="button"
-                        style="@Styles?.CloseButton"
-                        class="bit-ctp-cbn @Classes?.CloseButton"
-                        title="@CloseButtonTitle"
-                        aria-label="@CloseButtonTitle">
-                    <i style="@Styles?.CloseButtonIcon" class="bit-ctp-cbi @closeButtonIcon?.GetCssClasses() @Classes?.CloseButtonIcon" aria-hidden="true" />
-                </button>
-            }
         </div>
-    </div>
 
+        @if (ShowCloseButton && Standalone is false)
+        {
+            var closeButtonIcon = BitIconInfo.From(CloseButtonIcon, CloseButtonIconName ?? "Cancel");
+            <button @onclick="CloseCallout"
+                    type="button"
+                    style="@Styles?.CloseButton"
+                    class="bit-ctp-cbn @Classes?.CloseButton"
+                    title="@CloseButtonTitle"
+                    aria-label="@CloseButtonTitle">
+                <i style="@Styles?.CloseButtonIcon" class="bit-ctp-cbi @closeButtonIcon?.GetCssClasses() @Classes?.CloseButtonIcon" aria-hidden="true" />
+            </button>
+        }
+    </div>
 </div>

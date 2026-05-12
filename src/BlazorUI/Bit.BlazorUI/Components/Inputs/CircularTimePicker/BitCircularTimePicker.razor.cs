@@ -19,6 +19,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private ElementReference _clockRef;
     private string? _abortControllerId;
     private string _calloutId = string.Empty;
+    private string _overlayId = string.Empty;
     private string _circularTimePickerId = string.Empty;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
@@ -332,6 +333,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _labelId = $"{_circularTimePickerId}-label";
         _inputId = $"{_circularTimePickerId}-input";
         _calloutId = $"{_circularTimePickerId}-callout";
+        _overlayId = $"{_circularTimePickerId}-overlay";
 
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;
@@ -590,6 +592,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             component: null,
             calloutId: _calloutId,
             callout: null,
+            overlayId: _overlayId,
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
             dropDirection: BitDropDirection.TopAndBottom,
@@ -707,6 +710,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (Classes?.Callout is not null)
         {
             classes.Add(Classes.Callout);
+        }
+
+        if (Standalone)
+        {
+            classes.Add("bit-ctp-sta");
         }
 
         if (Responsive)
