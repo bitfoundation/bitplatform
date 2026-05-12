@@ -590,7 +590,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         if (Toggle && Split)
         {
-            await AssignIsToggled(!IsToggled);
+            if (await AssignIsToggled(!IsToggled) is false) return;
+
             await OnToggleChange.InvokeAsync(IsToggled);
         }
 

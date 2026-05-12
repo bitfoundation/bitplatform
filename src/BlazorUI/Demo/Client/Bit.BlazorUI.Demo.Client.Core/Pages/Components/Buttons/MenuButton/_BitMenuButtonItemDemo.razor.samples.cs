@@ -395,17 +395,6 @@ private List<BitMenuButtonItem> basicItemsIcon =
 ];";
 
     private readonly string example10RazorCode = @"
-<BitMenuButton Sticky Items=""isSelectedItems"" />
-<BitMenuButton Sticky Split Items=""isSelectedItems"" />";
-    private readonly string example10CsharpCode = @"
-private static List<BitMenuButtonItem> isSelectedItems =
-[
-    new() { Text = ""Item A"", Key = ""A"", IconName = BitIconName.Emoji },
-    new() { Text = ""Item B"", Key = ""B"", IconName = BitIconName.Emoji },
-    new() { Text = ""Item C"", Key = ""C"", IconName = BitIconName.Emoji2, IsSelected = true }
-];";
-
-    private readonly string example11RazorCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -431,7 +420,7 @@ private static List<BitMenuButtonItem> isSelectedItems =
 </BitMenuButton>
 
 <BitMenuButton Text=""Items"" Items=""itemTemplateItems2"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private List<BitMenuButtonItem> basicItems =
 [
     new() { Text = ""Item A"", Key = ""A"" },
@@ -465,7 +454,7 @@ private List<BitMenuButtonItem> itemTemplateItems2 =
     }
 ];";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitMenuButton Text=""Items"" Items=""basicItems""
                OnChange=""(BitMenuButtonItem item) => eventsChangedItem = item?.Key""
                OnClick=""(BitMenuButtonItem item) => eventsClickedItem = item?.Key"" />
@@ -486,7 +475,7 @@ private List<BitMenuButtonItem> itemTemplateItems2 =
 
 <div>Clicked item: @eventsClickedItem</div>
 <div>Changed item: @eventsChangedItem</div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private string? eventsClickedItem;
 private string? eventsChangedItem;
 
@@ -515,7 +504,7 @@ protected override void OnInitialized()
     basicItemsOnClick.ForEach(i => i.OnClick = onClick);
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitMenuButton Split Sticky Items=""basicItems"" DefaultSelectedItem=""basicItems[1]"" />
 
 <BitMenuButton Sticky Items=""basicItems"" @bind-SelectedItem=""twoWaySelectedItem"" />
@@ -528,7 +517,7 @@ protected override void OnInitialized()
 
 <BitMenuButton Sticky Items=""basicItems"" @bind-IsOpen=""twoWayIsOpen"" />
 <BitCheckbox Label=""Two-way IsOpen"" @bind-Value=""twoWayIsOpen"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private BitMenuButtonItem twoWaySelectedItem = default!;
 private bool oneWayIsOpen;
 private bool twoWayIsOpen;
@@ -555,7 +544,7 @@ protected override void OnInitialized()
     twoWaySelectedItem = basicItems[2];
 }";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitMenuButton Text=""Actions"" 
@@ -596,7 +585,7 @@ protected override void OnInitialized()
                Color=""BitColor.Tertiary""
                Variant=""BitVariant.Text"" 
                Icon=""@BitIconInfo.Fa(""brands github"")"" />";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private static List<BitMenuButtonItem> externalIconItems =
 [
     new() { Text = ""Add"", Icon = ""fa-solid fa-plus"" },

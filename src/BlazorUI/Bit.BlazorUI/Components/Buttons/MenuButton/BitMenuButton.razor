@@ -21,7 +21,7 @@
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription"
             style="@GetStyle(_selectedItem);@Styles?.OperatorButton"
-            class="bit-mnb-opb @(Sticky ? "bit-mnb-sel" : "") @GetClass(_selectedItem) @Classes?.OperatorButton"
+            class="bit-mnb-opb @GetClass(_selectedItem) @Classes?.OperatorButton"
             aria-pressed="@(Toggle && Split ? IsToggled.ToString().ToLower() : null)">
         @if (Sticky)
         {
@@ -107,6 +107,7 @@
 
             var template = GetTemplate(item);
             var isEnabled = GetIsEnabled(item);
+
             <li role="presentation" @key="@GetItemKey(item, idx.ToString())" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
                 <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                         role="menuitem"
@@ -115,7 +116,7 @@
                         disabled="@(isEnabled is false)"
                         aria-disabled="@(isEnabled is false)"
                         style="@GetStyle(item);@Styles?.ItemButton"
-                        class="bit-mnb-itm @(isSelected ? "bit-mnb-sel" : "") @GetClass(item) @Classes?.ItemButton">
+                        class="bit-mnb-itm @GetClass(item) @Classes?.ItemButton">
                     @if (template is not null)
                     {
                         @template(item)

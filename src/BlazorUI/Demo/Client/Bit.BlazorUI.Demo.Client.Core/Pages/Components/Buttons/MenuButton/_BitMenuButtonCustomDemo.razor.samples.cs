@@ -540,25 +540,6 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 };";
 
     private readonly string example10RazorCode = @"
-<BitMenuButton Sticky Items=""isSelectedCustoms"" NameSelectors=""nameSelectors"" />
-<BitMenuButton Sticky Split Items=""isSelectedCustoms"" NameSelectors=""nameSelectors"" />";
-    private readonly string example10CsharpCode = @"
-private static List<Operation> isSelectedCustoms =
-[
-    new() { Name = ""Custom A"", Id = ""A"", Image = BitIconName.Emoji },
-    new() { Name = ""Custom B"", Id = ""B"", Image = BitIconName.Emoji },
-    new() { Name = ""Custom C"", Id = ""C"", Image = BitIconName.Emoji2, IsSelected = true }
-];
-
-private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
-{
-    Text = { Name = nameof(Operation.Name) },
-    Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Image) },
-    IsEnabled = { Selector = m => m.Disabled is false }
-};";
-
-    private readonly string example11RazorCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -584,7 +565,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 </BitMenuButton>
 
 <BitMenuButton Text=""Customs"" Items=""itemTemplateCustoms2"" NameSelectors=""nameSelectors"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
@@ -636,7 +617,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     Template = { Name = nameof(Operation.Fragment) }
 };";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitMenuButton Text=""Customs"" Items=""basicCustoms"" NameSelectors=""nameSelectors""
                OnChange=""(Operation item) => eventsChangedCustom = item?.Id""
                OnClick=""(Operation item) => eventsClickedCustom = item?.Id"" />
@@ -655,7 +636,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 
 <div>Changed custom item: @eventsChangedCustom</div>
 <div>Clicked custom item: @eventsClickedCustom</div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }
@@ -686,7 +667,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitMenuButton Split Sticky Items=""basicCustoms"" DefaultSelectedItem=""basicCustoms[1]"" NameSelectors=""nameSelectors"" />
 
 <BitMenuButton Sticky Items=""basicCustoms"" NameSelectors=""nameSelectors"" @bind-SelectedItem=""twoWaySelectedCustom"" />
@@ -699,7 +680,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 
 <BitMenuButton Sticky Items=""basicCustoms"" NameSelectors=""nameSelectors"" @bind-IsOpen=""twoWayIsOpen"" />
 <BitCheckbox Label=""Two-way IsOpen"" @bind-Value=""twoWayIsOpen"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private Operation twoWaySelectedCustom = default!;
 private bool oneWayIsOpen;
 private bool twoWayIsOpen;
@@ -734,7 +715,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsEnabled = { Selector = m => m.Disabled is false }
 };";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitMenuButton Text=""Actions""
@@ -781,7 +762,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
                Items=""externalIconCustoms""
                NameSelectors=""nameSelectors2""
                Icon=""@BitIconInfo.Fa(""brands github"")"" />";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 public class Operation
 {
     public string? Id { get; set; }

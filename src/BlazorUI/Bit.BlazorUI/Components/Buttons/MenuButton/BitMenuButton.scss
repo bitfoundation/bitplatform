@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-mnb {
     display: flex;
@@ -162,16 +162,6 @@
     &:active {
         color: var(--bit-mnb-clr-txt);
         background-color: var(--bit-mnb-clr-active);
-    }
-}
-
-.bit-mnb-sel {
-    background-color: $clr-bg-sec;
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: $clr-bg-pri-hover;
-        }
     }
 }
 
