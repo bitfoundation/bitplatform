@@ -178,7 +178,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// If true, enables the toggling behavior on the header button in split mode.
     /// </summary>
-    [Parameter] public bool Toggle { get; set; }
+    [Parameter, ResetClassBuilder] 
+    public bool Toggle { get; set; }
 
     /// <summary>
     /// If true, the selected item is going to change the header item.
@@ -293,7 +294,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
 
-        ClassBuilder.Register(() => Toggle && IsToggled ? $"bit-mnb-tgl {Classes?.Toggled}" : string.Empty);
+        ClassBuilder.Register(() => Toggle && Split && IsToggled ? $"bit-mnb-tgl {Classes?.Toggled}" : string.Empty);
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -315,7 +316,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
 
-        if (Toggle && IsToggledHasBeenSet is false && DefaultIsToggled.HasValue)
+        if (Split && Toggle && IsToggledHasBeenSet is false && DefaultIsToggled.HasValue)
         {
             await AssignIsToggled(DefaultIsToggled.Value);
         }

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonCustomDemo
 {
@@ -807,8 +807,8 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors2 = new()
 };";
 
     private readonly string example17RazorCode = @"
-<BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlCustoms"" IconName=""@BitIconName.Edit"" NameSelectors=""nameSelectors"" />
-<BitMenuButton Text=""گرینه ها"" Dir=""BitDir.Rtl"" Items=""rtlCustoms"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" NameSelectors=""nameSelectors"" Split />";
+<BitMenuButton Text=""????? ??"" Dir=""BitDir.Rtl"" Items=""rtlCustoms"" IconName=""@BitIconName.Edit"" NameSelectors=""nameSelectors"" />
+<BitMenuButton Text=""????? ??"" Dir=""BitDir.Rtl"" Items=""rtlCustoms"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" NameSelectors=""nameSelectors"" Split />";
     private readonly string example17CsharpCode = @"
 public class Operation
 {
@@ -816,22 +816,13 @@ public class Operation
     public string? Name { get; set; }
     public string? Image { get; set; }
     public bool Disabled { get; set; }
-    public string? Class { get; set; }
-    public string? Style { get; set; }
 }
 
-private List<Operation> basicCustoms =
+private static List<Operation> rtlCustoms =
 [
-    new() { Name = ""Custom A"", Id = ""A"" },
-    new() { Name = ""Custom B"", Id = ""B"", Disabled = true },
-    new() { Name = ""Custom C"", Id = ""C"" }
-];
-
-private static List<Operation> itemStyleClassCustoms =
-[
-    new() { Name = ""Custom A"", Id = ""A"", Icon = BitIconName.Emoji, Style = ""color:red"" },
-    new() { Name = ""Custom B"", Id = ""B"", Icon = BitIconName.Emoji, Class = ""custom-item"" },
-    new() { Name = ""Custom C"", Id = ""C"", Icon = BitIconName.Emoji2, Style = ""background:blue"" }
+    new() { Name = ""????? ???"", Id = ""A"", Image = BitIconName.Emoji },
+    new() { Name = ""????? ?"", Id = ""B"", Image = BitIconName.Emoji },
+    new() { Name = ""????? ?"", Id = ""C"", Image = BitIconName.Emoji2 }
 ];
 
 private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
