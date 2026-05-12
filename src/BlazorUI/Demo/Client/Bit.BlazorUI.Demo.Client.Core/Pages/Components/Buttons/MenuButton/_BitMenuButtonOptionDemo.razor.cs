@@ -99,7 +99,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -696,7 +696,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitMenuButton Text=""Small"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -745,7 +745,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitMenuButton TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Sticky>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -779,7 +779,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitMenuButton Text=""IconName"" IconName=""@BitIconName.Edit"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
@@ -792,7 +792,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -895,7 +895,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Background=""BitColorKind.Primary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -920,7 +920,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitMenuButton Text=""Toggle"" TItem=""BitMenuButtonOption"" Split Toggle>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -950,7 +950,7 @@ public partial class _BitMenuButtonOptionDemo
 </BitMenuButton>
 <div>OnToggleChange: @optionToggledValue</div>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitMenuButton Text=""With icon"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Edit"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
@@ -976,7 +976,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitMenuButton Sticky TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
@@ -989,7 +989,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" IsSelected=""true"" />
 </BitMenuButton>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -1038,7 +1038,7 @@ public partial class _BitMenuButtonOptionDemo
     </BitMenuButtonOption>
 </BitMenuButton>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitMenuButton Text=""Options""
                OnChange=""(BitMenuButtonOption item) => exampleChangedOption = item?.Key""
                OnClick=""(BitMenuButtonOption item) => exampleClickedOption = item?.Key"">
@@ -1074,11 +1074,11 @@ public partial class _BitMenuButtonOptionDemo
 
 <div>Changed option: @exampleChangedOption</div>
 <div>Clicked option: @exampleClickedOption</div>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string? exampleChangedOption;
 private string? exampleClickedOption;";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitMenuButton Text=""Coming soon..."" TItem=""BitMenuButtonOption"" IsEnabled=""false"" />
 
 
@@ -1115,12 +1115,12 @@ private string? exampleClickedOption;";
     <BitMenuButtonOption Text=""Option C"" Key=""C"" @ref=""optionC"" />
 </BitMenuButton>
 <BitCheckbox Label=""Two-way IsOpen"" @bind-Value=""twoWayIsOpen"" />";
-    private readonly string example15CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private BitMenuButtonOption twoWaySelectedOption = default!;
 private bool oneWayIsOpen;
 private bool twoWayIsOpen;";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitMenuButton Text=""Actions"" 

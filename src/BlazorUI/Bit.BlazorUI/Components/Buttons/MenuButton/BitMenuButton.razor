@@ -21,7 +21,7 @@
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription"
             style="@GetStyle(_selectedItem);@Styles?.OperatorButton"
-            class="bit-mnb-opb @GetClass(_selectedItem) @Classes?.OperatorButton"
+            class="bit-mnb-opb @(Sticky ? "bit-mnb-sel" : "") @GetClass(_selectedItem) @Classes?.OperatorButton"
             aria-pressed="@(Toggle && Split ? IsToggled.ToString().ToLower() : null)">
         @if (Sticky)
         {
@@ -102,11 +102,11 @@
     <ul role="presentation" style="@Styles?.CalloutContainer" class="bit-mnb-cul @Classes?.CalloutContainer">
         @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
         {
-            if (Sticky && item == SelectedItem) continue;
+            var isSelected = item == SelectedItem;
+            if (Sticky && isSelected) continue;
 
             var template = GetTemplate(item);
             var isEnabled = GetIsEnabled(item);
-            var isSelected = Sticky && item == SelectedItem;
             <li role="presentation" @key="@GetItemKey(item, idx.ToString())" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
                 <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                         role="menuitem"

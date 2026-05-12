@@ -120,7 +120,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Determines whether the header button is in the checked/toggled state when Toggle is enabled.
     /// </summary>
-    [Parameter, ResetClassBuilder, TwoWayBound]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsToggled { get; set; }
 
     /// <summary>
@@ -177,15 +177,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     public bool Split { get; set; }
 
     /// <summary>
-    /// If true, enables the toggling behavior on the header button in split mode.
-    /// </summary>
-    [Parameter, ResetClassBuilder] 
-    public bool Toggle { get; set; }
-
-    /// <summary>
     /// If true, the selected item is going to change the header item.
     /// </summary>
-    [Parameter] public bool Sticky { get; set; }
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool Sticky { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the menu button.
@@ -196,6 +191,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// The text to show inside the header of menu button.
     /// </summary>
     [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// If true, enables the toggling behavior on the header button in split mode.
+    /// </summary>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder] 
+    public bool Toggle { get; set; }
 
     /// <summary>
     /// The visual variant of the menu button.
@@ -311,6 +312,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         StyleBuilder.Register(() => Styles?.Root);
 
         StyleBuilder.Register(() => IsOpen ? Styles?.Opened : string.Empty);
+
+        StyleBuilder.Register(() => Toggle && Split && IsToggled ? Styles?.Toggled : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
