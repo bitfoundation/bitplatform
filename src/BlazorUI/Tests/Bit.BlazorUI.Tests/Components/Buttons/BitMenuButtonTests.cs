@@ -344,7 +344,7 @@ public class BitMenuButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMenuButtonSelectedItemShouldHaveSelClassInStickyMode()
+    public void BitMenuButtonSelectedItemShouldBeRemovedFromCalloutInStickyMode()
     {
         var stickyItems = new List<BitMenuButtonItem>
         {
@@ -359,9 +359,9 @@ public class BitMenuButtonTests : BunitTestContext
         });
 
         var itemButtons = com.FindAll(".bit-mnb-itm");
-        var selectedButtons = itemButtons.Where(b => b.ClassList.Contains("bit-mnb-sel")).ToList();
 
-        Assert.AreEqual(1, selectedButtons.Count);
+        Assert.AreEqual(stickyItems.Count - 1, itemButtons.Count);
+        Assert.IsFalse(itemButtons.Any(b => b.TextContent.Contains("Item B")));
     }
 
     [TestMethod]
