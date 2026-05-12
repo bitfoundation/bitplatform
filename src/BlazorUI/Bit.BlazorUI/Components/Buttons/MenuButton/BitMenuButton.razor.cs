@@ -285,15 +285,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             _ => "bit-mnb-md"
         });
 
-        ClassBuilder.Register(() => Background switch
-        {
-            BitColorKind.Primary => "bit-mnb-bpg",
-            BitColorKind.Secondary => "bit-mnb-bsg",
-            BitColorKind.Tertiary => "bit-mnb-btg",
-            BitColorKind.Transparent => "bit-mnb-brg",
-            _ => null
-        });
-
         ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
 
         ClassBuilder.Register(() => Toggle && Split && IsToggled ? $"bit-mnb-tgl {Classes?.Toggled}" : string.Empty);
@@ -702,7 +693,20 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
     }
 
-
+    private string? GetCalloutCss()
+    {
+        var openClass = IsOpen ? "bit-mnb-ocl" : null;
+        var bgClass = Background switch
+        {
+            BitColorKind.Primary => "bit-mnb-bpg",
+            BitColorKind.Secondary => "bit-mnb-bsg",
+            BitColorKind.Tertiary => "bit-mnb-btg",
+            BitColorKind.Transparent => "bit-mnb-brg",
+            _ => null
+        };
+        var result = $"{openClass} {bgClass}".Trim();
+        return result.HasValue() ? result : null;
+    }
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

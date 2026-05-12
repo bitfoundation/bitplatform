@@ -95,10 +95,10 @@
      style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
      id="@_overlayId"
      class="bit-mnb-ovl @Classes?.Overlay"></div>
-
+     
 <div id="@_calloutId"
      style="@Styles?.Callout"
-     class="bit-mnb-cal @Classes?.Callout">
+     class="bit-mnb-cal @GetCalloutCss() @Classes?.Callout">
     <ul role="presentation" style="@Styles?.CalloutContainer" class="bit-mnb-cul @Classes?.CalloutContainer">
         @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
         {

@@ -235,8 +235,8 @@ public class BitMenuButtonTests : BunitTestContext
             parameters.Add(p => p.Background, background);
         });
 
-        var bitMenuButton = com.Find(".bit-mnb");
-        Assert.IsTrue(bitMenuButton.ClassList.Contains(expectedClass));
+        var callout = com.Find(".bit-mnb-cal");
+        Assert.IsTrue(callout.ClassList.Contains(expectedClass));
     }
 
     [TestMethod]

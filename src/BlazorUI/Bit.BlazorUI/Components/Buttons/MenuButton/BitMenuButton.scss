@@ -12,8 +12,6 @@
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
-    --bit-mnb-cal-opa: 0;
-    --bit-mnb-cal-tra: translateY(#{spacing(-1.25)});
 
     &.bit-dis {
         cursor: default;
@@ -71,8 +69,6 @@
 }
 
 .bit-mnb-omn {
-    --bit-mnb-cal-opa: 1;
-    --bit-mnb-cal-tra: translateY(0);
     --bit-mnb-clr-opb-txt: var(--bit-mnb-clr-opb-txt-nsp);
     --bit-mnb-clr-opb-bg: var(--bit-mnb-clr-opb-bg-nsp);
     --bit-mnb-clr-chb-txt: var(--bit-mnb-clr-txt);
@@ -111,18 +107,25 @@
 }
 
 .bit-mnb-cal {
+    --bit-mnb-cal-opa: 0;
+    --bit-mnb-cal-tra: translateY(#{spacing(-1.25)});
     display: none;
     position: fixed;
     overflow: hidden auto;
     min-width: max-content;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    background-color: var(--bit-mnb-cal-bg, #{$clr-bg-pri});
     opacity: var(--bit-mnb-cal-opa);
     box-shadow: $box-shadow-callout;
     transform: var(--bit-mnb-cal-tra);
     transition: opacity 100ms, transform 300ms;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
+    background-color: var(--bit-mnb-cal-bg, #{$clr-bg-pri});
+
+    &.bit-mnb-ocl {
+        --bit-mnb-cal-opa: 1;
+        --bit-mnb-cal-tra: translateY(0);
+    }
 }
 
 .bit-mnb-cul {
