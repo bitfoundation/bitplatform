@@ -1208,6 +1208,78 @@ public class BitDropdownTests : BunitTestContext
         }
     }
 
+    [TestMethod]
+    [DataRow(BitColor.Primary, "bit-drp-pri")]
+    [DataRow(BitColor.Secondary, "bit-drp-sec")]
+    [DataRow(BitColor.Tertiary, "bit-drp-ter")]
+    [DataRow(BitColor.Info, "bit-drp-inf")]
+    [DataRow(BitColor.Success, "bit-drp-suc")]
+    [DataRow(BitColor.Warning, "bit-drp-wrn")]
+    [DataRow(BitColor.SevereWarning, "bit-drp-swr")]
+    [DataRow(BitColor.Error, "bit-drp-err")]
+    [DataRow(BitColor.PrimaryBackground, "bit-drp-pbg")]
+    [DataRow(BitColor.SecondaryBackground, "bit-drp-sbg")]
+    [DataRow(BitColor.TertiaryBackground, "bit-drp-tbg")]
+    [DataRow(BitColor.PrimaryForeground, "bit-drp-pfg")]
+    [DataRow(BitColor.SecondaryForeground, "bit-drp-sfg")]
+    [DataRow(BitColor.TertiaryForeground, "bit-drp-tfg")]
+    [DataRow(BitColor.PrimaryBorder, "bit-drp-pbr")]
+    [DataRow(BitColor.SecondaryBorder, "bit-drp-sbr")]
+    [DataRow(BitColor.TertiaryBorder, "bit-drp-tbr")]
+    [DataRow(null, "bit-drp-pri")]
+    public void BitDropdownColorTest(BitColor? color, string expectedClass)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            if (color.HasValue)
+            {
+                parameters.Add(p => p.Color, color.Value);
+            }
+        });
+
+        var bitDrp = component.Find(".bit-drp");
+
+        Assert.IsTrue(bitDrp.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    [DataRow(BitColor.Primary, "bit-drp-pri")]
+    [DataRow(BitColor.Secondary, "bit-drp-sec")]
+    [DataRow(BitColor.Tertiary, "bit-drp-ter")]
+    [DataRow(BitColor.Info, "bit-drp-inf")]
+    [DataRow(BitColor.Success, "bit-drp-suc")]
+    [DataRow(BitColor.Warning, "bit-drp-wrn")]
+    [DataRow(BitColor.SevereWarning, "bit-drp-swr")]
+    [DataRow(BitColor.Error, "bit-drp-err")]
+    [DataRow(BitColor.PrimaryBackground, "bit-drp-pbg")]
+    [DataRow(BitColor.SecondaryBackground, "bit-drp-sbg")]
+    [DataRow(BitColor.TertiaryBackground, "bit-drp-tbg")]
+    [DataRow(BitColor.PrimaryForeground, "bit-drp-pfg")]
+    [DataRow(BitColor.SecondaryForeground, "bit-drp-sfg")]
+    [DataRow(BitColor.TertiaryForeground, "bit-drp-tfg")]
+    [DataRow(BitColor.PrimaryBorder, "bit-drp-pbr")]
+    [DataRow(BitColor.SecondaryBorder, "bit-drp-sbr")]
+    [DataRow(BitColor.TertiaryBorder, "bit-drp-tbr")]
+    [DataRow(null, "bit-drp-pri")]
+    public void BitDropdownColorCalloutTest(BitColor? color, string expectedClass)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            if (color.HasValue)
+            {
+                parameters.Add(p => p.Color, color.Value);
+            }
+        });
+
+        var callout = component.Find(".bit-drp-cal");
+
+        Assert.IsTrue(callout.ClassList.Contains(expectedClass));
+    }
+
     private void HandleValueChanged(string value)
     {
         _bitDropdownValue = value;

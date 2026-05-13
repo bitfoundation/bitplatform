@@ -1199,7 +1199,7 @@ public partial class BitDropdownDemo
                 new()
                 {
                     Name= "Primary",
-                    Description="Info Primary general color.",
+                    Description="Primary general color.",
                     Value="0",
                 },
                 new()

@@ -51,7 +51,7 @@
          aria-required="@Required"
          aria-disabled="@(IsEnabled is false)"
          aria-expanded=@(IsOpen ? "true" : "false")
-         aria-labelledby="@GetDropdownAriaLabelledby"
+         aria-labelledby="@GetDropdownAriaLabelledby()"
          aria-controls="@(IsOpen? _calloutId : null)">
 
         @if (PrefixTemplate is not null)

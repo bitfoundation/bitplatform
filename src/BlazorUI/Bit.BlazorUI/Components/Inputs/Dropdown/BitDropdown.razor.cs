@@ -5,7 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms.
+/// A dropdown is a list in which the selected item is always visible while other items are 
+/// visible on demand by clicking a dropdown button. Dropdowns are typically used for forms.
 /// </summary>
 public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
@@ -926,27 +927,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-drp-pri",
-            BitColor.Secondary => "bit-drp-sec",
-            BitColor.Tertiary => "bit-drp-ter",
-            BitColor.Info => "bit-drp-inf",
-            BitColor.Success => "bit-drp-suc",
-            BitColor.Warning => "bit-drp-wrn",
-            BitColor.SevereWarning => "bit-drp-swr",
-            BitColor.Error => "bit-drp-err",
-            BitColor.PrimaryBackground => "bit-drp-pbg",
-            BitColor.SecondaryBackground => "bit-drp-sbg",
-            BitColor.TertiaryBackground => "bit-drp-tbg",
-            BitColor.PrimaryForeground => "bit-drp-pfg",
-            BitColor.SecondaryForeground => "bit-drp-sfg",
-            BitColor.TertiaryForeground => "bit-drp-tfg",
-            BitColor.PrimaryBorder => "bit-drp-pbr",
-            BitColor.SecondaryBorder => "bit-drp-sbr",
-            BitColor.TertiaryBorder => "bit-drp-tbr",
-            _ => "bit-drp-pri"
-        });
+        ClassBuilder.Register(() => GetColorClass());
 
         ClassBuilder.Register(() => Required ? "bit-drp-req" : string.Empty);
 
@@ -1210,13 +1191,25 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await FocusOnSearchBox();
     }
 
-    private void HandleOnValueChanged(object? sender, EventArgs args) => UpdateSelectedItemsFromValues();
+    private void HandleOnValueChanged(object? sender, EventArgs args)
+    {
+        UpdateSelectedItemsFromValues();
+    }
 
-    private void HandleSearchBoxFocusIn() => _inputSearchHasFocus = true;
+    private void HandleSearchBoxFocusIn()
+    {
+        _inputSearchHasFocus = true;
+    }
 
-    private void HandleSearchBoxFocusOut() => _inputSearchHasFocus = false;
+    private void HandleSearchBoxFocusOut()
+    {
+        _inputSearchHasFocus = false;
+    }
 
-    private Task HandleSearchBoxOnClear() => ClearSearchBox();
+    private Task HandleSearchBoxOnClear()
+    {
+        return ClearSearchBox();
+    }
 
     private async Task HandleFilterChange(ChangeEventArgs e)
     {
@@ -1306,7 +1299,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return className.ToString();
     }
 
-    private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{_labelId} {_dropdownTextContainerId}" : _dropdownTextContainerId;
+    private string GetDropdownAriaLabelledby()
+    {
+        return Label.HasValue() ? $"{_labelId} {_dropdownTextContainerId}" : _dropdownTextContainerId;
+    }
 
     private async Task SearchVirtualized()
     {
@@ -1473,7 +1469,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
-    private Task HandleOnClickUnselectItem(TItem? item) => UnselectItem(item);
+    private Task HandleOnClickUnselectItem(TItem? item)
+    {
+        return UnselectItem(item);
+    }
 
     private async Task HandleOnComboInput(ChangeEventArgs e)
     {
@@ -1674,7 +1673,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             classes.Add("bit-drp-rtl");
         }
 
-        classes.Add(Color switch
+        classes.Add(GetColorClass());
+
+        return string.Join(' ', classes).Trim();
+    }
+
+    private string GetColorClass()
+    {
+        return Color switch
         {
             BitColor.Primary => "bit-drp-pri",
             BitColor.Secondary => "bit-drp-sec",
@@ -1694,12 +1700,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             BitColor.SecondaryBorder => "bit-drp-sbr",
             BitColor.TertiaryBorder => "bit-drp-tbr",
             _ => "bit-drp-pri"
-        });
-
-        return string.Join(' ', classes).Trim();
+        };
     }
-
-
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
