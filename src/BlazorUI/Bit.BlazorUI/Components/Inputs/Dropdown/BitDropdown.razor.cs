@@ -107,6 +107,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public BitDropdownClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The general color of the dropdown.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
     /// The icon of the clear button of the dropdown.
     /// Takes precedence over <see cref="ClearButtonIconName"/> when both are set.
     /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
@@ -920,6 +926,28 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-drp-pri",
+            BitColor.Secondary => "bit-drp-sec",
+            BitColor.Tertiary => "bit-drp-ter",
+            BitColor.Info => "bit-drp-inf",
+            BitColor.Success => "bit-drp-suc",
+            BitColor.Warning => "bit-drp-wrn",
+            BitColor.SevereWarning => "bit-drp-swr",
+            BitColor.Error => "bit-drp-err",
+            BitColor.PrimaryBackground => "bit-drp-pbg",
+            BitColor.SecondaryBackground => "bit-drp-sbg",
+            BitColor.TertiaryBackground => "bit-drp-tbg",
+            BitColor.PrimaryForeground => "bit-drp-pfg",
+            BitColor.SecondaryForeground => "bit-drp-sfg",
+            BitColor.TertiaryForeground => "bit-drp-tfg",
+            BitColor.PrimaryBorder => "bit-drp-pbr",
+            BitColor.SecondaryBorder => "bit-drp-sbr",
+            BitColor.TertiaryBorder => "bit-drp-tbr",
+            _ => "bit-drp-pri"
+        });
+
         ClassBuilder.Register(() => Required ? "bit-drp-req" : string.Empty);
 
         ClassBuilder.Register(() => _selectedItems?.Count > 0 ? "bit-drp-hvl" : string.Empty);
@@ -1645,6 +1673,28 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             classes.Add("bit-drp-rtl");
         }
+
+        classes.Add(Color switch
+        {
+            BitColor.Primary => "bit-drp-pri",
+            BitColor.Secondary => "bit-drp-sec",
+            BitColor.Tertiary => "bit-drp-ter",
+            BitColor.Info => "bit-drp-inf",
+            BitColor.Success => "bit-drp-suc",
+            BitColor.Warning => "bit-drp-wrn",
+            BitColor.SevereWarning => "bit-drp-swr",
+            BitColor.Error => "bit-drp-err",
+            BitColor.PrimaryBackground => "bit-drp-pbg",
+            BitColor.SecondaryBackground => "bit-drp-sbg",
+            BitColor.TertiaryBackground => "bit-drp-tbg",
+            BitColor.PrimaryForeground => "bit-drp-pfg",
+            BitColor.SecondaryForeground => "bit-drp-sfg",
+            BitColor.TertiaryForeground => "bit-drp-tfg",
+            BitColor.PrimaryBorder => "bit-drp-pbr",
+            BitColor.SecondaryBorder => "bit-drp-sbr",
+            BitColor.TertiaryBorder => "bit-drp-tbr",
+            _ => "bit-drp-pri"
+        });
 
         return string.Join(' ', classes).Trim();
     }

@@ -7,6 +7,9 @@
     position: relative;
     flex-direction: column;
     font-family: $tg-font-family;
+    --bit-drp-clr: #{$clr-pri};
+    --bit-drp-clr-hover: #{$clr-pri-hover};
+    --bit-drp-clr-text: #{$clr-pri-text};
 
     &.bit-drp-req {
         .bit-drp-lbl {
@@ -173,7 +176,7 @@
             pointer-events: none;
             inset: spacing(-0.125);
             border-radius: $shp-border-radius;
-            border: spacing(0.25) $shp-border-style $clr-pri;
+            border: spacing(0.25) $shp-border-style var(--bit-drp-clr);
         }
     }
 }
@@ -257,12 +260,12 @@
         background-color: $clr-bg-sec;
 
         .bit-drp-chb {
-            border-color: $clr-pri;
-            background-color: $clr-pri;
+            border-color: var(--bit-drp-clr);
+            background-color: var(--bit-drp-clr);
 
             .bit-drp-chm {
                 opacity: 1;
-                color: $clr-pri-text;
+                color: var(--bit-drp-clr-text);
             }
         }
 
@@ -271,8 +274,8 @@
                 background-color: $clr-bg-pri-hover;
 
                 .bit-drp-chb {
-                    border-color: $clr-pri-hover;
-                    background-color: $clr-pri-hover;
+                    border-color: var(--bit-drp-clr-hover);
+                    background-color: var(--bit-drp-clr-hover);
                 }
             }
         }
@@ -420,7 +423,7 @@
 
             .bit-drp-sic {
                 i {
-                    color: $clr-pri-hover;
+                    color: var(--bit-drp-clr-hover);
                 }
             }
         }
@@ -453,7 +456,7 @@
 
             .bit-drp-sic {
                 i {
-                    color: $clr-pri-hover;
+                    color: var(--bit-drp-clr-hover);
                 }
             }
         }
@@ -464,7 +467,7 @@
             &:hover {
                 .bit-drp-sic {
                     width: spacing(0.5);
-                    color: $clr-pri-hover;
+                    color: var(--bit-drp-clr-hover);
 
                     i {
                         opacity: 0;
@@ -475,7 +478,7 @@
     }
 
     &.bit-drp-shf {
-        border-bottom: spacing(0.25) $shp-border-style $clr-pri;
+        border-bottom: spacing(0.25) $shp-border-style var(--bit-drp-clr);
 
         .bit-drp-sic {
             width: spacing(0.5);
@@ -488,7 +491,7 @@
         @media (hover: hover) {
             &:hover {
                 border-width: 0 0 $shp-border-width;
-                border-bottom: spacing(0.25) $shp-border-style $clr-pri;
+                border-bottom: spacing(0.25) $shp-border-style var(--bit-drp-clr);
             }
         }
     }
@@ -503,7 +506,7 @@
     font-size: spacing(2);
     flex-direction: column;
     justify-content: center;
-    color: $clr-pri;
+    color: var(--bit-drp-clr);
     transition: width 0.167s ease 0s;
 
     i {
@@ -512,7 +515,7 @@
         width: unset;
         height: unset;
         display: inline-block;
-        color: $clr-pri;
+        color: var(--bit-drp-clr);
         transition: opacity 0.167s ease 0s;
     }
 }
@@ -573,7 +576,7 @@
     box-sizing: border-box;
     padding: 0 spacing(0.5);
     font-size: spacing(1.75);
-    color: $clr-pri;
+    color: var(--bit-drp-clr);
     background-color: transparent;
     font-family: $tg-font-family;
     border-radius: 0 spacing(0.125) spacing(0.125) 0;
@@ -649,7 +652,7 @@
 
 .bit-drp-ihd {
     width: 100%;
-    color: $clr-pri;
+    color: var(--bit-drp-clr);
     cursor: default;
     font-weight: 600;
     user-select: none;
@@ -795,4 +798,107 @@
         right: unset;
         transform: translateX(-100%);
     }
+}
+
+
+.bit-drp-pri {
+    --bit-drp-clr: #{$clr-pri};
+    --bit-drp-clr-hover: #{$clr-pri-hover};
+    --bit-drp-clr-text: #{$clr-pri-text};
+}
+
+.bit-drp-sec {
+    --bit-drp-clr: #{$clr-sec};
+    --bit-drp-clr-hover: #{$clr-sec-hover};
+    --bit-drp-clr-text: #{$clr-sec-text};
+}
+
+.bit-drp-ter {
+    --bit-drp-clr: #{$clr-ter};
+    --bit-drp-clr-hover: #{$clr-ter-hover};
+    --bit-drp-clr-text: #{$clr-ter-text};
+}
+
+.bit-drp-inf {
+    --bit-drp-clr: #{$clr-inf};
+    --bit-drp-clr-hover: #{$clr-inf-hover};
+    --bit-drp-clr-text: #{$clr-inf-text};
+}
+
+.bit-drp-suc {
+    --bit-drp-clr: #{$clr-suc};
+    --bit-drp-clr-hover: #{$clr-suc-hover};
+    --bit-drp-clr-text: #{$clr-suc-text};
+}
+
+.bit-drp-wrn {
+    --bit-drp-clr: #{$clr-wrn};
+    --bit-drp-clr-hover: #{$clr-wrn-hover};
+    --bit-drp-clr-text: #{$clr-wrn-text};
+}
+
+.bit-drp-swr {
+    --bit-drp-clr: #{$clr-swr};
+    --bit-drp-clr-hover: #{$clr-swr-hover};
+    --bit-drp-clr-text: #{$clr-swr-text};
+}
+
+.bit-drp-err {
+    --bit-drp-clr: #{$clr-err};
+    --bit-drp-clr-hover: #{$clr-err-hover};
+    --bit-drp-clr-text: #{$clr-err-text};
+}
+
+.bit-drp-pbg {
+    --bit-drp-clr: #{$clr-bg-pri};
+    --bit-drp-clr-hover: #{$clr-bg-pri-hover};
+    --bit-drp-clr-text: #{$clr-fg-pri};
+}
+
+.bit-drp-sbg {
+    --bit-drp-clr: #{$clr-bg-sec};
+    --bit-drp-clr-hover: #{$clr-bg-sec-hover};
+    --bit-drp-clr-text: #{$clr-fg-sec};
+}
+
+.bit-drp-tbg {
+    --bit-drp-clr: #{$clr-bg-ter};
+    --bit-drp-clr-hover: #{$clr-bg-ter-hover};
+    --bit-drp-clr-text: #{$clr-fg-ter};
+}
+
+.bit-drp-pfg {
+    --bit-drp-clr: #{$clr-fg-pri};
+    --bit-drp-clr-hover: #{$clr-fg-pri-hover};
+    --bit-drp-clr-text: #{$clr-bg-pri};
+}
+
+.bit-drp-sfg {
+    --bit-drp-clr: #{$clr-fg-sec};
+    --bit-drp-clr-hover: #{$clr-fg-sec-hover};
+    --bit-drp-clr-text: #{$clr-bg-sec};
+}
+
+.bit-drp-tfg {
+    --bit-drp-clr: #{$clr-fg-ter};
+    --bit-drp-clr-hover: #{$clr-fg-ter-hover};
+    --bit-drp-clr-text: #{$clr-bg-ter};
+}
+
+.bit-drp-pbr {
+    --bit-drp-clr: #{$clr-brd-pri};
+    --bit-drp-clr-hover: #{$clr-brd-pri-hover};
+    --bit-drp-clr-text: #{$clr-fg-pri};
+}
+
+.bit-drp-sbr {
+    --bit-drp-clr: #{$clr-brd-sec};
+    --bit-drp-clr-hover: #{$clr-brd-sec-hover};
+    --bit-drp-clr-text: #{$clr-fg-sec};
+}
+
+.bit-drp-tbr {
+    --bit-drp-clr: #{$clr-brd-ter};
+    --bit-drp-clr-hover: #{$clr-brd-ter-hover};
+    --bit-drp-clr-text: #{$clr-fg-ter};
 }
