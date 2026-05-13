@@ -458,7 +458,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.7.0
       with:
-        xcode-version: '26.3'
+        xcode-version: '26.4'
 
     - name: Create project from Boilerplate
       run: |

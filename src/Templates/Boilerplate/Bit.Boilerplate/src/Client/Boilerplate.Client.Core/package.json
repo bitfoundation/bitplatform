@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "dompurify": "3.4.2"
+        "dompurify": "3.4.3"
     },
     "devDependencies": {
         "esbuild": "0.28.0",
