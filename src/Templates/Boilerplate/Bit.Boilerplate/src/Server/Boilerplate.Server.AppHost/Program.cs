@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -8,11 +8,13 @@ var builder = DistributedApplication.CreateBuilder(args);
 //#if(redis == true)
 // Redis cache for FusionCache hybrid caching (L2 cache) and SignalR backplane - no persistence needed
 var redisCache = builder.AddRedis("redis-cache")
+    .WithOtlpExporter()
     .WithRedisInsight()
     .WithRedisCommander();
 
 // Redis for Hangfire background jobs, and distributed locking - persistent with AOF for durability
 var redisPersistent = builder.AddRedis("redis-persistent")
+    .WithOtlpExporter()
     .WithRedisInsight()
     .WithRedisCommander()
     .WithDataVolume()
@@ -26,6 +28,7 @@ var redisPersistent = builder.AddRedis("redis-persistent")
 
 //#if (database == "SqlServer")
 var sqlDatabase = builder.AddSqlServer("sqlserver")
+        .WithOtlpExporter()
         .WithDbGate(config => config.WithDataVolume())
         .WithDataVolume()
         .WithImage("mssql/server", "2025-latest")
@@ -33,6 +36,7 @@ var sqlDatabase = builder.AddSqlServer("sqlserver")
 
 //#elif (database == "PostgreSql")
 var postgresDatabase = builder.AddPostgres("postgresserver")
+        .WithOtlpExporter()
         .WithPgAdmin()
         .WithV18DataVolume()
         .WithOptimizedSetup()
@@ -41,6 +45,7 @@ var postgresDatabase = builder.AddPostgres("postgresserver")
 
 //#elif (database == "MySql")
 var mySqlDatabase = builder.AddMySql("mysqlserver")
+        .WithOtlpExporter()
         .WithPhpMyAdmin()
         .WithDataVolume()
         .AddDatabase("mysqldb");
@@ -59,11 +64,13 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
 
 //#elif (filesStorage == "S3")
 var s3Storage = builder.AddMinioContainer("s3")
+    .WithOtlpExporter()
     .WithDataVolume();
 //#endif
 
 // https://aspire.dev/integrations/security/keycloak/
 var keycloak = builder.AddKeycloak("keycloak", 8080)
+    .WithOtlpExporter()
     .WithDataVolume()
     .WithRealmImport("./Infrastructure/Realms");
 
