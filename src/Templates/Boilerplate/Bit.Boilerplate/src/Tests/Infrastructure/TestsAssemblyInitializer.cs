@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using Microsoft.EntityFrameworkCore;
 //#if (aspire == true)
 using Aspire.Hosting;
@@ -46,19 +46,39 @@ public partial class TestsAssemblyInitializer
     /// </summary>
     private static async Task RunAspireHost(TestContext testContext)
     {
-        var aspireBuilder = await DistributedApplicationTestingBuilder
+        var aspireAppBuilder = await DistributedApplicationTestingBuilder
             .CreateAsync<Program>(testContext.CancellationToken);
 
-        foreach (var res in aspireBuilder.Resources.OfType<ProjectResource>().ToList())
-            aspireBuilder.Resources.Remove(res);
-        foreach (var res in aspireBuilder.Resources.OfType<DevTunnelResource>().ToList()) // remove unnecessary resources.
-            aspireBuilder.Resources.Remove(res);
+        foreach (var res in aspireAppBuilder.Resources.Where(r => r is ProjectResource or IResourceWithParent<ProjectResource>).ToList())
+            aspireAppBuilder.Resources.Remove(res);
 
-        aspireApp = await aspireBuilder.BuildAsync(testContext.CancellationToken);
+        // The following resources are not that much useful in tests and just add to the startup time, so we remove them from the application.
+        foreach (var res in aspireAppBuilder.Resources.Where(r => r is DevTunnelResource or DevTunnelPortResource
+            //#if (database == 'SqlServer')
+            or DbGateContainerResource
+            //#elif (database == 'PostgreSql')
+            or Aspire.Hosting.Postgres.PgAdminContainerResource
+            //#elif (database == 'MySql')
+            or Aspire.Hosting.MySql.PhpMyAdminContainerResource
+            //#elif (database == 'Sqlite')
+            or SqliteWebResource
+            //#endif
+            //#if (redis == true)
+            or Aspire.Hosting.Redis.RedisInsightResource
+            or Aspire.Hosting.Redis.RedisCommanderResource
+            //#endif
+            or Aspire.Hosting.Maui.MauiAndroidDeviceResource
+            or Aspire.Hosting.Maui.MauiAndroidEmulatorResource
+            || r.GetType().Name is "OtlpLoopbackResource").ToList())
+        {
+            aspireAppBuilder.Resources.Remove(res);
+        }
+
+        aspireApp = await aspireAppBuilder.BuildAsync(testContext.CancellationToken);
 
         await aspireApp.StartAsync(testContext.CancellationToken);
 
-        foreach (var connectionString in aspireBuilder.Resources.OfType<IResourceWithConnectionString>())
+        foreach (var connectionString in aspireAppBuilder.Resources.OfType<IResourceWithConnectionString>())
         {
             Environment.SetEnvironmentVariable($"ConnectionStrings__{connectionString.Name}", await aspireApp.GetConnectionStringAsync(connectionString.Name, testContext.CancellationToken));
             await aspireApp.ResourceNotifications.WaitForResourceAsync(connectionString.Name, [.. KnownResourceStates.TerminalStates, KnownResourceStates.Running], testContext.CancellationToken);
