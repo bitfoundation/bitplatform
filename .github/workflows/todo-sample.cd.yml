@@ -227,9 +227,6 @@ jobs:
       run: |
           cd TodoSample/src/Server/TodoSample.Server.Web && dotnet tool restore && dotnet build -c Release && dotnet ef dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace TodoSample.Client.Core.Infrastructure.Data --project ../../Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj --verbose
 
-    - name: Generate CSS/JS files
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true --no-restore -c Release
-      
     - name: Publish
       run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
 
