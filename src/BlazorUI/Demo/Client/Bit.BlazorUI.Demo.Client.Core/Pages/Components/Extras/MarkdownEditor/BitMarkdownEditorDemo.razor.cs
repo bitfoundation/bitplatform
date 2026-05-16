@@ -204,6 +204,11 @@ private string? onChangeValue;";
 private string? bindingValue;";
 
     private readonly string example5RazorCode = @"
+<div style=""height:300px"">
+    <BitMarkdownEditor DefaultValue=""# Undo/Redo Demo"" />
+</div>";
+
+    private readonly string example6RazorCode = @"
 <div style=""display:flex;gap:1rem;margin-bottom:1rem"">
     <BitToggleButton Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" OnText=""Write"" OffText=""Preview"" @bind-IsChecked=""showPreview"" />
             
@@ -237,7 +242,7 @@ private string? bindingValue;";
     <BitMarkdownViewer Markdown=""@advancedValue"" 
                        Style=""@($""display:{(showPreview ? ""block"" : ""none"")}"")"" />
 </div>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool showPreview;
 private string? advancedValue;
 private BitMarkdownEditor advancedRef = default!;";
