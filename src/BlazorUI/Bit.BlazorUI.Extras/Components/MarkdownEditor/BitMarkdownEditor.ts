@@ -96,12 +96,12 @@ namespace BitBlazorUI {
                 clearTimeout(this._historyDebounce);
                 this._historyDebounce = null;
             }
-            this._history = [this.textArea.value];
+            this._history = [this.value];
             this._historyIndex = 0;
         }
 
         private pushHistory() {
-            const current = this.textArea.value;
+            const current = this.value;
             if (this._history.length > 0 && this._history[this._historyIndex] === current) return;
             this._history = this._history.slice(0, this._historyIndex + 1);
             this._history.push(current);
@@ -112,7 +112,7 @@ namespace BitBlazorUI {
             this.pushHistory();
             if (this._historyIndex > 0) {
                 this._historyIndex--;
-                this.textArea.value = this._history[this._historyIndex]!;
+                this.value = this._history[this._historyIndex]!;
                 setTimeout(() => {
                     this.change({} as Event);
                     if (this._historyDebounce !== null) {
@@ -126,7 +126,7 @@ namespace BitBlazorUI {
         private redo() {
             if (this._historyIndex < this._history.length - 1) {
                 this._historyIndex++;
-                this.textArea.value = this._history[this._historyIndex]!;
+                this.value = this._history[this._historyIndex]!;
                 setTimeout(() => {
                     this.change({} as Event);
                     if (this._historyDebounce !== null) {
@@ -208,11 +208,11 @@ namespace BitBlazorUI {
 
         insert(content: Content, start: number, end: number) {
             if (content.type === 'inline') {
-                this.textArea.value = `${this.textArea.value.slice(0, end)}${content.value}${this.textArea.value.slice(end)}`;
+                this.value = `${this.value.slice(0, end)}${content.value}${this.value.slice(end)}`;
             } else if (content.type === 'wrap') {
-                this.textArea.value = insert(this.textArea.value, content.value, start);
-                this.textArea.value = insert(
-                    this.textArea.value,
+                this.value = insert(this.value, content.value, start);
+                this.value = insert(
+                    this.value,
                     this._pairs[content.value] ? this._pairs[content.value] : content.value,
                     end + content.value.length,
                 );
@@ -227,7 +227,7 @@ namespace BitBlazorUI {
                 } else {
                     total[num] = content.value + total[num];
                 }
-                this.textArea.value = total.join('\n');
+                this.value = total.join('\n');
             } else if (content.type === 'init') { }
         }
 
@@ -296,7 +296,7 @@ namespace BitBlazorUI {
                 total[i] = l.slice(String(number).length);
                 total[i] = String(newNumber) + total[i];
             }
-            this.textArea.value = total.join('\n');
+            this.value = total.join('\n');
         }
 
         dispose() {
@@ -356,7 +356,7 @@ namespace BitBlazorUI {
                                 const pos = this.start - col;
                                 this.pushHistory();
                                 total.splice(num, 1);
-                                this.textArea.value = total.join('\n');
+                                this.value = total.join('\n');
                                 setTimeout(() => this.set(pos, pos), 0);
                             }
                         }
@@ -392,8 +392,8 @@ namespace BitBlazorUI {
                 this.pushHistory();
                 const start = this.start - 1;
                 const end = this.end - 1;
-                this.textArea.value = remove(this.textArea.value, start);
-                this.textArea.value = remove(this.textArea.value, end);
+                this.value = remove(this.value, start);
+                this.value = remove(this.value, end);
                 setTimeout(() => {
                     this.set(start, end);
                 }, 0);
@@ -405,7 +405,7 @@ namespace BitBlazorUI {
                 const pos = this.start - 1;
                 const { num } = this.getLine();
                 this.correct(num, true);
-                this.textArea.value = remove(this.textArea.value, pos);
+                this.value = remove(this.value, pos);
                 setTimeout(async () => {
                     this.set(pos, pos);
                 }, 0);
@@ -437,7 +437,7 @@ namespace BitBlazorUI {
                 const pos = origEnd - orig.length;
 
                 for (let i = 0; i < orig.length; i++) {
-                    this.textArea.value = remove(this.textArea.value, origEnd - (i + 1));
+                    this.value = remove(this.value, origEnd - (i + 1));
                 }
 
                 setTimeout(async () => {
