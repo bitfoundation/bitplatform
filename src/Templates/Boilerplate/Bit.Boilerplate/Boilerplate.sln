@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.0.11201.2
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -51,12 +51,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{3E57
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C0D}"
     ProjectSection(SolutionItems) = preProject
-        .github\agents\resx.agent.md = .github\agents\resx.agent.md
-		.github\agents\code-reviewer.agent.md = .github\agents\code-reviewer.agent.md
-        .github\agents\bitify.agent.md = .github\agents\bitify.agent.md
-        .github\agents\scaffold.agent.md = .github\agents\scaffold.agent.md
+.github\agents\code-reviewer.agent.md = .github\agents\code-reviewer.agent.md
         .github\agents\ai-dlc.agent.md = .github\agents\ai-dlc.agent.md
     EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prompts", "prompts", "{5B6E7F8A-9C0D-1B2C-3D4E-5F6A7B8C9D0E}"
+    ProjectSection(SolutionItems) = preProject
+        .github\prompts\bitify.prompt.md = .github\prompts\bitify.prompt.md
+        .github\prompts\resx.prompt.md = .github\prompts\resx.prompt.md
+        .github\prompts\scaffold.prompt.md = .github\prompts\scaffold.prompt.md
+    EndProjectSection
+EndProjectSection
 EndProject
 #if (pipeline == "GitHub")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{2347E3B2-FDDE-427E-A0AE-E4DCD47C2989}"
