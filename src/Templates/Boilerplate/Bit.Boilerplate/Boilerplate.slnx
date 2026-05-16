@@ -32,6 +32,7 @@
 	<File Path=".github/agents/code-reviewer.agent.md" />
     <File Path=".github/agents/bitify.agent.md" />
     <File Path=".github/agents/scaffold.agent.md" />
+    <File Path=".github/agents/ai-dlc.agent.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.docs/">
     <File Path=".docs/00- Wiki.md" />

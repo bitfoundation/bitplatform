@@ -55,6 +55,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E
 		.github\agents\code-reviewer.agent.md = .github\agents\code-reviewer.agent.md
         .github\agents\bitify.agent.md = .github\agents\bitify.agent.md
         .github\agents\scaffold.agent.md = .github\agents\scaffold.agent.md
+        .github\agents\ai-dlc.agent.md = .github\agents\ai-dlc.agent.md
     EndProjectSection
 EndProject
 #if (pipeline == "GitHub")
