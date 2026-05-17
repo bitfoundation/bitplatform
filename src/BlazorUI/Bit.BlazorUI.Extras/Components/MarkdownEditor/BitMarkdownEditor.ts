@@ -26,7 +26,8 @@ namespace BitBlazorUI {
             const editor = MarkdownEditor._editors[id];
             if (!editor) return;
 
-            return editor.value = value;
+            editor.value = value;
+            editor.resetHistory();
         }
 
         public static run(id: string, cmd: string) {
@@ -66,6 +67,7 @@ namespace BitBlazorUI {
         private _history: string[] = [];
         private _historyIndex: number = -1;
         private _historyDebounce: ReturnType<typeof setTimeout> | null = null;
+        private readonly _maxHistorySize: number = 100;
 
         private textArea: HTMLTextAreaElement;
         private dotnetObj: DotNetObject | undefined | null;
@@ -105,6 +107,9 @@ namespace BitBlazorUI {
             if (this._history.length > 0 && this._history[this._historyIndex] === current) return;
             this._history = this._history.slice(0, this._historyIndex + 1);
             this._history.push(current);
+            if (this._history.length > this._maxHistorySize) {
+                this._history = this._history.slice(this._history.length - this._maxHistorySize);
+            }
             this._historyIndex = this._history.length - 1;
         }
 
@@ -112,28 +117,22 @@ namespace BitBlazorUI {
             this.pushHistory();
             if (this._historyIndex > 0) {
                 this._historyIndex--;
+                if (this._historyDebounce !== null) {
+                    clearTimeout(this._historyDebounce);
+                    this._historyDebounce = null;
+                }
                 this.value = this._history[this._historyIndex]!;
-                setTimeout(() => {
-                    this.change({} as Event);
-                    if (this._historyDebounce !== null) {
-                        clearTimeout(this._historyDebounce);
-                        this._historyDebounce = null;
-                    }
-                }, 0);
             }
         }
 
         private redo() {
             if (this._historyIndex < this._history.length - 1) {
                 this._historyIndex++;
+                if (this._historyDebounce !== null) {
+                    clearTimeout(this._historyDebounce);
+                    this._historyDebounce = null;
+                }
                 this.value = this._history[this._historyIndex]!;
-                setTimeout(() => {
-                    this.change({} as Event);
-                    if (this._historyDebounce !== null) {
-                        clearTimeout(this._historyDebounce);
-                        this._historyDebounce = null;
-                    }
-                }, 0);
             }
         }
 
