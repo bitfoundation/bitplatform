@@ -14,7 +14,7 @@ var redisCache = builder.AddRedis("redis-cache")
 
 // Redis for Hangfire background jobs, and distributed locking - persistent with AOF for durability
 var redisPersistent = builder.AddRedis("redis-persistent")
-    .WithOtlpExporter()
+    // WithOtlpExporter() is intentionally omitted for containers with WithDataVolume() due to https://github.com/microsoft/aspire/issues/17191
     .WithRedisInsight()
     .WithRedisCommander()
     .WithDataVolume()
@@ -28,7 +28,7 @@ var redisPersistent = builder.AddRedis("redis-persistent")
 
 //#if (database == "SqlServer")
 var sqlDatabase = builder.AddSqlServer("sqlserver")
-        .WithOtlpExporter()
+        // WithOtlpExporter() is intentionally omitted for containers with WithDataVolume() due to https://github.com/microsoft/aspire/issues/17191
         .WithDbGate(config => config.WithDataVolume())
         .WithDataVolume()
         .WithImage("mssql/server", "2025-latest")
@@ -36,7 +36,7 @@ var sqlDatabase = builder.AddSqlServer("sqlserver")
 
 //#elif (database == "PostgreSql")
 var postgresDatabase = builder.AddPostgres("postgresserver")
-        .WithOtlpExporter()
+        // WithOtlpExporter() is intentionally omitted for containers with WithDataVolume() due to https://github.com/microsoft/aspire/issues/17191
         .WithPgAdmin()
         .WithV18DataVolume()
         .WithOptimizedSetup()
@@ -45,7 +45,7 @@ var postgresDatabase = builder.AddPostgres("postgresserver")
 
 //#elif (database == "MySql")
 var mySqlDatabase = builder.AddMySql("mysqlserver")
-        .WithOtlpExporter()
+        // WithOtlpExporter() is intentionally omitted for containers with WithDataVolume() due to https://github.com/microsoft/aspire/issues/17191
         .WithPhpMyAdmin()
         .WithDataVolume()
         .AddDatabase("mysqldb");
@@ -64,13 +64,13 @@ var azureBlobStorage = builder.AddAzureStorage("storage")
 
 //#elif (filesStorage == "S3")
 var s3Storage = builder.AddMinioContainer("s3")
-    .WithOtlpExporter()
+    // WithOtlpExporter() is intentionally omitted for containers with WithDataVolume() due to https://github.com/microsoft/aspire/issues/17191
     .WithDataVolume();
 //#endif
 
 // https://aspire.dev/integrations/security/keycloak/
 var keycloak = builder.AddKeycloak("keycloak", 8080)
-    .WithOtlpExporter()
+    // WithOtlpExporter() is intentionally omitted for containers with WithDataVolume() due to https://github.com/microsoft/aspire/issues/17191
     .WithDataVolume()
     .WithRealmImport("./Infrastructure/Realms");
 
