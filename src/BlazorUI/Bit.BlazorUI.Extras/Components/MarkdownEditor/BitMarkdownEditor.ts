@@ -26,6 +26,8 @@ namespace BitBlazorUI {
             const editor = MarkdownEditor._editors[id];
             if (!editor) return;
 
+            if (editor.value === value) return;
+
             editor.value = value;
             editor.resetHistory();
         }
@@ -137,11 +139,18 @@ namespace BitBlazorUI {
         }
 
         private scheduleHistorySave() {
+            // Truncate the redo branch immediately so stale future states are unreachable at once
+            this._history = this._history.slice(0, this._historyIndex + 1);
+
             if (this._historyDebounce !== null) {
                 clearTimeout(this._historyDebounce);
             }
             this._historyDebounce = setTimeout(() => {
-                this.pushHistory();
+                const current = this.value;
+                if (this._history[this._historyIndex] !== current) {
+                    this._history.push(current);
+                    this._historyIndex = this._history.length - 1;
+                }
                 this._historyDebounce = null;
             }, 200);
         }
