@@ -64,12 +64,18 @@ public sealed class BitCesiumMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
+        var hasToken = string.IsNullOrEmpty(IonAccessToken) is false;
+        var terrainEnabled = TerrainEnabled && hasToken;
+        var imageryStyle = hasToken || (ImageryStyle is not ("bing_aerial" or "bing_labels"))
+            ? ImageryStyle
+            : "osm";
+
         var common = GetCommonOptions();
         common["altitude"] = Altitude;
-        common["imageryStyle"] = ImageryStyle;
+        common["imageryStyle"] = imageryStyle;
         common["ionAccessToken"] = IonAccessToken;
         common["sceneMode"] = SceneMode;
-        common["terrainEnabled"] = TerrainEnabled;
+        common["terrainEnabled"] = terrainEnabled;
         common["shadowsEnabled"] = ShadowsEnabled;
         common["animationWidget"] = AnimationWidget;
         common["timelineWidget"] = TimelineWidget;

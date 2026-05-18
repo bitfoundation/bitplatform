@@ -317,6 +317,8 @@ namespace BitBlazorUI {
 
         public static addTileOverlay(id: string, opts: any) {
             const s = BitMapAzureMaps._require(id);
+            const existingTlId = s.tileOverlays[opts.id];
+            if (existingTlId) { try { s.map.layers.remove(existingTlId); } catch { /* ignore */ } delete s.tileOverlays[opts.id]; }
             const tlId = `_bm_tile_${opts.id}`;
             const tl = new s.atlas.layer.TileLayer({
                 tileUrl: (opts.urlTemplate || '').replace('{s}', 'a'),

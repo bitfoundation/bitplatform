@@ -69,6 +69,13 @@ namespace BitBlazorUI {
             s.view.goTo({ center: [lng, lat], zoom: o.zoom ?? s.view.zoom }, { animate: false }).catch(() => {});
             if (o.basemapId && o.basemapId !== s.map.basemap?.id) s.map.basemap = o.basemapId;
             BitMapArcGis._ensureScaleBar(s, !!o.showScaleControl);
+
+            // Reapply interaction flags the same way init sets them via navigation.actionMap.
+            const actionMap = s.view.navigation?.actionMap;
+            if (actionMap) {
+                actionMap.mouseWheel = o.scrollWheelZoom !== false ? 'zoom' : null;
+                actionMap.dragPrimary = o.dragging !== false ? 'pan' : null;
+            }
         }
 
         public static dispose(id: string) {
@@ -82,9 +89,17 @@ namespace BitBlazorUI {
             delete BitMapArcGis._maps[id];
         }
 
-        public static invalidateSize(_id: string) {
-            // ArcGIS auto-resizes via ResizeObserver — nudge it.
-            globalThis.dispatchEvent(new Event('resize'));
+        public static invalidateSize(id: string) {
+            const s = BitMapArcGis._maps[id];
+            if (!s) return;
+            
+            // Keep the resize scoped to the target ArcGIS view instead of broadcasting
+            // a global window resize event that can affect unrelated components.
+            const container = s.view.container as HTMLElement | null | undefined;
+            container?.getBoundingClientRect();
+            if (typeof s.view.resize === 'function') {
+                s.view.resize();
+            }
         }
 
         public static getView(id: string) {

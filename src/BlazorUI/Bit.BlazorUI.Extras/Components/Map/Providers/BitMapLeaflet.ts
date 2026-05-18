@@ -86,10 +86,14 @@ namespace BitBlazorUI {
             const L = s.L;
             const o = options || {};
 
-            // Update view if center/zoom changed
-            const c: [number, number] = [o.center?.lat ?? 51.505, o.center?.lng ?? -0.09];
-            const z: number = o.zoom ?? s.map.getZoom();
-            s.map.setView(c, z, { animate: false });
+            // Update view only when center or zoom is explicitly provided
+            if (o.center && o.zoom != null) {
+                s.map.setView([o.center.lat, o.center.lng], o.zoom, { animate: false });
+            } else if (o.center) {
+                s.map.setView([o.center.lat, o.center.lng], s.map.getZoom(), { animate: false });
+            } else if (o.zoom != null) {
+                s.map.setZoom(o.zoom, { animate: false });
+            }
 
             if (s.baseTileLayer) s.map.removeLayer(s.baseTileLayer);
             s.baseTileLayer = L.tileLayer(

@@ -132,13 +132,17 @@ namespace BitBlazorUI {
 
         public static setView(id: string, lat: number, lng: number, zoom: number | null, _animate: boolean) {
             const s = BitMapCesium._require(id);
-            const altitude = BitMapCesium._zoomToAltitude(zoom ?? 4);
+            const altitude = zoom != null
+                ? BitMapCesium._zoomToAltitude(zoom)
+                : s.viewer.camera.positionCartographic.height;
             s.viewer.camera.setView({ destination: s.Cesium.Cartesian3.fromDegrees(lng, lat, altitude) });
         }
 
         public static flyTo(id: string, lat: number, lng: number, zoom: number | null) {
             const s = BitMapCesium._require(id);
-            const altitude = BitMapCesium._zoomToAltitude(zoom ?? 4);
+            const altitude = zoom != null
+                ? BitMapCesium._zoomToAltitude(zoom)
+                : s.viewer.camera.positionCartographic.height;
             s.viewer.camera.flyTo({ destination: s.Cesium.Cartesian3.fromDegrees(lng, lat, altitude), duration: 1.5 });
         }
 

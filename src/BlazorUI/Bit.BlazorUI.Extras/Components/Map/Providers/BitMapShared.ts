@@ -43,6 +43,7 @@ namespace BitBlazorUI {
 
         /** Approximate a circle as a closed polygon ring of [lng,lat] coords (geographic). */
         static circleRingLngLat(lat: number, lng: number, radiusMeters: number, points = 64): [number, number][] {
+            points = Math.max(1, Math.floor(points));
             const R = 6371000;
             const ring: [number, number][] = [];
             const lat1 = (lat * Math.PI) / 180;

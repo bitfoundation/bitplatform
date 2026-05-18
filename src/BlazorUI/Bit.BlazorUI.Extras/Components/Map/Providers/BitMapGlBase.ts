@@ -330,7 +330,15 @@ namespace BitBlazorUI {
             const sourceId = `bm-raster-${id}-${opts.id}`;
             const layerId = `bm-raster-layer-${id}-${opts.id}`;
             const url = (opts.urlTemplate || '').replace('{s}', 'a');
-            if (s.map.getSource(sourceId)) return;
+            // Remove existing overlay if present so new options take effect.
+            const existing = s.tileOverlayCatalog[opts.id];
+            if (existing || s.map.getSource(sourceId)) {
+                try {
+                    if (s.map.getLayer(layerId)) s.map.removeLayer(layerId);
+                    if (s.map.getSource(sourceId)) s.map.removeSource(sourceId);
+                } catch { /* ignore */ }
+                delete s.tileOverlayCatalog[opts.id];
+            }
             s.map.addSource(sourceId, {
                 type: 'raster', tiles: [url], tileSize: 256,
                 attribution: opts.attribution || '',

@@ -311,7 +311,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
 
 
-    private string JsObject => _activeProvider?.JsObjectName ?? new TMapProvider().JsObjectName;
+    private string JsObject => _activeProvider!.JsObjectName;
 
     private static object ToMarkerPayload(BitMapMarker m) => new
     {
