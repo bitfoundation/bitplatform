@@ -70,6 +70,7 @@ namespace BitBlazorUI {
         private _historyIndex: number = -1;
         private _historyDebounce: ReturnType<typeof setTimeout> | null = null;
         private readonly _maxHistorySize: number = 100;
+        private _isUndoRedo: boolean = false;
 
         private textArea: HTMLTextAreaElement;
         private dotnetObj: DotNetObject | undefined | null;
@@ -123,6 +124,7 @@ namespace BitBlazorUI {
                     clearTimeout(this._historyDebounce);
                     this._historyDebounce = null;
                 }
+                this._isUndoRedo = true;
                 this.value = this._history[this._historyIndex]!;
             }
         }
@@ -134,11 +136,17 @@ namespace BitBlazorUI {
                     clearTimeout(this._historyDebounce);
                     this._historyDebounce = null;
                 }
+                this._isUndoRedo = true;
                 this.value = this._history[this._historyIndex]!;
             }
         }
 
         private scheduleHistorySave() {
+            if (this._isUndoRedo) {
+                this._isUndoRedo = false;
+                return;
+            }
+
             // Truncate the redo branch immediately so stale future states are unreachable at once
             this._history = this._history.slice(0, this._historyIndex + 1);
 
@@ -149,6 +157,9 @@ namespace BitBlazorUI {
                 const current = this.value;
                 if (this._history[this._historyIndex] !== current) {
                     this._history.push(current);
+                    if (this._history.length > this._maxHistorySize) {
+                        this._history = this._history.slice(this._history.length - this._maxHistorySize);
+                    }
                     this._historyIndex = this._history.length - 1;
                 }
                 this._historyDebounce = null;
