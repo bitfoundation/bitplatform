@@ -1,0 +1,15 @@
+<h1>Profile</h1>
+
+@if (string.IsNullOrEmpty(Username))
+{
+    <p>No username supplied. Try <a href="/profile/saleh">/profile/saleh</a>.</p>
+}
+else
+{
+    <p>Profile of <strong>@Username</strong></p>
+}
+
+@code {
+    // Optional parameter: bound when the URL provides one, otherwise null.
+    [BrouterParameter] public string? Username { get; set; }
+}

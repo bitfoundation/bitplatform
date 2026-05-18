@@ -1,0 +1,52 @@
+<h1>Hello, Brouter!</h1>
+Welcome to the Bit.Brouter demo.
+<br />
+<br />
+You have counted to @CountValue.
+<br />
+<br />
+<BrouterLink Href="/counter/1234">Counter from 1234</BrouterLink>
+<br />
+<BrouterLink Href="/counter/multi/1/2/saleh">Counter with multiple parameters [/multi/1/2/saleh]</BrouterLink>
+<br />
+<br />
+<BrouterLink Href="/profile">Profile (no username)</BrouterLink>
+<br />
+<BrouterLink Href="/profile/saleh">Profile of "saleh"</BrouterLink>
+<br />
+<BrouterLink Href="/posts/2026/05/intro-to-brouter">Catch-all post slug</BrouterLink>
+<br />
+<br />
+<BrouterLink Href="/404-test">non-existent page [404-test]</BrouterLink>
+<br />
+<br />
+<BrouterLink Href="/hahahaha/test">route */test</BrouterLink>
+<br />
+<BrouterLink Href="/start/test2/end">route {prefix}/test2/{postfix}</BrouterLink>
+<br />
+<br />
+<BrouterLink Href="/nested-route/1">nested route example [/1]</BrouterLink>
+<br />
+<BrouterLink Href="/nested-route/5/hello">nested route example [/5/hello]</BrouterLink>
+<br />
+<BrouterLink Href="/nested-route/10/world">nested route example [/10/world]</BrouterLink>
+<br />
+<BrouterLink Href="/nested-route/22/404-test">non-existent nested route [/22/404-test]</BrouterLink>
+<br />
+<br />
+<BrouterLink Href="/g1">Guarded route [/g1] by (DateTime.Now.Second % 2 == 0)</BrouterLink>
+<br />
+<BrouterLink Href="/g2">Guarded route [/g2] by (DateTime.Now.Minute % 2 == 0)</BrouterLink>
+<br />
+<br />
+<a href="nested">Let's go nested!</a>
+<br />
+<br />
+<a href="nested2">nested2</a>
+<br />
+<br />
+<a href="nested3">nested3</a>
+
+@code {
+    [Parameter] public int CountValue { get; set; }
+}

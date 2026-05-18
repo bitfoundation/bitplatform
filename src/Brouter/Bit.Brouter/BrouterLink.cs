@@ -1,0 +1,114 @@
+using Microsoft.AspNetCore.Components.Rendering;
+
+namespace Bit.Brouter;
+
+/// <summary>How <see cref="BrouterLink"/> compares its <see cref="BrouterLink.Href"/> to the current URL.</summary>
+public enum BrouterLinkMatch
+{
+    /// <summary>Match when the current path starts with the link's href (default).</summary>
+    Prefix = 0,
+
+    /// <summary>Match only when the current path equals the link's href exactly.</summary>
+    All = 1
+}
+
+/// <summary>
+/// An anchor element that automatically toggles an <c>active</c> class and <c>aria-current="page"</c>
+/// when its <see cref="Href"/> matches the current URL. Equivalent to React Router's <c>NavLink</c>
+/// and Vue Router's <c>router-link</c>.
+/// </summary>
+public sealed class BrouterLink : ComponentBase, IDisposable
+{
+    [Inject] private IBrouter Brouter { get; set; } = default!;
+
+    [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>The destination URL or path.</summary>
+    [Parameter, EditorRequired] public string Href { get; set; } = "/";
+
+    /// <summary>Inner content of the link.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Class always applied to the anchor.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Class applied in addition to <see cref="Class"/> when the link matches the current URL.</summary>
+    [Parameter] public string ActiveClass { get; set; } = "active";
+
+    /// <summary>How href is compared to the current URL.</summary>
+    [Parameter] public BrouterLinkMatch Match { get; set; } = BrouterLinkMatch.Prefix;
+
+    /// <summary>If true, navigation replaces the current history entry instead of adding a new one.</summary>
+    [Parameter] public bool Replace { get; set; }
+
+
+    private bool _isActive;
+
+    protected override void OnInitialized()
+    {
+        Brouter.OnNavigated += OnNavigated;
+        UpdateActiveState();
+    }
+
+    private ValueTask OnNavigated(NavigationContext ctx)
+    {
+        var was = _isActive;
+        UpdateActiveState();
+        if (was != _isActive) InvokeAsync(StateHasChanged);
+        return ValueTask.CompletedTask;
+    }
+
+    private void UpdateActiveState()
+    {
+        var current = Brouter.Location.Path;
+        var target = NormalisePath(Href);
+
+        _isActive = Match switch
+        {
+            BrouterLinkMatch.All => string.Equals(current, target, StringComparison.OrdinalIgnoreCase),
+            _ => current.StartsWith(target, StringComparison.OrdinalIgnoreCase) &&
+                 (current.Length == target.Length || target == "/" || current[target.Length] == '/' || current[target.Length] == '?' || current[target.Length] == '#')
+        };
+    }
+
+    private static string NormalisePath(string href)
+    {
+        var path = href;
+        var hashIdx = path.IndexOf('#');
+        if (hashIdx >= 0) path = path[..hashIdx];
+        var qIdx = path.IndexOf('?');
+        if (qIdx >= 0) path = path[..qIdx];
+        if (path.Length > 1 && path.EndsWith('/')) path = path[..^1];
+        if (path.Length == 0 || path[0] != '/') path = "/" + path;
+        return path;
+    }
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var combinedClass = string.IsNullOrEmpty(Class)
+            ? (_isActive ? ActiveClass : null)
+            : (_isActive ? $"{Class} {ActiveClass}".Trim() : Class);
+
+        builder.OpenElement(0, "a");
+        if (AdditionalAttributes is not null) builder.AddMultipleAttributes(1, AdditionalAttributes);
+        builder.AddAttribute(2, "href", Href);
+        if (combinedClass is not null) builder.AddAttribute(3, "class", combinedClass);
+        if (_isActive) builder.AddAttribute(4, "aria-current", "page");
+        builder.AddAttribute(5, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, OnClick));
+        builder.AddContent(7, ChildContent);
+        builder.CloseElement();
+    }
+
+    private void OnClick(Microsoft.AspNetCore.Components.Web.MouseEventArgs e)
+    {
+        // Honour modifier-clicks (open in new tab) and middle-click by letting the browser handle them.
+        if (e.CtrlKey || e.ShiftKey || e.MetaKey || e.AltKey || e.Button != 0) return;
+
+        Brouter.Navigate(Href, replace: Replace);
+    }
+
+    public void Dispose()
+    {
+        Brouter.OnNavigated -= OnNavigated;
+    }
+}

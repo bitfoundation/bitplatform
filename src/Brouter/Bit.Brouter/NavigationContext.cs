@@ -1,0 +1,44 @@
+using System.Threading;
+
+namespace Bit.Brouter;
+
+/// <summary>
+/// Carries information about an in-progress navigation. Passed to guards and global hooks.
+/// Inspired by Vue Router's <c>RouteLocationNormalized</c> and Angular's <c>NavigationStart</c>.
+/// </summary>
+public sealed class NavigationContext
+{
+    internal NavigationContext(BrouterLocation from, BrouterLocation to, CancellationToken cancellationToken)
+    {
+        From = from;
+        To = to;
+        CancellationToken = cancellationToken;
+    }
+
+    /// <summary>Where the navigation is coming from.</summary>
+    public BrouterLocation From { get; }
+
+    /// <summary>The target location.</summary>
+    public BrouterLocation To { get; }
+
+    /// <summary>Token cancelled when the navigation is superseded by a newer one.</summary>
+    public CancellationToken CancellationToken { get; }
+
+    /// <summary>The matched route once matching has happened. Null in OnNavigating hooks.</summary>
+    public Route? Route { get; internal set; }
+
+    /// <summary>Parameters extracted from the matched route. Empty when no match yet.</summary>
+    public RouteParameters Parameters { get; internal set; } = RouteParameters.Empty;
+
+    /// <summary>True if a guard or hook called <see cref="Cancel"/>.</summary>
+    public bool IsCancelled { get; private set; }
+
+    /// <summary>Set when a guard or hook called <see cref="Redirect"/>.</summary>
+    public string? RedirectUrl { get; private set; }
+
+    /// <summary>Cancel this navigation. The URL is restored to <see cref="From"/>.</summary>
+    public void Cancel() => IsCancelled = true;
+
+    /// <summary>Redirect to another URL instead of completing this navigation.</summary>
+    public void Redirect(string url) => RedirectUrl = url;
+}

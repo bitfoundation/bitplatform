@@ -1,0 +1,47 @@
+<h1>Counter</h1>
+
+<p>Current count: @CurrentCount</p>
+
+<button class="btn btn-primary" @onclick="() => ChangeCount?.Invoke(CurrentCount + 1)">Click me</button>
+
+<br />
+
+<div>Init: @Init</div>
+
+<br />
+
+<div>Id: @Id</div>
+<div>Age: @Age</div>
+<div>Name: @Name</div>
+
+@code {
+    [Parameter] public int CurrentCount { get; set; } = 0;
+    [Parameter] public EventCallback<int> CurrentCountChanged { get; set; }
+    [Parameter] public Action<int>? ChangeCount { get; set; }
+
+    [CascadingParameter(Name = "RouteParameters")] RouteParameters? Parameters { get; set; }
+
+    [CascadingParameter(Name = "init")] int Init { get; set; }
+
+    [CascadingParameter(Name = "id")] long Id { get; set; }
+    [CascadingParameter(Name = "age")] double Age { get; set; }
+    [CascadingParameter(Name = "name")] object? Name { get; set; }
+
+
+    private bool parameterHasSet = false;
+
+    protected override void OnParametersSet()
+    {
+        if (parameterHasSet) return;
+
+        parameterHasSet = true;
+
+        base.OnParametersSet();
+
+        if (Parameters?.TryGet<int>("init", out var init) == true)
+        {
+            CurrentCount = init;
+            ChangeCount?.Invoke(CurrentCount);
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "Bit.Brouter.slnx",
+    "projects": [
+      "Bit.Brouter\\Bit.Brouter.csproj",
+      "Demo\\Bit.Brouter.Demo.Core\\Bit.Brouter.Demo.Core.csproj",
+      "Demo\\Bit.Brouter.Demo.Web\\Bit.Brouter.Demo.Web.csproj"
+    ]
+  }
+}

@@ -47,6 +47,16 @@
     <Project Path="Bswup/FullDemo/Client/Bit.Bswup.Demo.Client.csproj" />
     <Project Path="Bswup/FullDemo/Server/Bit.Bswup.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Brouter/">
+    <Project Path="Brouter/Bit.Brouter/Bit.Brouter.csproj" />
+  </Folder>
+  <Folder Name="/Brouter/Demo/">
+    <Project Path="Brouter/Demo/Bit.Brouter.Demo.Core/Bit.Brouter.Demo.Core.csproj" />
+    <Project Path="Brouter/Demo/Bit.Brouter.Demo.Web/Bit.Brouter.Demo.Web.csproj" />
+  </Folder>
+  <Folder Name="/Brouter/Tests/">
+    <Project Path="Brouter/Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />
+  </Folder>
   <Folder Name="/Butil/">
     <File Path="Butil/README.md" />
     <Project Path="Butil/Bit.Butil/Bit.Butil.csproj" />

@@ -1,0 +1,8 @@
+<h1>Post</h1>
+
+<p>Slug (catch-all): <code>@Slug</code></p>
+
+@code {
+    // The catch-all parameter "{**slug}" is bound directly via [BrouterParameter].
+    [BrouterParameter] public string? Slug { get; set; }
+}

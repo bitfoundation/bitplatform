@@ -1,0 +1,19 @@
+<h1>Nested route: /nested2</h1>
+
+<p>let's test some nested2 routes</p>
+
+<button @onclick="() => count++">Count: [@count]</button>
+
+<hr />
+
+<a href="/nested2/n1/@count">"/nested2/n1/@count"</a>
+<br />
+<a href="/nested2/n2/@count">"/nested2/n2/@count"</a>
+
+<hr />
+
+<Outlet />
+
+@code {
+    private int count;
+}
