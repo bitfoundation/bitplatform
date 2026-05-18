@@ -1,0 +1,13 @@
+.bit-map {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+}
+
+.bit-map-canvas {
+    width: 100%;
+    height: 100%;
+    outline: none;
+}

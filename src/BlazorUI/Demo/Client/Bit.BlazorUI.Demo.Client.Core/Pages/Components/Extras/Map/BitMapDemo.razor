@@ -1,0 +1,257 @@
+@page "/components/map"
+
+<PageOutlet Url="components/map"
+            Title="Map"
+            Description="map component of the bit BlazorUI components" />
+
+<DemoPage Name="Map"
+          Description="BitMap is a generic, provider-pluggable interactive map component. It supports Leaflet, MapLibre GL, Mapbox GL, OpenLayers, ArcGIS, Azure Maps, and CesiumJS."
+          Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
+          GitHubExtrasUrl="Map/BitMap.razor"
+          GitHubDemoUrl="Extras/Map/BitMapDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed Text="Bit.BlazorUI.Extras" Color="BitColor.SecondaryBackground" IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package.
+            <br />
+            <code>BitMap&lt;TMapProvider&gt;</code> is generic — choose a provider class as the type argument and pass a configured instance via <code>Provider</code>.
+            Providers: <code>BitLeafletMapProvider</code>, <code>BitMapLibreMapProvider</code>, <code>BitMapboxMapProvider</code>,
+            <code>BitOpenLayersMapProvider</code>, <code>BitArcGisMapProvider</code>, <code>BitAzureMapsMapProvider</code>, <code>BitCesiumMapProvider</code>.
+            Mapbox, Azure Maps, and ArcGIS (for non-OSM basemaps) require an API key on the provider instance.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+
+        @* ── 1. Basic ─────────────────────────────────────────────────────────── *@
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>The simplest usage: a Leaflet map centered on London using the bundled Leaflet 1.9.4 library (no CDN, no token).</div>
+            <br />
+            <div style="height:360px">
+                <BitMap TMapProvider="BitLeafletMapProvider" />
+            </div>
+        </DemoExample>
+
+        @* ── 2. Markers ───────────────────────────────────────────────────────── *@
+        <DemoExample Title="Markers" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                Add markers with HTML popups, tooltips, and drag support via the imperative API.
+                Always wait for <code>OnReady</code> before calling map methods.
+            </div>
+            <br />
+            <div style="height:380px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        @ref="markersMapRef"
+                        Provider="@markersProvider"
+                        OnReady="OnMarkersReady"
+                        OnMarkerClick="OnMarkerClick"
+                        OnMarkerDragEnd="OnMarkerDragEnd" />
+            </div>
+            <br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
+                <BitButton OnClick="AddRandomMarker">Add random marker</BitButton>
+                <BitButton OnClick="ClearMarkers" Variant="BitVariant.Outline">Clear all</BitButton>
+                <BitButton OnClick="OpenLondonPopup" Variant="BitVariant.Outline">Open London popup</BitButton>
+                <BitButton OnClick="FitToMarkers" Variant="BitVariant.Outline">Fit to markers</BitButton>
+            </div>
+            <br />
+            <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@markersLog</pre>
+        </DemoExample>
+
+        @* ── 3. Vectors ───────────────────────────────────────────────────────── *@
+        <DemoExample Title="Vectors" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                Draw polylines, polygons, circles, and rectangles. Each layer has a string id so you can remove or replace it individually.
+                Clicking a shape raises <code>OnVectorClick</code>.
+            </div>
+            <br />
+            <div style="height:380px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        @ref="vectorsMapRef"
+                        Provider="@vectorsProvider"
+                        OnReady="OnVectorsReady"
+                        OnVectorClick="OnVectorClick" />
+            </div>
+            <br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                <BitButton OnClick="RedrawVectors">Redraw</BitButton>
+                <BitButton OnClick="ClearVectors" Variant="BitVariant.Outline">Clear vectors</BitButton>
+            </div>
+            <br />
+            <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@vectorsLog</pre>
+        </DemoExample>
+
+        @* ── 4. GeoJSON ───────────────────────────────────────────────────────── *@
+        <DemoExample Title="GeoJSON" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                Load any GeoJSON string as a styled layer. Feature clicks forward the feature's <code>properties</code> as a <code>JsonElement</code>.
+            </div>
+            <br />
+            <div style="height:380px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        @ref="geoJsonMapRef"
+                        Provider="@geoJsonProvider"
+                        OnGeoJsonFeatureClick="OnGeoJsonFeatureClick" />
+            </div>
+            <br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                <BitButton OnClick="LoadGeoJson">Load GeoJSON</BitButton>
+                <BitButton OnClick="RemoveGeoJson" Variant="BitVariant.Outline">Remove layer</BitButton>
+            </div>
+            <br />
+            <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@geoJsonLog</pre>
+        </DemoExample>
+
+        @* ── 5. Tiles ─────────────────────────────────────────────────────────── *@
+        <DemoExample Title="Custom tiles" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                Switch the base tile layer at runtime by updating the <code>Provider</code> parameter.
+                Any Leaflet-compatible XYZ template is accepted.
+            </div>
+            <br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem">
+                <BitButton OnClick='() => SetTileProvider("osm")' Variant="@(tileProvider == "osm" ? BitVariant.Fill : BitVariant.Outline)">OSM default</BitButton>
+                <BitButton OnClick='() => SetTileProvider("carto")' Variant="@(tileProvider == "carto" ? BitVariant.Fill : BitVariant.Outline)">Carto Voyager</BitButton>
+                <BitButton OnClick='() => SetTileProvider("topo")' Variant="@(tileProvider == "topo" ? BitVariant.Fill : BitVariant.Outline)">OpenTopoMap</BitButton>
+            </div>
+            <div style="height:360px">
+                <BitMap TMapProvider="BitLeafletMapProvider" @key="tileProvider" Provider="@currentTileLeafletProvider" />
+            </div>
+        </DemoExample>
+
+        @* ── 6. Events ────────────────────────────────────────────────────────── *@
+        <DemoExample Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <code>OnClick</code> returns the clicked coordinate. <code>OnViewChanged</code> fires after every pan or zoom.
+                Use <code>FlyTo</code> for animated navigation and <code>InvalidateSize</code> after a container resize.
+            </div>
+            <br />
+            <div style="height:320px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        @ref="eventsMapRef"
+                        Provider="@eventsProvider"
+                        OnClick="OnMapClick"
+                        OnDoubleClick="OnMapDoubleClick"
+                        OnViewChanged="OnViewChanged" />
+            </div>
+            <br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                <BitButton OnClick="FlyToTokyo">Fly to Tokyo</BitButton>
+                <BitButton OnClick="ReadView" Variant="BitVariant.Outline">Log viewport</BitButton>
+            </div>
+            <br />
+            <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@eventsLog</pre>
+        </DemoExample>
+
+        @* ── 7. Advanced ──────────────────────────────────────────────────────── *@
+        <DemoExample Title="Advanced" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                Interaction toggles, scale bar, pan limits (<code>MaxBounds</code>), marker tooltips, z-order, and tile overlays.
+            </div>
+            <br />
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:0.75rem">
+                <BitToggle @bind-Value="advScrollWheel" Text="Scroll wheel zoom" />
+                <BitToggle @bind-Value="advDragging" Text="Dragging" />
+                <BitToggle @bind-Value="advScaleBar" Text="Scale bar" />
+                <BitToggle @bind-Value="advMaxBounds" Text="Limit pan (London)" />
+            </div>
+            <div style="height:380px">
+                <BitMap TMapProvider="BitLeafletMapProvider"
+                        @ref="advMapRef"
+                        Provider="@BuildAdvancedProvider()"
+                        OnReady="OnAdvancedReady"
+                        OnDoubleClick="OnAdvancedDoubleClick" />
+            </div>
+            <br />
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                <BitButton OnClick="AddTooltipMarkers">Add tooltip markers + fit</BitButton>
+                <BitButton OnClick="ToggleTileOverlay" Variant="BitVariant.Outline">@(advOverlayOn ? "Remove overlay" : "Add tile overlay")</BitButton>
+                <BitButton OnClick="ReadAdvancedView" Variant="BitVariant.Outline">Log viewport</BitButton>
+            </div>
+            <br />
+            <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@advLog</pre>
+        </DemoExample>
+
+        @* ── 8. MapLibre GL ───────────────────────────────────────────────────── *@
+        <DemoExample Title="MapLibre GL" RazorCode="@example8RazorCode" Id="example8">
+            <div>MapLibre GL JS is loaded from unpkg on first render. No token required for the default demo style.</div>
+            <br />
+            <div style="height:360px">
+                <BitMap TMapProvider="BitMapLibreMapProvider" Provider="@maplibreProvider" />
+            </div>
+        </DemoExample>
+
+        @* ── 9. OpenLayers ────────────────────────────────────────────────────── *@
+        <DemoExample Title="OpenLayers" RazorCode="@example9RazorCode" Id="example9">
+            <div>OpenLayers 10 is loaded as ES modules from esm.sh. No token required; defaults to OpenStreetMap tiles.</div>
+            <br />
+            <div style="height:360px">
+                <BitMap TMapProvider="BitOpenLayersMapProvider" Provider="@olProvider" />
+            </div>
+        </DemoExample>
+
+        @* ── 10. Mapbox ───────────────────────────────────────────────────────── *@
+        <DemoExample Title="Mapbox GL (token required)" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                Mapbox GL JS requires a public access token for <code>mapbox://</code> styles.
+                Paste your token below — without it the canvas stays blank.
+            </div>
+            <br />
+            <BitTextField @bind-Value="mapboxToken" Placeholder="pk.eyJ1…" Style="margin-bottom:0.5rem;max-width:480px" />
+            <div style="height:360px">
+                @if (string.IsNullOrWhiteSpace(mapboxToken) is false)
+                {
+                    <BitMap TMapProvider="BitMapboxMapProvider"
+                            @key="mapboxToken"
+                            Provider="@(new BitMapboxMapProvider { AccessToken = mapboxToken!, Center = new(40, 0), Zoom = 2 })" />
+                }
+            </div>
+        </DemoExample>
+
+        @* ── 11. ArcGIS ───────────────────────────────────────────────────────── *@
+        <DemoExample Title="ArcGIS Maps SDK" RazorCode="@example11RazorCode" Id="example11">
+            <div>
+                ArcGIS Maps SDK 5.0 is loaded as an ES module from the Esri CDN.
+                The <code>osm</code> basemap works without an API key.
+            </div>
+            <br />
+            <div style="height:360px">
+                <BitMap TMapProvider="BitArcGisMapProvider" Provider="@arcGisProvider" />
+            </div>
+        </DemoExample>
+
+        @* ── 12. Azure Maps ───────────────────────────────────────────────────── *@
+        <DemoExample Title="Azure Maps (subscription key required)" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                Azure Maps Web SDK v3 requires a subscription key.
+                Paste your key below to render the map.
+            </div>
+            <br />
+            <BitTextField @bind-Value="azureMapsKey" Placeholder="Azure Maps subscription key" Style="margin-bottom:0.5rem;max-width:480px" />
+            <div style="height:360px">
+                @if (string.IsNullOrWhiteSpace(azureMapsKey) is false)
+                {
+                    <BitMap TMapProvider="BitAzureMapsMapProvider"
+                            @key="azureMapsKey"
+                            Provider="@(new BitAzureMapsMapProvider { SubscriptionKey = azureMapsKey!, Center = new(40, 0), Zoom = 2 })" />
+                }
+            </div>
+        </DemoExample>
+
+        @* ── 13. Cesium ───────────────────────────────────────────────────────── *@
+        <DemoExample Title="CesiumJS 3D globe" RazorCode="@example13RazorCode" Id="example13">
+            <div>
+                CesiumJS renders a 3D globe. OSM imagery and smooth-ellipsoid terrain work without a token.
+                A Cesium ion token unlocks Cesium World Terrain and Bing imagery.
+            </div>
+            <br />
+            <div style="height:420px">
+                <BitMap TMapProvider="BitCesiumMapProvider" Provider="@cesiumProvider" />
+            </div>
+        </DemoExample>
+
+    </Examples>
+</DemoPage>
