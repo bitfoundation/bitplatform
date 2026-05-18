@@ -33,6 +33,13 @@ public sealed class BitMapboxMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
+        if (StyleUrl.StartsWith("mapbox://", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(AccessToken))
+        {
+            throw new InvalidOperationException(
+                $"BitMapboxMapProvider: An AccessToken is required when using a 'mapbox://' style ('{StyleUrl}'). " +
+                "Provide a valid Mapbox access token or use a non-Mapbox style URL.");
+        }
+
         var common = GetCommonOptions();
         common["accessToken"] = AccessToken;
         common["styleUrl"] = StyleUrl;

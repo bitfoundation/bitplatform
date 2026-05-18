@@ -34,7 +34,7 @@ namespace BitBlazorUI {
             const map = new ol.Map({
                 target: element,
                 layers: [baseTile],
-                view: Promise.resolve({
+                view: new ol.View({
                     center: ol.fromLonLat([lng0, lat0]),
                     zoom,
                     minZoom: o.minZoom ?? undefined,
@@ -63,6 +63,7 @@ namespace BitBlazorUI {
             };
 
             BitMapOpenLayers._ensureScale(state, !!o.showScaleControl, !!o.scaleControlImperial);
+            BitMapOpenLayers._applyInteractions(state, o);
             BitMapOpenLayers._wireEvents(state);
 
             BitMapOpenLayers._maps[id] = state;
@@ -86,6 +87,7 @@ namespace BitBlazorUI {
             s.baseTileLayer.setOpacity(o.tileOpacity ?? 1);
 
             BitMapOpenLayers._ensureScale(s, !!o.showScaleControl, !!o.scaleControlImperial);
+            BitMapOpenLayers._applyInteractions(s, o);
         }
 
         public static dispose(id: string) {
@@ -227,8 +229,18 @@ namespace BitBlazorUI {
             const features = new ol.GeoJSON().readFeatures(gj, { dataProjection: 'EPSG:4326', featureProjection: 'EPSG:3857' });
             const stroke = BitMapOpenLayers._stroke(ol, style);
             const fill = BitMapOpenLayers._fill(ol, style);
+            const st = BitMapHelpers.readPathStyle(style);
             const styleFn = (feat: any) => {
                 const t = feat.getGeometry().getType();
+                if (t === 'Point' || t === 'MultiPoint') {
+                    return new ol.Style({
+                        image: new ol.CircleStyle({
+                            radius: 7,
+                            fill: new ol.Fill({ color: BitMapHelpers.hexToRgba(st.fillColor, st.fillOpacity) }),
+                            stroke: new ol.Stroke({ color: BitMapHelpers.hexToRgba(st.color, st.opacity), width: st.weight }),
+                        }),
+                    });
+                }
                 return (t === 'LineString' || t === 'MultiLineString')
                     ? new ol.Style({ stroke })
                     : new ol.Style({ stroke, fill });
@@ -314,6 +326,23 @@ namespace BitBlazorUI {
             if (show) {
                 s.scaleLine = new ol.ScaleLine({ units: imperial ? 'us' : 'metric' });
                 s.map.addControl(s.scaleLine);
+            }
+        }
+
+        private static _applyInteractions(s: any, o: any) {
+            const map = s.map;
+            const interactions = map.getInteractions().getArray();
+            for (const interaction of interactions) {
+                const name = interaction.constructor?.name || '';
+                if (name === 'MouseWheelZoom' || name.includes('MouseWheel')) {
+                    interaction.setActive(o.scrollWheelZoom !== false);
+                } else if (name === 'DoubleClickZoom' || name.includes('DoubleClick')) {
+                    interaction.setActive(o.doubleClickZoom !== false);
+                } else if (name === 'DragPan' || name.includes('DragPan')) {
+                    interaction.setActive(o.dragging !== false);
+                } else if (name === 'KeyboardPan' || name === 'KeyboardZoom' || name.includes('Keyboard')) {
+                    interaction.setActive(o.keyboardNavigation !== false);
+                }
             }
         }
 
@@ -416,48 +445,43 @@ namespace BitBlazorUI {
         private static async _loadOl(): Promise<any> {
             if (BitMapOpenLayers._olLoadPromise) return BitMapOpenLayers._olLoadPromise;
             BitMapOpenLayers._olLoadPromise = (async () => {
-                const u = (path: string) => `https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/${path}?bundle`;
-                // Use new Function to bypass the bundled `--outFile` constraint that
-                // disallows dynamic import() at the TypeScript level. The runtime is a
-                // modern browser that supports dynamic import.
+                // Import the full OL bundle from a single entry point so all classes
+                // (Map, View, etc.) share the same module scope and instanceof checks work.
                 const dynImport: (url: string) => Promise<any> = new Function('u', 'return import(u);') as any;
-                const [
-                    Map, View, TileLayer, XYZ, projModule, controlDefaults,
-                    VectorLayer, VectorSource, Feature, Point, LineString, Polygon, GeoJSON,
-                    Style, Fill, Stroke, Icon, CircleStyle, Overlay, ScaleLine,
-                ] = await Promise.all([
-                    dynImport(u('Map.js')), dynImport(u('View.js')),
-                    dynImport(u('layer/Tile.js')), dynImport(u('source/XYZ.js')),
-                    dynImport(u('proj.js')), dynImport(u('control/defaults.js')),
-                    dynImport(u('layer/Vector.js')), dynImport(u('source/Vector.js')),
-                    dynImport(u('Feature.js')), dynImport(u('geom/Point.js')),
-                    dynImport(u('geom/LineString.js')), dynImport(u('geom/Polygon.js')),
-                    dynImport(u('format/GeoJSON.js')), dynImport(u('style/Style.js')),
-                    dynImport(u('style/Fill.js')), dynImport(u('style/Stroke.js')),
-                    dynImport(u('style/Icon.js')), dynImport(u('style/Circle.js')),
-                    dynImport(u('Overlay.js')), dynImport(u('control/ScaleLine.js')),
-                ]);
+                const ol = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}?bundle`);
+                const olControl = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/control?bundle`);
+                const olStyle = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/style?bundle`);
+                const olGeom = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/geom?bundle`);
+                const olSource = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/source?bundle`);
+                const olLayer = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/layer?bundle`);
+                const olFormat = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/format?bundle`);
+                const olProj = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/proj?bundle`);
+                // ol/interaction is loaded implicitly via the main bundle (default interactions).
+                await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/interaction?bundle`);
+
                 return {
-                    Map: Map.default, View: View.default,
-                    TileLayer: TileLayer.default, XYZ: XYZ.default,
-                    fromLonLat: projModule.fromLonLat,
-                    toLonLat: projModule.toLonLat,
-                    transformExtent: projModule.transformExtent,
-                    defaults: controlDefaults.defaults,
-                    VectorLayer: VectorLayer.default,
-                    VectorSource: VectorSource.default,
-                    Feature: Feature.default,
-                    Point: Point.default,
-                    LineString: LineString.default,
-                    Polygon: Polygon.default,
-                    GeoJSON: GeoJSON.default,
-                    Style: Style.default,
-                    Fill: Fill.default,
-                    Stroke: Stroke.default,
-                    Icon: Icon.default,
-                    CircleStyle: CircleStyle.default,
-                    Overlay: Overlay.default,
-                    ScaleLine: ScaleLine.default,
+                    Map: ol.Map,
+                    View: ol.View,
+                    Overlay: ol.Overlay,
+                    Feature: ol.Feature,
+                    TileLayer: olLayer.Tile,
+                    VectorLayer: olLayer.Vector,
+                    XYZ: olSource.XYZ,
+                    VectorSource: olSource.Vector,
+                    Point: olGeom.Point,
+                    LineString: olGeom.LineString,
+                    Polygon: olGeom.Polygon,
+                    GeoJSON: olFormat.GeoJSON,
+                    Style: olStyle.Style,
+                    Fill: olStyle.Fill,
+                    Stroke: olStyle.Stroke,
+                    Icon: olStyle.Icon,
+                    CircleStyle: olStyle.Circle,
+                    ScaleLine: olControl.ScaleLine,
+                    defaults: olControl.defaults,
+                    fromLonLat: olProj.fromLonLat,
+                    toLonLat: olProj.toLonLat,
+                    transformExtent: olProj.transformExtent,
                 };
             })();
             return BitMapOpenLayers._olLoadPromise;

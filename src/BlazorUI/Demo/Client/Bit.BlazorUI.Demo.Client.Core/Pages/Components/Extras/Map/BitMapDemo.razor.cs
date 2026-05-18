@@ -331,8 +331,8 @@ public partial class BitMapDemo
             await advMapRef.AddTileOverlay(new BitMapTileOverlay
             {
                 Id = "labels",
-                UrlTemplate = "https://stamen-tiles.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}.png",
-                Attribution = "Map tiles by Stamen Design, CC BY 3.0. Data by OpenStreetMap.",
+                UrlTemplate = "https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png",
+                Attribution = "Map tiles by Stamen Design, hosted by Stadia Maps. Data by OpenStreetMap.",
                 Opacity = 0.85,
                 ZIndex = 400,
                 MaxZoom = 20,

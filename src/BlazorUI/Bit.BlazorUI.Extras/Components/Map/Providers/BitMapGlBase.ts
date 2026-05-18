@@ -5,7 +5,7 @@ namespace BitBlazorUI {
         map: any;
         dotnetObj: DotNetObject | null | undefined;
         markers: { [id: string]: { marker: any } };
-        vectorCatalog: { [id: string]: { sourceId: string, layerIds: string[] } };
+        vectorCatalog: { [id: string]: { sourceId: string, layerIds: string[], handlers: { layerId: string, handler: any }[] } };
         tileOverlayCatalog: { [id: string]: { sourceId: string, layerId: string } };
         navControl: any;
         lastStyleUrl: string;
@@ -27,6 +27,10 @@ namespace BitBlazorUI {
 
         public static async init(provider: string, glGlobalName: string, defaultStyleUrl: string,
                                  id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+            // Wait for the global to be available (script may still be initializing after onload)
+            if (!(globalThis as any)[glGlobalName]) {
+                await BitMapHelpers.waitForGlobal(glGlobalName, () => !!(globalThis as any)[glGlobalName], 10_000);
+            }
             const gl = (globalThis as any)[glGlobalName];
             if (!gl) throw new Error(`${glGlobalName} is not loaded.`);
 
@@ -133,7 +137,12 @@ namespace BitBlazorUI {
 
         public static setView(provider: string, id: string, lat: number, lng: number, zoom: number | null, animate: boolean) {
             const s = BitMapGlBase._require(provider, id);
-            s.map.jumpTo({ center: [lng, lat], zoom: zoom ?? s.map.getZoom(), essential: animate === false });
+            const z = zoom ?? s.map.getZoom();
+            if (animate === false) {
+                s.map.jumpTo({ center: [lng, lat], zoom: z });
+            } else {
+                s.map.easeTo({ center: [lng, lat], zoom: z, essential: true });
+            }
         }
 
         public static flyTo(provider: string, id: string, lat: number, lng: number, zoom: number | null) {
@@ -174,6 +183,8 @@ namespace BitBlazorUI {
                 marker = new gl.Marker({ draggable }).setLngLat([lng, lat]).addTo(s.map);
             }
 
+            // PopupHtml is developer-supplied content from Blazor parameters (not end-user input).
+            // If untrusted content is a concern, sanitize before passing to the Provider parameter.
             if (opts.popupHtml) marker.setPopup(new gl.Popup({ offset: 25 }).setHTML(String(opts.popupHtml)));
             if (opts.title) marker.getElement()?.setAttribute('title', opts.title);
 
@@ -245,8 +256,9 @@ namespace BitBlazorUI {
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
                 paint: BitMapGlBase._linePaint(style),
             });
-            BitMapGlBase._wireVectorClick(s, lineId, layerId, 'polyline');
-            s.vectorCatalog[layerId] = { sourceId, layerIds: [lineId] };
+            s.vectorCatalog[layerId] = { sourceId, layerIds: [lineId], handlers: [] };
+            const h = BitMapGlBase._wireVectorClick(s, lineId, layerId, 'polyline');
+            if (h) s.vectorCatalog[layerId].handlers.push(h);
         }
 
         public static addPolygon(provider: string, id: string, layerId: string, latlngs: BitMapLL[], style: any) {
@@ -288,14 +300,17 @@ namespace BitBlazorUI {
             s.map.addLayer({ id: fillId, type: 'fill', source: sourceId, paint: BitMapGlBase._fillPaint(style) });
             s.map.addLayer({ id: lineId, type: 'line', source: sourceId, paint: BitMapGlBase._linePaint(style) });
             const dn = s.dotnetObj;
+            const handlers: { layerId: string, handler: any }[] = [];
             if (dn) {
                 const handler = (e: any) => {
                     if (e.features?.[0]) dn.invokeMethodAsync('OnGeoJsonFeatureClick', layerId, e.features[0].properties || {});
                 };
                 s.map.on('click', fillId, handler);
                 s.map.on('click', lineId, handler);
+                handlers.push({ layerId: fillId, handler });
+                handlers.push({ layerId: lineId, handler });
             }
-            s.vectorCatalog[layerId] = { sourceId, layerIds: [fillId, lineId] };
+            s.vectorCatalog[layerId] = { sourceId, layerIds: [fillId, lineId], handlers };
         }
 
         public static removeLayer(provider: string, id: string, layerId: string) {
@@ -421,14 +436,21 @@ namespace BitBlazorUI {
             s.map.addSource(sourceId, { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } } });
             s.map.addLayer({ id: fillId, type: 'fill', source: sourceId, paint: BitMapGlBase._fillPaint(style) });
             s.map.addLayer({ id: lineId, type: 'line', source: sourceId, paint: BitMapGlBase._linePaint(style) });
-            BitMapGlBase._wireVectorClick(s, fillId, layerId, kind);
-            BitMapGlBase._wireVectorClick(s, lineId, layerId, kind);
-            s.vectorCatalog[layerId] = { sourceId, layerIds: [fillId, lineId] };
+            const handlers: { layerId: string, handler: any }[] = [];
+            const h1 = BitMapGlBase._wireVectorClick(s, fillId, layerId, kind);
+            const h2 = BitMapGlBase._wireVectorClick(s, lineId, layerId, kind);
+            if (h1) handlers.push(h1);
+            if (h2) handlers.push(h2);
+            s.vectorCatalog[layerId] = { sourceId, layerIds: [fillId, lineId], handlers };
         }
 
         private static _removeVector(s: GlState, layerId: string) {
             const entry = s.vectorCatalog[layerId];
             if (!entry) return;
+            // Unregister event handlers before removing layers
+            for (const h of entry.handlers) {
+                try { s.map.off('click', h.layerId, h.handler); } catch { /* ignore */ }
+            }
             for (const lid of entry.layerIds) {
                 try { if (s.map.getLayer(lid)) s.map.removeLayer(lid); } catch { /* ignore */ }
             }
@@ -436,12 +458,14 @@ namespace BitBlazorUI {
             delete s.vectorCatalog[layerId];
         }
 
-        private static _wireVectorClick(s: GlState, glLayerId: string, layerId: string, kind: string) {
-            if (!s.dotnetObj) return;
+        private static _wireVectorClick(s: GlState, glLayerId: string, layerId: string, kind: string): { layerId: string, handler: any } | null {
+            if (!s.dotnetObj) return null;
             const dn = s.dotnetObj;
-            s.map.on('click', glLayerId, (e: any) => {
+            const handler = (e: any) => {
                 dn.invokeMethodAsync('OnVectorClick', layerId, kind, { lat: e.lngLat.lat, lng: e.lngLat.lng });
-            });
+            };
+            s.map.on('click', glLayerId, handler);
+            return { layerId: glLayerId, handler };
         }
     }
 }

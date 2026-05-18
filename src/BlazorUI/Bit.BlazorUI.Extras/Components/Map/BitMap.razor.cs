@@ -301,10 +301,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     private async ValueTask OnProviderSet()
     {
-        if (_initialized is false || _activeProvider is null || Provider is null) return;
-        // Re-send the options payload so the JS engine can apply changes (center/zoom/style/etc.).
-        await _js.BitMapSync(JsObject, _Id, Provider.BuildOptionsPayload());
-        _activeProvider = Provider;
+        if (_initialized is false || _activeProvider is null) return;
+
+        // When Provider is reset to null, revert to a default-constructed instance.
+        var effective = Provider ?? new TMapProvider();
+        await _js.BitMapSync(JsObject, _Id, effective.BuildOptionsPayload());
+        _activeProvider = effective;
     }
 
 

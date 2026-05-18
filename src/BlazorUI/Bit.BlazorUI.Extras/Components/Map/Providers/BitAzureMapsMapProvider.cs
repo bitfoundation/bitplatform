@@ -30,6 +30,13 @@ public sealed class BitAzureMapsMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
+        if (string.IsNullOrWhiteSpace(SubscriptionKey))
+        {
+            throw new InvalidOperationException(
+                "BitAzureMapsMapProvider: A SubscriptionKey is required. " +
+                "Obtain one from the Azure portal (Azure Maps resource → Authentication).");
+        }
+
         var common = GetCommonOptions();
         common["subscriptionKey"] = SubscriptionKey;
         common["style"] = Style;

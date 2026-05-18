@@ -264,6 +264,7 @@ namespace BitBlazorUI {
 
         public static addGeoJson(id: string, layerId: string, geoJsonString: string, style: any) {
             const s = BitMapAzureMaps._require(id);
+            BitMapAzureMaps._removeExisting(s, layerId);
             const st = BitMapHelpers.readPathStyle(style);
             let gj: any;
             try { gj = JSON.parse(geoJsonString); } catch { throw new Error('Invalid GeoJSON string'); }
@@ -310,8 +311,8 @@ namespace BitBlazorUI {
         public static clearVectorLayers(id: string) {
             const s = BitMapAzureMaps._maps[id];
             if (!s) return;
-            for (const k in s.layers) BitMapAzureMaps.removeLayer(id, k);
-            for (const k in s.geoJsonLayers) BitMapAzureMaps.removeLayer(id, k);
+            for (const k of Object.keys(s.layers).slice()) BitMapAzureMaps.removeLayer(id, k);
+            for (const k of Object.keys(s.geoJsonLayers).slice()) BitMapAzureMaps.removeLayer(id, k);
         }
 
         public static addTileOverlay(id: string, opts: any) {
@@ -341,7 +342,17 @@ namespace BitBlazorUI {
             return s;
         }
 
+        private static _removeExisting(s: any, layerId: string) {
+            const info = s.layers[layerId] ?? s.geoJsonLayers[layerId];
+            if (!info) return;
+            for (const lid of info.layerIds) try { s.map.layers.remove(lid); } catch { /* ignore */ }
+            try { s.map.sources.remove(info.source); } catch { /* ignore */ }
+            delete s.layers[layerId];
+            delete s.geoJsonLayers[layerId];
+        }
+
         private static _addVectorLayer(s: any, layerId: string, features: any[], layerDefs: any[], _kind: string) {
+            BitMapAzureMaps._removeExisting(s, layerId);
             const ds = new s.atlas.source.DataSource();
             s.map.sources.add(ds);
             ds.add(features);

@@ -248,9 +248,23 @@ namespace BitBlazorUI {
                         symbol: new esri.SimpleMarkerSymbol({ color: [51, 136, 255, 255], outline: { color: [255, 255, 255, 255], width: 2 }, size: 8 }),
                         attributes: props,
                     }));
+                } else if (t === 'MultiPoint') {
+                    for (const coord of f.geometry.coordinates) {
+                        graphics.push(new esri.Graphic({
+                            geometry: new esri.Point({ longitude: coord[0], latitude: coord[1] }),
+                            symbol: new esri.SimpleMarkerSymbol({ color: [51, 136, 255, 255], outline: { color: [255, 255, 255, 255], width: 2 }, size: 8 }),
+                            attributes: props,
+                        }));
+                    }
                 } else if (t === 'LineString') {
                     graphics.push(new esri.Graphic({
                         geometry: new esri.Polyline({ paths: [f.geometry.coordinates], spatialReference: { wkid: 4326 } }),
+                        symbol: BitMapArcGis._lineSym(esri, style),
+                        attributes: props,
+                    }));
+                } else if (t === 'MultiLineString') {
+                    graphics.push(new esri.Graphic({
+                        geometry: new esri.Polyline({ paths: f.geometry.coordinates, spatialReference: { wkid: 4326 } }),
                         symbol: BitMapArcGis._lineSym(esri, style),
                         attributes: props,
                     }));
@@ -260,6 +274,14 @@ namespace BitBlazorUI {
                         symbol: BitMapArcGis._fillSym(esri, style),
                         attributes: props,
                     }));
+                } else if (t === 'MultiPolygon') {
+                    for (const rings of f.geometry.coordinates) {
+                        graphics.push(new esri.Graphic({
+                            geometry: new esri.Polygon({ rings, spatialReference: { wkid: 4326 } }),
+                            symbol: BitMapArcGis._fillSym(esri, style),
+                            attributes: props,
+                        }));
+                    }
                 }
             }
             BitMapArcGis._removeGeoJsonLayer(s, layerId);

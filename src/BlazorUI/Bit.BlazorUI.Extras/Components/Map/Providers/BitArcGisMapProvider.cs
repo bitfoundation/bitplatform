@@ -34,6 +34,13 @@ public sealed class BitArcGisMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
+        if (BasemapId is not "osm" && string.IsNullOrWhiteSpace(ApiKey))
+        {
+            throw new InvalidOperationException(
+                $"BitArcGisMapProvider: An ApiKey is required for the '{BasemapId}' basemap. " +
+                "Only the 'osm' basemap works without an API key.");
+        }
+
         var common = GetCommonOptions();
         common["basemapId"] = BasemapId;
         common["apiKey"] = ApiKey;

@@ -22,21 +22,41 @@ namespace BitBlazorUI {
             if (o.ionAccessToken) {
                 Cesium.Ion.defaultAccessToken = o.ionAccessToken;
             }
-            const imageryProvider = (() => {
+
+            // Cesium 1.104+ deprecated imageryProvider in Viewer constructor;
+            // use baseLayer instead. createWorldTerrain() is also deprecated in
+            // favor of createWorldTerrainAsync().
+            const baseLayer = await (async () => {
                 if (o.imageryStyle === 'bing_aerial' && o.ionAccessToken) {
-                    return undefined; // Cesium default Bing provider when ion token is set
+                    // Use Cesium's default Bing imagery via Ion
+                    return undefined; // Viewer will use Ion default when baseLayer is undefined and token is set
                 }
-                if (o.imageryStyle === 'none') return new Cesium.SingleTileImageryProvider({ url: '' });
-                // OSM
-                return new Cesium.UrlTemplateImageryProvider({
+                if (o.imageryStyle === 'none') {
+                    return false as any; // false disables the base imagery layer
+                }
+                // OSM tiles
+                const osmProvider = new Cesium.UrlTemplateImageryProvider({
                     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                     subdomains: ['a', 'b', 'c'],
                     credit: '© OpenStreetMap contributors',
                     maximumLevel: 19,
                 });
+                return Cesium.ImageryLayer
+                    ? new Cesium.ImageryLayer(osmProvider)
+                    : osmProvider; // fallback for older Cesium builds
             })();
 
-            const viewer = new Cesium.Viewer(element, {
+            // Terrain: use async API (Cesium 1.104+)
+            let terrainProvider: any;
+            if (o.terrainEnabled && o.ionAccessToken) {
+                terrainProvider = Cesium.createWorldTerrainAsync
+                    ? await Cesium.createWorldTerrainAsync()
+                    : Cesium.createWorldTerrain();
+            } else {
+                terrainProvider = new Cesium.EllipsoidTerrainProvider();
+            }
+
+            const viewerOptions: any = {
                 animation: !!o.animationWidget,
                 timeline: !!o.timelineWidget,
                 baseLayerPicker: !!o.baseLayerPicker,
@@ -46,11 +66,15 @@ namespace BitBlazorUI {
                 geocoder: !!o.geocoder,
                 infoBox: o.infoBox !== false,
                 sceneModePicker: false,
-                imageryProvider,
-                terrainProvider: o.terrainEnabled && o.ionAccessToken
-                    ? Cesium.createWorldTerrain()
-                    : new Cesium.EllipsoidTerrainProvider(),
-            });
+                terrainProvider,
+            };
+
+            // Use baseLayer (Cesium 1.104+) instead of deprecated imageryProvider
+            if (baseLayer !== undefined) {
+                viewerOptions.baseLayer = baseLayer;
+            }
+
+            const viewer = new Cesium.Viewer(element, viewerOptions);
 
             try {
                 viewer.scene.shadowMap.enabled = !!o.shadowsEnabled;
@@ -137,6 +161,8 @@ namespace BitBlazorUI {
         public static addMarker(id: string, markerId: string, opts: any) {
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
+            const existing = s.markers[markerId];
+            if (existing) try { s.viewer.entities.remove(existing); } catch { /* ignore */ }
             const billboard = opts.iconUrl ? {
                 image: opts.iconUrl,
                 width: opts.iconWidth || 32,
@@ -155,8 +181,6 @@ namespace BitBlazorUI {
                 description: opts.popupHtml || undefined,
                 _bmMarkerId: markerId,
             });
-            const existing = s.markers[markerId];
-            if (existing) try { s.viewer.entities.remove(existing); } catch { /* ignore */ }
             s.markers[markerId] = ent;
         }
 
@@ -267,9 +291,16 @@ namespace BitBlazorUI {
                 strokeWidth: st.weight,
             });
             (ds as any)._bmLayerId = layerId;
+            // Tag each entity with metadata so click handler can bridge to .NET
+            const entities = ds.entities.values;
+            for (let i = 0; i < entities.length; i++) {
+                const ent = entities[i];
+                (ent as any)._bmLayerId = layerId;
+                (ent as any)._bmKind = 'geojson';
+            }
+            const existingDs = s.geoJsonLayers[layerId];
+            if (existingDs) try { s.viewer.dataSources.remove(existingDs, true); } catch { /* ignore */ }
             await s.viewer.dataSources.add(ds);
-            const existing = s.geoJsonLayers[layerId];
-            if (existing) try { s.viewer.dataSources.remove(existing, true); } catch { /* ignore */ }
             s.geoJsonLayers[layerId] = ds;
         }
 
@@ -294,14 +325,14 @@ namespace BitBlazorUI {
         public static addTileOverlay(id: string, opts: any) {
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
+            const existingTile = s.tileOverlays[opts.id];
+            if (existingTile) try { s.viewer.imageryLayers.remove(existingTile, true); } catch { /* ignore */ }
             const layer = s.viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
                 url: (opts.urlTemplate || '').replace('{s}', 'a'),
                 credit: opts.attribution || '',
                 maximumLevel: opts.maxZoom ?? 19,
             }));
             layer.alpha = opts.opacity ?? 1;
-            const existing = s.tileOverlays[opts.id];
-            if (existing) try { s.viewer.imageryLayers.remove(existing, true); } catch { /* ignore */ }
             s.tileOverlays[opts.id] = layer;
         }
 
@@ -384,6 +415,15 @@ namespace BitBlazorUI {
                     if (mid && s.markers[mid]) { if (dn) dn.invokeMethodAsync('OnMarkerClick', mid); return; }
                     const lid = ent._bmLayerId;
                     const kind = ent._bmVectorKind;
+                    // GeoJSON feature click
+                    if (lid && ent._bmKind === 'geojson' && s.geoJsonLayers[lid]) {
+                        if (dn) {
+                            const props = ent.properties ? ent.properties.getValue(Cesium.JulianDate.now()) : {};
+                            dn.invokeMethodAsync('OnGeoJsonFeatureClick', lid, props || {});
+                        }
+                        return;
+                    }
+                    // Vector layer click
                     if (lid && s.layers[lid]) {
                         const carte = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
                         if (carte && dn) {
