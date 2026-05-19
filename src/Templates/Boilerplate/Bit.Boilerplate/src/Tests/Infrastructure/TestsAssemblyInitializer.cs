@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Microsoft.EntityFrameworkCore;
 //#if (aspire == true)
 using Aspire.Hosting;
