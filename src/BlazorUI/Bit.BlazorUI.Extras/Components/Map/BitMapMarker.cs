@@ -1,7 +1,7 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Declarative marker definition used by <see cref="BitMap"/>.
+/// Declarative marker definition used by <see cref="BitMap{TMapProvider}"/>.
 /// </summary>
 public sealed class BitMapMarker
 {
@@ -11,11 +11,39 @@ public sealed class BitMapMarker
     /// <summary>Geographic coordinate of the marker.</summary>
     public required BitMapLatLng Position { get; init; }
 
-    /// <summary>HTML content of the click popup.</summary>
+    /// <summary>
+    /// Raw HTML content rendered inside the click popup.
+    /// <para>
+    /// <b>Security:</b> This value is injected as raw HTML into the map popup (via <c>setHTML</c> / <c>innerHTML</c>).
+    /// Never pass unsanitized user input. The caller is responsible for escaping or sanitizing any
+    /// user-provided content before assigning it here. Prefer <see cref="PopupText"/> for plain-text content.
+    /// </para>
+    /// </summary>
     public string? PopupHtml { get; init; }
 
-    /// <summary>Tooltip on hover (separate from <see cref="PopupHtml"/> which opens on click).</summary>
+    /// <summary>
+    /// Plain-text content rendered inside the click popup. The text is safely escaped by the provider
+    /// (using <c>setText</c> / <c>textContent</c>) so it is safe to pass user-supplied strings.
+    /// When both <see cref="PopupHtml"/> and <see cref="PopupText"/> are set, <see cref="PopupHtml"/> takes precedence.
+    /// </summary>
+    public string? PopupText { get; init; }
+
+    /// <summary>
+    /// Raw HTML content rendered as a tooltip on hover (separate from <see cref="PopupHtml"/> which opens on click).
+    /// <para>
+    /// <b>Security:</b> This value is injected as raw HTML into the map tooltip.
+    /// Never pass unsanitized user input. The caller is responsible for escaping or sanitizing any
+    /// user-provided content before assigning it here. Prefer <see cref="TooltipText"/> for plain-text content.
+    /// </para>
+    /// </summary>
     public string? TooltipHtml { get; init; }
+
+    /// <summary>
+    /// Plain-text content rendered as a tooltip on hover. The text is safely escaped by the provider
+    /// (using <c>setText</c> / <c>textContent</c>) so it is safe to pass user-supplied strings.
+    /// When both <see cref="TooltipHtml"/> and <see cref="TooltipText"/> are set, <see cref="TooltipHtml"/> takes precedence.
+    /// </summary>
+    public string? TooltipText { get; init; }
 
     /// <summary>When true, the tooltip stays visible (use sparingly).</summary>
     public bool TooltipPermanent { get; init; }

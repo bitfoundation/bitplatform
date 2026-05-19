@@ -18,7 +18,7 @@
             </BitLink>
             nuget package.
             <br />
-            <code>BitMap&lt;TMapProvider&gt;</code> is generic — choose a provider class as the type argument and pass a configured instance via <code>Provider</code>.
+            <code>BitMap&lt;TMapProvider&gt;</code> is generic - choose a provider class as the type argument and pass a configured instance via <code>Provider</code>.
             Providers: <code>BitLeafletMapProvider</code>, <code>BitMapLibreMapProvider</code>, <code>BitMapboxMapProvider</code>,
             <code>BitOpenLayersMapProvider</code>, <code>BitArcGisMapProvider</code>, <code>BitAzureMapsMapProvider</code>, <code>BitCesiumMapProvider</code>.
             Mapbox, Azure Maps, and ArcGIS (for non-OSM basemaps) require an API key on the provider instance.
@@ -196,18 +196,19 @@
         @* ── 10. Mapbox ───────────────────────────────────────────────────────── *@
         <DemoExample Title="Mapbox GL (token required)" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
-                Mapbox GL JS requires a public access token for <code>mapbox://</code> styles.
-                Paste your token below — without it the canvas stays blank.
+                Mapbox GL JS requires a public access token to load <code>mapbox://</code> styles.
+                <br /><br />
+                To get started:
+                <ol style="margin:0.5rem 0 0.5rem 1.5rem">
+                    <li>Create a free account at <BitLink Href="https://account.mapbox.com/auth/signup/" Target="_blank">mapbox.com</BitLink></li>
+                    <li>Copy your default public token from the <BitLink Href="https://account.mapbox.com/access-tokens/" Target="_blank">Access Tokens</BitLink> page</li>
+                    <li>Pass it to <code>BitMapboxMapProvider.AccessToken</code></li>
+                </ol>
+                Without a valid token the map canvas will remain blank.
             </div>
             <br />
-            <BitTextField @bind-Value="mapboxToken" Placeholder="pk.eyJ1…" Style="margin-bottom:0.5rem;max-width:480px" />
-            <div style="height:360px">
-                @if (string.IsNullOrWhiteSpace(mapboxToken) is false)
-                {
-                    <BitMap TMapProvider="BitMapboxMapProvider"
-                            @key="mapboxToken"
-                            Provider="@(new BitMapboxMapProvider { AccessToken = mapboxToken!, Center = new(40, 0), Zoom = 2 })" />
-                }
+            <div style="height:100px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--bit-clr-brd-pri);border-radius:4px">
+                <BitText Typography="BitTypography.Body1" Style="opacity:0.6">Mapbox map renders here when a valid AccessToken is provided.</BitText>
             </div>
         </DemoExample>
 
@@ -226,18 +227,19 @@
         @* ── 12. Azure Maps ───────────────────────────────────────────────────── *@
         <DemoExample Title="Azure Maps (subscription key required)" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
-                Azure Maps Web SDK v3 requires a subscription key.
-                Paste your key below to render the map.
+                Azure Maps Web SDK v3 requires a subscription key for authentication.
+                <br /><br />
+                To get started:
+                <ol style="margin:0.5rem 0 0.5rem 1.5rem">
+                    <li>Create an Azure Maps account in the <BitLink Href="https://portal.azure.com/#create/Microsoft.Maps" Target="_blank">Azure Portal</BitLink></li>
+                    <li>Navigate to your Maps account → Authentication → Shared Key Authentication</li>
+                    <li>Copy the Primary Key and pass it to <code>BitAzureMapsMapProvider.SubscriptionKey</code></li>
+                </ol>
+                Without a valid key the map will not render.
             </div>
             <br />
-            <BitTextField @bind-Value="azureMapsKey" Placeholder="Azure Maps subscription key" Style="margin-bottom:0.5rem;max-width:480px" />
-            <div style="height:360px">
-                @if (string.IsNullOrWhiteSpace(azureMapsKey) is false)
-                {
-                    <BitMap TMapProvider="BitAzureMapsMapProvider"
-                            @key="azureMapsKey"
-                            Provider="@(new BitAzureMapsMapProvider { SubscriptionKey = azureMapsKey!, Center = new(40, 0), Zoom = 2 })" />
-                }
+            <div style="height:100px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--bit-clr-brd-pri);border-radius:4px">
+                <BitText Typography="BitTypography.Body1" Style="opacity:0.6">Azure Maps renders here when a valid SubscriptionKey is provided.</BitText>
             </div>
         </DemoExample>
 

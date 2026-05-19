@@ -146,14 +146,14 @@ namespace BitBlazorUI {
             const ol = s.ol;
             const f = new ol.Feature({
                 geometry: new ol.Point(ol.fromLonLat([opts.lng, opts.lat])),
-                markerId, popupHtml: opts.popupHtml || '', title: opts.title || '',
+                markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '', title: opts.title || '',
                 draggable: !!opts.draggable,
             });
             f.setId(markerId);
             f.setStyle(BitMapOpenLayers._markerStyle(ol, opts));
-            s.markerSource.addFeature(f);
             const existing = s.markers[markerId];
             if (existing) try { s.markerSource.removeFeature(existing); } catch { /* ignore */ }
+            s.markerSource.addFeature(f);
             s.markers[markerId] = f;
         }
 
@@ -169,6 +169,15 @@ namespace BitBlazorUI {
             if (!s) return;
             s.markerSource.clear();
             s.markers = {};
+        }
+
+        public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
+            const s = BitMapOpenLayers._maps[id];
+            if (!s) return;
+            s.markerSource.clear();
+            s.markers = {};
+            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
+            for (let i = 0; i < len; i++) BitMapOpenLayers.addMarker(id, markerIds[i], markers[i]);
         }
 
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {

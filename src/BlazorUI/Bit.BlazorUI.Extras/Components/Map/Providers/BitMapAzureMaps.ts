@@ -126,9 +126,13 @@ namespace BitBlazorUI {
         public static addMarker(id: string, markerId: string, opts: any) {
             const s = BitMapAzureMaps._require(id);
             const atlas = s.atlas;
-            const popup = opts.popupHtml
-                ? new atlas.Popup({ content: `<div style="padding:6px 8px;">${opts.popupHtml}</div>`, pixelOffset: [0, -28], closeButton: true })
-                : null;
+            let popup: any = null;
+            if (opts.popupHtml) {
+                popup = new atlas.Popup({ content: `<div style="padding:6px 8px;">${opts.popupHtml}</div>`, pixelOffset: [0, -28], closeButton: true });
+            } else if (opts.popupText) {
+                const escaped = String(opts.popupText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                popup = new atlas.Popup({ content: `<div style="padding:6px 8px;">${escaped}</div>`, pixelOffset: [0, -28], closeButton: true });
+            }
             const markerOpts: any = { position: [opts.lng, opts.lat], draggable: !!opts.draggable };
             if (opts.iconUrl) {
                 const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
@@ -179,6 +183,18 @@ namespace BitBlazorUI {
                 s.map.markers.remove(s.markers[k].marker);
             }
             s.markers = {};
+        }
+
+        public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
+            const s = BitMapAzureMaps._maps[id];
+            if (!s) return;
+            for (const k in s.markers) {
+                if (s.markers[k].popup) s.markers[k].popup.remove();
+                s.map.markers.remove(s.markers[k].marker);
+            }
+            s.markers = {};
+            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
+            for (let i = 0; i < len; i++) BitMapAzureMaps.addMarker(id, markerIds[i], markers[i]);
         }
 
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {
@@ -300,12 +316,7 @@ namespace BitBlazorUI {
         public static removeLayer(id: string, layerId: string) {
             const s = BitMapAzureMaps._maps[id];
             if (!s) return;
-            const info = s.layers[layerId] ?? s.geoJsonLayers[layerId];
-            if (!info) return;
-            for (const lid of info.layerIds) try { s.map.layers.remove(lid); } catch { /* ignore */ }
-            try { s.map.sources.remove(info.source); } catch { /* ignore */ }
-            delete s.layers[layerId];
-            delete s.geoJsonLayers[layerId];
+            BitMapAzureMaps._removeExisting(s, layerId);
         }
 
         public static clearVectorLayers(id: string) {
@@ -345,12 +356,19 @@ namespace BitBlazorUI {
         }
 
         private static _removeExisting(s: any, layerId: string) {
-            const info = s.layers[layerId] ?? s.geoJsonLayers[layerId];
-            if (!info) return;
-            for (const lid of info.layerIds) try { s.map.layers.remove(lid); } catch { /* ignore */ }
-            try { s.map.sources.remove(info.source); } catch { /* ignore */ }
-            delete s.layers[layerId];
-            delete s.geoJsonLayers[layerId];
+            const vectorInfo = s.layers[layerId];
+            const geoJsonInfo = s.geoJsonLayers[layerId];
+            if (!vectorInfo && !geoJsonInfo) return;
+            if (vectorInfo) {
+                for (const lid of vectorInfo.layerIds) try { s.map.layers.remove(lid); } catch { /* ignore */ }
+                try { s.map.sources.remove(vectorInfo.source); } catch { /* ignore */ }
+                delete s.layers[layerId];
+            }
+            if (geoJsonInfo) {
+                for (const lid of geoJsonInfo.layerIds) try { s.map.layers.remove(lid); } catch { /* ignore */ }
+                try { s.map.sources.remove(geoJsonInfo.source); } catch { /* ignore */ }
+                delete s.geoJsonLayers[layerId];
+            }
         }
 
         private static _addVectorLayer(s: any, layerId: string, features: any[], layerDefs: any[], _kind: string) {

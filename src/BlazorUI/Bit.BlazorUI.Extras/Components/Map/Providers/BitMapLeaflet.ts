@@ -181,9 +181,22 @@ namespace BitBlazorUI {
             if (icon) markerOpts.icon = icon;
 
             const m = L.marker([opts.lat, opts.lng], markerOpts);
-            if (opts.popupHtml) m.bindPopup(opts.popupHtml);
+            if (opts.popupHtml) {
+                m.bindPopup(opts.popupHtml);
+            } else if (opts.popupText) {
+                const el = document.createElement('span');
+                el.textContent = opts.popupText;
+                m.bindPopup(el);
+            }
             if (opts.tooltipHtml) {
                 m.bindTooltip(opts.tooltipHtml, {
+                    permanent: !!opts.tooltipPermanent,
+                    direction: opts.tooltipDirection || 'auto',
+                });
+            } else if (opts.tooltipText) {
+                const el = document.createElement('span');
+                el.textContent = opts.tooltipText;
+                m.bindTooltip(el, {
                     permanent: !!opts.tooltipPermanent,
                     direction: opts.tooltipDirection || 'auto',
                 });
@@ -217,6 +230,15 @@ namespace BitBlazorUI {
             if (!s) return;
             for (const key in s.markers) s.map.removeLayer(s.markers[key]);
             s.markers = {};
+        }
+
+        public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
+            const s = BitMapLeaflet._maps[id];
+            if (!s) return;
+            for (const key in s.markers) s.map.removeLayer(s.markers[key]);
+            s.markers = {};
+            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
+            for (let i = 0; i < len; i++) BitMapLeaflet.addMarker(id, markerIds[i], markers[i]);
         }
 
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {

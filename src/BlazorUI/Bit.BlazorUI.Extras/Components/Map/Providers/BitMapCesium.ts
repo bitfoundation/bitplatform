@@ -27,9 +27,20 @@ namespace BitBlazorUI {
             // use baseLayer instead. createWorldTerrain() is also deprecated in
             // favor of createWorldTerrainAsync().
             const baseLayer = await (async () => {
-                if (o.imageryStyle === 'bing_aerial' && o.ionAccessToken) {
-                    // Use Cesium's default Bing imagery via Ion
-                    return undefined; // Viewer will use Ion default when baseLayer is undefined and token is set
+                if ((o.imageryStyle === 'bing_aerial' || o.imageryStyle === 'bing_labels') && o.ionAccessToken) {
+                    // Use Cesium's Ion-based Bing imagery.
+                    // bing_aerial = satellite only; bing_labels = satellite + roads/labels (hybrid).
+                    if (o.imageryStyle === 'bing_labels' && Cesium.IonImageryProvider) {
+                        // Ion asset 3 = Bing Maps Aerial with Labels
+                        const provider = await (Cesium.IonImageryProvider.fromAssetId
+                            ? Cesium.IonImageryProvider.fromAssetId(3)
+                            : new Cesium.IonImageryProvider({ assetId: 3 }));
+                        return Cesium.ImageryLayer
+                            ? new Cesium.ImageryLayer(provider)
+                            : provider;
+                    }
+                    // bing_aerial: Viewer will use Ion default (Bing Aerial) when baseLayer is undefined and token is set
+                    return undefined;
                 }
                 if (o.imageryStyle === 'none') {
                     return false as any; // false disables the base imagery layer
@@ -177,12 +188,20 @@ namespace BitBlazorUI {
                 width: 27, height: 41,
                 verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
             };
+            // description is rendered as HTML in Cesium's InfoBox.
+            // popupText is escaped to prevent XSS; popupHtml is passed raw (caller's responsibility).
+            let description: string | undefined;
+            if (opts.popupHtml) {
+                description = opts.popupHtml;
+            } else if (opts.popupText) {
+                description = String(opts.popupText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
             const ent = s.viewer.entities.add({
                 id: `bm-marker-${id}-${markerId}`,
                 position: Cesium.Cartesian3.fromDegrees(opts.lng, opts.lat),
                 billboard,
                 label: opts.title ? { text: opts.title, font: '12px sans-serif', pixelOffset: new Cesium.Cartesian2(0, -50) } : undefined,
-                description: opts.popupHtml || undefined,
+                description: description,
                 _bmMarkerId: markerId,
             });
             s.markers[markerId] = ent;
@@ -200,6 +219,15 @@ namespace BitBlazorUI {
             if (!s) return;
             for (const k in s.markers) s.viewer.entities.remove(s.markers[k]);
             s.markers = {};
+        }
+
+        public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
+            const s = BitMapCesium._maps[id];
+            if (!s) return;
+            for (const k in s.markers) s.viewer.entities.remove(s.markers[k]);
+            s.markers = {};
+            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
+            for (let i = 0; i < len; i++) BitMapCesium.addMarker(id, markerIds[i], markers[i]);
         }
 
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {

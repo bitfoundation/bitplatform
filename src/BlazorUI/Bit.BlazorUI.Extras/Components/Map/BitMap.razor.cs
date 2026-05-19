@@ -153,13 +153,22 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         => _initialized ? _js.BitMapOpenMarkerPopup(JsObject, _Id, markerId) : ValueTask.CompletedTask;
 
     /// <summary>Replace all markers in a single batch operation.</summary>
-    public async ValueTask SyncMarkers(IEnumerable<BitMapMarker> markers)
+    public ValueTask SyncMarkers(IEnumerable<BitMapMarker> markers)
     {
-        await ClearMarkers();
-        foreach (var m in markers)
+        EnsureReady();
+        ArgumentNullException.ThrowIfNull(markers);
+
+        var list = markers as ICollection<BitMapMarker> ?? [.. markers];
+        var payload = new object[list.Count];
+        var ids = new string[list.Count];
+        var i = 0;
+        foreach (var m in list)
         {
-            await AddMarker(m);
+            ids[i] = m.Id;
+            payload[i] = ToMarkerPayload(m);
+            i++;
         }
+        return _js.BitMapSyncMarkers(JsObject, _Id, ids, payload);
     }
 
     /// <summary>Add a polyline vector layer.</summary>
@@ -319,7 +328,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         lng = m.Position.Longitude,
         title = m.Title,
         popupHtml = m.PopupHtml,
+        popupText = m.PopupText,
         tooltipHtml = m.TooltipHtml,
+        tooltipText = m.TooltipText,
         tooltipPermanent = m.TooltipPermanent,
         tooltipDirection = m.TooltipDirection,
         draggable = m.Draggable,

@@ -183,9 +183,12 @@ namespace BitBlazorUI {
                 marker = new gl.Marker({ draggable }).setLngLat([lng, lat]).addTo(s.map);
             }
 
-            // PopupHtml is developer-supplied content from Blazor parameters (not end-user input).
-            // If untrusted content is a concern, sanitize before passing to the Provider parameter.
-            if (opts.popupHtml) marker.setPopup(new gl.Popup({ offset: 25 }).setHTML(String(opts.popupHtml)));
+            // PopupHtml takes precedence; PopupText uses safe setText to avoid XSS.
+            if (opts.popupHtml) {
+                marker.setPopup(new gl.Popup({ offset: 25 }).setHTML(String(opts.popupHtml)));
+            } else if (opts.popupText) {
+                marker.setPopup(new gl.Popup({ offset: 25 }).setText(String(opts.popupText)));
+            }
             if (opts.title) marker.getElement()?.setAttribute('title', opts.title);
 
             if (s.dotnetObj) {
@@ -219,6 +222,15 @@ namespace BitBlazorUI {
             if (!s) return;
             for (const key in s.markers) s.markers[key].marker.remove();
             s.markers = {};
+        }
+
+        public static syncMarkers(provider: string, id: string, markerIds: string[], markers: any[]) {
+            const s = BitMapGlBase._store(provider)[id];
+            if (!s) return;
+            for (const key in s.markers) s.markers[key].marker.remove();
+            s.markers = {};
+            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
+            for (let i = 0; i < len; i++) BitMapGlBase.addMarker(provider, id, markerIds[i], markers[i]);
         }
 
         public static setMarkerPosition(provider: string, id: string, markerId: string, lat: number, lng: number) {

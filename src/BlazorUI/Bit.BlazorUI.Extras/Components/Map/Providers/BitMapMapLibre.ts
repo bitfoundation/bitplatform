@@ -30,6 +30,9 @@ namespace BitBlazorUI {
         public static addMarker(id: string, markerId: string, opts: any) { return BitMapGlBase.addMarker(BitMapMapLibre._key, id, markerId, opts); }
         public static removeMarker(id: string, markerId: string) { return BitMapGlBase.removeMarker(BitMapMapLibre._key, id, markerId); }
         public static clearMarkers(id: string) { return BitMapGlBase.clearMarkers(BitMapMapLibre._key, id); }
+        public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
+            return BitMapGlBase.syncMarkers(BitMapMapLibre._key, id, markerIds, markers);
+        }
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {
             return BitMapGlBase.setMarkerPosition(BitMapMapLibre._key, id, markerId, lat, lng);
         }

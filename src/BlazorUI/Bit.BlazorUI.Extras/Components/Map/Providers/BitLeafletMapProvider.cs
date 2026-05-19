@@ -18,7 +18,12 @@ public sealed class BitLeafletMapProvider : BitMapProviderBase
     public int TileMaxZoom { get; set; } = 19;
 
     /// <summary>Base tile layer opacity (0–1).</summary>
-    public double TileOpacity { get; set; } = 1;
+    public double TileOpacity
+    {
+        get => _tileOpacity;
+        set => _tileOpacity = value < 0 ? 0 : value > 1 ? 1 : value;
+    }
+    private double _tileOpacity = 1;
 
     /// <summary>Show a metric/imperial scale bar control.</summary>
     public bool ShowScaleControl { get; set; }

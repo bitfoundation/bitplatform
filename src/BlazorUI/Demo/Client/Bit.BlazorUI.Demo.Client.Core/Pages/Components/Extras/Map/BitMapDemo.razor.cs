@@ -1,5 +1,3 @@
-// using System.Text.Json;
-
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Map;
 
 public partial class BitMapDemo
@@ -52,9 +50,6 @@ public partial class BitMapDemo
     private readonly BitOpenLayersMapProvider olProvider = new() { Center = new(35.6762, 139.6503), Zoom = 4 };
     private readonly BitArcGisMapProvider arcGisProvider = new() { Center = new(40, 0), Zoom = 2, BasemapId = "osm" };
     private readonly BitCesiumMapProvider cesiumProvider = new() { Center = new(20, 0), Zoom = 2, SceneMode = "scene3d" };
-
-    private string? mapboxToken;
-    private string? azureMapsKey;
 
     // ── Example 2 – Markers ───────────────────────────────────────────────────
 
@@ -536,16 +531,13 @@ await advMapRef.RemoveTileOverlay(""labels"");";
 </div>";
 
     private readonly string example10RazorCode = @"
-<BitTextField @bind-Value=""mapboxToken"" Placeholder=""pk.eyJ1…"" />
 <div style=""height:360px"">
-    @if (!string.IsNullOrWhiteSpace(mapboxToken))
-    {
-        <BitMap TMapProvider=""BitMapboxMapProvider""
-                @key=""mapboxToken""
-                Provider=""@(new BitMapboxMapProvider { AccessToken = mapboxToken!, Center = new(40, 0), Zoom = 2 })"" />
-    }
+    <BitMap TMapProvider=""BitMapboxMapProvider""
+            Provider=""@(new BitMapboxMapProvider { AccessToken = ""YOUR_MAPBOX_TOKEN"", Center = new(40, 0), Zoom = 2 })"" />
 </div>";
-    private readonly string example10CsharpCode = @"private string? mapboxToken;";
+    private readonly string example10CsharpCode = @"
+// Get your token from https://account.mapbox.com/access-tokens/
+// Pass it via the AccessToken property on BitMapboxMapProvider.";
 
     private readonly string example11RazorCode = @"
 <div style=""height:360px"">
@@ -554,16 +546,13 @@ await advMapRef.RemoveTileOverlay(""labels"");";
 </div>";
 
     private readonly string example12RazorCode = @"
-<BitTextField @bind-Value=""azureMapsKey"" Placeholder=""Azure Maps subscription key"" />
 <div style=""height:360px"">
-    @if (!string.IsNullOrWhiteSpace(azureMapsKey))
-    {
-        <BitMap TMapProvider=""BitAzureMapsMapProvider""
-                @key=""azureMapsKey""
-                Provider=""@(new BitAzureMapsMapProvider { SubscriptionKey = azureMapsKey!, Center = new(40, 0), Zoom = 2 })"" />
-    }
+    <BitMap TMapProvider=""BitAzureMapsMapProvider""
+            Provider=""@(new BitAzureMapsMapProvider { SubscriptionKey = ""YOUR_AZURE_MAPS_KEY"", Center = new(40, 0), Zoom = 2 })"" />
 </div>";
-    private readonly string example12CsharpCode = @"private string? azureMapsKey;";
+    private readonly string example12CsharpCode = @"
+// Get your key from Azure Portal > Maps account > Authentication > Shared Key
+// Pass it via the SubscriptionKey property on BitAzureMapsMapProvider.";
 
     private readonly string example13RazorCode = @"
 <div style=""height:420px"">

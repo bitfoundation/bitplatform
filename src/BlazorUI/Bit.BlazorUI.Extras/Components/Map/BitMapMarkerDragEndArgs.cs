@@ -1,6 +1,6 @@
 namespace Bit.BlazorUI;
 
-/// <summary>Payload for the <see cref="BitMap.OnMarkerDragEnd"/> callback.</summary>
+/// <summary>Payload for the <see cref="BitMap{TMapProvider}.OnMarkerDragEnd"/> callback.</summary>
 public sealed class BitMapMarkerDragEndArgs
 {
     /// <summary>Identifier of the dragged marker.</summary>
@@ -10,7 +10,7 @@ public sealed class BitMapMarkerDragEndArgs
     public required BitMapLatLng Position { get; init; }
 }
 
-/// <summary>Payload for the <see cref="BitMap.OnVectorClick"/> callback.</summary>
+/// <summary>Payload for the <see cref="BitMap{TMapProvider}.OnVectorClick"/> callback.</summary>
 public sealed class BitMapVectorClickArgs
 {
     /// <summary>Identifier of the vector layer that was clicked.</summary>
@@ -23,7 +23,7 @@ public sealed class BitMapVectorClickArgs
     public required BitMapLatLng Position { get; init; }
 }
 
-/// <summary>Payload for the <see cref="BitMap.OnGeoJsonFeatureClick"/> callback.</summary>
+/// <summary>Payload for the <see cref="BitMap{TMapProvider}.OnGeoJsonFeatureClick"/> callback.</summary>
 public sealed class BitMapGeoJsonFeatureClickArgs
 {
     /// <summary>Identifier of the GeoJSON layer.</summary>

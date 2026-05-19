@@ -152,7 +152,7 @@ namespace BitBlazorUI {
             const graphic = new esri.Graphic({
                 geometry: new esri.Point({ longitude: opts.lng, latitude: opts.lat }),
                 symbol: sym,
-                attributes: { markerId, popupHtml: opts.popupHtml || '', title: opts.title || '' },
+                attributes: { markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '', title: opts.title || '' },
             });
             const existing = s.markers[markerId];
             if (existing) try { s.markerLayer.remove(existing); } catch { /* ignore */ }
@@ -174,6 +174,15 @@ namespace BitBlazorUI {
             s.markers = {};
         }
 
+        public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
+            const s = BitMapArcGis._maps[id];
+            if (!s) return;
+            s.markerLayer.removeAll();
+            s.markers = {};
+            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
+            for (let i = 0; i < len; i++) BitMapArcGis.addMarker(id, markerIds[i], markers[i]);
+        }
+
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {
             const s = BitMapArcGis._maps[id];
             if (!s) return;
@@ -187,8 +196,13 @@ namespace BitBlazorUI {
             const g = s.markers[markerId];
             if (!g) return;
             const html = g.attributes?.popupHtml;
+            const text = g.attributes?.popupText;
             if (html) {
                 s.view.popup.open({ content: html, title: g.attributes?.title || '', location: g.geometry });
+            } else if (text) {
+                const el = document.createElement('span');
+                el.textContent = text;
+                s.view.popup.open({ content: el, title: g.attributes?.title || '', location: g.geometry });
             }
         }
 
@@ -322,6 +336,8 @@ namespace BitBlazorUI {
 
         public static addTileOverlay(id: string, opts: any) {
             const s = BitMapArcGis._require(id);
+            const existing = s.tileOverlays[opts.id];
+            if (existing) { s.map.remove(existing); delete s.tileOverlays[opts.id]; }
             const esri = s.esri;
             const tl = new esri.WebTileLayer({
                 urlTemplate: (opts.urlTemplate || '').replace('{s}', 'a'),
@@ -329,8 +345,6 @@ namespace BitBlazorUI {
                 opacity: opts.opacity ?? 1,
             });
             s.map.add(tl);
-            const existing = s.tileOverlays[opts.id];
-            if (existing) s.map.remove(existing);
             s.tileOverlays[opts.id] = tl;
         }
 
@@ -444,7 +458,13 @@ namespace BitBlazorUI {
                         if (a.markerId && s.markers[a.markerId]) {
                             hit = true;
                             if (dn) dn.invokeMethodAsync('OnMarkerClick', a.markerId);
-                            if (a.popupHtml) view.popup.open({ content: a.popupHtml, title: a.title || '', location: g.geometry });
+                            if (a.popupHtml) {
+                                view.popup.open({ content: a.popupHtml, title: a.title || '', location: g.geometry });
+                            } else if (a.popupText) {
+                                const el = document.createElement('span');
+                                el.textContent = a.popupText;
+                                view.popup.open({ content: el, title: a.title || '', location: g.geometry });
+                            }
                             break;
                         }
                         if (a.bmKind === 'geojson' && a.layerId && s.geoJsonLayers[a.layerId]) {

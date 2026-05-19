@@ -78,6 +78,11 @@ internal static class BitMapJsRuntimeExtensions
         return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.clearMarkers", id);
     }
 
+    public static ValueTask BitMapSyncMarkers(this IJSRuntime jsRuntime, string jsObjectName, string id, string[] markerIds, object[] markers)
+    {
+        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.syncMarkers", id, markerIds, markers);
+    }
+
     public static ValueTask BitMapSetMarkerPosition(this IJSRuntime jsRuntime, string jsObjectName, string id,
                                                     string markerId, double lat, double lng)
     {
