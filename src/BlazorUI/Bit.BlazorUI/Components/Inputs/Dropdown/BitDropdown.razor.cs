@@ -1707,7 +1707,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (IsDisposed || disposing is false) return;
 
+        OnValueChanged -= HandleOnValueChanged;
+
         await base.DisposeAsync(disposing);
+
+        _dotnetObj?.Dispose();
 
         try
         {
