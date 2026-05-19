@@ -40,5 +40,11 @@ public sealed class NavigationContext
     public void Cancel() => IsCancelled = true;
 
     /// <summary>Redirect to another URL instead of completing this navigation.</summary>
-    public void Redirect(string url) => RedirectUrl = url;
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="url"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="url"/> is empty or whitespace.</exception>
+    public void Redirect(string url)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(url);
+        RedirectUrl = url;
+    }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 
 namespace Bit.Brouter;
@@ -8,7 +9,7 @@ namespace Bit.Brouter;
 /// </summary>
 public static class BrouterConstraints
 {
-    private static readonly Dictionary<string, Func<RouteConstraint>> _factories = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly ConcurrentDictionary<string, Func<RouteConstraint>> _factories = new(StringComparer.OrdinalIgnoreCase)
     {
         ["int"] = () => new TypeRouteConstraint<int>((string s, out int r) => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out r)),
         ["bool"] = () => new TypeRouteConstraint<bool>(bool.TryParse),
@@ -22,27 +23,30 @@ public static class BrouterConstraints
 
     /// <summary>
     /// Registers a custom constraint. Templates can then use <c>{name:yourConstraintName}</c>.
-    /// Throws if <paramref name="name"/> is already registered.
+    /// Throws if <paramref name="name"/> is already registered. Thread-safe.
     /// </summary>
     public static void Register(string name, Func<RouteConstraint> factory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(factory);
 
-        if (_factories.ContainsKey(name))
+        if (_factories.TryAdd(name, factory) is false)
             throw new InvalidOperationException($"A constraint named '{name}' is already registered.");
-
-        _factories[name] = factory;
     }
 
-    /// <summary>Removes a previously registered constraint. Built-ins cannot be removed.</summary>
+    private static readonly HashSet<string> _builtIns = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "int", "bool", "guid", "long", "float", "double", "decimal", "datetime"
+    };
+
+    /// <summary>Removes a previously registered constraint. Built-ins cannot be removed. Thread-safe.</summary>
     public static bool Unregister(string name)
     {
-        return name switch
-        {
-            "int" or "bool" or "guid" or "long" or "float" or "double" or "decimal" or "datetime" => false,
-            _ => _factories.Remove(name)
-        };
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        if (_builtIns.Contains(name)) return false;
+
+        return _factories.TryRemove(name, out _);
     }
 
     internal static RouteConstraint? Create(string name) =>

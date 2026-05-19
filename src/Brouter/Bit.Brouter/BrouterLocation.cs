@@ -12,12 +12,22 @@ public sealed class BrouterLocation
     public static readonly BrouterLocation Empty = new("", "/", [], "", "");
 
     private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyList<string>>> _queryParams;
+    private readonly string[] _segments;
 
     internal BrouterLocation(string fullUri, string path, string[] segments, string query, string hash)
     {
         FullUri = fullUri;
         Path = path;
-        Segments = segments;
+        if (segments is null || segments.Length == 0)
+        {
+            _segments = [];
+        }
+        else
+        {
+            _segments = new string[segments.Length];
+            Array.Copy(segments, _segments, segments.Length);
+        }
+        Segments = new ReadOnlyCollection<string>(_segments);
         Query = query;
         Hash = hash;
         _queryParams = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<string>>>(() => ParseQuery(query));
@@ -30,7 +40,10 @@ public sealed class BrouterLocation
     public string Path { get; }
 
     /// <summary>The path split by '/' with empty segments removed and segments URI-decoded.</summary>
-    public string[] Segments { get; }
+    public IReadOnlyList<string> Segments { get; }
+
+    /// <summary>Internal fast-path access to the raw segment array. Must not be mutated.</summary>
+    internal string[] SegmentsArray => _segments;
 
     /// <summary>The query part including the leading '?'. Empty when absent.</summary>
     public string Query { get; }

@@ -1,7 +1,10 @@
-@inject IBrouter brouter
+﻿@inject IBrouter brouter
+@implements IDisposable
 
 @code {
     private int currentCount { get; set; } = 0;
+
+    private Func<NavigationContext, ValueTask>? _onNavigatingHandler;
 
     void ChangeCountValue(int value)
     {
@@ -13,11 +16,21 @@
     {
         base.OnInitialized();
 
-        brouter.OnNavigating += async ctx =>
+        _onNavigatingHandler = async ctx =>
         {
             // analytics, telemetry, page title, ...
             await Task.CompletedTask;
         };
+        brouter.OnNavigating += _onNavigatingHandler;
+    }
+
+    public void Dispose()
+    {
+        if (_onNavigatingHandler is not null)
+        {
+            brouter.OnNavigating -= _onNavigatingHandler;
+            _onNavigatingHandler = null;
+        }
     }
 }
 
@@ -45,7 +58,7 @@
     @* Optional parameter: /profile or /profile/saleh both match. *@
     <Route Path="/profile/{username?}" Component="@typeof(ProfilePage)" />
 
-    @* Catch-all parameter: /posts/2024/12/hello-world binds the whole tail. *@>
+    @* Catch-all parameter: /posts/2024/12/hello-world binds the whole tail. *@
     <Route Path="/posts/{**slug}" Component="@typeof(PostPage)" />
 
     <Route Path="/{prefix}/test2/{postfix}">

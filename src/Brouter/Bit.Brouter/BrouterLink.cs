@@ -50,6 +50,12 @@ public sealed class BrouterLink : ComponentBase, IDisposable
         UpdateActiveState();
     }
 
+    protected override void OnParametersSet()
+    {
+        UpdateActiveState();
+        base.OnParametersSet();
+    }
+
     private ValueTask OnNavigated(NavigationContext ctx)
     {
         var was = _isActive;
@@ -94,15 +100,25 @@ public sealed class BrouterLink : ComponentBase, IDisposable
         builder.AddAttribute(2, "href", Href);
         if (combinedClass is not null) builder.AddAttribute(3, "class", combinedClass);
         if (_isActive) builder.AddAttribute(4, "aria-current", "page");
-        builder.AddAttribute(5, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, OnClick));
+        // By default, rely on Blazor's NavigationInterception (same as Microsoft's NavLink) to drive
+        // navigation off the anchor's href. Attaching @onclick here would cause both the intercepted
+        // navigation and an explicit Navigate() call to fire for a single click.
+        // The Replace parameter cannot be expressed via a plain anchor, so opt into a custom click
+        // handler with preventDefault only in that case.
+        if (Replace)
+        {
+            builder.AddAttribute(5, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, OnClick));
+            builder.AddAttribute(6, "onclick:preventDefault", true);
+        }
         builder.AddContent(7, ChildContent);
         builder.CloseElement();
     }
 
     private void OnClick(Microsoft.AspNetCore.Components.Web.MouseEventArgs e)
     {
-        // Honour modifier-clicks (open in new tab) and middle-click by letting the browser handle them.
-        if (e.CtrlKey || e.ShiftKey || e.MetaKey || e.AltKey || e.Button != 0) return;
+        // Only invoked when Replace=true (see BuildRenderTree). Non-primary buttons should still
+        // be ignored so the browser can perform its default action for them where possible.
+        if (e.Button != 0) return;
 
         Brouter.Navigate(Href, replace: Replace);
     }

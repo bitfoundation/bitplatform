@@ -70,7 +70,7 @@ internal static class TemplateParser
             {
                 sawOptional = true;
             }
-            else if (sawOptional && s.IsParameter)
+            else if (sawOptional)
             {
                 throw new InvalidOperationException(
                     $"Invalid path '{template}'. Optional parameters can only appear at the end of the template.");

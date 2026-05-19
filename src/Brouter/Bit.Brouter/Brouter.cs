@@ -46,7 +46,7 @@ public partial class Brouter : ComponentBase, IDisposable
     internal void UnregisterRoute(Route route) => _routes.Remove(route);
 
     internal Route? FindRouteByName(string name) =>
-        _routes.FirstOrDefault(r => string.Equals(r.Name, name, StringComparison.Ordinal));
+        _routes.FirstOrDefault(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase));
 
     private CancellationTokenSource? _navCts;
     private bool _noRouteMatched;
@@ -146,9 +146,14 @@ public partial class Brouter : ComponentBase, IDisposable
     {
         // Supersede any in-flight navigation work.
         var version = Interlocked.Increment(ref _navVersion);
-        _navCts?.Cancel();
-        _navCts = new CancellationTokenSource();
-        var token = _navCts.Token;
+        var newCts = new CancellationTokenSource();
+        var oldCts = Interlocked.Exchange(ref _navCts, newCts);
+        if (oldCts is not null)
+        {
+            oldCts.Cancel();
+            oldCts.Dispose();
+        }
+        var token = newCts.Token;
 
         var ctx = new NavigationContext(from, CurrentLocation, token);
         var service = (BrouterService)_brouterService;
@@ -161,7 +166,7 @@ public partial class Brouter : ComponentBase, IDisposable
 
             // Match routes.
             foreach (var r in _routes) r.Matched = false;
-            var candidates = _routes.Where(r => Match(r, CurrentLocation.Segments)).ToList();
+            var candidates = _routes.Where(r => Match(r, CurrentLocation.SegmentsArray)).ToList();
 
             if (candidates.Count == 0)
             {
@@ -304,10 +309,8 @@ public partial class Brouter : ComponentBase, IDisposable
             }
             else
             {
-                // URL is longer than template: only catch-all or trailing literal '*' can absorb extras.
-                bool lastSingleStar = last.IsSingleWildcard && templateSegments.Length - segments.Length == -1 + 1; // absorb one
-                bool lastCatchAll = last.IsCatchAll;
-                if (lastSingleStar is false && lastCatchAll is false) return false;
+                // URL is longer than template: only a catch-all (**) can absorb extra segments.
+                if (last.IsCatchAll is false) return false;
             }
         }
 
@@ -365,8 +368,12 @@ public partial class Brouter : ComponentBase, IDisposable
         if (_disposed || disposing is false) return;
 
         _navManager.LocationChanged -= NavManagerLocationChanged;
-        _navCts?.Cancel();
-        _navCts?.Dispose();
+        var cts = Interlocked.Exchange(ref _navCts, null);
+        if (cts is not null)
+        {
+            cts.Cancel();
+            cts.Dispose();
+        }
         ((BrouterService)_brouterService).Detach(this);
 
         _disposed = true;

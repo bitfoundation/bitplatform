@@ -1,4 +1,4 @@
-namespace Bit.Brouter;
+﻿namespace Bit.Brouter;
 
 internal class TemplateSegment
 {
@@ -70,7 +70,7 @@ internal class TemplateSegment
                 throw new ArgumentException($"Catch-all parameter '{segment}' in route '{template}' cannot have constraints.");
 
             Value = paramName;
-            Constraints = rest.Split(':', StringSplitOptions.RemoveEmptyEntries)
+            Constraints = rest.Split(':')
                               .Select(c => RouteConstraint.Parse(template, segment, c))
                               .ToArray();
         }

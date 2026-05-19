@@ -1,8 +1,8 @@
-<h1>Counter</h1>
+﻿<h1>Counter</h1>
 
 <p>Current count: @CurrentCount</p>
 
-<button class="btn btn-primary" @onclick="() => ChangeCount?.Invoke(CurrentCount + 1)">Click me</button>
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 <br />
 
@@ -28,20 +28,25 @@
     [CascadingParameter(Name = "name")] object? Name { get; set; }
 
 
-    private bool parameterHasSet = false;
-
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        if (parameterHasSet) return;
+        await base.OnParametersSetAsync().ConfigureAwait(true);
 
-        parameterHasSet = true;
-
-        base.OnParametersSet();
-
-        if (Parameters?.TryGet<int>("init", out var init) == true)
+        if (Parameters?.TryGet<int>("init", out var init) == true && init != CurrentCount)
         {
             CurrentCount = init;
             ChangeCount?.Invoke(CurrentCount);
+            if (CurrentCountChanged.HasDelegate)
+                await CurrentCountChanged.InvokeAsync(CurrentCount);
         }
+    }
+
+    private async Task IncrementCount()
+    {
+        var next = CurrentCount + 1;
+        CurrentCount = next;
+        ChangeCount?.Invoke(next);
+        if (CurrentCountChanged.HasDelegate)
+            await CurrentCountChanged.InvokeAsync(next);
     }
 }

@@ -1,4 +1,4 @@
-# bit Brouter
+﻿# bit Brouter
 A modern, declarative, nestable router for Blazor with async guards, data loaders,
 named routes, programmatic navigation, query string binding, and global navigation hooks.
 
@@ -9,7 +9,7 @@ SvelteKit, TanStack Router and ASP.NET Core's route matcher.
 
 ## Install
 
-```
+```bash
 dotnet add package Bit.Brouter
 ```
 
@@ -55,7 +55,7 @@ builder.Services.AddBitBrouterServices(o =>
 - Built-in constraints: `int`, `bool`, `guid`, `long`, `float`, `double`, `decimal`, `datetime`
 - Multiple constraints per parameter: `{id:int:long}`
 - Wildcards: `*` (single segment), `**` (catch-all)
-- **Optional parameters**: `{id?}` — must be trailing
+- **Optional parameters**: `{id?}` â€” must be trailing
 - **Catch-all parameter binding**: `{**path}` exposes the remainder
 - Custom constraints via `BrouterConstraints.Register("slug", () => new MyConstraint())`
 - Specificity-based matching (literals beat constrained beat unconstrained beat wildcards)

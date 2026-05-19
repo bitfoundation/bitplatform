@@ -11,7 +11,15 @@ public interface IBrouter
     /// <summary>The current parsed location. Always non-null; defaults to <see cref="BrouterLocation.Empty"/> before mount.</summary>
     BrouterLocation Location { get; }
 
-    /// <summary>Imperatively navigate to a URL.</summary>
+    /// <summary>
+    /// Imperatively navigate to a URL.
+    /// </summary>
+    /// <param name="url">Destination URL or path.</param>
+    /// <param name="replace">If true, replaces the current history entry instead of pushing a new one.
+    /// Ignored when <paramref name="forceLoad"/> is true.</param>
+    /// <param name="forceLoad">If true, performs a full-page reload. The Brouter pipeline
+    /// (<c>OnNavigating</c>, route guards, loaders, and <c>OnNavigated</c>) is skipped because
+    /// the SPA process is replaced by the new document.</param>
     void Navigate(string url, bool replace = false, bool forceLoad = false);
 
     /// <summary>Navigate one entry back in history.</summary>
