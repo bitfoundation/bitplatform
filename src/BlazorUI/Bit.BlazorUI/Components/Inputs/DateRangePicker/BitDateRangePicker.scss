@@ -50,6 +50,14 @@
         .bit-dtrp-icp {
             border-color: $clr-err;
         }
+
+        &.bit-dtrp-foc .bit-dtrp-icn {
+            @include focus-ring($clr-err-focus);
+        }
+
+        &.bit-dtrp-und.bit-dtrp-foc .bit-dtrp-icn {
+            @include focus-underline-ring($clr-err-focus);
+        }
     }
 
     &.bit-rtl {
@@ -163,13 +171,8 @@
 }
 
 .bit-dtrp-foc {
-    .bit-dtrp-icn::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style $clr-pri;
+    .bit-dtrp-icn {
+        @include focus-ring;
     }
 }
 
@@ -688,9 +691,8 @@
     }
 
     &:focus {
+        @include focus-underline-ring;
         border: none;
-        outline: none;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
     }
 
     &:disabled {
@@ -766,10 +768,8 @@
     }
 
     &.bit-dtrp-foc {
-        .bit-dtrp-icn::after {
-            border: none;
-            border-radius: 0;
-            border-bottom: spacing(0.25) $shp-border-style $clr-brd-pri;
+        .bit-dtrp-icn {
+            @include focus-underline-ring;
         }
     }
 }

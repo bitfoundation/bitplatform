@@ -44,6 +44,14 @@
         .bit-ctp-icn {
             border-color: $clr-err;
         }
+
+        &.bit-ctp-foc .bit-ctp-icn {
+            @include focus-ring($clr-err-focus);
+        }
+
+        &.bit-ctp-und.bit-ctp-foc .bit-ctp-icn {
+            @include focus-underline-ring($clr-err-focus);
+        }
     }
 }
 
@@ -122,13 +130,8 @@
 }
 
 .bit-ctp-foc {
-    .bit-ctp-icn::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style $clr-pri;
+    .bit-ctp-icn {
+        @include focus-ring;
     }
 }
 
@@ -152,10 +155,8 @@
     }
 
     &.bit-ctp-foc {
-        .bit-ctp-icn::after {
-            border: none;
-            border-radius: 0;
-            border-bottom: spacing(0.25) $shp-border-style $clr-brd-pri;
+        .bit-ctp-icn {
+            @include focus-underline-ring;
         }
     }
 }

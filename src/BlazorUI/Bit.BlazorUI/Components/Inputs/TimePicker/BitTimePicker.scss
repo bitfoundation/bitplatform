@@ -41,6 +41,14 @@
         .bit-tpc-icn {
             border-color: $clr-err;
         }
+
+        &.bit-tpc-foc .bit-tpc-icn {
+            @include focus-ring($clr-err-focus);
+        }
+
+        &.bit-tpc-und.bit-tpc-foc .bit-tpc-icn {
+            @include focus-underline-ring($clr-err-focus);
+        }
     }
 
     &.bit-rtl {
@@ -129,13 +137,8 @@
 }
 
 .bit-tpc-foc {
-    .bit-tpc-icn::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style $clr-pri;
+    .bit-tpc-icn {
+        @include focus-ring;
     }
 }
 
@@ -159,10 +162,8 @@
     }
 
     &.bit-tpc-foc {
-        .bit-tpc-icn::after {
-            border: none;
-            border-radius: 0;
-            border-bottom: spacing(0.25) $shp-border-style $clr-brd-pri;
+        .bit-tpc-icn {
+            @include focus-underline-ring;
         }
     }
 }
@@ -281,9 +282,8 @@
     }
 
     &:focus {
+        @include focus-underline-ring;
         border: none;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
-        outline: none;
     }
 }
 

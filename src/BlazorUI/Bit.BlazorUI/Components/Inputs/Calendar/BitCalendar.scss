@@ -471,9 +471,8 @@
     }
 
     &:focus {
+        @include focus-underline-ring;
         border: none;
-        outline: none;
-        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
     }
 }
 

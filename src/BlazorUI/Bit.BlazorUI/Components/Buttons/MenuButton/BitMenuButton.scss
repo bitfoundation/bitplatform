@@ -15,6 +15,11 @@
     --bit-mnb-cal-opa: 0;
     --bit-mnb-cal-tra: translateY(#{spacing(-1.25)});
 
+    &:focus-visible,
+    &:focus-within {
+        @include focus-ring(var(--bit-mnb-clr));
+    }
+
     &.bit-dis {
         cursor: default;
         color: $clr-fg-dis;

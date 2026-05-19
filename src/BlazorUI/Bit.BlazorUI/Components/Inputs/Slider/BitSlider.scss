@@ -15,10 +15,27 @@ $BgHover: $clr-pri-light;
         background: none;
 
         &:focus {
-            outline: none;
+            outline: none; // The visible focus indicator lives on the thumb pseudo-element below.
         }
     }
     /**/
+    /*webkit*/
+    input:focus-visible::-webkit-slider-thumb,
+    input:focus::-webkit-slider-thumb {
+        border-color: $clr-pri-focus;
+        box-shadow:
+            0 0 0 $shp-focus-ring-offset $clr-bg-pri-focus,
+            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) $clr-pri-focus;
+    }
+
+    input:focus-visible::-moz-range-thumb,
+    input:focus::-moz-range-thumb {
+        border-color: $clr-pri-focus;
+        box-shadow:
+            0 0 0 $shp-focus-ring-offset $clr-bg-pri-focus,
+            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) $clr-pri-focus;
+    }
+
     /*webkit*/
     input::-webkit-slider-thumb {
         width: spacing(2);

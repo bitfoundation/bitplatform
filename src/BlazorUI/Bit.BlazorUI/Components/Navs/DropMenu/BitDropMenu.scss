@@ -50,6 +50,11 @@
     justify-content: center;
     background-color: transparent;
     padding: spacing(1.0) spacing(1.5);
+    border-radius: $shp-border-radius;
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-drm-trn {

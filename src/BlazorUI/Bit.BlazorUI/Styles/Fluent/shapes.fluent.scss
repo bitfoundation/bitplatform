@@ -16,4 +16,12 @@
     --bit-shp-brd-radius: 0.125rem;
     --bit-shp-brd-width: 0.0625rem;
     --bit-shp-brd-style: solid;
+    //focus ring (a11y) — width is the visible thickness, offset is the gap between the element and the ring.
+    --bit-shp-focus-ring-width: 0.125rem; //2px
+    --bit-shp-focus-ring-offset: 0.125rem; //2px
+    //global focus shadow used by the focus-ring mixin and the .bit-css-shd-focus utility.
+    //Inner ring uses the page background to create a separator between the element and the colored ring (WCAG 2.4.11/2.4.13).
+    --bit-shd-focus-ring:
+        0 0 0 var(--bit-shp-focus-ring-offset) var(--bit-clr-bg-pri-focus),
+        0 0 0 calc(var(--bit-shp-focus-ring-offset) + var(--bit-shp-focus-ring-width)) var(--bit-clr-pri-focus);
 }

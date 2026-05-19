@@ -179,4 +179,18 @@
     --bit-clr-brd-dis: #21262D;
     //req
     --bit-clr-req: #A4262C;
+    //focus (a11y) — color of the focus indicator per role.
+    //Aliased to the role's base color so they track theme/brand overrides.
+    //Override these directly to differentiate focus from base color.
+    --bit-clr-pri-focus: var(--bit-clr-pri);
+    --bit-clr-sec-focus: var(--bit-clr-sec);
+    --bit-clr-ter-focus: var(--bit-clr-ter);
+    --bit-clr-inf-focus: var(--bit-clr-inf);
+    --bit-clr-suc-focus: var(--bit-clr-suc);
+    --bit-clr-wrn-focus: var(--bit-clr-wrn);
+    --bit-clr-swr-focus: var(--bit-clr-swr);
+    --bit-clr-err-focus: var(--bit-clr-err);
+    --bit-clr-fg-pri-focus: var(--bit-clr-fg-pri);
+    --bit-clr-bg-pri-focus: var(--bit-clr-bg-pri);
+    --bit-clr-brd-pri-focus: var(--bit-clr-pri);
 }

@@ -189,6 +189,19 @@ $clr-brd-dis: var(--bit-clr-brd-dis);
 //required
 $clr-req: var(--bit-clr-req);
 
+//focus (a11y) — per-role focus indicator color, plus shape/shadow tokens consumed by the focus-ring mixin.
+$clr-pri-focus: var(--bit-clr-pri-focus);
+$clr-sec-focus: var(--bit-clr-sec-focus);
+$clr-ter-focus: var(--bit-clr-ter-focus);
+$clr-inf-focus: var(--bit-clr-inf-focus);
+$clr-suc-focus: var(--bit-clr-suc-focus);
+$clr-wrn-focus: var(--bit-clr-wrn-focus);
+$clr-swr-focus: var(--bit-clr-swr-focus);
+$clr-err-focus: var(--bit-clr-err-focus);
+$clr-fg-pri-focus: var(--bit-clr-fg-pri-focus);
+$clr-bg-pri-focus: var(--bit-clr-bg-pri-focus);
+$clr-brd-pri-focus: var(--bit-clr-brd-pri-focus);
+
 //neutrals
 $clr-ntr-white: var(--bit-clr-ntr-white);
 $clr-ntr-black: var(--bit-clr-ntr-black);
@@ -268,6 +281,11 @@ $zindex-base: var(--bit-zin-base);
 $shp-border-radius: var(--bit-shp-brd-radius);
 $shp-border-width: var(--bit-shp-brd-width);
 $shp-border-style: var(--bit-shp-brd-style);
+$shp-focus-ring-width: var(--bit-shp-focus-ring-width);
+$shp-focus-ring-offset: var(--bit-shp-focus-ring-offset);
+
+//shadows-focus
+$box-shadow-focus-ring: var(--bit-shd-focus-ring);
 
 /*---- Typography ----*/
 $tg-font-family: var(--bit-tpg-font-family);

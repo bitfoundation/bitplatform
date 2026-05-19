@@ -69,13 +69,17 @@
         }
 
         &.bit-tfl-fcs {
-            .bit-tfl-fgp::after {
-                border-color: $clr-err;
+            .bit-tfl-fgp {
+                @include focus-ring($clr-err-focus);
             }
 
             &.bit-tfl-und {
-                .bit-tfl-wrp::after {
-                    border-color: $clr-err;
+                .bit-tfl-fgp {
+                    box-shadow: none;
+                }
+
+                .bit-tfl-wrp {
+                    @include focus-underline-ring($clr-err-focus);
                 }
             }
         }
@@ -313,26 +317,17 @@
         color: var(--bit-tfl-clr);
     }
 
-    .bit-tfl-fgp::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style var(--bit-tfl-clr);
+    .bit-tfl-fgp {
+        @include focus-ring(var(--bit-tfl-clr));
     }
 
     &.bit-tfl-und {
-        .bit-tfl-fgp::after {
-            border: none;
+        .bit-tfl-fgp {
+            box-shadow: none; // underlined variant uses a bottom rule instead of a full ring.
         }
 
-        .bit-tfl-wrp::after {
-            content: "";
-            position: absolute;
-            pointer-events: none;
-            inset: spacing(-0.125);
-            border-bottom: spacing(0.25) $shp-border-style var(--bit-tfl-clr);
+        .bit-tfl-wrp {
+            @include focus-underline-ring(var(--bit-tfl-clr));
         }
     }
 }

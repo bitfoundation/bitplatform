@@ -17,6 +17,10 @@
     font-size: var(--bit-tgb-fontsize);
     --bit-tgb-icn-margin: #{spacing(0.5)};
 
+    &:focus-visible {
+        @include focus-ring(var(--bit-tgb-clr));
+    }
+
     &.bit-dis {
         cursor: default;
         color: $clr-fg-dis;

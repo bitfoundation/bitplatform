@@ -3,10 +3,15 @@
 .bit-chb {
     cursor: pointer;
     width: fit-content;
+    border-radius: $shp-border-radius;
     font-family: $tg-font-family;
     --bit-chb-ico-opa: 0;
     --bit-chb-box-clr-brd: #{$clr-brd-pri};
     --bit-chb-ico-clr: #{var(--bit-chb-clr-txt-sec)};
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 
     @media (hover: hover) {
         &:hover {

@@ -84,13 +84,14 @@
         }
 
         &.bit-srb-foc {
-            .bit-srb-cnt::after {
-                border-color: $clr-err;
+            .bit-srb-cnt {
+                @include focus-ring($clr-err-focus);
             }
 
             &.bit-srb-und {
-                .bit-srb-cnt::after {
-                    border-color: $clr-err;
+                .bit-srb-cnt,
+                .bit-srb-sbn {
+                    @include focus-underline-ring($clr-err-focus);
                 }
             }
         }
@@ -346,32 +347,22 @@
         border-color: var(--bit-srb-clr);
     }
 
-    .bit-srb-cnt::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: spacing(-0.125);
-        border-radius: $shp-border-radius;
-        border: spacing(0.25) $shp-border-style var(--bit-srb-clr);
+    .bit-srb-cnt {
+        @include focus-ring(var(--bit-srb-clr));
     }
 
     &.bit-srb-und {
-        .bit-srb-cnt::after,
-        .bit-srb-sbn::after {
-            content: "";
-            border: none;
-            position: absolute;
-            pointer-events: none;
-            inset: spacing(-0.125);
-            border-bottom: spacing(0.25) $shp-border-style var(--bit-srb-clr);
+        .bit-srb-cnt,
+        .bit-srb-sbn {
+            @include focus-underline-ring(var(--bit-srb-clr));
         }
     }
 }
 
 .bit-srb-nbr {
-    .bit-srb-cnt,
-    .bit-srb-cnt::after {
+    .bit-srb-cnt {
         border: none;
+        box-shadow: none; // Suppress the themed focus ring for the no-border variant.
     }
 
     .bit-srb-sbn {

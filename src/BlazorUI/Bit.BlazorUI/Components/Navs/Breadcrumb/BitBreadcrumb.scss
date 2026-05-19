@@ -146,6 +146,11 @@
     line-height: spacing(2.5);
     background-color: transparent;
     border: $shp-border-width $shp-border-style transparent;
+    border-radius: $shp-border-radius;
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-brc-ofi {

@@ -168,6 +168,10 @@
     background-color: transparent;
     color: $clr-fg-pri;
 
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr));
+    }
+
     > span {
         height: 100%;
         display: flex;
@@ -206,6 +210,10 @@
     margin-right: spacing(1);
     line-height: spacing(5.5);
     background-color: transparent;
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-pvt-clr));
+    }
 
     &::before {
         bottom: 0;

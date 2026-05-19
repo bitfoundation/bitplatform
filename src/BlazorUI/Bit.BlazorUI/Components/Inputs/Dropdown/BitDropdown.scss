@@ -28,9 +28,7 @@
             }
 
             &:focus {
-                &::after {
-                    border-color: $clr-err;
-                }
+                @include focus-ring($clr-err-focus);
             }
         }
     }
@@ -51,12 +49,7 @@
             &:focus {
                 color: $clr-fg-dis;
                 border-color: $clr-brd-dis;
-
-                &::after {
-                    width: 0;
-                    height: 0;
-                    border: none;
-                }
+                box-shadow: none; // Suppress focus ring while disabled.
             }
         }
 
@@ -102,9 +95,7 @@
         }
 
         &:focus {
-            &::after {
-                border: none;
-            }
+            box-shadow: none; // No-border variant suppresses the themed focus ring.
         }
     }
 }
@@ -167,14 +158,7 @@
             color: $clr-fg-pri;
         }
 
-        &::after {
-            content: "";
-            position: absolute;
-            pointer-events: none;
-            inset: spacing(-0.125);
-            border-radius: $shp-border-radius;
-            border: spacing(0.25) $shp-border-style $clr-pri;
-        }
+        @include focus-ring;
     }
 }
 

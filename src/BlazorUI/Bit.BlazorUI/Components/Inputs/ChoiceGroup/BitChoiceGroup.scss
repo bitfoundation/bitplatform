@@ -154,8 +154,14 @@
     justify-content: center;
     min-height: spacing(2.5);
     transition: all 0.2s ease;
+    border-radius: $shp-border-radius;
     padding-block-start: spacing(2.75);
     border: $shp-border-width $shp-border-style transparent;
+
+    &:focus-visible,
+    input:focus-visible + & {
+        @include focus-ring;
+    }
 
     .bit-chg-rad {
         position: absolute;

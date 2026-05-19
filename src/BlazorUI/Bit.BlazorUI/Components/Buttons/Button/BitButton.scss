@@ -21,6 +21,10 @@
     --bit-btn-clr-brd-dis: #{$clr-brd-dis};
     --bit-btn-float-offset: #{spacing(2)};
 
+    &:focus-visible {
+        @include focus-ring(var(--bit-btn-clr));
+    }
+
     &.bit-dis {
         cursor: default;
         color: $clr-fg-dis;

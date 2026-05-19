@@ -120,6 +120,10 @@
     border-radius: spacing(1.25);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
+    &:focus-visible {
+        @include focus-ring;
+    }
+
     @media (hover: hover) {
         &:hover {
             border-color: $clr-brd-pri-hover;

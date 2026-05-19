@@ -26,9 +26,8 @@
     }
 
     &:focus-visible {
-        outline: none;
+        @include focus-ring(var(--bit-acb-clr-hover));
         border-radius: $shp-border-radius;
-        box-shadow: 0 0 0 spacing(0.25) var(--bit-acb-clr-hover);
     }
 
     &.bit-dis {

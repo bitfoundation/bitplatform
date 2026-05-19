@@ -1,4 +1,4 @@
-@import "theme-variables.scss";
+@import "functions.scss";
 
 //primary
 .bit-css-clr-pri {
@@ -938,4 +938,43 @@
 
 .bit-css-shp-brd-style {
     border-style: $shp-border-style;
+}
+
+
+//focus (a11y) — color tokens applied on :focus-visible.
+.bit-css-clr-pri-focus:focus-visible {
+    color: $clr-pri-focus;
+}
+
+.bit-css-clr-sec-focus:focus-visible {
+    color: $clr-sec-focus;
+}
+
+.bit-css-clr-ter-focus:focus-visible {
+    color: $clr-ter-focus;
+}
+
+.bit-css-clr-inf-focus:focus-visible {
+    color: $clr-inf-focus;
+}
+
+.bit-css-clr-suc-focus:focus-visible {
+    color: $clr-suc-focus;
+}
+
+.bit-css-clr-wrn-focus:focus-visible {
+    color: $clr-wrn-focus;
+}
+
+.bit-css-clr-swr-focus:focus-visible {
+    color: $clr-swr-focus;
+}
+
+.bit-css-clr-err-focus:focus-visible {
+    color: $clr-err-focus;
+}
+
+//focus ring utility — drop-in class to apply the global, theme-aware focus indicator.
+.bit-css-shd-focus-ring:focus-visible {
+    @include focus-ring;
 }

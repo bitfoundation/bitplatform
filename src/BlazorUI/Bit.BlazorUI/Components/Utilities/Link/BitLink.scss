@@ -11,11 +11,16 @@
     color: var(--bit-lnk-clr);
     font-family: $tg-font-family;
     background-color: transparent;
+    border-radius: $shp-border-radius;
 
     &:hover,
     &:active,
     &:focus {
         color: var(--bit-lnk-clr-hover);
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-lnk-clr));
     }
 
     &:hover,
@@ -31,6 +36,10 @@
         &:active,
         &:focus {
             color: $clr-fg-dis;
+        }
+
+        &:focus-visible {
+            box-shadow: none;
         }
 
         &:hover,

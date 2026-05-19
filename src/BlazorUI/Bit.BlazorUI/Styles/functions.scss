@@ -18,3 +18,44 @@ $html-font-size: 16px;
 @function spacing($spacingValue) {
     @return calc($spacing-scaling-factor * $spacingValue);
 }
+
+/*
+ * focus-ring($color, $offset)
+ * --------------------------------------------------
+ * Renders a consistent, theme-aware focus indicator across components.
+ *
+ * Behavior:
+ *   - Uses a two-layer box-shadow: an inner ring matching the page background
+ *     (separator) and an outer colored ring (visible indicator). This satisfies
+ *     WCAG 2.4.11 (Focus Not Obscured) and 2.4.13 (Focus Appearance).
+ *   - Width is driven by --bit-shp-focus-ring-width and offset by --bit-shp-focus-ring-offset,
+ *     both globally themable.
+ *   - Color defaults to --bit-clr-pri-focus and accepts any role token (e.g. $clr-err-focus)
+ *     so invalid/success/etc. variants can opt into matching focus colors.
+ *   - In Windows High Contrast mode the global --bit-shd-focus-ring is overridden to a
+ *     single solid Highlight ring; @see forced-colors.fluent.scss.
+ *
+ * Usage:
+ *   .my-component {
+ *       &:focus-visible { @include focus-ring; }
+ *       &.bit-inv:focus-visible { @include focus-ring($clr-err-focus); }
+ *   }
+ */
+@mixin focus-ring($color: $clr-pri-focus, $offset: $shp-focus-ring-offset) {
+    outline: none; // Replace native outline with the themed ring below.
+    box-shadow:
+        0 0 0 #{$offset} #{$clr-bg-pri-focus},
+        0 0 0 calc(#{$offset} + #{$shp-focus-ring-width}) #{$color};
+}
+
+/*
+ * focus-underline-ring($color)
+ * --------------------------------------------------
+ * Renders a focus indicator as a single bottom rule, used by "underlined"
+ * input variants (TextField/SearchBox/DatePicker .bit-*-und) where a full ring
+ * conflicts with the visual language of the component.
+ */
+@mixin focus-underline-ring($color: $clr-pri-focus) {
+    outline: none;
+    box-shadow: inset 0 calc(-1 * #{$shp-focus-ring-width}) 0 0 #{$color};
+}
