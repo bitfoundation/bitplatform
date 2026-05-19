@@ -288,17 +288,33 @@ public abstract class PerformanceTestBase : PageTest
             await Task.Delay(250);
         }
 
+        HttpResponseMessage response;
         try
         {
-            var response = await _sharedHttpClient.GetAsync($"{BaseUrl}/api/gc-info");
-            response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync();
+            response = await _sharedHttpClient.GetAsync($"{BaseUrl}/api/gc-info");
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail($"GetServerGCMemoryMB: /api/gc-info request failed: {ex.Message}");
+            return 0; // unreachable, but satisfies the compiler
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            Assert.Fail($"GetServerGCMemoryMB: /api/gc-info returned {(int)response.StatusCode} {response.ReasonPhrase}");
+        }
+
+        var json = await response.Content.ReadAsStringAsync();
+
+        try
+        {
             using var doc = JsonDocument.Parse(json);
             return doc.RootElement.GetProperty("allocatedMB").GetDouble();
         }
-        catch
+        catch (Exception ex)
         {
-            return 0;
+            Assert.Fail($"GetServerGCMemoryMB: failed to parse 'allocatedMB' from /api/gc-info response. {ex.Message}. Body: {json[..Math.Min(json.Length, 200)]}");
+            return 0; // unreachable
         }
     }
 
