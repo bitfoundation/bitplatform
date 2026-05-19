@@ -1711,13 +1711,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         await base.DisposeAsync(disposing);
 
-        _dotnetObj?.Dispose();
-
         try
         {
             await _js.BitCalloutClearCallout(_calloutId);
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // JS-side errors during disposal are non-critical
+        finally
+        {
+            _dotnetObj?.Dispose();
+        }
     }
 }
