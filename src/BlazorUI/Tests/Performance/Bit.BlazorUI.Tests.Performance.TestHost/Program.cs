@@ -33,7 +33,7 @@ app.MapGet("/api/gc-info", () =>
     GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true);
     GC.WaitForPendingFinalizers();
     GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true);
-    var allocatedMB = GC.GetTotalMemory(forceFullCollection: true) / (1024.0 * 1024.0);
+    var allocatedMB = GC.GetTotalMemory(forceFullCollection: false) / (1024.0 * 1024.0);
     return Results.Ok(new { allocatedMB });
 });
 
