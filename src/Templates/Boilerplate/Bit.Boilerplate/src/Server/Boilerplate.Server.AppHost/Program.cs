@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using Azure.Provisioning.RedisEnterprise;
 using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);

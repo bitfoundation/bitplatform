@@ -1,6 +1,8 @@
 ﻿//+:cnd:noEmit
 using Aspire.Hosting.Maui;
+//#if (database == "SqlServer" || database == "PostgreSQL" || redis == true || filesStorage == "AzureBlobStorage")
 using Aspire.Hosting.Azure;
+//#endif
 using Aspire.Hosting.DevTunnels;
 //#if (redis == true)
 using Azure.Provisioning.RedisEnterprise;
@@ -109,7 +111,7 @@ public static class IDistributedApplicationBuilderExtensions
     public static IResourceBuilder<AzurePostgresFlexibleServerDatabaseResource> AddPostgreSQL(this IDistributedApplicationBuilder builder)
     {
         return builder.AddAzurePostgresFlexibleServer("postgresserver")
-            .RunAsContainer(postgresDatabase =>
+            .RunAsContainer(postgresDatabase => // Remove this RunAsContainer and related configuration to use actual Azure PostgreSQL instance
             {
                 postgresDatabase.WithPgAdmin()
                     .WithV18DataVolume()
