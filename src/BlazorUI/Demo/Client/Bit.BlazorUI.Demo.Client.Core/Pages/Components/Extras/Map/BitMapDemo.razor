@@ -153,15 +153,15 @@
             </div>
             <br />
             <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:0.75rem">
-                <BitToggle @bind-Value="advScrollWheel" Text="Scroll wheel zoom" />
-                <BitToggle @bind-Value="advDragging" Text="Dragging" />
-                <BitToggle @bind-Value="advScaleBar" Text="Scale bar" />
-                <BitToggle @bind-Value="advMaxBounds" Text="Limit pan (London)" />
+                <BitToggle Value="advScrollWheel" ValueChanged="v => { advScrollWheel = v; BuildAdvancedProvider(); }" Text="Scroll wheel zoom" />
+                <BitToggle Value="advDragging" ValueChanged="v => { advDragging = v; BuildAdvancedProvider(); }" Text="Dragging" />
+                <BitToggle Value="advScaleBar" ValueChanged="v => { advScaleBar = v; BuildAdvancedProvider(); }" Text="Scale bar" />
+                <BitToggle Value="advMaxBounds" ValueChanged="v => { advMaxBounds = v; BuildAdvancedProvider(); }" Text="Limit pan (London)" />
             </div>
             <div style="height:380px">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         @ref="advMapRef"
-                        Provider="@BuildAdvancedProvider()"
+                        Provider="@advProvider"
                         OnReady="OnAdvancedReady"
                         OnDoubleClick="OnAdvancedDoubleClick" />
             </div>

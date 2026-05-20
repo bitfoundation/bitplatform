@@ -71,6 +71,11 @@ public abstract class BitMapProviderBase : IBitMapProvider
     /// </summary>
     protected Dictionary<string, object?> GetCommonOptions()
     {
+        if (MinZoom.HasValue && MaxZoom.HasValue && MinZoom.Value > MaxZoom.Value)
+        {
+            throw new ArgumentException($"MinZoom ({MinZoom.Value}) cannot be greater than MaxZoom ({MaxZoom.Value}).");
+        }
+
         return new Dictionary<string, object?>
         {
             ["center"] = new { lat = Center.Latitude, lng = Center.Longitude },

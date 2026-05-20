@@ -292,16 +292,29 @@ public partial class BitMapDemo
     private bool advOverlayOn;
     private string advLog = "Toggle options or use the buttons.";
 
-    private BitLeafletMapProvider BuildAdvancedProvider() => new()
+    private BitLeafletMapProvider advProvider = new()
     {
         Center = new(51.5074, -0.1278), Zoom = 11,
-        ScrollWheelZoom = advScrollWheel,
-        Dragging = advDragging,
-        ShowScaleControl = advScaleBar,
-        MaxBounds = advMaxBounds
-            ? new BitMapLatLngBounds(new(51.25, -0.55), new(51.75, 0.35))
-            : null,
+        ScrollWheelZoom = true,
+        Dragging = true,
+        ShowScaleControl = true,
+        MaxBounds = null,
     };
+
+    private BitLeafletMapProvider BuildAdvancedProvider()
+    {
+        advProvider = new()
+        {
+            Center = new(51.5074, -0.1278), Zoom = 11,
+            ScrollWheelZoom = advScrollWheel,
+            Dragging = advDragging,
+            ShowScaleControl = advScaleBar,
+            MaxBounds = advMaxBounds
+                ? new BitMapLatLngBounds(new(51.25, -0.55), new(51.75, 0.35))
+                : null,
+        };
+        return advProvider;
+    }
 
     private async Task OnAdvancedReady()
     {

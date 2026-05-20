@@ -6,11 +6,11 @@ namespace Bit.BlazorUI;
 public sealed class BitMapViewState
 {
     /// <summary>Current center of the map.</summary>
-    public BitMapLatLng Center { get; init; }
+    public required BitMapLatLng Center { get; init; }
 
     /// <summary>Current zoom level.</summary>
     public double Zoom { get; init; }
 
     /// <summary>Current visible bounds.</summary>
-    public BitMapLatLngBounds Bounds { get; init; }
+    public required BitMapLatLngBounds Bounds { get; init; }
 }

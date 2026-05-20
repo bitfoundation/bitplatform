@@ -14,6 +14,8 @@ namespace BitBlazorUI {
             layers: { [k: string]: any }, tileOverlays: { [k: string]: any },
             scaleLine: any, zIndexCounter: number,
             markerSource: any, markerLayer: any,
+            popupOverlay: any, popupElement: HTMLElement,
+            translateInteraction: any,
         } } = {};
 
         public static async init(id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
@@ -51,6 +53,38 @@ namespace BitBlazorUI {
             const markerLayer = new ol.VectorLayer({ source: markerSource, zIndex: 900 });
             map.addLayer(markerLayer);
 
+            // Create popup overlay element
+            const popupElement = document.createElement('div');
+            popupElement.className = 'bit-map-ol-popup';
+            popupElement.style.cssText = 'background:#fff;border-radius:6px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,.25);max-width:280px;word-wrap:break-word;position:relative;';
+            popupElement.style.display = 'none';
+
+            const popupCloser = document.createElement('button');
+            popupCloser.type = 'button';
+            popupCloser.textContent = '\u00d7';
+            popupCloser.style.cssText = 'position:absolute;top:2px;right:6px;border:none;background:transparent;font-size:16px;cursor:pointer;line-height:1;padding:2px 4px;color:#666;';
+            popupCloser.setAttribute('aria-label', 'Close popup');
+            popupElement.appendChild(popupCloser);
+
+            const popupContent = document.createElement('div');
+            popupContent.style.marginTop = '4px';
+            popupElement.appendChild(popupContent);
+
+            element.appendChild(popupElement);
+
+            const popupOverlay = new ol.Overlay({
+                element: popupElement,
+                autoPan: true,
+                positioning: 'bottom-center',
+                offset: [0, -12],
+            });
+            map.addOverlay(popupOverlay);
+
+            popupCloser.addEventListener('click', () => {
+                popupOverlay.setPosition(undefined);
+                popupElement.style.display = 'none';
+            });
+
             const state = {
                 ol, map, dotnetObj,
                 baseTileLayer: baseTile,
@@ -60,11 +94,31 @@ namespace BitBlazorUI {
                 scaleLine: null as any,
                 zIndexCounter: 100,
                 markerSource, markerLayer,
+                popupOverlay, popupElement,
+                translateInteraction: null as any,
             };
 
             BitMapOpenLayers._ensureScale(state, !!o.showScaleControl, !!o.scaleControlImperial);
             BitMapOpenLayers._applyInteractions(state, o);
             BitMapOpenLayers._wireEvents(state);
+
+            // Add Translate interaction for draggable markers
+            const translate = new ol.Translate({
+                filter: (feature: any) => feature.get && feature.get('draggable') === true,
+                layers: [markerLayer],
+            });
+            translate.on('translateend', (evt: any) => {
+                const features = evt.features?.getArray?.() || [];
+                for (const f of features) {
+                    const mid = f.get('markerId');
+                    if (mid && dotnetObj) {
+                        const coords = ol.toLonLat(f.getGeometry().getCoordinates());
+                        dotnetObj.invokeMethodAsync('OnMarkerDragEnd', mid, { lat: coords[1], lng: coords[0] });
+                    }
+                }
+            });
+            map.addInteraction(translate);
+            state.translateInteraction = translate;
 
             BitMapOpenLayers._maps[id] = state;
             queueMicrotask(() => map.updateSize());
@@ -75,8 +129,7 @@ namespace BitBlazorUI {
             if (!s) return;
             const ol = s.ol, view = s.map.getView();
             const o = options || {};
-            const lng0 = o.center?.lng ?? -0.09, lat0 = o.center?.lat ?? 51.505;
-            view.setCenter(ol.fromLonLat([lng0, lat0]));
+            if (o.center != null) view.setCenter(ol.fromLonLat([o.center.lng, o.center.lat]));
             if (o.zoom != null) view.setZoom(o.zoom);
 
             s.baseTileLayer.setSource(new ol.XYZ({
@@ -94,8 +147,11 @@ namespace BitBlazorUI {
             const s = BitMapOpenLayers._maps[id];
             if (!s) return;
             try {
+                if (s.translateInteraction) s.map.removeInteraction(s.translateInteraction);
                 for (const k in s.tileOverlays) s.map.removeLayer(s.tileOverlays[k]);
                 if (s.scaleLine) s.map.removeControl(s.scaleLine);
+                s.map.removeOverlay(s.popupOverlay);
+                s.popupElement.remove();
                 s.map.setTarget(null);
             } catch { /* ignore */ }
             s.dotnetObj = null;
@@ -187,7 +243,13 @@ namespace BitBlazorUI {
             if (f) f.getGeometry().setCoordinates(s.ol.fromLonLat([lng, lat]));
         }
 
-        public static openMarkerPopup(_id: string, _markerId: string) { /* OpenLayers has no built-in popup; no-op */ }
+        public static openMarkerPopup(id: string, markerId: string) {
+            const s = BitMapOpenLayers._maps[id];
+            if (!s) return;
+            const f = s.markers[markerId];
+            if (!f) return;
+            BitMapOpenLayers._showPopupForFeature(s, f);
+        }
 
         public static addPolyline(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
             const s = BitMapOpenLayers._require(id);
@@ -403,6 +465,23 @@ namespace BitBlazorUI {
             BitMapOpenLayers._setLayer(s, layerId, layer);
         }
 
+        private static _showPopupForFeature(s: any, feature: any) {
+            const html = feature.get('popupHtml') || '';
+            const text = feature.get('popupText') || '';
+            if (!html && !text) return;
+
+            const contentEl = s.popupElement.querySelector('div');
+            if (html) {
+                contentEl.innerHTML = html;
+            } else {
+                contentEl.textContent = text;
+            }
+
+            const coords = feature.getGeometry().getCoordinates();
+            s.popupElement.style.display = '';
+            s.popupOverlay.setPosition(coords);
+        }
+
         private static _wireEvents(s: any) {
             const ol = s.ol, map = s.map, dn = s.dotnetObj;
             map.on('singleclick', (evt: any) => {
@@ -414,6 +493,7 @@ namespace BitBlazorUI {
                             hit = true;
                             const id = feature.get('markerId');
                             if (id && dn) dn.invokeMethodAsync('OnMarkerClick', id);
+                            BitMapOpenLayers._showPopupForFeature(s, feature);
                             return true;
                         }
                         const lid = layer?.get('layerId');
@@ -438,6 +518,11 @@ namespace BitBlazorUI {
                 if (!hit && dn) {
                     const ll = ol.toLonLat(evt.coordinate);
                     dn.invokeMethodAsync('OnClick', { lat: ll[1], lng: ll[0] });
+                }
+                if (!hit) {
+                    // Close popup when clicking elsewhere on the map
+                    s.popupOverlay.setPosition(undefined);
+                    s.popupElement.style.display = 'none';
                 }
             });
             map.on('dblclick', (evt: any) => {
@@ -466,7 +551,7 @@ namespace BitBlazorUI {
                 const olFormat = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/format?bundle`);
                 const olProj = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/proj?bundle`);
                 // ol/interaction is loaded implicitly via the main bundle (default interactions).
-                await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/interaction?bundle`);
+                const olInteraction = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/interaction?bundle`);
 
                 return {
                     Map: ol.Map,
@@ -491,6 +576,7 @@ namespace BitBlazorUI {
                     fromLonLat: olProj.fromLonLat,
                     toLonLat: olProj.toLonLat,
                     transformExtent: olProj.transformExtent,
+                    Translate: olInteraction.Translate,
                 };
             })();
             return BitMapOpenLayers._olLoadPromise;

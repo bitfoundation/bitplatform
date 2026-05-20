@@ -316,7 +316,38 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         // When Provider is reset to null, revert to a default-constructed instance.
         var effective = Provider ?? new TMapProvider();
-        await _js.BitMapSync(JsObject, _Id, effective.BuildOptionsPayload());
+
+        var jsObjectChanged = !string.Equals(_activeProvider.JsObjectName, effective.JsObjectName, StringComparison.Ordinal);
+
+        // Load any new stylesheets/scripts the incoming provider requires.
+        if (effective.Stylesheets.Count > 0)
+        {
+            await _js.BitExtrasInitStylesheets(effective.Stylesheets);
+        }
+
+        if (effective.Scripts.Count > 0)
+        {
+            await _js.BitExtrasInitScripts(effective.Scripts, effective.ScriptsAreModules);
+        }
+
+        if (jsObjectChanged)
+        {
+            // The JS object name changed, so the old provider's JS instance cannot be synced.
+            // Dispose the old map and re-initialize with the new provider.
+            try
+            {
+                await _js.BitMapDispose(_activeProvider.JsObjectName, _Id);
+            }
+            catch (JSDisconnectedException) { }
+
+            await _js.BitMapInit(effective.JsObjectName, _Id, _mapElement, _dotnetObj!, effective.BuildOptionsPayload());
+        }
+        else
+        {
+            // Same JS object — just sync the updated options.
+            await _js.BitMapSync(effective.JsObjectName, _Id, effective.BuildOptionsPayload());
+        }
+
         _activeProvider = effective;
     }
 

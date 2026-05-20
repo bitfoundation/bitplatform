@@ -20,7 +20,7 @@ public interface IBitMapProvider
 
     /// <summary>
     /// External script URLs to load before the provider can be initialized. Returns an empty list
-    /// when the provider does not need external scripts (e.g. ArcGIS uses a module loader).
+    /// when the provider ships no external scripts (e.g. providers that bundle everything inline).
     /// </summary>
     IReadOnlyList<string> Scripts { get; }
 

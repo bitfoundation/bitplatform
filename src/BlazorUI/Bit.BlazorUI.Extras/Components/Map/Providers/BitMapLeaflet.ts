@@ -105,6 +105,14 @@ namespace BitBlazorUI {
             for (const key in s.tileOverlays) {
                 try { s.tileOverlays[key].bringToFront(); } catch { /* ignore */ }
             }
+
+            // Reapply interaction toggles when explicitly provided
+            if (o.scrollWheelZoom !== undefined) o.scrollWheelZoom ? s.map.scrollWheelZoom.enable() : s.map.scrollWheelZoom.disable();
+            if (o.doubleClickZoom !== undefined) o.doubleClickZoom ? s.map.doubleClickZoom.enable() : s.map.doubleClickZoom.disable();
+            if (o.boxZoom !== undefined) o.boxZoom ? s.map.boxZoom.enable() : s.map.boxZoom.disable();
+            if (o.dragging !== undefined) o.dragging ? s.map.dragging.enable() : s.map.dragging.disable();
+            if (o.keyboardNavigation !== undefined) o.keyboardNavigation ? s.map.keyboard.enable() : s.map.keyboard.disable();
+
             BitMapLeaflet._applyMaxBounds(s, o.maxBounds);
             BitMapLeaflet._ensureScaleControl(s, !!o.showScaleControl, !!o.scaleControlImperial);
         }

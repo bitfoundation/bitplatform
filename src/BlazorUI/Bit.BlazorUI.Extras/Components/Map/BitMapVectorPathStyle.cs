@@ -8,8 +8,13 @@ public sealed class BitMapVectorPathStyle
     /// <summary>Stroke color.</summary>
     public string Color { get; set; } = "#3388ff";
 
-    /// <summary>Stroke width in pixels.</summary>
-    public double Weight { get; set; } = 3;
+    /// <summary>Stroke width in pixels. Negative values are clamped to 0.</summary>
+    public double Weight
+    {
+        get => _weight;
+        set => _weight = value < 0 ? 0 : value;
+    }
+    private double _weight = 3;
 
     /// <summary>Stroke opacity (0–1). Values outside this range are clamped.</summary>
     public double Opacity

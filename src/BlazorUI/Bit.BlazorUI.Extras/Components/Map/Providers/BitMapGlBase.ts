@@ -97,6 +97,12 @@ namespace BitBlazorUI {
 
             if (o.styleUrl && o.styleUrl !== s.lastStyleUrl) {
                 s.lastStyleUrl = o.styleUrl;
+                // Unregister click handlers before style swap to prevent dangling listeners
+                for (const key of Object.keys(s.vectorCatalog)) {
+                    for (const h of s.vectorCatalog[key].handlers) {
+                        try { map.off('click', h.layerId, h.handler); } catch { /* ignore */ }
+                    }
+                }
                 map.setStyle(o.styleUrl);
                 map.once('styledata', () => {
                     s.vectorCatalog = {};

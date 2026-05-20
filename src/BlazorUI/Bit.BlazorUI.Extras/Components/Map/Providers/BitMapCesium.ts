@@ -11,6 +11,9 @@ namespace BitBlazorUI {
             layers: { [k: string]: { entity: any, kind: string } },
             geoJsonLayers: { [k: string]: any },   // DataSource refs
             tileOverlays: { [k: string]: any },
+            _cesiumHandler: any,
+            _viewTimer: any,
+            _moveEndCallback: any,
         } } = {};
 
         public static async init(id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
@@ -105,6 +108,7 @@ namespace BitBlazorUI {
             const state = {
                 Cesium, viewer, dotnetObj,
                 markers: {} as any, layers: {} as any, geoJsonLayers: {} as any, tileOverlays: {} as any,
+                _cesiumHandler: null as any, _viewTimer: null as any, _moveEndCallback: null as any,
             };
             BitMapCesium._wireEvents(state);
             BitMapCesium._maps[id] = state;
@@ -150,6 +154,9 @@ namespace BitBlazorUI {
         public static dispose(id: string) {
             const s = BitMapCesium._maps[id];
             if (!s) return;
+            if (s._cesiumHandler) { try { s._cesiumHandler.destroy(); } catch { /* ignore */ } s._cesiumHandler = null; }
+            if (s._viewTimer) { clearTimeout(s._viewTimer); s._viewTimer = null; }
+            if (s._moveEndCallback) { try { s.viewer.camera.moveEnd.removeEventListener(s._moveEndCallback); } catch { /* ignore */ } s._moveEndCallback = null; }
             try { s.viewer.destroy(); } catch { /* ignore */ }
             s.dotnetObj = null;
             delete BitMapCesium._maps[id];
@@ -503,11 +510,15 @@ namespace BitBlazorUI {
                 }
             }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
-            let viewTimer: any = null;
-            viewer.camera.moveEnd.addEventListener(() => {
-                clearTimeout(viewTimer);
-                viewTimer = setTimeout(() => BitMapCesium._notifyView(s), 80);
-            });
+            const moveEndCallback = () => {
+                clearTimeout(s._viewTimer);
+                s._viewTimer = setTimeout(() => BitMapCesium._notifyView(s), 80);
+            };
+            viewer.camera.moveEnd.addEventListener(moveEndCallback);
+
+            s._cesiumHandler = handler;
+            s._viewTimer = null;
+            s._moveEndCallback = moveEndCallback;
         }
     }
 }
