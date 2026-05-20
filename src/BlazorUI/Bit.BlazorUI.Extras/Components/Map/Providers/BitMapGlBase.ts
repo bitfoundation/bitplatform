@@ -87,7 +87,7 @@ namespace BitBlazorUI {
             if (!s) return;
             const map = s.map;
             const o = options || {};
-            const center: [number, number] = [o.center?.lng ?? -0.09, o.center?.lat ?? 51.505];
+            const center: [number, number] = o.center ? [o.center.lng, o.center.lat] : [map.getCenter().lng, map.getCenter().lat];
             const zoom = o.zoom ?? map.getZoom();
             map.jumpTo({ center, zoom, essential: true });
 
@@ -301,10 +301,10 @@ namespace BitBlazorUI {
         }
 
         public static addGeoJson(provider: string, id: string, layerId: string, geoJsonString: string, style: any) {
-            const s = BitMapGlBase._require(provider, id);
-            BitMapGlBase._removeVector(s, layerId);
             let gj: any;
             try { gj = JSON.parse(geoJsonString); } catch { throw new Error('Invalid GeoJSON string'); }
+            const s = BitMapGlBase._require(provider, id);
+            BitMapGlBase._removeVector(s, layerId);
             const sourceId = `bm-src-${id}-${layerId}`;
             const fillId = `bm-fill-${id}-${layerId}`;
             const lineId = `bm-line-${id}-${layerId}`;

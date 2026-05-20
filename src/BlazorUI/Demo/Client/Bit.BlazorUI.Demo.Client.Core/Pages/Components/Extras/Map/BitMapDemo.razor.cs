@@ -185,7 +185,12 @@ public partial class BitMapDemo
 
     private Task OnGeoJsonFeatureClick(BitMapGeoJsonFeatureClickArgs e)
     {
-        var name = e.Properties.TryGetProperty("name", out var n) ? n.GetString() : "(no name)";
+        var name = "(no name)";
+        if (e.Properties.ValueKind == System.Text.Json.JsonValueKind.Object
+            && e.Properties.TryGetProperty("name", out var n))
+        {
+            name = n.ValueKind == System.Text.Json.JsonValueKind.String ? n.GetString() : n.ToString();
+        }
         geoJsonLog = $"Layer {e.LayerId} — properties.name = {name}";
         return Task.CompletedTask;
     }
@@ -414,7 +419,8 @@ private async Task OnVectorsReady()
         new BitMapLatLngBounds(new(37.748, -122.44), new(37.756, -122.42)),
         new BitMapVectorPathStyle { Color = ""#d29922"", DashArray = ""6,4"" });
 
-    await vectorsMapRef.ClearVectorLayers();
+    await vectorsMapRef.FitBounds(
+        new BitMapLatLngBounds(new(37.755, -122.49), new(37.805, -122.38)));
 }
 
 private Task OnVectorClick(BitMapVectorClickArgs e)

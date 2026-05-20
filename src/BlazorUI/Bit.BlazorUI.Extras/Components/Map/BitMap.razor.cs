@@ -285,6 +285,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         if (firstRender is false) return;
 
+        if (_js.IsRuntimeInvalid()) return;
+
         _activeProvider = Provider ?? new TMapProvider();
 
         if (_activeProvider.Stylesheets.Count > 0)

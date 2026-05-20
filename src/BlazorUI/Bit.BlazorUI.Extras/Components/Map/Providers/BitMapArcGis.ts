@@ -65,7 +65,9 @@ namespace BitBlazorUI {
             const s = BitMapArcGis._maps[id];
             if (!s) return;
             const o = options || {};
-            const lng = o.center?.lng ?? -0.09, lat = o.center?.lat ?? 51.505;
+            const currentCenter = s.view.center;
+            const lng = o.center ? o.center.lng : (currentCenter?.longitude ?? 0);
+            const lat = o.center ? o.center.lat : (currentCenter?.latitude ?? 0);
             s.view.goTo({ center: [lng, lat], zoom: o.zoom ?? s.view.zoom }, { animate: false }).catch(() => {});
             if (o.basemapId && o.basemapId !== s.map.basemap?.id) s.map.basemap = o.basemapId;
             BitMapArcGis._ensureScaleBar(s, !!o.showScaleControl);

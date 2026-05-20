@@ -15,7 +15,12 @@ public sealed class BitMapTileOverlay
     public string? Attribution { get; init; }
 
     /// <summary>Layer opacity (0–1).</summary>
-    public double Opacity { get; init; } = 1;
+    public double Opacity
+    {
+        get => _opacity;
+        init => _opacity = Math.Clamp(value, 0, 1);
+    }
+    private double _opacity = 1;
 
     /// <summary>Stack order index of the overlay.</summary>
     public int ZIndex { get; init; } = 100;

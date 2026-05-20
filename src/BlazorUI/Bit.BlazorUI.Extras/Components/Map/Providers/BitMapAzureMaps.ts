@@ -55,7 +55,8 @@ namespace BitBlazorUI {
             const s = BitMapAzureMaps._maps[id];
             if (!s) return;
             const o = options || {};
-            s.map.setCamera({ center: [o.center?.lng ?? -0.09, o.center?.lat ?? 51.505], zoom: o.zoom ?? s.map.getCamera().zoom, type: 'jump' });
+            const center = o.center ? [o.center.lng, o.center.lat] : s.map.getCamera().center;
+            s.map.setCamera({ center, zoom: o.zoom ?? s.map.getCamera().zoom, type: 'jump' });
             if (o.style) s.map.setStyle({ style: o.style });
             s.map.setUserInteraction({
                 scrollZoomInteraction: o.scrollWheelZoom !== false,
@@ -136,9 +137,15 @@ namespace BitBlazorUI {
             const markerOpts: any = { position: [opts.lng, opts.lat], draggable: !!opts.draggable };
             if (opts.iconUrl) {
                 const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
-                markerOpts.htmlContent =
-                    `<div style="position:relative;width:${w}px;height:${h}px;transform:translate(-50%,-100%);">` +
-                    `<img src="${opts.iconUrl}" width="${w}" height="${h}" alt="" /></div>`;
+                const div = document.createElement('div');
+                div.style.cssText = `position:relative;width:${w}px;height:${h}px;transform:translate(-50%,-100%);`;
+                const img = document.createElement('img');
+                img.src = opts.iconUrl;
+                img.width = w;
+                img.height = h;
+                img.alt = '';
+                div.appendChild(img);
+                markerOpts.htmlContent = div;
             }
             if (opts.title) markerOpts.title = opts.title;
             if (popup) markerOpts.popup = popup;
@@ -280,10 +287,10 @@ namespace BitBlazorUI {
 
         public static addGeoJson(id: string, layerId: string, geoJsonString: string, style: any) {
             const s = BitMapAzureMaps._require(id);
-            BitMapAzureMaps._removeExisting(s, layerId);
-            const st = BitMapHelpers.readPathStyle(style);
             let gj: any;
             try { gj = JSON.parse(geoJsonString); } catch { throw new Error('Invalid GeoJSON string'); }
+            BitMapAzureMaps._removeExisting(s, layerId);
+            const st = BitMapHelpers.readPathStyle(style);
             const augment = (f: any) => ({ ...f, properties: { ...(f.properties ?? {}), _bmLayerId: layerId, _bmKind: 'geojson' } });
             const data = gj.type === 'FeatureCollection'
                 ? { ...gj, features: gj.features.map(augment) }

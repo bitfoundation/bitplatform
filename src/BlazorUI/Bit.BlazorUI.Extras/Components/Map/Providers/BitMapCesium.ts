@@ -115,9 +115,32 @@ namespace BitBlazorUI {
             const s = BitMapCesium._maps[id];
             if (!s) return;
             const o = options || {};
-            const lat = o.center?.lat ?? 51.505;
-            const lng = o.center?.lng ?? -0.09;
-            const altitude = o.altitude ?? BitMapCesium._zoomToAltitude(o.zoom ?? 4);
+
+            let lat: number, lng: number, altitude: number;
+
+            const currentCartographic = s.Cesium.Cartographic.fromCartesian(s.viewer.camera.position);
+
+            if (o.center !== undefined && o.center !== null) {
+                lat = o.center.lat;
+                lng = o.center.lng;
+            } else if (currentCartographic) {
+                lat = s.Cesium.Math.toDegrees(currentCartographic.latitude);
+                lng = s.Cesium.Math.toDegrees(currentCartographic.longitude);
+            } else {
+                lat = 51.505;
+                lng = -0.09;
+            }
+
+            if (o.altitude !== undefined && o.altitude !== null) {
+                altitude = o.altitude;
+            } else if (o.zoom !== undefined && o.zoom !== null) {
+                altitude = BitMapCesium._zoomToAltitude(o.zoom);
+            } else if (currentCartographic) {
+                altitude = currentCartographic.height;
+            } else {
+                altitude = BitMapCesium._zoomToAltitude(4);
+            }
+
             s.viewer.camera.flyTo({
                 destination: s.Cesium.Cartesian3.fromDegrees(lng, lat, altitude),
                 duration: 0,
