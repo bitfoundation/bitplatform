@@ -15,7 +15,7 @@ var redisPersistent = builder.AddRedisPersistent();
 
 //#if (database == "SqlServer")
 var sqlDatabase = builder.AddSqlServer();
-//#elif (database == "PostgreSql")
+//#elif (database == "PostgreSQL")
 var postgresDatabase = builder.AddPostgreSQL();
 //#elif (database == "MySql")
 var mySqlDatabase = builder.AddMySql();
@@ -59,7 +59,7 @@ if (builder.Environment.IsDevelopment())
 serverWebProject.WithReference(serverApiProject);
 //#if (database == "SqlServer")
 serverApiProject.WithReference(sqlDatabase).WaitFor(sqlDatabase);
-//#elif (database == "PostgreSql")
+//#elif (database == "PostgreSQL")
 serverApiProject.WithReference(postgresDatabase).WaitFor(postgresDatabase);
 //#elif (database == "MySql")
 serverApiProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
@@ -81,7 +81,7 @@ serverApiProject.WithReference(redisPersistent).WaitFor(redisPersistent);
 
 //#if (database == "SqlServer")
 serverWebProject.WithReference(sqlDatabase).WaitFor(sqlDatabase);
-//#elif (database == "PostgreSql")
+//#elif (database == "PostgreSQL")
 serverWebProject.WithReference(postgresDatabase).WaitFor(postgresDatabase);
 //#elif (database == "MySql")
 serverWebProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
