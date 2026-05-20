@@ -2,7 +2,9 @@
 using Aspire.Hosting.Maui;
 using Aspire.Hosting.Azure;
 using Aspire.Hosting.DevTunnels;
+//#if (redis == true)
 using Azure.Provisioning.RedisEnterprise;
+//#endif
 
 namespace Aspire.Hosting;
 
@@ -20,7 +22,25 @@ public static class IDistributedApplicationBuilderExtensions
             {
                 redis.WithRedisInsight()
                     .WithRedisCommander()
-                    .WithImage("redis/redis-stack", "latest");
+                    .WithImage("redis/redis-stack", "latest")
+                    .WithArgs(
+                     "--save", "",                        // Backend API has its own L1 in-memory cache, no need to have RDB snapshots for the L2 redis cache in case of failures.
+                     "--appendonly", "no",                // Disables AOF persistence as well for the same reason.
+                     "--maxmemory-policy", "allkeys-lru"  // Evict least recently used keys when memory limit is reached
+                 );
+            }).ConfigureInfrastructure(infra =>
+            {
+                var db = infra.GetProvisionableResources()
+                    .OfType<RedisEnterpriseDatabase>()
+                    .Single();
+
+                db.Persistence = new()
+                {
+                    IsAofEnabled = false,
+                    IsRdbEnabled = false
+                };
+
+                db.EvictionPolicy = RedisEnterpriseEvictionPolicy.AllKeysLru;
             });
     }
 
@@ -81,7 +101,7 @@ public static class IDistributedApplicationBuilderExtensions
     }
     //#endif
 
-    //#if (database == "PostgreSql")
+    //#if (database == "PostgreSQL")
     /// <summary>
     /// Adds a PostgreSQL Server instance with pgAdmin and a database named <c>postgresdb</c>.
     /// Uses pgvector (pg18) image which supports embedded vector search.
