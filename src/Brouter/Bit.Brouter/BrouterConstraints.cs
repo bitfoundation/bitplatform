@@ -32,6 +32,8 @@ public static class BrouterConstraints
 
         if (_factories.TryAdd(name, factory) is false)
             throw new InvalidOperationException($"A constraint named '{name}' is already registered.");
+
+        RouteConstraint.InvalidateCache(name);
     }
 
     private static readonly HashSet<string> _builtIns = new(StringComparer.OrdinalIgnoreCase)
@@ -46,7 +48,12 @@ public static class BrouterConstraints
 
         if (_builtIns.Contains(name)) return false;
 
-        return _factories.TryRemove(name, out _);
+        var removed = _factories.TryRemove(name, out _);
+        if (removed)
+        {
+            RouteConstraint.InvalidateCache(name);
+        }
+        return removed;
     }
 
     internal static RouteConstraint? Create(string name) =>

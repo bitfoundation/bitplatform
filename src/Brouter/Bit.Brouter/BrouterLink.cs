@@ -43,6 +43,7 @@ public sealed class BrouterLink : ComponentBase, IDisposable
 
 
     private bool _isActive;
+    private bool _preventDefaultClick = true;
 
     protected override void OnInitialized()
     {
@@ -104,24 +105,38 @@ public sealed class BrouterLink : ComponentBase, IDisposable
         // navigation off the anchor's href. Attaching @onclick here would cause both the intercepted
         // navigation and an explicit Navigate() call to fire for a single click.
         // The Replace parameter cannot be expressed via a plain anchor, so opt into a custom click
-        // handler with preventDefault only in that case.
+        // handler with preventDefault only in that case. We use a mousedown handler to detect
+        // modifier keys/non-primary buttons and conditionally disable preventDefault so that
+        // Ctrl+click, middle-click, etc. still trigger the browser's native "open in new tab" behavior.
         if (Replace)
         {
-            builder.AddAttribute(5, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, OnClick));
-            builder.AddAttribute(6, "onclick:preventDefault", true);
+            builder.AddAttribute(5, "onmousedown", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, OnMouseDown));
+            builder.AddAttribute(6, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, OnClick));
+            builder.AddAttribute(7, "onclick:preventDefault", _preventDefaultClick);
         }
-        builder.AddContent(7, ChildContent);
+        builder.AddContent(8, ChildContent);
         builder.CloseElement();
+    }
+
+    private void OnMouseDown(Microsoft.AspNetCore.Components.Web.MouseEventArgs e)
+    {
+        // Runs before the click event. Update _preventDefaultClick so the rendered attribute
+        // reflects whether the upcoming click should be intercepted or left to the browser.
+        _preventDefaultClick = IsUnmodifiedPrimaryClick(e);
     }
 
     private void OnClick(Microsoft.AspNetCore.Components.Web.MouseEventArgs e)
     {
-        // Only invoked when Replace=true (see BuildRenderTree). Non-primary buttons should still
-        // be ignored so the browser can perform its default action for them where possible.
-        if (e.Button != 0) return;
+        // Only invoked when Replace=true (see BuildRenderTree).
+        // Let the browser handle modified clicks (Ctrl/Cmd+click, Shift+click, middle-click)
+        // so that "open in new tab" and similar native behaviors work as expected.
+        if (!IsUnmodifiedPrimaryClick(e)) return;
 
         Brouter.Navigate(Href, replace: Replace);
     }
+
+    private static bool IsUnmodifiedPrimaryClick(Microsoft.AspNetCore.Components.Web.MouseEventArgs e)
+        => e.Button == 0 && !e.CtrlKey && !e.ShiftKey && !e.AltKey && !e.MetaKey;
 
     public void Dispose()
     {

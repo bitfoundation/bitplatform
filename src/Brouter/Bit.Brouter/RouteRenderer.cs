@@ -14,49 +14,48 @@ internal class RouteRenderer
 
     public void BuildRenderTree(RenderTreeBuilder builder, bool matched)
     {
-        var seq = 0;
-        builder.OpenComponent<CascadingValue<Route>>(seq++);
-        builder.AddAttribute(seq++, "Name", "ParentRoute");
-        builder.AddAttribute(seq++, "Value", _route);
-        builder.AddAttribute(seq++, "ChildContent", (RenderFragment)(b =>
+        builder.OpenComponent<CascadingValue<Route>>(0);
+        builder.AddAttribute(1, "Name", "ParentRoute");
+        builder.AddAttribute(2, "Value", _route);
+        builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
         {
-            b.AddContent(seq, _route.ChildContent);
-            if (matched) RenderRoute(b, seq);
+            b.AddContent(0, _route.ChildContent);
+            if (matched) RenderRoute(b);
         }));
         builder.CloseComponent();
     }
 
-    private void RenderRoute(RenderTreeBuilder builder, int seq)
+    private void RenderRoute(RenderTreeBuilder builder)
     {
         var merged = MergeParameters(_route.InheritedParameters, _route.Parameters);
         var routeParams = new RouteParameters(merged);
 
-        builder.OpenComponent<CascadingValue<RouteParameters>>(seq++);
-        builder.AddAttribute(seq++, "Name", "RouteParameters");
-        builder.AddAttribute(seq++, "Value", routeParams);
-        builder.AddAttribute(seq++, "IsFixed", false);
-        builder.AddAttribute(seq++, "ChildContent", (RenderFragment)(b1 =>
+        builder.OpenComponent<CascadingValue<RouteParameters>>(1);
+        builder.AddAttribute(0, "Name", "RouteParameters");
+        builder.AddAttribute(1, "Value", routeParams);
+        builder.AddAttribute(2, "IsFixed", false);
+        builder.AddAttribute(3, "ChildContent", (RenderFragment)(b1 =>
         {
-            b1.OpenComponent<CascadingValue<object?>>(seq++);
-            b1.AddAttribute(seq++, "Name", "RouteData");
-            b1.AddAttribute(seq++, "Value", _route.LoadedData);
-            b1.AddAttribute(seq++, "ChildContent", (RenderFragment)(b2 =>
+            b1.OpenComponent<CascadingValue<object?>>(0);
+            b1.AddAttribute(1, "Name", "RouteData");
+            b1.AddAttribute(2, "Value", _route.LoadedData);
+            b1.AddAttribute(3, "ChildContent", (RenderFragment)(b2 =>
             {
-                b2.OpenComponent<CascadingValue<object?>>(seq++);
-                b2.AddAttribute(seq++, "Name", "RouteMeta");
-                b2.AddAttribute(seq++, "Value", _route.Meta);
-                b2.AddAttribute(seq++, "ChildContent", (RenderFragment)(b3 =>
+                b2.OpenComponent<CascadingValue<object?>>(0);
+                b2.AddAttribute(1, "Name", "RouteMeta");
+                b2.AddAttribute(2, "Value", _route.Meta);
+                b2.AddAttribute(3, "ChildContent", (RenderFragment)(b3 =>
                 {
                     if (_route.Parent?.Outlet is null)
                     {
                         if (_route.Content is not null)
                         {
-                            b3.AddContent(seq, _route.Content(routeParams));
+                            b3.AddContent(0, _route.Content(routeParams));
                         }
                         else if (_route.Component is not null)
                         {
-                            b3.OpenComponent(seq++, _route.Component);
-                            ApplyTypedParameters(b3, _route.Component, routeParams, ref seq);
+                            b3.OpenComponent(0, _route.Component);
+                            ApplyTypedParameters(b3, _route.Component, routeParams);
                             b3.CloseComponent();
                         }
                     }
@@ -72,11 +71,14 @@ internal class RouteRenderer
         builder.CloseComponent();
     }
 
-    private static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, RouteParameters parameters, ref int seq)
+    private static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, RouteParameters parameters)
     {
         // Reflect once per type. Simple, correct, allocates only on first hit per type.
         // Trimming: Component is annotated DynamicallyAccessedMemberTypes.All so its members are preserved.
         var bindings = TypedParameterCache.GetBindings(componentType);
+        // Sequence numbers for dynamic parameter attributes start after the OpenComponent (0).
+        // These are stable per render because the same bindings are iterated in the same order.
+        var seq = 1;
         foreach (var b in bindings)
         {
             if (b.IsQuery)

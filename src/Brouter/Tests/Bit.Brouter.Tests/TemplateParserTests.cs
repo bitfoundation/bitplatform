@@ -61,19 +61,22 @@ public class TemplateParserTests
     [Fact]
     public void Catch_all_must_be_last_segment()
     {
-        Assert.Throws<TargetInvocationException>(() => Parse("/files/{**path}/extra"));
+        var ex = Assert.Throws<TargetInvocationException>(() => Parse("/files/{**path}/extra"));
+        Assert.IsType<InvalidOperationException>(ex.InnerException);
     }
 
     [Fact]
     public void Optionals_must_be_trailing()
     {
-        Assert.Throws<TargetInvocationException>(() => Parse("/{a?}/{b}"));
+        var ex = Assert.Throws<TargetInvocationException>(() => Parse("/{a?}/{b}"));
+        Assert.IsType<InvalidOperationException>(ex.InnerException);
     }
 
     [Fact]
     public void Duplicate_parameter_names_throw()
     {
-        Assert.Throws<TargetInvocationException>(() => Parse("/{id}/{id:int}"));
+        var ex = Assert.Throws<TargetInvocationException>(() => Parse("/{id}/{id:int}"));
+        Assert.IsType<InvalidOperationException>(ex.InnerException);
     }
 
     [Fact]

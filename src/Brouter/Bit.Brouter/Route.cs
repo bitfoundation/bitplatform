@@ -142,18 +142,12 @@ public partial class Route : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private bool _disposed;
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (_disposed) return;
+        _disposed = true;
 
         Brouter?.UnregisterRoute(this);
         Parent?.RemoveChild(this);
-
-        _disposed = true;
     }
+
+    private bool _disposed;
 }

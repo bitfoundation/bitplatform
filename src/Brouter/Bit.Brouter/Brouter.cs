@@ -79,16 +79,15 @@ public partial class Brouter : ComponentBase, IDisposable
     {
         base.BuildRenderTree(builder);
 
-        var seq = 0;
-        builder.OpenComponent<CascadingValue<Brouter>>(seq++);
-        builder.AddAttribute(seq++, "Name", "Brouter");
-        builder.AddAttribute(seq++, "Value", this);
-        builder.AddAttribute(seq++, "ChildContent", (RenderFragment)(b =>
+        builder.OpenComponent<CascadingValue<Brouter>>(0);
+        builder.AddAttribute(1, "Name", "Brouter");
+        builder.AddAttribute(2, "Value", this);
+        builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
         {
-            b.AddContent(seq, ChildContent);
+            b.AddContent(0, ChildContent);
             if (_noRouteMatched && NotFoundContent is not null && string.IsNullOrEmpty(NotFound))
             {
-                b.AddContent(seq, NotFoundContent(CurrentLocation));
+                b.AddContent(1, NotFoundContent(CurrentLocation));
             }
         }));
         builder.CloseComponent();
@@ -277,7 +276,7 @@ public partial class Brouter : ComponentBase, IDisposable
         route.ConstraintsByParameter = new Dictionary<string, string[]>();
 
         var routeTemplate = route.RouteTemplate;
-        if (routeTemplate is null || string.IsNullOrEmpty(routeTemplate.Template)) return true;
+        if (routeTemplate is null || string.IsNullOrEmpty(routeTemplate.Template)) return false;
 
         var literalComparison = Options.CaseSensitive
             ? StringComparison.Ordinal
@@ -358,14 +357,8 @@ public partial class Brouter : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private bool _disposed;
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (_disposed) return;
+        _disposed = true;
 
         _navManager.LocationChanged -= NavManagerLocationChanged;
         var cts = Interlocked.Exchange(ref _navCts, null);
@@ -375,7 +368,7 @@ public partial class Brouter : ComponentBase, IDisposable
             cts.Dispose();
         }
         ((BrouterService)_brouterService).Detach(this);
-
-        _disposed = true;
     }
+
+    private bool _disposed;
 }

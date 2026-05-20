@@ -12,13 +12,13 @@ public sealed class RouteParameters
     /// <summary>An empty parameters instance.</summary>
     public static readonly RouteParameters Empty = new(new Dictionary<string, object?>());
 
-    private readonly IDictionary<string, object?> _values;
+    private readonly Dictionary<string, object?> _values;
 
-    internal RouteParameters(IDictionary<string, object?> values) => _values = values;
+    internal RouteParameters(IDictionary<string, object?> values) =>
+        _values = new Dictionary<string, object?>(values, StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>Raw parameter values keyed by name.</summary>
-    public IReadOnlyDictionary<string, object?> Values =>
-        (_values as IReadOnlyDictionary<string, object?>) ?? _values.ToDictionary(p => p.Key, p => p.Value);
+    /// <summary>Raw parameter values keyed by name (read-only).</summary>
+    public IReadOnlyDictionary<string, object?> Values => _values;
 
     /// <summary>Returns the raw value or null if missing.</summary>
     public object? this[string key] => _values.TryGetValue(key, out var v) ? v : null;

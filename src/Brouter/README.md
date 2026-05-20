@@ -55,7 +55,7 @@ builder.Services.AddBitBrouterServices(o =>
 - Built-in constraints: `int`, `bool`, `guid`, `long`, `float`, `double`, `decimal`, `datetime`
 - Multiple constraints per parameter: `{id:int:long}`
 - Wildcards: `*` (single segment), `**` (catch-all)
-- **Optional parameters**: `{id?}` â€” must be trailing
+- **Optional parameters**: `{id?}` — must be trailing
 - **Catch-all parameter binding**: `{**path}` exposes the remainder
 - Custom constraints via `BrouterConstraints.Register("slug", () => new MyConstraint())`
 - Specificity-based matching (literals beat constrained beat unconstrained beat wildcards)

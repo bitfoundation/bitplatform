@@ -46,9 +46,18 @@ internal sealed class BrouterService : IBrouter
     public void Back()
     {
         EnsureMounted();
-        // Best-effort. JSInterop may not be ready in pre-render; skip silently.
-        try { _ = _js.InvokeVoidAsync("history.back"); }
-        catch { /* no-op */ }
+        _ = BackAsync();
+    }
+
+    private async Task BackAsync()
+    {
+        try
+        {
+            await _js.InvokeVoidAsync("history.back").ConfigureAwait(false);
+        }
+        catch (JSDisconnectedException) { /* Circuit disconnected; nothing to do. */ }
+        catch (InvalidOperationException) { /* JS interop not available during pre-render. */ }
+        catch (TaskCanceledException) { /* Component disposed mid-call. */ }
     }
 
     public void NavigateToName(string name, IReadOnlyDictionary<string, object?>? parameters = null,
