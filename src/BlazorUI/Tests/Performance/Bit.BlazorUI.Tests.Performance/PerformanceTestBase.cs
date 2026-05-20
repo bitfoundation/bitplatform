@@ -18,7 +18,7 @@ public abstract class PerformanceTestBase : PageTest
     private static readonly object _lock = new();
     private static int _testCount;
     private static bool _isHostStarted;
-    private static readonly HttpClient _sharedHttpClient = new();
+    private static readonly HttpClient _sharedHttpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
 
     protected const string BaseUrl = "http://localhost:5280";
     protected const int DefaultTimeout = 30000;
@@ -168,9 +168,9 @@ public abstract class PerformanceTestBase : PageTest
         for (int depth = 0; depth < 8 && dir is not null; depth++)
         {
             // Same level as our test project root → the host is a sibling folder.
-            if (dir.GetFiles(siblingTestProject).Length > 0)
+            if (dir.GetFiles(siblingTestProject).Length > 0 && dir.Parent is not null)
             {
-                var sibling = Path.Combine(dir.Parent!.FullName, testHostFolder, testHostCsproj);
+                var sibling = Path.Combine(dir.Parent.FullName, testHostFolder, testHostCsproj);
                 if (File.Exists(sibling))
                 {
                     return sibling;
@@ -263,7 +263,8 @@ public abstract class PerformanceTestBase : PageTest
     protected async Task WaitForStatus(string status)
     {
         await Page.WaitForFunctionAsync(
-            $"() => document.getElementById('status')?.innerText === '{status}'",
+            "(expected) => document.getElementById('status')?.innerText === expected",
+            status,
             new PageWaitForFunctionOptions { Timeout = DefaultTimeout });
     }
 
@@ -292,6 +293,11 @@ public abstract class PerformanceTestBase : PageTest
         try
         {
             response = await _sharedHttpClient.GetAsync($"{BaseUrl}/api/gc-info");
+        }
+        catch (TaskCanceledException)
+        {
+            Assert.Fail("GetServerGCMemoryMB: /api/gc-info request timed out. The test host may be unresponsive.");
+            return 0; // unreachable, but satisfies the compiler
         }
         catch (Exception ex)
         {
