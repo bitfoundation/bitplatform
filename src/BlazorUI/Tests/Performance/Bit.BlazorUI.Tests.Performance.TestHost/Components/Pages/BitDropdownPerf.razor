@@ -1,0 +1,127 @@
+@page "/perf/dropdown"
+@page "/perf/dropdown/{Count:int}"
+
+<PageTitle>BitDropdown Performance Test</PageTitle>
+
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitDropdown Performance Test</h3>
+    <div style="margin-bottom: 10px;">
+        <label>Component Count: </label>
+        <input type="number" @bind="Count" @bind:event="oninput" min="1" max="1000" style="width: 100px;" />
+        <button @onclick="Render" id="btn-render">Render</button>
+        <button @onclick="Clear" id="btn-clear">Clear</button>
+        <button @onclick="ReRender" id="btn-rerender">Re-render (Toggle IsEnabled)</button>
+        <button @onclick="ToggleResponsive" id="btn-toggle-responsive">
+            Responsive: @(_responsive ? "ON" : "OFF")
+        </button>
+    </div>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Render Time: <span id="render-time">@_renderTimeMs</span> ms</p>
+        <p>Re-render Time: <span id="rerender-time">@_reRenderTimeMs</span> ms</p>
+        <p>Component Count: <span id="component-count">@_renderedCount</span></p>
+        <p>Responsive Mode: <span id="responsive-mode">@(_responsive ? "true" : "false")</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+<div id="test-container" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px;">
+    @if (_isRendered)
+    {
+        @for (int i = 0; i < _renderedCount; i++)
+        {
+            var index = i;
+            <BitDropdown TItem="BitDropdownItem<string>"
+                         TValue="string"
+                         Items="_items"
+                         Placeholder="@($"Dropdown {index}")"
+                         IsEnabled="@_isEnabled"
+                         Responsive="@_responsive"
+                         Style="width: 180px;" />
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Count { get; set; } = 50;
+
+    private int _renderedCount;
+    private double _renderTimeMs;
+    private double _reRenderTimeMs;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects.
+    // Only OnAfterRenderAsync(firstRender=true) — which never runs during SSR — transitions
+    // this to "Ready", giving Playwright a reliable "Blazor interactive circuit is up" signal.
+    private string _status = "Loading";
+    private bool _isRendered;
+    private bool _isEnabled = true;
+    private bool _responsive;
+    private readonly System.Diagnostics.Stopwatch _stopwatch = new();
+
+    // Shared static item list — same items are reused across all dropdown instances
+    // to keep allocations focused on component lifecycle rather than data.
+    private static readonly List<BitDropdownItem<string>> _items =
+        Enumerable.Range(1, 10)
+                  .Select(i => new BitDropdownItem<string> { Text = $"Option {i}", Value = $"val-{i}" })
+                  .ToList();
+
+    private void Render()
+    {
+        _stopwatch.Restart();
+        _isRendered = true;
+        _renderedCount = Count;
+        _status = "Rendering...";
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Runs only in interactive mode (never during SSR pre-render).
+            // Signals to the test that the Blazor circuit is ready to handle events.
+            _status = "Ready";
+            StateHasChanged();
+            return;
+        }
+
+        if (_stopwatch.IsRunning && _isRendered)
+        {
+            _stopwatch.Stop();
+
+            if (_status == "Rendering...")
+            {
+                _renderTimeMs = _stopwatch.Elapsed.TotalMilliseconds;
+                _status = "Rendered";
+            }
+            else if (_status == "Re-rendering...")
+            {
+                _reRenderTimeMs = _stopwatch.Elapsed.TotalMilliseconds;
+                _status = "Re-rendered";
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private void Clear()
+    {
+        _isRendered = false;
+        _renderedCount = 0;
+        _renderTimeMs = 0;
+        _reRenderTimeMs = 0;
+        _status = "Cleared";
+    }
+
+    private void ReRender()
+    {
+        if (!_isRendered) return;
+
+        _stopwatch.Restart();
+        _isEnabled = !_isEnabled;
+        _status = "Re-rendering...";
+    }
+
+    private void ToggleResponsive()
+    {
+        _responsive = !_responsive;
+    }
+}
