@@ -244,7 +244,6 @@ public partial class Brouter : ComponentBase, IDisposable
         catch (Exception ex)
         {
             await service.InvokeOnError(ctx, ex).ConfigureAwait(false);
-            throw;
         }
     }
 

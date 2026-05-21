@@ -14,8 +14,9 @@ public partial class Route : ComponentBase, IDisposable
     /// <summary>
     /// The route path to match. Supports literal segments, parameter segments, constraints and wildcards.
     /// E.g. <c>"/users/{id:int}"</c>, <c>"/files/{**path}"</c>, <c>"/posts/{slug?}"</c>.
+    /// For nested (child) routes, an empty string matches the parent path exactly (index route).
     /// </summary>
-    [Parameter] public string? Path { get; set; }
+    [Parameter, EditorRequired] public string Path { get; set; } = string.Empty;
 
     /// <summary>Optional unique name for this route. Used by <see cref="IBrouter.NavigateToName"/> and <see cref="IBrouter.ResolveUrl"/>.</summary>
     [Parameter] public string? Name { get; set; }
@@ -78,11 +79,15 @@ public partial class Route : ComponentBase, IDisposable
         if (Brouter is null)
             throw new InvalidOperationException("A Route must be nested inside a Brouter.");
 
+        if (Parent is null && string.IsNullOrWhiteSpace(Path))
+            throw new InvalidOperationException("A root-level Route must have a non-empty Path. " +
+                "Only nested (child) routes may use an empty path to act as an index route.");
+
         Brouter.RegisterRoute(this);
         Parent?.AddChild(this);
 
         FullTemplate = (Parent is null || string.IsNullOrWhiteSpace(Parent.FullTemplate))
-                        ? Path ?? string.Empty
+                        ? Path
                         : $"{Parent.FullTemplate}/{Path}".Replace("//", "/");
 
         RouteTemplate = TemplateParser.ParseTemplate(FullTemplate);

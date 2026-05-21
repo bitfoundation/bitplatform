@@ -20,6 +20,7 @@ public enum BrouterLinkMatch
 public sealed class BrouterLink : ComponentBase, IDisposable
 {
     [Inject] private IBrouter Brouter { get; set; } = default!;
+    [Inject] private BrouterOptions Options { get; set; } = default!;
 
     [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -72,11 +73,12 @@ public sealed class BrouterLink : ComponentBase, IDisposable
     {
         var current = Brouter.Location.Path;
         var target = NormalisePath(Href);
+        var comparison = Options.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
         _isActive = Match switch
         {
-            BrouterLinkMatch.All => string.Equals(current, target, StringComparison.OrdinalIgnoreCase),
-            _ => current.StartsWith(target, StringComparison.OrdinalIgnoreCase) &&
+            BrouterLinkMatch.All => string.Equals(current, target, comparison),
+            _ => current.StartsWith(target, comparison) &&
                  (current.Length == target.Length || target == "/" || current[target.Length] == '/' || current[target.Length] == '?' || current[target.Length] == '#')
         };
     }

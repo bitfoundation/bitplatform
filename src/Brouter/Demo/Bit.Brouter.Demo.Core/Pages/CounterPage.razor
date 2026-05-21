@@ -30,7 +30,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        await base.OnParametersSetAsync().ConfigureAwait(true);
+        await base.OnParametersSetAsync();
 
         if (Parameters?.TryGet<int>("init", out var init) == true && init != CurrentCount)
         {

@@ -2,8 +2,9 @@
 # EditorConfig: portable formatting conventions for Bit.Brouter
 # https://editorconfig.org
 #
-# Replaces the previous IDE-specific settings.VisualStudio.json with a
-# tool-agnostic file that Visual Studio, Rider, and VS Code all honor.
+# Provides tool-agnostic formatting rules that Visual Studio, Rider, and
+# VS Code all honor. IDE-specific settings (debugging, hot-reload, etc.)
+# remain in settings.VisualStudio.json.
 ###############################################################################
 
 root = true

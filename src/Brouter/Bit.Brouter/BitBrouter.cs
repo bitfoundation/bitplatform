@@ -12,6 +12,8 @@ public static class BitBrouter
     public static IServiceCollection AddBitBrouterServices(this IServiceCollection services,
                                                            Action<BrouterOptions>? configure = null)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         var options = new BrouterOptions();
         configure?.Invoke(options);
 

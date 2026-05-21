@@ -110,7 +110,7 @@ internal class RouteRenderer
 
     private static IDictionary<string, object?> MergeParameters(RouteParameters? inherited, IDictionary<string, object?>? local)
     {
-        var result = new Dictionary<string, object?>();
+        var result = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         if (inherited is not null)
         {
             foreach (var kv in inherited.Values) result[kv.Key] = kv.Value;
