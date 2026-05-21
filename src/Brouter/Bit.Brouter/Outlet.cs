@@ -58,6 +58,7 @@ public class Outlet : ComponentBase, IDisposable
                 else if (_matchedChild.Component is not null)
                 {
                     b2.OpenComponent(0, _matchedChild.Component);
+                    RouteRenderer.ApplyTypedParameters(b2, _matchedChild.Component, _parameters);
                     b2.CloseComponent();
                 }
 

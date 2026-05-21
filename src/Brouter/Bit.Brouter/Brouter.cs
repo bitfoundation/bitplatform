@@ -283,7 +283,7 @@ public partial class Brouter : ComponentBase, IDisposable
             : StringComparison.OrdinalIgnoreCase;
 
         var templateSegments = routeTemplate.TemplateSegments;
-        if (templateSegments.Length == 0) return false;
+        if (templateSegments.Length == 0) return segments.Length == 0;
 
         var lastIdx = templateSegments.Length - 1;
         var last = templateSegments[lastIdx];

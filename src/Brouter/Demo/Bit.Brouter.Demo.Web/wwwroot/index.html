@@ -11,7 +11,9 @@
     <div id="app"></div>
 
     <script>
-        navigator.serviceWorker.register('/sw.js');
+        if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
+            navigator.serviceWorker.register('/sw.js').catch(function () { /* ignore */ });
+        }
     </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>

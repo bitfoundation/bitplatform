@@ -1,0 +1,54 @@
+###############################################################################
+# EditorConfig: portable formatting conventions for Bit.Brouter
+# https://editorconfig.org
+#
+# Replaces the previous IDE-specific settings.VisualStudio.json with a
+# tool-agnostic file that Visual Studio, Rider, and VS Code all honor.
+###############################################################################
+
+root = true
+
+# Defaults for every file
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# C# / Razor / project / build files
+[*.{cs,csx,razor,cshtml,csproj,props,targets,slnx}]
+indent_size = 4
+
+# XAML and XML
+[*.{xaml,xml,config,nuspec,resx,axaml}]
+indent_size = 4
+
+# Web / styling
+[*.{html,htm,css,scss,js,ts,json,jsonc}]
+indent_size = 2
+
+# YAML must use spaces, conventionally 2
+[*.{yml,yaml}]
+indent_size = 2
+
+# Markdown: don't strip trailing whitespace (it carries hard line breaks)
+[*.md]
+trim_trailing_whitespace = false
+indent_size = 2
+
+# Shell / batch / dockerfile / sql
+[*.{sh}]
+end_of_line = lf
+indent_size = 2
+
+[*.{bat,cmd}]
+end_of_line = crlf
+indent_size = 2
+
+[Dockerfile]
+indent_size = 4
+
+[*.sql]
+indent_size = 4

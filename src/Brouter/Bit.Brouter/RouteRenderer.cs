@@ -30,11 +30,11 @@ internal class RouteRenderer
         var merged = MergeParameters(_route.InheritedParameters, _route.Parameters);
         var routeParams = new RouteParameters(merged);
 
-        builder.OpenComponent<CascadingValue<RouteParameters>>(1);
-        builder.AddAttribute(0, "Name", "RouteParameters");
-        builder.AddAttribute(1, "Value", routeParams);
-        builder.AddAttribute(2, "IsFixed", false);
-        builder.AddAttribute(3, "ChildContent", (RenderFragment)(b1 =>
+        builder.OpenComponent<CascadingValue<RouteParameters>>(0);
+        builder.AddAttribute(1, "Name", "RouteParameters");
+        builder.AddAttribute(2, "Value", routeParams);
+        builder.AddAttribute(3, "IsFixed", false);
+        builder.AddAttribute(4, "ChildContent", (RenderFragment)(b1 =>
         {
             b1.OpenComponent<CascadingValue<object?>>(0);
             b1.AddAttribute(1, "Name", "RouteData");
@@ -71,7 +71,7 @@ internal class RouteRenderer
         builder.CloseComponent();
     }
 
-    private static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, RouteParameters parameters)
+    internal static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, RouteParameters parameters)
     {
         // Reflect once per type. Simple, correct, allocates only on first hit per type.
         // Trimming: Component is annotated DynamicallyAccessedMemberTypes.All so its members are preserved.

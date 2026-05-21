@@ -2,6 +2,7 @@
     padding: 0.5rem 1rem;
 }
 
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
 .container ::deep a.active {
     font-weight: bold;
     text-decoration: underline;

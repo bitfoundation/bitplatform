@@ -56,6 +56,7 @@ internal sealed class BrouterService : IBrouter
             await _js.InvokeVoidAsync("history.back").ConfigureAwait(false);
         }
         catch (JSDisconnectedException) { /* Circuit disconnected; nothing to do. */ }
+        catch (JSException) { /* JS interop failure; nothing to do. */ }
         catch (InvalidOperationException) { /* JS interop not available during pre-render. */ }
         catch (TaskCanceledException) { /* Component disposed mid-call. */ }
     }
