@@ -87,8 +87,8 @@ public partial class Route : ComponentBase, IDisposable
         Parent?.AddChild(this);
 
         FullTemplate = (Parent is null || string.IsNullOrWhiteSpace(Parent.FullTemplate))
-                        ? Path
-                        : $"{Parent.FullTemplate}/{Path}".Replace("//", "/");
+                        ? Path.Trim('/')
+                        : $"{Parent.FullTemplate.TrimEnd('/')}/{Path.TrimStart('/')}";
 
         RouteTemplate = TemplateParser.ParseTemplate(FullTemplate);
 

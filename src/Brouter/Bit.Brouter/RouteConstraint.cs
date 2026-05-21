@@ -23,11 +23,11 @@ public abstract class RouteConstraint
 
         lock (_lock)
         {
+            if (_cache.TryGetValue(constraint, out var cached))
+                return cached;
+
             var fresh = BrouterConstraints.Create(constraint)
                 ?? throw new ArgumentException($"Unsupported constraint '{constraint}' in route '{template}'.");
-
-            if (_cache.TryGetValue(constraint, out var cached) && cached.GetType() == fresh.GetType())
-                return cached;
 
             fresh.Constraint = constraint;
             _cache[constraint] = fresh;

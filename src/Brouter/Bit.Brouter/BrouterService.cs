@@ -115,10 +115,18 @@ internal sealed class BrouterService : IBrouter
             {
                 // Allow forward slashes in catch-all values; encode each segment separately.
                 var parts = rawValue.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                for (int i = 0; i < parts.Length; i++)
+                if (parts.Length == 0)
                 {
-                    if (i > 0) sb.Append('/');
-                    sb.Append(Uri.EscapeDataString(parts[i]));
+                    // Empty catch-all value: remove the trailing '/' we just appended.
+                    if (sb.Length > 0 && sb[^1] == '/') sb.Length--;
+                }
+                else
+                {
+                    for (int i = 0; i < parts.Length; i++)
+                    {
+                        if (i > 0) sb.Append('/');
+                        sb.Append(Uri.EscapeDataString(parts[i]));
+                    }
                 }
             }
             else

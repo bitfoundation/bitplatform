@@ -11,6 +11,8 @@
     <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
     <OutputType>Exe</OutputType>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>

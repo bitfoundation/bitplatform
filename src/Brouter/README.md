@@ -66,8 +66,7 @@ builder.Services.AddBitBrouterServices(o =>
 - Component or `Content` (typed render fragment) rendering
 - `NotFound` URL or inline `NotFoundContent`
 - **Type-safe `RouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
-- Per-constraint typed cascading values (`[CascadingParameter(Name = "id")] int Id`)
-- **Auto-binding** to component properties via `[BrouterParameter]` and `[BrouterQuery]`
+- **Auto-binding** to component properties via `[Parameter, BrouterParameter]`
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
 - **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl`
 - **Global hooks**: `OnNavigating`, `OnNavigated`, `OnError` (Vue Router style)
@@ -91,7 +90,6 @@ builder.Services.AddBitBrouterServices(o =>
 ```razor
 @code {
     [CascadingParameter(Name = "RouteParameters")] RouteParameters? Params { get; set; }
-    [CascadingParameter(Name = "id")] int Id { get; set; }
 
     protected override void OnInitialized()
     {
@@ -108,8 +106,8 @@ builder.Services.AddBitBrouterServices(o =>
 
 ```razor
 @code {
-    [BrouterParameter] public string? Username { get; set; }
-    [BrouterParameter(Name = "id")] public int UserId { get; set; }
+    [Parameter, BrouterParameter] public string? Username { get; set; }
+    [Parameter, BrouterParameter(Name = "id")] public int UserId { get; set; }
 }
 ```
 

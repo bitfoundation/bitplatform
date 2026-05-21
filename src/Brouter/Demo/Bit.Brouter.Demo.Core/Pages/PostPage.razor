@@ -4,5 +4,5 @@
 
 @code {
     // The catch-all parameter "{**slug}" is bound directly via [BrouterParameter].
-    [BrouterParameter] public string? Slug { get; set; }
+    [Parameter, BrouterParameter] public string? Slug { get; set; }
 }
