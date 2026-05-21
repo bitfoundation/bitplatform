@@ -78,6 +78,12 @@ internal sealed class BrouterService : IBrouter
         if (route.RouteTemplate is null)
             throw new InvalidOperationException($"Route '{name}' has no template.");
 
+        // Normalize parameters into a case-insensitive dictionary so that segment.Value lookups
+        // succeed regardless of the casing the caller used for dictionary keys.
+        var normalizedParams = parameters is null
+            ? null
+            : new Dictionary<string, object?>(parameters, StringComparer.OrdinalIgnoreCase);
+
         var sb = new StringBuilder();
 
         foreach (var segment in route.RouteTemplate.TemplateSegments)
@@ -95,7 +101,7 @@ internal sealed class BrouterService : IBrouter
                 continue;
             }
 
-            var hasValue = parameters is not null && parameters.TryGetValue(segment.Value, out var raw) && raw is not null;
+            var hasValue = normalizedParams is not null && normalizedParams.TryGetValue(segment.Value, out var raw) && raw is not null;
             if (hasValue is false)
             {
                 if (segment.IsOptional)
@@ -109,7 +115,7 @@ internal sealed class BrouterService : IBrouter
                     nameof(parameters));
             }
 
-            var rawValue = parameters![segment.Value]!.ToString() ?? string.Empty;
+            var rawValue = normalizedParams![segment.Value]!.ToString() ?? string.Empty;
 
             if (segment.IsCatchAll)
             {

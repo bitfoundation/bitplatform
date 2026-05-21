@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
@@ -18,7 +19,7 @@ public sealed class RouteParameters
         _values = new Dictionary<string, object?>(values, StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Raw parameter values keyed by name (read-only).</summary>
-    public IReadOnlyDictionary<string, object?> Values => _values;
+    public IReadOnlyDictionary<string, object?> Values => new ReadOnlyDictionary<string, object?>(_values);
 
     /// <summary>Returns the raw value or null if missing.</summary>
     public object? this[string key] => _values.TryGetValue(key, out var v) ? v : null;

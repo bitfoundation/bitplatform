@@ -275,7 +275,7 @@ public partial class Brouter : ComponentBase, IDisposable
         route.ConstraintsByParameter = new Dictionary<string, string[]>();
 
         var routeTemplate = route.RouteTemplate;
-        if (routeTemplate is null || string.IsNullOrEmpty(routeTemplate.Template)) return false;
+        if (routeTemplate is null) return false;
 
         var literalComparison = Options.CaseSensitive
             ? StringComparison.Ordinal

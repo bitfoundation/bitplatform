@@ -179,7 +179,7 @@ builder.Services.AddBitBrouterServices(o =>
 
 ## Global hooks
 
-```csharp
+```razor
 @inject IBrouter brouter
 
 @code {

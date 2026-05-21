@@ -98,12 +98,15 @@ internal static class TemplateParser
 
     private static void ValidateParameterName(string template, string segment, string inner)
     {
-        // Strip leading '**' and trailing '?' and the constraint suffix ':...' before checking the name.
+        // Strip leading '**', then trailing '?', then the constraint suffix ':...' before checking the name.
+        // Order matters: the optional marker '?' must be checked before stripping constraints
+        // so that malformed tokens like "id?:int" are caught (the '?' would remain in the name
+        // after colon-stripping and fail the invalid-character check).
         var name = inner;
         if (name.StartsWith("**", StringComparison.Ordinal)) name = name[2..];
+        if (name.EndsWith('?')) name = name[..^1];
         var colon = name.IndexOf(':');
         if (colon >= 0) name = name[..colon];
-        if (name.EndsWith('?')) name = name[..^1];
 
         if (name.Length == 0)
             throw new InvalidOperationException($"Invalid path '{template}'. Empty parameter name in segment '{segment}' is not allowed.");

@@ -2,7 +2,10 @@ namespace Bit.Brouter;
 
 internal class RouteTemplate
 {
-    public static readonly char[] Separators = ['/'];
+    private static readonly char[] _separators = ['/'];
+
+    /// <summary>Route path separator characters (immutable view).</summary>
+    public static ReadOnlySpan<char> Separators => _separators;
 
     public string Template { get; }
     public TemplateSegment[] TemplateSegments { get; }

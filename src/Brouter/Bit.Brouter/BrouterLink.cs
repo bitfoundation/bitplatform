@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Brouter;
 
@@ -41,13 +42,14 @@ public sealed class BrouterLink : ComponentBase, IDisposable
 
     /// <summary>
     /// If true, navigation replaces the current history entry instead of adding a new one.
-    /// Note: when Replace is true, modified clicks (Ctrl/Cmd+click, Shift+click, middle-click)
-    /// will not open a new tab because the click's default action is always prevented.
+    /// Modified clicks (Ctrl/Cmd+click, Shift+click, middle-click) still defer to native
+    /// browser behavior such as opening in a new tab.
     /// </summary>
     [Parameter] public bool Replace { get; set; }
 
 
     private bool _isActive;
+    private bool _shouldPreventDefault;
 
     protected override void OnInitialized()
     {
@@ -115,33 +117,35 @@ public sealed class BrouterLink : ComponentBase, IDisposable
         if (combinedClass is not null) builder.AddAttribute(3, "class", combinedClass);
         if (_isActive) builder.AddAttribute(4, "aria-current", "page");
         // By default, rely on Blazor's NavigationInterception (same as Microsoft's NavLink) to drive
-        // navigation off the anchor's href. Attaching @onclick here would cause both the intercepted
-        // navigation and an explicit Navigate() call to fire for a single click.
-        // The Replace parameter cannot be expressed via a plain anchor, so opt into a custom click
-        // handler with preventDefault only in that case.
-        // Limitation: when Replace=true we always preventDefault on click, which means modified
-        // clicks (Ctrl/Cmd+click, Shift+click, middle-click) won't trigger the browser's native
-        // "open in new tab" behavior. Conditionally toggling preventDefault would require a JS
-        // interop handler since Blazor's onclick:preventDefault is evaluated at render time and
-        // can't be updated synchronously between mousedown and click.
+        // navigation off the anchor's href. The Replace parameter cannot be expressed via a plain
+        // anchor, so opt into a custom click handler with preventDefault only in that case.
+        // We use onmousedown to detect whether the upcoming click is an unmodified primary click
+        // and only then set preventDefault/stopPropagation to true, preserving native modified-click
+        // behavior (Ctrl/Cmd+click opens in new tab, etc.).
         if (Replace)
         {
-            builder.AddAttribute(5, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, OnClick));
-            builder.AddAttribute(6, "onclick:preventDefault", true);
-            builder.AddAttribute(7, "onclick:stopPropagation", true);
+            builder.AddAttribute(5, "onmousedown", EventCallback.Factory.Create<MouseEventArgs>(this, OnMouseDown));
+            builder.AddAttribute(6, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, OnClick));
+            builder.AddAttribute(7, "onclick:preventDefault", _shouldPreventDefault);
+            builder.AddAttribute(8, "onclick:stopPropagation", _shouldPreventDefault);
         }
-        builder.AddContent(8, ChildContent);
+        builder.AddContent(9, ChildContent);
         builder.CloseElement();
     }
 
-    private void OnClick(Microsoft.AspNetCore.Components.Web.MouseEventArgs e)
+    private void OnMouseDown(MouseEventArgs e)
+    {
+        // Set the flag only for unmodified primary clicks so that modified clicks
+        // (Ctrl+click, Shift+click, middle-click) fall through to native browser behavior.
+        _shouldPreventDefault = e.Button == 0 && !e.CtrlKey && !e.ShiftKey && !e.AltKey && !e.MetaKey;
+    }
+
+    private void OnClick(MouseEventArgs e)
     {
         // Only invoked when Replace=true (see BuildRenderTree).
-        // We always preventDefault for Replace links, so modified clicks land here too.
-        // Skip non-primary or modified clicks so the user can still hold a modifier to opt out
-        // of navigation (the browser won't open a new tab because default is prevented, but at
-        // least we won't replace the current entry against the user's intent).
-        if (e.Button != 0 || e.CtrlKey || e.ShiftKey || e.AltKey || e.MetaKey) return;
+        // Navigate only when the mousedown indicated an unmodified primary click.
+        if (!_shouldPreventDefault) return;
+        _shouldPreventDefault = false;
 
         Brouter.Navigate(Href, replace: Replace);
     }
