@@ -107,9 +107,27 @@ public sealed class BrouterLink : ComponentBase, IDisposable
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var combinedClass = string.IsNullOrEmpty(Class)
+        // Merge caller-provided "class" from AdditionalAttributes with our Class/ActiveClass so
+        // splatted classes don't get clobbered by the explicit class attribute we add below.
+        string? extraClass = null;
+        if (AdditionalAttributes is not null &&
+            AdditionalAttributes.TryGetValue("class", out var raw) &&
+            raw is string s && string.IsNullOrWhiteSpace(s) is false)
+        {
+            extraClass = s;
+        }
+
+        var ownClass = string.IsNullOrEmpty(Class)
             ? (_isActive ? ActiveClass : null)
             : (_isActive ? $"{Class} {ActiveClass}".Trim() : Class);
+
+        var combinedClass = (extraClass, ownClass) switch
+        {
+            (null, null) => null,
+            (null, _) => ownClass,
+            (_, null) => extraClass,
+            _ => $"{extraClass} {ownClass}"
+        };
 
         builder.OpenElement(0, "a");
         if (AdditionalAttributes is not null) builder.AddMultipleAttributes(1, AdditionalAttributes);

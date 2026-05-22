@@ -107,6 +107,20 @@ public partial class Route : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>Nesting depth (root routes are 0, each level of nesting adds 1).</summary>
+    internal int Depth
+    {
+        get
+        {
+            var d = 0;
+            for (var p = Parent; p is not null; p = p.Parent) d++;
+            return d;
+        }
+    }
+
+    /// <summary>True for nested index routes (child routes whose <see cref="Path"/> is empty).</summary>
+    internal bool IsIndex => Parent is not null && string.IsNullOrEmpty(Path);
+
 
     internal bool Matched { get; set; }
 

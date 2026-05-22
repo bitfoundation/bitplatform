@@ -183,10 +183,14 @@ public partial class Brouter : ComponentBase, IDisposable
 
             _noRouteMatched = false;
 
-            // Pick the most specific match. Ties broken by declaration order.
+            // Pick the most specific match. Ties broken by deeper nesting (so an index child
+            // wins over its parent when their full templates are identical), then by index-route
+            // preference, then by declaration order.
             var winner = candidates
-                .Select((r, i) => (Route: r, Specificity: r.Specificity, Order: i))
+                .Select((r, i) => (Route: r, Specificity: r.Specificity, Depth: r.Depth, IsIndex: r.IsIndex, Order: i))
                 .OrderByDescending(t => t.Specificity)
+                .ThenByDescending(t => t.Depth)
+                .ThenByDescending(t => t.IsIndex)
                 .ThenBy(t => t.Order)
                 .First()
                 .Route;
