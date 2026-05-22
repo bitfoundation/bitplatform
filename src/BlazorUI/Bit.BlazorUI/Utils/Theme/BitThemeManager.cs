@@ -79,8 +79,9 @@ public sealed class BitThemeManager : IAsyncDisposable
     private async ValueTask EnsureJsNotifierRegisteredAsync()
     {
         if (_jsNotifierRegistered) return;
+        if (_js.IsRuntimeInvalid()) return; // e.g. prerendering / disconnected circuit; retry on next call.
 
-        _jsNotifierReference = DotNetObjectReference.Create(_jsNotifierReceiver);
+        _jsNotifierReference ??= DotNetObjectReference.Create(_jsNotifierReceiver);
         await _js.BitThemeRegisterDotNetNotifier(_jsNotifierReference).ConfigureAwait(false);
         _jsNotifierRegistered = true;
     }

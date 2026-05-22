@@ -7,7 +7,7 @@
     font-family: $tg-font-family;
     --bit-chb-ico-opa: 0;
     --bit-chb-box-clr-brd: #{$clr-brd-pri};
-    --bit-chb-ico-clr: #{var(--bit-chb-clr-txt-sec)};
+    --bit-chb-ico-clr: var(--bit-chb-clr-txt-sec);
 
     &:focus-visible {
         @include focus-ring;
@@ -39,18 +39,18 @@
         cursor: default;
         color: var(--bit-chb-clr-dis-text);
         pointer-events: none;
-        --bit-chb-ico-clr: #{var(--bit-chb-clr-dis-text)};
-        --bit-chb-ico-clr-bg: #{var(--bit-chb-clr-dis)};
-        --bit-chb-box-clr-brd: #{var(--bit-chb-clr-dis)};
+        --bit-chb-ico-clr: var(--bit-chb-clr-dis-text);
+        --bit-chb-ico-clr-bg: var(--bit-chb-clr-dis);
+        --bit-chb-box-clr-brd: var(--bit-chb-clr-dis);
 
         &.bit-chb-ckd {
-            --bit-chb-ico-clr: #{var(--bit-chb-clr-dis-text)};
-            --bit-chb-box-clr-bg: #{var(--bit-chb-clr-dis)};
-            --bit-chb-box-clr-brd: #{var(--bit-chb-clr-dis)};
+            --bit-chb-ico-clr: var(--bit-chb-clr-dis-text);
+            --bit-chb-box-clr-bg: var(--bit-chb-clr-dis);
+            --bit-chb-box-clr-brd: var(--bit-chb-clr-dis);
         }
 
         &.bit-chb-ind {
-            --bit-chb-ico-clr-bg: #{var(--bit-chb-clr-dis)};
+            --bit-chb-ico-clr-bg: var(--bit-chb-clr-dis);
         }
     }
 }
@@ -114,35 +114,35 @@
 
 
 .bit-chb-ckd {
-    --bit-chb-box-clr-bg: #{var(--bit-chb-clr)};
-    --bit-chb-box-clr-brd: #{var(--bit-chb-clr)};
+    --bit-chb-box-clr-bg: var(--bit-chb-clr);
+    --bit-chb-box-clr-brd: var(--bit-chb-clr);
     --bit-chb-ico-opa: 1;
-    --bit-chb-ico-clr: #{var(--bit-chb-clr-txt)};
+    --bit-chb-ico-clr: var(--bit-chb-clr-txt);
 
     @media (hover: hover) {
         &:hover {
-            --bit-chb-box-clr-bg: #{var(--bit-chb-clr-hover)};
-            --bit-chb-box-clr-brd: #{var(--bit-chb-clr-hover)};
+            --bit-chb-box-clr-bg: var(--bit-chb-clr-hover);
+            --bit-chb-box-clr-brd: var(--bit-chb-clr-hover);
             --bit-chb-ico-opa: 1;
-            --bit-chb-ico-clr: #{var(--bit-chb-clr-txt-hover)};
+            --bit-chb-ico-clr: var(--bit-chb-clr-txt-hover);
         }
     }
 }
 
 .bit-chb-ind {
     --bit-chb-box-clr-bg: transparent;
-    --bit-chb-box-clr-brd: #{var(--bit-chb-clr)};
+    --bit-chb-box-clr-brd: var(--bit-chb-clr);
     --bit-chb-ico-opa: 1;
-    --bit-chb-ico-clr: #{var(--bit-chb-clr-txt)};
-    --bit-chb-ico-clr-bg: #{var(--bit-chb-clr)};
+    --bit-chb-ico-clr: var(--bit-chb-clr-txt);
+    --bit-chb-ico-clr-bg: var(--bit-chb-clr);
 
     @media (hover: hover) {
         &:hover {
             --bit-chb-box-clr-bg: transparent;
-            --bit-chb-box-clr-brd: #{var(--bit-chb-clr-hover)};
+            --bit-chb-box-clr-brd: var(--bit-chb-clr-hover);
             --bit-chb-ico-opa: 1;
-            --bit-chb-ico-clr: #{var(--bit-chb-clr-txt-hover)};
-            --bit-chb-ico-clr-bg: #{var(--bit-chb-clr-hover)};
+            --bit-chb-ico-clr: var(--bit-chb-clr-txt-hover);
+            --bit-chb-ico-clr-bg: var(--bit-chb-clr-hover);
         }
     }
 

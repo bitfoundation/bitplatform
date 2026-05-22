@@ -27,6 +27,7 @@
 
     &:focus-visible {
         @include focus-ring(var(--bit-acb-clr-hover));
+
         border-radius: $shp-border-radius;
     }
 

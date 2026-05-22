@@ -29,10 +29,23 @@ public static class BitThemeColorDerivation
 
             if (adjustTextForWcagAa && variants.Main is not null && variants.Text is not null)
             {
-                var ratio = BitThemeColorContrast.GetContrastRatio(variants.Text, variants.Main);
-                if (!BitThemeColorContrast.MeetsWcagAaNormalText(ratio))
+                var blackRatio = BitThemeColorContrast.GetContrastRatio("#000000", variants.Main);
+                var whiteRatio = BitThemeColorContrast.GetContrastRatio("#FFFFFF", variants.Main);
+                var blackPasses = BitThemeColorContrast.MeetsWcagAaNormalText(blackRatio);
+                var whitePasses = BitThemeColorContrast.MeetsWcagAaNormalText(whiteRatio);
+
+                // Prefer a candidate that meets WCAG AA; if both pass or neither passes, pick the higher contrast.
+                if (blackPasses && !whitePasses)
                 {
-                    variants.Text = variants.Text.Equals("#000000", StringComparison.OrdinalIgnoreCase) ? "#FFFFFF" : "#000000";
+                    variants.Text = "#000000";
+                }
+                else if (whitePasses && !blackPasses)
+                {
+                    variants.Text = "#FFFFFF";
+                }
+                else
+                {
+                    variants.Text = blackRatio >= whiteRatio ? "#000000" : "#FFFFFF";
                 }
             }
         }

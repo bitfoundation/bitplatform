@@ -26,6 +26,7 @@
 
         &.bit-tgi-fcs .bit-tgi-cnt {
             @include focus-ring($clr-err-focus);
+
             border-color: $clr-err-focus;
         }
     }
@@ -48,6 +49,7 @@
 .bit-tgi-fcs {
     .bit-tgi-cnt {
         @include focus-ring;
+
         border-color: $clr-pri-focus;
     }
 }

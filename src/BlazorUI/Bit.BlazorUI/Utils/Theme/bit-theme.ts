@@ -66,7 +66,6 @@ class BitTheme {
         }
 
         BitTheme.set(theme, { fromInit: true });
-        BitTheme.syncSystemThemeListener();
     }
 
     public static onChange(fn: onThemeChangeType) {
@@ -180,16 +179,22 @@ class BitTheme {
     private static attachSystemThemeListener() {
         if (!window.matchMedia) return;
         BitTheme._schemeMediaQuery = matchMedia('(prefers-color-scheme: dark)');
-        BitTheme._schemeMediaQuery.addEventListener('change', BitTheme._onSchemeChange);
-        const legacy = BitTheme._schemeMediaQuery as unknown as { addListener?: (cb: () => void) => void };
-        legacy.addListener?.(BitTheme._onSchemeChange);
+        const mq = BitTheme._schemeMediaQuery as MediaQueryList & { addListener?: (cb: () => void) => void };
+        if (typeof mq.addEventListener === 'function') {
+            mq.addEventListener('change', BitTheme._onSchemeChange);
+        } else {
+            mq.addListener?.(BitTheme._onSchemeChange);
+        }
     }
 
     private static detachSystemThemeListener() {
         if (!BitTheme._schemeMediaQuery) return;
-        BitTheme._schemeMediaQuery.removeEventListener('change', BitTheme._onSchemeChange);
-        const legacy = BitTheme._schemeMediaQuery as unknown as { removeListener?: (cb: () => void) => void };
-        legacy.removeListener?.(BitTheme._onSchemeChange);
+        const mq = BitTheme._schemeMediaQuery as MediaQueryList & { removeListener?: (cb: () => void) => void };
+        if (typeof mq.removeEventListener === 'function') {
+            mq.removeEventListener('change', BitTheme._onSchemeChange);
+        } else {
+            mq.removeListener?.(BitTheme._onSchemeChange);
+        }
         BitTheme._schemeMediaQuery = null;
     }
 
