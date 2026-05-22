@@ -1107,72 +1107,71 @@ private BitPivotItem selectedPivotItem;";
 </BitPivot>";
 
     private readonly string example11RazorCode = @"
+<BitPivot Color=""BitColor.Primary"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
 <BitPivot Color=""BitColor.Secondary"">
-    <BitPivotItem HeaderText=""Primary"">
-        <h1>Pivot #1: Primary</h1>
-        <div>
-            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
-        </div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Secondary"">
-        <h1>Pivot #2: Secondary</h1>
-        <div>
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
-            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
-            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-        </div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Info"">
-        <h1>Pivot #3: Info</h1>
-        <div>
-            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
-            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-            shaped into meaning, and the emotions ready to resonate with every reader.
-        </div>
-    </BitPivotItem>
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.Tertiary"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.Info"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.Success"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.Warning"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.SevereWarning"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot Color=""BitColor.Error"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+
+<BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Primary"">
+    <BitPivotItem HeaderText=""Primary""><div>Pivot #1: Primary</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Secondary""><div>Pivot #2: Secondary</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Tertiary""><div>Pivot #3: Tertiary</div></BitPivotItem>
 </BitPivot>
 
 <BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Success"">
-    <BitPivotItem HeaderText=""Primary bg"">
-        <h1>Pivot #1: Primary background</h1>
-        <div>
-            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-            Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-            when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-            for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
-        </div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Secondary bg"">
-        <h1>Pivot #2: Secondary background</h1>
-        <div>
-            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
-            Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-            inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-            spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities
-            are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-        </div>
-    </BitPivotItem>
-    <BitPivotItem HeaderText=""Tertiary fg"">
-        <h1>Pivot #3: Tertiary foreground</h1>
-        <div>
-            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits
-            to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
-            possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
-            vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
-            shaped into meaning, and the emotions ready to resonate with every reader.
-        </div>
-    </BitPivotItem>
+    <BitPivotItem HeaderText=""Info""><div>Pivot #1: Info</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Success""><div>Pivot #2: Success</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Warning""><div>Pivot #3: Warning</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Error"">
+    <BitPivotItem HeaderText=""SevereWarning""><div>Pivot #1: SevereWarning</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Error""><div>Pivot #2: Error</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Info""><div>Pivot #3: Info</div></BitPivotItem>
 </BitPivot>";
 
     private readonly string example12RazorCode = @"
@@ -1459,5 +1458,30 @@ private BitPivotItem selectedPivotItem;";
         راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای
         اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
     </BitPivotItem>
+</BitPivot>";
+
+    private readonly string example15RazorCode = @"
+<BitPivot IsEnabled=""false"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot>
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared"" IsEnabled=""false""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot HeaderType=""BitPivotHeaderType.Tab"" IsEnabled=""false"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
+</BitPivot>
+
+<BitPivot HeaderType=""BitPivotHeaderType.Tab"">
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared"" IsEnabled=""false""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>";
 }

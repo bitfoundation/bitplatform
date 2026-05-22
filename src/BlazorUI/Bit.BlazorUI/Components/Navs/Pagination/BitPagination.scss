@@ -8,8 +8,8 @@
     font-size: var(--bit-pgn-font-size);
     --bit-pgn-ico-transform-end: scaleX(1);
     --bit-pgn-ico-transform-start: scaleX(-1);
-    --bit-pgn-clr-dis: #{$clr-bg-dis};
-    --bit-pgn-clr-txt-dis: #{$clr-fg-dis};
+    --bit-pgn-clr-dis: var(--bit-pgn-clr-dis-bg);
+    --bit-pgn-clr-txt-dis: var(--bit-pgn-clr-dis-text);
     --bit-pgn-clr-btn-txt-hover: var(--bit-pgn-clr-txt);
     --bit-pgn-clr-btn-bg-hover: var(--bit-pgn-clr-hover);
     --bit-pgn-clr-btn-brd-hover: var(--bit-pgn-clr-hover);
@@ -34,8 +34,8 @@
 
     &.bit-dis {
         cursor: default;
-        color: $clr-fg-dis;
         pointer-events: none;
+        color: var(--bit-pgn-clr-txt-dis);
     }
 }
 
@@ -90,7 +90,6 @@
 
     &[disabled] {
         cursor: default;
-        color: $clr-fg-dis;
         pointer-events: none;
         color: var(--bit-pgn-clr-btn-txt-dis);
         border-color: var(--bit-pgn-clr-btn-brd-dis);
@@ -151,6 +150,8 @@
     --bit-pgn-clr-sel: #{$clr-pri-dark};
     --bit-pgn-clr-sel-hover: #{$clr-pri-dark-hover};
     --bit-pgn-clr-sel-active: #{$clr-pri-dark-active};
+    --bit-pgn-clr-dis-bg: #{$clr-pri-dis};
+    --bit-pgn-clr-dis-text: #{$clr-pri-dis-text};
 }
 
 .bit-pgn-sec {
@@ -161,6 +162,8 @@
     --bit-pgn-clr-sel: #{$clr-sec-dark};
     --bit-pgn-clr-sel-hover: #{$clr-sec-dark-hover};
     --bit-pgn-clr-sel-active: #{$clr-sec-dark-active};
+    --bit-pgn-clr-dis-bg: #{$clr-sec-dis};
+    --bit-pgn-clr-dis-text: #{$clr-sec-dis-text};
 }
 
 .bit-pgn-ter {
@@ -171,6 +174,8 @@
     --bit-pgn-clr-sel: #{$clr-ter-dark};
     --bit-pgn-clr-sel-hover: #{$clr-ter-dark-hover};
     --bit-pgn-clr-sel-active: #{$clr-ter-dark-active};
+    --bit-pgn-clr-dis-bg: #{$clr-ter-dis};
+    --bit-pgn-clr-dis-text: #{$clr-ter-dis-text};
 }
 
 .bit-pgn-inf {
@@ -181,6 +186,8 @@
     --bit-pgn-clr-sel: #{$clr-inf-dark};
     --bit-pgn-clr-sel-hover: #{$clr-inf-dark-hover};
     --bit-pgn-clr-sel-active: #{$clr-inf-dark-active};
+    --bit-pgn-clr-dis-bg: #{$clr-inf-dis};
+    --bit-pgn-clr-dis-text: #{$clr-inf-dis-text};
 }
 
 .bit-pgn-suc {
@@ -191,6 +198,8 @@
     --bit-pgn-clr-sel: #{$clr-suc-dark};
     --bit-pgn-clr-sel-hover: #{$clr-suc-dark-hover};
     --bit-pgn-clr-sel-active: #{$clr-suc-dark-active};
+    --bit-pgn-clr-dis-bg: #{$clr-suc-dis};
+    --bit-pgn-clr-dis-text: #{$clr-suc-dis-text};
 }
 
 .bit-pgn-wrn {
@@ -201,6 +210,8 @@
     --bit-pgn-clr-sel: #{$clr-wrn-dark};
     --bit-pgn-clr-sel-hover: #{$clr-wrn-dark-hover};
     --bit-pgn-clr-sel-active: #{$clr-wrn-dark-active};
+    --bit-pgn-clr-dis-bg: #{$clr-wrn-dis};
+    --bit-pgn-clr-dis-text: #{$clr-wrn-dis-text};
 }
 
 .bit-pgn-swr {
@@ -211,6 +222,8 @@
     --bit-pgn-clr-sel: #{$clr-swr-dark};
     --bit-pgn-clr-sel-hover: #{$clr-swr-dark-hover};
     --bit-pgn-clr-sel-active: #{$clr-swr-dark-active};
+    --bit-pgn-clr-dis-bg: #{$clr-swr-dis};
+    --bit-pgn-clr-dis-text: #{$clr-swr-dis-text};
 }
 
 .bit-pgn-err {
@@ -221,6 +234,8 @@
     --bit-pgn-clr-sel: #{$clr-err-dark};
     --bit-pgn-clr-sel-hover: #{$clr-err-dark-hover};
     --bit-pgn-clr-sel-active: #{$clr-err-dark-active};
+    --bit-pgn-clr-dis-bg: #{$clr-err-dis};
+    --bit-pgn-clr-dis-text: #{$clr-err-dis-text};
 }
 
 

@@ -3,6 +3,11 @@
         gap: 0.5rem;
         display: flex;
         flex-flow: column;
+
+        &.row {
+            flex-flow: row;
+            flex-wrap: wrap;
+        }
     }
 
     .custom-class {

@@ -56,7 +56,42 @@ public partial class BitPaginationDemo
 
 <BitPagination Count=""5"" Color=""BitColor.Error"" />
 <BitPagination Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" />";
+<BitPagination Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" />
+
+
+<!-- Disabled: -->
+
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Primary"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Primary"" Variant=""BitVariant.Text"" />
+
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Secondary"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Secondary"" Variant=""BitVariant.Text"" />
+
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Tertiary"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"" />
+
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Info"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Info"" Variant=""BitVariant.Outline"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Info"" Variant=""BitVariant.Text"" />
+
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Success"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Success"" Variant=""BitVariant.Outline"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Success"" Variant=""BitVariant.Text"" />
+
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Warning"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Warning"" Variant=""BitVariant.Text"" />
+
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.SevereWarning"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" />
+
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Error"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Outline"" />
+<BitPagination IsEnabled=""false"" Count=""5"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" />";
 
     private readonly string example9RazorCode = @"
 <BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Fill"" />

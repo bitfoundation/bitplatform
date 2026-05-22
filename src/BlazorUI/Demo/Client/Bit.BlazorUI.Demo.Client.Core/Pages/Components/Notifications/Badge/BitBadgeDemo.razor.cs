@@ -573,6 +573,87 @@ private List<BitDropdownItem<BitPosition>> badgePositionList = Enum.GetValues(ty
 </BitBadge>
 <BitBadge Content=""84"" Color=""BitColor.Error"" Variant=""BitVariant.Text"">
     <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+
+
+<BitBadge Content=""84"" Color=""BitColor.Primary"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Primary"" Variant=""BitVariant.Text"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+
+<BitBadge Content=""84"" Color=""BitColor.Secondary"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Secondary"" Variant=""BitVariant.Text"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+
+<BitBadge Content=""84"" Color=""BitColor.Tertiary"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+
+<BitBadge Content=""84"" Color=""BitColor.Info"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Info"" Variant=""BitVariant.Outline"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Info"" Variant=""BitVariant.Text"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+
+<BitBadge Content=""84"" Color=""BitColor.Success"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Success"" Variant=""BitVariant.Outline"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Success"" Variant=""BitVariant.Text"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+
+<BitBadge Content=""84"" Color=""BitColor.Warning"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Warning"" Variant=""BitVariant.Text"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+
+<BitBadge Content=""84"" Color=""BitColor.SevereWarning"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+
+<BitBadge Content=""84"" Color=""BitColor.Error"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Error"" Variant=""BitVariant.Outline"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
+</BitBadge>
+<BitBadge Content=""84"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" IsEnabled=""false"">
+    <BitIcon IconName=""@BitIconName.Mail"" Color=""BitColor.Tertiary"" />
 </BitBadge>";
 
     private readonly string example10RazorCode = @"

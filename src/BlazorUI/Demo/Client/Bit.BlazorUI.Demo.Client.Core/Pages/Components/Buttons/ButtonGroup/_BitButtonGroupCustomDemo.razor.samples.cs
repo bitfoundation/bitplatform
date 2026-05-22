@@ -375,7 +375,81 @@ private List<Operation> basicCustoms =
 
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
-<BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />";
+<BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+
+<!-- Disabled: -->
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Primary"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Secondary"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Secondary"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Tertiary"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Info"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Info"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Info"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Success"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Success"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Warning"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Warning"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SevereWarning"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Error"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryForeground"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryForeground"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryForeground"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBorder"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBorder"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.PrimaryBorder"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />";
     private readonly string example11CsharpCode = @"
 private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 

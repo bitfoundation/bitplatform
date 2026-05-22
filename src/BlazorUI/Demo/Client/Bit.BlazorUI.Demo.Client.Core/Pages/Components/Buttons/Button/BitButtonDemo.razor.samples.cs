@@ -523,7 +523,78 @@ private int clickCounter;";
 
 <BitButton Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitButton>
 <BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitButton>
-<BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"">TertiaryBorder</BitButton>";
+<BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"">TertiaryBorder</BitButton>
+
+
+Disabled:
+
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Fill"">Primary</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Outline"">Primary</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Text"">Primary</BitButton>
+
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Secondary"">Secondary</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"">Secondary</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Secondary"">Secondary</BitButton>
+
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Tertiary"">Tertiary</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"">Tertiary</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"">Tertiary</BitButton>
+
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"">Info</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Info"">Info</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Info"">Info</BitButton>
+
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"">Success</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Success"">Success</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Success"">Success</BitButton>
+
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Warning"">Warning</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Warning"">Warning</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Warning"">Warning</BitButton>
+
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.SevereWarning"">SevereWarning</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.SevereWarning"">SevereWarning</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.SevereWarning"">SevereWarning</BitButton>
+
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"">Error</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"">Error</BitButton>
+<BitButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.Error"">Error</BitButton>
+
+<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"">PrimaryBackground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"">PrimaryBackground</BitButton>
+
+<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"">SecondaryBackground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"">SecondaryBackground</BitButton>
+
+<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"">TertiaryBackground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"">TertiaryBackground</BitButton>
+
+<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Outline"">PrimaryForeground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Text"">PrimaryForeground</BitButton>
+
+<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Variant=""BitVariant.Outline"">SecondaryForeground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Variant=""BitVariant.Text"">SecondaryForeground</BitButton>
+
+<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryForeground"" Variant=""BitVariant.Outline"">TertiaryForeground</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryForeground"" Variant=""BitVariant.Text"">TertiaryForeground</BitButton>
+
+<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBorder"" Variant=""BitVariant.Outline"">PrimaryBorder</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.PrimaryBorder"" Variant=""BitVariant.Text"">PrimaryBorder</BitButton>
+
+<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Outline"">SecondaryBorder</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Text"">SecondaryBorder</BitButton>
+
+<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitButton>
+<BitButton IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"">TertiaryBorder</BitButton>";
 
     private readonly string example18RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
