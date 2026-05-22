@@ -544,7 +544,77 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+<DemoExample Title="Color" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="Primary"
+                     MultiSelect
+                     ShowSearchBox
+                     DefaultValue="@("")"
+                     Items="GetBasicItems()"
+                     Color="BitColor.Primary"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Secondary"
+                     MultiSelect
+                     ShowSearchBox
+                     DefaultValue="@("")"
+                     Items="GetBasicItems()"
+                     Color="BitColor.Secondary"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Tertiary"
+                     MultiSelect
+                     ShowSearchBox
+                     DefaultValue="@("")"
+                     Items="GetBasicItems()"
+                     Color="BitColor.Tertiary"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Info"
+                     MultiSelect
+                     ShowSearchBox
+                     DefaultValue="@("")"
+                     Items="GetBasicItems()"
+                     Color="BitColor.Info"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Success"
+                     MultiSelect
+                     ShowSearchBox
+                     DefaultValue="@("")"
+                     Items="GetBasicItems()"
+                     Color="BitColor.Success"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Warning"
+                     MultiSelect
+                     ShowSearchBox
+                     DefaultValue="@("")"
+                     Items="GetBasicItems()"
+                     Color="BitColor.Warning"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="SevereWarning"
+                     MultiSelect
+                     ShowSearchBox
+                     DefaultValue="@("")"
+                     Items="GetBasicItems()"
+                     Color="BitColor.SevereWarning"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Error"
+                     MultiSelect
+                     ShowSearchBox
+                     DefaultValue="@("")"
+                     Items="GetBasicItems()"
+                     Color="BitColor.Error"
+                     Placeholder="Select items" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div class="example-content">
@@ -586,7 +656,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+<DemoExample Title="RTL" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
     <div>Use BitDropdown in right-to-left (RTL).</div>
     <br />
     <dir dir="rtl" style="padding:0">
@@ -614,7 +684,7 @@
     </dir>
 </DemoExample>
 
-<DemoExample Title="Virtualization" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+<DemoExample Title="Virtualization" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
     <div>Demonstrates virtualization in the BitDropdown component for handling large datasets efficiently.</div>
     <br /><br /><br />
     <div class="example-content">

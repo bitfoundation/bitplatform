@@ -25,7 +25,7 @@ public partial class Templates03GettingStartedPage
             command:"$progressPreference = 'silentlyContinue'; Install-PackageProvider -Name NuGet -Force | Out-Null; Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null; Repair-WinGetPackageManager -AllUsers;"),
 
             (text:@"echo 'Install .NET SDK https://dotnet.microsoft.com/en-us/download';",
-            command: $"winget install Microsoft.DotNet.SDK.Preview --accept-source-agreements --accept-package-agreements;"),
+            command: $"winget install Microsoft.DotNet.SDK.10 --accept-source-agreements --accept-package-agreements;"),
             
             (text:@"echo 'Install Microsoft DevTunnels https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/get-started?tabs=windows#install';",
             command: $"winget install Microsoft.devtunnel --accept-source-agreements --accept-package-agreements;"),
@@ -43,7 +43,7 @@ public partial class Templates03GettingStartedPage
             command:"dotnet tool install -g Aspire.Cli"),
 
             (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
-            command:"dotnet new install Bit.Boilerplate::10.4.4-pre-03;")
+            command:"dotnet new install Bit.Boilerplate::10.4.4;")
         ];
 
         if (enableVirtualization)

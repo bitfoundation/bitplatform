@@ -21,7 +21,8 @@
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription"
             style="@GetStyle(_selectedItem);@Styles?.OperatorButton"
-            class="bit-mnb-opb @GetClass(_selectedItem) @Classes?.OperatorButton">
+            class="bit-mnb-opb @GetClass(_selectedItem) @Classes?.OperatorButton"
+            aria-pressed="@(Toggle && Split ? IsToggled.ToString().ToLower() : null)">
         @if (Sticky)
         {
             var template = GetTemplate(_selectedItem);
@@ -36,7 +37,7 @@
             else
             {
                 var icon = GetIcon(_selectedItem);
-                @if (icon is not null)
+                @if (NoIcon is false && icon is not null)
                 {
                     <i style="@Styles?.OperatorButtonIcon" class="@icon.GetCssClasses() @Classes?.OperatorButtonIcon" />
                 }
@@ -54,7 +55,7 @@
             }
             else
             {
-                @if (headerIcon is not null)
+                @if (NoIcon is false && headerIcon is not null)
                 {
                     <i style="@Styles?.Icon" class="@headerIcon.GetCssClasses() @Classes?.Icon" />
                 }
@@ -94,17 +95,19 @@
      style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
      id="@_overlayId"
      class="bit-mnb-ovl @Classes?.Overlay"></div>
-
+     
 <div id="@_calloutId"
      style="@Styles?.Callout"
-     class="bit-mnb-cal @Classes?.Callout">
+     class="bit-mnb-cal @GetCalloutCss() @Classes?.Callout">
     <ul role="presentation" style="@Styles?.CalloutContainer" class="bit-mnb-cul @Classes?.CalloutContainer">
         @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
         {
-            if (Sticky && item == SelectedItem) continue;
+            var isSelected = item == SelectedItem;
+            if (Sticky && isSelected) continue;
 
             var template = GetTemplate(item);
             var isEnabled = GetIsEnabled(item);
+
             <li role="presentation" @key="@GetItemKey(item, idx.ToString())" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
                 <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                         role="menuitem"
@@ -137,4 +140,4 @@
             </li>
         }
     </ul>
-</div>
+</div>

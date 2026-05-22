@@ -795,7 +795,101 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+<DemoExample Title="Color" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="Primary"
+                     MultiSelect
+                     Color="BitColor.Primary"
+                     Placeholder="Select items"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="Secondary"
+                     MultiSelect
+                     Color="BitColor.Secondary"
+                     Placeholder="Select items"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="Tertiary"
+                     MultiSelect
+                     Color="BitColor.Tertiary"
+                     Placeholder="Select items"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="Info"
+                     MultiSelect
+                     Color="BitColor.Info"
+                     Placeholder="Select items"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="Success"
+                     MultiSelect
+                     Color="BitColor.Success"
+                     Placeholder="Select items"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="Warning"
+                     MultiSelect
+                     Color="BitColor.Warning"
+                     Placeholder="Select items"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="SevereWarning"
+                     MultiSelect
+                     Color="BitColor.SevereWarning"
+                     Placeholder="Select items"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="Error"
+                     MultiSelect
+                     Color="BitColor.Error"
+                     Placeholder="Select items"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div class="example-content">
@@ -857,7 +951,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+<DemoExample Title="RTL" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
     <div>Use BitDropdown in right-to-left (RTL).</div>
     <br />
     <dir dir="rtl" style="padding:0">
@@ -897,6 +991,6 @@
     </dir>
 </DemoExample>
 
-<DemoExample Title="Virtualization" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+<DemoExample Title="Virtualization" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
     <div>Not applicable to option demo!</div>
 </DemoExample>

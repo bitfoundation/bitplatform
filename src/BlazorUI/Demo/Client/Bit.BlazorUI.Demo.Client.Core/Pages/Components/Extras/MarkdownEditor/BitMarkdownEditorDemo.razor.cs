@@ -145,7 +145,7 @@ public partial class BitMarkdownEditorDemo
     ];
 
 
-    private string? introValue = "# BitMarkdownEditor in action\n\n- Ctrl+H  =>  Heading\n- Ctrl+B  =>  Bold\n- Ctrl+I  =>  Italic\n- Ctrl+L  =>  Link\n- Ctrl+P  =>  Picture/Image\n- Ctrl+Q  =>  Quote\n- auto handling ordered/unordered lists\n- auto handling Ctrl+X and Ctrl+C\n\n### Missing features:\n1. Undo/Redo\n2. Multi-level unordered lists\n3. Tab to go deeper list level\n\nStart typing here...";
+    private string? introValue = "# BitMarkdownEditor in action\n\n- Ctrl+H  =>  Heading\n- Ctrl+B  =>  Bold\n- Ctrl+I  =>  Italic\n- Ctrl+L  =>  Link\n- Ctrl+P  =>  Picture/Image\n- Ctrl+Q  =>  Quote\n- auto handling ordered/unordered lists\n- auto handling Ctrl+X and Ctrl+C\n- Ctrl+Z  =>  Undo\n- Ctrl+Y / Ctrl+Shift+Z  =>  Redo\n\n### Missing features:\n1. Multi-level unordered lists\n2. Tab to go deeper list level\n\nStart typing here...";
 
     private BitMarkdownEditor editorRef = default!;
     private string? value;
@@ -204,6 +204,11 @@ private string? onChangeValue;";
 private string? bindingValue;";
 
     private readonly string example5RazorCode = @"
+<div style=""height:300px"">
+    <BitMarkdownEditor DefaultValue=""# Undo/Redo Demo"" />
+</div>";
+
+    private readonly string example6RazorCode = @"
 <div style=""display:flex;gap:1rem;margin-bottom:1rem"">
     <BitToggleButton Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" OnText=""Write"" OffText=""Preview"" @bind-IsChecked=""showPreview"" />
             
@@ -237,7 +242,7 @@ private string? bindingValue;";
     <BitMarkdownViewer Markdown=""@advancedValue"" 
                        Style=""@($""display:{(showPreview ? ""block"" : ""none"")}"")"" />
 </div>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool showPreview;
 private string? advancedValue;
 private BitMarkdownEditor advancedRef = default!;";

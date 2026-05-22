@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-mnb {
     display: flex;
@@ -12,8 +12,6 @@
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
-    --bit-mnb-cal-opa: 0;
-    --bit-mnb-cal-tra: translateY(#{spacing(-1.25)});
 
     &:focus-visible,
     &:focus-within {
@@ -76,12 +74,17 @@
 }
 
 .bit-mnb-omn {
-    --bit-mnb-cal-opa: 1;
-    --bit-mnb-cal-tra: translateY(0);
     --bit-mnb-clr-opb-txt: var(--bit-mnb-clr-opb-txt-nsp);
     --bit-mnb-clr-opb-bg: var(--bit-mnb-clr-opb-bg-nsp);
     --bit-mnb-clr-chb-txt: var(--bit-mnb-clr-txt);
     --bit-mnb-clr-chb-bg: var(--bit-mnb-clr-active);
+}
+
+.bit-mnb-tgl {
+    .bit-mnb-opb {
+        color: var(--bit-mnb-clr-txt);
+        background-color: var(--bit-mnb-clr-active);
+    }
 }
 
 .bit-mnb-nsp {
@@ -109,18 +112,25 @@
 }
 
 .bit-mnb-cal {
+    --bit-mnb-cal-opa: 0;
+    --bit-mnb-cal-tra: translateY(#{spacing(-1.25)});
     display: none;
     position: fixed;
     overflow: hidden auto;
     min-width: max-content;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    background-color: $clr-bg-pri;
     opacity: var(--bit-mnb-cal-opa);
     box-shadow: $box-shadow-callout;
     transform: var(--bit-mnb-cal-tra);
     transition: opacity 100ms, transform 300ms;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
+    background-color: var(--bit-mnb-cal-bg, #{$clr-bg-pri});
+
+    &.bit-mnb-ocl {
+        --bit-mnb-cal-opa: 1;
+        --bit-mnb-cal-tra: translateY(0);
+    }
 }
 
 .bit-mnb-cul {
@@ -393,4 +403,21 @@
 .bit-mnb-lg {
     font-size: spacing(2.0);
     --bit-mnb-padding: #{spacing(1.0)} #{spacing(2.0)};
+}
+
+
+.bit-mnb-bpg {
+    --bit-mnb-cal-bg: #{$clr-bg-pri};
+}
+
+.bit-mnb-bsg {
+    --bit-mnb-cal-bg: #{$clr-bg-sec};
+}
+
+.bit-mnb-btg {
+    --bit-mnb-cal-bg: #{$clr-bg-ter};
+}
+
+.bit-mnb-brg {
+    --bit-mnb-cal-bg: transparent;
 }

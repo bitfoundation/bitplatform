@@ -5,6 +5,9 @@ public partial class _BitMenuButtonCustomDemo
     private string? eventsChangedCustom;
     private string? eventsClickedCustom;
 
+    private bool customIsToggled;
+    private bool customToggledValue;
+
     private Operation twoWaySelectedCustom = default!;
 
     private bool oneWayIsOpen;

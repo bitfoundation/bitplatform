@@ -10,6 +10,8 @@ namespace BitBlazorUI {
                 editor.value = defaultValue;
             }
 
+            editor.resetHistory();
+
             MarkdownEditor._editors[id] = editor;
         }
 
@@ -24,7 +26,10 @@ namespace BitBlazorUI {
             const editor = MarkdownEditor._editors[id];
             if (!editor) return;
 
-            return editor.value = value;
+            if (editor.value === value) return;
+
+            editor.value = value;
+            editor.resetHistory();
         }
 
         public static run(id: string, cmd: string) {
@@ -51,8 +56,8 @@ namespace BitBlazorUI {
     }
 
     class Editor {
-        _opens: string[] = [];
-        _pairs: { [key: string]: string } = {
+        private _opens: string[] = [];
+        private _pairs: { [key: string]: string } = {
             '(': ')',
             '{': '}',
             '[': ']',
@@ -60,6 +65,12 @@ namespace BitBlazorUI {
             '"': '"',
             "'": "'",
         };
+
+        private _history: string[] = [];
+        private _historyIndex: number = -1;
+        private _historyDebounce: ReturnType<typeof setTimeout> | null = null;
+        private readonly _maxHistorySize: number = 100;
+        private _isUndoRedo: boolean = false;
 
         private textArea: HTMLTextAreaElement;
         private dotnetObj: DotNetObject | undefined | null;
@@ -85,8 +96,79 @@ namespace BitBlazorUI {
             this.textArea.addEventListener('keydown', this.keydownHandler);
         }
 
+        resetHistory() {
+            if (this._historyDebounce !== null) {
+                clearTimeout(this._historyDebounce);
+                this._historyDebounce = null;
+            }
+            this._history = [this.value];
+            this._historyIndex = 0;
+        }
+
+        private pushHistory() {
+            const current = this.value;
+            if (this._history.length > 0 && this._history[this._historyIndex] === current) return;
+            this._history = this._history.slice(0, this._historyIndex + 1);
+            this._history.push(current);
+            if (this._history.length > this._maxHistorySize) {
+                this._history = this._history.slice(this._history.length - this._maxHistorySize);
+            }
+            this._historyIndex = this._history.length - 1;
+        }
+
+        private undo() {
+            this.pushHistory();
+            if (this._historyIndex > 0) {
+                this._historyIndex--;
+                if (this._historyDebounce !== null) {
+                    clearTimeout(this._historyDebounce);
+                    this._historyDebounce = null;
+                }
+                this._isUndoRedo = true;
+                this.value = this._history[this._historyIndex]!;
+            }
+        }
+
+        private redo() {
+            if (this._historyIndex < this._history.length - 1) {
+                this._historyIndex++;
+                if (this._historyDebounce !== null) {
+                    clearTimeout(this._historyDebounce);
+                    this._historyDebounce = null;
+                }
+                this._isUndoRedo = true;
+                this.value = this._history[this._historyIndex]!;
+            }
+        }
+
+        private scheduleHistorySave() {
+            if (this._isUndoRedo) {
+                this._isUndoRedo = false;
+                return;
+            }
+
+            // Truncate the redo branch immediately so stale future states are unreachable at once
+            this._history = this._history.slice(0, this._historyIndex + 1);
+
+            if (this._historyDebounce !== null) {
+                clearTimeout(this._historyDebounce);
+            }
+            this._historyDebounce = setTimeout(() => {
+                const current = this.value;
+                if (this._history[this._historyIndex] !== current) {
+                    this._history.push(current);
+                    if (this._history.length > this._maxHistorySize) {
+                        this._history = this._history.slice(this._history.length - this._maxHistorySize);
+                    }
+                    this._historyIndex = this._history.length - 1;
+                }
+                this._historyDebounce = null;
+            }, 200);
+        }
+
 
         addContent(value: string, type: ContentType = 'block') {
+            this.pushHistory();
             this.add({ type, value });
         }
 
@@ -243,6 +325,11 @@ namespace BitBlazorUI {
             this.textArea.removeEventListener('dblclick', this.dblClickHandler);
             this.textArea.removeEventListener('keydown', this.keydownHandler);
 
+            if (this._historyDebounce !== null) {
+                clearTimeout(this._historyDebounce);
+                this._historyDebounce = null;
+            }
+
             this.dotnetObj = undefined;
         }
 
@@ -258,6 +345,7 @@ namespace BitBlazorUI {
             } else if (e.key === 'Tab') {
                 if (this.block % 2 !== 0) {
                     e.preventDefault();
+                    this.pushHistory();
                     this.add({ type: 'inline', value: '\t' });
                 }
             } else if (e.key === 'Enter') {
@@ -266,6 +354,16 @@ namespace BitBlazorUI {
                 const nextIsPaired = Object.values(this._pairs).includes(next);
                 const isSelected = this.start !== this.end;
                 if (e.ctrlKey || e.metaKey) {
+                    if (e.key === 'z' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.undo();
+                        return;
+                    }
+                    if (e.key === 'y' || (e.shiftKey && e.key === 'Z')) {
+                        e.preventDefault();
+                        this.redo();
+                        return;
+                    }
                     if (this.start === this.end) {
                         if (e.key === 'c' || e.key === 'x') {
                             e.preventDefault();
@@ -275,6 +373,7 @@ namespace BitBlazorUI {
 
                             if (e.key === 'x') {
                                 const pos = this.start - col;
+                                this.pushHistory();
                                 total.splice(num, 1);
                                 this.value = total.join('\n');
                                 setTimeout(() => this.set(pos, pos), 0);
@@ -294,6 +393,7 @@ namespace BitBlazorUI {
                     this._opens.pop();
                 } else if (e.key in this._pairs) {
                     e.preventDefault();
+                    this.pushHistory();
                     this.add({ type: 'wrap', value: e.key });
                     this._opens.push(e.key);
                 }
@@ -308,6 +408,7 @@ namespace BitBlazorUI {
                 next === this._pairs[prev]
             ) {
                 e.preventDefault();
+                this.pushHistory();
                 const start = this.start - 1;
                 const end = this.end - 1;
                 this.value = remove(this.value, start);
@@ -319,6 +420,7 @@ namespace BitBlazorUI {
             }
             if (prev === '\n' && this.start === this.end) {
                 e.preventDefault();
+                this.pushHistory();
                 const pos = this.start - 1;
                 const { num } = this.getLine();
                 this.correct(num, true);
@@ -340,6 +442,7 @@ namespace BitBlazorUI {
 
             if (rep && (orig && orig.length < col)) {
                 e.preventDefault();
+                this.pushHistory();
                 const start = this.start;
                 const end = this.end;
 
@@ -347,6 +450,7 @@ namespace BitBlazorUI {
                 this.add({ type: 'inline', value: `\n${rep}` }, start, end);
             } else if (rep && (orig && orig.length === col)) {
                 e.preventDefault();
+                this.pushHistory();
 
                 const origEnd = this.end;
                 const pos = origEnd - orig.length;
@@ -380,6 +484,7 @@ namespace BitBlazorUI {
 
         change(e: Event) {
             this.dotnetObj?.invokeMethodAsync('OnChange', this.value);
+            this.scheduleHistorySave();
         }
 
         command(cmd: string) {
@@ -418,6 +523,7 @@ namespace BitBlazorUI {
             }
 
             if (content) {
+                this.pushHistory();
                 this.add(content);
             }
 

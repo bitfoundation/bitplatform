@@ -220,4 +220,160 @@ public class BitMenuButtonTests : BunitTestContext
             Assert.IsNotNull(chevronDownButton);
         }
     }
+
+    [TestMethod,
+        DataRow(BitColorKind.Primary, "bit-mnb-bpg"),
+        DataRow(BitColorKind.Secondary, "bit-mnb-bsg"),
+        DataRow(BitColorKind.Tertiary, "bit-mnb-btg"),
+        DataRow(BitColorKind.Transparent, "bit-mnb-brg")
+    ]
+    public void BitMenuButtonShouldRespectBackground(BitColorKind background, string expectedClass)
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Background, background);
+        });
+
+        var callout = com.Find(".bit-mnb-cal");
+        Assert.IsTrue(callout.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonNoIconShouldRemoveIcon()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.IconName, "Add");
+            parameters.Add(p => p.NoIcon, true);
+        });
+
+        var icons = com.FindAll(".bit-mnb-opb .bit-icon--Add");
+        Assert.AreEqual(0, icons.Count);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonNoIconFalseShouldShowIcon()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.IconName, "Add");
+            parameters.Add(p => p.NoIcon, false);
+        });
+
+        var icon = com.Find(".bit-mnb-opb .bit-icon--Add");
+        Assert.IsNotNull(icon);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonToggleShouldSetIsToggledOnClick()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.Toggle, true);
+        });
+
+        var bitMenuButton = com.Find(".bit-mnb");
+        Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-mnb-tgl"));
+
+        var operatorButton = com.Find(".bit-mnb-opb");
+        operatorButton.Click();
+
+        Assert.IsTrue(bitMenuButton.ClassList.Contains("bit-mnb-tgl"));
+
+        operatorButton.Click();
+        Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-mnb-tgl"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonToggleShouldRespectDefaultIsToggled()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.Toggle, true);
+            parameters.Add(p => p.DefaultIsToggled, true);
+        });
+
+        var bitMenuButton = com.Find(".bit-mnb");
+        Assert.IsTrue(bitMenuButton.ClassList.Contains("bit-mnb-tgl"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonToggleShouldFireOnToggleChange()
+    {
+        bool? toggledValue = null;
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.Toggle, true);
+            parameters.Add(p => p.OnToggleChange, (v) => toggledValue = v);
+        });
+
+        var operatorButton = com.Find(".bit-mnb-opb");
+        operatorButton.Click();
+
+        Assert.IsTrue(toggledValue == true);
+
+        operatorButton.Click();
+        Assert.IsTrue(toggledValue == false);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonToggleShouldNotOpenCallout()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.Toggle, true);
+        });
+
+        var bitMenuButton = com.Find(".bit-mnb");
+        var operatorButton = com.Find(".bit-mnb-opb");
+        operatorButton.Click();
+
+        Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-mnb-omn"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonSelectedItemShouldBeRemovedFromCalloutInStickyMode()
+    {
+        var stickyItems = new List<BitMenuButtonItem>
+        {
+            new() { Text = "Item A", Key = "A" },
+            new() { Text = "Item B", Key = "B", IsSelected = true }
+        };
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, stickyItems);
+            parameters.Add(p => p.Sticky, true);
+        });
+
+        var itemButtons = com.FindAll(".bit-mnb-itm");
+
+        Assert.AreEqual(stickyItems.Count - 1, itemButtons.Count);
+        Assert.IsFalse(itemButtons.Any(b => b.TextContent.Contains("Item B")));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonSelectedItemShouldNotHaveSelClassInNonStickyMode()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Sticky, false);
+        });
+
+        var selectedButtons = com.FindAll(".bit-mnb-sel");
+        Assert.AreEqual(0, selectedButtons.Count);
+    }
 }

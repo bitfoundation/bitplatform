@@ -38,6 +38,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
+    /// The background color kind of the callout.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Background { get; set; }
+
+    /// <summary>
     ///  The value of the type attribute of the menu button.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
@@ -69,6 +75,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Default value of the IsToggled parameter in toggle mode.
+    /// </summary>
+    [Parameter] public bool? DefaultIsToggled { get; set; }
+
+    /// <summary>
     /// Default value of the SelectedItem.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
@@ -94,12 +105,23 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
+    /// If true, removes the icon from the header button.
+    /// </summary>
+    [Parameter] public bool NoIcon { get; set; }
+
+    /// <summary>
     /// Determines the opening state of the callout.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetIsOpen))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// Determines whether the header button is in the checked/toggled state when Toggle is enabled.
+    /// </summary>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
+    public bool IsToggled { get; set; }
 
     /// <summary>
     ///  List of items to show in the menu button.
@@ -127,6 +149,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public EventCallback<TItem> OnChange { get; set; }
 
     /// <summary>
+    /// The callback that is called when the IsToggled value changes in toggle mode.
+    /// </summary>
+    [Parameter] public EventCallback<bool> OnToggleChange { get; set; }
+
+    /// <summary>
     /// Alias of the ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
@@ -152,7 +179,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// If true, the selected item is going to change the header item.
     /// </summary>
-    [Parameter] public bool Sticky { get; set; }
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool Sticky { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the menu button.
@@ -163,6 +191,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// The text to show inside the header of menu button.
     /// </summary>
     [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// If true, enables the toggling behavior on the header button in split mode.
+    /// </summary>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder] 
+    public bool Toggle { get; set; }
 
     /// <summary>
     /// The visual variant of the menu button.
@@ -253,6 +287,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
 
+        ClassBuilder.Register(() => Toggle && Split && IsToggled ? $"bit-mnb-tgl {Classes?.Toggled}" : string.Empty);
+
         ClassBuilder.Register(() => Variant switch
         {
             BitVariant.Fill => "bit-mnb-fil",
@@ -267,12 +303,19 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         StyleBuilder.Register(() => Styles?.Root);
 
         StyleBuilder.Register(() => IsOpen ? Styles?.Opened : string.Empty);
+
+        StyleBuilder.Register(() => Toggle && Split && IsToggled ? Styles?.Toggled : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
     {
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
         _overlayId = $"BitMenuButton-{UniqueId}-overlay";
+
+        if (Split && Toggle && IsToggledHasBeenSet is false && DefaultIsToggled.HasValue)
+        {
+            await AssignIsToggled(DefaultIsToggled.Value);
+        }
 
         if (Sticky && SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
         {
@@ -536,6 +579,13 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             await OpenCallout();
         }
 
+        if (Toggle && Split)
+        {
+            if (await AssignIsToggled(!IsToggled) is false) return;
+
+            await OnToggleChange.InvokeAsync(IsToggled);
+        }
+
         if (item is not null)
         {
             if (GetIsEnabled(item) is false) return;
@@ -643,7 +693,20 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
     }
 
-
+    private string? GetCalloutCss()
+    {
+        var openClass = IsOpen ? "bit-mnb-ocl" : null;
+        var bgClass = Background switch
+        {
+            BitColorKind.Primary => "bit-mnb-bpg",
+            BitColorKind.Secondary => "bit-mnb-bsg",
+            BitColorKind.Tertiary => "bit-mnb-btg",
+            BitColorKind.Transparent => "bit-mnb-brg",
+            _ => null
+        };
+        var result = $"{openClass} {bgClass}".Trim();
+        return result.HasValue() ? result : null;
+    }
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

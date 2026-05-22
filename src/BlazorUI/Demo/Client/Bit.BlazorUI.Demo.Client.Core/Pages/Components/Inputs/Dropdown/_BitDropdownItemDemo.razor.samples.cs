@@ -530,7 +530,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitDropdown Label=""Single select""
              Virtualize
              Items=""virtualizeItems1""
@@ -572,7 +572,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Placeholder=""Select items""
              InitialSelectedItems=""initialSelectedItems""
              TItem=""BitDropdownItem<string>"" TValue=""string"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private ICollection<BitDropdownItem<string>>? virtualizeItems1;
 private ICollection<BitDropdownItem<string>>? virtualizeItems2;
 
@@ -902,6 +902,85 @@ private List<BitDropdownItem<string>> GetExternalIconBiItems() => new()
 };";
 
     private readonly string example16RazorCode = @"
+<BitDropdown Label=""Primary""
+             MultiSelect
+             ShowSearchBox
+             DefaultValue=""@("""")""
+             Items=""GetBasicItems()""
+             Color=""BitColor.Primary""
+             Placeholder=""Select items"" />
+
+<BitDropdown Label=""Secondary""
+             MultiSelect
+             ShowSearchBox
+             DefaultValue=""@("""")""
+             Items=""GetBasicItems()""
+             Color=""BitColor.Secondary""
+             Placeholder=""Select items"" />
+
+<BitDropdown Label=""Tertiary""
+             MultiSelect
+             ShowSearchBox
+             DefaultValue=""@("""")""
+             Items=""GetBasicItems()""
+             Color=""BitColor.Tertiary""
+             Placeholder=""Select items"" />
+
+<BitDropdown Label=""Info""
+             MultiSelect
+             ShowSearchBox
+             DefaultValue=""@("""")""
+             Items=""GetBasicItems()""
+             Color=""BitColor.Info""
+             Placeholder=""Select items"" />
+
+<BitDropdown Label=""Success""
+             MultiSelect
+             ShowSearchBox
+             DefaultValue=""@("""")""
+             Items=""GetBasicItems()""
+             Color=""BitColor.Success""
+             Placeholder=""Select items"" />
+
+<BitDropdown Label=""Warning""
+             MultiSelect
+             ShowSearchBox
+             DefaultValue=""@("""")""
+             Items=""GetBasicItems()""
+             Color=""BitColor.Warning""
+             Placeholder=""Select items"" />
+
+<BitDropdown Label=""SevereWarning""
+             MultiSelect
+             ShowSearchBox
+             DefaultValue=""@("""")""
+             Items=""GetBasicItems()""
+             Color=""BitColor.SevereWarning""
+             Placeholder=""Select items"" />
+
+<BitDropdown Label=""Error""
+             MultiSelect
+             ShowSearchBox
+             DefaultValue=""@("""")""
+             Items=""GetBasicItems()""
+             Color=""BitColor.Error""
+             Placeholder=""Select items"" />";
+    private readonly string example16CsharpCode = @"
+private List<BitDropdownItem<string>> GetBasicItems() => new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};";
+
+    private readonly string example17RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -979,7 +1058,7 @@ private List<BitDropdownItem<string>> GetExternalIconBiItems() => new()
                                 Container = ""custom-container"",
                                 ItemButton = ""custom-item-button"",
                                 ScrollContainer = ""custom-scroll-container"" })"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {
     new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
@@ -1008,7 +1087,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"", Class = ""custom-veg"" }
 };";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitDropdown Label=""تک انتخابی""
              Items=""GetRtlItems()""
              DefaultValue=""@string.Empty""
@@ -1028,7 +1107,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Items=""GetRtlItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""لطفا انتخاب کنید"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private List<BitDropdownItem<string>> GetRtlItems() => new()
 {
     new() { ItemType = BitDropdownItemType.Header, Text = ""میوه ها"" },
