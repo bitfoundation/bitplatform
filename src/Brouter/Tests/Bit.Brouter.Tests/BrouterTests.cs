@@ -44,6 +44,7 @@ public class BrouterTests : TestContext
 </Route>"));
 
         cut.WaitForAssertion(() => Assert.NotNull(cut.Find("[data-testid=about]")));
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("[data-testid=star]")));
     }
 
     [Fact]
@@ -55,6 +56,11 @@ public class BrouterTests : TestContext
         var cut = RenderComponent<OptionalParamHost>();
 
         cut.WaitForAssertion(() => Assert.Equal("(none)", cut.Find("[data-testid=out]").TextContent));
+
+        // Now navigate with a concrete value and verify the optional parameter is captured.
+        nav.NavigateTo("http://localhost/users/42");
+
+        cut.WaitForAssertion(() => Assert.Equal("42", cut.Find("[data-testid=out]").TextContent));
     }
 
     [Fact]

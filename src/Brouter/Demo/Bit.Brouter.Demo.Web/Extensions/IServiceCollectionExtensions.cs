@@ -4,6 +4,8 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddWebServices(this IServiceCollection services)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         // Services being registered here can get injected in web (blazor web assembly & blazor server)
         services.AddCoreServices();
 

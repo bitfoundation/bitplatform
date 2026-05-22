@@ -4,6 +4,11 @@ namespace Bit.Brouter;
 /// Base type for parameter constraints. Custom constraints can be registered via
 /// <see cref="BrouterConstraints.Register"/>.
 /// </summary>
+/// <remarks>
+/// A single <see cref="RouteConstraint"/> instance is created per constraint name and reused
+/// across every route match (and across threads). Implementations must be stateless and
+/// thread-safe; do not store per-match data on the instance.
+/// </remarks>
 public abstract class RouteConstraint
 {
     private static readonly Dictionary<string, RouteConstraint> _cache = new(StringComparer.OrdinalIgnoreCase);

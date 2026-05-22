@@ -7,6 +7,11 @@ namespace Bit.Brouter;
 /// Registry of route parameter constraints. Built-in constraints are always registered;
 /// custom constraints can be added via <see cref="Register"/>.
 /// </summary>
+/// <remarks>
+/// The factory passed to <see cref="Register"/> is invoked at most once per constraint name —
+/// the resulting <see cref="RouteConstraint"/> instance is cached and reused across all
+/// route matches. Implementations must therefore be stateless and thread-safe.
+/// </remarks>
 public static class BrouterConstraints
 {
     private static readonly ConcurrentDictionary<string, Func<RouteConstraint>> _factories = new(StringComparer.OrdinalIgnoreCase)
@@ -25,6 +30,11 @@ public static class BrouterConstraints
     /// Registers a custom constraint. Templates can then use <c>{name:yourConstraintName}</c>.
     /// Throws if <paramref name="name"/> is already registered. Thread-safe.
     /// </summary>
+    /// <remarks>
+    /// <paramref name="factory"/> is invoked at most once per constraint name; the produced
+    /// <see cref="RouteConstraint"/> is cached and shared across every route match. Implementations
+    /// must be stateless and safe for concurrent use.
+    /// </remarks>
     public static void Register(string name, Func<RouteConstraint> factory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);

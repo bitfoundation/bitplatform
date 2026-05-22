@@ -35,11 +35,11 @@ public partial class Brouter : ComponentBase, IDisposable
 
     [Inject] private NavigationManager _navManager { get; set; } = default!;
     [Inject] private INavigationInterception _navInterception { get; set; } = default!;
-    [Inject] private IBrouter _brouterService { get; set; } = default!;
+    [Inject] private BrouterService _brouterService { get; set; } = default!;
 
 
     internal BrouterLocation CurrentLocation { get; private set; } = BrouterLocation.Empty;
-    internal BrouterOptions Options => ((BrouterService)_brouterService).Options;
+    internal BrouterOptions Options => _brouterService.Options;
 
     private readonly List<Route> _routes = [];
     internal void RegisterRoute(Route route) => _routes.Add(route);
@@ -57,7 +57,7 @@ public partial class Brouter : ComponentBase, IDisposable
     {
         base.OnInitialized();
 
-        ((BrouterService)_brouterService).Attach(this, _navManager);
+        _brouterService.Attach(this, _navManager);
 
         _navManager.LocationChanged += NavManagerLocationChanged;
 
@@ -155,7 +155,7 @@ public partial class Brouter : ComponentBase, IDisposable
         var token = newCts.Token;
 
         var ctx = new NavigationContext(from, CurrentLocation, token);
-        var service = (BrouterService)_brouterService;
+        var service = _brouterService;
 
         try
         {
@@ -282,15 +282,15 @@ public partial class Brouter : ComponentBase, IDisposable
             : StringComparison.OrdinalIgnoreCase;
 
         var templateSegments = routeTemplate.TemplateSegments;
-        if (templateSegments.Length == 0) return segments.Length == 0;
+        if (templateSegments.Count == 0) return segments.Length == 0;
 
-        var lastIdx = templateSegments.Length - 1;
+        var lastIdx = templateSegments.Count - 1;
         var last = templateSegments[lastIdx];
 
-        if (templateSegments.Length != segments.Length)
+        if (templateSegments.Count != segments.Length)
         {
             // Allow shorter URLs if every missing trailing segment is optional or the last one is catch-all.
-            if (segments.Length < templateSegments.Length)
+            if (segments.Length < templateSegments.Count)
             {
                 if (last.IsCatchAll && segments.Length >= lastIdx)
                 {
@@ -298,7 +298,7 @@ public partial class Brouter : ComponentBase, IDisposable
                 }
                 else
                 {
-                    for (int i = segments.Length; i < templateSegments.Length; i++)
+                    for (int i = segments.Length; i < templateSegments.Count; i++)
                     {
                         if (templateSegments[i].IsOptional is false &&
                             templateSegments[i].IsCatchAll is false) return false;
@@ -312,7 +312,7 @@ public partial class Brouter : ComponentBase, IDisposable
             }
         }
 
-        for (int i = 0; i < templateSegments.Length; i++)
+        for (int i = 0; i < templateSegments.Count; i++)
         {
             var templateSegment = templateSegments[i];
 
@@ -366,7 +366,7 @@ public partial class Brouter : ComponentBase, IDisposable
             cts.Cancel();
             cts.Dispose();
         }
-        ((BrouterService)_brouterService).Detach(this);
+        _brouterService.Detach(this);
     }
 
     private bool _disposed;

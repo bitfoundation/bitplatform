@@ -8,11 +8,15 @@ internal class RouteTemplate
     public static ReadOnlySpan<char> Separators => _separators;
 
     public string Template { get; }
-    public TemplateSegment[] TemplateSegments { get; }
+    public IReadOnlyList<TemplateSegment> TemplateSegments { get; }
 
     public RouteTemplate(string template, TemplateSegment[] segments)
     {
+        ArgumentNullException.ThrowIfNull(segments);
         Template = template;
-        TemplateSegments = segments;
+        // Defensive copy so callers can't mutate internal state via the original array reference.
+        var copy = new TemplateSegment[segments.Length];
+        Array.Copy(segments, copy, segments.Length);
+        TemplateSegments = copy;
     }
 }
