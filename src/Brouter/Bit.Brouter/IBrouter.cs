@@ -38,6 +38,11 @@ public interface IBrouter
     /// <summary>Async hook fired after a successful navigation completes.</summary>
     event Func<NavigationContext, ValueTask>? OnNavigated;
 
-    /// <summary>Async hook fired when a navigation is cancelled or fails.</summary>
+    /// <summary>
+    /// Async hook fired when an unhandled exception is thrown during navigation
+    /// (e.g., from a route loader or another step in the pipeline).
+    /// User-driven cancellations via <see cref="NavigationContext.Cancel"/> and redirects via
+    /// <see cref="NavigationContext.Redirect"/> are control-flow signals and do not raise this event.
+    /// </summary>
     event Func<NavigationContext, Exception?, ValueTask>? OnError;
 }

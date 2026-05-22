@@ -12,6 +12,7 @@ internal class RouteTemplate
 
     public RouteTemplate(string template, TemplateSegment[] segments)
     {
+        ArgumentNullException.ThrowIfNull(template);
         ArgumentNullException.ThrowIfNull(segments);
         Template = template;
         // Defensive copy so callers can't mutate internal state via the original array reference.

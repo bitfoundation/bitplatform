@@ -100,7 +100,9 @@ public partial class Brouter : ComponentBase, IDisposable
         {
             var from = CurrentLocation;
             UpdateLocation();
-            await ProcessNavigationAsync(from).ConfigureAwait(false);
+            // No ConfigureAwait(false): keep the navigation pipeline on the renderer's
+            // dispatcher so subsequent StateHasChanged() / UI mutations are valid.
+            await ProcessNavigationAsync(from);
         }
         catch
         {
@@ -206,17 +208,20 @@ public partial class Brouter : ComponentBase, IDisposable
             ctx.Parameters = new RouteParameters(winner.Parameters);
 
             // Guards.
-            var guardsOk = await winner.InvokeGuardsAsync(ctx).ConfigureAwait(false);
+            var guardsOk = await winner.InvokeGuardsAsync(ctx);
             if (HandleSideEffects(ctx, from)) return;
             if (token.IsCancellationRequested || version != _navVersion) return;
             if (guardsOk is false) return;
 
-            // Loader.
+            // Loader. Capture the result into a local first, then re-check
+            // cancellation/version before committing to shared state so a superseded
+            // navigation can't leave stale LoadedData on the route.
             if (winner.Loader is not null)
             {
+                object? loaded;
                 try
                 {
-                    winner.LoadedData = await winner.Loader(ctx).ConfigureAwait(false);
+                    loaded = await winner.Loader(ctx).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested)
                 {
@@ -230,6 +235,8 @@ public partial class Brouter : ComponentBase, IDisposable
 
                 if (HandleSideEffects(ctx, from)) return;
                 if (token.IsCancellationRequested || version != _navVersion) return;
+
+                winner.LoadedData = loaded;
             }
 
             winner.SetMatched();
@@ -247,7 +254,7 @@ public partial class Brouter : ComponentBase, IDisposable
         }
         catch (Exception ex)
         {
-            await service.InvokeOnError(ctx, ex).ConfigureAwait(false);
+            await service.InvokeOnError(ctx, ex);
         }
     }
 

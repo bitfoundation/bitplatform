@@ -20,7 +20,15 @@ internal class RouteRenderer
         builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
         {
             b.AddContent(0, _route.ChildContent);
-            if (matched) RenderRoute(b);
+            if (matched)
+            {
+                // RenderRoute restarts its own sequence numbers from 0; wrap it in a region
+                // so its frames live in an independent sequence-number space and don't collide
+                // with the AddContent above.
+                b.OpenRegion(1);
+                RenderRoute(b);
+                b.CloseRegion();
+            }
         }));
         builder.CloseComponent();
     }

@@ -83,9 +83,9 @@ public partial class Route : ComponentBase, IDisposable
             throw new InvalidOperationException("A root-level Route must have a non-empty Path. " +
                 "Only nested (child) routes may use an empty path to act as an index route.");
 
-        Brouter.RegisterRoute(this);
-        Parent?.AddChild(this);
-
+        // Compute and parse the template (and build the renderer) before registering with the
+        // Brouter or attaching to the Parent. If parsing throws we don't want this Route to be
+        // left half-initialized in the parent/router collections.
         FullTemplate = (Parent is null || string.IsNullOrWhiteSpace(Parent.FullTemplate))
                         ? Path.Trim('/')
                         : $"{Parent.FullTemplate.TrimEnd('/')}/{Path.TrimStart('/')}";
@@ -93,6 +93,9 @@ public partial class Route : ComponentBase, IDisposable
         RouteTemplate = TemplateParser.ParseTemplate(FullTemplate);
 
         _renderer = new RouteRenderer(this);
+
+        Brouter.RegisterRoute(this);
+        Parent?.AddChild(this);
     }
 
     /// <summary>The combined specificity score of this route's full template.</summary>

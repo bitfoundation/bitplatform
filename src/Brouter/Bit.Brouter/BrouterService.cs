@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -115,7 +116,7 @@ internal sealed class BrouterService : IBrouter
                     nameof(parameters));
             }
 
-            var rawValue = normalizedParams![segment.Value]!.ToString() ?? string.Empty;
+            var rawValue = FormatRouteValue(normalizedParams![segment.Value]);
 
             if (segment.IsCatchAll)
             {
@@ -155,6 +156,32 @@ internal sealed class BrouterService : IBrouter
     {
         if (_activeBrouter is null || _navigationManager is null)
             throw new InvalidOperationException("No Brouter is currently mounted.");
+    }
+
+    private static string FormatRouteValue(object? value)
+    {
+        if (value is null) return string.Empty;
+
+        // Strings pass through unchanged.
+        if (value is string s) return s;
+
+        // Booleans: use lowercased invariant form ("true"/"false") for stable, parseable URLs.
+        if (value is bool b) return b ? "true" : "false";
+
+        // Enums: emit the symbolic name rather than a (locale-independent but opaque) numeric value.
+        if (value is Enum e) return e.ToString();
+
+        // Round-trippable date/time formats.
+        if (value is DateTime dt) return dt.ToString("o", CultureInfo.InvariantCulture);
+        if (value is DateTimeOffset dto) return dto.ToString("o", CultureInfo.InvariantCulture);
+        if (value is TimeSpan ts) return ts.ToString("c", CultureInfo.InvariantCulture);
+        if (value is DateOnly d) return d.ToString("o", CultureInfo.InvariantCulture);
+        if (value is TimeOnly t) return t.ToString("o", CultureInfo.InvariantCulture);
+
+        // Numerics and other formattable types: force invariant culture.
+        if (value is IFormattable f) return f.ToString(null, CultureInfo.InvariantCulture);
+
+        return value.ToString() ?? string.Empty;
     }
 
 
