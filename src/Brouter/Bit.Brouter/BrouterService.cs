@@ -194,9 +194,11 @@ internal sealed class BrouterService : IBrouter
         var handlers = OnNavigating;
         if (handlers is null) return;
 
+        // No ConfigureAwait(false): user handlers typically touch UI state (StateHasChanged,
+        // NavigationManager calls). Stay on the Blazor renderer's synchronization context.
         foreach (var handler in handlers.GetInvocationList().Cast<Func<NavigationContext, ValueTask>>())
         {
-            await handler(ctx).ConfigureAwait(false);
+            await handler(ctx);
             if (ctx.IsCancelled || ctx.RedirectUrl is not null) return;
         }
     }
@@ -208,7 +210,7 @@ internal sealed class BrouterService : IBrouter
 
         foreach (var handler in handlers.GetInvocationList().Cast<Func<NavigationContext, ValueTask>>())
         {
-            try { await handler(ctx).ConfigureAwait(false); }
+            try { await handler(ctx); }
             catch { /* OnNavigated should not break navigation flow */ }
         }
     }
@@ -220,7 +222,7 @@ internal sealed class BrouterService : IBrouter
 
         foreach (var handler in handlers.GetInvocationList().Cast<Func<NavigationContext, Exception?, ValueTask>>())
         {
-            try { await handler(ctx, ex).ConfigureAwait(false); }
+            try { await handler(ctx, ex); }
             catch { /* swallow secondary errors */ }
         }
     }

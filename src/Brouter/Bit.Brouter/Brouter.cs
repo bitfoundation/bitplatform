@@ -42,7 +42,26 @@ public partial class Brouter : ComponentBase, IDisposable
     internal BrouterOptions Options => _brouterService.Options;
 
     private readonly List<Route> _routes = [];
-    internal void RegisterRoute(Route route) => _routes.Add(route);
+    internal void RegisterRoute(Route route)
+    {
+        // Enforce the documented uniqueness contract for Route.Name. Comparison matches
+        // FindRouteByName (case-insensitive), so name lookups stay unambiguous.
+        if (string.IsNullOrEmpty(route.Name) is false)
+        {
+            for (int i = 0; i < _routes.Count; i++)
+            {
+                var existing = _routes[i];
+                if (ReferenceEquals(existing, route)) continue;
+                if (string.Equals(existing.Name, route.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(
+                        $"A route with the name '{route.Name}' is already registered. Route names must be unique (case-insensitive).");
+                }
+            }
+        }
+
+        _routes.Add(route);
+    }
     internal void UnregisterRoute(Route route) => _routes.Remove(route);
 
     internal Route? FindRouteByName(string name) =>
@@ -161,7 +180,10 @@ public partial class Brouter : ComponentBase, IDisposable
 
         try
         {
-            await service.InvokeOnNavigating(ctx).ConfigureAwait(false);
+            // No ConfigureAwait(false) anywhere in this pipeline: subsequent calls
+            // (StateHasChanged, NavigationManager.NavigateTo, route/component state mutations,
+            // Outlet rendering) require the Blazor renderer's synchronization context.
+            await service.InvokeOnNavigating(ctx);
             if (HandleSideEffects(ctx, from)) return;
             if (token.IsCancellationRequested || version != _navVersion) return;
 
@@ -172,12 +194,18 @@ public partial class Brouter : ComponentBase, IDisposable
             if (candidates.Count == 0)
             {
                 _noRouteMatched = true;
-                if (OnNotFound is not null) await OnNotFound(CurrentLocation).ConfigureAwait(false);
+                if (OnNotFound is not null) await OnNotFound(CurrentLocation);
 
                 if (string.IsNullOrEmpty(NotFound) is false)
                 {
-                    _navManager.NavigateTo(NotFound);
-                    return;
+                    // Avoid a self-redirect loop when the current URL is already the NotFound target
+                    // (and still doesn't match any route). Render the fallback UI instead.
+                    var targetUri = _navManager.ToAbsoluteUri(NotFound).ToString();
+                    if (string.Equals(_navManager.Uri, targetUri, StringComparison.Ordinal) is false)
+                    {
+                        _navManager.NavigateTo(NotFound);
+                        return;
+                    }
                 }
                 StateHasChanged();
                 return;
@@ -221,7 +249,7 @@ public partial class Brouter : ComponentBase, IDisposable
                 object? loaded;
                 try
                 {
-                    loaded = await winner.Loader(ctx).ConfigureAwait(false);
+                    loaded = await winner.Loader(ctx);
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested)
                 {
@@ -229,7 +257,7 @@ public partial class Brouter : ComponentBase, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    await service.InvokeOnError(ctx, ex).ConfigureAwait(false);
+                    await service.InvokeOnError(ctx, ex);
                     return;
                 }
 
@@ -241,10 +269,10 @@ public partial class Brouter : ComponentBase, IDisposable
 
             winner.SetMatched();
 
-            if (OnMatch is not null) await OnMatch(winner).ConfigureAwait(false);
+            if (OnMatch is not null) await OnMatch(winner);
 
-            await service.InvokeOnNavigated(ctx).ConfigureAwait(false);
-            await service.ApplyScrollAsync().ConfigureAwait(false);
+            await service.InvokeOnNavigated(ctx);
+            await service.ApplyScrollAsync();
 
             StateHasChanged();
         }

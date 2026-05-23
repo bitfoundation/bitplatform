@@ -67,9 +67,37 @@ public sealed class RouteParameters
             return true;
         }
 
+        var underlying = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        // Convert.ChangeType doesn't support string -> Guid or string -> Enum, so handle them
+        // explicitly before falling back. Nullable<T> is honored because we resolved the
+        // underlying type above; assigning a boxed Guid/enum value is compatible with the
+        // Nullable<T> field assignment performed by the caller.
+        if (raw is string str)
+        {
+            if (underlying == typeof(Guid))
+            {
+                if (Guid.TryParse(str, out var guidVal))
+                {
+                    value = guidVal;
+                    return true;
+                }
+                return false;
+            }
+
+            if (underlying.IsEnum)
+            {
+                if (Enum.TryParse(underlying, str, ignoreCase: true, out var enumVal))
+                {
+                    value = enumVal;
+                    return true;
+                }
+                return false;
+            }
+        }
+
         try
         {
-            var underlying = Nullable.GetUnderlyingType(targetType) ?? targetType;
             value = Convert.ChangeType(raw, underlying, CultureInfo.InvariantCulture);
             return true;
         }

@@ -8,22 +8,22 @@ namespace Bit.Brouter;
 /// custom constraints can be added via <see cref="Register"/>.
 /// </summary>
 /// <remarks>
-/// The factory passed to <see cref="Register"/> is invoked at most once per constraint name —
-/// the resulting <see cref="RouteConstraint"/> instance is cached and reused across all
-/// route matches. Implementations must therefore be stateless and thread-safe.
+/// Each registered <see cref="RouteConstraint"/> instance is cached and reused across all
+/// route matches (and across threads). Implementations must therefore be stateless and
+/// thread-safe.
 /// </remarks>
 public static class BrouterConstraints
 {
-    private static readonly ConcurrentDictionary<string, Func<RouteConstraint>> _factories = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly ConcurrentDictionary<string, RouteConstraint> _constraints = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["int"] = () => new TypeRouteConstraint<int>((string s, out int r) => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out r)),
-        ["bool"] = () => new TypeRouteConstraint<bool>(bool.TryParse),
-        ["guid"] = () => new TypeRouteConstraint<Guid>(Guid.TryParse),
-        ["long"] = () => new TypeRouteConstraint<long>((string s, out long r) => long.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out r)),
-        ["float"] = () => new TypeRouteConstraint<float>((string s, out float r) => float.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
-        ["double"] = () => new TypeRouteConstraint<double>((string s, out double r) => double.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
-        ["decimal"] = () => new TypeRouteConstraint<decimal>((string s, out decimal r) => decimal.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
-        ["datetime"] = () => new TypeRouteConstraint<DateTime>((string s, out DateTime r) => DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out r)),
+        ["int"] = new TypeRouteConstraint<int>((string s, out int r) => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out r)),
+        ["bool"] = new TypeRouteConstraint<bool>(bool.TryParse),
+        ["guid"] = new TypeRouteConstraint<Guid>(Guid.TryParse),
+        ["long"] = new TypeRouteConstraint<long>((string s, out long r) => long.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out r)),
+        ["float"] = new TypeRouteConstraint<float>((string s, out float r) => float.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
+        ["double"] = new TypeRouteConstraint<double>((string s, out double r) => double.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
+        ["decimal"] = new TypeRouteConstraint<decimal>((string s, out decimal r) => decimal.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
+        ["datetime"] = new TypeRouteConstraint<DateTime>((string s, out DateTime r) => DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out r)),
     };
 
     /// <summary>
@@ -31,19 +31,16 @@ public static class BrouterConstraints
     /// Throws if <paramref name="name"/> is already registered. Thread-safe.
     /// </summary>
     /// <remarks>
-    /// <paramref name="factory"/> is invoked at most once per constraint name; the produced
-    /// <see cref="RouteConstraint"/> is cached and shared across every route match. Implementations
-    /// must be stateless and safe for concurrent use.
+    /// The provided <paramref name="constraint"/> is cached and shared across every route match.
+    /// Implementations must be stateless and safe for concurrent use.
     /// </remarks>
-    public static void Register(string name, Func<RouteConstraint> factory)
+    public static void Register(string name, RouteConstraint constraint)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        ArgumentNullException.ThrowIfNull(factory);
+        ArgumentNullException.ThrowIfNull(constraint);
 
-        if (_factories.TryAdd(name, factory) is false)
+        if (_constraints.TryAdd(name, constraint) is false)
             throw new InvalidOperationException($"A constraint named '{name}' is already registered.");
-
-        RouteConstraint.InvalidateCache(name);
     }
 
     private static readonly HashSet<string> _builtIns = new(StringComparer.OrdinalIgnoreCase)
@@ -58,14 +55,10 @@ public static class BrouterConstraints
 
         if (_builtIns.Contains(name)) return false;
 
-        var removed = _factories.TryRemove(name, out _);
-        if (removed)
-        {
-            RouteConstraint.InvalidateCache(name);
-        }
+        var removed = _constraints.TryRemove(name, out _);
         return removed;
     }
 
     internal static RouteConstraint? Create(string name) =>
-        _factories.TryGetValue(name, out var factory) ? factory() : null;
+        _constraints.TryGetValue(name, out var constraint) ? constraint : null;
 }

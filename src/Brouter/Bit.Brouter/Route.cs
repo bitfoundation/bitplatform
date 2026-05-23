@@ -149,11 +149,14 @@ public partial class Route : ComponentBase, IDisposable
         for (var r = this; r is not null; r = r.Parent) chain.Add(r);
         chain.Reverse();
 
+        // No ConfigureAwait(false): guards typically touch UI state (redirect/cancel via ctx,
+        // injected services that expect the renderer context), and the navigation pipeline
+        // continues with component state mutations after we return.
         foreach (var node in chain)
         {
             if (node.Guard is not null)
             {
-                await node.Guard(ctx).ConfigureAwait(false);
+                await node.Guard(ctx);
                 if (ctx.IsCancelled || ctx.RedirectUrl is not null) return false;
             }
         }

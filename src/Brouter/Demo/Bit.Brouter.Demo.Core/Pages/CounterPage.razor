@@ -21,14 +21,20 @@
 
     [CascadingParameter(Name = "RouteParameters")] RouteParameters? Parameters { get; set; }
 
+    private int? _appliedInit;
+
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
-        if (Parameters?.TryGet<int>("init", out var init) == true && init != CurrentCount)
+        // Apply the route 'init' parameter only once per distinct value. Otherwise, every
+        // re-render would overwrite user-driven increments with the original route value.
+        if (Parameters?.TryGet<int>("init", out var init) == true &&
+            (_appliedInit is null || _appliedInit != init))
         {
             CurrentCount = init;
+            _appliedInit = init;
             ChangeCount?.Invoke(CurrentCount);
             if (CurrentCountChanged.HasDelegate)
                 await CurrentCountChanged.InvokeAsync(CurrentCount);

@@ -57,7 +57,7 @@ builder.Services.AddBitBrouterServices(o =>
 - Wildcards: `*` (single segment), `**` (catch-all)
 - **Optional parameters**: `{id?}` — must be trailing
 - **Catch-all parameter binding**: `{**path}` exposes the remainder
-- Custom constraints via `BrouterConstraints.Register("slug", () => new MyConstraint())`
+- Custom constraints via `BrouterConstraints.Register("slug", new MyConstraint())`
 - Specificity-based matching (literals beat constrained beat unconstrained beat wildcards)
 - Nested routes via `Route` children or `Outlet`
 - Async `Guard` with cancel/redirect via `NavigationContext`
@@ -222,7 +222,7 @@ builder.Services.AddBitBrouterServices(o =>
 
 ```csharp
 BrouterConstraints.Register("slug",
-    () => new TypeRouteConstraint<string>((string s, out string r) =>
+    new TypeRouteConstraint<string>((string s, out string r) =>
     {
         r = s;
         return s.Length >= 3 && s.All(c => char.IsLetterOrDigit(c) || c == '-');
