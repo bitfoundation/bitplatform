@@ -60,11 +60,21 @@ public sealed class BitMapMarker
     /// <summary>Optional URL to a custom marker icon image.</summary>
     public string? IconUrl { get; init; }
 
-    /// <summary>Width in pixels of the custom marker icon.</summary>
-    public int? IconWidth { get; init; }
+    /// <summary>Width in pixels of the custom marker icon. Negative values are clamped to 0.</summary>
+    public int? IconWidth
+    {
+        get => _iconWidth;
+        init => _iconWidth = value is null ? null : Math.Max(0, value.Value);
+    }
+    private readonly int? _iconWidth;
 
-    /// <summary>Height in pixels of the custom marker icon.</summary>
-    public int? IconHeight { get; init; }
+    /// <summary>Height in pixels of the custom marker icon. Negative values are clamped to 0.</summary>
+    public int? IconHeight
+    {
+        get => _iconHeight;
+        init => _iconHeight = value is null ? null : Math.Max(0, value.Value);
+    }
+    private readonly int? _iconHeight;
 
     /// <summary>Stack order offset for overlapping markers.</summary>
     public int ZIndexOffset { get; init; }

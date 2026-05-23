@@ -164,25 +164,51 @@ public class BitMapTests : BunitTestContext
     [TestMethod]
     public void BitMapShouldReInitializeWhenJsObjectNameChanges()
     {
-        // Use OpenLayers provider which has a different JsObjectName than Leaflet
-        const string OL_INIT = "BitBlazorUI.BitMapOpenLayers.init";
-        const string OL_DISPOSE = "BitBlazorUI.BitMapOpenLayers.dispose";
+        // Two test providers that share TMapProvider but expose different JsObjectName
+        // values so swapping Provider drives the re-init branch in OnProviderSet
+        // (dispose old + init new) instead of the sync branch.
+        const string A_INIT = "BitBlazorUI.TestProviderA.init";
+        const string A_DISPOSE = "BitBlazorUI.TestProviderA.dispose";
+        const string B_INIT = "BitBlazorUI.TestProviderB.init";
 
         Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
         Context.JSInterop.SetupVoid(INIT_SCRIPTS);
-        Context.JSInterop.SetupVoid(INIT);
-        Context.JSInterop.SetupVoid(DISPOSE);
-        Context.JSInterop.SetupVoid(OL_INIT);
-        Context.JSInterop.SetupVoid(OL_DISPOSE);
+        Context.JSInterop.SetupVoid(A_INIT);
+        Context.JSInterop.SetupVoid(A_DISPOSE);
+        Context.JSInterop.SetupVoid(B_INIT);
 
-        // Start with Leaflet
-        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        // Start with provider A
+        var component = RenderComponent<BitMap<TestMapProviderA>>(parameters =>
         {
-            parameters.Add(p => p.Provider, new BitLeafletMapProvider());
+            parameters.Add(p => p.Provider, new TestMapProviderA());
         });
 
-        // Verify initial init was called
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == INIT));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == A_INIT),
+            "Provider A should be initialized on first render");
+
+        // Swap to a derived provider with a different JsObjectName
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Provider, new TestMapProviderB());
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == A_DISPOSE),
+            "Provider A should be disposed when JsObjectName changes");
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == B_INIT),
+            "Provider B should be initialized when JsObjectName changes");
+    }
+
+    private class TestMapProviderA : BitMapProviderBase
+    {
+        public override string Key => "test-a";
+        public override string JsObjectName => "TestProviderA";
+        public override object BuildOptionsPayload() => GetCommonOptions();
+    }
+
+    private sealed class TestMapProviderB : TestMapProviderA
+    {
+        public override string Key => "test-b";
+        public override string JsObjectName => "TestProviderB";
     }
 
     [TestMethod]

@@ -34,7 +34,7 @@ public sealed class BitArcGisMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
-        if (BasemapId is not "osm" && string.IsNullOrWhiteSpace(ApiKey))
+        if (!string.Equals(BasemapId, "osm", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(ApiKey))
         {
             throw new InvalidOperationException(
                 $"BitArcGisMapProvider: An ApiKey is required for the '{BasemapId}' basemap. " +

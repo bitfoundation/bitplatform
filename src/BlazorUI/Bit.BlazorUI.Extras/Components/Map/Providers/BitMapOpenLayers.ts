@@ -5,7 +5,6 @@ namespace BitBlazorUI {
      * Mirrors the public surface used by every BitMap provider.
      */
     export class BitMapOpenLayers {
-        private static readonly _OL_VER = '10.5.0';
         private static _olLoadPromise: Promise<any> | null = null;
 
         private static _maps: { [id: string]: {
@@ -538,46 +537,14 @@ namespace BitBlazorUI {
 
         private static async _loadOl(): Promise<any> {
             if (BitMapOpenLayers._olLoadPromise) return BitMapOpenLayers._olLoadPromise;
+            // The CSP-friendly loader (a real ES module shipped under
+            // _content/Bit.BlazorUI.Extras/openlayers/bit-map-ol-loader.js) performs the
+            // actual dynamic import()s and exposes the resolved bundle on
+            // globalThis.__bitMapOlBundle. We just await it here so this concatenated
+            // (non-module) bundle never has to call import() directly.
             BitMapOpenLayers._olLoadPromise = (async () => {
-                // Import the full OL bundle from a single entry point so all classes
-                // (Map, View, etc.) share the same module scope and instanceof checks work.
-                const dynImport: (url: string) => Promise<any> = new Function('u', 'return import(u);') as any;
-                const ol = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}?bundle`);
-                const olControl = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/control?bundle`);
-                const olStyle = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/style?bundle`);
-                const olGeom = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/geom?bundle`);
-                const olSource = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/source?bundle`);
-                const olLayer = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/layer?bundle`);
-                const olFormat = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/format?bundle`);
-                const olProj = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/proj?bundle`);
-                // ol/interaction is loaded implicitly via the main bundle (default interactions).
-                const olInteraction = await dynImport(`https://esm.sh/ol@${BitMapOpenLayers._OL_VER}/interaction?bundle`);
-
-                return {
-                    Map: ol.Map,
-                    View: ol.View,
-                    Overlay: ol.Overlay,
-                    Feature: ol.Feature,
-                    TileLayer: olLayer.Tile,
-                    VectorLayer: olLayer.Vector,
-                    XYZ: olSource.XYZ,
-                    VectorSource: olSource.Vector,
-                    Point: olGeom.Point,
-                    LineString: olGeom.LineString,
-                    Polygon: olGeom.Polygon,
-                    GeoJSON: olFormat.GeoJSON,
-                    Style: olStyle.Style,
-                    Fill: olStyle.Fill,
-                    Stroke: olStyle.Stroke,
-                    Icon: olStyle.Icon,
-                    CircleStyle: olStyle.Circle,
-                    ScaleLine: olControl.ScaleLine,
-                    defaults: olControl.defaults,
-                    fromLonLat: olProj.fromLonLat,
-                    toLonLat: olProj.toLonLat,
-                    transformExtent: olProj.transformExtent,
-                    Translate: olInteraction.Translate,
-                };
+                await BitMapHelpers.waitForGlobal('__bitMapOlBundle', () => !!(globalThis as any).__bitMapOlBundle, 30_000);
+                return await (globalThis as any).__bitMapOlBundle;
             })();
             return BitMapOpenLayers._olLoadPromise;
         }

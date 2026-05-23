@@ -37,7 +37,13 @@ public sealed class BitOpenLayersMapProvider : BitMapProviderBase
     public override string JsObjectName => "BitMapOpenLayers";
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> Scripts => ["_content/Bit.BlazorUI.Extras/openlayers/bit-map-ol-loader.js"];
+
+    /// <inheritdoc />
     public override IReadOnlyList<string> Stylesheets => ["https://cdn.jsdelivr.net/npm/ol@10.5.0/ol.css"];
+
+    /// <inheritdoc />
+    public override bool ScriptsAreModules => true;
 
     /// <inheritdoc />
     public override object BuildOptionsPayload()

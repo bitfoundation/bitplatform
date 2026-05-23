@@ -52,9 +52,24 @@ namespace BitBlazorUI {
             });
 
             await new Promise<void>((resolve, reject) => {
-                map.once('load', () => resolve());
-                map.once('error', (e: any) => reject(e?.error ?? new Error('Map error')));
-                setTimeout(() => reject(new Error('GL map load timeout (30s)')), 30000);
+                let settled = false;
+                const timeoutHandle = setTimeout(() => {
+                    if (settled) return;
+                    settled = true;
+                    reject(new Error('GL map load timeout (30s)'));
+                }, 30000);
+                map.once('load', () => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timeoutHandle);
+                    resolve();
+                });
+                map.once('error', (e: any) => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timeoutHandle);
+                    reject(e?.error ?? new Error('Map error'));
+                });
             });
 
             BitMapGlBase._applyMaxBounds(map, o.maxBounds);
@@ -314,9 +329,11 @@ namespace BitBlazorUI {
             const sourceId = `bm-src-${id}-${layerId}`;
             const fillId = `bm-fill-${id}-${layerId}`;
             const lineId = `bm-line-${id}-${layerId}`;
+            const circleId = `bm-circle-${id}-${layerId}`;
             s.map.addSource(sourceId, { type: 'geojson', data: gj });
             s.map.addLayer({ id: fillId, type: 'fill', source: sourceId, paint: BitMapGlBase._fillPaint(style) });
             s.map.addLayer({ id: lineId, type: 'line', source: sourceId, paint: BitMapGlBase._linePaint(style) });
+            s.map.addLayer({ id: circleId, type: 'circle', source: sourceId, paint: BitMapGlBase._circlePaint(style) });
             const dn = s.dotnetObj;
             const handlers: { layerId: string, handler: any }[] = [];
             if (dn) {
@@ -325,10 +342,12 @@ namespace BitBlazorUI {
                 };
                 s.map.on('click', fillId, handler);
                 s.map.on('click', lineId, handler);
+                s.map.on('click', circleId, handler);
                 handlers.push({ layerId: fillId, handler });
                 handlers.push({ layerId: lineId, handler });
+                handlers.push({ layerId: circleId, handler });
             }
-            s.vectorCatalog[layerId] = { sourceId, layerIds: [fillId, lineId], handlers };
+            s.vectorCatalog[layerId] = { sourceId, layerIds: [fillId, lineId, circleId], handlers };
         }
 
         public static removeLayer(provider: string, id: string, layerId: string) {
@@ -452,6 +471,18 @@ namespace BitBlazorUI {
                 'fill-color': st.fillColor,
                 'fill-opacity': st.fillOpacity,
                 'fill-outline-color': st.color,
+            };
+        }
+
+        private static _circlePaint(style: any) {
+            const st = BitMapHelpers.readPathStyle(style);
+            return {
+                'circle-color': st.fillColor,
+                'circle-opacity': st.fillOpacity,
+                'circle-stroke-color': st.color,
+                'circle-stroke-width': st.weight,
+                'circle-stroke-opacity': st.opacity,
+                'circle-radius': 5,
             };
         }
 

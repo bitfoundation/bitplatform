@@ -33,6 +33,12 @@ public sealed class BitMapboxMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
+        if (string.IsNullOrWhiteSpace(StyleUrl))
+        {
+            throw new InvalidOperationException(
+                "BitMapboxMapProvider: StyleUrl must be a non-empty value.");
+        }
+
         if (StyleUrl.StartsWith("mapbox://", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(AccessToken))
         {
             throw new InvalidOperationException(

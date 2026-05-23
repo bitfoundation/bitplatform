@@ -70,13 +70,21 @@ namespace BitBlazorUI {
             const lat = o.center ? o.center.lat : (currentCenter?.latitude ?? 0);
             s.view.goTo({ center: [lng, lat], zoom: o.zoom ?? s.view.zoom }, { animate: false }).catch(() => {});
             if (o.basemapId && o.basemapId !== s.map.basemap?.id) s.map.basemap = o.basemapId;
-            BitMapArcGis._ensureScaleBar(s, !!o.showScaleControl);
+            // Only touch the scale bar when caller explicitly supplied the flag,
+            // so partial updates don't reset the user's existing setting.
+            if (Object.prototype.hasOwnProperty.call(o, 'showScaleControl')) {
+                BitMapArcGis._ensureScaleBar(s, !!o.showScaleControl);
+            }
 
-            // Reapply interaction flags the same way init sets them via navigation.actionMap.
+            // Reapply interaction flags only for keys the caller explicitly provided.
             const actionMap = s.view.navigation?.actionMap;
             if (actionMap) {
-                actionMap.mouseWheel = o.scrollWheelZoom !== false ? 'zoom' : null;
-                actionMap.dragPrimary = o.dragging !== false ? 'pan' : null;
+                if (Object.prototype.hasOwnProperty.call(o, 'scrollWheelZoom')) {
+                    actionMap.mouseWheel = o.scrollWheelZoom !== false ? 'zoom' : null;
+                }
+                if (Object.prototype.hasOwnProperty.call(o, 'dragging')) {
+                    actionMap.dragPrimary = o.dragging !== false ? 'pan' : null;
+                }
             }
         }
 
@@ -269,18 +277,17 @@ namespace BitBlazorUI {
                 : gj.type === 'Feature' ? [gj]
                 : [{ type: 'Feature', geometry: gj, properties: {} }];
             const graphics: any[] = [];
-            for (const f of features) {
-                if (!f.geometry) continue;
-                const props = { ...(f.properties || {}), layerId, bmKind: 'geojson' };
-                const t = f.geometry.type;
+            const processGeometry = (geometry: any, props: any) => {
+                if (!geometry) return;
+                const t = geometry.type;
                 if (t === 'Point') {
                     graphics.push(new esri.Graphic({
-                        geometry: new esri.Point({ longitude: f.geometry.coordinates[0], latitude: f.geometry.coordinates[1] }),
+                        geometry: new esri.Point({ longitude: geometry.coordinates[0], latitude: geometry.coordinates[1] }),
                         symbol: new esri.SimpleMarkerSymbol({ color: [51, 136, 255, 255], outline: { color: [255, 255, 255, 255], width: 2 }, size: 8 }),
                         attributes: props,
                     }));
                 } else if (t === 'MultiPoint') {
-                    for (const coord of f.geometry.coordinates) {
+                    for (const coord of geometry.coordinates) {
                         graphics.push(new esri.Graphic({
                             geometry: new esri.Point({ longitude: coord[0], latitude: coord[1] }),
                             symbol: new esri.SimpleMarkerSymbol({ color: [51, 136, 255, 255], outline: { color: [255, 255, 255, 255], width: 2 }, size: 8 }),
@@ -289,31 +296,40 @@ namespace BitBlazorUI {
                     }
                 } else if (t === 'LineString') {
                     graphics.push(new esri.Graphic({
-                        geometry: new esri.Polyline({ paths: [f.geometry.coordinates], spatialReference: { wkid: 4326 } }),
+                        geometry: new esri.Polyline({ paths: [geometry.coordinates], spatialReference: { wkid: 4326 } }),
                         symbol: BitMapArcGis._lineSym(esri, style),
                         attributes: props,
                     }));
                 } else if (t === 'MultiLineString') {
                     graphics.push(new esri.Graphic({
-                        geometry: new esri.Polyline({ paths: f.geometry.coordinates, spatialReference: { wkid: 4326 } }),
+                        geometry: new esri.Polyline({ paths: geometry.coordinates, spatialReference: { wkid: 4326 } }),
                         symbol: BitMapArcGis._lineSym(esri, style),
                         attributes: props,
                     }));
                 } else if (t === 'Polygon') {
                     graphics.push(new esri.Graphic({
-                        geometry: new esri.Polygon({ rings: f.geometry.coordinates, spatialReference: { wkid: 4326 } }),
+                        geometry: new esri.Polygon({ rings: geometry.coordinates, spatialReference: { wkid: 4326 } }),
                         symbol: BitMapArcGis._fillSym(esri, style),
                         attributes: props,
                     }));
                 } else if (t === 'MultiPolygon') {
-                    for (const rings of f.geometry.coordinates) {
+                    for (const rings of geometry.coordinates) {
                         graphics.push(new esri.Graphic({
                             geometry: new esri.Polygon({ rings, spatialReference: { wkid: 4326 } }),
                             symbol: BitMapArcGis._fillSym(esri, style),
                             attributes: props,
                         }));
                     }
+                } else if (t === 'GeometryCollection') {
+                    for (const inner of geometry.geometries || []) {
+                        processGeometry(inner, props);
+                    }
                 }
+            };
+            for (const f of features) {
+                if (!f.geometry) continue;
+                const props = { ...(f.properties || {}), layerId, bmKind: 'geojson' };
+                processGeometry(f.geometry, props);
             }
             BitMapArcGis._removeGeoJsonLayer(s, layerId);
             for (const g of graphics) s.view.graphics.add(g);

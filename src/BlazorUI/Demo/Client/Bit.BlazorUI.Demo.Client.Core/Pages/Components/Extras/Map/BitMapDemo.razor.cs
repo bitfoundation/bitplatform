@@ -510,22 +510,37 @@ private async Task FlyToTokyo() => await eventsMapRef.FlyTo(new(35.6762, 139.650
 private async Task ReadView() { var v = await eventsMapRef.GetView(); }";
 
     private readonly string example7RazorCode = @"
+@* Bind a stable field, not a method call: a method call reallocates the provider on every render. *@
 <BitMap TMapProvider=""BitLeafletMapProvider""
         @ref=""advMapRef""
-        Provider=""@BuildAdvancedProvider()""
+        Provider=""@advProvider""
         OnReady=""OnAdvancedReady""
-        OnDoubleClick=""OnAdvancedDoubleClick"" />";
+        OnDoubleClick=""OnAdvancedDoubleClick"" />
+
+<BitToggle Value=""advScrollWheel""
+           ValueChanged=""v => { advScrollWheel = v; BuildAdvancedProvider(); }""
+           Text=""Scroll wheel zoom"" />";
     private readonly string example7CsharpCode = @"
-private BitLeafletMapProvider BuildAdvancedProvider() => new()
+private BitLeafletMapProvider advProvider = new()
 {
     Center = new(51.5074, -0.1278), Zoom = 11,
-    ScrollWheelZoom = advScrollWheel,
-    Dragging = advDragging,
-    ShowScaleControl = advScaleBar,
-    MaxBounds = advMaxBounds
-        ? new BitMapLatLngBounds(new(51.25, -0.55), new(51.75, 0.35))
-        : null,
 };
+
+// Mutate the stable field only when an option actually changes — not on every render.
+private BitLeafletMapProvider BuildAdvancedProvider()
+{
+    advProvider = new BitLeafletMapProvider
+    {
+        Center = new(51.5074, -0.1278), Zoom = 11,
+        ScrollWheelZoom = advScrollWheel,
+        Dragging = advDragging,
+        ShowScaleControl = advScaleBar,
+        MaxBounds = advMaxBounds
+            ? new BitMapLatLngBounds(new(51.25, -0.55), new(51.75, 0.35))
+            : null,
+    };
+    return advProvider;
+}
 
 // Tile overlay
 await advMapRef.AddTileOverlay(new BitMapTileOverlay

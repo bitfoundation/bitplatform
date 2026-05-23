@@ -1,0 +1,46 @@
+// Loaded as <script type="module"> by the OpenLayers provider via Extras.initScripts.
+// Native dynamic import() inside an ES module is CSP-friendly — it does not require
+// 'unsafe-eval', unlike the `new Function('return import(u)')` workaround that the
+// concatenated, non-module BitBlazorUI bundle would otherwise need.
+//
+// The resolved bundle (each OpenLayers sub-module mapped to a flat object) is exposed
+// on globalThis.__bitMapOlBundle as a Promise so the provider can await it from its
+// non-module context.
+const OL_VER = '10.5.0';
+const u = (p) => `https://esm.sh/ol@${OL_VER}${p ? '/' + p : ''}?bundle`;
+
+globalThis.__bitMapOlBundle = Promise.all([
+    import(u()),
+    import(u('control')),
+    import(u('style')),
+    import(u('geom')),
+    import(u('source')),
+    import(u('layer')),
+    import(u('format')),
+    import(u('proj')),
+    import(u('interaction')),
+]).then(([ol, olControl, olStyle, olGeom, olSource, olLayer, olFormat, olProj, olInteraction]) => ({
+    Map: ol.Map,
+    View: ol.View,
+    Overlay: ol.Overlay,
+    Feature: ol.Feature,
+    TileLayer: olLayer.Tile,
+    VectorLayer: olLayer.Vector,
+    XYZ: olSource.XYZ,
+    VectorSource: olSource.Vector,
+    Point: olGeom.Point,
+    LineString: olGeom.LineString,
+    Polygon: olGeom.Polygon,
+    GeoJSON: olFormat.GeoJSON,
+    Style: olStyle.Style,
+    Fill: olStyle.Fill,
+    Stroke: olStyle.Stroke,
+    Icon: olStyle.Icon,
+    CircleStyle: olStyle.Circle,
+    ScaleLine: olControl.ScaleLine,
+    defaults: olControl.defaults,
+    fromLonLat: olProj.fromLonLat,
+    toLonLat: olProj.toLonLat,
+    transformExtent: olProj.transformExtent,
+    Translate: olInteraction.Translate,
+}));

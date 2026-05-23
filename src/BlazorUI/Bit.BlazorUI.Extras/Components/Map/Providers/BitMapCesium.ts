@@ -279,8 +279,10 @@ namespace BitBlazorUI {
             const Cesium = s.Cesium;
             const st = BitMapHelpers.readPathStyle(style);
             const positions = Cesium.Cartesian3.fromDegreesArray(latlngs.flatMap(p => [p.lng, p.lat]));
+            const entId = `bm-poly-${id}-${layerId}`;
+            BitMapCesium._removeEntityById(s, entId);
             const ent = s.viewer.entities.add({
-                id: `bm-poly-${id}-${layerId}`,
+                id: entId,
                 polyline: { positions, width: st.weight, material: BitMapCesium._color(Cesium, st.color, st.opacity) },
                 _bmLayerId: layerId, _bmVectorKind: 'polyline',
             });
@@ -292,8 +294,10 @@ namespace BitBlazorUI {
             const Cesium = s.Cesium;
             const st = BitMapHelpers.readPathStyle(style);
             const hierarchy = Cesium.Cartesian3.fromDegreesArray(latlngs.flatMap(p => [p.lng, p.lat]));
+            const entId = `bm-polygon-${id}-${layerId}`;
+            BitMapCesium._removeEntityById(s, entId);
             const ent = s.viewer.entities.add({
-                id: `bm-polygon-${id}-${layerId}`,
+                id: entId,
                 polygon: {
                     hierarchy,
                     material: BitMapCesium._color(Cesium, st.fillColor, st.fillOpacity),
@@ -309,8 +313,10 @@ namespace BitBlazorUI {
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
             const st = BitMapHelpers.readPathStyle(style);
+            const entId = `bm-circle-${id}-${layerId}`;
+            BitMapCesium._removeEntityById(s, entId);
             const ent = s.viewer.entities.add({
-                id: `bm-circle-${id}-${layerId}`,
+                id: entId,
                 position: Cesium.Cartesian3.fromDegrees(lng, lat),
                 ellipse: {
                     semiMajorAxis: radiusMeters,
@@ -328,8 +334,10 @@ namespace BitBlazorUI {
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
             const st = BitMapHelpers.readPathStyle(style);
+            const entId = `bm-rect-${id}-${layerId}`;
+            BitMapCesium._removeEntityById(s, entId);
             const ent = s.viewer.entities.add({
-                id: `bm-rect-${id}-${layerId}`,
+                id: entId,
                 rectangle: {
                     coordinates: Cesium.Rectangle.fromDegrees(swLng, swLat, neLng, neLat),
                     material: BitMapCesium._color(Cesium, st.fillColor, st.fillOpacity),
@@ -417,6 +425,18 @@ namespace BitBlazorUI {
             const existing = s.layers[layerId];
             if (existing) try { s.viewer.entities.remove(existing.entity); } catch { /* ignore */ }
             s.layers[layerId] = { entity, kind };
+        }
+
+        private static _removeEntityById(s: any, entId: string) {
+            try {
+                const ents = s.viewer.entities;
+                if (typeof ents.removeById === 'function') {
+                    ents.removeById(entId);
+                    return;
+                }
+                const existing = ents.getById ? ents.getById(entId) : null;
+                if (existing) ents.remove(existing);
+            } catch { /* ignore */ }
         }
 
         private static _color(Cesium: any, hex: string, alpha: number) {

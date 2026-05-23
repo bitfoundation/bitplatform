@@ -1,5 +1,12 @@
 namespace BitBlazorUI {
 
+    type LeafletTileOptions = {
+        tileUrl: string;
+        tileMaxZoom: number;
+        tileAttribution: string;
+        tileOpacity: number;
+    };
+
     type LeafletState = {
         L: any;
         map: any;
@@ -9,6 +16,9 @@ namespace BitBlazorUI {
         tileOverlays: { [id: string]: any };
         baseTileLayer: any;
         scaleControl: any;
+        _tileOptions: LeafletTileOptions;
+        _scaleControlImperial: boolean;
+        _scaleControlEnabled: boolean;
     };
 
     let leafletDefaultIconPatched = false;
@@ -52,21 +62,29 @@ namespace BitBlazorUI {
                 keyboard: o.keyboardNavigation !== false,
             });
 
-            const tileUrl = o.tileUrl || "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-            const baseTileLayer = L.tileLayer(tileUrl, {
-                maxZoom: o.tileMaxZoom ?? 19,
-                attribution: o.tileAttribution || "",
-                opacity: o.tileOpacity ?? 1,
+            const tileOptions: LeafletTileOptions = {
+                tileUrl: o.tileUrl || "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                tileMaxZoom: o.tileMaxZoom ?? 19,
+                tileAttribution: o.tileAttribution || "",
+                tileOpacity: o.tileOpacity ?? 1,
+            };
+            const baseTileLayer = L.tileLayer(tileOptions.tileUrl, {
+                maxZoom: tileOptions.tileMaxZoom,
+                attribution: tileOptions.tileAttribution,
+                opacity: tileOptions.tileOpacity,
             }).addTo(map);
 
             const state: LeafletState = {
                 L, map, dotnetObj,
                 markers: {}, layers: {}, tileOverlays: {},
                 baseTileLayer, scaleControl: null,
+                _tileOptions: tileOptions,
+                _scaleControlImperial: !!o.scaleControlImperial,
+                _scaleControlEnabled: !!o.showScaleControl,
             };
 
-            BitMapLeaflet._applyMaxBounds(state, o.maxBounds);
-            BitMapLeaflet._ensureScaleControl(state, !!o.showScaleControl, !!o.scaleControlImperial);
+            if (o.maxBounds !== undefined) BitMapLeaflet._applyMaxBounds(state, o.maxBounds);
+            BitMapLeaflet._ensureScaleControl(state, state._scaleControlEnabled, state._scaleControlImperial);
 
             if (dotnetObj) {
                 map.on('click', (e: any) => dotnetObj.invokeMethodAsync('OnClick', { lat: e.latlng.lat, lng: e.latlng.lng }));
@@ -95,12 +113,30 @@ namespace BitBlazorUI {
                 s.map.setZoom(o.zoom, { animate: false });
             }
 
-            if (s.baseTileLayer) s.map.removeLayer(s.baseTileLayer);
-            s.baseTileLayer = L.tileLayer(
-                o.tileUrl || "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                { maxZoom: o.tileMaxZoom ?? 19, attribution: o.tileAttribution || "", opacity: o.tileOpacity ?? 1 }
-            ).addTo(s.map);
-            s.baseTileLayer.bringToBack();
+            // Only recreate the base tile layer when tile options actually changed.
+            const next: LeafletTileOptions = {
+                tileUrl: o.tileUrl ?? s._tileOptions.tileUrl,
+                tileMaxZoom: o.tileMaxZoom ?? s._tileOptions.tileMaxZoom,
+                tileAttribution: o.tileAttribution ?? s._tileOptions.tileAttribution,
+                tileOpacity: o.tileOpacity ?? s._tileOptions.tileOpacity,
+            };
+            const tileChanged =
+                next.tileUrl !== s._tileOptions.tileUrl ||
+                next.tileMaxZoom !== s._tileOptions.tileMaxZoom ||
+                next.tileAttribution !== s._tileOptions.tileAttribution ||
+                next.tileOpacity !== s._tileOptions.tileOpacity;
+            if (tileChanged) {
+                if (s.baseTileLayer) s.map.removeLayer(s.baseTileLayer);
+                s.baseTileLayer = L.tileLayer(next.tileUrl, {
+                    maxZoom: next.tileMaxZoom,
+                    attribution: next.tileAttribution,
+                    opacity: next.tileOpacity,
+                }).addTo(s.map);
+                s._tileOptions = next;
+            }
+            if (s.baseTileLayer) {
+                try { s.baseTileLayer.bringToBack(); } catch { /* ignore */ }
+            }
 
             for (const key in s.tileOverlays) {
                 try { s.tileOverlays[key].bringToFront(); } catch { /* ignore */ }
@@ -113,8 +149,16 @@ namespace BitBlazorUI {
             if (o.dragging !== undefined) o.dragging ? s.map.dragging.enable() : s.map.dragging.disable();
             if (o.keyboardNavigation !== undefined) o.keyboardNavigation ? s.map.keyboard.enable() : s.map.keyboard.disable();
 
-            BitMapLeaflet._applyMaxBounds(s, o.maxBounds);
-            BitMapLeaflet._ensureScaleControl(s, !!o.showScaleControl, !!o.scaleControlImperial);
+            // Only touch maxBounds when explicitly provided to avoid clearing existing settings on partial updates.
+            if (o.maxBounds !== undefined) BitMapLeaflet._applyMaxBounds(s, o.maxBounds);
+            // Only touch scale control when caller actually supplied either flag; preserve existing state otherwise.
+            const hasShow = Object.prototype.hasOwnProperty.call(o, 'showScaleControl');
+            const hasImperial = Object.prototype.hasOwnProperty.call(o, 'scaleControlImperial');
+            if (hasShow || hasImperial) {
+                if (hasShow) s._scaleControlEnabled = !!o.showScaleControl;
+                if (hasImperial) s._scaleControlImperial = !!o.scaleControlImperial;
+                BitMapLeaflet._ensureScaleControl(s, s._scaleControlEnabled, s._scaleControlImperial);
+            }
         }
 
         public static dispose(id: string) {
