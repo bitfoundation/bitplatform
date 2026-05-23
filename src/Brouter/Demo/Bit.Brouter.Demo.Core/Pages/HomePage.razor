@@ -39,13 +39,13 @@ You have counted to @CountValue.
 <BrouterLink Href="/g2">Guarded route [/g2] by (DateTime.Now.Minute % 2 == 0)</BrouterLink>
 <br />
 <br />
-<a href="/nested">Let's go nested!</a>
+<BrouterLink Href="/nested">Let's go nested!</BrouterLink>
 <br />
 <br />
-<a href="/nested2">nested2</a>
+<BrouterLink Href="/nested2">nested2</BrouterLink>
 <br />
 <br />
-<a href="/nested3">nested3</a>
+<BrouterLink Href="/nested3">nested3</BrouterLink>
 
 @code {
     [Parameter] public int CountValue { get; set; }

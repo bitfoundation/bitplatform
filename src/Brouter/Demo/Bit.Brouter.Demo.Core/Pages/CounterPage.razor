@@ -30,14 +30,22 @@
 
         // Apply the route 'init' parameter only once per distinct value. Otherwise, every
         // re-render would overwrite user-driven increments with the original route value.
-        if (Parameters?.TryGet<int>("init", out var init) == true &&
-            (_appliedInit is null || _appliedInit != init))
+        if (Parameters?.TryGet<int>("init", out var init) == true)
         {
-            CurrentCount = init;
-            _appliedInit = init;
-            ChangeCount?.Invoke(CurrentCount);
-            if (CurrentCountChanged.HasDelegate)
-                await CurrentCountChanged.InvokeAsync(CurrentCount);
+            if (_appliedInit is null || _appliedInit != init)
+            {
+                CurrentCount = init;
+                _appliedInit = init;
+                ChangeCount?.Invoke(CurrentCount);
+                if (CurrentCountChanged.HasDelegate)
+                    await CurrentCountChanged.InvokeAsync(CurrentCount);
+            }
+        }
+        else
+        {
+            // Clear the applied init so a future navigation back to a route with the
+            // same init value will be re-applied instead of being treated as already-applied.
+            _appliedInit = null;
         }
     }
 

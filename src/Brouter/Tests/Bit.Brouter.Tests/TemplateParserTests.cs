@@ -1,71 +1,71 @@
-using Bit.Brouter;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Brouter.Tests;
 
+[TestClass]
 public class TemplateParserTests
 {
-    [Fact]
+    [TestMethod]
     public void Empty_template_yields_empty_segments()
     {
         var result = TemplateParser.ParseTemplate("");
-        Assert.Empty(result.TemplateSegments);
+        Assert.AreEqual(0, result.TemplateSegments.Count);
     }
 
-    [Fact]
+    [TestMethod]
     public void Slash_template_is_handled()
     {
         var result = TemplateParser.ParseTemplate("/");
-        Assert.Empty(result.TemplateSegments);
+        Assert.AreEqual(0, result.TemplateSegments.Count);
     }
 
-    [Theory]
-    [InlineData("/users")]
-    [InlineData("users")]
-    [InlineData("/users/")]
+    [TestMethod]
+    [DataRow("/users")]
+    [DataRow("users")]
+    [DataRow("/users/")]
     public void Single_literal_parses_one_segment(string template)
     {
         var result = TemplateParser.ParseTemplate(template);
-        Assert.Single(result.TemplateSegments);
+        Assert.AreEqual(1, result.TemplateSegments.Count);
     }
 
-    [Fact]
+    [TestMethod]
     public void Optional_parameter_is_recognised()
     {
         var result = TemplateParser.ParseTemplate("/users/{id?}");
-        Assert.True(result.TemplateSegments[1].IsOptional);
+        Assert.IsTrue(result.TemplateSegments[1].IsOptional);
     }
 
-    [Fact]
+    [TestMethod]
     public void Catch_all_parameter_is_recognised()
     {
         var result = TemplateParser.ParseTemplate("/files/{**path}");
-        Assert.True(result.TemplateSegments[1].IsCatchAll);
-        Assert.Equal("path", result.TemplateSegments[1].Value);
+        Assert.IsTrue(result.TemplateSegments[1].IsCatchAll);
+        Assert.AreEqual("path", result.TemplateSegments[1].Value);
     }
 
-    [Fact]
+    [TestMethod]
     public void Catch_all_must_be_last_segment()
     {
-        Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/files/{**path}/extra"));
+        Assert.ThrowsExactly<InvalidOperationException>(() => TemplateParser.ParseTemplate("/files/{**path}/extra"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Optionals_must_be_trailing()
     {
-        Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/{a?}/{b}"));
+        Assert.ThrowsExactly<InvalidOperationException>(() => TemplateParser.ParseTemplate("/{a?}/{b}"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Duplicate_parameter_names_throw()
     {
-        Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/{id}/{id:int}"));
+        Assert.ThrowsExactly<InvalidOperationException>(() => TemplateParser.ParseTemplate("/{id}/{id:int}"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Multiple_constraints_parse()
     {
         var result = TemplateParser.ParseTemplate("/{id:int:long}");
-        Assert.Equal(2, result.TemplateSegments[0].Constraints.Length);
+        Assert.AreEqual(2, result.TemplateSegments[0].Constraints.Length);
     }
 }

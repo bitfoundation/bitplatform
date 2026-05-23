@@ -63,7 +63,7 @@ internal class RouteRenderer
                         else if (_route.Component is not null)
                         {
                             b3.OpenComponent(0, _route.Component);
-                            ApplyTypedParameters(b3, _route.Component, routeParams);
+                            ApplyTypedParameters(b3, _route.Component, routeParams, _route.Brouter?.CurrentLocation);
                             b3.CloseComponent();
                         }
                     }
@@ -79,7 +79,7 @@ internal class RouteRenderer
         builder.CloseComponent();
     }
 
-    internal static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, RouteParameters parameters)
+    internal static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, RouteParameters parameters, BrouterLocation? location)
     {
         // Reflect once per type. Simple, correct, allocates only on first hit per type.
         // Trimming: Component is annotated DynamicallyAccessedMemberTypes.All so its members are preserved.
@@ -91,9 +91,11 @@ internal class RouteRenderer
         {
             if (b.IsQuery)
             {
-                // Wired by the consumer via [BrouterQuery] — but query state lives on the location, not the route.
-                // We expose the raw values through cascading; query auto-binding is intentionally off here to keep
-                // routes orthogonal to query-string state. Components can read [BrouterQuery] via cascading Location.
+                if (location is null) continue;
+                if (TryBindQuery(b, location, out var queryValue))
+                {
+                    builder.AddAttribute(seq++, b.PropertyName, queryValue);
+                }
                 continue;
             }
 
@@ -113,6 +115,48 @@ internal class RouteRenderer
             }
 
             builder.AddAttribute(seq++, b.PropertyName, value);
+        }
+    }
+
+    private static bool TryBindQuery(ParameterBinding binding, BrouterLocation location, out object? value)
+    {
+        value = null;
+        if (location.QueryParams.TryGetValue(binding.ParameterName, out var values) is false || values.Count == 0)
+            return false;
+
+        var propType = binding.PropertyType;
+
+        // Multi-value support: per BrouterQueryAttribute docs, string[]-typed properties receive every value.
+        if (propType == typeof(string[]))
+        {
+            var arr = new string[values.Count];
+            for (int i = 0; i < values.Count; i++) arr[i] = values[i];
+            value = arr;
+            return true;
+        }
+
+        // Scalar properties bind to the first value, converted to the property's type.
+        return TryConvert(values[0], propType, out value);
+    }
+
+    private static bool TryConvert(string raw, Type targetType, out object? value)
+    {
+        var underlying = Nullable.GetUnderlyingType(targetType) ?? targetType;
+        if (underlying == typeof(string))
+        {
+            value = raw;
+            return true;
+        }
+
+        try
+        {
+            value = System.Convert.ChangeType(raw, underlying, System.Globalization.CultureInfo.InvariantCulture);
+            return true;
+        }
+        catch
+        {
+            value = null;
+            return false;
         }
     }
 

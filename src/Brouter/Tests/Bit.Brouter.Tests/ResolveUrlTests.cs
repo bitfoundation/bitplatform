@@ -1,20 +1,13 @@
 using System.Globalization;
-using Bit.Brouter;
-using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
-using TestContext = Bunit.TestContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Brouter.Tests;
 
-public class ResolveUrlTests : TestContext
+[TestClass]
+public class ResolveUrlTests : BunitTestContext
 {
-    public ResolveUrlTests()
-    {
-        Services.AddBitBrouterServices();
-    }
-
     /// <summary>
     /// Mounts a <see cref="Brouter"/> with a single named route at <paramref name="path"/>
     /// and returns an <see cref="IBrouter"/> ready for ResolveUrl/NavigateToName calls.
@@ -31,17 +24,17 @@ public class ResolveUrlTests : TestContext
         return Services.GetRequiredService<IBrouter>();
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolves_required_parameter()
     {
         var brouter = MountWithNamedRoute("user", "/users/{id}");
 
         var url = brouter.ResolveUrl("user", new Dictionary<string, object?> { ["id"] = 42 });
 
-        Assert.Equal("/users/42", url);
+        Assert.AreEqual("/users/42", url);
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolves_parameter_with_case_insensitive_key()
     {
         var brouter = MountWithNamedRoute("user", "/users/{id}");
@@ -49,27 +42,27 @@ public class ResolveUrlTests : TestContext
         // Caller used "ID" but the template parameter is "id" — should still bind.
         var url = brouter.ResolveUrl("user", new Dictionary<string, object?> { ["ID"] = 7 });
 
-        Assert.Equal("/users/7", url);
+        Assert.AreEqual("/users/7", url);
     }
 
-    [Fact]
+    [TestMethod]
     public void Throws_when_route_name_not_registered()
     {
         var brouter = MountWithNamedRoute("user", "/users/{id}");
 
-        Assert.Throws<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             brouter.ResolveUrl("missing", new Dictionary<string, object?> { ["id"] = 1 }));
     }
 
-    [Fact]
+    [TestMethod]
     public void Throws_when_required_parameter_is_missing()
     {
         var brouter = MountWithNamedRoute("user", "/users/{id}");
 
-        Assert.Throws<ArgumentException>(() => brouter.ResolveUrl("user"));
+        Assert.ThrowsExactly<ArgumentException>(() => brouter.ResolveUrl("user"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Optional_parameter_present_is_emitted()
     {
         var brouter = MountWithNamedRoute("profile", "/profile/{username?}");
@@ -77,23 +70,23 @@ public class ResolveUrlTests : TestContext
         var url = brouter.ResolveUrl("profile",
             new Dictionary<string, object?> { ["username"] = "saleh" });
 
-        Assert.Equal("/profile/saleh", url);
+        Assert.AreEqual("/profile/saleh", url);
     }
 
-    [Fact]
+    [TestMethod]
     public void Optional_parameter_absent_trims_trailing_slash()
     {
         var brouter = MountWithNamedRoute("profile", "/profile/{username?}");
 
         // No params at all: trailing '/' for the absent optional should be dropped.
-        Assert.Equal("/profile", brouter.ResolveUrl("profile"));
+        Assert.AreEqual("/profile", brouter.ResolveUrl("profile"));
 
         // Explicit null value: same behavior.
-        Assert.Equal("/profile",
+        Assert.AreEqual("/profile",
             brouter.ResolveUrl("profile", new Dictionary<string, object?> { ["username"] = null }));
     }
 
-    [Fact]
+    [TestMethod]
     public void Catch_all_parameter_preserves_internal_slashes_and_encodes_each_segment()
     {
         var brouter = MountWithNamedRoute("posts", "/posts/{**slug}");
@@ -103,10 +96,10 @@ public class ResolveUrlTests : TestContext
 
         // Slashes are preserved as path separators; each segment is percent-encoded individually
         // (so the space in "hello world" becomes %20 but the slashes don't).
-        Assert.Equal("/posts/2026/05/hello%20world", url);
+        Assert.AreEqual("/posts/2026/05/hello%20world", url);
     }
 
-    [Fact]
+    [TestMethod]
     public void Catch_all_parameter_with_empty_value_drops_trailing_slash()
     {
         var brouter = MountWithNamedRoute("posts", "/posts/{**slug}");
@@ -114,10 +107,10 @@ public class ResolveUrlTests : TestContext
         var url = brouter.ResolveUrl("posts",
             new Dictionary<string, object?> { ["slug"] = string.Empty });
 
-        Assert.Equal("/posts", url);
+        Assert.AreEqual("/posts", url);
     }
 
-    [Fact]
+    [TestMethod]
     public void Regular_parameter_value_is_percent_encoded()
     {
         var brouter = MountWithNamedRoute("user", "/users/{name}");
@@ -126,20 +119,20 @@ public class ResolveUrlTests : TestContext
             new Dictionary<string, object?> { ["name"] = "john doe/admin" });
 
         // Non-catch-all parameter encodes the entire value, including '/'.
-        Assert.Equal("/users/john%20doe%2Fadmin", url);
+        Assert.AreEqual("/users/john%20doe%2Fadmin", url);
     }
 
-    [Fact]
+    [TestMethod]
     public void Throws_when_template_contains_literal_wildcard()
     {
         // A literal '*' segment can't be resolved back into a URL — there's no value to substitute.
         var brouter = MountWithNamedRoute("wild", "/files/*");
 
-        Assert.Throws<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             brouter.ResolveUrl("wild"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Query_string_is_appended_with_leading_question_mark_added_when_missing()
     {
         var brouter = MountWithNamedRoute("user", "/users/{id}");
@@ -149,22 +142,22 @@ public class ResolveUrlTests : TestContext
         var withoutPrefix = brouter.ResolveUrl("user",
             new Dictionary<string, object?> { ["id"] = 1 }, query: "tab=info");
 
-        Assert.Equal("/users/1?tab=info", withPrefix);
-        Assert.Equal("/users/1?tab=info", withoutPrefix);
+        Assert.AreEqual("/users/1?tab=info", withPrefix);
+        Assert.AreEqual("/users/1?tab=info", withoutPrefix);
     }
 
-    [Fact]
+    [TestMethod]
     public void Boolean_is_formatted_as_lowercase()
     {
         var brouter = MountWithNamedRoute("flag", "/flag/{enabled}");
 
-        Assert.Equal("/flag/true",
+        Assert.AreEqual("/flag/true",
             brouter.ResolveUrl("flag", new Dictionary<string, object?> { ["enabled"] = true }));
-        Assert.Equal("/flag/false",
+        Assert.AreEqual("/flag/false",
             brouter.ResolveUrl("flag", new Dictionary<string, object?> { ["enabled"] = false }));
     }
 
-    [Fact]
+    [TestMethod]
     public void Enum_is_formatted_as_symbolic_name()
     {
         var brouter = MountWithNamedRoute("day", "/day/{value}");
@@ -172,10 +165,10 @@ public class ResolveUrlTests : TestContext
         var url = brouter.ResolveUrl("day",
             new Dictionary<string, object?> { ["value"] = DayOfWeek.Tuesday });
 
-        Assert.Equal("/day/Tuesday", url);
+        Assert.AreEqual("/day/Tuesday", url);
     }
 
-    [Fact]
+    [TestMethod]
     public void DateTime_is_formatted_as_round_trip_invariant()
     {
         var brouter = MountWithNamedRoute("when", "/when/{ts}");
@@ -185,10 +178,10 @@ public class ResolveUrlTests : TestContext
             new Dictionary<string, object?> { ["ts"] = dt });
 
         // "o" specifier is lossless and culture-independent; the ':' characters are percent-encoded.
-        Assert.Equal("/when/" + Uri.EscapeDataString(dt.ToString("o", CultureInfo.InvariantCulture)), url);
+        Assert.AreEqual("/when/" + Uri.EscapeDataString(dt.ToString("o", CultureInfo.InvariantCulture)), url);
     }
 
-    [Fact]
+    [TestMethod]
     public void Numeric_values_use_invariant_culture()
     {
         // Switch to a culture that uses ',' as decimal separator. Without invariant formatting,
@@ -202,7 +195,7 @@ public class ResolveUrlTests : TestContext
             var url = brouter.ResolveUrl("price",
                 new Dictionary<string, object?> { ["amount"] = 1.5 });
 
-            Assert.Equal("/price/1.5", url);
+            Assert.AreEqual("/price/1.5", url);
         }
         finally
         {

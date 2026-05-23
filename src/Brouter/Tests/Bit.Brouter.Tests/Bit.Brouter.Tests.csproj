@@ -1,4 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Microsoft.NET.Sdk.Razor" />
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -7,17 +9,15 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
-    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
-    <OutputType>Exe</OutputType>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="bunit" Version="1.40.0" />
-    <PackageReference Include="xunit.v3" Version="3.0.0" />
+    <PackageReference Include="bunit.web" Version="1.40.0" />
+    <PackageReference Include="MSTest" Version="4.2.3" />
   </ItemGroup>
 
   <ItemGroup>

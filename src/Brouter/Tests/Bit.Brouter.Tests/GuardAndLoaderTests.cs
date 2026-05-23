@@ -1,20 +1,14 @@
-using Bit.Brouter;
 using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
-using TestContext = Bunit.TestContext;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Brouter.Tests;
 
-public class GuardAndLoaderTests : TestContext
+[TestClass]
+public class GuardAndLoaderTests : BunitTestContext
 {
-    public GuardAndLoaderTests()
-    {
-        Services.AddBitBrouterServices();
-    }
-
-    [Fact]
+    [TestMethod]
     public void Guard_can_redirect()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
@@ -22,16 +16,16 @@ public class GuardAndLoaderTests : TestContext
 
         var cut = RenderComponent<GuardHost>();
 
-        cut.WaitForAssertion(() => Assert.EndsWith("/login", nav.Uri));
+        cut.WaitForAssertion(() => StringAssert.EndsWith(nav.Uri, "/login"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Loader_value_is_exposed_via_RouteData()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
         nav.NavigateTo("http://localhost/data");
 
         var cut = RenderComponent<LoaderHost>();
-        cut.WaitForAssertion(() => Assert.Equal("loaded!", cut.Find("[data-testid=val]").TextContent));
+        cut.WaitForAssertion(() => Assert.AreEqual("loaded!", cut.Find("[data-testid=val]").TextContent));
     }
 }

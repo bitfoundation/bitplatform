@@ -241,15 +241,26 @@ public partial class Brouter : ComponentBase, IDisposable
             if (token.IsCancellationRequested || version != _navVersion) return;
             if (guardsOk is false) return;
 
-            // Loader. Capture the result into a local first, then re-check
-            // cancellation/version before committing to shared state so a superseded
-            // navigation can't leave stale LoadedData on the route.
-            if (winner.Loader is not null)
+            // Loaders. Walk root -> leaf so parent layouts get their data populated before
+            // children run, mirroring guard ordering (see Route.InvokeGuardsAsync). Reset
+            // LoadedData on every route in the matched chain first so data from a previous
+            // navigation can't leak into parent layouts whose current loader is null.
+            // Capture each loader's result into a local before committing to shared state,
+            // so a superseded navigation can't leave stale LoadedData on the route.
+            var matchedChain = new List<Route>();
+            for (var node = winner; node is not null; node = node.Parent) matchedChain.Add(node);
+            matchedChain.Reverse();
+
+            foreach (var node in matchedChain) node.LoadedData = null;
+
+            foreach (var node in matchedChain)
             {
+                if (node.Loader is null) continue;
+
                 object? loaded;
                 try
                 {
-                    loaded = await winner.Loader(ctx);
+                    loaded = await node.Loader(ctx);
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested)
                 {
@@ -264,7 +275,7 @@ public partial class Brouter : ComponentBase, IDisposable
                 if (HandleSideEffects(ctx, from)) return;
                 if (token.IsCancellationRequested || version != _navVersion) return;
 
-                winner.LoadedData = loaded;
+                node.LoadedData = loaded;
             }
 
             winner.SetMatched();
