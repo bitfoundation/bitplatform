@@ -25,9 +25,12 @@ public static class BitThemeColorDerivation
             variants.Light ??= ToHex(h, s, AddV(v, 0.08));
             variants.LightHover ??= ToHex(h, s, AddV(v, 0.12));
             variants.LightActive ??= ToHex(h, s, AddV(v, 0.16));
+
+            // Track whether Text was auto-generated in this call so we don't overwrite caller-provided values.
+            var textWasNull = variants.Text is null;
             variants.Text ??= SuggestOnColorText(baseColor);
 
-            if (adjustTextForWcagAa && variants.Main is not null && variants.Text is not null)
+            if (adjustTextForWcagAa && textWasNull && variants.Main is not null && variants.Text is not null)
             {
                 var blackRatio = BitThemeColorContrast.GetContrastRatio("#000000", variants.Main);
                 var whiteRatio = BitThemeColorContrast.GetContrastRatio("#FFFFFF", variants.Main);

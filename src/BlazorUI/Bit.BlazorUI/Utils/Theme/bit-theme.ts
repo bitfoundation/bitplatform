@@ -62,7 +62,13 @@ class BitTheme {
 
         if (BitTheme._initOptions.persist) {
             BitTheme._persist = true;
-            theme = BitTheme.getPersisted() || theme;
+            const persisted = BitTheme.getPersisted();
+            if (persisted) {
+                theme = persisted;
+                // An explicit persisted preset (anything other than "system") means the user pinned a theme;
+                // stop following the OS even when <html bit-theme-system> is present.
+                BitTheme._stopFollowingSystem = persisted !== BitTheme.SYSTEM_THEME;
+            }
         }
 
         BitTheme.set(theme, { fromInit: true });
@@ -165,7 +171,13 @@ class BitTheme {
     private static shouldFollowSystem(): boolean {
         if (typeof document === 'undefined') return false;
         if (BitTheme._stopFollowingSystem) return false;
-        if (BitTheme._persist && BitTheme.getPersisted() === BitTheme.SYSTEM_THEME) return true;
+        // An explicitly persisted theme (anything other than SYSTEM_THEME) wins over the
+        // bit-theme-system attribute, otherwise a stale attribute could override the user's choice.
+        if (BitTheme._persist) {
+            const persisted = BitTheme.getPersisted();
+            if (persisted && persisted !== BitTheme.SYSTEM_THEME) return false;
+            if (persisted === BitTheme.SYSTEM_THEME) return true;
+        }
         if (document.documentElement.hasAttribute('bit-theme-system')) return true;
         return false;
     }

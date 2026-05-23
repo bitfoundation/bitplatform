@@ -22,17 +22,19 @@ $BgHover: $clr-pri-light;
     input:focus-visible::-webkit-slider-thumb,
     input:focus::-webkit-slider-thumb {
         border-color: $clr-pri-focus;
-        box-shadow:
-            0 0 0 $shp-focus-ring-offset $clr-bg-pri-focus,
-            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) $clr-pri-focus;
+        // Reference the global focus-ring shadow token so forced-colors and theme-level
+        // overrides (see forced-colors.fluent.scss) propagate to the slider thumb.
+        box-shadow: var(--bit-shd-focus-ring,
+            0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri-focus},
+            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$clr-pri-focus});
     }
 
     input:focus-visible::-moz-range-thumb,
     input:focus::-moz-range-thumb {
         border-color: $clr-pri-focus;
-        box-shadow:
-            0 0 0 $shp-focus-ring-offset $clr-bg-pri-focus,
-            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) $clr-pri-focus;
+        box-shadow: var(--bit-shd-focus-ring,
+            0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri-focus},
+            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$clr-pri-focus});
     }
 
     /* webkit thumb */

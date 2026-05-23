@@ -15,11 +15,16 @@ public sealed class BitExternalThemeLoader
 
     public ValueTask AttachStylesheetAsync(string linkElementId, string href)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(linkElementId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(href);
+
         return _js.BitExternalThemeAttach(linkElementId, href);
     }
 
     public ValueTask DetachStylesheetAsync(string linkElementId)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(linkElementId);
+
         return _js.BitExternalThemeDetach(linkElementId);
     }
 }

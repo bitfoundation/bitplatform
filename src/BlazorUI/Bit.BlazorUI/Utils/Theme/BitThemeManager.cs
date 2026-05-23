@@ -6,7 +6,7 @@
 /// <see cref="ApplyBitThemeAsync"/> sets <c>--bit-*</c> variables on the target element (default <c>document.body</c>), overriding stylesheet defaults for that subtree.
 /// Nested <see cref="BitThemeProvider"/> scopes overrides to its root element.
 /// </summary>
-public sealed class BitThemeManager : IAsyncDisposable
+public class BitThemeManager : IAsyncDisposable
 {
     private readonly IJSRuntime _js;
     private readonly BitThemeJsNotifierReceiver _jsNotifierReceiver;

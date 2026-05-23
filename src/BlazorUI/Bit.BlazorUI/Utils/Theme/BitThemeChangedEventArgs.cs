@@ -5,15 +5,15 @@ namespace Bit.BlazorUI;
 /// </summary>
 public sealed class BitThemeChangedEventArgs : EventArgs
 {
-    public BitThemeChangedEventArgs(string newTheme, string oldTheme)
+    public BitThemeChangedEventArgs(string? newTheme, string? oldTheme)
     {
         NewTheme = newTheme;
         OldTheme = oldTheme;
     }
 
     /// <summary>Resolved theme name now on <c>bit-theme</c>.</summary>
-    public string NewTheme { get; }
+    public string? NewTheme { get; }
 
     /// <summary>Previous resolved theme name.</summary>
-    public string OldTheme { get; }
+    public string? OldTheme { get; }
 }
