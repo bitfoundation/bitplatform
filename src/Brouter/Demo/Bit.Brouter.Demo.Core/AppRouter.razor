@@ -16,10 +16,10 @@
     {
         base.OnInitialized();
 
-        _onNavigatingHandler = async ctx =>
+        _onNavigatingHandler = ctx =>
         {
             // analytics, telemetry, page title, ...
-            await Task.CompletedTask;
+            return ValueTask.CompletedTask;
         };
         brouter.OnNavigating += _onNavigatingHandler;
     }

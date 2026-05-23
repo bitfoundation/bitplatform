@@ -86,9 +86,20 @@ public partial class Route : ComponentBase, IDisposable
         // Compute and parse the template (and build the renderer) before registering with the
         // Brouter or attaching to the Parent. If parsing throws we don't want this Route to be
         // left half-initialized in the parent/router collections.
-        FullTemplate = (Parent is null || string.IsNullOrWhiteSpace(Parent.FullTemplate))
-                        ? Path.Trim('/')
-                        : $"{Parent.FullTemplate.TrimEnd('/')}/{Path.TrimStart('/')}";
+        if (Parent is null || string.IsNullOrWhiteSpace(Parent.FullTemplate))
+        {
+            FullTemplate = Path.Trim('/');
+        }
+        else if (string.IsNullOrEmpty(Path.Trim('/')))
+        {
+            // Index route (empty/slashes-only Path): inherit the parent's template without a trailing slash
+            // so "parent/" doesn't leak into matching/specificity calculations.
+            FullTemplate = Parent.FullTemplate.TrimEnd('/');
+        }
+        else
+        {
+            FullTemplate = $"{Parent.FullTemplate.TrimEnd('/')}/{Path.TrimStart('/')}";
+        }
 
         RouteTemplate = TemplateParser.ParseTemplate(FullTemplate);
 

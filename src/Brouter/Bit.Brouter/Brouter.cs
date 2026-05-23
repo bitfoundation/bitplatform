@@ -104,7 +104,11 @@ public partial class Brouter : ComponentBase, IDisposable
         builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
         {
             b.AddContent(0, ChildContent);
-            if (_noRouteMatched && NotFoundContent is not null && string.IsNullOrEmpty(NotFound))
+            // Render the inline fallback when no route matched and either NotFound is unset, or
+            // NotFound resolves to the current URL (no redirect happened, so we'd otherwise show nothing).
+            if (_noRouteMatched && NotFoundContent is not null &&
+                (string.IsNullOrEmpty(NotFound) ||
+                 string.Equals(_navManager.ToAbsoluteUri(NotFound).ToString(), _navManager.Uri, StringComparison.Ordinal)))
             {
                 b.AddContent(1, NotFoundContent(CurrentLocation));
             }
@@ -396,7 +400,7 @@ public partial class Brouter : ComponentBase, IDisposable
             {
                 route.Parameters[templateSegment.Value] = matchedValue;
                 route.ConstraintsByParameter[templateSegment.Value] =
-                    templateSegment.Constraints.Select(rc => rc.Constraint).ToArray();
+                    templateSegment.Constraints.Select(rc => rc.Name).ToArray();
             }
         }
 

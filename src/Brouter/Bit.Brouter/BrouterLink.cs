@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Bit.Brouter;
 
@@ -18,10 +19,11 @@ public enum BrouterLinkMatch
 /// when its <see cref="Href"/> matches the current URL. Equivalent to React Router's <c>NavLink</c>
 /// and Vue Router's <c>router-link</c>.
 /// </summary>
-public sealed class BrouterLink : ComponentBase, IDisposable
+public sealed class BrouterLink : ComponentBase, IAsyncDisposable
 {
     [Inject] private IBrouter Brouter { get; set; } = default!;
     [Inject] private BrouterOptions Options { get; set; } = default!;
+    [Inject] private IJSRuntime JS { get; set; } = default!;
 
     [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -41,15 +43,19 @@ public sealed class BrouterLink : ComponentBase, IDisposable
     [Parameter] public BrouterLinkMatch Match { get; set; } = BrouterLinkMatch.Prefix;
 
     /// <summary>
-    /// If true, navigation replaces the current history entry instead of adding a new one.
-    /// Note: when <see cref="Replace"/> is true, modified clicks (Ctrl/Cmd+click, Shift+click)
-    /// will not open the link in a new tab — Blazor's parameter binding cannot conditionally
-    /// preventDefault between mousedown and click, so the default action is always prevented.
+    /// If true, navigation replaces the current history entry instead of pushing a new one.
+    /// Modified clicks (Ctrl/Cmd+click, Shift+click, etc.) and non-primary clicks fall through
+    /// to the browser's default behavior (e.g., "open in new tab"); only unmodified left-clicks
+    /// are intercepted to perform the replace navigation.
     /// </summary>
     [Parameter] public bool Replace { get; set; }
 
 
     private bool _isActive;
+    private ElementReference _anchor;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _handle;
+    private bool _replaceWired;
 
     protected override void OnInitialized()
     {
@@ -134,37 +140,94 @@ public sealed class BrouterLink : ComponentBase, IDisposable
         builder.AddAttribute(2, "href", Href);
         if (combinedClass is not null) builder.AddAttribute(3, "class", combinedClass);
         if (_isActive) builder.AddAttribute(4, "aria-current", "page");
-        // By default, rely on Blazor's NavigationInterception (same as Microsoft's NavLink) to drive
-        // navigation off the anchor's href. The Replace parameter cannot be expressed via a plain
-        // anchor, so opt into a custom click handler with preventDefault only in that case.
-        // Limitation: when Replace=true we always preventDefault on click, which means modified
-        // clicks (Ctrl/Cmd+click, Shift+click) won't open a new tab. Trying to toggle preventDefault
-        // based on modifier keys via @onclick:preventDefault is unreliable because Blazor evaluates
-        // the attribute at render time, and there's no synchronous way to flip it between mousedown
-        // and click. Middle-click fires auxclick (not click), so it isn't intercepted here either way.
+
+        // For Replace=false we rely on Blazor's NavigationInterception (same as Microsoft's
+        // NavLink) to drive navigation off the anchor's href.
+        // For Replace=true we hook our own click handler in C# AND wire a JS capture-phase
+        // listener (see OnAfterRenderAsync) that conditionally calls preventDefault only for
+        // unmodified primary clicks. That way, modified clicks (Ctrl/Cmd+click, Shift+click)
+        // keep their native "open in new tab" / "open in new window" behavior; only plain
+        // left-clicks are intercepted to perform the replace navigation.
         if (Replace)
         {
             builder.AddAttribute(5, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, OnClick));
-            builder.AddAttribute(6, "onclick:preventDefault", true);
-            builder.AddAttribute(7, "onclick:stopPropagation", true);
+            builder.AddAttribute(6, "onclick:stopPropagation", true);
+            builder.AddElementReferenceCapture(7, capturedRef => _anchor = capturedRef);
         }
+
         builder.AddContent(8, ChildContent);
         builder.CloseElement();
     }
 
-    private void OnClick(MouseEventArgs e)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Only invoked when Replace=true (see BuildRenderTree).
-        // Skip non-primary or modified clicks so the user can hold a modifier to opt out of
-        // the replace navigation. The browser won't open a new tab because default is prevented,
-        // but at least we won't replace the current entry against the user's intent.
-        if (e.Button != 0 || e.CtrlKey || e.ShiftKey || e.AltKey || e.MetaKey) return;
-
-        Brouter.Navigate(Href, replace: Replace);
+        if (Replace && _replaceWired is false)
+        {
+            try
+            {
+                _module ??= await JS.InvokeAsync<IJSObjectReference>(
+                    "import", "./_content/Bit.Brouter/BitBrouter.js").ConfigureAwait(false);
+                _handle = await _module.InvokeAsync<IJSObjectReference>(
+                    "wireConditionalPreventDefault", _anchor).ConfigureAwait(false);
+                _replaceWired = true;
+            }
+            catch (JSDisconnectedException) { /* Circuit disconnected; nothing to wire. */ }
+            catch (JSException) { /* JS interop failure; falls back to default link behavior. */ }
+            catch (InvalidOperationException) { /* JS interop unavailable during pre-render. */ }
+            catch (TaskCanceledException) { /* Component disposed mid-call. */ }
+        }
+        else if (Replace is false && _replaceWired)
+        {
+            // Replace switched off after wiring; tear the JS handler down.
+            await DisposeJsHandleAsync().ConfigureAwait(false);
+            _replaceWired = false;
+        }
     }
 
-    public void Dispose()
+    private void OnClick(MouseEventArgs e)
+    {
+        // Mirrors the JS-side filter so the C# logic agrees with what the browser is doing:
+        // for modified or non-primary clicks the JS listener doesn't preventDefault, the
+        // browser opens the link natively, and we should not also push a replace navigation.
+        if (e.Button != 0 || e.CtrlKey || e.ShiftKey || e.AltKey || e.MetaKey) return;
+
+        Brouter.Navigate(Href, replace: true);
+    }
+
+    private async ValueTask DisposeJsHandleAsync()
+    {
+        if (_handle is not null)
+        {
+            try { await _handle.InvokeVoidAsync("dispose").ConfigureAwait(false); }
+            catch (JSDisconnectedException) { }
+            catch (JSException) { }
+            catch (InvalidOperationException) { }
+            catch (TaskCanceledException) { }
+
+            try { await _handle.DisposeAsync().ConfigureAwait(false); }
+            catch (JSDisconnectedException) { }
+            catch (JSException) { }
+            catch (InvalidOperationException) { }
+            catch (TaskCanceledException) { }
+
+            _handle = null;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
     {
         Brouter.OnNavigated -= OnNavigated;
+
+        await DisposeJsHandleAsync().ConfigureAwait(false);
+
+        if (_module is not null)
+        {
+            try { await _module.DisposeAsync().ConfigureAwait(false); }
+            catch (JSDisconnectedException) { }
+            catch (JSException) { }
+            catch (InvalidOperationException) { }
+            catch (TaskCanceledException) { }
+            _module = null;
+        }
     }
 }

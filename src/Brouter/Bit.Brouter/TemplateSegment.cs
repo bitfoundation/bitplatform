@@ -18,7 +18,7 @@ internal class TemplateSegment
     /// <summary>True for parameters declared with a trailing <c>?</c>, e.g. <c>{id?}</c>.</summary>
     public bool IsOptional { get; }
 
-    public RouteConstraint[] Constraints { get; }
+    public RouteConstraintBinding[] Constraints { get; }
 
     public TemplateSegment(string template, string segment, bool isParameter)
     {
@@ -71,7 +71,7 @@ internal class TemplateSegment
 
             Value = paramName;
             Constraints = rest.Split(':')
-                              .Select(c => RouteConstraint.Parse(template, segment, c))
+                              .Select(c => new RouteConstraintBinding(c, RouteConstraint.Resolve(template, segment, c)))
                               .ToArray();
         }
 
@@ -85,9 +85,9 @@ internal class TemplateSegment
         {
             matchedParameterValue = segment;
 
-            foreach (var constraint in Constraints)
+            foreach (var binding in Constraints)
             {
-                if (constraint.TryMatch(segment, out matchedParameterValue) is false) return false;
+                if (binding.Constraint.TryMatch(segment, out matchedParameterValue) is false) return false;
             }
 
             return true;

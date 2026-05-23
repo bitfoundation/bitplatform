@@ -148,6 +148,32 @@ internal class RouteRenderer
             return true;
         }
 
+        // Convert.ChangeType doesn't support string -> Guid or string -> Enum, so handle them
+        // explicitly before falling back. Mirrors RouteParameters.TryGetWeak so [BrouterQuery]
+        // bindings accept the same scalar types as [BrouterParameter]. Nullable<T> is honored
+        // because we resolved the underlying type above.
+        if (underlying == typeof(Guid))
+        {
+            if (Guid.TryParse(raw, out var guidVal))
+            {
+                value = guidVal;
+                return true;
+            }
+            value = null;
+            return false;
+        }
+
+        if (underlying.IsEnum)
+        {
+            if (Enum.TryParse(underlying, raw, ignoreCase: true, out var enumVal))
+            {
+                value = enumVal;
+                return true;
+            }
+            value = null;
+            return false;
+        }
+
         try
         {
             value = System.Convert.ChangeType(raw, underlying, System.Globalization.CultureInfo.InvariantCulture);
