@@ -52,7 +52,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -103,7 +103,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -158,7 +158,7 @@ jobs:
        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --ads
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -205,7 +205,7 @@ jobs:
        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --offlineDb --signalR --ads
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -257,7 +257,7 @@ jobs:
        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --ads
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -314,7 +314,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'TodoSample\**\appsettings*json'
       env:
@@ -366,14 +366,14 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
   
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@v1.2
+      uses: timheuer/base64-to-file@v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/'
           fileName: 'TodoSample.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
 
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@v1.2
+      uses: timheuer/base64-to-file@v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android'
           fileName: 'google-services.json'
@@ -386,7 +386,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -405,7 +405,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
 
     - name: Extract App Icon from env
-      uses: timheuer/base64-to-file@v1.2
+      uses: timheuer/base64-to-file@v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
           fileName: 'appicon.svg'
@@ -415,7 +415,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
 
     - name: Extract App Splash Screen from env
-      uses: timheuer/base64-to-file@v1.2
+      uses: timheuer/base64-to-file@v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
           fileName: 'splash.svg'
@@ -471,7 +471,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'TodoSample/**/appsettings*json'
       env:
@@ -484,13 +484,13 @@ jobs:
       run: cd src && dotnet workload install maui
 
     - name: Import Code-Signing Certificates
-      uses: apple-actions/import-codesign-certs@v5
+      uses: apple-actions/import-codesign-certs@v7
       with:
         p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles
-      uses: Apple-Actions/download-provisioning-profiles@v4
+      uses: Apple-Actions/download-provisioning-profiles@v6
       with:
         bundle-id: 'com.bitplatform.Todo.Template'
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
@@ -501,7 +501,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
 
     - name: Extract App Icon from env
-      uses: timheuer/base64-to-file@v1.2
+      uses: timheuer/base64-to-file@v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
           fileName: 'appicon.svg'
@@ -511,7 +511,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
 
     - name: Extract App Splash Screen from env
-      uses: timheuer/base64-to-file@v1.2
+      uses: timheuer/base64-to-file@v2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
           fileName: 'splash.svg'

@@ -49,7 +49,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
@@ -117,7 +117,7 @@ jobs:
        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
@@ -176,7 +176,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'AdminPanel\**\appsettings*json'
       env:
@@ -228,14 +228,14 @@ jobs:
         node-version: 24
   
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@v1.2
+      uses: timheuer/base64-to-file@v2
       with:
           fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/'
           fileName: 'AdminPanel.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
 
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@v1.2
+      uses: timheuer/base64-to-file@v2
       with:
           fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/Android'
           fileName: 'google-services.json'
@@ -248,7 +248,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
@@ -313,7 +313,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
@@ -326,13 +326,13 @@ jobs:
       run: cd src && dotnet workload install maui
 
     - name: Import Code-Signing Certificates
-      uses: apple-actions/import-codesign-certs@v5
+      uses: apple-actions/import-codesign-certs@v7
       with:
         p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles
-      uses: Apple-Actions/download-provisioning-profiles@v4
+      uses: Apple-Actions/download-provisioning-profiles@v6
       with:
         bundle-id: 'com.bitplatform.AdminPanel.Template'
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}

@@ -1,10 +1,10 @@
 {
     "dependencies": {
-        "dompurify": "3.4.3"
+        "dompurify": "3.4.5"
     },
     "devDependencies": {
         "esbuild": "0.28.0",
-        "sass": "1.99.0",
+        "sass": "1.100.0",
         "typescript": "6.0.3"
     }
 }

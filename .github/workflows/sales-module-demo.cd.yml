@@ -45,7 +45,7 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'SalesModule/**/appsettings*json'
       env:
@@ -108,7 +108,7 @@ jobs:
         cd ..\..\..\ && dotnet new bit-bp --name SalesModule --database PostgreSQL --module Sales --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --ads
   
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v2 
       with:
         files: 'SalesModule\**\appsettings*json'
       env:

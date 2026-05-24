@@ -39,7 +39,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@v1.2 
+        uses: devops-actions/variable-substitution@v2 
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -122,7 +122,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@v1.2 
+        uses: devops-actions/variable-substitution@v2 
         with:
           files: 'src\**\appsettings*json'
         env:
@@ -164,7 +164,7 @@ jobs:
           node-version: 24
 
       - name: Extract Android signing key
-        uses: timheuer/base64-to-file@v1.2
+        uses: timheuer/base64-to-file@v2
         with:
           fileDir: './src/Client/Boilerplate.Client.Maui/'
           fileName: 'Boilerplate.keystore'
@@ -176,7 +176,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@v1.2 
+        uses: devops-actions/variable-substitution@v2 
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -231,7 +231,7 @@ jobs:
           bit-resx-translate
 
       - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@v1.2 
+        uses: devops-actions/variable-substitution@v2 
         with:
           files: 'src/**/appsettings*json'
         env:
@@ -241,13 +241,13 @@ jobs:
         run: cd src && dotnet workload install maui
 
       - name: Import Code-Signing Certificates
-        uses: apple-actions/import-codesign-certs@v5
+        uses: apple-actions/import-codesign-certs@v7
         with:
           p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
           p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
       - name: Download Apple Provisioning Profiles
-        uses: Apple-Actions/download-provisioning-profiles@v4
+        uses: Apple-Actions/download-provisioning-profiles@v6
         with:
           bundle-id: ${{ vars.APP_ID }}
           issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
