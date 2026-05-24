@@ -14,6 +14,7 @@ public class BitThemeManager : IAsyncDisposable
 
     private DotNetObjectReference<BitThemeJsNotifierReceiver>? _jsNotifierReference;
     private bool _jsNotifierRegistered;
+    private bool _disposed;
 
     /// <summary>
     /// Creates a manager without a .NET notifier receiver. <see cref="BitThemeNotifications"/> won't fire from JS until a receiver is provided
@@ -91,6 +92,7 @@ public class BitThemeManager : IAsyncDisposable
     {
         if (_jsNotifierRegistered) return;
         if (_jsNotifierReceiver is null) return; // no-op when constructed without a receiver
+        if (_disposed) return; // semaphore has been disposed; do not attempt to wait on it.
         if (_js.IsRuntimeInvalid()) return; // e.g. prerendering / disconnected circuit; retry on next call.
 
         // Serialize concurrent callers (e.g. Task.WhenAll over multiple manager methods) so only one
@@ -100,6 +102,7 @@ public class BitThemeManager : IAsyncDisposable
         try
         {
             if (_jsNotifierRegistered) return;
+            if (_disposed) return; // disposal raced ahead while we were waiting on the semaphore.
             if (_js.IsRuntimeInvalid()) return;
 
             _jsNotifierReference ??= DotNetObjectReference.Create(_jsNotifierReceiver!);
@@ -119,27 +122,34 @@ public class BitThemeManager : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_jsNotifierReference is null)
-        {
-            _jsNotifierRegistrationLock.Dispose();
-            return;
-        }
-
+        // Acquire the registration lock so any in-flight EnsureJsNotifierRegisteredAsync completes
+        // before we tear down the semaphore; new callers will short-circuit on _disposed.
+        await _jsNotifierRegistrationLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            await _js.BitThemeUnregisterDotNetNotifier().ConfigureAwait(false);
-        }
-        catch (JSDisconnectedException) { } // circuit gone — nothing to unregister
-        catch (JSException ex)
-        {
-            // missing JS module (e.g. after a page refresh or navigation) — safe to ignore at teardown.
-            Console.WriteLine(ex.Message);
-        }
-        finally
-        {
+            if (_disposed) return;
+            _disposed = true;
+
+            if (_jsNotifierReference is null) return;
+
+            try
+            {
+                await _js.BitThemeUnregisterDotNetNotifier().ConfigureAwait(false);
+            }
+            catch (JSDisconnectedException) { } // circuit gone — nothing to unregister
+            catch (JSException ex)
+            {
+                // missing JS module (e.g. after a page refresh or navigation) — safe to ignore at teardown.
+                Console.WriteLine(ex.Message);
+            }
+
             _jsNotifierReference.Dispose();
             _jsNotifierReference = null;
             _jsNotifierRegistered = false;
+        }
+        finally
+        {
+            _jsNotifierRegistrationLock.Release();
             _jsNotifierRegistrationLock.Dispose();
         }
     }

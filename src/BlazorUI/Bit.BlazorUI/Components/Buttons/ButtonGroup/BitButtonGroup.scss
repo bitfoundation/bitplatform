@@ -19,8 +19,10 @@
     &.bit-dis {
         color: var(--bit-btg-clr-dis-text);
         border-color: var(--bit-btg-clr-dis);
-        --bit-btg-itm-clr-bg: var(--bit-btg-clr-dis);
-        --bit-btg-itm-clr-brd: var(--bit-btg-clr-dis);
+        // Resolve through the per-variant `*-dis` tokens so outline/text variants keep transparent
+        // backgrounds and only filled variants render the colored disabled tint.
+        --bit-btg-itm-clr-bg: var(--bit-btg-itm-clr-bg-dis);
+        --bit-btg-itm-clr-brd: var(--bit-btg-itm-clr-brd-dis, var(--bit-btg-clr-dis));
     }
 }
 
