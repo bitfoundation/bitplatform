@@ -234,6 +234,11 @@ namespace BitBlazorUI {
             const s = BitMapArcGis._require(id);
             const esri = s.esri;
             const ring = latlngs.map(p => [p.lng, p.lat]);
+            if (ring.length > 0) {
+                const a = ring[0];
+                const b = ring[ring.length - 1];
+                if (a[0] !== b[0] || a[1] !== b[1]) ring.push([a[0], a[1]]);
+            }
             const g = new esri.Graphic({
                 geometry: new esri.Polygon({ rings: [ring], spatialReference: { wkid: 4326 } }),
                 symbol: BitMapArcGis._fillSym(esri, style),

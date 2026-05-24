@@ -30,6 +30,12 @@ public sealed class BitMapLibreMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
+        if (string.IsNullOrWhiteSpace(StyleUrl))
+        {
+            throw new InvalidOperationException(
+                $"{nameof(BitMapLibreMapProvider)}.{nameof(StyleUrl)} must be a non-empty URL pointing to a MapLibre style JSON.");
+        }
+
         var common = GetCommonOptions();
         common["styleUrl"] = StyleUrl;
         common["showNavigationControl"] = ShowNavigationControl;

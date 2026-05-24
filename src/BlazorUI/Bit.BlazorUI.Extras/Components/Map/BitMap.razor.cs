@@ -39,6 +39,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     /// <summary>
     /// Fired once after the map is ready and imperative methods can be called safely.
+    /// Also fires again if the active provider is swapped to one with a different JS backend
+    /// (which destructively re-initializes the map); consumers can use this to rebuild any
+    /// imperatively-added markers/layers/overlays on the new provider.
     /// </summary>
     [Parameter] public EventCallback OnReady { get; set; }
 
@@ -335,6 +338,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         {
             // The JS object name changed, so the old provider's JS instance cannot be synced.
             // Dispose the old map and re-initialize with the new provider.
+            // NOTE: switching to a provider with a different JsObjectName is destructive —
+            // any imperatively-added markers, vector layers and tile overlays are dropped
+            // because they live inside the disposed JS instance. Callers should re-apply
+            // those after handling the OnReady event that fires below.
             try
             {
                 await _js.BitMapDispose(_activeProvider.JsObjectName, _Id);
@@ -342,12 +349,16 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             catch (JSDisconnectedException) { }
 
             await _js.BitMapInit(effective.JsObjectName, _Id, _mapElement, _dotnetObj!, effective.BuildOptionsPayload());
+
+            _activeProvider = effective;
+
+            // Fire OnReady again so consumers can rebuild their map state on the new provider.
+            await OnReady.InvokeAsync();
+            return;
         }
-        else
-        {
-            // Same JS object — just sync the updated options.
-            await _js.BitMapSync(effective.JsObjectName, _Id, effective.BuildOptionsPayload());
-        }
+
+        // Same JS object — just sync the updated options.
+        await _js.BitMapSync(effective.JsObjectName, _Id, effective.BuildOptionsPayload());
 
         _activeProvider = effective;
     }
