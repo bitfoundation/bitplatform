@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// JS-invokable bridge for <c>BitTheme.registerDotNetNotifier</c>; registered lazily by <see cref="BitThemeManager"/>.
 /// </summary>
-public sealed class BitThemeJsNotifierReceiver : IDisposable
+public sealed class BitThemeJsNotifierReceiver
 {
     private readonly BitThemeNotifications _notifications;
 
@@ -16,9 +16,5 @@ public sealed class BitThemeJsNotifierReceiver : IDisposable
     public void NotifyThemeChangedFromJs(string newTheme, string oldTheme)
     {
         _notifications.Raise(newTheme, oldTheme);
-    }
-
-    public void Dispose()
-    {
     }
 }

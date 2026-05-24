@@ -362,6 +362,7 @@
 .bit-srb-nbr {
     .bit-srb-cnt {
         border: none;
+
         // Keep box-shadow unset here so the focus-ring mixin applied via .bit-srb-foc
         // (and any :focus / :focus-visible states) can still render the focus indicator.
     }

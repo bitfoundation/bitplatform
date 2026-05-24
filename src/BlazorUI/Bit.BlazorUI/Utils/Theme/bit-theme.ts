@@ -32,6 +32,13 @@ class BitTheme {
     /** When true, user pinned an explicit theme via set (not system); disables following OS until set('system'). */
     private static _stopFollowingSystem = false;
 
+    /**
+     * When true, the user explicitly opted into following the OS at runtime (e.g. via useSystem()),
+     * so we follow OS changes even without a persisted "system" preference or the bit-theme-system attribute.
+     * Cleared automatically when the user pins a concrete theme via set(...).
+     */
+    private static _runtimeFollowSystem = false;
+
     private static _schemeMediaQuery: MediaQueryList | null = null;
     private static _onSchemeChange = () => BitTheme.applyResolvedSystemThemeFromOs();
 
@@ -110,8 +117,10 @@ class BitTheme {
         if (!fromInit && !internalOs) {
             if (themeName === BitTheme.SYSTEM_THEME) {
                 BitTheme._stopFollowingSystem = false;
+                BitTheme._runtimeFollowSystem = true;
             } else {
                 BitTheme._stopFollowingSystem = true;
+                BitTheme._runtimeFollowSystem = false;
             }
         }
 
@@ -192,6 +201,7 @@ class BitTheme {
             if (persisted && persisted !== BitTheme.SYSTEM_THEME) return false;
             if (persisted === BitTheme.SYSTEM_THEME) return true;
         }
+        if (BitTheme._runtimeFollowSystem) return true;
         if (document.documentElement.hasAttribute('bit-theme-system')) return true;
         return false;
     }

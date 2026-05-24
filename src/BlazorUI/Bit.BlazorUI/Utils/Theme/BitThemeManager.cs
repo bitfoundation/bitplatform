@@ -105,13 +105,17 @@ public class BitThemeManager : IAsyncDisposable
         {
             await _js.BitThemeUnregisterDotNetNotifier().ConfigureAwait(false);
         }
-        catch (JSDisconnectedException)
+        catch (JSDisconnectedException) { } // circuit gone — nothing to unregister
+        catch (JSException ex)
         {
-            // Circuit gone
+            // missing JS module (e.g. after a page refresh or navigation) — safe to ignore at teardown.
+            Console.WriteLine(ex.Message);
         }
-
-        _jsNotifierReference.Dispose();
-        _jsNotifierReference = null;
-        _jsNotifierRegistered = false;
+        finally
+        {
+            _jsNotifierReference.Dispose();
+            _jsNotifierReference = null;
+            _jsNotifierRegistered = false;
+        }
     }
 }

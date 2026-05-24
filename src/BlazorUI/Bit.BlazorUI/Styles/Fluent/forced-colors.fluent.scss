@@ -39,8 +39,11 @@
 }
 
 // Stronger contrast preference (non-forced): deepen borders and primary text slightly.
+// Use a concrete value rather than self-referencing var(--bit-shp-brd-width, …) — a custom
+// property cannot reference its own current value (the cycle resolves to the fallback per
+// the CSS spec, which makes the intent unclear and brittle across engines).
 @media (prefers-contrast: more) {
     :root {
-        --bit-shp-brd-width: max(var(--bit-shp-brd-width, 1px), 1px);
+        --bit-shp-brd-width: 1px;
     }
 }

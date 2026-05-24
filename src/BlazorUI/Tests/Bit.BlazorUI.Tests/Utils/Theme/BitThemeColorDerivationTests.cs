@@ -295,6 +295,77 @@ public sealed class BitThemeColorDerivationTests
         Assert.AreEqual(v1.Main, v2.Main);
     }
 
+    // ── adjustTextForWcagAa ───────────────────────────────────────────────────
+
+    [TestMethod]
+    public void FillColorRoleFromMainAdjustTextForWcagAaDefaultFalseKeepsHeuristicSuggestion()
+    {
+        // #888888: heuristic luminance ≈ 0.533 → suggests "#FFFFFF".
+        // Without the flag, that suggestion stands even though WCAG AA prefers black.
+        var v = new BitThemeColorVariants();
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#888888");
+        Assert.AreEqual("#FFFFFF", v.Text);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainAdjustTextForWcagAaFlipsToBlackOnMidGray()
+    {
+        // #888888 vs white ≈ 3.55 (fails AA), vs black ≈ 5.92 (passes AA).
+        // Heuristic picks white; flag must flip to black via pass/fail precedence.
+        var v = new BitThemeColorVariants();
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#888888", adjustTextForWcagAa: true);
+        Assert.AreEqual("#000000", v.Text);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainAdjustTextForWcagAaFlipsToBlackOnSaturatedColor()
+    {
+        // #009100 has a low heuristic luminance (≈ 0.334) so the heuristic suggests white,
+        // but WCAG relative luminance ≈ 0.20: white fails AA (≈ 4.16), black passes (≈ 5.05).
+        // Pass/fail precedence must select the AA-passing candidate (black).
+        var v = new BitThemeColorVariants();
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#009100", adjustTextForWcagAa: true);
+        Assert.AreEqual("#000000", v.Text);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainAdjustTextForWcagAaKeepsWhiteOnVeryDarkColor()
+    {
+        // #1A1A2E: only white passes AA. Heuristic also picks white. No flip.
+        var v = new BitThemeColorVariants();
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#1A1A2E", adjustTextForWcagAa: true);
+        Assert.AreEqual("#FFFFFF", v.Text);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainAdjustTextForWcagAaKeepsBlackOnVeryLightColor()
+    {
+        // #F0F0F0: only black passes AA. Heuristic also picks black. No flip.
+        var v = new BitThemeColorVariants();
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#F0F0F0", adjustTextForWcagAa: true);
+        Assert.AreEqual("#000000", v.Text);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainAdjustTextForWcagAaTieBreakPicksHigherContrast()
+    {
+        // #757575: both candidates pass AA (black ≈ 4.558, white ≈ 4.607).
+        // Tie-break must select white as the higher-contrast option.
+        var v = new BitThemeColorVariants();
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#757575", adjustTextForWcagAa: true);
+        Assert.AreEqual("#FFFFFF", v.Text);
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainAdjustTextForWcagAaPresetTextNotOverwritten()
+    {
+        // Caller-provided Text must never be overwritten — even when it would fail WCAG AA.
+        const string preset = "#FFFFFF"; // would fail AA on #888888
+        var v = new BitThemeColorVariants { Text = preset };
+        BitThemeColorDerivation.FillColorRoleFromMain(v, "#888888", adjustTextForWcagAa: true);
+        Assert.AreEqual(preset, v.Text);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /// <summary>Perceived luminance (0–1) from a #RRGGBB hex string.</summary>

@@ -45,7 +45,11 @@ $html-font-size: 16px;
     outline: none; // Replace native outline with the themed ring below.
     --bit-focus-ring-color: #{$color};
     --bit-focus-ring-offset: #{$offset};
-    box-shadow: var(--bit-shd-focus-ring);
+    // Inline fallback mirrors the global --bit-shd-focus-ring expression in shapes.fluent.scss
+    // so focus indicators still render if a consumer-defined theme omits that token.
+    box-shadow: var(--bit-shd-focus-ring,
+        0 0 0 var(--bit-focus-ring-offset, #{$offset}) var(--bit-clr-bg-pri-focus),
+        0 0 0 calc(var(--bit-focus-ring-offset, #{$offset}) + #{$shp-focus-ring-width}) var(--bit-focus-ring-color, #{$color}));
 }
 
 /*
