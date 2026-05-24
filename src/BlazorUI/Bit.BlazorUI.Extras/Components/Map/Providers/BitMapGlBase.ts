@@ -86,7 +86,19 @@ namespace BitBlazorUI {
             BitMapGlBase._ensureNavControl(state, o);
 
             if (dotnetObj) {
-                map.on('click', (e: any) => dotnetObj.invokeMethodAsync('OnClick', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
+                map.on('click', (e: any) => {
+                    // Suppress map-level OnClick when the click hits any registered
+                    // vector/geojson layer; those layers have their own click handlers
+                    // and OnClick is contractually "not on a marker or vector layer".
+                    const vectorLayerIds = BitMapGlBase._collectVectorLayerIds(state);
+                    if (vectorLayerIds.length > 0) {
+                        try {
+                            const hits = map.queryRenderedFeatures(e.point, { layers: vectorLayerIds });
+                            if (hits && hits.length > 0) return;
+                        } catch { /* ignore — fall through and fire OnClick */ }
+                    }
+                    dotnetObj.invokeMethodAsync('OnClick', { lat: e.lngLat.lat, lng: e.lngLat.lng });
+                });
                 map.on('dblclick', (e: any) => dotnetObj.invokeMethodAsync('OnDoubleClick', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
                 const notify = () => queueMicrotask(() => dotnetObj.invokeMethodAsync('OnViewChanged', BitMapGlBase._readView(map)));
                 map.on('moveend', notify);
@@ -406,6 +418,17 @@ namespace BitBlazorUI {
             const s = BitMapGlBase._store(provider)[id];
             if (!s) throw new Error(`${provider}: unknown map id '${id}'`);
             return s;
+        }
+
+        private static _collectVectorLayerIds(s: GlState): string[] {
+            const ids: string[] = [];
+            for (const key of Object.keys(s.vectorCatalog)) {
+                const entry = s.vectorCatalog[key];
+                for (const lid of entry.layerIds) {
+                    if (s.map.getLayer && s.map.getLayer(lid)) ids.push(lid);
+                }
+            }
+            return ids;
         }
 
         private static _readView(map: any) {

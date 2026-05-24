@@ -1,11 +1,17 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// OpenLayers provider for <see cref="BitMap{TMapProvider}"/>. Loads OpenLayers 10.5.0 from esm.sh.
-/// No API key required; defaults to OpenStreetMap raster tiles.
+/// OpenLayers provider for <see cref="BitMap{TMapProvider}"/>. Loads OpenLayers from esm.sh
+/// (see <see cref="OpenLayersVersion"/>). No API key required; defaults to OpenStreetMap raster tiles.
 /// </summary>
 public sealed class BitOpenLayersMapProvider : BitMapProviderBase
 {
+    /// <summary>
+    /// OpenLayers version used by this provider. Keep in sync with <c>OL_VER</c> in
+    /// <c>wwwroot/openlayers/bit-map-ol-loader.js</c>; both reference the same release.
+    /// </summary>
+    public const string OpenLayersVersion = "10.5.0";
+
     /// <summary>Tile URL template (XYZ).</summary>
     public string TileUrl { get; set; } = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
@@ -40,7 +46,7 @@ public sealed class BitOpenLayersMapProvider : BitMapProviderBase
     public override IReadOnlyList<string> Scripts => ["_content/Bit.BlazorUI.Extras/openlayers/bit-map-ol-loader.js"];
 
     /// <inheritdoc />
-    public override IReadOnlyList<string> Stylesheets => ["https://cdn.jsdelivr.net/npm/ol@10.5.0/ol.css"];
+    public override IReadOnlyList<string> Stylesheets => [$"https://cdn.jsdelivr.net/npm/ol@{OpenLayersVersion}/ol.css"];
 
     /// <inheritdoc />
     public override bool ScriptsAreModules => true;

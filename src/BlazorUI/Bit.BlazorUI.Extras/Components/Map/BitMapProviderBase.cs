@@ -76,6 +76,22 @@ public abstract class BitMapProviderBase : IBitMapProvider
             throw new ArgumentException($"MinZoom ({MinZoom.Value}) cannot be greater than MaxZoom ({MaxZoom.Value}).");
         }
 
+        if (MinZoom.HasValue && Zoom < MinZoom.Value)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(Zoom),
+                Zoom,
+                $"Zoom ({Zoom}) must be greater than or equal to MinZoom ({MinZoom.Value}).");
+        }
+
+        if (MaxZoom.HasValue && Zoom > MaxZoom.Value)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(Zoom),
+                Zoom,
+                $"Zoom ({Zoom}) must be less than or equal to MaxZoom ({MaxZoom.Value}).");
+        }
+
         return new Dictionary<string, object?>
         {
             ["center"] = new { lat = Center.Latitude, lng = Center.Longitude },

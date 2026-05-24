@@ -15,7 +15,14 @@ namespace BitBlazorUI {
             markerSource: any, markerLayer: any,
             popupOverlay: any, popupElement: HTMLElement,
             translateInteraction: any,
+            tileUrl: string, tileMaxZoom: number, tileAttribution: string,
         } } = {};
+
+        private static readonly _defaultTileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+        private static _resolveTileUrl(o: any): string {
+            return (o.tileUrl || BitMapOpenLayers._defaultTileUrl).replace('{s}', 'a');
+        }
 
         public static async init(id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
             const ol = await BitMapOpenLayers._loadOl();
@@ -23,11 +30,15 @@ namespace BitBlazorUI {
             const lng0 = o.center?.lng ?? -0.09, lat0 = o.center?.lat ?? 51.505;
             const zoom = o.zoom ?? 13;
 
+            const tileUrl = BitMapOpenLayers._resolveTileUrl(o);
+            const tileMaxZoom = o.tileMaxZoom ?? 19;
+            const tileAttribution = o.tileAttribution || '';
+
             const baseTile = new ol.TileLayer({
                 source: new ol.XYZ({
-                    url: (o.tileUrl || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png').replace('{s}', 'a'),
-                    maxZoom: o.tileMaxZoom ?? 19,
-                    attributions: o.tileAttribution || '',
+                    url: tileUrl,
+                    maxZoom: tileMaxZoom,
+                    attributions: tileAttribution,
                 }),
                 opacity: o.tileOpacity ?? 1,
             });
@@ -95,6 +106,7 @@ namespace BitBlazorUI {
                 markerSource, markerLayer,
                 popupOverlay, popupElement,
                 translateInteraction: null as any,
+                tileUrl, tileMaxZoom, tileAttribution,
             };
 
             BitMapOpenLayers._ensureScale(state, !!o.showScaleControl, !!o.scaleControlImperial);
@@ -131,11 +143,24 @@ namespace BitBlazorUI {
             if (o.center != null) view.setCenter(ol.fromLonLat([o.center.lng, o.center.lat]));
             if (o.zoom != null) view.setZoom(o.zoom);
 
-            s.baseTileLayer.setSource(new ol.XYZ({
-                url: (o.tileUrl || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png').replace('{s}', 'a'),
-                maxZoom: o.tileMaxZoom ?? 19,
-                attributions: o.tileAttribution || '',
-            }));
+            // Only recreate the base tile source when tile-defining options actually change;
+            // otherwise we'd force a full tile reload on every sync (e.g. when only center/zoom
+            // or interaction toggles change).
+            const nextTileUrl = BitMapOpenLayers._resolveTileUrl(o);
+            const nextTileMaxZoom = o.tileMaxZoom ?? 19;
+            const nextTileAttribution = o.tileAttribution || '';
+            if (nextTileUrl !== s.tileUrl ||
+                nextTileMaxZoom !== s.tileMaxZoom ||
+                nextTileAttribution !== s.tileAttribution) {
+                s.baseTileLayer.setSource(new ol.XYZ({
+                    url: nextTileUrl,
+                    maxZoom: nextTileMaxZoom,
+                    attributions: nextTileAttribution,
+                }));
+                s.tileUrl = nextTileUrl;
+                s.tileMaxZoom = nextTileMaxZoom;
+                s.tileAttribution = nextTileAttribution;
+            }
             s.baseTileLayer.setOpacity(o.tileOpacity ?? 1);
 
             BitMapOpenLayers._ensureScale(s, !!o.showScaleControl, !!o.scaleControlImperial);

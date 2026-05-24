@@ -58,14 +58,16 @@ namespace BitBlazorUI {
             const center = o.center ? [o.center.lng, o.center.lat] : s.map.getCamera().center;
             s.map.setCamera({ center, zoom: o.zoom ?? s.map.getCamera().zoom, type: 'jump' });
             if (o.style) s.map.setStyle({ style: o.style });
-            s.map.setUserInteraction({
-                scrollZoomInteraction: o.scrollWheelZoom !== false,
-                dragPanInteraction: o.dragging !== false,
-                dblClickZoomInteraction: o.doubleClickZoom !== false,
-                keyboardInteraction: o.keyboardNavigation !== false,
-            });
-            BitMapAzureMaps._ensureZoom(s, o.zoomControl !== false);
-            BitMapAzureMaps._ensureScale(s, !!o.showScaleControl);
+
+            const interaction: any = {};
+            if ('scrollWheelZoom' in o) interaction.scrollZoomInteraction = o.scrollWheelZoom !== false;
+            if ('dragging' in o) interaction.dragPanInteraction = o.dragging !== false;
+            if ('doubleClickZoom' in o) interaction.dblClickZoomInteraction = o.doubleClickZoom !== false;
+            if ('keyboardNavigation' in o) interaction.keyboardInteraction = o.keyboardNavigation !== false;
+            if (Object.keys(interaction).length > 0) s.map.setUserInteraction(interaction);
+
+            if ('zoomControl' in o) BitMapAzureMaps._ensureZoom(s, o.zoomControl !== false);
+            if ('showScaleControl' in o) BitMapAzureMaps._ensureScale(s, !!o.showScaleControl);
         }
 
         public static dispose(id: string) {

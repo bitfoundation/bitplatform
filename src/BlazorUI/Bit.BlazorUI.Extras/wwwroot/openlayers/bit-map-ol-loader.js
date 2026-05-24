@@ -6,6 +6,9 @@
 // The resolved bundle (each OpenLayers sub-module mapped to a flat object) is exposed
 // on globalThis.__bitMapOlBundle as a Promise so the provider can await it from its
 // non-module context.
+//
+// Keep OL_VER below in sync with `BitOpenLayersMapProvider.OpenLayersVersion` (which
+// drives the stylesheet URL and the C# XML doc); both reference the same release.
 const OL_VER = '10.5.0';
 const u = (p) => `https://esm.sh/ol@${OL_VER}${p ? '/' + p : ''}?bundle`;
 

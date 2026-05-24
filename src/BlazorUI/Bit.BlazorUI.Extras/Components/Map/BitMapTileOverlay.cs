@@ -59,7 +59,7 @@ public sealed class BitMapTileOverlay
             UrlTemplate.Contains("{y}", StringComparison.Ordinal) is false)
         {
             throw new ArgumentException(
-                $"{nameof(BitMapTileOverlay)}.{nameof(UrlTemplate)} ('{UrlTemplate}') must contain the '{{z}}', '{{x}}', and '{{y}}' placeholders. The optional '{{s}}' placeholder is also supported.",
+                $"{nameof(BitMapTileOverlay)}.{nameof(UrlTemplate)} must contain the '{{z}}', '{{x}}', and '{{y}}' placeholders. The optional '{{s}}' placeholder is also supported.",
                 nameof(UrlTemplate));
         }
     }
