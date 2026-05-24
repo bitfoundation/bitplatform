@@ -1,0 +1,21 @@
+@* Renders each bound query parameter so tests can inspect the result of [BrouterQuery]. *@
+
+<div>
+    <div data-testid="name">@(Name ?? "(null)")</div>
+    <div data-testid="count">@Count</div>
+    <div data-testid="ncount">@(NullableCount?.ToString() ?? "(null)")</div>
+    <div data-testid="id">@(Id?.ToString() ?? "(null)")</div>
+    <div data-testid="day">@(Day?.ToString() ?? "(null)")</div>
+    <div data-testid="aliased">@(Aliased ?? "(null)")</div>
+    <div data-testid="tags">@(Tags is null ? "(null)" : string.Join(",", Tags))</div>
+</div>
+
+@code {
+    [Parameter, BrouterQuery] public string? Name { get; set; }
+    [Parameter, BrouterQuery] public int Count { get; set; }
+    [Parameter, BrouterQuery] public int? NullableCount { get; set; }
+    [Parameter, BrouterQuery] public Guid? Id { get; set; }
+    [Parameter, BrouterQuery] public DayOfWeek? Day { get; set; }
+    [Parameter, BrouterQuery(Name = "q")] public string? Aliased { get; set; }
+    [Parameter, BrouterQuery] public string[]? Tags { get; set; }
+}

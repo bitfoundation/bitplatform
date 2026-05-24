@@ -161,7 +161,19 @@ public partial class Brouter : ComponentBase, IDisposable
 
         var rawSegments = path.Trim('/').Split(_Separator, StringSplitOptions.RemoveEmptyEntries);
         for (int i = 0; i < rawSegments.Length; i++)
-            rawSegments[i] = Uri.UnescapeDataString(rawSegments[i]);
+        {
+            // Decode defensively: malformed percent-encoding (e.g. "%ZZ" or a stray "%") would
+            // otherwise throw UriFormatException and bubble out of the async-void LocationChanged
+            // handler, silently breaking routing without surfacing NotFound / OnError. Falling
+            // back to the raw segment lets ProcessNavigationAsync run normally — the bad URL
+            // typically won't match any route, which routes the request through NotFound/OnError
+            // as it should.
+            try
+            {
+                rawSegments[i] = Uri.UnescapeDataString(rawSegments[i]);
+            }
+            catch (UriFormatException) { /* keep the raw, still-escaped segment */ }
+        }
 
         CurrentLocation = new BrouterLocation(_navManager.Uri, path, rawSegments, query, hash);
     }
@@ -199,6 +211,11 @@ public partial class Brouter : ComponentBase, IDisposable
             {
                 _noRouteMatched = true;
                 if (OnNotFound is not null) await OnNotFound(CurrentLocation);
+
+                // The OnNotFound handler may have awaited; if a newer navigation has started or
+                // this one was cancelled in the meantime, abandon the fallback path so we don't
+                // redirect/render on behalf of a superseded navigation.
+                if (token.IsCancellationRequested || version != _navVersion) return;
 
                 if (string.IsNullOrEmpty(NotFound) is false)
                 {

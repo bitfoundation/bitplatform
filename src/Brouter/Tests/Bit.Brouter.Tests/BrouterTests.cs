@@ -2,7 +2,6 @@ using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using BrouterComp = Bit.Brouter.Brouter;
 
 namespace Bit.Brouter.Tests;
 
@@ -15,12 +14,11 @@ public class BrouterTests : BunitTestContext
         var nav = Services.GetRequiredService<FakeNavigationManager>();
         nav.NavigateTo("http://localhost/home");
 
-        var cut = RenderComponent<BrouterComp>(p => p.AddChildContent(@"
-<Route Path=""/home"">
-    <Content><div data-testid=""home"">home</div></Content>
-</Route>"));
+        var cut = RenderComponent<SimpleHomeHost>();
 
         cut.WaitForAssertion(() => Assert.AreEqual("home", cut.Find("[data-testid=home]").TextContent));
+        // Sanity check: the /users route is registered but should NOT render at /home.
+        Assert.AreEqual(0, cut.FindAll("[data-testid=u]").Count);
     }
 
     [TestMethod]
@@ -29,13 +27,7 @@ public class BrouterTests : BunitTestContext
         var nav = Services.GetRequiredService<FakeNavigationManager>();
         nav.NavigateTo("http://localhost/about");
 
-        var cut = RenderComponent<BrouterComp>(p => p.AddChildContent(@"
-<Route Path=""/*"">
-    <Content><div data-testid=""star"">star</div></Content>
-</Route>
-<Route Path=""/about"">
-    <Content><div data-testid=""about"">about</div></Content>
-</Route>"));
+        var cut = RenderComponent<SpecificityHost>();
 
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=about]")));
         cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=star]").Count));
@@ -63,8 +55,7 @@ public class BrouterTests : BunitTestContext
         var nav = Services.GetRequiredService<FakeNavigationManager>();
         nav.NavigateTo("http://localhost/users/");
 
-        var cut = RenderComponent<BrouterComp>(p => p.AddChildContent(@"
-<Route Path=""/users""><Content><div data-testid=""u"">users</div></Content></Route>"));
+        var cut = RenderComponent<SimpleHomeHost>();
 
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=u]")));
     }

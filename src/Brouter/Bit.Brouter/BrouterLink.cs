@@ -191,6 +191,14 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         // browser opens the link natively, and we should not also push a replace navigation.
         if (e.Button != 0 || e.CtrlKey || e.ShiftKey || e.AltKey || e.MetaKey) return;
 
+        // Only issue the replace navigation when our JS preventDefault handler is installed.
+        // Otherwise Blazor's NavigationInterception will pick the click up as a regular push
+        // navigation, and adding our own NavigateTo here would result in double-navigation
+        // (two LocationChanged events / two ProcessNavigationAsync passes for one click).
+        // Degrading to a push when wiring failed is the safer fallback than racing with the
+        // built-in interceptor.
+        if (_replaceWired is false) return;
+
         Brouter.Navigate(Href, replace: true);
     }
 

@@ -78,7 +78,10 @@ public class Outlet : ComponentBase, IDisposable
         _disposed = true;
 
         _matchedChild = null;
-        if (Parent is not null) Parent.Outlet = null;
+        // Only detach from the parent if it still points at *this* instance. A newer Outlet may
+        // have already taken our place (e.g. after a re-render that recreates the component),
+        // and we must not unregister it.
+        if (Parent is not null && ReferenceEquals(Parent.Outlet, this)) Parent.Outlet = null;
     }
 
     private bool _disposed;

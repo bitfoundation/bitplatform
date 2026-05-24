@@ -65,9 +65,13 @@ public sealed class BrouterLocation
 
     private static IReadOnlyDictionary<string, IReadOnlyList<string>> ParseQuery(string query)
     {
-        var staging = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        // Case-insensitive keys mirror ASP.NET Core's IQueryCollection and align with
+        // RouteParameters (OrdinalIgnoreCase), so [BrouterQuery]/GetQuery(...) bind reliably
+        // regardless of the casing used in the URL (e.g. "?Tab=1" vs "?tab=1").
+        var staging = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         if (string.IsNullOrEmpty(query))
-            return new ReadOnlyDictionary<string, IReadOnlyList<string>>(new Dictionary<string, IReadOnlyList<string>>());
+            return new ReadOnlyDictionary<string, IReadOnlyList<string>>(
+                new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase));
 
         var span = query.AsSpan();
         if (span.Length > 0 && span[0] == '?') span = span[1..];
@@ -112,7 +116,7 @@ public sealed class BrouterLocation
             }
         }
 
-        var snapshot = new Dictionary<string, IReadOnlyList<string>>(staging.Count, StringComparer.Ordinal);
+        var snapshot = new Dictionary<string, IReadOnlyList<string>>(staging.Count, StringComparer.OrdinalIgnoreCase);
         foreach (var kv in staging)
         {
             snapshot[kv.Key] = kv.Value.AsReadOnly();

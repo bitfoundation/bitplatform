@@ -181,16 +181,34 @@ builder.Services.AddBitBrouterServices(o =>
 
 ```razor
 @inject IBrouter brouter
+@implements IDisposable
 
 @code {
+    private Func<NavigationContext, ValueTask>? _onNavigating;
+    private Func<NavigationContext, ValueTask>? _onNavigated;
+    private Func<NavigationContext, Exception, ValueTask>? _onError;
+
     protected override void OnInitialized()
     {
-        brouter.OnNavigating += async ctx =>
+        _onNavigating = ctx =>
         {
             // Telemetry, analytics, page title, scroll restoration, ...
+            return ValueTask.CompletedTask;
         };
-        brouter.OnNavigated += async ctx => { /* ... */ };
-        brouter.OnError += async (ctx, ex) => { /* ... */ };
+        _onNavigated = ctx => ValueTask.CompletedTask;
+        _onError = (ctx, ex) => ValueTask.CompletedTask;
+
+        brouter.OnNavigating += _onNavigating;
+        brouter.OnNavigated += _onNavigated;
+        brouter.OnError += _onError;
+    }
+
+    public void Dispose()
+    {
+        // Always unsubscribe to avoid handler leaks when the component is removed.
+        if (_onNavigating is not null) brouter.OnNavigating -= _onNavigating;
+        if (_onNavigated is not null) brouter.OnNavigated -= _onNavigated;
+        if (_onError is not null) brouter.OnError -= _onError;
     }
 }
 ```
