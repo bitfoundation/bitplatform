@@ -53,7 +53,7 @@
         <Content><CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" /></Content>
     </Route>
 
-    <Route Path="/fetchdata" Component="typeof(FetchDataPage)" />
+    <Route Path="/fetchdata" Component="@typeof(FetchDataPage)" />
 
     @* Optional parameter: /profile or /profile/saleh both match. *@
     <Route Path="/profile/{username?}" Component="@typeof(ProfilePage)" />

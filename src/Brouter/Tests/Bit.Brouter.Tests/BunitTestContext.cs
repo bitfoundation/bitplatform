@@ -25,7 +25,6 @@ public abstract class BunitTestContext : IDisposable
     public void Dispose()
     {
         Context?.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     public IRenderedComponent<TComponent> RenderComponent<TComponent>(params ComponentParameter[] parameters)
