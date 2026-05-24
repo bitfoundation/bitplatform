@@ -27,7 +27,7 @@ jobs:
         global-json-file: src/global.json
        
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v2 
+      uses: devops-actions/variable-substitution@v2.0.0 
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
@@ -75,7 +75,7 @@ jobs:
         node-version: 24
   
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v2 
+      uses: devops-actions/variable-substitution@v2.0.0 
       with:
         files: 'src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\appsettings.json'
       env:
@@ -124,7 +124,7 @@ jobs:
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v2 
+      uses: devops-actions/variable-substitution@v2.0.0 
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
@@ -171,7 +171,7 @@ jobs:
         node-version: 24
   
     - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v2 
+      uses: devops-actions/variable-substitution@v2.0.0 
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
