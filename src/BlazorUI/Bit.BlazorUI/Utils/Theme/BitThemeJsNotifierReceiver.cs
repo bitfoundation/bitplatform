@@ -9,6 +9,8 @@ public sealed class BitThemeJsNotifierReceiver
 
     public BitThemeJsNotifierReceiver(BitThemeNotifications notifications)
     {
+        ArgumentNullException.ThrowIfNull(notifications);
+
         _notifications = notifications;
     }
 

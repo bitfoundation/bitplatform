@@ -10,6 +10,8 @@ public sealed class BitExternalThemeLoader
 
     public BitExternalThemeLoader(IJSRuntime js)
     {
+        ArgumentNullException.ThrowIfNull(js);
+
         _js = js;
     }
 

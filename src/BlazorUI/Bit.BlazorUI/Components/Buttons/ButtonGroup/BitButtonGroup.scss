@@ -66,6 +66,7 @@
         cursor: default;
         pointer-events: none;
         color: var(--bit-btg-clr-dis-text);
+        border-color: var(--bit-btg-itm-clr-brd-dis, var(--bit-btg-clr-dis));
         background-color: var(--bit-btg-itm-clr-bg-dis);
     }
 

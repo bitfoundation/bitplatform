@@ -94,6 +94,11 @@ public class BitThemeManager : IAsyncDisposable
 
         _jsNotifierReference ??= DotNetObjectReference.Create(_jsNotifierReceiver);
         await _js.BitThemeRegisterDotNetNotifier(_jsNotifierReference).ConfigureAwait(false);
+
+        // InvokeVoid silently no-ops when the runtime is invalid; if it became invalid between the
+        // initial check and the awaited call, leave the flag false so a later call can retry.
+        if (_js.IsRuntimeInvalid()) return;
+
         _jsNotifierRegistered = true;
     }
 
