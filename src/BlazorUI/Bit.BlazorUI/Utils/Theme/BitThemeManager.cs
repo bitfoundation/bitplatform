@@ -10,10 +10,10 @@ public class BitThemeManager : IAsyncDisposable
 {
     private readonly IJSRuntime _js;
     private readonly BitThemeJsNotifierReceiver? _jsNotifierReceiver;
+    private readonly SemaphoreSlim _jsNotifierRegistrationLock = new(1, 1);
 
     private DotNetObjectReference<BitThemeJsNotifierReceiver>? _jsNotifierReference;
     private bool _jsNotifierRegistered;
-    private Task? _jsNotifierRegistrationTask;
 
     /// <summary>
     /// Creates a manager without a .NET notifier receiver. <see cref="BitThemeNotifications"/> won't fire from JS until a receiver is provided
@@ -87,26 +87,21 @@ public class BitThemeManager : IAsyncDisposable
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
     }
 
-    private ValueTask EnsureJsNotifierRegisteredAsync()
+    private async ValueTask EnsureJsNotifierRegisteredAsync()
     {
-        if (_jsNotifierRegistered) return ValueTask.CompletedTask;
-        if (_jsNotifierReceiver is null) return ValueTask.CompletedTask; // no-op when constructed without a receiver
-        if (_js.IsRuntimeInvalid()) return ValueTask.CompletedTask; // e.g. prerendering / disconnected circuit; retry on next call.
+        if (_jsNotifierRegistered) return;
+        if (_jsNotifierReceiver is null) return; // no-op when constructed without a receiver
+        if (_js.IsRuntimeInvalid()) return; // e.g. prerendering / disconnected circuit; retry on next call.
 
         // Serialize concurrent callers (e.g. Task.WhenAll over multiple manager methods) so only one
-        // BitThemeRegisterDotNetNotifier invocation is in flight; subsequent callers await the same task.
-        var inFlight = _jsNotifierRegistrationTask;
-        if (inFlight is not null) return new ValueTask(inFlight);
-
-        var task = RegisterJsNotifierAsync();
-        _jsNotifierRegistrationTask = task;
-        return new ValueTask(task);
-    }
-
-    private async Task RegisterJsNotifierAsync()
-    {
+        // BitThemeRegisterDotNetNotifier invocation is in flight; subsequent callers wait on the semaphore
+        // and then short-circuit on the _jsNotifierRegistered fast-path.
+        await _jsNotifierRegistrationLock.WaitAsync().ConfigureAwait(false);
         try
         {
+            if (_jsNotifierRegistered) return;
+            if (_js.IsRuntimeInvalid()) return;
+
             _jsNotifierReference ??= DotNetObjectReference.Create(_jsNotifierReceiver!);
             await _js.BitThemeRegisterDotNetNotifier(_jsNotifierReference).ConfigureAwait(false);
 
@@ -118,15 +113,17 @@ public class BitThemeManager : IAsyncDisposable
         }
         finally
         {
-            // Clear the in-flight tracker so a failed/runtime-invalid attempt can be retried on the next call.
-            // On success the _jsNotifierRegistered fast-path keeps subsequent callers from re-entering.
-            _jsNotifierRegistrationTask = null;
+            _jsNotifierRegistrationLock.Release();
         }
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_jsNotifierReference is null) return;
+        if (_jsNotifierReference is null)
+        {
+            _jsNotifierRegistrationLock.Dispose();
+            return;
+        }
 
         try
         {
@@ -143,6 +140,7 @@ public class BitThemeManager : IAsyncDisposable
             _jsNotifierReference.Dispose();
             _jsNotifierReference = null;
             _jsNotifierRegistered = false;
+            _jsNotifierRegistrationLock.Dispose();
         }
     }
 }
