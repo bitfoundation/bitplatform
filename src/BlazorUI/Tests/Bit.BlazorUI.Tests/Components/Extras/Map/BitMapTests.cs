@@ -212,10 +212,11 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitMapDisposeShouldNotThrowWhenNotInitialized()
+    public async Task BitMapDisposeShouldBeIdempotent()
     {
-        // Render without triggering OnAfterRender (component won't be initialized)
-        // In practice, bUnit always triggers OnAfterRender, so we test double-dispose instead
+        // bUnit always triggers OnAfterRender, so the component is always initialized
+        // by the time we get here. Verify that disposing twice is safe and that the
+        // underlying JS dispose is invoked exactly once.
         Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
         Context.JSInterop.SetupVoid(INIT_SCRIPTS);
         Context.JSInterop.SetupVoid(INIT);

@@ -554,43 +554,63 @@ await advMapRef.RemoveTileOverlay(""labels"");";
 
     private readonly string example8RazorCode = @"
 <div style=""height:360px"">
-    <BitMap TMapProvider=""BitMapLibreMapProvider""
-            Provider=""@(new BitMapLibreMapProvider { Center = new(48.8566, 2.3522), Zoom = 5 })"" />
+    <BitMap TMapProvider=""BitMapLibreMapProvider"" Provider=""@maplibreProvider"" />
 </div>";
+    private readonly string example8CsharpCode = @"
+// Bind a stable field so the provider isn't reallocated on every render.
+private readonly BitMapLibreMapProvider maplibreProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5 };";
 
     private readonly string example9RazorCode = @"
 <div style=""height:360px"">
-    <BitMap TMapProvider=""BitOpenLayersMapProvider""
-            Provider=""@(new BitOpenLayersMapProvider { Center = new(35.6762, 139.6503), Zoom = 4 })"" />
+    <BitMap TMapProvider=""BitOpenLayersMapProvider"" Provider=""@olProvider"" />
 </div>";
+    private readonly string example9CsharpCode = @"
+// Bind a stable field so the provider isn't reallocated on every render.
+private readonly BitOpenLayersMapProvider olProvider = new() { Center = new(35.6762, 139.6503), Zoom = 4 };";
 
     private readonly string example10RazorCode = @"
 <div style=""height:360px"">
-    <BitMap TMapProvider=""BitMapboxMapProvider""
-            Provider=""@(new BitMapboxMapProvider { AccessToken = ""YOUR_MAPBOX_TOKEN"", Center = new(40, 0), Zoom = 2 })"" />
+    <BitMap TMapProvider=""BitMapboxMapProvider"" Provider=""@mapboxProvider"" />
 </div>";
     private readonly string example10CsharpCode = @"
 // Get your token from https://account.mapbox.com/access-tokens/
-// Pass it via the AccessToken property on BitMapboxMapProvider.";
+// and pass it via the AccessToken property on BitMapboxMapProvider.
+// Bind a stable field so the provider isn't reallocated on every render.
+private readonly BitMapboxMapProvider mapboxProvider = new()
+{
+    AccessToken = ""YOUR_MAPBOX_TOKEN"",
+    Center = new(40, 0),
+    Zoom = 2,
+};";
 
     private readonly string example11RazorCode = @"
 <div style=""height:360px"">
-    <BitMap TMapProvider=""BitArcGisMapProvider""
-            Provider=""@(new BitArcGisMapProvider { BasemapId = ""osm"", Center = new(40, 0), Zoom = 2 })"" />
+    <BitMap TMapProvider=""BitArcGisMapProvider"" Provider=""@arcGisProvider"" />
 </div>";
+    private readonly string example11CsharpCode = @"
+// Bind a stable field so the provider isn't reallocated on every render.
+private readonly BitArcGisMapProvider arcGisProvider = new() { Center = new(40, 0), Zoom = 2, BasemapId = ""osm"" };";
 
     private readonly string example12RazorCode = @"
 <div style=""height:360px"">
-    <BitMap TMapProvider=""BitAzureMapsMapProvider""
-            Provider=""@(new BitAzureMapsMapProvider { SubscriptionKey = ""YOUR_AZURE_MAPS_KEY"", Center = new(40, 0), Zoom = 2 })"" />
+    <BitMap TMapProvider=""BitAzureMapsMapProvider"" Provider=""@azureMapsProvider"" />
 </div>";
     private readonly string example12CsharpCode = @"
 // Get your key from Azure Portal > Maps account > Authentication > Shared Key
-// Pass it via the SubscriptionKey property on BitAzureMapsMapProvider.";
+// and pass it via the SubscriptionKey property on BitAzureMapsMapProvider.
+// Bind a stable field so the provider isn't reallocated on every render.
+private readonly BitAzureMapsMapProvider azureMapsProvider = new()
+{
+    SubscriptionKey = ""YOUR_AZURE_MAPS_KEY"",
+    Center = new(40, 0),
+    Zoom = 2,
+};";
 
     private readonly string example13RazorCode = @"
 <div style=""height:420px"">
-    <BitMap TMapProvider=""BitCesiumMapProvider""
-            Provider=""@(new BitCesiumMapProvider { Center = new(20, 0), Zoom = 2, SceneMode = ""scene3d"" })"" />
+    <BitMap TMapProvider=""BitCesiumMapProvider"" Provider=""@cesiumProvider"" />
 </div>";
+    private readonly string example13CsharpCode = @"
+// Bind a stable field so the provider isn't reallocated on every render.
+private readonly BitCesiumMapProvider cesiumProvider = new() { Center = new(20, 0), Zoom = 2, SceneMode = ""scene3d"" };";
 }

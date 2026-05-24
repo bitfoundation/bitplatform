@@ -7,7 +7,7 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLowerInvariant()">
     <div @ref="_mapElement"
          class="bit-map-canvas"
          tabindex="0"

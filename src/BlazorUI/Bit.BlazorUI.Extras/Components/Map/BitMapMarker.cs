@@ -85,6 +85,12 @@ public sealed class BitMapMarker
     }
     private readonly int? _iconHeight;
 
-    /// <summary>Stack order offset for overlapping markers.</summary>
+    /// <summary>
+    /// Stack order offset for overlapping markers.
+    /// <para>
+    /// <b>Provider support:</b> Leaflet only. Other providers (MapLibre, Mapbox, OpenLayers, ArcGIS, Azure Maps, Cesium)
+    /// do not expose an equivalent per-marker stacking offset and ignore this value.
+    /// </para>
+    /// </summary>
     public int ZIndexOffset { get; init; }
 }
