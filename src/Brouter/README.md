@@ -186,7 +186,7 @@ builder.Services.AddBitBrouterServices(o =>
 @code {
     private Func<NavigationContext, ValueTask>? _onNavigating;
     private Func<NavigationContext, ValueTask>? _onNavigated;
-    private Func<NavigationContext, Exception, ValueTask>? _onError;
+    private Func<NavigationContext, Exception?, ValueTask>? _onError;
 
     protected override void OnInitialized()
     {

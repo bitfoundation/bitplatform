@@ -10,12 +10,7 @@
 
 <hr />
 
-<Route Path="n1/{count:int}">
-    <Content Context="p">
-        <h3>this is the nested route /n1</h3>
-        <div>count: [@p["count"]]</div>
-    </Content>
-</Route>
+<Outlet />
 
 @code {
     private int count;

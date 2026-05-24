@@ -89,33 +89,57 @@ internal class RouteRenderer
         var seq = 1;
         foreach (var b in bindings)
         {
+            // Always emit an attribute frame per binding, even when the binding is missing or
+            // unconvertible. Component instances are reused across navigations that match the
+            // same Component (e.g. /profile/saleh -> /profile), so silently skipping a frame
+            // would leave the previous value on the property instead of clearing it back to
+            // its default. Stable per-binding sequence numbers also keep Blazor's diff happy.
+            object? value;
+
             if (b.IsQuery)
             {
-                if (location is null) continue;
-                if (TryBindQuery(b, location, out var queryValue))
+                if (location is null || TryBindQuery(b, location, out value) is false)
                 {
-                    builder.AddAttribute(seq++, b.PropertyName, queryValue);
+                    value = DefaultValueFor(b.PropertyType);
                 }
-                continue;
             }
-
-            if (parameters.Values.TryGetValue(b.ParameterName, out var raw) is false || raw is null) continue;
-
-            object? value = raw;
-            if (b.PropertyType.IsAssignableFrom(raw.GetType()) is false)
+            else if (parameters.Values.TryGetValue(b.ParameterName, out var raw) is false || raw is null)
             {
-                if (parameters.TryGetWeak(b.ParameterName, b.PropertyType, out var converted))
-                {
-                    value = converted;
-                }
-                else
-                {
-                    continue;
-                }
+                value = DefaultValueFor(b.PropertyType);
+            }
+            else if (b.PropertyType.IsAssignableFrom(raw.GetType()))
+            {
+                value = raw;
+            }
+            else if (parameters.TryGetWeak(b.ParameterName, b.PropertyType, out var converted))
+            {
+                value = converted;
+            }
+            else
+            {
+                value = DefaultValueFor(b.PropertyType);
             }
 
             builder.AddAttribute(seq++, b.PropertyName, value);
         }
+    }
+
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2067",
+        Justification = "t comes from PropertyType of a [Parameter] on a component reached via Route.Component, " +
+                        "which is annotated DynamicallyAccessedMemberTypes.All so its parameter property types are preserved.")]
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050",
+        Justification = "Same as above. Array.CreateInstance for a single element is safe for the closed set of " +
+                        "value types reachable from preserved component parameter properties.")]
+    private static object? DefaultValueFor(Type t)
+    {
+        // For nullable / reference types, default is null. For non-nullable value types,
+        // create a single-element array of that type and read element 0; this returns the
+        // boxed default(T) without requiring constructor annotations on the Type.
+        if (t.IsValueType is false || Nullable.GetUnderlyingType(t) is not null)
+            return null;
+
+        var arr = Array.CreateInstance(t, 1);
+        return arr.GetValue(0);
     }
 
     private static bool TryBindQuery(ParameterBinding binding, BrouterLocation location, out object? value)

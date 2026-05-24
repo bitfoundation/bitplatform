@@ -182,4 +182,27 @@ public class QueryBindingTests : BunitTestContext
         Assert.IsNull(loc.GetQuery("missing"));
         Assert.AreEqual(0, loc.GetQueryAll("missing").Count);
     }
+
+    [TestMethod]
+    public void Location_query_does_not_throw_on_malformed_percent_encoding()
+    {
+        // Decode falls back to the raw (with '+' -> ' ') string when Uri.UnescapeDataString
+        // throws UriFormatException, so query parsing must keep working.
+        var loc = new BrouterLocation(
+            "http://localhost/q?name=%ZZ+ok",
+            "/q", ["q"], "?name=%ZZ+ok", "");
+
+        string? value = null;
+        IReadOnlyList<string>? all = null;
+
+        // Both calls must complete without throwing.
+        value = loc.GetQuery("name");
+        all = loc.GetQueryAll("name");
+
+        Assert.IsNotNull(value);
+        StringAssert.Contains(value, "ok");
+        Assert.IsNotNull(all);
+        Assert.AreEqual(1, all.Count);
+        StringAssert.Contains(all[0], "ok");
+    }
 }

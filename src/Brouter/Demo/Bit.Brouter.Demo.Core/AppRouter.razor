@@ -104,7 +104,14 @@
 
     @*============================================================================*@
 
-    <Route Path="nested" Component="@typeof(Nested)" />
+    <Route Path="nested" Component="@typeof(Nested)">
+        <Route Path="n1/{count:int}">
+            <Content Context="p">
+                <h3>this is the nested route /n1</h3>
+                <div>count: [@p["count"]]</div>
+            </Content>
+        </Route>
+    </Route>
 
     <Route Path="nested2" Component="@typeof(Nested2)">
         <Route Path="n1/{count:int}">
