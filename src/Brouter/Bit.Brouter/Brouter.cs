@@ -255,6 +255,33 @@ public partial class Brouter : ComponentBase, IDisposable
             for (var node = winner; node is not null; node = node.Parent) matchedChain.Add(node);
             matchedChain.Reverse();
 
+            // Propagate matched parameter values from the winner into every ancestor in the
+            // matched chain. Match() only ran on the winner (parents typically don't match
+            // the longer URL by themselves), so without this step parent layouts would see
+            // an empty cascading RouteParameters even when their template declares parameters
+            // (e.g. parent "/users/{id}" + child "/edit"). An ancestor's template params are a
+            // subset of the winner's, so we just copy the slice that the ancestor declares.
+            foreach (var node in matchedChain)
+            {
+                if (ReferenceEquals(node, winner)) continue;
+
+                var ancestorTemplate = node.RouteTemplate;
+                if (ancestorTemplate is null) continue;
+
+                var ancestorParams = new Dictionary<string, object?>();
+                var ancestorConstraints = new Dictionary<string, string[]>();
+                foreach (var seg in ancestorTemplate.TemplateSegments)
+                {
+                    if (seg.IsParameter is false) continue;
+                    if (winner.Parameters.TryGetValue(seg.Value, out var val))
+                        ancestorParams[seg.Value] = val;
+                    if (winner.ConstraintsByParameter.TryGetValue(seg.Value, out var cons))
+                        ancestorConstraints[seg.Value] = cons;
+                }
+                node.Parameters = ancestorParams;
+                node.ConstraintsByParameter = ancestorConstraints;
+            }
+
             foreach (var node in matchedChain) node.LoadedData = null;
 
             foreach (var node in matchedChain)

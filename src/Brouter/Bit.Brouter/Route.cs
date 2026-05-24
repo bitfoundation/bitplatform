@@ -132,8 +132,8 @@ public partial class Route : ComponentBase, IDisposable
         }
     }
 
-    /// <summary>True for nested index routes (child routes whose <see cref="Path"/> is empty).</summary>
-    internal bool IsIndex => Parent is not null && string.IsNullOrEmpty(Path);
+    /// <summary>True for nested index routes (child routes whose <see cref="Path"/> is empty or contains only slashes).</summary>
+    internal bool IsIndex => Parent is not null && string.IsNullOrEmpty(Path.Trim('/'));
 
 
     internal bool Matched { get; set; }

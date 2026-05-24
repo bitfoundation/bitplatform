@@ -10,7 +10,10 @@ namespace Bit.Brouter;
 //   - Literal wildcards: '*' for a single segment, '**' for catch-all
 internal static class TemplateParser
 {
-    public static readonly char[] InvalidParameterNameCharacters = ['*', '?', '{', '}', '=', '.', ':'];
+    private static readonly char[] _invalidParameterNameCharacters = ['*', '?', '{', '}', '=', '.', ':'];
+
+    /// <summary>Read-only view of the characters that aren't allowed inside a parameter name.</summary>
+    public static ReadOnlySpan<char> InvalidParameterNameCharacters => _invalidParameterNameCharacters;
 
     internal static RouteTemplate ParseTemplate(string template)
     {
@@ -111,7 +114,7 @@ internal static class TemplateParser
         if (name.Length == 0)
             throw new InvalidOperationException($"Invalid path '{template}'. Empty parameter name in segment '{segment}' is not allowed.");
 
-        var invalidIdx = name.IndexOfAny(InvalidParameterNameCharacters);
+        var invalidIdx = name.AsSpan().IndexOfAny(InvalidParameterNameCharacters);
         if (invalidIdx != -1)
             throw new InvalidOperationException(
                 $"Invalid path '{template}'. The character '{name[invalidIdx]}' in parameter segment '{segment}' is not allowed.");
