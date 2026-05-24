@@ -66,9 +66,9 @@ public sealed class BitCesiumMapProvider : BitMapProviderBase
     {
         var hasToken = string.IsNullOrWhiteSpace(IonAccessToken) is false;
         var terrainEnabled = TerrainEnabled && hasToken;
-        var imageryStyle = hasToken || (ImageryStyle is not ("bing_aerial" or "bing_labels"))
-            ? ImageryStyle
-            : "osm";
+        var isBing = ImageryStyle?.Equals("bing_aerial", StringComparison.OrdinalIgnoreCase) == true ||
+                     ImageryStyle?.Equals("bing_labels", StringComparison.OrdinalIgnoreCase) == true;
+        var imageryStyle = hasToken || !isBing ? ImageryStyle : "osm";
 
         var common = GetCommonOptions();
         common["altitude"] = Altitude;

@@ -343,6 +343,11 @@ namespace BitBlazorUI {
         public static addTileOverlay(id: string, opts: any) {
             const s = BitMapOpenLayers._require(id);
             const ol = s.ol;
+            const existing = s.tileOverlays[opts.id];
+            if (existing) {
+                s.map.removeLayer(existing);
+                delete s.tileOverlays[opts.id];
+            }
             const tl = new ol.TileLayer({
                 source: new ol.XYZ({
                     url: (opts.urlTemplate || '').replace('{s}', 'a'),
@@ -352,10 +357,8 @@ namespace BitBlazorUI {
                 opacity: opts.opacity ?? 1,
                 zIndex: opts.zIndex ?? 100,
             });
-            s.map.addLayer(tl);
-            const existing = s.tileOverlays[opts.id];
-            if (existing) s.map.removeLayer(existing);
             s.tileOverlays[opts.id] = tl;
+            s.map.addLayer(tl);
         }
 
         public static removeTileOverlay(id: string, overlayId: string) {
@@ -410,6 +413,8 @@ namespace BitBlazorUI {
                     interaction.setActive(o.doubleClickZoom !== false);
                 } else if (name === 'DragPan' || name.includes('DragPan')) {
                     interaction.setActive(o.dragging !== false);
+                } else if (name === 'DragZoom' || name.includes('DragZoom')) {
+                    interaction.setActive(o.boxZoom !== false);
                 } else if (name === 'KeyboardPan' || name === 'KeyboardZoom' || name.includes('Keyboard')) {
                     interaction.setActive(o.keyboardNavigation !== false);
                 }

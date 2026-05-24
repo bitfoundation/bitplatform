@@ -34,6 +34,13 @@ public sealed class BitArcGisMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
+        if (string.IsNullOrWhiteSpace(BasemapId))
+        {
+            throw new InvalidOperationException(
+                "BitArcGisMapProvider: A BasemapId is required. " +
+                "Use 'osm' for the no-key default, or an Esri-hosted basemap id such as 'streets-vector' or 'satellite' along with an ApiKey.");
+        }
+
         if (!string.Equals(BasemapId, "osm", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(ApiKey))
         {
             throw new InvalidOperationException(

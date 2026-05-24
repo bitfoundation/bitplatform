@@ -12,6 +12,9 @@
          class="bit-map-canvas"
          tabindex="0"
          role="region"
-         aria-label="@AriaLabel"></div>
-    @ChildContent
+         aria-label="@(AriaLabel ?? "Map")"></div>
+    @if (ChildContent is not null)
+    {
+        <div class="bit-map-overlay">@ChildContent</div>
+    }
 </div>

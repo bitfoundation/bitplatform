@@ -221,6 +221,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     public ValueTask AddTileOverlay(BitMapTileOverlay overlay)
     {
         EnsureReady();
+        overlay.Validate();
         return _js.BitMapAddTileOverlay(JsObject, _Id, new
         {
             id = overlay.Id,

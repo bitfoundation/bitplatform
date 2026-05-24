@@ -41,7 +41,7 @@ public abstract class BitMapProviderBase : IBitMapProvider
     /// <summary>Enable +/- and arrow key navigation when the map container is focused.</summary>
     public bool KeyboardNavigation { get; set; } = true;
 
-    /// <summary>Restrict panning to this geographic rectangle.</summary>
+    /// <summary>Restrict panning to this geographic rectangle (Leaflet/MapLibre/Mapbox only).</summary>
     public BitMapLatLngBounds? MaxBounds { get; set; }
 
     /// <inheritdoc />

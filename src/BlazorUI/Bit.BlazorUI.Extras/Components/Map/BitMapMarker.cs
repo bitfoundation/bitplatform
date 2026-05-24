@@ -31,6 +31,12 @@ public sealed class BitMapMarker
     /// <summary>
     /// Raw HTML content rendered as a tooltip on hover (separate from <see cref="PopupHtml"/> which opens on click).
     /// <para>
+    /// <b>Provider support:</b> tooltips are currently rendered by the Leaflet provider only. Other providers
+    /// (MapLibre, Mapbox, OpenLayers, ArcGIS, Azure Maps, Cesium) ignore <see cref="TooltipHtml"/>,
+    /// <see cref="TooltipText"/>, <see cref="TooltipPermanent"/>, and <see cref="TooltipDirection"/>.
+    /// Use <see cref="Title"/> for a native browser tooltip that works everywhere.
+    /// </para>
+    /// <para>
     /// <b>Security:</b> This value is injected as raw HTML into the map tooltip.
     /// Never pass unsanitized user input. The caller is responsible for escaping or sanitizing any
     /// user-provided content before assigning it here. Prefer <see cref="TooltipText"/> for plain-text content.
@@ -42,13 +48,16 @@ public sealed class BitMapMarker
     /// Plain-text content rendered as a tooltip on hover. The text is safely escaped by the provider
     /// (using <c>setText</c> / <c>textContent</c>) so it is safe to pass user-supplied strings.
     /// When both <see cref="TooltipHtml"/> and <see cref="TooltipText"/> are set, <see cref="TooltipHtml"/> takes precedence.
+    /// <para>
+    /// <b>Provider support:</b> Leaflet only. See <see cref="TooltipHtml"/> for details.
+    /// </para>
     /// </summary>
     public string? TooltipText { get; init; }
 
-    /// <summary>When true, the tooltip stays visible (use sparingly).</summary>
+    /// <summary>When true, the tooltip stays visible (use sparingly). Leaflet only.</summary>
     public bool TooltipPermanent { get; init; }
 
-    /// <summary>Tooltip placement direction: <c>top</c>, <c>bottom</c>, <c>right</c>, <c>left</c>, <c>center</c>, or <c>auto</c>.</summary>
+    /// <summary>Tooltip placement direction: <c>top</c>, <c>bottom</c>, <c>right</c>, <c>left</c>, <c>center</c>, or <c>auto</c>. Leaflet only.</summary>
     public string? TooltipDirection { get; init; }
 
     /// <summary>Native browser tooltip rendered as the <c>title</c> attribute.</summary>
