@@ -49,7 +49,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v2.0.0 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
@@ -117,7 +117,7 @@ jobs:
        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --ads
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v2.0.0 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
@@ -176,7 +176,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v2.0.0 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel\**\appsettings*json'
       env:
@@ -248,7 +248,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v2.0.0 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
@@ -313,7 +313,7 @@ jobs:
             bit-resx-translate
 
     - name: Update core appsettings.json
-      uses: devops-actions/variable-substitution@v2.0.0 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel/**/appsettings*json'
       env:
