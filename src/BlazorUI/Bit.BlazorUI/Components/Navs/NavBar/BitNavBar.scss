@@ -9,7 +9,7 @@
         pointer-events: none;
 
         .bit-nbr-itm {
-            color: var(--bit-nbr-clr-dis);
+            color: var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor));
         }
     }
 }
@@ -64,7 +64,7 @@
 }
 
 .bit-nbr-dis {
-    color: var(--bit-nbr-clr-dis);
+    color: var(--bit-nbr-clr-dis, var(--bit-nbr-clr, currentColor));
     pointer-events: none;
 }
 

@@ -42,6 +42,8 @@ class BitTheme {
     public static init(options: BitThemeOptions) {
         Object.assign(BitTheme._initOptions, options);
 
+        let deferPersist = false;
+
         if (BitTheme._initOptions.onChange) {
             BitTheme._onThemeChange = BitTheme._initOptions.onChange;
         }
@@ -68,10 +70,22 @@ class BitTheme {
                 // An explicit persisted preset (anything other than "system") means the user pinned a theme;
                 // stop following the OS even when <html bit-theme-system> is present.
                 BitTheme._stopFollowingSystem = persisted !== BitTheme.SYSTEM_THEME;
+            } else if (BitTheme._initOptions.system) {
+                // System mode is enabled but no value has been persisted yet. Avoid writing the
+                // resolved light/dark theme to storage during the initial set() — otherwise the next
+                // init would treat that concrete value as an explicit user choice and stop following
+                // the OS. Disable persistence for the initial set() and re-enable it afterwards so
+                // SYSTEM_THEME remains the effective persisted indicator until the user picks one.
+                BitTheme._persist = false;
+                deferPersist = true;
             }
         }
 
         BitTheme.set(theme, { fromInit: true });
+
+        if (deferPersist) {
+            BitTheme._persist = true;
+        }
     }
 
     public static onChange(fn: onThemeChangeType) {

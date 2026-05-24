@@ -22,7 +22,9 @@
     --bit-shp-focus-ring-offset: 0.125rem; //2px
     //global focus shadow used by the focus-ring mixin and the .bit-css-shd-focus utility.
     //Inner ring uses the page background to create a separator between the element and the colored ring (WCAG 2.4.11/2.4.13).
+    //The mixin sets --bit-focus-ring-color/--bit-focus-ring-offset locally on the focused element so per-call overrides apply.
+    //The forced-colors block replaces this whole token, bypassing the hooks, which is the intended behavior for High Contrast.
     --bit-shd-focus-ring:
-        0 0 0 var(--bit-shp-focus-ring-offset) var(--bit-clr-bg-pri-focus),
-        0 0 0 calc(var(--bit-shp-focus-ring-offset) + var(--bit-shp-focus-ring-width)) var(--bit-clr-pri-focus);
+        0 0 0 var(--bit-focus-ring-offset, var(--bit-shp-focus-ring-offset)) var(--bit-clr-bg-pri-focus),
+        0 0 0 calc(var(--bit-focus-ring-offset, var(--bit-shp-focus-ring-offset)) + var(--bit-shp-focus-ring-width)) var(--bit-focus-ring-color, var(--bit-clr-pri-focus));
 }

@@ -22,6 +22,7 @@ $BgHover: $clr-pri-light;
     input:focus-visible::-webkit-slider-thumb,
     input:focus::-webkit-slider-thumb {
         border-color: $clr-pri-focus;
+
         // Reference the global focus-ring shadow token so forced-colors and theme-level
         // overrides (see forced-colors.fluent.scss) propagate to the slider thumb.
         box-shadow: var(--bit-shd-focus-ring,

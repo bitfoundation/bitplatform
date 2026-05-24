@@ -43,9 +43,9 @@ $html-font-size: 16px;
  */
 @mixin focus-ring($color: $clr-pri-focus, $offset: $shp-focus-ring-offset) {
     outline: none; // Replace native outline with the themed ring below.
-    box-shadow: var(--bit-shd-focus-ring,
-        0 0 0 #{$offset} #{$clr-bg-pri-focus},
-        0 0 0 calc(#{$offset} + #{$shp-focus-ring-width}) #{$color});
+    --bit-focus-ring-color: #{$color};
+    --bit-focus-ring-offset: #{$offset};
+    box-shadow: var(--bit-shd-focus-ring);
 }
 
 /*

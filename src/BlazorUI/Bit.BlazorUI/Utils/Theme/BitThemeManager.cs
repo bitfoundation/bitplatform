@@ -9,10 +9,20 @@
 public class BitThemeManager : IAsyncDisposable
 {
     private readonly IJSRuntime _js;
-    private readonly BitThemeJsNotifierReceiver _jsNotifierReceiver;
+    private readonly BitThemeJsNotifierReceiver? _jsNotifierReceiver;
 
     private DotNetObjectReference<BitThemeJsNotifierReceiver>? _jsNotifierReference;
     private bool _jsNotifierRegistered;
+
+    /// <summary>
+    /// Creates a manager without a .NET notifier receiver. <see cref="BitThemeNotifications"/> won't fire from JS until a receiver is provided
+    /// (use the other constructor or resolve <see cref="BitThemeManager"/> from DI).
+    /// </summary>
+    public BitThemeManager(IJSRuntime js)
+    {
+        _js = js;
+        _jsNotifierReceiver = null;
+    }
 
     public BitThemeManager(IJSRuntime js, BitThemeJsNotifierReceiver jsNotifierReceiver)
     {
@@ -79,6 +89,7 @@ public class BitThemeManager : IAsyncDisposable
     private async ValueTask EnsureJsNotifierRegisteredAsync()
     {
         if (_jsNotifierRegistered) return;
+        if (_jsNotifierReceiver is null) return; // no-op when constructed without a receiver
         if (_js.IsRuntimeInvalid()) return; // e.g. prerendering / disconnected circuit; retry on next call.
 
         _jsNotifierReference ??= DotNetObjectReference.Create(_jsNotifierReceiver);

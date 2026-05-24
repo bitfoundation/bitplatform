@@ -184,9 +184,9 @@ private bool customContentIndeterminate = true;";
 <BitCheckbox Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Value />
 
 
-<BitCheckbox IsEnabled=""false"" Label=""Primary"" />
-<BitCheckbox IsEnabled=""false"" Label=""Primary"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Label=""Primary"" Value />
+<BitCheckbox IsEnabled=""false"" Color=""BitColor.Primary"" Label=""Primary"" />
+<BitCheckbox IsEnabled=""false"" Color=""BitColor.Primary"" Label=""Primary"" Indeterminate />
+<BitCheckbox IsEnabled=""false"" Color=""BitColor.Primary"" Label=""Primary"" Value />
 
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.Secondary"" Label=""Secondary"" />
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.Secondary"" Label=""Secondary"" Indeterminate />
