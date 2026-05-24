@@ -87,6 +87,48 @@ public class ResolveUrlTests : BunitTestContext
     }
 
     [TestMethod]
+    public void Multiple_trailing_optionals_emit_all_when_supplied()
+    {
+        var brouter = MountWithNamedRoute("range", "/range/{from?}/{to?}");
+
+        var url = brouter.ResolveUrl("range",
+            new Dictionary<string, object?> { ["from"] = "1", ["to"] = "10" });
+
+        Assert.AreEqual("/range/1/10", url);
+    }
+
+    [TestMethod]
+    public void Multiple_trailing_optionals_all_absent_trims_tail()
+    {
+        var brouter = MountWithNamedRoute("range", "/range/{from?}/{to?}");
+
+        Assert.AreEqual("/range", brouter.ResolveUrl("range"));
+    }
+
+    [TestMethod]
+    public void Trailing_optional_absent_with_earlier_optional_supplied_trims_only_the_trailing_slash()
+    {
+        var brouter = MountWithNamedRoute("range", "/range/{from?}/{to?}");
+
+        // Supplying only the leading optional is well-defined: emit it, drop the trailing slot.
+        var url = brouter.ResolveUrl("range",
+            new Dictionary<string, object?> { ["from"] = "1" });
+
+        Assert.AreEqual("/range/1", url);
+    }
+
+    [TestMethod]
+    public void Throws_when_earlier_optional_omitted_but_later_optional_supplied()
+    {
+        var brouter = MountWithNamedRoute("range", "/range/{from?}/{to?}");
+
+        // Without this guard the URL would be "/range/10" and the matcher would bind it as
+        // from="10", silently shifting the value into the wrong parameter slot.
+        Assert.ThrowsExactly<ArgumentException>(() => brouter.ResolveUrl("range",
+            new Dictionary<string, object?> { ["to"] = "10" }));
+    }
+
+    [TestMethod]
     public void Catch_all_parameter_preserves_internal_slashes_and_encodes_each_segment()
     {
         var brouter = MountWithNamedRoute("posts", "/posts/{**slug}");

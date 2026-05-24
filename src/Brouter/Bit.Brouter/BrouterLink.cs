@@ -80,18 +80,26 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
     private void UpdateActiveState()
     {
         var current = Brouter.Location.Path;
-        var target = NormalisePath(Href);
+        // Brouter.UpdateLocation() only strips a trailing slash from Path when
+        // Options.IgnoreTrailingSlash is true, so we must mirror that here when normalising
+        // the link's Href. Otherwise BrouterLinkMatch.All would never match a current path
+        // that legitimately ends in '/' under Options.IgnoreTrailingSlash == false.
+        var target = NormalisePath(Href, stripTrailingSlash: Options.IgnoreTrailingSlash);
         var comparison = Options.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
         _isActive = Match switch
         {
             BrouterLinkMatch.All => string.Equals(current, target, comparison),
+            // Prefix match: when target retains a trailing '/' (Options.IgnoreTrailingSlash == false
+            // and the link href ended with '/'), the slash itself enforces the segment boundary,
+            // so the explicit boundary check on current[target.Length] is unnecessary in that case.
             _ => current.StartsWith(target, comparison) &&
-                 (current.Length == target.Length || target == "/" || current[target.Length] == '/' || current[target.Length] == '?' || current[target.Length] == '#')
+                 (current.Length == target.Length || target == "/" || target[^1] == '/' ||
+                  current[target.Length] == '/' || current[target.Length] == '?' || current[target.Length] == '#')
         };
     }
 
-    private static string NormalisePath(string href)
+    private static string NormalisePath(string href, bool stripTrailingSlash)
     {
         string path;
         if (Uri.TryCreate(href, UriKind.Absolute, out var uri))
@@ -106,7 +114,7 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
             var qIdx = path.IndexOf('?');
             if (qIdx >= 0) path = path[..qIdx];
         }
-        if (path.Length > 1 && path.EndsWith('/')) path = path[..^1];
+        if (stripTrailingSlash && path.Length > 1 && path.EndsWith('/')) path = path[..^1];
         if (path.Length == 0 || path[0] != '/') path = "/" + path;
         return path;
     }

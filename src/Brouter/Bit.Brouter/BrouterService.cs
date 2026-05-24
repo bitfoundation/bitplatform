@@ -86,6 +86,12 @@ internal sealed class BrouterService : IBrouter
             : new Dictionary<string, object?>(parameters, StringComparer.OrdinalIgnoreCase);
 
         var sb = new StringBuilder();
+        // Tracks whether a preceding trailing optional was omitted. If so, no later optional
+        // may carry a value: emitting it would shift the value into the missing optional's
+        // slot ("/a/{b?}/{c?}" + only c => "/a/x" reads back as b="x"). The matcher can't
+        // bind that back to the original parameter, so fail loud rather than silently mis-bind.
+        var optionalOmitted = false;
+        string? omittedOptionalName = null;
 
         foreach (var segment in route.RouteTemplate.TemplateSegments)
         {
@@ -109,10 +115,24 @@ internal sealed class BrouterService : IBrouter
                 {
                     // Drop trailing '/' for the absent optional segment.
                     if (sb.Length > 0 && sb[^1] == '/') sb.Length--;
+                    optionalOmitted = true;
+                    omittedOptionalName ??= segment.Value;
                     continue;
                 }
                 throw new ArgumentException(
                     $"Missing value for required route parameter '{segment.Value}' when resolving route '{name}'.",
+                    nameof(parameters));
+            }
+
+            // A trailing optional with a value can't follow an omitted earlier optional, since
+            // optionals only ever live at the tail of a template (TemplateParser enforces this).
+            // Allowing it would emit a URL that re-binds to the wrong parameter.
+            if (segment.IsOptional && optionalOmitted)
+            {
+                throw new ArgumentException(
+                    $"Cannot resolve route '{name}': optional parameter '{omittedOptionalName}' is missing " +
+                    $"but a later optional parameter '{segment.Value}' has a value. " +
+                    "Trailing optionals must be filled in order from left to right.",
                     nameof(parameters));
             }
 

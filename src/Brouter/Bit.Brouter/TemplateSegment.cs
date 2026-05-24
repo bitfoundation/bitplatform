@@ -109,8 +109,10 @@ internal class TemplateSegment
             if (IsSingleWildcard) return 2;
             if (IsParameter)
             {
-                var score = IsOptional ? 4 : 6;
-                return score + Constraints.Length * 2;
+                // Cap parameter scores below the literal score (11) so a literal segment always
+                // wins a tie at the same depth, even when a parameter declares many constraints.
+                var score = (IsOptional ? 4 : 6) + Constraints.Length * 2;
+                return Math.Min(score, 10);
             }
             return 11; // literal
         }
