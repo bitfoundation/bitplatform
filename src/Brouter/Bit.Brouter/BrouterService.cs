@@ -118,6 +118,18 @@ internal sealed class BrouterService : IBrouter
 
             var rawValue = FormatRouteValue(normalizedParams![segment.Value]);
 
+            // Required non-catch-all segments must round-trip through the router; an empty
+            // formatted value would emit a stray '/' (e.g. "/users//edit") that the matcher
+            // can't bind back. Catch-all is exempt because it has its own empty handling
+            // below (it just drops the trailing slash). Optional missing values are already
+            // handled above via the 'hasValue is false' branch.
+            if (segment.IsCatchAll is false && string.IsNullOrEmpty(rawValue))
+            {
+                throw new ArgumentException(
+                    $"Missing value for required route parameter '{segment.Value}' when resolving route '{name}'.",
+                    nameof(parameters));
+            }
+
             if (segment.IsCatchAll)
             {
                 // Allow forward slashes in catch-all values; encode each segment separately.

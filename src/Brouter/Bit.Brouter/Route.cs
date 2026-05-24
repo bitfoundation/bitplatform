@@ -9,8 +9,6 @@ namespace Bit.Brouter;
 /// </summary>
 public partial class Route : ComponentBase, IDisposable
 {
-    internal readonly string Id = Guid.NewGuid().ToString();
-
     /// <summary>
     /// The route path to match. Supports literal segments, parameter segments, constraints and wildcards.
     /// E.g. <c>"/users/{id:int}"</c>, <c>"/files/{**path}"</c>, <c>"/posts/{slug?}"</c>.

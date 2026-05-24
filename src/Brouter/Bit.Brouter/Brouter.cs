@@ -11,7 +11,7 @@ namespace Bit.Brouter;
 /// </summary>
 public partial class Brouter : ComponentBase, IDisposable
 {
-    private static readonly char[] _Separator = ['/'];
+    private static readonly char[] _separator = ['/'];
 
 
     /// <summary>The route declarations and any other markup.</summary>
@@ -159,7 +159,7 @@ public partial class Brouter : ComponentBase, IDisposable
             path = path[..^1];
         }
 
-        var rawSegments = path.Trim('/').Split(_Separator, StringSplitOptions.RemoveEmptyEntries);
+        var rawSegments = path.Trim('/').Split(_separator, StringSplitOptions.RemoveEmptyEntries);
         for (int i = 0; i < rawSegments.Length; i++)
         {
             // Decode defensively: malformed percent-encoding (e.g. "%ZZ" or a stray "%") would

@@ -216,15 +216,32 @@ internal static class TypedParameterCache
             foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 var paramAttr = prop.GetCustomAttribute<BrouterParameterAttribute>();
+                var queryAttr = prop.GetCustomAttribute<BrouterQueryAttribute>();
+                if (paramAttr is null && queryAttr is null) continue;
+
+                // [BrouterParameter] / [BrouterQuery] only have an effect when Blazor recognises
+                // the property as a component parameter, i.e. it's annotated with [Parameter]
+                // (or [CascadingParameter], which Brouter doesn't drive) and has a public setter.
+                // Without that, AddAttribute below would feed an unknown attribute into the
+                // component and Blazor would throw a generic exception the moment the route
+                // matches. Failing here gives the developer a clear, actionable message.
+                var attrName = paramAttr is not null ? nameof(BrouterParameterAttribute) : nameof(BrouterQueryAttribute);
+                if (prop.GetCustomAttribute<ParameterAttribute>() is null)
+                    throw new InvalidOperationException(
+                        $"Property '{type.FullName}.{prop.Name}' is annotated with [{attrName}] but is missing [Parameter]. " +
+                        "Add [Parameter] (or remove the Brouter binding attribute).");
+                if (prop.SetMethod is null || prop.SetMethod.IsPublic is false)
+                    throw new InvalidOperationException(
+                        $"Property '{type.FullName}.{prop.Name}' is annotated with [{attrName}] but has no public setter. " +
+                        "Add a public setter so the router can assign the bound value.");
+
                 if (paramAttr is not null)
                 {
                     bindings.Add(new ParameterBinding(prop.Name, paramAttr.Name ?? prop.Name, prop.PropertyType, IsQuery: false));
-                    continue;
                 }
-                var queryAttr = prop.GetCustomAttribute<BrouterQueryAttribute>();
-                if (queryAttr is not null)
+                else
                 {
-                    bindings.Add(new ParameterBinding(prop.Name, queryAttr.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
+                    bindings.Add(new ParameterBinding(prop.Name, queryAttr!.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
                 }
             }
 

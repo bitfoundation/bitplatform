@@ -1,6 +1,6 @@
 namespace Bit.Brouter;
 
-/// <summary>Controls scroll behaviour after a successful navigation.</summary>
+/// <summary>Controls scroll behavior after a successful navigation.</summary>
 public enum BrouterScrollMode
 {
     /// <summary>Do not change scroll position automatically.</summary>

@@ -20,8 +20,8 @@ public static class BrouterConstraints
         ["bool"] = new TypeRouteConstraint<bool>(bool.TryParse),
         ["guid"] = new TypeRouteConstraint<Guid>(Guid.TryParse),
         ["long"] = new TypeRouteConstraint<long>((string s, out long r) => long.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out r)),
-        ["float"] = new TypeRouteConstraint<float>((string s, out float r) => float.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
-        ["double"] = new TypeRouteConstraint<double>((string s, out double r) => double.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
+        ["float"] = new TypeRouteConstraint<float>((string s, out float r) => float.TryParse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out r)),
+        ["double"] = new TypeRouteConstraint<double>((string s, out double r) => double.TryParse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out r)),
         ["decimal"] = new TypeRouteConstraint<decimal>((string s, out decimal r) => decimal.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
         ["datetime"] = new TypeRouteConstraint<DateTime>((string s, out DateTime r) => DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out r)),
     };
