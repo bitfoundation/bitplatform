@@ -13,6 +13,7 @@ public class BitThemeManager : IAsyncDisposable
 
     private DotNetObjectReference<BitThemeJsNotifierReceiver>? _jsNotifierReference;
     private bool _jsNotifierRegistered;
+    private Task? _jsNotifierRegistrationTask;
 
     /// <summary>
     /// Creates a manager without a .NET notifier receiver. <see cref="BitThemeNotifications"/> won't fire from JS until a receiver is provided
@@ -86,20 +87,41 @@ public class BitThemeManager : IAsyncDisposable
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
     }
 
-    private async ValueTask EnsureJsNotifierRegisteredAsync()
+    private ValueTask EnsureJsNotifierRegisteredAsync()
     {
-        if (_jsNotifierRegistered) return;
-        if (_jsNotifierReceiver is null) return; // no-op when constructed without a receiver
-        if (_js.IsRuntimeInvalid()) return; // e.g. prerendering / disconnected circuit; retry on next call.
+        if (_jsNotifierRegistered) return ValueTask.CompletedTask;
+        if (_jsNotifierReceiver is null) return ValueTask.CompletedTask; // no-op when constructed without a receiver
+        if (_js.IsRuntimeInvalid()) return ValueTask.CompletedTask; // e.g. prerendering / disconnected circuit; retry on next call.
 
-        _jsNotifierReference ??= DotNetObjectReference.Create(_jsNotifierReceiver);
-        await _js.BitThemeRegisterDotNetNotifier(_jsNotifierReference).ConfigureAwait(false);
+        // Serialize concurrent callers (e.g. Task.WhenAll over multiple manager methods) so only one
+        // BitThemeRegisterDotNetNotifier invocation is in flight; subsequent callers await the same task.
+        var inFlight = _jsNotifierRegistrationTask;
+        if (inFlight is not null) return new ValueTask(inFlight);
 
-        // InvokeVoid silently no-ops when the runtime is invalid; if it became invalid between the
-        // initial check and the awaited call, leave the flag false so a later call can retry.
-        if (_js.IsRuntimeInvalid()) return;
+        var task = RegisterJsNotifierAsync();
+        _jsNotifierRegistrationTask = task;
+        return new ValueTask(task);
+    }
 
-        _jsNotifierRegistered = true;
+    private async Task RegisterJsNotifierAsync()
+    {
+        try
+        {
+            _jsNotifierReference ??= DotNetObjectReference.Create(_jsNotifierReceiver!);
+            await _js.BitThemeRegisterDotNetNotifier(_jsNotifierReference).ConfigureAwait(false);
+
+            // InvokeVoid silently no-ops when the runtime is invalid; if it became invalid between the
+            // initial check and the awaited call, leave the flag false so a later call can retry.
+            if (_js.IsRuntimeInvalid()) return;
+
+            _jsNotifierRegistered = true;
+        }
+        finally
+        {
+            // Clear the in-flight tracker so a failed/runtime-invalid attempt can be retried on the next call.
+            // On success the _jsNotifierRegistered fast-path keeps subsequent callers from re-entering.
+            _jsNotifierRegistrationTask = null;
+        }
     }
 
     public async ValueTask DisposeAsync()

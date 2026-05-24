@@ -251,7 +251,10 @@ class BitTheme {
         BitTheme._onThemeChange?.(newTheme, oldTheme);
         const n = BitTheme._dotnetNotifier;
         if (n) {
-            void n.invokeMethodAsync('NotifyThemeChangedFromJs', newTheme, oldTheme);
+            // Swallow rejections so a disposed circuit / receiver does not surface as an
+            // unhandled promise rejection. Theme dispatch is fire-and-forget by design.
+            n.invokeMethodAsync('NotifyThemeChangedFromJs', newTheme, oldTheme)
+                .catch(() => { /* receiver gone or invocation failed; nothing actionable here */ });
         }
     }
 
