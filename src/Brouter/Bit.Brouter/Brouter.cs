@@ -329,9 +329,16 @@ public partial class Brouter : ComponentBase, IDisposable
             winner.SetMatched();
 
             if (OnMatch is not null) await OnMatch(winner);
+            // Each await below can yield long enough for a newer navigation to start. If that
+            // happens, bail out so we don't fire OnNavigated, scroll, or re-render on behalf
+            // of a superseded navigation (and overwrite the new one's UI / scroll position).
+            if (token.IsCancellationRequested || version != _navVersion) return;
 
             await service.InvokeOnNavigated(ctx);
+            if (token.IsCancellationRequested || version != _navVersion) return;
+
             await service.ApplyScrollAsync();
+            if (token.IsCancellationRequested || version != _navVersion) return;
 
             StateHasChanged();
         }

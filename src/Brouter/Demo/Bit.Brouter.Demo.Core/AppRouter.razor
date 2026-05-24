@@ -2,13 +2,13 @@
 @implements IDisposable
 
 @code {
-    private int currentCount { get; set; } = 0;
+    private int _currentCount;
 
     private Func<NavigationContext, ValueTask>? _onNavigatingHandler;
 
     void ChangeCountValue(int value)
     {
-        currentCount = value;
+        _currentCount = value;
         StateHasChanged();
     }
 
@@ -38,19 +38,19 @@
     <Route Path="/" RedirectTo="/home" />
 
     <Route Name="home" Path="/home">
-        <Content><HomePage CountValue="@currentCount" /></Content>
+        <Content><HomePage CountValue="@_currentCount" /></Content>
     </Route>
 
     <Route Path="/counter">
-        <Content><CounterPage @bind-CurrentCount="currentCount" ChangeCount="@ChangeCountValue" /></Content>
+        <Content><CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" /></Content>
     </Route>
 
     <Route Name="counter" Path="/counter/{init:int}">
-        <Content><CounterPage @bind-CurrentCount="currentCount" ChangeCount="@ChangeCountValue" /></Content>
+        <Content><CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" /></Content>
     </Route>
 
     <Route Path="/counter/multi/{id:int:long}/{age:long:decimal:double}/{name}">
-        <Content><CounterPage @bind-CurrentCount="currentCount" ChangeCount="@ChangeCountValue" /></Content>
+        <Content><CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" /></Content>
     </Route>
 
     <Route Path="/fetchdata" Component="typeof(FetchDataPage)" />

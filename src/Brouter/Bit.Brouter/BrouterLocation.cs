@@ -123,6 +123,22 @@ public sealed class BrouterLocation
         }
         return new ReadOnlyDictionary<string, IReadOnlyList<string>>(snapshot);
 
-        static string Decode(string s) => Uri.UnescapeDataString(s.Replace('+', ' '));
+        static string Decode(string s)
+        {
+            // Mirrors the defensive decoding used for path segments in Brouter.UpdateLocation:
+            // malformed percent-encoding (e.g. "%ZZ" or a stray "%") would otherwise throw
+            // UriFormatException and break query parsing / [BrouterQuery] binding the first
+            // time QueryParams is accessed. Fall back to the raw substring (with '+' -> ' '
+            // already applied) so navigation keeps working and routes can still match.
+            var replaced = s.Replace('+', ' ');
+            try
+            {
+                return Uri.UnescapeDataString(replaced);
+            }
+            catch (UriFormatException)
+            {
+                return replaced;
+            }
+        }
     }
 }

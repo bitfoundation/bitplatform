@@ -7,6 +7,6 @@
 </Brouter>
 
 @code {
-    [Parameter, EditorRequired] public string Name { get; set; } = string.Empty;
-    [Parameter, EditorRequired] public string Path { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Name { get; set; } = default!;
+    [Parameter, EditorRequired] public string Path { get; set; } = default!;
 }
