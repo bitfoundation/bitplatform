@@ -68,16 +68,22 @@ public sealed class BitCesiumMapProvider : BitMapProviderBase
         // doesn't break presence checks or downstream auth headers.
         var trimmedToken = string.IsNullOrWhiteSpace(IonAccessToken) ? null : IonAccessToken.Trim();
         var hasToken = trimmedToken is not null;
+
+        // Validate and normalize ImageryStyle / SceneMode at the .NET layer so invalid
+        // values are rejected with a clear message instead of being forwarded to the
+        // JS provider where they silently fall back to defaults.
+        var imageryStyle = NormalizeImageryStyle(ImageryStyle);
+        var sceneMode = NormalizeSceneMode(SceneMode);
+
         var terrainEnabled = TerrainEnabled && hasToken;
-        var isBing = ImageryStyle?.Equals("bing_aerial", StringComparison.OrdinalIgnoreCase) == true ||
-                     ImageryStyle?.Equals("bing_labels", StringComparison.OrdinalIgnoreCase) == true;
-        var imageryStyle = hasToken || !isBing ? ImageryStyle : "osm";
+        var isBing = imageryStyle is "bing_aerial" or "bing_labels";
+        var effectiveImagery = hasToken || !isBing ? imageryStyle : "osm";
 
         var common = GetCommonOptions();
         common["altitude"] = Altitude;
-        common["imageryStyle"] = imageryStyle;
+        common["imageryStyle"] = effectiveImagery;
         common["ionAccessToken"] = trimmedToken;
-        common["sceneMode"] = SceneMode;
+        common["sceneMode"] = sceneMode;
         common["terrainEnabled"] = terrainEnabled;
         common["shadowsEnabled"] = ShadowsEnabled;
         common["animationWidget"] = AnimationWidget;
@@ -89,5 +95,38 @@ public sealed class BitCesiumMapProvider : BitMapProviderBase
         common["geocoder"] = Geocoder;
         common["infoBox"] = InfoBox;
         return common;
+    }
+
+    private static readonly string[] _allowedImageryStyles = ["osm", "bing_aerial", "bing_labels", "none"];
+    private static readonly string[] _allowedSceneModes = ["scene3d", "scene2d", "columbus"];
+
+    private static string NormalizeImageryStyle(string value)
+    {
+        var trimmed = (value ?? string.Empty).Trim();
+        foreach (var allowed in _allowedImageryStyles)
+        {
+            if (string.Equals(trimmed, allowed, StringComparison.OrdinalIgnoreCase))
+            {
+                return allowed;
+            }
+        }
+        throw new ArgumentException(
+            $"{nameof(ImageryStyle)} must be one of: {string.Join(", ", _allowedImageryStyles)}.",
+            nameof(ImageryStyle));
+    }
+
+    private static string NormalizeSceneMode(string value)
+    {
+        var trimmed = (value ?? string.Empty).Trim();
+        foreach (var allowed in _allowedSceneModes)
+        {
+            if (string.Equals(trimmed, allowed, StringComparison.OrdinalIgnoreCase))
+            {
+                return allowed;
+            }
+        }
+        throw new ArgumentException(
+            $"{nameof(SceneMode)} must be one of: {string.Join(", ", _allowedSceneModes)}.",
+            nameof(SceneMode));
     }
 }

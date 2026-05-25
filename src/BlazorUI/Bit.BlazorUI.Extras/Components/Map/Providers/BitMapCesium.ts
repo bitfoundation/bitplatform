@@ -207,6 +207,14 @@ namespace BitBlazorUI {
         public static addMarker(id: string, markerId: string, opts: any) {
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
+            // Cesium provider does not implement draggable markers yet.
+            // Warn loudly so callers don't think Draggable=true is silently honored.
+            // TODO: implement drag handling in _wireEvents (LEFT_DOWN/MOUSE_MOVE/LEFT_UP on
+            // a picked marker entity) and emit dotnetObj.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat, lng })
+            // when the drag ends, mirroring the pattern in BitMapAzureMaps/BitMapMapLibre.
+            if (opts && opts.draggable === true) {
+                console.warn(`BitMapCesium: Draggable markers are not supported by the Cesium provider; marker '${markerId}' will be added as non-draggable.`);
+            }
             const existing = s.markers[markerId];
             if (existing) try { s.viewer.entities.remove(existing); } catch { /* ignore */ }
             const billboard = opts.iconUrl ? {

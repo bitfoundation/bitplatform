@@ -3,10 +3,22 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Geographic coordinate in WGS84 (EPSG:4326).
 /// </summary>
-public readonly record struct BitMapLatLng(double Latitude, double Longitude)
+public readonly record struct BitMapLatLng
 {
-    private readonly double _latitude = ValidateLatitude(Latitude);
-    private readonly double _longitude = ValidateLongitude(Longitude);
+    private readonly double _latitude;
+    private readonly double _longitude;
+
+    /// <summary>
+    /// Creates a new <see cref="BitMapLatLng"/> with the given coordinates.
+    /// </summary>
+    /// <param name="latitude">Latitude in degrees. Must be within [-90, 90].</param>
+    /// <param name="longitude">Longitude in degrees. Must be within [-180, 180].</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when either value is outside its valid range or NaN.</exception>
+    public BitMapLatLng(double latitude, double longitude)
+    {
+        _latitude = ValidateLatitude(latitude);
+        _longitude = ValidateLongitude(longitude);
+    }
 
     /// <summary>
     /// Latitude in degrees. Must be within [-90, 90].
