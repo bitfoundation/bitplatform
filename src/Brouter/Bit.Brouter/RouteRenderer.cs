@@ -243,6 +243,16 @@ internal static class TypedParameterCache
                 var queryAttr = prop.GetCustomAttribute<BrouterQueryAttribute>();
                 if (paramAttr is null && queryAttr is null) continue;
 
+                // Reject ambiguous annotations up front: a property carrying both attributes
+                // would silently bind as one or the other, leaving the developer unaware that
+                // half of their intent was dropped. Fail fast with a clear message that names
+                // the offending property and both attribute names.
+                if (paramAttr is not null && queryAttr is not null)
+                    throw new InvalidOperationException(
+                        $"Property '{type.FullName}.{prop.Name}' is annotated with both " +
+                        $"[{nameof(BrouterParameterAttribute)}] and [{nameof(BrouterQueryAttribute)}]. " +
+                        "Pick exactly one: a property can bind to either a route parameter or a query string value, not both.");
+
                 // [BrouterParameter] / [BrouterQuery] only have an effect when Blazor recognises
                 // the property as a component parameter, i.e. it's annotated with [Parameter]
                 // (or [CascadingParameter], which Brouter doesn't drive) and has a public setter.

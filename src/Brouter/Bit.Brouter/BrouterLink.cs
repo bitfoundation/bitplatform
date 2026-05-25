@@ -156,14 +156,20 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         // unmodified primary clicks. That way, modified clicks (Ctrl/Cmd+click, Shift+click)
         // keep their native "open in new tab" / "open in new window" behavior; only plain
         // left-clicks are intercepted to perform the replace navigation.
+        // We deliberately do NOT set onclick:stopPropagation here. When the JS handler is
+        // installed, Blazor's document-level NavigationInterception self-skips because the
+        // capture-phase listener has already called preventDefault (it checks defaultPrevented),
+        // so no double navigation occurs. When wiring isn't available (pre-render, circuit
+        // disconnect, or interop failure), letting the click bubble means NavigationInterception
+        // can still pick it up and perform an SPA push navigation as a graceful fallback,
+        // instead of falling all the way through to a full page load.
         if (Replace)
         {
             builder.AddAttribute(5, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, OnClick));
-            builder.AddAttribute(6, "onclick:stopPropagation", true);
-            builder.AddElementReferenceCapture(7, capturedRef => _anchor = capturedRef);
+            builder.AddElementReferenceCapture(6, capturedRef => _anchor = capturedRef);
         }
 
-        builder.AddContent(8, ChildContent);
+        builder.AddContent(7, ChildContent);
         builder.CloseElement();
     }
 
@@ -205,10 +211,11 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
 
         // Only issue the replace navigation when our JS preventDefault handler is installed.
         // Otherwise Blazor's NavigationInterception will pick the click up as a regular push
-        // navigation, and adding our own NavigateTo here would result in double-navigation
+        // navigation (we no longer stopPropagation, so the document-level interceptor still
+        // sees the event), and adding our own NavigateTo here would result in double-navigation
         // (two LocationChanged events / two ProcessNavigationAsync passes for one click).
         // Degrading to a push when wiring failed is the safer fallback than racing with the
-        // built-in interceptor.
+        // built-in interceptor or forcing a full page load.
         if (_replaceWired is false) return;
 
         Brouter.Navigate(Href, replace: true);

@@ -23,7 +23,7 @@ public static class BrouterConstraints
         ["float"] = new TypeRouteConstraint<float>((string s, out float r) => float.TryParse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out r)),
         ["double"] = new TypeRouteConstraint<double>((string s, out double r) => double.TryParse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out r)),
         ["decimal"] = new TypeRouteConstraint<decimal>((string s, out decimal r) => decimal.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
-        ["datetime"] = new TypeRouteConstraint<DateTime>((string s, out DateTime r) => DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out r)),
+        ["datetime"] = new TypeRouteConstraint<DateTime>((string s, out DateTime r) => DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out r)),
     };
 
     /// <summary>
