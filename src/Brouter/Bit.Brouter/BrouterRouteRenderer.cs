@@ -3,18 +3,18 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.Brouter;
 
-internal class RouteRenderer
+internal class BrouterRouteRenderer
 {
-    private readonly Route _route;
+    private readonly BrouterRoute _route;
 
-    public RouteRenderer(Route route)
+    public BrouterRouteRenderer(BrouterRoute route)
     {
         _route = route;
     }
 
     public void BuildRenderTree(RenderTreeBuilder builder, bool matched)
     {
-        builder.OpenComponent<CascadingValue<Route>>(0);
+        builder.OpenComponent<CascadingValue<BrouterRoute>>(0);
         builder.AddAttribute(1, "Name", "ParentRoute");
         builder.AddAttribute(2, "Value", _route);
         builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
@@ -36,9 +36,9 @@ internal class RouteRenderer
     private void RenderRoute(RenderTreeBuilder builder)
     {
         var merged = MergeParameters(_route.InheritedParameters, _route.Parameters);
-        var routeParams = new RouteParameters(merged);
+        var routeParams = new BrouterRouteParameters(merged);
 
-        builder.OpenComponent<CascadingValue<RouteParameters>>(0);
+        builder.OpenComponent<CascadingValue<BrouterRouteParameters>>(0);
         builder.AddAttribute(1, "Name", "RouteParameters");
         builder.AddAttribute(2, "Value", routeParams);
         builder.AddAttribute(3, "IsFixed", false);
@@ -79,11 +79,11 @@ internal class RouteRenderer
         builder.CloseComponent();
     }
 
-    internal static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, RouteParameters parameters, BrouterLocation? location)
+    internal static void ApplyTypedParameters(RenderTreeBuilder builder, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type componentType, BrouterRouteParameters parameters, BrouterLocation? location)
     {
         // Reflect once per type. Simple, correct, allocates only on first hit per type.
         // Trimming: Component is annotated DynamicallyAccessedMemberTypes.All so its members are preserved.
-        var bindings = TypedParameterCache.GetBindings(componentType);
+        var bindings = BrouterTypedParameterCache.GetBindings(componentType);
         // Sequence numbers for dynamic parameter attributes start after the OpenComponent (0).
         // These are stable per render because the same bindings are iterated in the same order.
         var seq = 1;
@@ -142,7 +142,7 @@ internal class RouteRenderer
         return arr.GetValue(0);
     }
 
-    private static bool TryBindQuery(ParameterBinding binding, BrouterLocation location, out object? value)
+    private static bool TryBindQuery(BrouterParameterBinding binding, BrouterLocation location, out object? value)
     {
         value = null;
         if (location.QueryParams.TryGetValue(binding.ParameterName, out var values) is false || values.Count == 0)
@@ -210,7 +210,7 @@ internal class RouteRenderer
         }
     }
 
-    private static IDictionary<string, object?> MergeParameters(RouteParameters? inherited, IDictionary<string, object?>? local)
+    private static IDictionary<string, object?> MergeParameters(BrouterRouteParameters? inherited, IDictionary<string, object?>? local)
     {
         var result = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         if (inherited is not null)
@@ -225,18 +225,18 @@ internal class RouteRenderer
     }
 }
 
-internal static class TypedParameterCache
+internal static class BrouterTypedParameterCache
 {
-    private static readonly Dictionary<Type, ParameterBinding[]> _cache = new();
+    private static readonly Dictionary<Type, BrouterParameterBinding[]> _cache = new();
     private static readonly object _lock = new();
 
-    public static ParameterBinding[] GetBindings([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
+    public static BrouterParameterBinding[] GetBindings([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
     {
         lock (_lock)
         {
             if (_cache.TryGetValue(type, out var cached)) return cached;
 
-            var bindings = new List<ParameterBinding>();
+            var bindings = new List<BrouterParameterBinding>();
             foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 var paramAttr = prop.GetCustomAttribute<BrouterParameterAttribute>();
@@ -271,11 +271,11 @@ internal static class TypedParameterCache
 
                 if (paramAttr is not null)
                 {
-                    bindings.Add(new ParameterBinding(prop.Name, paramAttr.Name ?? prop.Name, prop.PropertyType, IsQuery: false));
+                    bindings.Add(new BrouterParameterBinding(prop.Name, paramAttr.Name ?? prop.Name, prop.PropertyType, IsQuery: false));
                 }
                 else
                 {
-                    bindings.Add(new ParameterBinding(prop.Name, queryAttr!.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
+                    bindings.Add(new BrouterParameterBinding(prop.Name, queryAttr!.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
                 }
             }
 
@@ -286,4 +286,4 @@ internal static class TypedParameterCache
     }
 }
 
-internal readonly record struct ParameterBinding(string PropertyName, string ParameterName, Type PropertyType, bool IsQuery);
+internal readonly record struct BrouterParameterBinding(string PropertyName, string ParameterName, Type PropertyType, bool IsQuery);

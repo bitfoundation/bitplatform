@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Bit.Brouter;
 
 /// <summary>
-/// The root component of Bit.Brouter. Hosts a tree of <see cref="Route"/> children and renders
+/// The root component of Bit.Brouter. Hosts a tree of <see cref="BrouterRoute"/> children and renders
 /// the matching one for the current URL.
 /// </summary>
 public partial class Brouter : ComponentBase, IDisposable
@@ -27,7 +27,7 @@ public partial class Brouter : ComponentBase, IDisposable
     [Parameter] public RenderFragment<BrouterLocation>? NotFoundContent { get; set; }
 
     /// <summary>Async hook fired whenever a route is successfully matched.</summary>
-    [Parameter] public Func<Route, ValueTask>? OnMatch { get; set; }
+    [Parameter] public Func<BrouterRoute, ValueTask>? OnMatch { get; set; }
 
     /// <summary>Async hook fired when no route matches the current URL.</summary>
     [Parameter] public Func<BrouterLocation, ValueTask>? OnNotFound { get; set; }
@@ -41,8 +41,8 @@ public partial class Brouter : ComponentBase, IDisposable
     internal BrouterLocation CurrentLocation { get; private set; } = BrouterLocation.Empty;
     internal BrouterOptions Options => _brouterService.Options;
 
-    private readonly List<Route> _routes = [];
-    internal void RegisterRoute(Route route)
+    private readonly List<BrouterRoute> _routes = [];
+    internal void RegisterRoute(BrouterRoute route)
     {
         // Enforce the documented uniqueness contract for Route.Name. Comparison matches
         // FindRouteByName (case-insensitive), so name lookups stay unambiguous.
@@ -62,9 +62,9 @@ public partial class Brouter : ComponentBase, IDisposable
 
         _routes.Add(route);
     }
-    internal void UnregisterRoute(Route route) => _routes.Remove(route);
+    internal void UnregisterRoute(BrouterRoute route) => _routes.Remove(route);
 
-    internal Route? FindRouteByName(string name) =>
+    internal BrouterRoute? FindRouteByName(string name) =>
         _routes.FirstOrDefault(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase));
 
     private CancellationTokenSource? _navCts;
@@ -136,7 +136,7 @@ public partial class Brouter : ComponentBase, IDisposable
             try
             {
                 await _brouterService.InvokeOnError(
-                    new NavigationContext(from, CurrentLocation, CancellationToken.None), ex);
+                    new BrouterNavigationContext(from, CurrentLocation, CancellationToken.None), ex);
             }
             catch { /* OnError must never crash the navigation handler */ }
         }
@@ -205,7 +205,7 @@ public partial class Brouter : ComponentBase, IDisposable
         }
         var token = newCts.Token;
 
-        var ctx = new NavigationContext(from, CurrentLocation, token);
+        var ctx = new BrouterNavigationContext(from, CurrentLocation, token);
         var service = _brouterService;
 
         try
@@ -268,7 +268,7 @@ public partial class Brouter : ComponentBase, IDisposable
             }
 
             ctx.Route = winner;
-            ctx.Parameters = new RouteParameters(winner.Parameters);
+            ctx.Parameters = new BrouterRouteParameters(winner.Parameters);
 
             // Guards.
             var guardsOk = await winner.InvokeGuardsAsync(ctx);
@@ -282,7 +282,7 @@ public partial class Brouter : ComponentBase, IDisposable
             // navigation can't leak into parent layouts whose current loader is null.
             // Capture each loader's result into a local before committing to shared state,
             // so a superseded navigation can't leave stale LoadedData on the route.
-            var matchedChain = new List<Route>();
+            var matchedChain = new List<BrouterRoute>();
             for (var node = winner; node is not null; node = node.Parent) matchedChain.Add(node);
             matchedChain.Reverse();
 
@@ -366,7 +366,7 @@ public partial class Brouter : ComponentBase, IDisposable
         }
     }
 
-    private bool HandleSideEffects(NavigationContext ctx, BrouterLocation from)
+    private bool HandleSideEffects(BrouterNavigationContext ctx, BrouterLocation from)
     {
         if (ctx.RedirectUrl is not null)
         {
@@ -388,7 +388,7 @@ public partial class Brouter : ComponentBase, IDisposable
         return false;
     }
 
-    private bool Match(Route route, string[] segments, bool hasTrailingSlash)
+    private bool Match(BrouterRoute route, string[] segments, bool hasTrailingSlash)
     {
         route.Parameters = new Dictionary<string, object?>();
         route.ConstraintsByParameter = new Dictionary<string, string[]>();

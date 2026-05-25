@@ -69,7 +69,7 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         base.OnParametersSet();
     }
 
-    private ValueTask OnNavigated(NavigationContext ctx)
+    private ValueTask OnNavigated(BrouterNavigationContext ctx)
     {
         var was = _isActive;
         UpdateActiveState();

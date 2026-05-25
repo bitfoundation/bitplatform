@@ -39,7 +39,7 @@ else
 @code {
     [Parameter] public string Value { get; set; } = "N/A";
 
-    [CascadingParameter(Name = "RouteParameters")] RouteParameters? Parameters { get; set; }
+    [CascadingParameter(Name = "RouteParameters")] BrouterRouteParameters? Parameters { get; set; }
 
     private WeatherForecast[]? forecasts;
 

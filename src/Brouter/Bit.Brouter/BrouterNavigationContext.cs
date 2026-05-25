@@ -6,9 +6,9 @@ namespace Bit.Brouter;
 /// Carries information about an in-progress navigation. Passed to guards and global hooks.
 /// Inspired by Vue Router's <c>RouteLocationNormalized</c> and Angular's <c>NavigationStart</c>.
 /// </summary>
-public sealed class NavigationContext
+public sealed class BrouterNavigationContext
 {
-    internal NavigationContext(BrouterLocation from, BrouterLocation to, CancellationToken cancellationToken)
+    internal BrouterNavigationContext(BrouterLocation from, BrouterLocation to, CancellationToken cancellationToken)
     {
         From = from;
         To = to;
@@ -25,10 +25,10 @@ public sealed class NavigationContext
     public CancellationToken CancellationToken { get; }
 
     /// <summary>The matched route once matching has happened. Null in OnNavigating hooks.</summary>
-    public Route? Route { get; internal set; }
+    public BrouterRoute? Route { get; internal set; }
 
     /// <summary>Parameters extracted from the matched route. Empty when no match yet.</summary>
-    public RouteParameters Parameters { get; internal set; } = RouteParameters.Empty;
+    public BrouterRouteParameters Parameters { get; internal set; } = BrouterRouteParameters.Empty;
 
     /// <summary>True if a guard or hook called <see cref="Cancel"/>.</summary>
     public bool IsCancelled { get; private set; }

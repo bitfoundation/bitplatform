@@ -4,7 +4,7 @@
 @code {
     private int _currentCount;
 
-    private Func<NavigationContext, ValueTask>? _onNavigatingHandler;
+    private Func<BrouterNavigationContext, ValueTask>? _onNavigatingHandler;
 
     void ChangeCountValue(int value)
     {
@@ -33,13 +33,13 @@
         }
     }
 
-    private ValueTask GuardEvenSecond(NavigationContext ctx)
+    private ValueTask GuardEvenSecond(BrouterNavigationContext ctx)
     {
         if (DateTime.Now.Second % 2 != 0) ctx.Redirect("/403");
         return ValueTask.CompletedTask;
     }
 
-    private async ValueTask CheckEvenMinute(NavigationContext ctx)
+    private async ValueTask CheckEvenMinute(BrouterNavigationContext ctx)
     {
         await Task.Delay(1, ctx.CancellationToken);
         if (DateTime.Now.Minute % 2 != 0)
@@ -50,94 +50,94 @@
 }
 
 <Brouter NotFound="404">
-    <Route Path="/" RedirectTo="/home" />
+    <BrouterRoute Path="/" RedirectTo="/home" />
 
-    <Route Name="home" Path="/home">
+    <BrouterRoute Name="home" Path="/home">
         <Content><HomePage CountValue="@_currentCount" /></Content>
-    </Route>
+    </BrouterRoute>
 
-    <Route Path="/counter">
+    <BrouterRoute Path="/counter">
         <Content><CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" /></Content>
-    </Route>
+    </BrouterRoute>
 
-    <Route Name="counter" Path="/counter/{init:int}">
+    <BrouterRoute Name="counter" Path="/counter/{init:int}">
         <Content><CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" /></Content>
-    </Route>
+    </BrouterRoute>
 
-    <Route Path="/counter/multi/{id:int:long}/{age:long:decimal:double}/{name}">
+    <BrouterRoute Path="/counter/multi/{id:int:long}/{age:long:decimal:double}/{name}">
         <Content><CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" /></Content>
-    </Route>
+    </BrouterRoute>
 
-    <Route Path="/fetchdata" Component="@typeof(FetchDataPage)" />
+    <BrouterRoute Path="/fetchdata" Component="@typeof(FetchDataPage)" />
 
     @* Optional parameter: /profile or /profile/saleh both match. *@
-    <Route Path="/profile/{username?}" Component="@typeof(ProfilePage)" />
+    <BrouterRoute Path="/profile/{username?}" Component="@typeof(ProfilePage)" />
 
     @* Catch-all parameter: /posts/2024/12/hello-world binds the whole tail. *@
-    <Route Path="/posts/{**slug}" Component="@typeof(PostPage)" />
+    <BrouterRoute Path="/posts/{**slug}" Component="@typeof(PostPage)" />
 
-    <Route Path="/{prefix}/test2/{postfix}">
+    <BrouterRoute Path="/{prefix}/test2/{postfix}">
         <Content Context="p"><p>[@p["prefix"]] Test2 page [@p["postfix"]]</p></Content>
-    </Route>
+    </BrouterRoute>
 
     @* Wildcard route - only wins if nothing more specific matches. *@
-    <Route Path="/*/test">
+    <BrouterRoute Path="/*/test">
         <Content><p>Wildcard test page</p></Content>
-    </Route>
+    </BrouterRoute>
 
     @*============================================================================*@
 
-    <Route Path="/nested-route">
-        <Route Path="/{id:int}" Component="@typeof(FetchDataPage)" />
-        <Route Path="/{id:int}/hello">
+    <BrouterRoute Path="/nested-route">
+        <BrouterRoute Path="/{id:int}" Component="@typeof(FetchDataPage)" />
+        <BrouterRoute Path="/{id:int}/hello">
             <Content Context="p">
                 <div>This is a nested-route (/{id:int}/hello)</div>
                 <div>id: [@p["id"]]</div>
                 <hr />
                 <FetchDataPage Value="2" />
             </Content>
-        </Route>
-        <Route Path="/{id:int}/world">
+        </BrouterRoute>
+        <BrouterRoute Path="/{id:int}/world">
             <Content Context="p">
                 <div>This is a nested-route (/{id:int}/world)</div>
                 <div>id: [@p["id"]]</div>
                 <hr />
                 <FetchDataPage Value="3" />
             </Content>
-        </Route>
-    </Route>
+        </BrouterRoute>
+    </BrouterRoute>
 
     @*============================================================================*@
 
-    <Route Path="g1" Guard="@GuardEvenSecond">
+    <BrouterRoute Path="g1" Guard="@GuardEvenSecond">
         <Content>This is <strong>g1</strong> route (allowed when current second is even)</Content>
-    </Route>
+    </BrouterRoute>
 
-    <Route Path="g2" Guard="@CheckEvenMinute">
+    <BrouterRoute Path="g2" Guard="@CheckEvenMinute">
         <Content>This is <strong>g2</strong> route</Content>
-    </Route>
+    </BrouterRoute>
 
     @*============================================================================*@
 
-    <Route Path="nested" Component="@typeof(Nested)">
-        <Route Path="n1/{count:int}">
+    <BrouterRoute Path="nested" Component="@typeof(Nested)">
+        <BrouterRoute Path="n1/{count:int}">
             <Content Context="p">
                 <h3>this is the nested route /n1</h3>
                 <div>count: [@p["count"]]</div>
             </Content>
-        </Route>
-    </Route>
+        </BrouterRoute>
+    </BrouterRoute>
 
-    <Route Path="nested2" Component="@typeof(Nested2)">
-        <Route Path="n1/{count:int}">
+    <BrouterRoute Path="nested2" Component="@typeof(Nested2)">
+        <BrouterRoute Path="n1/{count:int}">
             <Content Context="p"><h3>nested2/n1</h3><div>count: [@p["count"]]</div></Content>
-        </Route>
-        <Route Path="n2/{count:int}">
+        </BrouterRoute>
+        <BrouterRoute Path="n2/{count:int}">
             <Content Context="p"><h3>nested2/n2</h3><div><b>count: [@p["count"]]</b></div></Content>
-        </Route>
-    </Route>
+        </BrouterRoute>
+    </BrouterRoute>
 
-    <Route Path="nested3">
+    <BrouterRoute Path="nested3">
         <Content>
             <h1>Nested route: /nested3</h1>
             <p>nested3 routes:</p>
@@ -146,31 +146,31 @@
             <br />
             <a href="/nested3/n2/2">"/nested3/n2/2"</a>
             <hr />
-            <Outlet />
+            <BrouterOutlet />
         </Content>
         <ChildContent>
-            <Route Path="n1/{count:int}">
+            <BrouterRoute Path="n1/{count:int}">
                 <Content Context="p"><h3>nested3/n1</h3><em>count1: [@p["count"]]</em></Content>
-            </Route>
-            <Route Path="n2/{count:int}">
+            </BrouterRoute>
+            <BrouterRoute Path="n2/{count:int}">
                 <Content Context="p"><h3>nested3/n2</h3><b>count2: [@p["count"]]</b></Content>
-            </Route>
+            </BrouterRoute>
         </ChildContent>
-    </Route>
+    </BrouterRoute>
 
     @*============================================================================*@
 
-    <Route Path="404">
+    <BrouterRoute Path="404">
         <Content>
             <h1 class="text-danger">404</h1>
             <p>Sorry, there's nothing at this address.</p>
         </Content>
-    </Route>
+    </BrouterRoute>
 
-    <Route Path="/403">
+    <BrouterRoute Path="/403">
         <Content>
             <h1 class="text-danger">403 oops!</h1>
             <p>Sorry, you can't go there yet.</p>
         </Content>
-    </Route>
+    </BrouterRoute>
 </Brouter>

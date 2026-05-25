@@ -7,7 +7,7 @@ namespace Bit.Brouter;
 /// <summary>
 /// Declares a single route inside a <see cref="Brouter"/>.
 /// </summary>
-public partial class Route : ComponentBase, IDisposable
+public partial class BrouterRoute : ComponentBase, IDisposable
 {
     /// <summary>
     /// The route path to match. Supports literal segments, parameter segments, constraints and wildcards.
@@ -27,20 +27,20 @@ public partial class Route : ComponentBase, IDisposable
     public Type? Component { get; set; }
 
     /// <summary>A render fragment to render when this route matches. The argument carries the route parameters.</summary>
-    [Parameter] public RenderFragment<RouteParameters>? Content { get; set; }
+    [Parameter] public RenderFragment<BrouterRouteParameters>? Content { get; set; }
 
     /// <summary>
     /// Async guard. Use <c>ctx.Cancel()</c> or <c>ctx.Redirect("/login")</c> to deny.
     /// Inspired by Vue Router's <c>beforeEnter</c> and Angular's <c>CanActivate</c>.
     /// </summary>
-    [Parameter] public Func<NavigationContext, ValueTask>? Guard { get; set; }
+    [Parameter] public Func<BrouterNavigationContext, ValueTask>? Guard { get; set; }
 
     /// <summary>
     /// Async data loader. Runs after the route matches and guards pass, before render.
     /// The result is exposed via the cascading <c>RouteData</c> value.
     /// Inspired by React Router v6's <c>loader</c> and Angular's <c>Resolve</c>.
     /// </summary>
-    [Parameter] public Func<NavigationContext, ValueTask<object?>>? Loader { get; set; }
+    [Parameter] public Func<BrouterNavigationContext, ValueTask<object?>>? Loader { get; set; }
 
     /// <summary>Optional metadata. Exposed via the cascading <c>RouteMeta</c> value.</summary>
     [Parameter] public object? Meta { get; set; }
@@ -50,25 +50,25 @@ public partial class Route : ComponentBase, IDisposable
 
 
     [CascadingParameter(Name = "Brouter")] internal Brouter? Brouter { get; set; }
-    [CascadingParameter(Name = "ParentRoute")] internal Route? Parent { get; set; }
-    [CascadingParameter(Name = "RouteParameters")] internal RouteParameters? InheritedParameters { get; set; }
+    [CascadingParameter(Name = "ParentRoute")] internal BrouterRoute? Parent { get; set; }
+    [CascadingParameter(Name = "RouteParameters")] internal BrouterRouteParameters? InheritedParameters { get; set; }
 
 
     internal string FullTemplate { get; private set; } = string.Empty;
 
 
-    private readonly List<Route> _children = [];
-    internal void AddChild(Route route) => _children.Add(route);
-    internal void RemoveChild(Route route) => _children.Remove(route);
+    private readonly List<BrouterRoute> _children = [];
+    internal void AddChild(BrouterRoute route) => _children.Add(route);
+    internal void RemoveChild(BrouterRoute route) => _children.Remove(route);
 
-    internal Outlet? Outlet { get; set; }
+    internal BrouterOutlet? Outlet { get; set; }
 
-    internal RouteTemplate? RouteTemplate { get; private set; }
+    internal BrouterRouteTemplate? RouteTemplate { get; private set; }
     internal IDictionary<string, object?> Parameters { get; set; } = new Dictionary<string, object?>();
     internal IDictionary<string, string[]> ConstraintsByParameter { get; set; } = new Dictionary<string, string[]>();
     internal object? LoadedData { get; set; }
 
-    private RouteRenderer? _renderer;
+    private BrouterRouteRenderer? _renderer;
 
     protected override void OnInitialized()
     {
@@ -99,9 +99,9 @@ public partial class Route : ComponentBase, IDisposable
             FullTemplate = $"{Parent.FullTemplate.TrimEnd('/')}/{Path.TrimStart('/')}";
         }
 
-        RouteTemplate = TemplateParser.ParseTemplate(FullTemplate);
+        RouteTemplate = BrouterTemplateParser.ParseTemplate(FullTemplate);
 
-        _renderer = new RouteRenderer(this);
+        _renderer = new BrouterRouteRenderer(this);
 
         Brouter.RegisterRoute(this);
         Parent?.AddChild(this);
@@ -151,10 +151,10 @@ public partial class Route : ComponentBase, IDisposable
         Parent?.SetMatched();
     }
 
-    internal async ValueTask<bool> InvokeGuardsAsync(NavigationContext ctx)
+    internal async ValueTask<bool> InvokeGuardsAsync(BrouterNavigationContext ctx)
     {
         // Walk from root to leaf so parents authorize children, mirroring Angular's hierarchical guards.
-        var chain = new List<Route>();
+        var chain = new List<BrouterRoute>();
         for (var r = this; r is not null; r = r.Parent) chain.Add(r);
         chain.Reverse();
 

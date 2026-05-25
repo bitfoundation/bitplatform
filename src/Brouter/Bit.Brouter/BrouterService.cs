@@ -217,42 +217,42 @@ internal sealed class BrouterService : IBrouter
     }
 
 
-    public event Func<NavigationContext, ValueTask>? OnNavigating;
-    public event Func<NavigationContext, ValueTask>? OnNavigated;
-    public event Func<NavigationContext, Exception?, ValueTask>? OnError;
+    public event Func<BrouterNavigationContext, ValueTask>? OnNavigating;
+    public event Func<BrouterNavigationContext, ValueTask>? OnNavigated;
+    public event Func<BrouterNavigationContext, Exception?, ValueTask>? OnError;
 
-    internal async ValueTask InvokeOnNavigating(NavigationContext ctx)
+    internal async ValueTask InvokeOnNavigating(BrouterNavigationContext ctx)
     {
         var handlers = OnNavigating;
         if (handlers is null) return;
 
         // No ConfigureAwait(false): user handlers typically touch UI state (StateHasChanged,
         // NavigationManager calls). Stay on the Blazor renderer's synchronization context.
-        foreach (var handler in handlers.GetInvocationList().Cast<Func<NavigationContext, ValueTask>>())
+        foreach (var handler in handlers.GetInvocationList().Cast<Func<BrouterNavigationContext, ValueTask>>())
         {
             await handler(ctx);
             if (ctx.IsCancelled || ctx.RedirectUrl is not null) return;
         }
     }
 
-    internal async ValueTask InvokeOnNavigated(NavigationContext ctx)
+    internal async ValueTask InvokeOnNavigated(BrouterNavigationContext ctx)
     {
         var handlers = OnNavigated;
         if (handlers is null) return;
 
-        foreach (var handler in handlers.GetInvocationList().Cast<Func<NavigationContext, ValueTask>>())
+        foreach (var handler in handlers.GetInvocationList().Cast<Func<BrouterNavigationContext, ValueTask>>())
         {
             try { await handler(ctx); }
             catch { /* OnNavigated should not break navigation flow */ }
         }
     }
 
-    internal async ValueTask InvokeOnError(NavigationContext ctx, Exception? ex)
+    internal async ValueTask InvokeOnError(BrouterNavigationContext ctx, Exception? ex)
     {
         var handlers = OnError;
         if (handlers is null) return;
 
-        foreach (var handler in handlers.GetInvocationList().Cast<Func<NavigationContext, Exception?, ValueTask>>())
+        foreach (var handler in handlers.GetInvocationList().Cast<Func<BrouterNavigationContext, Exception?, ValueTask>>())
         {
             try { await handler(ctx, ex); }
             catch { /* swallow secondary errors */ }

@@ -1,19 +1,19 @@
 @using Bit.Brouter
 
 <Brouter NotFound="/404">
-    <Route Path="/secret" Guard="@Deny">
+    <BrouterRoute Path="/secret" Guard="@Deny">
         <Content><div data-testid="ok">should not render</div></Content>
-    </Route>
-    <Route Path="/login">
+    </BrouterRoute>
+    <BrouterRoute Path="/login">
         <Content><div data-testid="login">login</div></Content>
-    </Route>
-    <Route Path="/404">
+    </BrouterRoute>
+    <BrouterRoute Path="/404">
         <Content>404</Content>
-    </Route>
+    </BrouterRoute>
 </Brouter>
 
 @code {
-    private ValueTask Deny(NavigationContext ctx)
+    private ValueTask Deny(BrouterNavigationContext ctx)
     {
         ctx.Redirect("/login");
         return ValueTask.CompletedTask;

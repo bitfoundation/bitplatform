@@ -8,25 +8,25 @@ namespace Bit.Brouter;
 //   - Optional parameters (must be trailing): {id?}
 //   - Catch-all parameters (must be the very last segment): {**path}
 //   - Literal wildcards: '*' for a single segment, '**' for catch-all
-internal static class TemplateParser
+internal static class BrouterTemplateParser
 {
     private static readonly char[] _invalidParameterNameCharacters = ['*', '?', '{', '}', '=', '.', ':'];
 
     /// <summary>Read-only view of the characters that aren't allowed inside a parameter name.</summary>
     public static ReadOnlySpan<char> InvalidParameterNameCharacters => _invalidParameterNameCharacters;
 
-    internal static RouteTemplate ParseTemplate(string template)
+    internal static BrouterRouteTemplate ParseTemplate(string template)
     {
-        if (string.IsNullOrEmpty(template)) return new RouteTemplate("", []);
+        if (string.IsNullOrEmpty(template)) return new BrouterRouteTemplate("", []);
 
         var originalTemplate = template;
         template = template.Trim('/');
 
         // Special case "/".
-        if (template == "") return new RouteTemplate("/", []);
+        if (template == "") return new BrouterRouteTemplate("/", []);
 
         var segments = template.Split('/');
-        var templateSegments = new TemplateSegment[segments.Length];
+        var templateSegments = new BrouterTemplateSegment[segments.Length];
 
         for (int i = 0; i < segments.Length; i++)
         {
@@ -39,7 +39,7 @@ internal static class TemplateParser
                 if (segment[^1] == '}')
                     throw new InvalidOperationException($"Invalid path '{template}'. Missing '{{' in parameter segment '{segment}'.");
 
-                templateSegments[i] = new TemplateSegment(originalTemplate, segment, isParameter: false);
+                templateSegments[i] = new BrouterTemplateSegment(originalTemplate, segment, isParameter: false);
             }
             else
             {
@@ -54,7 +54,7 @@ internal static class TemplateParser
                 // Validate parameter name characters: skip '*' (catch-all prefix), ':' (constraint separator), '?' (optional suffix).
                 ValidateParameterName(originalTemplate, segment, inner);
 
-                templateSegments[i] = new TemplateSegment(originalTemplate, inner, isParameter: true);
+                templateSegments[i] = new BrouterTemplateSegment(originalTemplate, inner, isParameter: true);
             }
         }
 
@@ -96,7 +96,7 @@ internal static class TemplateParser
             }
         }
 
-        return new RouteTemplate(template, templateSegments);
+        return new BrouterRouteTemplate(template, templateSegments);
     }
 
     private static void ValidateParameterName(string template, string segment, string inner)

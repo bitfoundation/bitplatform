@@ -1,6 +1,6 @@
-﻿namespace Bit.Brouter;
+namespace Bit.Brouter;
 
-internal class TemplateSegment
+internal class BrouterTemplateSegment
 {
     /// <summary>
     /// The literal text for a literal segment, or the parameter name for a parameter segment.
@@ -18,9 +18,9 @@ internal class TemplateSegment
     /// <summary>True for parameters declared with a trailing <c>?</c>, e.g. <c>{id?}</c>.</summary>
     public bool IsOptional { get; }
 
-    public RouteConstraintBinding[] Constraints { get; }
+    public BrouterRouteConstraintBinding[] Constraints { get; }
 
-    public TemplateSegment(string template, string segment, bool isParameter)
+    public BrouterTemplateSegment(string template, string segment, bool isParameter)
     {
         IsParameter = isParameter;
 
@@ -71,7 +71,7 @@ internal class TemplateSegment
 
             Value = paramName;
             Constraints = rest.Split(':')
-                              .Select(c => new RouteConstraintBinding(c, RouteConstraint.Resolve(template, segment, c)))
+                              .Select(c => new BrouterRouteConstraintBinding(c, BrouterRouteConstraint.Resolve(template, segment, c)))
                               .ToArray();
         }
 

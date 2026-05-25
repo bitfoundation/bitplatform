@@ -6,15 +6,15 @@ namespace Bit.Brouter;
 /// Placeholder that renders the matched child route inside its parent route's content.
 /// Equivalent to React Router's <c>&lt;Outlet/&gt;</c> and Vue Router's <c>&lt;router-view/&gt;</c>.
 /// </summary>
-public class Outlet : ComponentBase, IDisposable
+public class BrouterOutlet : ComponentBase, IDisposable
 {
-    [CascadingParameter(Name = "ParentRoute")] internal Route? Parent { get; set; }
+    [CascadingParameter(Name = "ParentRoute")] internal BrouterRoute? Parent { get; set; }
 
 
-    private Route? _matchedChild;
-    private RouteParameters _parameters = RouteParameters.Empty;
+    private BrouterRoute? _matchedChild;
+    private BrouterRouteParameters _parameters = BrouterRouteParameters.Empty;
 
-    internal void Render(Route route, RouteParameters parameters)
+    internal void Render(BrouterRoute route, BrouterRouteParameters parameters)
     {
         _matchedChild = route;
         _parameters = parameters;
@@ -44,7 +44,7 @@ public class Outlet : ComponentBase, IDisposable
         // is set back to true, so Matched is the authoritative "is this still selected" flag.
         if (_matchedChild is null || _matchedChild.Matched is false) return;
 
-        builder.OpenComponent<CascadingValue<Outlet>>(0);
+        builder.OpenComponent<CascadingValue<BrouterOutlet>>(0);
         builder.AddAttribute(1, "Name", "Outlet");
         builder.AddAttribute(2, "Value", this);
 
@@ -52,7 +52,7 @@ public class Outlet : ComponentBase, IDisposable
         {
             // Re-establish ParentRoute for any nested routes declared inside the matched child's content,
             // so they can register themselves and recurse correctly.
-            b.OpenComponent<CascadingValue<Route>>(0);
+            b.OpenComponent<CascadingValue<BrouterRoute>>(0);
             b.AddAttribute(1, "Name", "ParentRoute");
             b.AddAttribute(2, "Value", _matchedChild);
             b.AddAttribute(3, "ChildContent", (RenderFragment)(b2 =>
@@ -64,7 +64,7 @@ public class Outlet : ComponentBase, IDisposable
                 else if (_matchedChild.Component is not null)
                 {
                     b2.OpenComponent(0, _matchedChild.Component);
-                    RouteRenderer.ApplyTypedParameters(b2, _matchedChild.Component, _parameters, _matchedChild.Brouter?.CurrentLocation);
+                    BrouterRouteRenderer.ApplyTypedParameters(b2, _matchedChild.Component, _parameters, _matchedChild.Brouter?.CurrentLocation);
                     b2.CloseComponent();
                 }
 

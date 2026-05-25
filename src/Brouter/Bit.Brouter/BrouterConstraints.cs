@@ -8,22 +8,22 @@ namespace Bit.Brouter;
 /// custom constraints can be added via <see cref="Register"/>.
 /// </summary>
 /// <remarks>
-/// Each registered <see cref="RouteConstraint"/> instance is cached and reused across all
+/// Each registered <see cref="BrouterRouteConstraint"/> instance is cached and reused across all
 /// route matches (and across threads). Implementations must therefore be stateless and
 /// thread-safe.
 /// </remarks>
 public static class BrouterConstraints
 {
-    private static readonly ConcurrentDictionary<string, RouteConstraint> _constraints = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly ConcurrentDictionary<string, BrouterRouteConstraint> _constraints = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["int"] = new TypeRouteConstraint<int>((string s, out int r) => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out r)),
-        ["bool"] = new TypeRouteConstraint<bool>(bool.TryParse),
-        ["guid"] = new TypeRouteConstraint<Guid>(Guid.TryParse),
-        ["long"] = new TypeRouteConstraint<long>((string s, out long r) => long.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out r)),
-        ["float"] = new TypeRouteConstraint<float>((string s, out float r) => float.TryParse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out r)),
-        ["double"] = new TypeRouteConstraint<double>((string s, out double r) => double.TryParse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out r)),
-        ["decimal"] = new TypeRouteConstraint<decimal>((string s, out decimal r) => decimal.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
-        ["datetime"] = new TypeRouteConstraint<DateTime>((string s, out DateTime r) => DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out r)),
+        ["int"] = new BrouterTypeRouteConstraint<int>((string s, out int r) => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out r)),
+        ["bool"] = new BrouterTypeRouteConstraint<bool>(bool.TryParse),
+        ["guid"] = new BrouterTypeRouteConstraint<Guid>(Guid.TryParse),
+        ["long"] = new BrouterTypeRouteConstraint<long>((string s, out long r) => long.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out r)),
+        ["float"] = new BrouterTypeRouteConstraint<float>((string s, out float r) => float.TryParse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out r)),
+        ["double"] = new BrouterTypeRouteConstraint<double>((string s, out double r) => double.TryParse(s, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out r)),
+        ["decimal"] = new BrouterTypeRouteConstraint<decimal>((string s, out decimal r) => decimal.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out r)),
+        ["datetime"] = new BrouterTypeRouteConstraint<DateTime>((string s, out DateTime r) => DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out r)),
     };
 
     /// <summary>
@@ -34,7 +34,7 @@ public static class BrouterConstraints
     /// The provided <paramref name="constraint"/> is cached and shared across every route match.
     /// Implementations must be stateless and safe for concurrent use.
     /// </remarks>
-    public static void Register(string name, RouteConstraint constraint)
+    public static void Register(string name, BrouterRouteConstraint constraint)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(constraint);
@@ -59,6 +59,6 @@ public static class BrouterConstraints
         return removed;
     }
 
-    internal static RouteConstraint? Create(string name) =>
+    internal static BrouterRouteConstraint? Create(string name) =>
         _constraints.TryGetValue(name, out var constraint) ? constraint : null;
 }
