@@ -33,7 +33,7 @@ public class BitThemeManager : IAsyncDisposable
     }
 
     /// <summary>Returns the active <c>bit-theme</c> name from the document element.</summary>
-    public async ValueTask<string> GetCurrentThemeAsync()
+    public async ValueTask<string?> GetCurrentThemeAsync()
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
         return await _js.BitThemeGetCurrentTheme();
@@ -76,7 +76,7 @@ public class BitThemeManager : IAsyncDisposable
         return await _js.BitThemeIsSystemDark();
     }
 
-    public async ValueTask<string> GetCurrentPersistedThemeAsync()
+    public async ValueTask<string?> GetCurrentPersistedThemeAsync()
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
         return await _js.BitThemeGetCurrentPersistedTheme();

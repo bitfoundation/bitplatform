@@ -525,7 +525,7 @@ private void HandleInvalidSubmit() { }";
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup IsEnabled=""false"" Color=""BitColor.Primary"" Label=""Primary (default)"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
+<BitChoiceGroup IsEnabled=""false"" Label=""Primary (default)"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
