@@ -49,7 +49,7 @@ This JSON file defines the source and target languages, the location of your res
 }
 ```
 
-***Security Note:*** It is highly recommended to provide your ApiKey using environment variable `OpenAI__ApiKey` instead of hardcoding it directly in the `Bit.RexsTranslator.json` file,
+***Security Note:*** It is highly recommended to provide your ApiKey using environment variable `OpenAI__ApiKey` instead of hardcoding it directly in the `Bit.ResxTranslator.json` file,
 especially if this file is checked into version control. The tool uses standard .NET configuration practices, meaning environment variables will override values present in the JSON file.
 
 ## Usage
