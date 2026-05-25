@@ -55,20 +55,7 @@ public static class Services
             options.ForwardedHostHeaderName = "X-Host";
         });
 
-        if (string.IsNullOrEmpty(appSettings?.AzureOpenAI?.ChatApiKey) is false)
-        {
-            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.AzureAIInference#microsoftextensionsaiazureaiinference
-            services.AddChatClient(sp => new Azure.AI.Inference.ChatCompletionsClient(endpoint: appSettings.AzureOpenAI.ChatEndpoint,
-                credential: new Azure.AzureKeyCredential(appSettings.AzureOpenAI.ChatApiKey),
-                options: new()
-                {
-                    Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-                }).AsIChatClient(appSettings.AzureOpenAI.ChatModel))
-            .UseLogging()
-            .UseFunctionInvocation()
-            .UseDistributedCache();
-        }
-        else if (string.IsNullOrEmpty(appSettings?.OpenAI?.ChatApiKey) is false)
+        if (string.IsNullOrEmpty(appSettings?.OpenAI?.ChatApiKey) is false)
         {
             // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI#microsoftextensionsaiopenai
             services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.OpenAI.ChatModel, credential: new(appSettings.OpenAI.ChatApiKey), options: new()

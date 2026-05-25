@@ -12,8 +12,6 @@ public class ResxTranslatorSettings
     public string[] ResxPaths { get; set; } = [];
 
     public OpenAIOptions? OpenAI { get; set; }
-
-    public OpenAIOptions? AzureOpenAI { get; set; }
 }
 
 public class OpenAIOptions

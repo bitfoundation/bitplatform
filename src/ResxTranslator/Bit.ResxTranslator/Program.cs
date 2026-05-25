@@ -62,18 +62,6 @@ if (string.IsNullOrEmpty(settings.OpenAI?.ApiKey) is false)
     .UseLogging()
     .UseFunctionInvocation();
 }
-else if (string.IsNullOrEmpty(settings.AzureOpenAI?.ApiKey) is false)
-{
-    // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.AzureAIInference#microsoftextensionsaiazureaiinference
-    services.AddChatClient(sp => new ChatCompletionsClient(endpoint: settings.AzureOpenAI.Endpoint,
-        credential: new Azure.AzureKeyCredential(settings.AzureOpenAI.ApiKey),
-        options: new()
-        {
-            Transport = new HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-        }).AsIChatClient(settings.AzureOpenAI.Model))
-    .UseLogging()
-    .UseFunctionInvocation();
-}
 else
 {
     throw new InvalidOperationException("No OpenAI or Azure OpenAI API key provided.");
