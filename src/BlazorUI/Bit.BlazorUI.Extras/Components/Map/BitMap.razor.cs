@@ -399,9 +399,14 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
+        // Build the options payload outside the interop try/catch so that provider
+        // configuration errors (missing tokens, invalid URLs, etc.) surface to the
+        // caller instead of being swallowed and leaving the map silently uninitialized.
+        var initOptions = _activeProvider.BuildOptionsPayload();
+
         try
         {
-            await _js.BitMapInit(_activeProvider.JsObjectName, _Id, _canvasId, _mapElement, _dotnetObj, _activeProvider.BuildOptionsPayload());
+            await _js.BitMapInit(_activeProvider.JsObjectName, _Id, _canvasId, _mapElement, _dotnetObj, initOptions);
         }
         catch (JSDisconnectedException)
         {
@@ -488,11 +493,21 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             catch (JSDisconnectedException) { return; }
             catch { /* ignore — proceed with re-init */ }
 
+            // The old JS instance is gone (or could not be disposed cleanly). Clear the
+            // ready/active state up front so a failed re-init below cannot leave the
+            // component reporting IsReady=true while pointing at a disposed backend.
+            _initialized = false;
+            _activeProvider = null;
+
             if (IsDisposed) return;
+
+            // Build the options payload outside the interop try/catch so that provider
+            // configuration errors surface to the caller instead of being swallowed.
+            var swapInitOptions = effective.BuildOptionsPayload();
 
             try
             {
-                await _js.BitMapInit(effective.JsObjectName, _Id, _canvasId, _mapElement, _dotnetObj!, effective.BuildOptionsPayload());
+                await _js.BitMapInit(effective.JsObjectName, _Id, _canvasId, _mapElement, _dotnetObj!, swapInitOptions);
             }
             catch (JSDisconnectedException)
             {
@@ -506,6 +521,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             }
 
             _activeProvider = effective;
+            _initialized = true;
 
             // Fire OnReady again so consumers can rebuild their map state on the new provider.
             try
@@ -519,10 +535,13 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             return;
         }
 
-        // Same JS object — just sync the updated options.
+        // Same JS object — just sync the updated options. Build the payload outside
+        // the try/catch so configuration errors surface instead of being swallowed.
+        var syncOptions = effective.BuildOptionsPayload();
+
         try
         {
-            await _js.BitMapSync(effective.JsObjectName, _Id, effective.BuildOptionsPayload());
+            await _js.BitMapSync(effective.JsObjectName, _Id, syncOptions);
         }
         catch (JSDisconnectedException)
         {

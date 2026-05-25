@@ -41,8 +41,10 @@ public sealed class BitMapboxMapProvider : BitMapProviderBase
 
         if (StyleUrl.StartsWith("mapbox://", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(AccessToken))
         {
+            // Don't echo the raw StyleUrl back — `mapbox://` URLs and any followup query
+            // params can include sensitive identifiers/secrets we shouldn't leak via logs.
             throw new InvalidOperationException(
-                $"BitMapboxMapProvider: An AccessToken is required when using a 'mapbox://' style ('{StyleUrl}'). " +
+                "BitMapboxMapProvider: An AccessToken is required when a 'mapbox://' style is used. " +
                 "Provide a valid Mapbox access token or use a non-Mapbox style URL.");
         }
 

@@ -14,6 +14,7 @@ namespace BitBlazorUI {
             geoJsonLayers: { [k: string]: { graphics: any[] } },
             tileOverlays: { [k: string]: any },
             scaleBar: any,
+            dragHandlersWired?: boolean,
         } } = {};
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
@@ -163,12 +164,19 @@ namespace BitBlazorUI {
             const graphic = new esri.Graphic({
                 geometry: new esri.Point({ longitude: opts.lng, latitude: opts.lat }),
                 symbol: sym,
-                attributes: { markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '', title: opts.title || '' },
+                attributes: {
+                    markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '',
+                    title: opts.title || '', draggable: !!opts.draggable,
+                },
             });
             const existing = s.markers[markerId];
             if (existing) try { s.markerLayer.remove(existing); } catch { /* ignore */ }
             s.markerLayer.add(graphic);
             s.markers[markerId] = graphic;
+
+            if (opts.draggable) {
+                BitMapArcGis._ensureDragHandlers(s);
+            }
         }
 
         public static removeMarker(id: string, markerId: string) {
@@ -289,14 +297,14 @@ namespace BitBlazorUI {
                 if (t === 'Point') {
                     graphics.push(new esri.Graphic({
                         geometry: new esri.Point({ longitude: geometry.coordinates[0], latitude: geometry.coordinates[1] }),
-                        symbol: new esri.SimpleMarkerSymbol({ color: [51, 136, 255, 255], outline: { color: [255, 255, 255, 255], width: 2 }, size: 8 }),
+                        symbol: BitMapArcGis._pointSym(esri, style),
                         attributes: props,
                     }));
                 } else if (t === 'MultiPoint') {
                     for (const coord of geometry.coordinates) {
                         graphics.push(new esri.Graphic({
                             geometry: new esri.Point({ longitude: coord[0], latitude: coord[1] }),
-                            symbol: new esri.SimpleMarkerSymbol({ color: [51, 136, 255, 255], outline: { color: [255, 255, 255, 255], width: 2 }, size: 8 }),
+                            symbol: BitMapArcGis._pointSym(esri, style),
                             attributes: props,
                         }));
                     }
@@ -422,6 +430,30 @@ namespace BitBlazorUI {
             });
         }
 
+        /**
+         * Build a point symbol from a BitMap path style. Falls back to the legacy
+         * blue SimpleMarkerSymbol only when no style at all is supplied so callers
+         * that pass a custom color/outline/opacity see them honored on point features.
+         */
+        private static _pointSym(esri: any, style: any) {
+            if (!style) {
+                return new esri.SimpleMarkerSymbol({
+                    color: [51, 136, 255, 255],
+                    outline: { color: [255, 255, 255, 255], width: 2 },
+                    size: 8,
+                });
+            }
+            const st = BitMapHelpers.readPathStyle(style);
+            return new esri.SimpleMarkerSymbol({
+                color: BitMapArcGis._rgbaArr(st.fillColor, st.fillOpacity),
+                outline: {
+                    color: BitMapArcGis._rgbaArr(st.color, st.opacity),
+                    width: st.weight,
+                },
+                size: 8,
+            });
+        }
+
         private static _rgbaArr(hex: string, alpha: number): number[] {
             const a = Math.round(alpha * 255);
             if (!hex) return [51, 136, 255, a];
@@ -468,6 +500,58 @@ namespace BitBlazorUI {
         private static _notifyView(s: any) {
             if (!s.dotnetObj) return;
             queueMicrotask(() => s.dotnetObj.invokeMethodAsync('OnViewChanged', BitMapArcGis._readView(s)));
+        }
+
+        /**
+         * Wires per-view pointer handlers (once) so that markers added with
+         * opts.draggable=true can be dragged by the user. Drag end fires
+         * OnMarkerDragEnd through the dotnet bridge, matching the other providers.
+         */
+        private static _ensureDragHandlers(s: any) {
+            if (s.dragHandlersWired) return;
+            s.dragHandlersWired = true;
+
+            const view = s.view;
+            let active: any = null; // { graphic, markerId }
+
+            view.on('pointer-down', (event: any) => {
+                view.hitTest(event).then((response: any) => {
+                    for (const r of response.results) {
+                        const g = r.graphic;
+                        const a = g?.attributes;
+                        if (a && a.markerId && a.draggable && s.markers[a.markerId] === g) {
+                            active = { graphic: g, markerId: a.markerId };
+                            // Disable map panning while dragging this marker.
+                            try { event.stopPropagation(); } catch { /* ignore */ }
+                            const am = view.navigation?.actionMap;
+                            if (am) { (active as any)._prevDrag = am.dragPrimary; am.dragPrimary = null; }
+                            break;
+                        }
+                    }
+                }).catch(() => { /* ignore */ });
+            });
+
+            view.on('drag', (event: any) => {
+                if (!active) return;
+                try { event.stopPropagation(); } catch { /* ignore */ }
+                if (event.action === 'end') {
+                    const pt = view.toMap({ x: event.x, y: event.y });
+                    if (pt) {
+                        active.graphic.geometry = new s.esri.Point({ longitude: pt.longitude, latitude: pt.latitude });
+                        if (s.dotnetObj) {
+                            s.dotnetObj.invokeMethodAsync('OnMarkerDragEnd', active.markerId, { lat: pt.latitude, lng: pt.longitude });
+                        }
+                    }
+                    const am = view.navigation?.actionMap;
+                    if (am && (active as any)._prevDrag !== undefined) am.dragPrimary = (active as any)._prevDrag;
+                    active = null;
+                } else {
+                    const pt = view.toMap({ x: event.x, y: event.y });
+                    if (pt) {
+                        active.graphic.geometry = new s.esri.Point({ longitude: pt.longitude, latitude: pt.latitude });
+                    }
+                }
+            });
         }
 
         private static _wireEvents(s: any) {

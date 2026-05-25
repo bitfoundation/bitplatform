@@ -139,9 +139,20 @@ namespace BitBlazorUI {
                 });
             }
 
-            BitMapGlBase._applyMaxBounds(map, o.maxBounds);
-            BitMapGlBase._applyInteractivity(map, o);
-            BitMapGlBase._ensureNavControl(s, o);
+            // Only apply each of these helpers when the caller actually supplied the
+            // corresponding option, otherwise a partial sync (e.g. style/token-only update)
+            // would silently reset bounds/interactivity/nav-control to their defaults.
+            const has = (k: string) => Object.prototype.hasOwnProperty.call(o, k);
+            if (has('maxBounds')) {
+                BitMapGlBase._applyMaxBounds(map, o.maxBounds);
+            }
+            if (has('scrollWheelZoom') || has('doubleClickZoom') || has('boxZoom')
+                || has('dragPan') || has('dragging') || has('dragRotate') || has('keyboardNavigation')) {
+                BitMapGlBase._applyInteractivity(map, o);
+            }
+            if (has('showNavigationControl')) {
+                BitMapGlBase._ensureNavControl(s, o);
+            }
         }
 
         public static dispose(provider: string, id: string) {
@@ -485,7 +496,16 @@ namespace BitBlazorUI {
                 'line-opacity': st.opacity,
             };
             if (st.dashArray) {
-                paint['line-dasharray'] = st.dashArray.split(',').map((x: string) => parseFloat(x.trim()));
+                // Accept commas and/or any whitespace as separators (e.g. "4 2" or "4, 2").
+                const parts = String(st.dashArray)
+                    .split(/[\s,]+/)
+                    .map(t => t.trim())
+                    .filter(t => t.length > 0)
+                    .map(t => parseFloat(t))
+                    .filter(n => Number.isFinite(n));
+                if (parts.length > 0) {
+                    paint['line-dasharray'] = parts;
+                }
             }
             return paint;
         }

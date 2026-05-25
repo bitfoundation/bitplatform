@@ -64,10 +64,16 @@ namespace BitBlazorUI {
                 keyboard: o.keyboardNavigation !== false,
             });
 
+            // The default tileUrl is OpenStreetMap, which contractually requires the
+            // standard attribution. Only fall back to whatever the caller supplied when
+            // they explicitly pass a non-empty value, otherwise emit the OSM attribution.
+            const defaultOsmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
             const tileOptions: LeafletTileOptions = {
                 tileUrl: o.tileUrl || "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 tileMaxZoom: o.tileMaxZoom ?? 19,
-                tileAttribution: o.tileAttribution || "",
+                tileAttribution: (typeof o.tileAttribution === 'string' && o.tileAttribution.length > 0)
+                    ? o.tileAttribution
+                    : defaultOsmAttribution,
                 tileOpacity: o.tileOpacity ?? 1,
             };
             const baseTileLayer = L.tileLayer(tileOptions.tileUrl, {

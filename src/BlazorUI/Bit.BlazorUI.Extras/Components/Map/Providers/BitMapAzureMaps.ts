@@ -155,7 +155,13 @@ namespace BitBlazorUI {
 
             const marker = new atlas.HtmlMarker(markerOpts);
             const existing = s.markers[markerId];
-            if (existing) try { s.map.markers.remove(existing.marker); } catch { /* ignore */ }
+            if (existing) {
+                if (existing.popup) {
+                    try { s.map.popups.remove(existing.popup); } catch { /* ignore */ }
+                    try { existing.popup.remove(); } catch { /* ignore */ }
+                }
+                try { s.map.markers.remove(existing.marker); } catch { /* ignore */ }
+            }
             s.map.markers.add(marker);
             s.markers[markerId] = { marker, popup };
 
