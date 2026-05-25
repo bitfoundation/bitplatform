@@ -486,6 +486,16 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             // any imperatively-added markers, vector layers and tile overlays are dropped
             // because they live inside the disposed JS instance. Callers should re-apply
             // those after handling the OnReady event that fires below.
+
+            // Build (and implicitly validate) the new provider's options payload BEFORE
+            // disposing the active map. If BuildOptionsPayload throws (missing token,
+            // invalid URL, out-of-range zoom, etc.) the current map stays intact and the
+            // caller sees the configuration error instead of being left with a torn-down
+            // backend that reports IsReady=true.
+            var swapInitOptions = effective.BuildOptionsPayload();
+
+            if (IsDisposed) return;
+
             try
             {
                 await _js.BitMapDispose(_activeProvider.JsObjectName, _Id);
@@ -500,10 +510,6 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             _activeProvider = null;
 
             if (IsDisposed) return;
-
-            // Build the options payload outside the interop try/catch so that provider
-            // configuration errors surface to the caller instead of being swallowed.
-            var swapInitOptions = effective.BuildOptionsPayload();
 
             try
             {

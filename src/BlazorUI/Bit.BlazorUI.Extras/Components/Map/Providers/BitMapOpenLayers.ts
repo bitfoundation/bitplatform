@@ -457,12 +457,21 @@ namespace BitBlazorUI {
 
         private static _markerStyle(ol: any, opts: any) {
             if (opts.iconUrl) {
+                const iconOpts: any = {
+                    src: opts.iconUrl,
+                    anchor: [0.5, 1], anchorXUnits: 'fraction', anchorYUnits: 'fraction',
+                };
+                // OpenLayers' ol.Icon asserts when both explicit width/height and a scale
+                // are provided — pick one path: honor caller-supplied dimensions when
+                // present, otherwise fall back to the default 1:1 scale.
+                if (opts.iconWidth || opts.iconHeight) {
+                    if (opts.iconWidth) iconOpts.width = opts.iconWidth;
+                    if (opts.iconHeight) iconOpts.height = opts.iconHeight;
+                } else {
+                    iconOpts.scale = 1;
+                }
                 return new ol.Style({
-                    image: new ol.Icon({
-                        src: opts.iconUrl,
-                        anchor: [0.5, 1], anchorXUnits: 'fraction', anchorYUnits: 'fraction',
-                        scale: 1,
-                    }),
+                    image: new ol.Icon(iconOpts),
                 });
             }
             return new ol.Style({

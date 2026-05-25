@@ -38,6 +38,9 @@ public sealed class BitMapTileOverlay
     /// or when <see cref="UrlTemplate"/> is missing one of the required <c>{z}</c>,
     /// <c>{x}</c>, or <c>{y}</c> placeholders.
     /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <see cref="MaxZoom"/> is negative.
+    /// </exception>
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(Id))
@@ -61,6 +64,14 @@ public sealed class BitMapTileOverlay
             throw new ArgumentException(
                 $"{nameof(BitMapTileOverlay)}.{nameof(UrlTemplate)} must contain the '{{z}}', '{{x}}', and '{{y}}' placeholders. The optional '{{s}}' placeholder is also supported.",
                 nameof(UrlTemplate));
+        }
+
+        if (MaxZoom < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(MaxZoom),
+                MaxZoom,
+                $"{nameof(BitMapTileOverlay)}.{nameof(MaxZoom)} must be a non-negative value.");
         }
     }
 }
