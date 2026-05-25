@@ -136,6 +136,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     public ValueTask AddMarker(BitMapMarker marker)
     {
         EnsureReady();
+        ArgumentNullException.ThrowIfNull(marker);
+
         return SafeInvokeAsync(_js.BitMapAddMarker(JsObject, _Id, marker.Id, ToMarkerPayload(marker)));
     }
 
@@ -180,6 +182,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     public ValueTask AddPolyline(string layerId, IReadOnlyList<BitMapLatLng> path, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
+        ArgumentNullException.ThrowIfNull(path);
+
         return SafeInvokeAsync(_js.BitMapAddPolyline(JsObject, _Id, layerId, ToLatLngArray(path), ToStylePayload(style)));
     }
 
@@ -187,6 +191,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     public ValueTask AddPolygon(string layerId, IReadOnlyList<BitMapLatLng> ring, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
+        ArgumentNullException.ThrowIfNull(ring);
+
         return SafeInvokeAsync(_js.BitMapAddPolygon(JsObject, _Id, layerId, ToLatLngArray(ring), ToStylePayload(style)));
     }
 
@@ -226,6 +232,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     public ValueTask AddTileOverlay(BitMapTileOverlay overlay)
     {
         EnsureReady();
+        ArgumentNullException.ThrowIfNull(overlay);
+
         overlay.Validate();
         return SafeInvokeAsync(_js.BitMapAddTileOverlay(JsObject, _Id, new
         {
