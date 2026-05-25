@@ -123,7 +123,11 @@ public class BitThemeManager : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         // Acquire the registration lock so any in-flight EnsureJsNotifierRegisteredAsync completes
-        // before we tear down the semaphore; new callers will short-circuit on _disposed.
+        // before we tear down state; new callers will short-circuit on _disposed.
+        // We intentionally do NOT Dispose the SemaphoreSlim here: a caller that already passed the
+        // early _disposed check (or was queued on WaitAsync) could otherwise observe ObjectDisposedException
+        // on its WaitAsync/Release. SemaphoreSlim only holds an unmanaged handle if AvailableWaitHandle
+        // is used (it isn't here), so leaving it for the GC is safe.
         await _jsNotifierRegistrationLock.WaitAsync().ConfigureAwait(false);
         try
         {
@@ -150,7 +154,6 @@ public class BitThemeManager : IAsyncDisposable
         finally
         {
             _jsNotifierRegistrationLock.Release();
-            _jsNotifierRegistrationLock.Dispose();
         }
     }
 }

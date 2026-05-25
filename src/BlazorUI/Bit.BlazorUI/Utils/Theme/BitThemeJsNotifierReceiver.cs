@@ -15,7 +15,7 @@ public sealed class BitThemeJsNotifierReceiver
     }
 
     [JSInvokable]
-    public void NotifyThemeChangedFromJs(string newTheme, string oldTheme)
+    public void NotifyThemeChangedFromJs(string? newTheme, string? oldTheme)
     {
         // Defensive normalization: parameters are non-nullable in the .NET signature, but the
         // values originate from JS where null/undefined can slip through. Normalize so subscribers

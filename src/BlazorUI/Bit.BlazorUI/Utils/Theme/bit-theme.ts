@@ -270,18 +270,30 @@ class BitTheme {
 /** Attach or swap alternate theme stylesheets at runtime (prefer same-origin / trusted URLs). */
 class BitExternalTheme {
     public static attach(linkId: string, href: string) {
-        let el = document.getElementById(linkId) as HTMLLinkElement | null;
-        if (!el) {
-            el = document.createElement('link');
-            el.id = linkId;
-            el.rel = 'stylesheet';
-            document.head.appendChild(el);
+        const existing = document.getElementById(linkId);
+        let link: HTMLLinkElement;
+        if (existing && existing.tagName === 'LINK') {
+            link = existing as HTMLLinkElement;
+        } else {
+            // No element, or an element with the same id but a different tag (e.g. a stale
+            // <style> or <meta>): replace/insert a fresh <link> rather than blindly mutating
+            // an unrelated node which would break attach/detach invariants.
+            existing?.remove();
+            link = document.createElement('link');
+            link.id = linkId;
+            link.rel = 'stylesheet';
+            document.head.appendChild(link);
         }
-        el.href = href;
+        link.href = href;
     }
 
     public static detach(linkId: string) {
-        document.getElementById(linkId)?.remove();
+        const el = document.getElementById(linkId);
+        // Only remove the element if it's actually a <link>; we should not garbage-collect
+        // unrelated nodes that happen to share the id.
+        if (el && el.tagName === 'LINK') {
+            el.remove();
+        }
     }
 }
 

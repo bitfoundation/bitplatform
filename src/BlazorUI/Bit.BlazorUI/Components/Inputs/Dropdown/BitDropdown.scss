@@ -97,6 +97,12 @@
             }
         }
 
+        &:focus {
+            // Suppress the global box-shadow focus ring on the no-border variant; the
+            // underline-ring below still applies for keyboard focus via :focus-visible.
+            box-shadow: none;
+        }
+
         &:focus-visible {
             // No-border variant: keep the no-border look but use an inset underline-style
             // ring as a keyboard-only, high-contrast focus cue (WCAG 2.4.7 / 2.4.13).
