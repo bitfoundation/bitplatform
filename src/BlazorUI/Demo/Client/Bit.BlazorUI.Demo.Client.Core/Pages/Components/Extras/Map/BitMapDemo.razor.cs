@@ -79,14 +79,39 @@ public partial class BitMapDemo
     {
         _markerCounter++;
         var id = $"m{_markerCounter}";
-        var lat = 48.85 + Random.Shared.NextDouble() * 0.12;
-        var lng = 2.28 + Random.Shared.NextDouble() * 0.20;
+
+        // Scatter inside the current viewport so new markers are always visible
+        // wherever the user has panned/zoomed to. We inset the bounds slightly so
+        // markers don't land right on the edge.
+        var view = await markersMapRef.GetView();
+        var sw = view.Bounds.SouthWest;
+        var ne = view.Bounds.NorthEast;
+
+        var latSpan = ne.Latitude - sw.Latitude;
+        // Handle the antimeridian: when crossing it, NE.lng < SW.lng, so add 360°.
+        var lngSpan = ne.Longitude - sw.Longitude;
+        if (lngSpan < 0) lngSpan += 360;
+
+        const double inset = 0.1; // keep markers ~10% inside each edge
+        var lat = sw.Latitude + (inset + Random.Shared.NextDouble() * (1 - 2 * inset)) * latSpan;
+        var lng = sw.Longitude + (inset + Random.Shared.NextDouble() * (1 - 2 * inset)) * lngSpan;
+        lat = Math.Clamp(lat, -85, 85);
+        if (lng > 180) lng -= 360;
+        else if (lng < -180) lng += 360;
+
+        // Randomly make some markers draggable so the demo shows OnMarkerDragEnd in action.
+        var draggable = Random.Shared.Next(2) == 0;
+
         await markersMapRef.AddMarker(new BitMapMarker
         {
             Id = id, Position = new(lat, lng),
-            PopupHtml = $"<span>Marker <code>{id}</code></span>",
+            Title = $"Marker {id}{(draggable ? " (draggable)" : "")}",
+            PopupHtml = $"Marker <code>{id}</code><br/>{lat:F4}, {lng:F4}" +
+                        (draggable ? "<br/><i>Drag me!</i>" : ""),
+            Draggable = draggable,
+            TooltipHtml = draggable ? "Drag me!" : null,
         });
-        markersLog = $"Added {id} at {lat:F4}, {lng:F4}";
+        markersLog = $"Added {id}{(draggable ? " (draggable)" : "")} at {lat:F4}, {lng:F4}";
     }
 
     private async Task ClearMarkers()
@@ -387,6 +412,7 @@ public partial class BitMapDemo
     private readonly string example2CsharpCode = @"
 private BitMap<BitLeafletMapProvider> markersMapRef = default!;
 private readonly BitLeafletMapProvider markersProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5 };
+private int _markerCounter;
 
 private async Task OnMarkersReady()
 {
@@ -401,6 +427,39 @@ private async Task OnMarkersReady()
         Title = ""London"", Draggable = true, TooltipHtml = ""Drag me!"",
     });
     await markersMapRef.FitBoundsToMarkers();
+}
+
+private async Task AddRandomMarker()
+{
+    _markerCounter++;
+    var id = $""m{_markerCounter}"";
+
+    // Scatter inside the current viewport so new markers are always visible.
+    var view = await markersMapRef.GetView();
+    var sw = view.Bounds.SouthWest;
+    var ne = view.Bounds.NorthEast;
+
+    var latSpan = ne.Latitude - sw.Latitude;
+    var lngSpan = ne.Longitude - sw.Longitude;
+    if (lngSpan < 0) lngSpan += 360; // antimeridian
+
+    const double inset = 0.1;
+    var lat = sw.Latitude + (inset + Random.Shared.NextDouble() * (1 - 2 * inset)) * latSpan;
+    var lng = sw.Longitude + (inset + Random.Shared.NextDouble() * (1 - 2 * inset)) * lngSpan;
+    lat = Math.Clamp(lat, -85, 85);
+    if (lng > 180) lng -= 360;
+    else if (lng < -180) lng += 360;
+
+    // Roll a coin so some markers come in draggable.
+    var draggable = Random.Shared.Next(2) == 0;
+
+    await markersMapRef.AddMarker(new BitMapMarker
+    {
+        Id = id, Position = new(lat, lng),
+        Title = $""Marker {id}"",
+        Draggable = draggable,
+        TooltipHtml = draggable ? ""Drag me!"" : null,
+    });
 }
 
 private Task OnMarkerClick(string id) { /* ... */ return Task.CompletedTask; }

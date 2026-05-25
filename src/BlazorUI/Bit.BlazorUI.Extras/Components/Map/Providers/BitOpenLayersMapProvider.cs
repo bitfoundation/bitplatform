@@ -54,6 +54,9 @@ public sealed class BitOpenLayersMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
+        ValidateTileUrl(TileUrl, nameof(TileUrl));
+        ValidateTileMaxZoom(TileMaxZoom, nameof(TileMaxZoom));
+
         var common = GetCommonOptions();
         common["tileUrl"] = TileUrl;
         common["tileAttribution"] = TileAttribution;

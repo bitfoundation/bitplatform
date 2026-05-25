@@ -90,9 +90,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     /// <summary>Recalculate map size after a container resize.</summary>
     public ValueTask InvalidateSize()
-        => _initialized ? _js.BitMapInvalidateSize(JsObject, _Id) : ValueTask.CompletedTask;
+        => _initialized ? SafeInvokeAsync(_js.BitMapInvalidateSize(JsObject, _Id)) : ValueTask.CompletedTask;
 
     /// <summary>Returns a snapshot of the current viewport.</summary>
+    /// <remarks>Throws <see cref="JSException"/> if the underlying provider's getView fails.</remarks>
     public async ValueTask<BitMapViewState> GetView()
     {
         EnsureReady();
@@ -104,57 +105,57 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     public ValueTask SetView(BitMapLatLng center, double? zoom = null, bool animate = true)
     {
         EnsureReady();
-        return _js.BitMapSetView(JsObject, _Id, center.Latitude, center.Longitude, zoom, animate);
+        return SafeInvokeAsync(_js.BitMapSetView(JsObject, _Id, center.Latitude, center.Longitude, zoom, animate));
     }
 
     /// <summary>Animated pan/zoom to the given center.</summary>
     public ValueTask FlyTo(BitMapLatLng center, double? zoom = null)
     {
         EnsureReady();
-        return _js.BitMapFlyTo(JsObject, _Id, center.Latitude, center.Longitude, zoom);
+        return SafeInvokeAsync(_js.BitMapFlyTo(JsObject, _Id, center.Latitude, center.Longitude, zoom));
     }
 
     /// <summary>Fit the view to the given bounding box.</summary>
     public ValueTask FitBounds(BitMapLatLngBounds bounds, int paddingPixels = 48)
     {
         EnsureReady();
-        return _js.BitMapFitBounds(JsObject, _Id,
+        return SafeInvokeAsync(_js.BitMapFitBounds(JsObject, _Id,
             bounds.SouthWest.Latitude, bounds.SouthWest.Longitude,
             bounds.NorthEast.Latitude, bounds.NorthEast.Longitude,
-            paddingPixels);
+            paddingPixels));
     }
 
     /// <summary>Fit the view to include all currently rendered markers.</summary>
     public ValueTask FitBoundsToMarkers(int paddingPixels = 48)
     {
         EnsureReady();
-        return _js.BitMapFitBoundsToMarkers(JsObject, _Id, paddingPixels);
+        return SafeInvokeAsync(_js.BitMapFitBoundsToMarkers(JsObject, _Id, paddingPixels));
     }
 
     /// <summary>Add a marker to the map.</summary>
     public ValueTask AddMarker(BitMapMarker marker)
     {
         EnsureReady();
-        return _js.BitMapAddMarker(JsObject, _Id, marker.Id, ToMarkerPayload(marker));
+        return SafeInvokeAsync(_js.BitMapAddMarker(JsObject, _Id, marker.Id, ToMarkerPayload(marker)));
     }
 
     /// <summary>Remove a single marker by its id.</summary>
     public ValueTask RemoveMarker(string markerId)
-        => _initialized ? _js.BitMapRemoveMarker(JsObject, _Id, markerId) : ValueTask.CompletedTask;
+        => _initialized ? SafeInvokeAsync(_js.BitMapRemoveMarker(JsObject, _Id, markerId)) : ValueTask.CompletedTask;
 
     /// <summary>Remove all markers from the map.</summary>
     public ValueTask ClearMarkers()
-        => _initialized ? _js.BitMapClearMarkers(JsObject, _Id) : ValueTask.CompletedTask;
+        => _initialized ? SafeInvokeAsync(_js.BitMapClearMarkers(JsObject, _Id)) : ValueTask.CompletedTask;
 
     /// <summary>Move an existing marker to a new position.</summary>
     public ValueTask SetMarkerPosition(string markerId, BitMapLatLng position)
         => _initialized
-            ? _js.BitMapSetMarkerPosition(JsObject, _Id, markerId, position.Latitude, position.Longitude)
+            ? SafeInvokeAsync(_js.BitMapSetMarkerPosition(JsObject, _Id, markerId, position.Latitude, position.Longitude))
             : ValueTask.CompletedTask;
 
     /// <summary>Open the popup of the marker with the given id.</summary>
     public ValueTask OpenMarkerPopup(string markerId)
-        => _initialized ? _js.BitMapOpenMarkerPopup(JsObject, _Id, markerId) : ValueTask.CompletedTask;
+        => _initialized ? SafeInvokeAsync(_js.BitMapOpenMarkerPopup(JsObject, _Id, markerId)) : ValueTask.CompletedTask;
 
     /// <summary>Replace all markers in a single batch operation.</summary>
     public ValueTask SyncMarkers(IEnumerable<BitMapMarker> markers)
@@ -172,61 +173,61 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             payload[i] = ToMarkerPayload(m);
             i++;
         }
-        return _js.BitMapSyncMarkers(JsObject, _Id, ids, payload);
+        return SafeInvokeAsync(_js.BitMapSyncMarkers(JsObject, _Id, ids, payload));
     }
 
     /// <summary>Add a polyline vector layer.</summary>
     public ValueTask AddPolyline(string layerId, IReadOnlyList<BitMapLatLng> path, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
-        return _js.BitMapAddPolyline(JsObject, _Id, layerId, ToLatLngArray(path), ToStylePayload(style));
+        return SafeInvokeAsync(_js.BitMapAddPolyline(JsObject, _Id, layerId, ToLatLngArray(path), ToStylePayload(style)));
     }
 
     /// <summary>Add a polygon vector layer.</summary>
     public ValueTask AddPolygon(string layerId, IReadOnlyList<BitMapLatLng> ring, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
-        return _js.BitMapAddPolygon(JsObject, _Id, layerId, ToLatLngArray(ring), ToStylePayload(style));
+        return SafeInvokeAsync(_js.BitMapAddPolygon(JsObject, _Id, layerId, ToLatLngArray(ring), ToStylePayload(style)));
     }
 
     /// <summary>Add a circle vector layer (radius in meters).</summary>
     public ValueTask AddCircle(string layerId, BitMapLatLng center, double radiusMeters, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
-        return _js.BitMapAddCircle(JsObject, _Id, layerId, center.Latitude, center.Longitude, radiusMeters, ToStylePayload(style));
+        return SafeInvokeAsync(_js.BitMapAddCircle(JsObject, _Id, layerId, center.Latitude, center.Longitude, radiusMeters, ToStylePayload(style)));
     }
 
     /// <summary>Add a rectangle vector layer.</summary>
     public ValueTask AddRectangle(string layerId, BitMapLatLngBounds bounds, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
-        return _js.BitMapAddRectangle(JsObject, _Id, layerId,
+        return SafeInvokeAsync(_js.BitMapAddRectangle(JsObject, _Id, layerId,
             bounds.SouthWest.Latitude, bounds.SouthWest.Longitude,
             bounds.NorthEast.Latitude, bounds.NorthEast.Longitude,
-            ToStylePayload(style));
+            ToStylePayload(style)));
     }
 
     /// <summary>Add a GeoJSON layer rendered with the given style.</summary>
     public ValueTask AddGeoJson(string layerId, string geoJson, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
-        return _js.BitMapAddGeoJson(JsObject, _Id, layerId, geoJson, ToStylePayload(style));
+        return SafeInvokeAsync(_js.BitMapAddGeoJson(JsObject, _Id, layerId, geoJson, ToStylePayload(style)));
     }
 
     /// <summary>Remove a vector layer by id.</summary>
     public ValueTask RemoveLayer(string layerId)
-        => _initialized ? _js.BitMapRemoveLayer(JsObject, _Id, layerId) : ValueTask.CompletedTask;
+        => _initialized ? SafeInvokeAsync(_js.BitMapRemoveLayer(JsObject, _Id, layerId)) : ValueTask.CompletedTask;
 
     /// <summary>Remove all vector layers.</summary>
     public ValueTask ClearVectorLayers()
-        => _initialized ? _js.BitMapClearVectorLayers(JsObject, _Id) : ValueTask.CompletedTask;
+        => _initialized ? SafeInvokeAsync(_js.BitMapClearVectorLayers(JsObject, _Id)) : ValueTask.CompletedTask;
 
     /// <summary>Add a tile overlay (raster XYZ layer) above the base map.</summary>
     public ValueTask AddTileOverlay(BitMapTileOverlay overlay)
     {
         EnsureReady();
         overlay.Validate();
-        return _js.BitMapAddTileOverlay(JsObject, _Id, new
+        return SafeInvokeAsync(_js.BitMapAddTileOverlay(JsObject, _Id, new
         {
             id = overlay.Id,
             urlTemplate = overlay.UrlTemplate,
@@ -234,50 +235,114 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             opacity = overlay.Opacity,
             zIndex = overlay.ZIndex,
             maxZoom = overlay.MaxZoom,
-        });
+        }));
     }
 
     /// <summary>Remove a tile overlay by id.</summary>
     public ValueTask RemoveTileOverlay(string overlayId)
-        => _initialized ? _js.BitMapRemoveTileOverlay(JsObject, _Id, overlayId) : ValueTask.CompletedTask;
+        => _initialized ? SafeInvokeAsync(_js.BitMapRemoveTileOverlay(JsObject, _Id, overlayId)) : ValueTask.CompletedTask;
 
 
 
     [JSInvokable("OnClick")]
     public Task _OnClick(JsonElement e)
-        => OnClick.HasDelegate ? OnClick.InvokeAsync(ReadLatLng(e)) : Task.CompletedTask;
+    {
+        if (OnClick.HasDelegate is false) return Task.CompletedTask;
+        try
+        {
+            return OnClick.InvokeAsync(ReadLatLng(e));
+        }
+        catch
+        {
+            // A malformed payload from a misbehaving provider must not propagate back into
+            // JS as an unhandled exception (which would surface as a circuit-breaking error
+            // in Blazor Server / WASM). Swallow and continue.
+            return Task.CompletedTask;
+        }
+    }
 
     [JSInvokable("OnDoubleClick")]
     public Task _OnDoubleClick(JsonElement e)
-        => OnDoubleClick.HasDelegate ? OnDoubleClick.InvokeAsync(ReadLatLng(e)) : Task.CompletedTask;
+    {
+        if (OnDoubleClick.HasDelegate is false) return Task.CompletedTask;
+        try
+        {
+            return OnDoubleClick.InvokeAsync(ReadLatLng(e));
+        }
+        catch
+        {
+            return Task.CompletedTask;
+        }
+    }
 
     [JSInvokable("OnViewChanged")]
     public Task _OnViewChanged(JsonElement e)
-        => OnViewChanged.HasDelegate ? OnViewChanged.InvokeAsync(ParseViewState(e)) : Task.CompletedTask;
+    {
+        if (OnViewChanged.HasDelegate is false) return Task.CompletedTask;
+        try
+        {
+            return OnViewChanged.InvokeAsync(ParseViewState(e));
+        }
+        catch
+        {
+            return Task.CompletedTask;
+        }
+    }
 
     [JSInvokable("OnMarkerClick")]
     public Task _OnMarkerClick(string markerId)
-        => OnMarkerClick.HasDelegate ? OnMarkerClick.InvokeAsync(markerId) : Task.CompletedTask;
+    {
+        if (OnMarkerClick.HasDelegate is false) return Task.CompletedTask;
+        try
+        {
+            return OnMarkerClick.InvokeAsync(markerId);
+        }
+        catch
+        {
+            return Task.CompletedTask;
+        }
+    }
 
     [JSInvokable("OnMarkerDragEnd")]
     public Task _OnMarkerDragEnd(string markerId, JsonElement position)
     {
         if (OnMarkerDragEnd.HasDelegate is false) return Task.CompletedTask;
-        return OnMarkerDragEnd.InvokeAsync(new BitMapMarkerDragEndArgs { Id = markerId, Position = ReadLatLng(position) });
+        try
+        {
+            return OnMarkerDragEnd.InvokeAsync(new BitMapMarkerDragEndArgs { Id = markerId, Position = ReadLatLng(position) });
+        }
+        catch
+        {
+            return Task.CompletedTask;
+        }
     }
 
     [JSInvokable("OnVectorClick")]
     public Task _OnVectorClick(string layerId, string kind, JsonElement position)
     {
         if (OnVectorClick.HasDelegate is false) return Task.CompletedTask;
-        return OnVectorClick.InvokeAsync(new BitMapVectorClickArgs { LayerId = layerId, Kind = kind, Position = ReadLatLng(position) });
+        try
+        {
+            return OnVectorClick.InvokeAsync(new BitMapVectorClickArgs { LayerId = layerId, Kind = kind, Position = ReadLatLng(position) });
+        }
+        catch
+        {
+            return Task.CompletedTask;
+        }
     }
 
     [JSInvokable("OnGeoJsonFeatureClick")]
     public Task _OnGeoJsonFeatureClick(string layerId, JsonElement properties)
     {
         if (OnGeoJsonFeatureClick.HasDelegate is false) return Task.CompletedTask;
-        return OnGeoJsonFeatureClick.InvokeAsync(new BitMapGeoJsonFeatureClickArgs { LayerId = layerId, Properties = properties });
+        try
+        {
+            return OnGeoJsonFeatureClick.InvokeAsync(new BitMapGeoJsonFeatureClickArgs { LayerId = layerId, Properties = properties });
+        }
+        catch
+        {
+            return Task.CompletedTask;
+        }
     }
 
 
@@ -353,7 +418,14 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         _initialized = true;
 
-        await OnReady.InvokeAsync();
+        try
+        {
+            await OnReady.InvokeAsync();
+        }
+        catch
+        {
+            // A consumer-thrown exception in OnReady must not break the render pipeline.
+        }
     }
 
 
@@ -362,21 +434,44 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     {
         if (_initialized is false || _activeProvider is null) return;
 
+        if (_js.IsRuntimeInvalid()) return;
+
         // When Provider is reset to null, revert to a default-constructed instance.
         var effective = Provider ?? new TMapProvider();
 
         var jsObjectChanged = !string.Equals(_activeProvider.JsObjectName, effective.JsObjectName, StringComparison.Ordinal);
 
         // Load any new stylesheets/scripts the incoming provider requires.
-        if (effective.Stylesheets.Count > 0)
+        try
         {
-            await _js.BitExtrasInitStylesheets(effective.Stylesheets);
+            if (effective.Stylesheets.Count > 0)
+            {
+                await _js.BitExtrasInitStylesheets(effective.Stylesheets);
+            }
+        }
+        catch
+        {
+            // A failed CDN stylesheet load shouldn't prevent the provider switch from
+            // proceeding; mirror the first-render behavior and continue.
         }
 
-        if (effective.Scripts.Count > 0)
+        if (IsDisposed) return;
+
+        try
         {
-            await _js.BitExtrasInitScripts(effective.Scripts, effective.ScriptsAreModules);
+            if (effective.Scripts.Count > 0)
+            {
+                await _js.BitExtrasInitScripts(effective.Scripts, effective.ScriptsAreModules);
+            }
         }
+        catch
+        {
+            // Without the scripts the new provider can't initialize; bail out silently
+            // rather than surfacing an opaque '[object Event]' error to the consumer.
+            return;
+        }
+
+        if (IsDisposed) return;
 
         if (jsObjectChanged)
         {
@@ -390,19 +485,54 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             {
                 await _js.BitMapDispose(_activeProvider.JsObjectName, _Id);
             }
-            catch (JSDisconnectedException) { }
+            catch (JSDisconnectedException) { return; }
+            catch { /* ignore — proceed with re-init */ }
 
-            await _js.BitMapInit(effective.JsObjectName, _Id, _canvasId, _mapElement, _dotnetObj!, effective.BuildOptionsPayload());
+            if (IsDisposed) return;
+
+            try
+            {
+                await _js.BitMapInit(effective.JsObjectName, _Id, _canvasId, _mapElement, _dotnetObj!, effective.BuildOptionsPayload());
+            }
+            catch (JSDisconnectedException)
+            {
+                return;
+            }
+            catch
+            {
+                // The most common failure here is the canvas div being removed from the
+                // DOM before the JS init runs. Swallow rather than tearing down the page.
+                return;
+            }
 
             _activeProvider = effective;
 
             // Fire OnReady again so consumers can rebuild their map state on the new provider.
-            await OnReady.InvokeAsync();
+            try
+            {
+                await OnReady.InvokeAsync();
+            }
+            catch
+            {
+                // A consumer-thrown exception in OnReady must not break the render pipeline.
+            }
             return;
         }
 
         // Same JS object — just sync the updated options.
-        await _js.BitMapSync(effective.JsObjectName, _Id, effective.BuildOptionsPayload());
+        try
+        {
+            await _js.BitMapSync(effective.JsObjectName, _Id, effective.BuildOptionsPayload());
+        }
+        catch (JSDisconnectedException)
+        {
+            return;
+        }
+        catch
+        {
+            // Sync failures shouldn't take down the render pipeline.
+            return;
+        }
 
         _activeProvider = effective;
     }
@@ -493,7 +623,39 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             }
         }
         catch (JSDisconnectedException) { }
+        catch (JSException) { /* a misbehaving provider's dispose must not crash teardown */ }
+        catch (ObjectDisposedException) { }
 
         await base.DisposeAsync(disposing);
+    }
+
+    /// <summary>
+    /// Awaits a JS interop call and swallows the common transport / provider failures that
+    /// would otherwise propagate as unhandled exceptions and tear down the host app.
+    /// </summary>
+    private static async ValueTask SafeInvokeAsync(ValueTask task)
+    {
+        try
+        {
+            await task;
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit/runtime is gone; nothing to do.
+        }
+        catch (JSException)
+        {
+            // The underlying map provider threw inside its JS implementation. We log nothing
+            // here because the same call site is reachable from rapid user interactions
+            // (drag, zoom, marker churn) and noisy logging would dominate output.
+        }
+        catch (ObjectDisposedException)
+        {
+            // The component (or its DotNetObjectReference) was disposed mid-call.
+        }
+        catch (TaskCanceledException)
+        {
+            // Interop calls can be cancelled when the circuit closes.
+        }
     }
 }
