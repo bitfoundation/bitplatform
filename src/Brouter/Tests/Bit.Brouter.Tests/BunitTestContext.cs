@@ -6,7 +6,10 @@ namespace Bit.Brouter.Tests;
 
 public abstract class BunitTestContext : IDisposable
 {
-    protected Bunit.TestContext Context = default!;
+    // Nullable on purpose: MSTest constructs the test class before [TestInitialize] runs, so any
+    // member access in that window genuinely sees a null Context. Declaring it non-nullable with
+    // `default!` would silence the compiler about the very null checks we still need below.
+    protected Bunit.TestContext? Context;
 
     public TestServiceProvider Services => Context?.Services
         ?? throw new InvalidOperationException("MSTest has not started executing tests yet");

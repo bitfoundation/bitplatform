@@ -36,7 +36,13 @@ public class Outlet : ComponentBase, IDisposable
     {
         base.BuildRenderTree(builder);
 
-        if (_matchedChild is null) return;
+        // Also check Matched: when navigating from a child URL back to the parent (or to any
+        // URL where no child of this outlet matches), the previously matched child Route never
+        // calls Render() again because its renderer skips RenderRoute while Matched == false.
+        // Without this guard the outlet would keep rendering the stale child. Brouter resets
+        // Matched on all routes at the start of every navigation and only the winning chain
+        // is set back to true, so Matched is the authoritative "is this still selected" flag.
+        if (_matchedChild is null || _matchedChild.Matched is false) return;
 
         builder.OpenComponent<CascadingValue<Outlet>>(0);
         builder.AddAttribute(1, "Name", "Outlet");
