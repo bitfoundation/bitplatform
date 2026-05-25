@@ -270,6 +270,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
         catch
         {
+            // See _OnClick for the rationale: malformed payloads or callback failures
+            // must not propagate back into JS as unhandled exceptions.
         }
     }
 
@@ -283,6 +285,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
         catch
         {
+            // See _OnClick for the rationale: malformed payloads or callback failures
+            // must not propagate back into JS as unhandled exceptions.
         }
     }
 
@@ -296,6 +300,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
         catch
         {
+            // See _OnClick for the rationale: malformed payloads or callback failures
+            // must not propagate back into JS as unhandled exceptions.
         }
     }
 
@@ -309,6 +315,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
         catch
         {
+            // See _OnClick for the rationale: malformed payloads or callback failures
+            // must not propagate back into JS as unhandled exceptions.
         }
     }
 
@@ -322,6 +330,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
         catch
         {
+            // See _OnClick for the rationale: malformed payloads or callback failures
+            // must not propagate back into JS as unhandled exceptions.
         }
     }
 
@@ -335,6 +345,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
         catch
         {
+            // See _OnClick for the rationale: malformed payloads or callback failures
+            // must not propagate back into JS as unhandled exceptions.
         }
     }
 
