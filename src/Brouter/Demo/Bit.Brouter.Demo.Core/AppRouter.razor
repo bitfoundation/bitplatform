@@ -32,6 +32,21 @@
             _onNavigatingHandler = null;
         }
     }
+
+    private ValueTask GuardEvenSecond(NavigationContext ctx)
+    {
+        if (DateTime.Now.Second % 2 != 0) ctx.Redirect("/403");
+        return ValueTask.CompletedTask;
+    }
+
+    private async ValueTask CheckEvenMinute(NavigationContext ctx)
+    {
+        await Task.Delay(1, ctx.CancellationToken);
+        if (DateTime.Now.Minute % 2 != 0)
+        {
+            ctx.Redirect("/403");
+        }
+    }
 }
 
 <Brouter NotFound="404">
@@ -159,20 +174,3 @@
         </Content>
     </Route>
 </Brouter>
-
-@code {
-    private ValueTask GuardEvenSecond(NavigationContext ctx)
-    {
-        if (DateTime.Now.Second % 2 != 0) ctx.Redirect("/403");
-        return ValueTask.CompletedTask;
-    }
-
-    private async ValueTask CheckEvenMinute(NavigationContext ctx)
-    {
-        await Task.Delay(1, ctx.CancellationToken);
-        if (DateTime.Now.Minute % 2 != 0)
-        {
-            ctx.Redirect("/403");
-        }
-    }
-}

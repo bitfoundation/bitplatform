@@ -169,14 +169,18 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Note: no ConfigureAwait(false) below. In a Blazor component lifecycle method we want
+        // to stay on the renderer's SynchronizationContext so subsequent JS interop calls and
+        // any state changes/StateHasChanged remain marshaled correctly (especially on Blazor
+        // Server, where leaving the renderer context can break interop/state updates).
         if (Replace && _replaceWired is false)
         {
             try
             {
                 _module ??= await JS.InvokeAsync<IJSObjectReference>(
-                    "import", "./_content/Bit.Brouter/BitBrouter.js").ConfigureAwait(false);
+                    "import", "./_content/Bit.Brouter/BitBrouter.js");
                 _handle = await _module.InvokeAsync<IJSObjectReference>(
-                    "wireConditionalPreventDefault", _anchor).ConfigureAwait(false);
+                    "wireConditionalPreventDefault", _anchor);
                 _replaceWired = true;
             }
             catch (JSDisconnectedException) { /* Circuit disconnected; nothing to wire. */ }
@@ -187,7 +191,7 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         else if (Replace is false && _replaceWired)
         {
             // Replace switched off after wiring; tear the JS handler down.
-            await DisposeJsHandleAsync().ConfigureAwait(false);
+            await DisposeJsHandleAsync();
             _replaceWired = false;
         }
     }
@@ -214,13 +218,13 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
     {
         if (_handle is not null)
         {
-            try { await _handle.InvokeVoidAsync("dispose").ConfigureAwait(false); }
+            try { await _handle.InvokeVoidAsync("dispose"); }
             catch (JSDisconnectedException) { }
             catch (JSException) { }
             catch (InvalidOperationException) { }
             catch (TaskCanceledException) { }
 
-            try { await _handle.DisposeAsync().ConfigureAwait(false); }
+            try { await _handle.DisposeAsync(); }
             catch (JSDisconnectedException) { }
             catch (JSException) { }
             catch (InvalidOperationException) { }
@@ -234,11 +238,11 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
     {
         Brouter.OnNavigated -= OnNavigated;
 
-        await DisposeJsHandleAsync().ConfigureAwait(false);
+        await DisposeJsHandleAsync();
 
         if (_module is not null)
         {
-            try { await _module.DisposeAsync().ConfigureAwait(false); }
+            try { await _module.DisposeAsync(); }
             catch (JSDisconnectedException) { }
             catch (JSException) { }
             catch (InvalidOperationException) { }
