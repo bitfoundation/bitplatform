@@ -5,17 +5,28 @@ namespace Bit.BlazorUI;
 /// </summary>
 public readonly record struct BitMapLatLng(double Latitude, double Longitude)
 {
+    private readonly double _latitude = ValidateLatitude(Latitude);
+    private readonly double _longitude = ValidateLongitude(Longitude);
+
     /// <summary>
     /// Latitude in degrees. Must be within [-90, 90].
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is outside the valid range.</exception>
-    public double Latitude { get; init; } = ValidateLatitude(Latitude);
+    public double Latitude
+    {
+        get => _latitude;
+        init => _latitude = ValidateLatitude(value);
+    }
 
     /// <summary>
     /// Longitude in degrees. Must be within [-180, 180].
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is outside the valid range.</exception>
-    public double Longitude { get; init; } = ValidateLongitude(Longitude);
+    public double Longitude
+    {
+        get => _longitude;
+        init => _longitude = ValidateLongitude(value);
+    }
 
     /// <summary>Shorthand for <see cref="Latitude"/>.</summary>
     public double Lat => Latitude;
