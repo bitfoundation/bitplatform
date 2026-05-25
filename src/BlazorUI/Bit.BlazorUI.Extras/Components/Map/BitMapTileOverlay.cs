@@ -39,7 +39,7 @@ public sealed class BitMapTileOverlay
     /// <c>{x}</c>, or <c>{y}</c> placeholders.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <see cref="MaxZoom"/> is negative.
+    /// Thrown when <see cref="MaxZoom"/> is outside the supported range (0–30).
     /// </exception>
     public void Validate()
     {
@@ -66,12 +66,12 @@ public sealed class BitMapTileOverlay
                 nameof(UrlTemplate));
         }
 
-        if (MaxZoom < 0)
+        if (MaxZoom is < 0 or > 30)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(MaxZoom),
                 MaxZoom,
-                $"{nameof(BitMapTileOverlay)}.{nameof(MaxZoom)} must be a non-negative value.");
+                $"{nameof(BitMapTileOverlay)}.{nameof(MaxZoom)} must be between 0 and 30.");
         }
     }
 }

@@ -342,7 +342,10 @@ namespace BitBlazorUI {
             };
             for (const f of features) {
                 if (!f.geometry) continue;
-                const props = { ...(f.properties || {}), layerId, bmKind: 'geojson' };
+                // Use reserved/prefixed keys for internal tagging so that user-supplied
+                // GeoJSON properties (e.g. a feature with a literal "layerId" or "bmKind"
+                // property) are not overwritten and silently stripped before being sent to .NET.
+                const props = { ...(f.properties || {}), _bmLayerId: layerId, _bmKind: 'geojson' };
                 processGeometry(f.geometry, props);
             }
             BitMapArcGis._removeGeoJsonLayer(s, layerId);
@@ -575,10 +578,10 @@ namespace BitBlazorUI {
                             }
                             break;
                         }
-                        if (a.bmKind === 'geojson' && a.layerId && s.geoJsonLayers[a.layerId]) {
+                        if (a._bmKind === 'geojson' && a._bmLayerId && s.geoJsonLayers[a._bmLayerId]) {
                             hit = true;
-                            const props = { ...a }; delete props.layerId; delete props.bmKind;
-                            if (dn) dn.invokeMethodAsync('OnGeoJsonFeatureClick', a.layerId, props);
+                            const props = { ...a }; delete props._bmLayerId; delete props._bmKind;
+                            if (dn) dn.invokeMethodAsync('OnGeoJsonFeatureClick', a._bmLayerId, props);
                             break;
                         }
                         if (a.bmVectorKind && a.layerId && s.layers[a.layerId]) {

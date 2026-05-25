@@ -64,7 +64,10 @@ public sealed class BitCesiumMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
-        var hasToken = string.IsNullOrWhiteSpace(IonAccessToken) is false;
+        // Trim once and reuse so leading/trailing whitespace in IonAccessToken
+        // doesn't break presence checks or downstream auth headers.
+        var trimmedToken = string.IsNullOrWhiteSpace(IonAccessToken) ? null : IonAccessToken.Trim();
+        var hasToken = trimmedToken is not null;
         var terrainEnabled = TerrainEnabled && hasToken;
         var isBing = ImageryStyle?.Equals("bing_aerial", StringComparison.OrdinalIgnoreCase) == true ||
                      ImageryStyle?.Equals("bing_labels", StringComparison.OrdinalIgnoreCase) == true;
@@ -73,7 +76,7 @@ public sealed class BitCesiumMapProvider : BitMapProviderBase
         var common = GetCommonOptions();
         common["altitude"] = Altitude;
         common["imageryStyle"] = imageryStyle;
-        common["ionAccessToken"] = hasToken ? IonAccessToken : null;
+        common["ionAccessToken"] = trimmedToken;
         common["sceneMode"] = SceneMode;
         common["terrainEnabled"] = terrainEnabled;
         common["shadowsEnabled"] = ShadowsEnabled;

@@ -15,7 +15,10 @@ namespace BitBlazorUI {
             markerSource: any, markerLayer: any,
             popupOverlay: any, popupElement: HTMLElement,
             translateInteraction: any,
-            tileUrl: string, tileMaxZoom: number, tileAttribution: string,
+            tileUrl: string, tileMaxZoom: number, tileAttribution: string, tileOpacity: number,
+            scaleEnabled: boolean, scaleImperial: boolean,
+            scrollWheelZoom: boolean, doubleClickZoom: boolean,
+            dragging: boolean, boxZoom: boolean, keyboardNavigation: boolean,
         } } = {};
 
         private static readonly _defaultTileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -34,6 +37,7 @@ namespace BitBlazorUI {
             const tileUrl = BitMapOpenLayers._resolveTileUrl(o);
             const tileMaxZoom = o.tileMaxZoom ?? 19;
             const tileAttribution = o.tileAttribution || '';
+            const tileOpacity = o.tileOpacity ?? 1;
 
             const baseTile = new ol.TileLayer({
                 source: new ol.XYZ({
@@ -41,7 +45,7 @@ namespace BitBlazorUI {
                     maxZoom: tileMaxZoom,
                     attributions: tileAttribution,
                 }),
-                opacity: o.tileOpacity ?? 1,
+                opacity: tileOpacity,
             });
 
             const map = new ol.Map({
@@ -104,6 +108,14 @@ namespace BitBlazorUI {
                 popupElement.style.display = 'none';
             });
 
+            const scaleEnabled = !!o.showScaleControl;
+            const scaleImperial = !!o.scaleControlImperial;
+            const scrollWheelZoom = o.scrollWheelZoom !== false;
+            const doubleClickZoom = o.doubleClickZoom !== false;
+            const dragging = o.dragging !== false;
+            const boxZoom = o.boxZoom !== false;
+            const keyboardNavigation = o.keyboardNavigation !== false;
+
             const state = {
                 ol, map, dotnetObj,
                 baseTileLayer: baseTile,
@@ -115,11 +127,15 @@ namespace BitBlazorUI {
                 markerSource, markerLayer,
                 popupOverlay, popupElement,
                 translateInteraction: null as any,
-                tileUrl, tileMaxZoom, tileAttribution,
+                tileUrl, tileMaxZoom, tileAttribution, tileOpacity,
+                scaleEnabled, scaleImperial,
+                scrollWheelZoom, doubleClickZoom, dragging, boxZoom, keyboardNavigation,
             };
 
-            BitMapOpenLayers._ensureScale(state, !!o.showScaleControl, !!o.scaleControlImperial);
-            BitMapOpenLayers._applyInteractions(state, o);
+            BitMapOpenLayers._ensureScale(state, scaleEnabled, scaleImperial);
+            BitMapOpenLayers._applyInteractions(state, {
+                scrollWheelZoom, doubleClickZoom, dragging, boxZoom, keyboardNavigation,
+            });
             BitMapOpenLayers._wireEvents(state);
 
             // Add Translate interaction for draggable markers
@@ -154,10 +170,13 @@ namespace BitBlazorUI {
 
             // Only recreate the base tile source when tile-defining options actually change;
             // otherwise we'd force a full tile reload on every sync (e.g. when only center/zoom
-            // or interaction toggles change).
-            const nextTileUrl = BitMapOpenLayers._resolveTileUrl(o);
-            const nextTileMaxZoom = o.tileMaxZoom ?? 19;
-            const nextTileAttribution = o.tileAttribution || '';
+            // or interaction toggles change). Prefer caller-supplied values, then fall back to
+            // the stored state so a partial sync doesn't reset a previously-applied custom basemap.
+            const nextTileUrl = o.tileUrl != null
+                ? BitMapOpenLayers._resolveTileUrl(o)
+                : s.tileUrl;
+            const nextTileMaxZoom = o.tileMaxZoom ?? s.tileMaxZoom;
+            const nextTileAttribution = o.tileAttribution ?? s.tileAttribution;
             if (nextTileUrl !== s.tileUrl ||
                 nextTileMaxZoom !== s.tileMaxZoom ||
                 nextTileAttribution !== s.tileAttribution) {
@@ -170,10 +189,39 @@ namespace BitBlazorUI {
                 s.tileMaxZoom = nextTileMaxZoom;
                 s.tileAttribution = nextTileAttribution;
             }
-            s.baseTileLayer.setOpacity(o.tileOpacity ?? 1);
+            const nextTileOpacity = o.tileOpacity ?? s.tileOpacity;
+            if (nextTileOpacity !== s.tileOpacity) {
+                s.baseTileLayer.setOpacity(nextTileOpacity);
+                s.tileOpacity = nextTileOpacity;
+            }
 
-            BitMapOpenLayers._ensureScale(s, !!o.showScaleControl, !!o.scaleControlImperial);
-            BitMapOpenLayers._applyInteractions(s, o);
+            // Only touch the scale bar when caller explicitly supplied either flag,
+            // so a partial sync doesn't toggle visibility or units off.
+            const hasShow = Object.prototype.hasOwnProperty.call(o, 'showScaleControl');
+            const hasImperial = Object.prototype.hasOwnProperty.call(o, 'scaleControlImperial');
+            if (hasShow || hasImperial) {
+                if (hasShow) s.scaleEnabled = !!o.showScaleControl;
+                if (hasImperial) s.scaleImperial = !!o.scaleControlImperial;
+                BitMapOpenLayers._ensureScale(s, s.scaleEnabled, s.scaleImperial);
+            }
+
+            // Only re-apply interactions for keys the caller explicitly provided so
+            // omitted flags are treated as "unchanged" rather than re-enabled defaults.
+            const interactionFlags: any = {};
+            let anyInteractionTouched = false;
+            for (const key of ['scrollWheelZoom', 'doubleClickZoom', 'dragging', 'boxZoom', 'keyboardNavigation']) {
+                if (Object.prototype.hasOwnProperty.call(o, key)) {
+                    const v = o[key] !== false;
+                    interactionFlags[key] = v;
+                    (s as any)[key] = v;
+                    anyInteractionTouched = true;
+                } else {
+                    interactionFlags[key] = (s as any)[key];
+                }
+            }
+            if (anyInteractionTouched) {
+                BitMapOpenLayers._applyInteractions(s, interactionFlags);
+            }
         }
 
         public static dispose(id: string) {
@@ -436,21 +484,21 @@ namespace BitBlazorUI {
             }
         }
 
-        private static _applyInteractions(s: any, o: any) {
+        private static _applyInteractions(s: any, flags: any) {
             const map = s.map;
             const interactions = map.getInteractions().getArray();
             for (const interaction of interactions) {
                 const name = interaction.constructor?.name || '';
                 if (name === 'MouseWheelZoom' || name.includes('MouseWheel')) {
-                    interaction.setActive(o.scrollWheelZoom !== false);
+                    if (flags.scrollWheelZoom !== undefined) interaction.setActive(!!flags.scrollWheelZoom);
                 } else if (name === 'DoubleClickZoom' || name.includes('DoubleClick')) {
-                    interaction.setActive(o.doubleClickZoom !== false);
+                    if (flags.doubleClickZoom !== undefined) interaction.setActive(!!flags.doubleClickZoom);
                 } else if (name === 'DragPan' || name.includes('DragPan')) {
-                    interaction.setActive(o.dragging !== false);
+                    if (flags.dragging !== undefined) interaction.setActive(!!flags.dragging);
                 } else if (name === 'DragZoom' || name.includes('DragZoom')) {
-                    interaction.setActive(o.boxZoom !== false);
+                    if (flags.boxZoom !== undefined) interaction.setActive(!!flags.boxZoom);
                 } else if (name === 'KeyboardPan' || name === 'KeyboardZoom' || name.includes('Keyboard')) {
-                    interaction.setActive(o.keyboardNavigation !== false);
+                    if (flags.keyboardNavigation !== undefined) interaction.setActive(!!flags.keyboardNavigation);
                 }
             }
         }

@@ -245,103 +245,96 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
 
     [JSInvokable("OnClick")]
-    public Task _OnClick(JsonElement e)
+    public async Task _OnClick(JsonElement e)
     {
-        if (OnClick.HasDelegate is false) return Task.CompletedTask;
+        if (OnClick.HasDelegate is false) return;
         try
         {
-            return OnClick.InvokeAsync(ReadLatLng(e));
+            await OnClick.InvokeAsync(ReadLatLng(e));
         }
         catch
         {
             // A malformed payload from a misbehaving provider must not propagate back into
             // JS as an unhandled exception (which would surface as a circuit-breaking error
             // in Blazor Server / WASM). Swallow and continue.
-            return Task.CompletedTask;
         }
     }
 
     [JSInvokable("OnDoubleClick")]
-    public Task _OnDoubleClick(JsonElement e)
+    public async Task _OnDoubleClick(JsonElement e)
     {
-        if (OnDoubleClick.HasDelegate is false) return Task.CompletedTask;
+        if (OnDoubleClick.HasDelegate is false) return;
         try
         {
-            return OnDoubleClick.InvokeAsync(ReadLatLng(e));
+            await OnDoubleClick.InvokeAsync(ReadLatLng(e));
         }
         catch
         {
-            return Task.CompletedTask;
         }
     }
 
     [JSInvokable("OnViewChanged")]
-    public Task _OnViewChanged(JsonElement e)
+    public async Task _OnViewChanged(JsonElement e)
     {
-        if (OnViewChanged.HasDelegate is false) return Task.CompletedTask;
+        if (OnViewChanged.HasDelegate is false) return;
         try
         {
-            return OnViewChanged.InvokeAsync(ParseViewState(e));
+            await OnViewChanged.InvokeAsync(ParseViewState(e));
         }
         catch
         {
-            return Task.CompletedTask;
         }
     }
 
     [JSInvokable("OnMarkerClick")]
-    public Task _OnMarkerClick(string markerId)
+    public async Task _OnMarkerClick(string markerId)
     {
-        if (OnMarkerClick.HasDelegate is false) return Task.CompletedTask;
+        if (OnMarkerClick.HasDelegate is false) return;
         try
         {
-            return OnMarkerClick.InvokeAsync(markerId);
+            await OnMarkerClick.InvokeAsync(markerId);
         }
         catch
         {
-            return Task.CompletedTask;
         }
     }
 
     [JSInvokable("OnMarkerDragEnd")]
-    public Task _OnMarkerDragEnd(string markerId, JsonElement position)
+    public async Task _OnMarkerDragEnd(string markerId, JsonElement position)
     {
-        if (OnMarkerDragEnd.HasDelegate is false) return Task.CompletedTask;
+        if (OnMarkerDragEnd.HasDelegate is false) return;
         try
         {
-            return OnMarkerDragEnd.InvokeAsync(new BitMapMarkerDragEndArgs { Id = markerId, Position = ReadLatLng(position) });
+            await OnMarkerDragEnd.InvokeAsync(new BitMapMarkerDragEndArgs { Id = markerId, Position = ReadLatLng(position) });
         }
         catch
         {
-            return Task.CompletedTask;
         }
     }
 
     [JSInvokable("OnVectorClick")]
-    public Task _OnVectorClick(string layerId, string kind, JsonElement position)
+    public async Task _OnVectorClick(string layerId, string kind, JsonElement position)
     {
-        if (OnVectorClick.HasDelegate is false) return Task.CompletedTask;
+        if (OnVectorClick.HasDelegate is false) return;
         try
         {
-            return OnVectorClick.InvokeAsync(new BitMapVectorClickArgs { LayerId = layerId, Kind = kind, Position = ReadLatLng(position) });
+            await OnVectorClick.InvokeAsync(new BitMapVectorClickArgs { LayerId = layerId, Kind = kind, Position = ReadLatLng(position) });
         }
         catch
         {
-            return Task.CompletedTask;
         }
     }
 
     [JSInvokable("OnGeoJsonFeatureClick")]
-    public Task _OnGeoJsonFeatureClick(string layerId, JsonElement properties)
+    public async Task _OnGeoJsonFeatureClick(string layerId, JsonElement properties)
     {
-        if (OnGeoJsonFeatureClick.HasDelegate is false) return Task.CompletedTask;
+        if (OnGeoJsonFeatureClick.HasDelegate is false) return;
         try
         {
-            return OnGeoJsonFeatureClick.InvokeAsync(new BitMapGeoJsonFeatureClickArgs { LayerId = layerId, Properties = properties });
+            await OnGeoJsonFeatureClick.InvokeAsync(new BitMapGeoJsonFeatureClickArgs { LayerId = layerId, Properties = properties });
         }
         catch
         {
-            return Task.CompletedTask;
         }
     }
 

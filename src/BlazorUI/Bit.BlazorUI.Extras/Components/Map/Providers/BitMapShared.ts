@@ -43,7 +43,14 @@ namespace BitBlazorUI {
 
         /** Approximate a circle as a closed polygon ring of [lng,lat] coords (geographic). */
         static circleRingLngLat(lat: number, lng: number, radiusMeters: number, points = 64): [number, number][] {
-            points = Math.max(1, Math.floor(points));
+            // Guard against non-finite or absurdly large inputs that would make the loop
+            // either run forever (e.g. Infinity) or produce a ring big enough to OOM the
+            // tab. Cap to a generous upper bound; 4096 segments is far more than any
+            // visual use case needs and still bounded.
+            if (!Number.isFinite(points)) {
+                points = 64;
+            }
+            points = Math.max(1, Math.min(4096, Math.floor(points)));
             const R = 6371000;
             const ring: [number, number][] = [];
             const lat1 = (lat * Math.PI) / 180;

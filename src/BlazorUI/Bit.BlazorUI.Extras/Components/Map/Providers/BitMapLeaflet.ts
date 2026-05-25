@@ -65,15 +65,22 @@ namespace BitBlazorUI {
             });
 
             // The default tileUrl is OpenStreetMap, which contractually requires the
-            // standard attribution. Only fall back to whatever the caller supplied when
-            // they explicitly pass a non-empty value, otherwise emit the OSM attribution.
+            // standard attribution. When the caller leaves tileUrl unset (so we serve
+            // OSM tiles) we substitute the OSM attribution unless the caller supplied
+            // a non-empty replacement. For any other tileUrl we honor the caller's
+            // tileAttribution exactly (including an empty string) so custom basemaps
+            // don't end up incorrectly crediting OSM.
+            const defaultOsmTileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
             const defaultOsmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+            const effectiveTileUrl: string = o.tileUrl || defaultOsmTileUrl;
+            const callerAttribution = (typeof o.tileAttribution === 'string' && o.tileAttribution.length > 0)
+                ? o.tileAttribution
+                : null;
             const tileOptions: LeafletTileOptions = {
-                tileUrl: o.tileUrl || "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                tileUrl: effectiveTileUrl,
                 tileMaxZoom: o.tileMaxZoom ?? 19,
-                tileAttribution: (typeof o.tileAttribution === 'string' && o.tileAttribution.length > 0)
-                    ? o.tileAttribution
-                    : defaultOsmAttribution,
+                tileAttribution: callerAttribution
+                    ?? (effectiveTileUrl === defaultOsmTileUrl ? defaultOsmAttribution : (typeof o.tileAttribution === 'string' ? o.tileAttribution : '')),
                 tileOpacity: o.tileOpacity ?? 1,
             };
             const baseTileLayer = L.tileLayer(tileOptions.tileUrl, {
@@ -122,10 +129,30 @@ namespace BitBlazorUI {
             }
 
             // Only recreate the base tile layer when tile options actually changed.
+            // Mirror init's URL-keyed attribution rule so an attribution from a previous
+            // OSM-default base layer doesn't leak onto a newly-set custom tileUrl.
+            const defaultOsmTileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+            const defaultOsmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+            const nextTileUrl = o.tileUrl ?? s._tileOptions.tileUrl;
+            const callerAttrProvided = typeof o.tileAttribution === 'string';
+            const callerAttrNonEmpty = callerAttrProvided && (o.tileAttribution as string).length > 0;
+            const urlChanged = nextTileUrl !== s._tileOptions.tileUrl;
+            let nextTileAttribution: string;
+            if (callerAttrNonEmpty) {
+                nextTileAttribution = o.tileAttribution as string;
+            } else if (callerAttrProvided || urlChanged) {
+                // Caller explicitly cleared attribution, or the tile URL changed without a
+                // matching attribution update — recompute strictly from the URL.
+                nextTileAttribution = nextTileUrl === defaultOsmTileUrl
+                    ? defaultOsmAttribution
+                    : (callerAttrProvided ? (o.tileAttribution as string) : '');
+            } else {
+                nextTileAttribution = s._tileOptions.tileAttribution;
+            }
             const next: LeafletTileOptions = {
-                tileUrl: o.tileUrl ?? s._tileOptions.tileUrl,
+                tileUrl: nextTileUrl,
                 tileMaxZoom: o.tileMaxZoom ?? s._tileOptions.tileMaxZoom,
-                tileAttribution: o.tileAttribution ?? s._tileOptions.tileAttribution,
+                tileAttribution: nextTileAttribution,
                 tileOpacity: o.tileOpacity ?? s._tileOptions.tileOpacity,
             };
             const tileChanged =
