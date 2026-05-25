@@ -463,15 +463,24 @@ namespace BitBlazorUI {
         }
 
         private static _applyInteractivity(map: any, o: any) {
-            if (o.scrollWheelZoom === false) map.scrollZoom?.disable(); else map.scrollZoom?.enable();
-            if (o.doubleClickZoom === false) map.doubleClickZoom?.disable(); else map.doubleClickZoom?.enable();
-            if (o.boxZoom === false) map.boxZoom?.disable(); else map.boxZoom?.enable();
-            const dp = o.dragPan ?? o.dragging;
-            if (dp === false) map.dragPan?.disable(); else map.dragPan?.enable();
-            if (o.dragRotate === false) map.dragRotate?.disable(); else map.dragRotate?.enable();
-            const kb = o.keyboardNavigation;
-            if (map.keyboard) {
-                if (kb === false) map.keyboard.disable(); else map.keyboard.enable();
+            if ('scrollWheelZoom' in o) {
+                if (o.scrollWheelZoom === false) map.scrollZoom?.disable(); else map.scrollZoom?.enable();
+            }
+            if ('doubleClickZoom' in o) {
+                if (o.doubleClickZoom === false) map.doubleClickZoom?.disable(); else map.doubleClickZoom?.enable();
+            }
+            if ('boxZoom' in o) {
+                if (o.boxZoom === false) map.boxZoom?.disable(); else map.boxZoom?.enable();
+            }
+            if ('dragPan' in o || 'dragging' in o) {
+                const dp = o.dragPan ?? o.dragging;
+                if (dp === false) map.dragPan?.disable(); else map.dragPan?.enable();
+            }
+            if ('dragRotate' in o) {
+                if (o.dragRotate === false) map.dragRotate?.disable(); else map.dragRotate?.enable();
+            }
+            if ('keyboardNavigation' in o && map.keyboard) {
+                if (o.keyboardNavigation === false) map.keyboard.disable(); else map.keyboard.enable();
             }
         }
 

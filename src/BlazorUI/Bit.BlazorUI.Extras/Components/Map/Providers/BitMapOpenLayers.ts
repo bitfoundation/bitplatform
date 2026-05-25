@@ -13,7 +13,7 @@ namespace BitBlazorUI {
             layers: { [k: string]: any }, tileOverlays: { [k: string]: any },
             scaleLine: any, zIndexCounter: number,
             markerSource: any, markerLayer: any,
-            popupOverlay: any, popupElement: HTMLElement,
+            popupOverlay: any, popupElement: HTMLElement, popupContentElement: HTMLElement,
             translateInteraction: any,
             tileUrl: string, tileMaxZoom: number, tileAttribution: string, tileOpacity: number,
             scaleEnabled: boolean, scaleImperial: boolean,
@@ -125,7 +125,7 @@ namespace BitBlazorUI {
                 scaleLine: null as any,
                 zIndexCounter: 100,
                 markerSource, markerLayer,
-                popupOverlay, popupElement,
+                popupOverlay, popupElement, popupContentElement: popupContent,
                 translateInteraction: null as any,
                 tileUrl, tileMaxZoom, tileAttribution, tileOpacity,
                 scaleEnabled, scaleImperial,
@@ -565,7 +565,7 @@ namespace BitBlazorUI {
             const text = feature.get('popupText') || '';
             if (!html && !text) return;
 
-            const contentEl = s.popupElement.querySelector('div');
+            const contentEl = s.popupContentElement;
             if (html) {
                 contentEl.innerHTML = html;
             } else {
