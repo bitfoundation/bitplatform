@@ -28,24 +28,24 @@ builder.Services.AddBitBrouterServices(o =>
 
 ```razor
 <Brouter NotFound="404">
-    <Route Path="/" RedirectTo="/home" />
+    <BrouterRoute Path="/" RedirectTo="/home" />
 
-    <Route Name="home" Path="/home">
+    <BrouterRoute Name="home" Path="/home">
         <Content><HomePage /></Content>
-    </Route>
+    </BrouterRoute>
 
-    <Route Name="user" Path="/users/{id:int}">
+    <BrouterRoute Name="user" Path="/users/{id:int}">
         <Content><UserPage /></Content>
-    </Route>
+    </BrouterRoute>
 
-    <Route Path="/files/{**path}" Component="@typeof(FilesPage)" />
+    <BrouterRoute Path="/files/{**path}" Component="@typeof(FilesPage)" />
 
-    <Route Path="404">
+    <BrouterRoute Path="404">
         <Content>
             <h1 class="text-danger">404</h1>
             <p>Sorry, there's nothing at this address.</p>
         </Content>
-    </Route>
+    </BrouterRoute>
 </Brouter>
 ```
 
@@ -59,13 +59,13 @@ builder.Services.AddBitBrouterServices(o =>
 - **Catch-all parameter binding**: `{**path}` exposes the remainder
 - Custom constraints via `BrouterConstraints.Register("slug", new MyConstraint())`
 - Specificity-based matching (literals beat constrained beat unconstrained beat wildcards)
-- Nested routes via `Route` children or `Outlet`
-- Async `Guard` with cancel/redirect via `NavigationContext`
+- Nested routes via `BrouterRoute` children or `BrouterOutlet`
+- Async `Guard` with cancel/redirect via `BrouterNavigationContext`
 - **Async data `Loader`** exposed via cascading `RouteData`
 - Redirects with `RedirectTo`
 - Component or `Content` (typed render fragment) rendering
 - `NotFound` URL or inline `NotFoundContent`
-- **Type-safe `RouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
+- **Type-safe `BrouterRouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
 - **Auto-binding** to component properties via `[Parameter, BrouterParameter]`
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
 - **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl`
@@ -80,16 +80,16 @@ builder.Services.AddBitBrouterServices(o =>
 ## Type-safe parameters
 
 ```razor
-<Route Path="/users/{id:int}">
+<BrouterRoute Path="/users/{id:int}">
     <Content Context="p">
         <p>User: @p.Get<int>("id")</p>
     </Content>
-</Route>
+</BrouterRoute>
 ```
 
 ```razor
 @code {
-    [CascadingParameter(Name = "RouteParameters")] RouteParameters? Params { get; set; }
+    [CascadingParameter(Name = "RouteParameters")] BrouterRouteParameters? Params { get; set; }
 
     protected override void OnInitialized()
     {
@@ -101,7 +101,7 @@ builder.Services.AddBitBrouterServices(o =>
 ## Auto-bound parameters
 
 ```razor
-<Route Path="/profile/{username?}" Component="@typeof(ProfilePage)" />
+<BrouterRoute Path="/profile/{username?}" Component="@typeof(ProfilePage)" />
 ```
 
 ```razor
@@ -114,14 +114,14 @@ builder.Services.AddBitBrouterServices(o =>
 ## Async guards
 
 ```razor
-<Route Path="/admin" Guard="@CheckAdmin">
+<BrouterRoute Path="/admin" Guard="@CheckAdmin">
     <Content><AdminPage /></Content>
-</Route>
+</BrouterRoute>
 
 @code {
     [Inject] AuthService Auth { get; set; } = default!;
 
-    private async ValueTask CheckAdmin(NavigationContext ctx)
+    private async ValueTask CheckAdmin(BrouterNavigationContext ctx)
     {
         if (await Auth.IsAdminAsync(ctx.CancellationToken) is false)
             ctx.Redirect("/login?return=" + Uri.EscapeDataString(ctx.To.Path));
@@ -132,16 +132,16 @@ builder.Services.AddBitBrouterServices(o =>
 ## Data loader
 
 ```razor
-<Route Path="/users/{id:int}" Loader="@LoadUser">
+<BrouterRoute Path="/users/{id:int}" Loader="@LoadUser">
     <Content Context="p">
         <UserDetails />  @* reads cascading RouteData *@
     </Content>
-</Route>
+</BrouterRoute>
 
 @code {
     [Inject] HttpClient Http { get; set; } = default!;
 
-    private async ValueTask<object?> LoadUser(NavigationContext ctx)
+    private async ValueTask<object?> LoadUser(BrouterNavigationContext ctx)
         => await Http.GetFromJsonAsync<User>(
                $"/api/users/{ctx.Parameters["id"]}",
                ctx.CancellationToken);
@@ -184,9 +184,9 @@ builder.Services.AddBitBrouterServices(o =>
 @implements IDisposable
 
 @code {
-    private Func<NavigationContext, ValueTask>? _onNavigating;
-    private Func<NavigationContext, ValueTask>? _onNavigated;
-    private Func<NavigationContext, Exception?, ValueTask>? _onError;
+    private Func<BrouterNavigationContext, ValueTask>? _onNavigating;
+    private Func<BrouterNavigationContext, ValueTask>? _onNavigated;
+    private Func<BrouterNavigationContext, Exception?, ValueTask>? _onError;
 
     protected override void OnInitialized()
     {
@@ -216,24 +216,24 @@ builder.Services.AddBitBrouterServices(o =>
 ## Nested routes
 
 ```razor
-<Route Path="/users">
-    <Route Path="/{id:int}" Component="@typeof(UserPage)" />
-    <Route Path="/{id:int}/edit">
+<BrouterRoute Path="/users">
+    <BrouterRoute Path="/{id:int}" Component="@typeof(UserPage)" />
+    <BrouterRoute Path="/{id:int}/edit">
         <Content Context="p">Edit user [@p["id"]]</Content>
-    </Route>
-</Route>
+    </BrouterRoute>
+</BrouterRoute>
 ```
 
 ```razor
-<Route Path="/dashboard">
+<BrouterRoute Path="/dashboard">
     <Content>
         <h1>Dashboard</h1>
-        <Outlet />
+        <BrouterOutlet />
     </Content>
     <ChildContent>
-        <Route Path="/stats" Component="@typeof(StatsPage)" />
+        <BrouterRoute Path="/stats" Component="@typeof(StatsPage)" />
     </ChildContent>
-</Route>
+</BrouterRoute>
 ```
 
 ## Custom constraints
@@ -248,5 +248,5 @@ BrouterConstraints.Register("slug",
 ```
 
 ```razor
-<Route Path="/posts/{slug:slug}" Component="@typeof(PostPage)" />
+<BrouterRoute Path="/posts/{slug:slug}" Component="@typeof(PostPage)" />
 ```

@@ -161,11 +161,18 @@ public partial class BrouterRoute : ComponentBase, IDisposable
         // No ConfigureAwait(false): guards typically touch UI state (redirect/cancel via ctx,
         // injected services that expect the renderer context), and the navigation pipeline
         // continues with component state mutations after we return.
+        // Observe ctx.CancellationToken at every yield point so a superseded navigation
+        // (the pipeline cancels its CTS when a newer one starts) doesn't keep running guards
+        // that may perform expensive auth/IO calls or mutate state on behalf of a stale URL.
+        if (ctx.CancellationToken.IsCancellationRequested) return false;
+
         foreach (var node in chain)
         {
             if (node.Guard is not null)
             {
+                if (ctx.CancellationToken.IsCancellationRequested) return false;
                 await node.Guard(ctx);
+                if (ctx.CancellationToken.IsCancellationRequested) return false;
                 if (ctx.IsCancelled || ctx.RedirectUrl is not null) return false;
             }
         }
