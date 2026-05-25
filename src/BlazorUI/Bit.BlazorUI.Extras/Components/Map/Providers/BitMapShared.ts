@@ -76,5 +76,25 @@ namespace BitBlazorUI {
                 await new Promise(r => setTimeout(r, 50));
             }
         }
+
+        /**
+         * Resolves the map canvas element. Falls back to a plain id lookup using the
+         * canvas id passed from the BitMap component when Blazor's element-reference
+         * reviver returns null (which can happen under some render-batching conditions,
+         * especially with multiple BitMap instances). If even that returns null we
+         * briefly poll the DOM to let any pending render batch land before giving up.
+         */
+        static async resolveMapCanvas(canvasId: string, element: HTMLElement | null | undefined, timeoutMs = 5_000): Promise<HTMLElement> {
+            if (element) return element;
+            const t0 = Date.now();
+            while (true) {
+                const byId = document.getElementById(canvasId);
+                if (byId) return byId;
+                if (Date.now() - t0 > timeoutMs) {
+                    throw new Error(`BitMap canvas element with id '${canvasId}' was not found in the DOM.`);
+                }
+                await new Promise(r => setTimeout(r, 16));
+            }
+        }
     }
 }

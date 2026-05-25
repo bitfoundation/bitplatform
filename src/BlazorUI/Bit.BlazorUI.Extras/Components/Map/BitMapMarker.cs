@@ -34,7 +34,8 @@ public sealed class BitMapMarker
     /// <b>Provider support:</b> tooltips are currently rendered by the Leaflet provider only. Other providers
     /// (MapLibre, Mapbox, OpenLayers, ArcGIS, Azure Maps, Cesium) ignore <see cref="TooltipHtml"/>,
     /// <see cref="TooltipText"/>, <see cref="TooltipPermanent"/>, and <see cref="TooltipDirection"/>.
-    /// Use <see cref="Title"/> for a native browser tooltip that works everywhere.
+    /// Use <see cref="Title"/> for a hover label, but note that its rendering varies by provider
+    /// (see <see cref="Title"/> for details).
     /// </para>
     /// <para>
     /// <b>Security:</b> This value is injected as raw HTML into the map tooltip.
@@ -60,7 +61,15 @@ public sealed class BitMapMarker
     /// <summary>Tooltip placement direction: <c>top</c>, <c>bottom</c>, <c>right</c>, <c>left</c>, <c>center</c>, or <c>auto</c>. Leaflet only.</summary>
     public string? TooltipDirection { get; init; }
 
-    /// <summary>Native browser tooltip rendered as the <c>title</c> attribute.</summary>
+    /// <summary>
+    /// Hover label for the marker. Rendering varies by provider:
+    /// <list type="bullet">
+    /// <item><description><b>Leaflet, Mapbox, MapLibre:</b> applied as the DOM <c>title</c> attribute on the marker element (native browser tooltip on hover).</description></item>
+    /// <item><description><b>Cesium:</b> rendered as a billboard <c>label</c> drawn next to the marker (always visible, not a hover tooltip).</description></item>
+    /// <item><description><b>ArcGIS:</b> used as the title of the popup that opens when the marker is clicked (not a hover tooltip).</description></item>
+    /// <item><description><b>OpenLayers, Azure Maps:</b> stored on the marker but not surfaced as a tooltip; effectively ignored.</description></item>
+    /// </list>
+    /// </summary>
     public string? Title { get; init; }
 
     /// <summary>When true, the marker can be moved by the user.</summary>

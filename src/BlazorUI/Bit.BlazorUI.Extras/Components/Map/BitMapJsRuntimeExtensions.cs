@@ -10,12 +10,13 @@ internal static class BitMapJsRuntimeExtensions
     public static ValueTask BitMapInit<TProvider>(this IJSRuntime jsRuntime,
                                                   string jsObjectName,
                                                   string id,
+                                                  string canvasId,
                                                   ElementReference element,
                                                   DotNetObjectReference<BitMap<TProvider>>? dotnetObj,
                                                   object options)
         where TProvider : class, IBitMapProvider, new()
     {
-        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.init", id, element, dotnetObj, options);
+        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.init", id, canvasId, element, dotnetObj, options);
     }
 
     public static ValueTask BitMapSync(this IJSRuntime jsRuntime, string jsObjectName, string id, object options)

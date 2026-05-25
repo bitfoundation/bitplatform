@@ -8,7 +8,8 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLowerInvariant()">
-    <div @ref="_mapElement"
+    <div id="@_canvasId"
+         @ref="_mapElement"
          class="bit-map-canvas"
          tabindex="0"
          role="region"

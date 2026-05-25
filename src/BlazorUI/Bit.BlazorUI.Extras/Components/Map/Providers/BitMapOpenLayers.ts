@@ -24,7 +24,8 @@ namespace BitBlazorUI {
             return (o.tileUrl || BitMapOpenLayers._defaultTileUrl).replace('{s}', 'a');
         }
 
-        public static async init(id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+        public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+            element = await BitMapHelpers.resolveMapCanvas(canvasId, element);
             const ol = await BitMapOpenLayers._loadOl();
             const o = options || {};
             const lng0 = o.center?.lng ?? -0.09, lat0 = o.center?.lat ?? 51.505;
@@ -80,7 +81,14 @@ namespace BitBlazorUI {
             popupContent.style.marginTop = '4px';
             popupElement.appendChild(popupContent);
 
-            element.appendChild(popupElement);
+            // Stop pointer/click events on the popup from bubbling to the map. Without this,
+            // interacting with the popup UI (links, buttons, the close button) can reach the
+            // map's singleclick handler and either fire OnClick or immediately re-close the popup.
+            const stopPropagation = (e: Event) => e.stopPropagation();
+            popupElement.addEventListener('pointerdown', stopPropagation);
+            popupElement.addEventListener('mousedown', stopPropagation);
+            popupElement.addEventListener('click', stopPropagation);
+            popupElement.addEventListener('dblclick', stopPropagation);
 
             const popupOverlay = new ol.Overlay({
                 element: popupElement,
@@ -90,7 +98,8 @@ namespace BitBlazorUI {
             });
             map.addOverlay(popupOverlay);
 
-            popupCloser.addEventListener('click', () => {
+            popupCloser.addEventListener('click', (e) => {
+                e.stopPropagation();
                 popupOverlay.setPosition(undefined);
                 popupElement.style.display = 'none';
             });

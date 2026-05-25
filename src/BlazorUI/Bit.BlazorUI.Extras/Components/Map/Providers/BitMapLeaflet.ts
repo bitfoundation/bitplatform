@@ -40,7 +40,9 @@ namespace BitBlazorUI {
     export class BitMapLeaflet {
         private static _maps: { [id: string]: LeafletState } = {};
 
-        public static init(id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+        public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+            element = await BitMapHelpers.resolveMapCanvas(canvasId, element);
+
             const L = (globalThis as any).L;
             if (!L) throw new Error("Leaflet is not loaded.");
 
@@ -378,6 +380,11 @@ namespace BitBlazorUI {
         public static addTileOverlay(id: string, opts: any) {
             const s = BitMapLeaflet._require(id);
             const L = s.L;
+            const existing = s.tileOverlays[opts.id];
+            if (existing) {
+                s.map.removeLayer(existing);
+                delete s.tileOverlays[opts.id];
+            }
             const tl = L.tileLayer(opts.urlTemplate, {
                 opacity: opts.opacity ?? 1,
                 zIndex: opts.zIndex ?? 100,
@@ -385,8 +392,6 @@ namespace BitBlazorUI {
                 attribution: opts.attribution || "",
             });
             tl.addTo(s.map);
-            const existing = s.tileOverlays[opts.id];
-            if (existing) s.map.removeLayer(existing);
             s.tileOverlays[opts.id] = tl;
         }
 

@@ -16,7 +16,8 @@ namespace BitBlazorUI {
             scaleBar: any,
         } } = {};
 
-        public static async init(id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+        public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+            element = await BitMapHelpers.resolveMapCanvas(canvasId, element);
             const esri = await BitMapArcGis._loadEsri();
             const o = options || {};
 

@@ -16,7 +16,8 @@ namespace BitBlazorUI {
             _moveEndCallback: any,
         } } = {};
 
-        public static async init(id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+        public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+            element = await BitMapHelpers.resolveMapCanvas(canvasId, element);
             await BitMapHelpers.waitForGlobal('Cesium', () => typeof (globalThis as any).Cesium?.Viewer === 'function');
             const Cesium = (globalThis as any).Cesium;
             const o = options || {};

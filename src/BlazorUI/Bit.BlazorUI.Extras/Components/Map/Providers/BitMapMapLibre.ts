@@ -8,8 +8,8 @@ namespace BitBlazorUI {
         private static readonly _global = 'maplibregl';
         private static readonly _defaultStyle = 'https://demotiles.maplibre.org/style.json';
 
-        public static init(id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
-            return BitMapGlBase.init(BitMapMapLibre._key, BitMapMapLibre._global, BitMapMapLibre._defaultStyle, id, element, dotnetObj, options);
+        public static init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+            return BitMapGlBase.init(BitMapMapLibre._key, BitMapMapLibre._global, BitMapMapLibre._defaultStyle, id, canvasId, element, dotnetObj, options);
         }
         public static sync(id: string, options: any) { return BitMapGlBase.sync(BitMapMapLibre._key, id, options); }
         public static dispose(id: string) { return BitMapGlBase.dispose(BitMapMapLibre._key, id); }

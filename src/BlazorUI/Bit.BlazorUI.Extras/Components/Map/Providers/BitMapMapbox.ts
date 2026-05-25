@@ -8,8 +8,8 @@ namespace BitBlazorUI {
         private static readonly _global = 'mapboxgl';
         private static readonly _defaultStyle = 'mapbox://styles/mapbox/streets-v12';
 
-        public static init(id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
-            return BitMapGlBase.init(BitMapMapbox._key, BitMapMapbox._global, BitMapMapbox._defaultStyle, id, element, dotnetObj, options);
+        public static init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+            return BitMapGlBase.init(BitMapMapbox._key, BitMapMapbox._global, BitMapMapbox._defaultStyle, id, canvasId, element, dotnetObj, options);
         }
         public static sync(id: string, options: any) { return BitMapGlBase.sync(BitMapMapbox._key, id, options); }
         public static dispose(id: string) { return BitMapGlBase.dispose(BitMapMapbox._key, id); }

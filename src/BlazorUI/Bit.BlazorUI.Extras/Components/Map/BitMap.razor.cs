@@ -13,6 +13,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     where TMapProvider : class, IBitMapProvider, new()
 {
     private bool _initialized;
+    private string _canvasId = string.Empty;
     private TMapProvider? _activeProvider;
     private ElementReference _mapElement;
     private DotNetObjectReference<BitMap<TMapProvider>>? _dotnetObj;
@@ -283,6 +284,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     protected override string RootElementClass => "bit-map";
 
+    protected override void OnInitialized()
+    {
+        _canvasId = $"{_Id}-canvas";
+        base.OnInitialized();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -293,19 +300,56 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         _activeProvider = Provider ?? new TMapProvider();
 
-        if (_activeProvider.Stylesheets.Count > 0)
+        try
         {
-            await _js.BitExtrasInitStylesheets(_activeProvider.Stylesheets);
+            if (_activeProvider.Stylesheets.Count > 0)
+            {
+                await _js.BitExtrasInitStylesheets(_activeProvider.Stylesheets);
+            }
+        }
+        catch
+        {
+            // A failed CDN stylesheet load shouldn't prevent the map from initializing.
+            // The map providers degrade gracefully (e.g., OpenLayers will still work, just
+            // with unstyled controls if its CSS failed to load).
         }
 
-        if (_activeProvider.Scripts.Count > 0)
+        if (IsDisposed) return;
+
+        try
         {
-            await _js.BitExtrasInitScripts(_activeProvider.Scripts, _activeProvider.ScriptsAreModules);
+            if (_activeProvider.Scripts.Count > 0)
+            {
+                await _js.BitExtrasInitScripts(_activeProvider.Scripts, _activeProvider.ScriptsAreModules);
+            }
         }
+        catch
+        {
+            // Without the scripts the map can't initialize; bail out silently rather than
+            // surfacing an opaque '[object Event]' error to the consumer.
+            return;
+        }
+
+        if (IsDisposed) return;
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        await _js.BitMapInit(_activeProvider.JsObjectName, _Id, _mapElement, _dotnetObj, _activeProvider.BuildOptionsPayload());
+        try
+        {
+            await _js.BitMapInit(_activeProvider.JsObjectName, _Id, _canvasId, _mapElement, _dotnetObj, _activeProvider.BuildOptionsPayload());
+        }
+        catch (JSDisconnectedException)
+        {
+            return;
+        }
+        catch
+        {
+            // The most common failure here is the canvas div being removed from the DOM
+            // before the JS init runs (e.g. due to a parent-component re-render or page
+            // navigation). Swallow the error rather than letting it bubble up as an
+            // unhandled exception that takes down the rest of the page.
+            return;
+        }
 
         _initialized = true;
 
@@ -348,7 +392,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             }
             catch (JSDisconnectedException) { }
 
-            await _js.BitMapInit(effective.JsObjectName, _Id, _mapElement, _dotnetObj!, effective.BuildOptionsPayload());
+            await _js.BitMapInit(effective.JsObjectName, _Id, _canvasId, _mapElement, _dotnetObj!, effective.BuildOptionsPayload());
 
             _activeProvider = effective;
 

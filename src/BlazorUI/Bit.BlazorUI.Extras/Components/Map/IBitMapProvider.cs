@@ -31,7 +31,7 @@ public interface IBitMapProvider
 
     /// <summary>
     /// Whether the scripts must be loaded as <c>type="module"</c>. Most providers ship UMD scripts
-    /// (return false). ArcGIS 5.0 uses an ESM CDN entry (returns true).
+    /// (return false); providers that load ESM entries (e.g. ArcGIS, OpenLayers) return true.
     /// </summary>
     bool ScriptsAreModules { get; }
 

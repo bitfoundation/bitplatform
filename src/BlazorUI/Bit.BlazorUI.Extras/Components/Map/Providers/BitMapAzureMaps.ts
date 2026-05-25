@@ -14,7 +14,8 @@ namespace BitBlazorUI {
             zoomControl: any, scaleControl: any,
         } } = {};
 
-        public static async init(id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+        public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+            element = await BitMapHelpers.resolveMapCanvas(canvasId, element);
             await BitMapHelpers.waitForGlobal('atlas', () => typeof (globalThis as any).atlas?.Map === 'function');
             const atlas = (globalThis as any).atlas;
             const o = options || {};

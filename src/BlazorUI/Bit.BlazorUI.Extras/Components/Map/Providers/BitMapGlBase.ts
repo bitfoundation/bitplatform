@@ -26,7 +26,9 @@ namespace BitBlazorUI {
         }
 
         public static async init(provider: string, glGlobalName: string, defaultStyleUrl: string,
-                                 id: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+                                 id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
+            element = await BitMapHelpers.resolveMapCanvas(canvasId, element);
+
             // Wait for the global to be available (script may still be initializing after onload)
             if (!(globalThis as any)[glGlobalName]) {
                 await BitMapHelpers.waitForGlobal(glGlobalName, () => !!(globalThis as any)[glGlobalName], 10_000);
