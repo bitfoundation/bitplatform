@@ -39,15 +39,21 @@ public class BitThemeManager : IAsyncDisposable
         return await _js.BitThemeGetCurrentTheme();
     }
 
-    /// <summary>Sets the <c>bit-theme</c> attribute (use values from <see cref="BitThemePresets"/> or custom names matching your CSS).</summary>
-    public async ValueTask<string> SetThemeAsync(string themeName)
+    /// <summary>
+    /// Sets the <c>bit-theme</c> attribute (use values from <see cref="BitThemePresets"/> or custom names matching your CSS).
+    /// Returns <see langword="null"/> when JS interop is unavailable (e.g. prerendering / disconnected circuit).
+    /// </summary>
+    public async ValueTask<string?> SetThemeAsync(string themeName)
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
         return await _js.BitThemeSetTheme(themeName);
     }
 
-    /// <summary>Toggles between configured light and dark theme names.</summary>
-    public async ValueTask<string> ToggleDarkLightAsync()
+    /// <summary>
+    /// Toggles between configured light and dark theme names.
+    /// Returns <see langword="null"/> when JS interop is unavailable (e.g. prerendering / disconnected circuit).
+    /// </summary>
+    public async ValueTask<string?> ToggleDarkLightAsync()
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
         return await _js.BitThemeToggleThemeDarkLight();
@@ -146,10 +152,15 @@ public class BitThemeManager : IAsyncDisposable
                 // missing JS module (e.g. after a page refresh or navigation) — safe to ignore at teardown.
                 Console.WriteLine(ex.Message);
             }
-
-            _jsNotifierReference.Dispose();
-            _jsNotifierReference = null;
-            _jsNotifierRegistered = false;
+            finally
+            {
+                // Always release the .NET reference and reset state, even if the JS call threw an
+                // exception type we don't catch above (e.g. OperationCanceledException), so we never
+                // leak the DotNetObjectReference or leave _jsNotifierRegistered in an inconsistent state.
+                _jsNotifierReference.Dispose();
+                _jsNotifierReference = null;
+                _jsNotifierRegistered = false;
+            }
         }
         finally
         {

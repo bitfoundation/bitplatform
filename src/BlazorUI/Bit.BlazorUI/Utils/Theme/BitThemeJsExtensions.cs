@@ -2,19 +2,19 @@
 
 internal static class BitThemeJsExtensions
 {
-    internal static ValueTask<string> BitThemeGetCurrentTheme(this IJSRuntime js)
+    internal static ValueTask<string?> BitThemeGetCurrentTheme(this IJSRuntime js)
     {
-        return js.Invoke<string>("BitTheme.get");
+        return js.Invoke<string?>("BitTheme.get");
     }
 
-    internal static ValueTask<string> BitThemeSetTheme(this IJSRuntime js, string themeName)
+    internal static ValueTask<string?> BitThemeSetTheme(this IJSRuntime js, string themeName)
     {
-        return js.Invoke<string>("BitTheme.set", themeName);
+        return js.Invoke<string?>("BitTheme.set", themeName);
     }
 
-    internal static ValueTask<string> BitThemeToggleThemeDarkLight(this IJSRuntime js)
+    internal static ValueTask<string?> BitThemeToggleThemeDarkLight(this IJSRuntime js)
     {
-        return js.Invoke<string>("BitTheme.toggleDarkLight");
+        return js.Invoke<string?>("BitTheme.toggleDarkLight");
     }
 
     internal static ValueTask BitThemeApplyBitTheme(this IJSRuntime js, IReadOnlyDictionary<string, string> theme, ElementReference? element)
@@ -27,9 +27,9 @@ internal static class BitThemeJsExtensions
         return js.Invoke<bool>("BitTheme.isSystemDark");
     }
 
-    internal static ValueTask<string> BitThemeGetCurrentPersistedTheme(this IJSRuntime js)
+    internal static ValueTask<string?> BitThemeGetCurrentPersistedTheme(this IJSRuntime js)
     {
-        return js.Invoke<string>("BitTheme.getPersisted");
+        return js.Invoke<string?>("BitTheme.getPersisted");
     }
 
     internal static ValueTask BitThemeClearAppliedBitTheme(this IJSRuntime js, ElementReference? element)
