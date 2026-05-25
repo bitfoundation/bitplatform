@@ -14,7 +14,7 @@ public sealed class BrouterLocation
     private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyList<string>>> _queryParams;
     private readonly string[] _segments;
 
-    internal BrouterLocation(string fullUri, string path, string[] segments, string query, string hash)
+    internal BrouterLocation(string fullUri, string path, string[] segments, string query, string hash, bool hasTrailingSlash = false)
     {
         FullUri = fullUri;
         Path = path;
@@ -30,6 +30,7 @@ public sealed class BrouterLocation
         Segments = new ReadOnlyCollection<string>(_segments);
         Query = query;
         Hash = hash;
+        HasTrailingSlash = hasTrailingSlash;
         _queryParams = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<string>>>(() => ParseQuery(query));
     }
 
@@ -44,6 +45,15 @@ public sealed class BrouterLocation
 
     /// <summary>Internal fast-path access to the raw segment array. Must not be mutated.</summary>
     internal string[] SegmentsArray => _segments;
+
+    /// <summary>
+    /// True when the original URL path ended with a trailing '/' and
+    /// <see cref="BrouterOptions.IgnoreTrailingSlash"/> is <c>false</c>.
+    /// Used by route matching to keep <c>/users</c> and <c>/users/</c> distinguishable
+    /// under strict-trailing-slash mode (the slash is otherwise lost when the path is
+    /// split into segments).
+    /// </summary>
+    internal bool HasTrailingSlash { get; }
 
     /// <summary>The query part including the leading '?'. Empty when absent.</summary>
     public string Query { get; }

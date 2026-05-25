@@ -154,6 +154,11 @@ public partial class Brouter : ComponentBase, IDisposable
         }
 
         var path = "/" + raw;
+        // Detect a meaningful trailing slash before any normalization, so that under
+        // Options.IgnoreTrailingSlash == false we can distinguish "/users/" from "/users"
+        // during matching. The split below drops the trailing empty segment unconditionally,
+        // so without this flag the option would have no effect on route matching.
+        var hasTrailingSlash = Options.IgnoreTrailingSlash is false && path.Length > 1 && path[^1] == '/';
         if (Options.IgnoreTrailingSlash && path.Length > 1 && path[^1] == '/')
         {
             path = path[..^1];
@@ -175,7 +180,7 @@ public partial class Brouter : ComponentBase, IDisposable
             catch (UriFormatException) { /* keep the raw, still-escaped segment */ }
         }
 
-        CurrentLocation = new BrouterLocation(_navManager.Uri, path, rawSegments, query, hash);
+        CurrentLocation = new BrouterLocation(_navManager.Uri, path, rawSegments, query, hash, hasTrailingSlash);
     }
 
     private async ValueTask ProcessNavigationAsync(BrouterLocation from)
@@ -205,7 +210,7 @@ public partial class Brouter : ComponentBase, IDisposable
 
             // Match routes.
             foreach (var r in _routes) r.Matched = false;
-            var candidates = _routes.Where(r => Match(r, CurrentLocation.SegmentsArray)).ToList();
+            var candidates = _routes.Where(r => Match(r, CurrentLocation.SegmentsArray, CurrentLocation.HasTrailingSlash)).ToList();
 
             if (candidates.Count == 0)
             {
@@ -374,7 +379,7 @@ public partial class Brouter : ComponentBase, IDisposable
         return false;
     }
 
-    private bool Match(Route route, string[] segments)
+    private bool Match(Route route, string[] segments, bool hasTrailingSlash)
     {
         route.Parameters = new Dictionary<string, object?>();
         route.ConstraintsByParameter = new Dictionary<string, string[]>();
@@ -387,10 +392,17 @@ public partial class Brouter : ComponentBase, IDisposable
             : StringComparison.OrdinalIgnoreCase;
 
         var templateSegments = routeTemplate.TemplateSegments;
-        if (templateSegments.Count == 0) return segments.Length == 0;
+        if (templateSegments.Count == 0) return segments.Length == 0 && hasTrailingSlash is false;
 
         var lastIdx = templateSegments.Count - 1;
         var last = templateSegments[lastIdx];
+
+        // Under Options.IgnoreTrailingSlash == false a URL ending in '/' is distinct from one
+        // that doesn't. Templates are always normalized via TemplateParser to drop trailing
+        // slashes, so a non-catch-all route can never legitimately require the slash and must
+        // not match a trailing-slash URL. Catch-all is exempt: it absorbs the trailing position
+        // (matching zero or more remaining segments, including the implicit empty one).
+        if (hasTrailingSlash && last.IsCatchAll is false) return false;
 
         if (templateSegments.Count != segments.Length)
         {
