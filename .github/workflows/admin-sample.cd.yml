@@ -6,9 +6,6 @@ env:
   SERVER_WEB_ADDRESS: 'https://adminpanel.bitplatform.dev'
   SERVER_API_ADDRESS: 'https://adminpanel-api.bitplatform.dev'
   APP_SERVICE_NAME: 'bit-adminpanel'
-  AzureOpenAI__ApiKey: ${{ secrets.AzureOpenAI__ApiKey }}
-  AzureOpenAI__Endpoint: ${{ secrets.AzureOpenAI__Endpoint }}
-  AZUREOPENAI__MODEL: ${{ secrets.AZUREOPENAI__MODEL }}
   OpenAI__ApiKey: ${{ secrets.OpenAI__ApiKey }}
   OpenAI__Endpoint: ${{ secrets.OpenAI__Endpoint }}
   OPENAI__MODEL: ${{ secrets.OPENAI__MODEL }}

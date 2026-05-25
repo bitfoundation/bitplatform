@@ -43,7 +43,7 @@ This JSON file defines the source and target languages, the location of your res
     "Endpoint": "https://models.inference.ai.azure.com",
     "Endpoint__Samples": "Google AI Studio: https://generativelanguage.googleapis.com/v1beta/openai | GitHub: https://models.inference.ai.azure.com",
     "Endpoint__Samples2": "xAI(Grok): https://api.x.ai/v1 | Azure AI Foundry: https://YOUR_AZURE_FOUNDRY.services.ai.azure.com/openai/v1",
-    "ApiKey": null
+    "ApiKey": null,
     "ApiKey__Comment": "API key can be set here OR via [OpenAI__ApiKey] environment variable",
   }
 }
