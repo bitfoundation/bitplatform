@@ -14,10 +14,17 @@ public static class BitBrouter
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        if (services.Any(s => s.ServiceType == typeof(BrouterOptions)))
+        {
+            throw new InvalidOperationException(
+                $"{nameof(AddBitBrouterServices)} has already been called on this service collection. " +
+                "Bit.Brouter services must only be registered once to avoid silently discarding configuration.");
+        }
+
         var options = new BrouterOptions();
         configure?.Invoke(options);
 
-        services.TryAddSingleton(options);
+        services.AddSingleton(options);
         services.TryAddScoped<BrouterService>();
         services.TryAddScoped<IBrouter>(sp => sp.GetRequiredService<BrouterService>());
         return services;

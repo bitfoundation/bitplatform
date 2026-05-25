@@ -263,7 +263,9 @@ internal sealed class BrouterService : IBrouter
     internal async ValueTask ApplyScrollAsync()
     {
         if (_options.ScrollBehavior != BrouterScrollMode.ToTop) return;
-        try { await _js.InvokeVoidAsync("window.scrollTo", 0, 0).ConfigureAwait(false); }
+        // No ConfigureAwait(false): this is awaited from Brouter.ProcessNavigationAsync, which
+        // calls StateHasChanged() right after. That needs the renderer's synchronization context.
+        try { await _js.InvokeVoidAsync("window.scrollTo", 0, 0); }
         catch { /* no-op during pre-render or when JS interop is unavailable */ }
     }
 }

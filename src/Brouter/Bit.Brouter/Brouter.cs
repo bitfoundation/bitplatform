@@ -119,17 +119,26 @@ public partial class Brouter : ComponentBase, IDisposable
 
     private async void NavManagerLocationChanged(object? sender, LocationChangedEventArgs e)
     {
+        var from = CurrentLocation;
         try
         {
-            var from = CurrentLocation;
             UpdateLocation();
             // No ConfigureAwait(false): keep the navigation pipeline on the renderer's
             // dispatcher so subsequent StateHasChanged() / UI mutations are valid.
             await ProcessNavigationAsync(from);
         }
-        catch
+        catch (Exception ex)
         {
-            // Errors are reported via IBrouter.OnError; never let an exception escape async void.
+            // ProcessNavigationAsync routes its own exceptions to OnError. This outer catch
+            // mainly covers failures around it (e.g. UpdateLocation). Surface them through
+            // IBrouter.OnError so they don't disappear silently, and never let an exception
+            // escape async void.
+            try
+            {
+                await _brouterService.InvokeOnError(
+                    new NavigationContext(from, CurrentLocation, CancellationToken.None), ex);
+            }
+            catch { /* OnError must never crash the navigation handler */ }
         }
     }
 

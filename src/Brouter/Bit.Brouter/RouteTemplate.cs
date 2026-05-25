@@ -18,6 +18,8 @@ internal class RouteTemplate
         // Defensive copy so callers can't mutate internal state via the original array reference.
         var copy = new TemplateSegment[segments.Length];
         Array.Copy(segments, copy, segments.Length);
-        TemplateSegments = copy;
+        // Wrap in a read-only collection so callers can't downcast TemplateSegments back to
+        // TemplateSegment[] and mutate it; the array is still defensively copied above.
+        TemplateSegments = Array.AsReadOnly(copy);
     }
 }
