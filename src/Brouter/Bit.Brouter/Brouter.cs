@@ -179,7 +179,7 @@ public partial class Brouter : ComponentBase, IDisposable
             // Decode defensively: malformed percent-encoding (e.g. "%ZZ" or a stray "%") would
             // otherwise throw UriFormatException and bubble out of the async-void LocationChanged
             // handler, silently breaking routing without surfacing NotFound / OnError. Falling
-            // back to the raw segment lets ProcessNavigationAsync run normally — the bad URL
+            // back to the raw segment lets ProcessNavigationAsync run normally - the bad URL
             // typically won't match any route, which routes the request through NotFound/OnError
             // as it should.
             try

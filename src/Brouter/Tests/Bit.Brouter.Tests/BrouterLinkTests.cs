@@ -158,7 +158,7 @@ public class BrouterLinkTests : BunitTestContext
             .Add(x => x.Replace, true));
 
         // Without waiting for _replaceWired, OnClick early-returns and this test would pass
-        // trivially — observing "no navigation happened" wouldn't prove the modifier-key
+        // trivially - observing "no navigation happened" wouldn't prove the modifier-key
         // filter at all. Wait for wiring so the filter is the only thing keeping the
         // navigation from firing.
         WaitForReplaceWiring(cut);

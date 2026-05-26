@@ -39,7 +39,7 @@ public class ResolveUrlTests : BunitTestContext
     {
         var brouter = MountWithNamedRoute("user", "/users/{id}");
 
-        // Caller used "ID" but the template parameter is "id" — should still bind.
+        // Caller used "ID" but the template parameter is "id" - should still bind.
         var url = brouter.ResolveUrl("user", new Dictionary<string, object?> { ["ID"] = 7 });
 
         Assert.AreEqual("/users/7", url);
@@ -167,7 +167,7 @@ public class ResolveUrlTests : BunitTestContext
     [TestMethod]
     public void Throws_when_template_contains_literal_wildcard()
     {
-        // A literal '*' segment can't be resolved back into a URL — there's no value to substitute.
+        // A literal '*' segment can't be resolved back into a URL - there's no value to substitute.
         var brouter = MountWithNamedRoute("wild", "/files/*");
 
         Assert.ThrowsExactly<InvalidOperationException>(() =>
