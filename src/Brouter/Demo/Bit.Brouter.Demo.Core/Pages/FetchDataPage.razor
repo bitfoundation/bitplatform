@@ -1,16 +1,22 @@
-<h1>Weather forecast</h1>
-
-<p>This component demonstrates static sample data.</p>
+<div class="bb-intro">
+    <h1>Weather forecast</h1>
+    <p class="bb-subtitle">A static sample dataset rendered as a styled table.</p>
+</div>
 
 @if (forecasts is null)
 {
-    <p><em>Loading...</em></p>
+    <div class="bb-empty"><em>Loading forecast...</em></div>
 }
 else
 {
-    if (Parameters?.Contains("id") == true)
+    @if (Parameters?.Contains("id") == true)
     {
-        <p>Id: @Parameters["id"], Value: @Value</p>
+        <dl class="bb-params">
+            <dt>id</dt>
+            <dd>@Parameters["id"]</dd>
+            <dt>value</dt>
+            <dd>@Value</dd>
+        </dl>
     }
 
     <table class="table">

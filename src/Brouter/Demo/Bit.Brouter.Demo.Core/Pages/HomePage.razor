@@ -1,51 +1,80 @@
-<h1>Hello, Brouter!</h1>
-Welcome to the Bit.Brouter demo.
-<br />
-<br />
-You have counted to @CountValue.
-<br />
-<br />
-<BrouterLink Href="/counter/1234">Counter from 1234</BrouterLink>
-<br />
-<BrouterLink Href="/counter/multi/1/2/saleh">Counter with multiple parameters [/multi/1/2/saleh]</BrouterLink>
-<br />
-<br />
-<BrouterLink Href="/profile">Profile (no username)</BrouterLink>
-<br />
-<BrouterLink Href="/profile/saleh">Profile of "saleh"</BrouterLink>
-<br />
-<BrouterLink Href="/posts/2026/05/intro-to-brouter">Catch-all post slug</BrouterLink>
-<br />
-<br />
-<BrouterLink Href="/404-test">non-existent page [404-test]</BrouterLink>
-<br />
-<br />
-<BrouterLink Href="/hahahaha/test">route */test</BrouterLink>
-<br />
-<BrouterLink Href="/start/test2/end">route {prefix}/test2/{postfix}</BrouterLink>
-<br />
-<br />
-<BrouterLink Href="/nested-route/1">nested route example [/1]</BrouterLink>
-<br />
-<BrouterLink Href="/nested-route/5/hello">nested route example [/5/hello]</BrouterLink>
-<br />
-<BrouterLink Href="/nested-route/10/world">nested route example [/10/world]</BrouterLink>
-<br />
-<BrouterLink Href="/nested-route/22/404-test">non-existent nested route [/22/404-test]</BrouterLink>
-<br />
-<br />
-<BrouterLink Href="/g1">Guarded route [/g1] by (DateTime.Now.Second % 2 == 0)</BrouterLink>
-<br />
-<BrouterLink Href="/g2">Guarded route [/g2] by (DateTime.Now.Minute % 2 == 0)</BrouterLink>
-<br />
-<br />
-<BrouterLink Href="/nested">Let's go nested!</BrouterLink>
-<br />
-<br />
-<BrouterLink Href="/nested2">nested2</BrouterLink>
-<br />
-<br />
-<BrouterLink Href="/nested3">nested3</BrouterLink>
+<div class="bb-intro">
+    <h1>Hello, Brouter!</h1>
+    <p class="bb-subtitle">A tour of <code>Bit.Brouter</code> routing features. Pick any link below to see it in action.</p>
+</div>
+
+<div class="bb-counter">
+    <div>
+        <div class="bb-counter-label">Current count</div>
+        <div class="bb-counter-value">@CountValue</div>
+    </div>
+    <div style="color: var(--bb-text-muted); font-size: .85rem;">
+        The shared count is preserved across navigations via the host component.
+    </div>
+</div>
+
+<div class="bb-grid">
+    <section class="bb-card">
+        <h3 class="bb-card-title">
+            <span class="bb-dot bb-dot-primary"></span>
+            Route parameters
+            <span class="bb-badge">params</span>
+        </h3>
+        <p class="bb-card-desc">Strongly-typed route values with optional and multi-segment constraints.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/counter/1234">Counter starting at <code>1234</code></BrouterLink></li>
+            <li><BrouterLink Href="/counter/multi/1/2/saleh">Multi-param: <code>/multi/1/2/saleh</code></BrouterLink></li>
+            <li><BrouterLink Href="/profile">Profile (no username)</BrouterLink></li>
+            <li><BrouterLink Href="/profile/saleh">Profile of <code>saleh</code></BrouterLink></li>
+            <li><BrouterLink Href="/posts/2026/05/intro-to-brouter">Catch-all post slug</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title">
+            <span class="bb-dot bb-dot-warning"></span>
+            Wildcards &amp; fallbacks
+            <span class="bb-badge bb-badge-warn">wildcard</span>
+        </h3>
+        <p class="bb-card-desc">How wildcard segments and the 404 fallback resolve.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/hahahaha/test">Wildcard <code>*/test</code></BrouterLink></li>
+            <li><BrouterLink Href="/start/test2/end">Pattern <code>{prefix}/test2/{postfix}</code></BrouterLink></li>
+            <li><BrouterLink Href="/404-test">Non-existent page</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title">
+            <span class="bb-dot bb-dot-success"></span>
+            Nested routes
+            <span class="bb-badge bb-badge-success">nested</span>
+        </h3>
+        <p class="bb-card-desc">Routes with their own children and outlets.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/nested-route/1">Nested example <code>/1</code></BrouterLink></li>
+            <li><BrouterLink Href="/nested-route/5/hello">Nested example <code>/5/hello</code></BrouterLink></li>
+            <li><BrouterLink Href="/nested-route/10/world">Nested example <code>/10/world</code></BrouterLink></li>
+            <li><BrouterLink Href="/nested-route/22/404-test">Non-existent nested route</BrouterLink></li>
+            <li><BrouterLink Href="/nested">Nested layout</BrouterLink></li>
+            <li><BrouterLink Href="/nested2">Nested2 layout</BrouterLink></li>
+            <li><BrouterLink Href="/nested3">Nested3 layout</BrouterLink></li>
+        </ul>
+    </section>
+
+    <section class="bb-card">
+        <h3 class="bb-card-title">
+            <span class="bb-dot bb-dot-danger"></span>
+            Guarded routes
+            <span class="bb-badge bb-badge-danger">guard</span>
+        </h3>
+        <p class="bb-card-desc">Routes that conditionally redirect via guards.</p>
+        <ul class="bb-link-list">
+            <li><BrouterLink Href="/g1">/g1 — allowed when <code>second % 2 == 0</code></BrouterLink></li>
+            <li><BrouterLink Href="/g2">/g2 — allowed when <code>minute % 2 == 0</code></BrouterLink></li>
+        </ul>
+    </section>
+</div>
 
 @code {
     [Parameter] public int CountValue { get; set; }

@@ -1,18 +1,42 @@
-﻿<h1>Counter</h1>
+﻿<div class="bb-intro">
+    <h1>Counter</h1>
+    <p class="bb-subtitle">A simple counter that reads its initial value from the route.</p>
+</div>
 
-<p>Current count: @CurrentCount</p>
+<div class="bb-counter">
+    <div>
+        <div class="bb-counter-label">Current count</div>
+        <div class="bb-counter-value">@CurrentCount</div>
+    </div>
+    <button class="btn btn-primary" @onclick="IncrementCount">+ Increment</button>
+</div>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
-
-<br />
-
-<div>Init: @(Parameters?.GetOrDefault<int>("init"))</div>
-
-<br />
-
-<div>Id: @(Parameters?.GetOrDefault<long>("id"))</div>
-<div>Age: @(Parameters?.GetOrDefault<double>("age"))</div>
-<div>Name: @(Parameters?["name"])</div>
+@if (Parameters is not null && (Parameters.Contains("init") || Parameters.Contains("id") || Parameters.Contains("name")))
+{
+    <h3 style="margin-top: 1.25rem;">Route parameters</h3>
+    <dl class="bb-params">
+        @if (Parameters.Contains("init"))
+        {
+            <dt>init</dt>
+            <dd>@(Parameters.GetOrDefault<int>("init"))</dd>
+        }
+        @if (Parameters.Contains("id"))
+        {
+            <dt>id</dt>
+            <dd>@(Parameters.GetOrDefault<long>("id"))</dd>
+        }
+        @if (Parameters.Contains("age"))
+        {
+            <dt>age</dt>
+            <dd>@(Parameters.GetOrDefault<double>("age"))</dd>
+        }
+        @if (Parameters.Contains("name"))
+        {
+            <dt>name</dt>
+            <dd>@Parameters["name"]</dd>
+        }
+    </dl>
+}
 
 @code {
     [Parameter] public int CurrentCount { get; set; } = 0;

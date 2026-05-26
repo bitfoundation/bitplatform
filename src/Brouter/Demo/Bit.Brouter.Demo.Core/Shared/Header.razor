@@ -1,13 +1,18 @@
-<div class="container">
-    <BrouterLink Href="/" Match="BrouterLinkMatch.All">Home</BrouterLink> |
-    <BrouterLink Href="/counter/1234">Counter</BrouterLink> |
-    <BrouterLink Href="/fetchdata">Fetch data</BrouterLink> |
-    <BrouterLink Href="/nested-route/1">Nested</BrouterLink> |
-    <BrouterLink Href="/nested2">Nested2</BrouterLink> |
-    <BrouterLink Href="/nested3">Nested3</BrouterLink> |
-    <BrouterLink Href="/posts/2024/12/hello-world">Post (catch-all)</BrouterLink> |
-    <BrouterLink Href="/profile">Profile (optional)</BrouterLink> |
-    <BrouterLink Href="/g1">Guarded</BrouterLink> |
-    <BrouterLink Href="/404-test">404 test</BrouterLink>
-</div>
-<hr />
+<header class="bb-header">
+    <div class="bb-header-inner">
+        <BrouterLink Href="/" Match="BrouterLinkMatch.All" class="bb-brand">
+            <span class="bb-brand-text">Bit.Brouter</span>
+            <span class="bb-brand-tag">demo</span>
+        </BrouterLink>
+
+        <nav class="bb-nav">
+            <BrouterLink Href="/" Match="BrouterLinkMatch.All">Home</BrouterLink>
+            <BrouterLink Href="/counter/1234">Counter</BrouterLink>
+            <BrouterLink Href="/fetchdata">Fetch data</BrouterLink>
+            <BrouterLink Href="/profile">Profile</BrouterLink>
+            <BrouterLink Href="/posts/2024/12/hello-world">Posts</BrouterLink>
+            <BrouterLink Href="/nested">Nested</BrouterLink>
+            <BrouterLink Href="/g1">Guarded</BrouterLink>
+        </nav>
+    </div>
+</header>

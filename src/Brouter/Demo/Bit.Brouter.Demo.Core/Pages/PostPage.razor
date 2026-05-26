@@ -1,6 +1,12 @@
-<h1>Post</h1>
+<div class="bb-intro">
+    <h1>Post</h1>
+    <p class="bb-subtitle">A catch-all route that captures everything after <code>/posts/</code>.</p>
+</div>
 
-<p>Slug (catch-all): <code>@Slug</code></p>
+<dl class="bb-params">
+    <dt>slug</dt>
+    <dd>@(Slug ?? "(none)")</dd>
+</dl>
 
 @code {
     // The catch-all parameter "{**slug}" is bound directly via [BrouterParameter].
