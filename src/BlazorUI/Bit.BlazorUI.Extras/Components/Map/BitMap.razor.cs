@@ -410,12 +410,14 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
         if (IsDisposed) return;
 
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         // Build the options payload outside the interop try/catch so that provider
         // configuration errors (missing tokens, invalid URLs, etc.) surface to the
         // caller instead of being swallowed and leaving the map silently uninitialized.
+        // Built before creating the DotNetObjectReference so a payload exception
+        // doesn't leak a live interop handle for a map that never initializes.
         var initOptions = _activeProvider.BuildOptionsPayload();
+
+        _dotnetObj = DotNetObjectReference.Create(this);
 
         try
         {

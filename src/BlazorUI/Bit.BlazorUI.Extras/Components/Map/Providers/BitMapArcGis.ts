@@ -622,7 +622,7 @@ namespace BitBlazorUI {
 
         private static async _loadEsri(): Promise<any> {
             if (BitMapArcGis._esriPromise) return BitMapArcGis._esriPromise;
-            BitMapArcGis._esriPromise = (async () => {
+            const p = (async () => {
                 await BitMapHelpers.waitForGlobal('$arcgis', () => typeof (globalThis as any).$arcgis?.import === 'function');
                 const $arcgis = (globalThis as any).$arcgis;
                 const imp = (path: string) => $arcgis.import(path);
@@ -659,7 +659,11 @@ namespace BitBlazorUI {
                     webMercatorUtils, ScaleBar, reactiveUtils,
                 };
             })();
-            return BitMapArcGis._esriPromise;
+            // Clear the memoized promise on failure so subsequent calls can retry the
+            // SDK load instead of being stuck with a permanently rejected promise.
+            p.catch(() => { if (BitMapArcGis._esriPromise === p) BitMapArcGis._esriPromise = null; });
+            BitMapArcGis._esriPromise = p;
+            return p;
         }
     }
 }

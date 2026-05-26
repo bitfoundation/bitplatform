@@ -251,8 +251,8 @@ namespace BitBlazorUI {
             const L = s.L;
             let icon: any | undefined;
             if (opts.iconUrl) {
-                const w = opts.iconWidth || 32;
-                const h = opts.iconHeight || 32;
+                const w = opts.iconWidth ?? 32;
+                const h = opts.iconHeight ?? 32;
                 icon = L.icon({
                     iconUrl: opts.iconUrl,
                     iconSize: [w, h],

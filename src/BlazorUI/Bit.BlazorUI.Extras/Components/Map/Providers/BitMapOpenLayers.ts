@@ -644,11 +644,15 @@ namespace BitBlazorUI {
             // actual dynamic import()s and exposes the resolved bundle on
             // globalThis.__bitMapOlBundle. We just await it here so this concatenated
             // (non-module) bundle never has to call import() directly.
-            BitMapOpenLayers._olLoadPromise = (async () => {
+            const p = (async () => {
                 await BitMapHelpers.waitForGlobal('__bitMapOlBundle', () => !!(globalThis as any).__bitMapOlBundle, 30_000);
                 return await (globalThis as any).__bitMapOlBundle;
             })();
-            return BitMapOpenLayers._olLoadPromise;
+            // Clear the memoized promise on failure so callers can retry the OL load
+            // instead of being permanently stuck on a rejected promise.
+            p.catch(() => { if (BitMapOpenLayers._olLoadPromise === p) BitMapOpenLayers._olLoadPromise = null; });
+            BitMapOpenLayers._olLoadPromise = p;
+            return p;
         }
     }
 }

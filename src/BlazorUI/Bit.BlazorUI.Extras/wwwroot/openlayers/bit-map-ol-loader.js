@@ -16,7 +16,7 @@ const u = (p) => `https://esm.sh/ol@${OL_VER}${p ? '/' + p : ''}?bundle`;
 // BitMap instances initializing concurrently before the first script tag finishes
 // parsing), reuse the existing Promise so we don't issue a duplicate set of
 // dynamic imports for the same OpenLayers bundle.
-globalThis.__bitMapOlBundle = globalThis.__bitMapOlBundle || Promise.all([
+const p = globalThis.__bitMapOlBundle || Promise.all([
     import(u()),
     import(u('control')),
     import(u('style')),
@@ -51,3 +51,12 @@ globalThis.__bitMapOlBundle = globalThis.__bitMapOlBundle || Promise.all([
     transformExtent: olProj.transformExtent,
     Translate: olInteraction.Translate,
 }));
+
+// Clear the global on failure so future loader injections can retry the imports
+// instead of being permanently stuck on a rejected promise.
+p.catch((err) => {
+    if (globalThis.__bitMapOlBundle === p) delete globalThis.__bitMapOlBundle;
+    throw err;
+});
+
+globalThis.__bitMapOlBundle = p;
