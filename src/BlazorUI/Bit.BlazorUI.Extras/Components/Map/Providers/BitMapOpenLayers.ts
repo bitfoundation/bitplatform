@@ -68,21 +68,22 @@ namespace BitBlazorUI {
             const markerLayer = new ol.VectorLayer({ source: markerSource, zIndex: 900 });
             map.addLayer(markerLayer);
 
-            // Create popup overlay element
+            // Create popup overlay element. Styles live in BitMap.scss
+            // (.bit-map-ol-popup, .bit-map-ol-popup__close, .bit-map-ol-popup__content)
+            // so we don't rely on inline styles that strict CSP would block, and so
+            // consumers can theme the popup from their own stylesheets.
             const popupElement = document.createElement('div');
-            popupElement.className = 'bit-map-ol-popup';
-            popupElement.style.cssText = 'background:#fff;border-radius:6px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,.25);max-width:280px;word-wrap:break-word;position:relative;';
-            popupElement.style.display = 'none';
+            popupElement.className = 'bit-map-ol-popup bit-map-ol-popup--hidden';
 
             const popupCloser = document.createElement('button');
             popupCloser.type = 'button';
             popupCloser.textContent = '\u00d7';
-            popupCloser.style.cssText = 'position:absolute;top:2px;right:6px;border:none;background:transparent;font-size:16px;cursor:pointer;line-height:1;padding:2px 4px;color:#666;';
+            popupCloser.className = 'bit-map-ol-popup__close';
             popupCloser.setAttribute('aria-label', 'Close popup');
             popupElement.appendChild(popupCloser);
 
             const popupContent = document.createElement('div');
-            popupContent.style.marginTop = '4px';
+            popupContent.className = 'bit-map-ol-popup__content';
             popupElement.appendChild(popupContent);
 
             // Stop pointer/click events on the popup from bubbling to the map. Without this,
@@ -105,7 +106,7 @@ namespace BitBlazorUI {
             popupCloser.addEventListener('click', (e) => {
                 e.stopPropagation();
                 popupOverlay.setPosition(undefined);
-                popupElement.style.display = 'none';
+                popupElement.classList.add('bit-map-ol-popup--hidden');
             });
 
             const scaleEnabled = !!o.showScaleControl;
@@ -566,6 +567,11 @@ namespace BitBlazorUI {
             if (!html && !text) return;
 
             const contentEl = s.popupContentElement;
+            // popupHtml is rendered raw to match every other BitMap provider's contract
+            // (Leaflet's bindPopup, Mapbox/MapLibre setHTML, ArcGis popup.open, Cesium
+            // entity.description, Azure Maps Popup content). Sanitization is the
+            // caller's responsibility; pass untrusted strings through popupText, which
+            // is written via textContent below and is safe from XSS.
             if (html) {
                 contentEl.innerHTML = html;
             } else {
@@ -573,7 +579,7 @@ namespace BitBlazorUI {
             }
 
             const coords = feature.getGeometry().getCoordinates();
-            s.popupElement.style.display = '';
+            s.popupElement.classList.remove('bit-map-ol-popup--hidden');
             s.popupOverlay.setPosition(coords);
         }
 
@@ -617,7 +623,7 @@ namespace BitBlazorUI {
                 if (!hit) {
                     // Close popup when clicking elsewhere on the map
                     s.popupOverlay.setPosition(undefined);
-                    s.popupElement.style.display = 'none';
+                    s.popupElement.classList.add('bit-map-ol-popup--hidden');
                 }
             });
             map.on('dblclick', (evt: any) => {

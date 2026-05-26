@@ -29,3 +29,37 @@
         pointer-events: auto;
     }
 }
+
+// OpenLayers popup. Styles live here (instead of inline cssText in the TS provider)
+// so they aren't blocked under strict CSP configurations that disallow inline styles
+// and so consumers can theme them from their own stylesheets.
+.bit-map-ol-popup {
+    position: relative;
+    max-width: 280px;
+    padding: 10px 12px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    word-wrap: break-word;
+}
+
+.bit-map-ol-popup--hidden {
+    display: none;
+}
+
+.bit-map-ol-popup__close {
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    padding: 2px 4px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bit-map-ol-popup__content {
+    margin-top: 4px;
+}

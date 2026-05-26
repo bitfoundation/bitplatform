@@ -12,7 +12,11 @@
 const OL_VER = '10.5.0';
 const u = (p) => `https://esm.sh/ol@${OL_VER}${p ? '/' + p : ''}?bundle`;
 
-globalThis.__bitMapOlBundle = Promise.all([
+// Guard against re-execution: if this loader script is injected twice (e.g. two
+// BitMap instances initializing concurrently before the first script tag finishes
+// parsing), reuse the existing Promise so we don't issue a duplicate set of
+// dynamic imports for the same OpenLayers bundle.
+globalThis.__bitMapOlBundle = globalThis.__bitMapOlBundle || Promise.all([
     import(u()),
     import(u('control')),
     import(u('style')),

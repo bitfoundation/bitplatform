@@ -379,6 +379,12 @@ namespace BitBlazorUI {
             }
             const existingDs = s.geoJsonLayers[layerId];
             if (existingDs) try { s.viewer.dataSources.remove(existingDs, true); } catch { /* ignore */ }
+            // The same layerId may previously have been used for a non-GeoJSON entity
+            // (polyline/polygon/circle/rectangle) stored in s.layers. Drop that prior
+            // representation too so reusing a layerId across types doesn't leave the
+            // old entity on the viewer alongside the new GeoJSON dataSource.
+            const priorEntity = s.layers[layerId];
+            if (priorEntity) { try { s.viewer.entities.remove(priorEntity.entity); } catch { /* ignore */ } delete s.layers[layerId]; }
             await s.viewer.dataSources.add(ds);
             s.geoJsonLayers[layerId] = ds;
         }
@@ -433,6 +439,12 @@ namespace BitBlazorUI {
         private static _setLayer(s: any, layerId: string, entity: any, kind: string) {
             const existing = s.layers[layerId];
             if (existing) try { s.viewer.entities.remove(existing.entity); } catch { /* ignore */ }
+            // The same layerId may previously have been used for a GeoJSON dataSource
+            // stored in s.geoJsonLayers. Drop that prior representation too so reusing a
+            // layerId across types doesn't leave the old GeoJSON content rendered
+            // alongside the new entity.
+            const existingDs = s.geoJsonLayers[layerId];
+            if (existingDs) { try { s.viewer.dataSources.remove(existingDs, true); } catch { /* ignore */ } delete s.geoJsonLayers[layerId]; }
             s.layers[layerId] = { entity, kind };
         }
 

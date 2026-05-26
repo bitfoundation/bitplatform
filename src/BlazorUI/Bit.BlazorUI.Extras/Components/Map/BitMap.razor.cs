@@ -423,6 +423,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
         catch (JSDisconnectedException)
         {
+            // The circuit is gone, but the DotNetObjectReference we created for this
+            // failed init still owns a GC handle to this component. Release it so we
+            // don't keep a live interop reference around for a map that never wired up.
+            _dotnetObj.Dispose();
+            _dotnetObj = null;
+            _activeProvider = null;
             return;
         }
         catch
@@ -430,7 +436,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             // The most common failure here is the canvas div being removed from the DOM
             // before the JS init runs (e.g. due to a parent-component re-render or page
             // navigation). Swallow the error rather than letting it bubble up as an
-            // unhandled exception that takes down the rest of the page.
+            // unhandled exception that takes down the rest of the page — but first
+            // dispose the DotNetObjectReference we created for this failed init so we
+            // don't keep a live interop handle to a map that never wired up.
+            _dotnetObj.Dispose();
+            _dotnetObj = null;
+            _activeProvider = null;
             return;
         }
 

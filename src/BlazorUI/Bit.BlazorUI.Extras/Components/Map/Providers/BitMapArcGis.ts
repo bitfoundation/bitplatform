@@ -349,6 +349,12 @@ namespace BitBlazorUI {
                 processGeometry(f.geometry, props);
             }
             BitMapArcGis._removeGeoJsonLayer(s, layerId);
+            // The same layerId may previously have been used for a non-GeoJSON vector
+            // (polyline/polygon/circle/rectangle) stored in s.layers. Drop that prior
+            // representation too so reusing a layerId across types doesn't leave the
+            // old graphic on the map alongside the new GeoJSON content.
+            const prior = s.layers[layerId];
+            if (prior) { try { s.view.graphics.remove(prior.graphic); } catch { /* ignore */ } delete s.layers[layerId]; }
             for (const g of graphics) s.view.graphics.add(g);
             s.geoJsonLayers[layerId] = { graphics };
         }
@@ -401,6 +407,11 @@ namespace BitBlazorUI {
         private static _setLayer(s: any, layerId: string, graphic: any, kind: string) {
             const existing = s.layers[layerId];
             if (existing) s.view.graphics.remove(existing.graphic);
+            // The same layerId may previously have been used for a GeoJSON layer stored
+            // in s.geoJsonLayers. Drop that prior representation too so reusing a layerId
+            // across types doesn't leave the old GeoJSON graphics rendered alongside the
+            // new vector content.
+            BitMapArcGis._removeGeoJsonLayer(s, layerId);
             s.view.graphics.add(graphic);
             s.layers[layerId] = { graphic, kind };
         }
