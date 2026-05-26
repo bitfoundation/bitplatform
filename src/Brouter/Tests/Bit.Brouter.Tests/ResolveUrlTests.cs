@@ -228,8 +228,12 @@ public class ResolveUrlTests : BunitTestContext
     {
         // Switch to a culture that uses ',' as decimal separator. Without invariant formatting,
         // 1.5 would surface as "1,5" and break the URL.
-        var previous = CultureInfo.CurrentCulture;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+        // Mutate Thread.CurrentThread culture (and UI culture) so the change is scoped to this
+        // test thread instead of leaking via the process-wide CultureInfo.CurrentCulture default.
+        var previousThreadCulture = Thread.CurrentThread.CurrentCulture;
+        var previousThreadUICulture = Thread.CurrentThread.CurrentUICulture;
+        Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo("de-DE");
         try
         {
             var brouter = MountWithNamedRoute("price", "/price/{amount}");
@@ -241,7 +245,8 @@ public class ResolveUrlTests : BunitTestContext
         }
         finally
         {
-            CultureInfo.CurrentCulture = previous;
+            Thread.CurrentThread.CurrentCulture = previousThreadCulture;
+            Thread.CurrentThread.CurrentUICulture = previousThreadUICulture;
         }
     }
 }

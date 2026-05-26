@@ -260,21 +260,26 @@ public partial class Brouter : ComponentBase, IDisposable
                 .First()
                 .Route;
 
-            // Pure redirect (no guard) takes precedence.
-            if (winner.Guard is null && winner.RedirectTo is not null)
-            {
-                _navManager.NavigateTo(winner.RedirectTo);
-                return;
-            }
-
             ctx.Route = winner;
             ctx.Parameters = new BrouterRouteParameters(winner.Parameters);
 
-            // Guards.
+            // Guards run before RedirectTo so a guard can still authorize/cancel/redirect-elsewhere
+            // (e.g. an auth guard on a redirect route, or a parent guard inherited via the chain).
+            // For routes without any guards in the chain, InvokeGuardsAsync is effectively a no-op,
+            // so pure redirect routes still redirect immediately below.
             var guardsOk = await winner.InvokeGuardsAsync(ctx);
             if (HandleSideEffects(ctx, from)) return;
             if (token.IsCancellationRequested || version != _navVersion) return;
             if (guardsOk is false) return;
+
+            // RedirectTo: once guards pass, redirect instead of running loaders/rendering. This honors
+            // the documented "redirects to the given URL instead of rendering anything" contract even
+            // when Guard is also set.
+            if (winner.RedirectTo is not null)
+            {
+                _navManager.NavigateTo(winner.RedirectTo);
+                return;
+            }
 
             // Loaders. Walk root -> leaf so parent layouts get their data populated before
             // children run, mirroring guard ordering (see Route.InvokeGuardsAsync). Reset

@@ -19,7 +19,11 @@ public partial class BrouterRoute : ComponentBase, IDisposable
     /// <summary>Optional unique name for this route. Used by <see cref="IBrouter.NavigateToName"/> and <see cref="IBrouter.ResolveUrl"/>.</summary>
     [Parameter] public string? Name { get; set; }
 
-    /// <summary>When set, navigating to this route redirects to the given URL instead of rendering anything.</summary>
+    /// <summary>
+    /// When set, navigating to this route redirects to the given URL instead of running loaders or rendering.
+    /// Guards (on this route and its ancestors) still run first, so a guard may cancel the navigation or
+    /// redirect elsewhere; only when guards pass is the redirect to <see cref="RedirectTo"/> performed.
+    /// </summary>
     [Parameter] public string? RedirectTo { get; set; }
 
     /// <summary>The component type to render when this route matches.</summary>
