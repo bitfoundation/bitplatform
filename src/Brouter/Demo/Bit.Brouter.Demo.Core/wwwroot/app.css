@@ -162,7 +162,6 @@ article {
     align-items: center;
 }
 
-.bb-link-list ::deep a,
 .bb-link-list a {
     display: inline-flex;
     align-items: center;
@@ -177,14 +176,12 @@ article {
     width: 100%;
 }
 
-.bb-link-list ::deep a:hover,
 .bb-link-list a:hover {
     background: var(--bb-primary-soft);
     border-color: var(--bb-border);
     text-decoration: none;
 }
 
-.bb-link-list ::deep a.active,
 .bb-link-list a.active {
     background: var(--bb-primary-soft);
     color: var(--bb-primary-hover);

@@ -11,7 +11,7 @@
     <button class="btn btn-primary" @onclick="IncrementCount">+ Increment</button>
 </div>
 
-@if (Parameters is not null && (Parameters.Contains("init") || Parameters.Contains("id") || Parameters.Contains("name")))
+@if (Parameters is not null && (Parameters.Contains("init") || Parameters.Contains("id") || Parameters.Contains("age") || Parameters.Contains("name")))
 {
     <h3 style="margin-top: 1.25rem;">Route parameters</h3>
     <dl class="bb-params">
