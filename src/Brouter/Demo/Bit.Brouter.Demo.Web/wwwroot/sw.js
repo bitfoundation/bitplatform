@@ -5,3 +5,10 @@ self.addEventListener('install', e => {
     // soon as install completes, without waiting for existing clients to close.
     e.waitUntil(self.skipWaiting());
 });
+
+self.addEventListener('activate', e => {
+    console.log('sw activate');
+    // Take control of any already-open clients (tabs) so they start using this
+    // new worker immediately, without requiring a reload.
+    e.waitUntil(self.clients.claim());
+});

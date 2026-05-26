@@ -240,7 +240,7 @@ builder.Services.AddBitBrouterServices(o =>
 
 ```csharp
 BrouterConstraints.Register("slug",
-    new TypeRouteConstraint<string>((string s, out string r) =>
+    new BrouterTypeRouteConstraint<string>((string s, out string r) =>
     {
         r = s;
         return s.Length >= 3 && s.All(c => char.IsLetterOrDigit(c) || c == '-');
