@@ -124,6 +124,13 @@ internal class BrouterRouteRenderer
         }
     }
 
+    // Cache boxed default(T) per value type so we don't allocate a fresh single-element array
+    // on every render. ApplyTypedParameters runs frequently and iterates every binding, so the
+    // previous per-call Array.CreateInstance produced avoidable GC pressure. Boxed value-type
+    // defaults are effectively immutable for our purposes (Blazor unboxes when assigning to the
+    // property setter), so a shared instance per Type is safe to hand out repeatedly.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, object?> _boxedDefaultCache = new();
+
     [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2067",
         Justification = "t comes from PropertyType of a [Parameter] on a component reached via Route.Component, " +
                         "which is annotated DynamicallyAccessedMemberTypes.All so its parameter property types are preserved.")]
@@ -134,12 +141,18 @@ internal class BrouterRouteRenderer
     {
         // For nullable / reference types, default is null. For non-nullable value types,
         // create a single-element array of that type and read element 0; this returns the
-        // boxed default(T) without requiring constructor annotations on the Type.
+        // boxed default(T) without requiring constructor annotations on the Type. The result
+        // is cached per Type so subsequent renders reuse the same boxed instance.
         if (t.IsValueType is false || Nullable.GetUnderlyingType(t) is not null)
             return null;
 
+        if (_boxedDefaultCache.TryGetValue(t, out var cached))
+            return cached;
+
         var arr = Array.CreateInstance(t, 1);
-        return arr.GetValue(0);
+        var value = arr.GetValue(0);
+        _boxedDefaultCache[t] = value;
+        return value;
     }
 
     private static bool TryBindQuery(BrouterParameterBinding binding, BrouterLocation location, out object? value)
