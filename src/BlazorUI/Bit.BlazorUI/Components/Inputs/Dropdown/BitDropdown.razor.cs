@@ -1707,6 +1707,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (IsDisposed || disposing is false) return;
 
+        OnValueChanged -= HandleOnValueChanged;
+
         await base.DisposeAsync(disposing);
 
         try
@@ -1715,5 +1717,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            _dotnetObj?.Dispose();
+        }
     }
 }

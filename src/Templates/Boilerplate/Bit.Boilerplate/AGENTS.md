@@ -60,6 +60,10 @@ Before implementing any changes, you **MUST** complete the following:
 *   For anything related to `Bit.BlazorUI`, `bit Bswup`, `bit Butil`, `bit Besql`, or the bit project template, you **MUST** use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform` to find relevant information.
 *   For mapper/mapping entity/dto related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `riok/mapperly` to find correct implementation and usage patterns focusing on its static classes and extension methods approach.
 *   For Keycloak/realm related tasks, you **MUST** use the `DeepWiki_ask_question` tool with repository `keycloak/keycloak` to find relevant information.
+*   For .NET Aspire tasks (AppHost orchestration, resource configuration, switching Docker resources to Azure equivalents, service discovery, integrations), you **MUST** use the `DeepWiki_ask_question` tool with repository `microsoft/aspire` to find correct implementation patterns — it significantly outperforms Microsoft Learn for code-level questions.
+*   For FusionCache tasks (hybrid caching, L2 cache backplane, distributed locking, OpenTelemetry integration, cache factory configuration), you **MUST** use the `DeepWiki_ask_question` tool with repository `ZiggyCreatures/FusionCache` to find correct usage patterns.
+*   For Microsoft Agent Framework tasks (agent creation, multi-agent orchestration, workflows, tools/function calling, MCP, A2A communication, memory/context, provider integrations), you **MUST** use the `DeepWiki_ask_question` tool with repository `microsoft/agent-framework` to find correct implementation patterns.
+*   For Hangfire tasks (job scheduling, recurring jobs, filters, storage configuration, distributed processing), you **MUST** use the `DeepWiki_ask_question` tool with repository `HangfireIO/Hangfire` to find correct implementation patterns.
 
 ## 4. Critical Command Reference
 

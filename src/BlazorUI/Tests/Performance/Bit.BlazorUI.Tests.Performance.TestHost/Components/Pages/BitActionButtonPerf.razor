@@ -43,7 +43,7 @@
     private int RenderedCount { get; set; }
     private double RenderTimeMs { get; set; }
     private double ReRenderTimeMs { get; set; }
-    private string Status { get; set; } = "Ready";
+    private string Status { get; set; } = "Loading";
     private bool _isRendered;
     private bool _isEnabled = true;
     private System.Diagnostics.Stopwatch _stopwatch = new();
@@ -66,6 +66,13 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
+        if (firstRender)
+        {
+            Status = "Ready";
+            StateHasChanged();
+            return;
+        }
+
         if (_stopwatch.IsRunning && _isRendered)
         {
             _stopwatch.Stop();

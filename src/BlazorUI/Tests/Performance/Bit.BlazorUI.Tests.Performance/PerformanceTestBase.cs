@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,6 +18,7 @@ public abstract class PerformanceTestBase : PageTest
     private static readonly object _lock = new();
     private static int _testCount;
     private static bool _isHostStarted;
+    private static readonly HttpClient _sharedHttpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
 
     protected const string BaseUrl = "http://localhost:5280";
     protected const int DefaultTimeout = 30000;
@@ -58,9 +60,11 @@ public abstract class PerformanceTestBase : PageTest
             }
         }
 
-        // Wait for page to be ready
+        // Wait for page to be ready.
+        // NOTE: Do NOT use WaitForLoadStateAsync(NetworkIdle) here — Blazor Server keeps a
+        // persistent SignalR WebSocket open, which Playwright counts as an active connection
+        // and therefore NetworkIdle never fires. GotoAsync already waits for the Load event.
         await Page.GotoAsync(BaseUrl);
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 
     [TestCleanup]
@@ -80,11 +84,17 @@ public abstract class PerformanceTestBase : PageTest
     private static void StartTestHost()
     {
         var testHostPath = GetTestHostPath();
-        
+
+        // The test host project targets multiple frameworks (net8.0/net9.0/net10.0).
+        // 'dotnet run' refuses to pick one automatically and exits immediately, which
+        // previously caused all browser tests to fail with a misleading 30-second timeout.
+        // Run the host on the same TFM as the test runner so the right one is used.
+        var tfm = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+
         var startInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = $"run --project \"{testHostPath}\" --urls {BaseUrl}",
+            Arguments = $"run --project \"{testHostPath}\" --framework {tfm} --urls {BaseUrl}",
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardOutput = true,
@@ -92,15 +102,27 @@ public abstract class PerformanceTestBase : PageTest
         };
 
         _hostProcess = Process.Start(startInfo);
-        
-        // Wait for the host to start
-        var maxWait = TimeSpan.FromSeconds(30);
+
+        // 'dotnet run' performs an implicit build on first invocation, which can take
+        // longer than 30s on a clean machine or in CI, so allow up to 2 minutes.
+        var maxWait = TimeSpan.FromSeconds(120);
         var waited = TimeSpan.Zero;
         var interval = TimeSpan.FromMilliseconds(500);
 
-        using var httpClient = new HttpClient();
+        using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
         while (waited < maxWait)
         {
+            if (_hostProcess is not null && _hostProcess.HasExited)
+            {
+                var stderr = _hostProcess.StandardError.ReadToEnd();
+                var stdout = _hostProcess.StandardOutput.ReadToEnd();
+                throw new InvalidOperationException(
+                    $"Test host process exited before it could serve requests. " +
+                    $"ExitCode={_hostProcess.ExitCode}.{Environment.NewLine}" +
+                    $"STDERR:{Environment.NewLine}{stderr}{Environment.NewLine}" +
+                    $"STDOUT:{Environment.NewLine}{stdout}");
+            }
+
             try
             {
                 var response = httpClient.GetAsync(BaseUrl).Result;
@@ -134,50 +156,39 @@ public abstract class PerformanceTestBase : PageTest
 
     private static string GetTestHostPath()
     {
-        // Navigate from test project to test host project
-        var currentDir = Directory.GetCurrentDirectory();
+        // The working directory at test runtime is usually
+        // <repo>/.../Bit.BlazorUI.Tests.Performance/bin/Debug/<tfm>, but it can also be
+        // the project root when run from some IDEs. Walk upward looking for the test
+        // project root and resolve from there.
+        const string testHostCsproj = "Bit.BlazorUI.Tests.Performance.TestHost.csproj";
+        const string testHostFolder = "Bit.BlazorUI.Tests.Performance.TestHost";
+        const string siblingTestProject = "Bit.BlazorUI.Tests.Performance.csproj";
 
-        var path = Path.GetFullPath(Path.Combine(currentDir, "..", "Bit.BlazorUI.Tests.Performance.TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj"));
+        var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+        for (int depth = 0; depth < 8 && dir is not null; depth++)
+        {
+            // Same level as our test project root → the host is a sibling folder.
+            if (dir.GetFiles(siblingTestProject).Length > 0 && dir.Parent is not null)
+            {
+                var sibling = Path.Combine(dir.Parent.FullName, testHostFolder, testHostCsproj);
+                if (File.Exists(sibling))
+                {
+                    return sibling;
+                }
+            }
 
-        return path;
-        
-        // Try to find the TestHost project
-        //var possiblePaths = new[]
-        //{
-        //    Path.Combine(currentDir, "..", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj"),
-        //    Path.Combine(currentDir, "..", "..", "..", "..", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj"),
-        //    Path.Combine(currentDir, "..", "..", "..", "..", "..", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj"),
-        //};
+            // Be lenient: maybe the host folder lives directly under the current dir.
+            var direct = Path.Combine(dir.FullName, testHostFolder, testHostCsproj);
+            if (File.Exists(direct))
+            {
+                return direct;
+            }
 
-        //foreach (var path in possiblePaths)
-        //{
-        //    var fullPath = Path.GetFullPath(path);
-        //    if (File.Exists(fullPath))
-        //    {
-        //        return fullPath;
-        //    }
-        //}
+            dir = dir.Parent;
+        }
 
-        //// Fallback: search upward for the project
-        //var searchDir = currentDir;
-        //while (!string.IsNullOrEmpty(searchDir))
-        //{
-        //    var testHostPath = Path.Combine(searchDir, "Performance", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj");
-        //    if (File.Exists(testHostPath))
-        //    {
-        //        return testHostPath;
-        //    }
-
-        //    var testsDir = Path.Combine(searchDir, "Bit.BlazorUI.Tests", "Performance", "TestHost", "Bit.BlazorUI.Tests.Performance.TestHost.csproj");
-        //    if (File.Exists(testsDir))
-        //    {
-        //        return testsDir;
-        //    }
-
-        //    searchDir = Path.GetDirectoryName(searchDir);
-        //}
-
-        //throw new FileNotFoundException("Could not find Bit.BlazorUI.Tests.Performance.TestHost.csproj");
+        throw new FileNotFoundException(
+            $"Could not locate {testHostCsproj}. Working directory: {Directory.GetCurrentDirectory()}");
     }
 
     /// <summary>
@@ -243,6 +254,73 @@ public abstract class PerformanceTestBase : PageTest
         catch
         {
             return 0;
+        }
+    }
+
+    /// <summary>
+    /// Waits for the page status element to show the given text.
+    /// </summary>
+    protected async Task WaitForStatus(string status)
+    {
+        await Page.WaitForFunctionAsync(
+            "(expected) => document.getElementById('status')?.innerText === expected",
+            status,
+            new PageWaitForFunctionOptions { Timeout = DefaultTimeout });
+    }
+
+    /// <summary>
+    /// Forces a full server-side GC collection and returns the total managed heap
+    /// size in MB, as reported by the test host's /api/gc-info endpoint.
+    /// Use this to verify that server memory returns to near-baseline after
+    /// components are disposed across mount/unmount cycles.
+    /// </summary>
+    /// <param name="settle">
+    /// When true, waits a short period and forces a second GC before sampling. This
+    /// gives the SignalR circuit and finalizer thread a chance to release any
+    /// objects whose disposal is pending after a DOM-level unmount, producing a
+    /// much more stable reading for memory-leak assertions.
+    /// </param>
+    protected async Task<double> GetServerGCMemoryMB(bool settle = true)
+    {
+        if (settle)
+        {
+            // First pass: queues finalizers, second pass: collects them.
+            await _sharedHttpClient.GetAsync($"{BaseUrl}/api/gc-info");
+            await Task.Delay(250);
+        }
+
+        HttpResponseMessage response;
+        try
+        {
+            response = await _sharedHttpClient.GetAsync($"{BaseUrl}/api/gc-info");
+        }
+        catch (TaskCanceledException)
+        {
+            Assert.Fail("GetServerGCMemoryMB: /api/gc-info request timed out. The test host may be unresponsive.");
+            return 0; // unreachable, but satisfies the compiler
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail($"GetServerGCMemoryMB: /api/gc-info request failed: {ex.Message}");
+            return 0; // unreachable, but satisfies the compiler
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            Assert.Fail($"GetServerGCMemoryMB: /api/gc-info returned {(int)response.StatusCode} {response.ReasonPhrase}");
+        }
+
+        var json = await response.Content.ReadAsStringAsync();
+
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            return doc.RootElement.GetProperty("allocatedMB").GetDouble();
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail($"GetServerGCMemoryMB: failed to parse 'allocatedMB' from /api/gc-info response. {ex.Message}. Body: {json[..Math.Min(json.Length, 200)]}");
+            return 0; // unreachable
         }
     }
 

@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -7,70 +7,31 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 //#if(redis == true)
 // Redis cache for FusionCache hybrid caching (L2 cache) and SignalR backplane - no persistence needed
-var redisCache = builder.AddRedis("redis-cache")
-    .WithOtlpExporter()
-    .WithRedisInsight()
-    .WithRedisCommander();
+var redisCache = builder.AddRedisCache();
 
 // Redis for Hangfire background jobs, and distributed locking - persistent with AOF for durability
-var redisPersistent = builder.AddRedis("redis-persistent")
-    .WithOtlpExporter()
-    .WithRedisInsight()
-    .WithRedisCommander()
-    .WithDataVolume()
-    .WithArgs(
-        "--appendonly", "yes",             // Enable AOF (Append only file) for data durability
-        "--appendfsync", "always",         // Sync to disk on every write for maximum durability. Temporarily disable it programmatically using C# code during bulk operations if needed.
-        "--save", "",                      // Disables RDB snapshots
-        "--maxmemory-policy", "noeviction" // Raise error when memory limit is reached instead of evicting keys
-    );
+var redisPersistent = builder.AddRedisPersistent();
 //#endif
 
 //#if (database == "SqlServer")
-var sqlDatabase = builder.AddSqlServer("sqlserver")
-        .WithOtlpExporter()
-        .WithDbGate(config => config.WithDataVolume())
-        .WithDataVolume()
-        .WithImage("mssql/server", "2025-latest")
-        .AddDatabase("mssqldb"); // Sql server 2025 supports embedded vector search.
-
-//#elif (database == "PostgreSql")
-var postgresDatabase = builder.AddPostgres("postgresserver")
-        .WithOtlpExporter()
-        .WithPgAdmin()
-        .WithV18DataVolume()
-        .WithOptimizedSetup()
-        .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
-        .AddDatabase("postgresdb");
-
+var sqlDatabase = builder.AddSqlServer();
+//#elif (database == "PostgreSQL")
+var postgresDatabase = builder.AddPostgreSQL();
 //#elif (database == "MySql")
-var mySqlDatabase = builder.AddMySql("mysqlserver")
-        .WithOtlpExporter()
-        .WithPhpMyAdmin()
-        .WithDataVolume()
-        .AddDatabase("mysqldb");
+var mySqlDatabase = builder.AddMySql();
 //#elif (database == "Sqlite")
-var sqlite = builder.AddSqlite("sqlite", databaseFileName: "BoilerplateDb.db")
-    .WithSqliteWeb();
+var sqlite = builder.AddSqlite();
 //#endif
-//#if (filesStorage == "AzureBlobStorage")
-var azureBlobStorage = builder.AddAzureStorage("storage")
-        .RunAsEmulator(azurite =>
-        {
-            azurite
-                .WithDataVolume();
-        })
-        .AddBlobs("azureblobstorage");
 
+//#if (filesStorage == "AzureBlobStorage")
+var azureBlobStorage = builder.AddAzureStorage();
 //#elif (filesStorage == "S3")
 var s3Storage = builder.AddMinioContainer("s3")
-    .WithOtlpExporter()
     .WithDataVolume();
 //#endif
 
 // https://aspire.dev/integrations/security/keycloak/
 var keycloak = builder.AddKeycloak("keycloak", 8080)
-    .WithOtlpExporter()
     .WithDataVolume()
     .WithRealmImport("./Infrastructure/Realms");
 
@@ -98,7 +59,7 @@ if (builder.Environment.IsDevelopment())
 serverWebProject.WithReference(serverApiProject);
 //#if (database == "SqlServer")
 serverApiProject.WithReference(sqlDatabase).WaitFor(sqlDatabase);
-//#elif (database == "PostgreSql")
+//#elif (database == "PostgreSQL")
 serverApiProject.WithReference(postgresDatabase).WaitFor(postgresDatabase);
 //#elif (database == "MySql")
 serverApiProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
@@ -120,7 +81,7 @@ serverApiProject.WithReference(redisPersistent).WaitFor(redisPersistent);
 
 //#if (database == "SqlServer")
 serverWebProject.WithReference(sqlDatabase).WaitFor(sqlDatabase);
-//#elif (database == "PostgreSql")
+//#elif (database == "PostgreSQL")
 serverWebProject.WithReference(postgresDatabase).WaitFor(postgresDatabase);
 //#elif (database == "MySql")
 serverWebProject.WithReference(mySqlDatabase).WaitFor(mySqlDatabase);
@@ -171,47 +132,7 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
             .WithExplicitStart();
     }
 
-    // Blazor Hybrid MAUI project.
-    var mauiapp = builder.AddMauiProject("mauiapp", @"../../Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj");
-
-    if (OperatingSystem.IsWindows())
-    {
-        mauiapp.AddWindowsDevice()
-            .WithExplicitStart()
-            .WithReference(serverWebProject);
-    }
-
-    if (OperatingSystem.IsMacOS())
-    {
-        mauiapp.AddMacCatalystDevice()
-            .WithExplicitStart()
-            .WithReference(serverWebProject);
-    }
-
-    if (OperatingSystem.IsMacOS())
-    {
-        // Windows supports iOS Simulator and Physical devices if there's a mac connected to network, but the following runners only work on macOS for now.
-
-        mauiapp.AddiOSDevice()
-            .WithExplicitStart()
-            .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
-            .WithReference(serverWebProject, tunnel);
-
-        mauiapp.AddiOSSimulator()
-            .WithExplicitStart()
-            .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
-            .WithReference(serverWebProject, tunnel);
-    }
-
-    mauiapp.AddAndroidDevice()
-        .WithExplicitStart()
-        .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
-        .WithReference(serverWebProject, tunnel);
-
-    mauiapp.AddAndroidEmulator()
-        .WithExplicitStart()
-        .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
-        .WithReference(serverWebProject, tunnel);
+    builder.AddMaui(serverWebProject, tunnel);
 }
 
 await builder
