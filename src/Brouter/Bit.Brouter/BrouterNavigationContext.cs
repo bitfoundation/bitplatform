@@ -36,15 +36,24 @@ public sealed class BrouterNavigationContext
     /// <summary>Set when a guard or hook called <see cref="Redirect"/>.</summary>
     public string? RedirectUrl { get; private set; }
 
-    /// <summary>Cancel this navigation. The URL is restored to <see cref="From"/>.</summary>
-    public void Cancel() => IsCancelled = true;
+    /// <summary>Cancel this navigation. The URL is restored to <see cref="From"/>.
+    /// Clears any previously set <see cref="RedirectUrl"/> so the navigation state is unambiguous.</summary>
+    public void Cancel()
+    {
+        IsCancelled = true;
+        RedirectUrl = null;
+    }
 
     /// <summary>Redirect to another URL instead of completing this navigation.</summary>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="url"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="url"/> is empty or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the navigation has already been cancelled
+    /// via <see cref="Cancel"/>. A cancelled navigation cannot be turned into a redirect.</exception>
     public void Redirect(string url)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(url);
+        if (IsCancelled)
+            throw new InvalidOperationException("Cannot set a redirect on a cancelled navigation context. Call Redirect() before Cancel(), or do not cancel.");
         RedirectUrl = url;
     }
 }

@@ -144,7 +144,21 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
         };
 
         builder.OpenElement(0, "a");
-        if (AdditionalAttributes is not null) builder.AddMultipleAttributes(1, AdditionalAttributes);
+        if (AdditionalAttributes is not null)
+        {
+            // Filter "class" out of the splatted attributes: we've already merged its value
+            // into combinedClass above and emit a single explicit class attribute below.
+            // Splatting the original dictionary as well would produce a redundant class frame
+            // that relies on Blazor's last-write-wins diff rule to be neutralised.
+            if (extraClass is null)
+            {
+                builder.AddMultipleAttributes(1, AdditionalAttributes);
+            }
+            else
+            {
+                builder.AddMultipleAttributes(1, AdditionalAttributes.Where(kv => string.Equals(kv.Key, "class", StringComparison.OrdinalIgnoreCase) is false).Select(kv => new KeyValuePair<string, object>(kv.Key, kv.Value)));
+            }
+        }
         builder.AddAttribute(2, "href", Href);
         if (combinedClass is not null) builder.AddAttribute(3, "class", combinedClass);
         if (_isActive) builder.AddAttribute(4, "aria-current", "page");
