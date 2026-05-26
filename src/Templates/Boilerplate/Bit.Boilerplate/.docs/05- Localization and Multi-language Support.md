@@ -602,8 +602,6 @@ set OpenAI__ApiKey=your-api-key-here
 export OpenAI__ApiKey="your-api-key-here"
 ```
 
-The tool automatically reads environment variables using the pattern: `{Section}__{Property}`
-
 ### Usage
 
 Run the translation command from your project root (where `Bit.ResxTranslator.json` is located):

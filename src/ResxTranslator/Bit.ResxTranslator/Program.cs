@@ -9,9 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.ClientModel.Primitives;
 
-using Azure.AI.Inference;
-using Azure.Core.Pipeline;
-
 using OpenAI.Chat;
 
 var services = new ServiceCollection();
