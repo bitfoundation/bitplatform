@@ -9,7 +9,7 @@ namespace Bit.Brouter.Tests;
 public class BrouterTests : BunitTestContext
 {
     [TestMethod]
-    public void Matches_root_route()
+    public void Matches_literal_route()
     {
         var nav = Services.GetRequiredService<FakeNavigationManager>();
         nav.NavigateTo("http://localhost/home");
