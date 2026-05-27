@@ -533,6 +533,12 @@ namespace BitBlazorUI {
 
             const view = s.view;
             let active: any = null; // { graphic, markerId }
+            // Per-pointer-down token used to discard hitTest promises that resolve
+            // after the user has already released the pointer. Each pointer-down
+            // bumps the counter; the resolver captures it in a closure and bails
+            // out if the current token has moved on (i.e. a newer pointer-down or
+            // a pointer-up/leave invalidated the gesture).
+            let pointerToken = 0;
 
             // Restore any actionMap.dragPrimary override and clear `active`. Used by
             // pointer-up / pointer-leave to defend against a hitTest promise that
@@ -541,6 +547,9 @@ namespace BitBlazorUI {
             // would leave panning permanently disabled and `active` permanently
             // pinned to a stale graphic.
             const releaseActive = () => {
+                // Invalidate any in-flight hitTest from the just-completed gesture
+                // so it can't re-acquire `active` after we've cleared it.
+                pointerToken++;
                 if (!active) return;
                 const am = view.navigation?.actionMap;
                 if (am && (active as any)._prevDrag !== undefined) {
@@ -550,7 +559,12 @@ namespace BitBlazorUI {
             };
 
             view.on('pointer-down', (event: any) => {
+                const token = ++pointerToken;
                 view.hitTest(event).then((response: any) => {
+                    // Pointer-up / pointer-leave (or another pointer-down) bumped the
+                    // token; this response is stale and must not mutate `active` or
+                    // actionMap.dragPrimary, otherwise we'd leave panning disabled.
+                    if (token !== pointerToken) return;
                     for (const r of response.results) {
                         const g = r.graphic;
                         const a = g?.attributes;

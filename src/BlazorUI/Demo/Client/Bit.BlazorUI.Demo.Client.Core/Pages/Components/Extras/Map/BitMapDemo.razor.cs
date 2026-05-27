@@ -340,6 +340,10 @@ public partial class BitMapDemo
                 ? new BitMapLatLngBounds(new(51.25, -0.55), new(51.75, 0.35))
                 : null,
         };
+        // Rebuilding the provider replaces the underlying Leaflet map instance,
+        // so any previously-added overlays no longer exist on the new map.
+        // Reset the toggle state so the UI label/branch reflects that.
+        advOverlayOn = false;
         return advProvider;
     }
 

@@ -79,6 +79,16 @@ public sealed class BitCesiumMapProvider : BitMapProviderBase
         var isBing = imageryStyle is "bing_aerial" or "bing_labels";
         var effectiveImagery = hasToken || !isBing ? imageryStyle : "osm";
 
+        // Guard against NaN/±Infinity: System.Text.Json (used by the JS interop layer)
+        // rejects non-finite numbers by default and would throw mid-serialization.
+        if (Altitude.HasValue && double.IsFinite(Altitude.Value) is false)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(Altitude),
+                Altitude.Value,
+                $"{nameof(Altitude)} ({Altitude.Value}) must be a finite number.");
+        }
+
         var common = GetCommonOptions();
         common["altitude"] = Altitude;
         common["imageryStyle"] = effectiveImagery;

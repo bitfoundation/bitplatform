@@ -142,19 +142,42 @@ namespace BitBlazorUI {
             const Cesium = s.Cesium;
             const o = options || {};
 
+            // ---- ion access token rotation ----
+            // Detect token rotation BEFORE the imagery/terrain branches so that
+            // Ion-backed resources (Bing imagery, world terrain) are recreated with
+            // the new token even when neither imageryStyle nor terrainEnabled changed.
+            // We compare against the stored token first, then update s.ionAccessToken
+            // so the recreate paths below see the fresh value.
+            const ionTokenChanged = Object.prototype.hasOwnProperty.call(o, 'ionAccessToken')
+                && o.ionAccessToken !== s.ionAccessToken;
+            if (ionTokenChanged) {
+                s.ionAccessToken = o.ionAccessToken;
+            }
+
             // ---- imagery ----
             // Replace the base imagery layer when o.imageryStyle is provided and
             // differs from the currently-applied style. We keep the logic in step
             // with init: bing_* uses an Ion provider (requires ionAccessToken); 'none'
             // disables imagery; anything else falls back to OSM tiles.
-            if (Object.prototype.hasOwnProperty.call(o, 'imageryStyle') && o.imageryStyle !== s.imageryStyle) {
-                BitMapCesium._applyImagery(s, o.imageryStyle).catch(() => { /* ignore */ });
-                s.imageryStyle = o.imageryStyle;
+            // Also re-apply when only the Ion token rotated and the current style
+            // depends on it (Bing imagery via Ion).
+            const imageryStyleProvided = Object.prototype.hasOwnProperty.call(o, 'imageryStyle');
+            const imageryStyleChanged = imageryStyleProvided && o.imageryStyle !== s.imageryStyle;
+            const imageryUsesIon = (style: string | undefined) => style === 'bing_aerial' || style === 'bing_labels';
+            if (imageryStyleChanged || (ionTokenChanged && imageryUsesIon(s.imageryStyle))) {
+                const targetStyle = imageryStyleProvided ? o.imageryStyle : s.imageryStyle;
+                BitMapCesium._applyImagery(s, targetStyle).catch(() => { /* ignore */ });
+                s.imageryStyle = targetStyle;
             }
 
             // ---- terrain ----
-            if (Object.prototype.hasOwnProperty.call(o, 'terrainEnabled') && !!o.terrainEnabled !== s.terrainEnabled) {
-                const enabled = !!o.terrainEnabled;
+            // Recreate the terrain provider when terrainEnabled flipped, or when the
+            // Ion token rotated and terrain is currently enabled (so the Ion-backed
+            // CesiumTerrainProvider is rebuilt with the fresh token).
+            const terrainProvided = Object.prototype.hasOwnProperty.call(o, 'terrainEnabled');
+            const terrainFlipped = terrainProvided && !!o.terrainEnabled !== s.terrainEnabled;
+            if (terrainFlipped || (ionTokenChanged && s.terrainEnabled)) {
+                const enabled = terrainProvided ? !!o.terrainEnabled : s.terrainEnabled;
                 if (enabled && s.ionAccessToken && Cesium.CesiumTerrainProvider?.fromIonAssetId) {
                     Cesium.CesiumTerrainProvider.fromIonAssetId(1, { accessToken: s.ionAccessToken })
                         .then((tp: any) => { try { s.viewer.terrainProvider = tp; } catch { /* ignore */ } })

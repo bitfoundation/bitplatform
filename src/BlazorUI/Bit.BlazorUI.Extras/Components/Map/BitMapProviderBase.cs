@@ -76,10 +76,22 @@ public abstract class BitMapProviderBase : IBitMapProvider
     /// Thrown when <see cref="MinZoom"/> &gt; <see cref="MaxZoom"/>.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <see cref="Zoom"/> falls outside <see cref="MinZoom"/>/<see cref="MaxZoom"/>.
+    /// Thrown when <see cref="Zoom"/> is non-finite (NaN/±Infinity) or falls outside
+    /// <see cref="MinZoom"/>/<see cref="MaxZoom"/>.
     /// </exception>
     protected void ValidateCommonOptions()
     {
+        // Guard against NaN/±Infinity up front: ordering comparisons against NaN always
+        // return false, so the Min/Max checks below would silently let it through and
+        // the JS interop JSON serializer would then throw on the non-finite value.
+        if (double.IsFinite(Zoom) is false)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(Zoom),
+                Zoom,
+                $"Zoom ({Zoom}) must be a finite number.");
+        }
+
         if (MinZoom.HasValue && MaxZoom.HasValue && MinZoom.Value > MaxZoom.Value)
         {
             throw new ArgumentException($"MinZoom ({MinZoom.Value}) cannot be greater than MaxZoom ({MaxZoom.Value}).");
