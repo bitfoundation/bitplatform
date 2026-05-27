@@ -10,7 +10,7 @@ It efficiently identifies missing translations in your target language files and
 *   **Preserves Existing Translations:** Only adds missing translations to target `.resx` files, leaving existing ones untouched.
 *   **Automatic File Generation:** Creates target language `.resx` files (e.g., `AppStrings.fr.resx`) if they don't exist based on your default language file (e.g., `AppStrings.fr.resx`).
 *   **Flexible Configuration:** Configure languages, `.resx` file paths (using glob patterns), and LLM provider details via `Bit.ResxTranslator.json`.
-*   **.NET Configuration:** Supports API keys via JSON or standard environment variables (e.g., `OpenAI__ApiKey`, `AzureOpenAI__ApiKey`).
+*   **.NET Configuration:** Supports API keys via JSON or standard environment variable `OpenAI__ApiKey`.
 *   **Easy Installation:** Installs as a .NET global tool.
 
 ## Installation
@@ -41,21 +41,15 @@ This JSON file defines the source and target languages, the location of your res
   "OpenAI": {
     "Model": "gpt-4.1-mini",
     "Endpoint": "https://models.inference.ai.azure.com",
-    "Endpoint__Comment": "Required if using OpenAI: API Key. Can be set here OR via Environment Variable [OpenAI__ApiKey]",
-    "ApiKey": null
-  },
-
-  "AzureOpenAI": {
-    "Model": "gpt-4.1-mini",
-    "Endpoint": "https://yourResourceName.openai.azure.com/openai/deployments/yourDeployment",
-    "Endpoint__Comment": "Required if using Azure: API Key. Can be set here OR via Environment Variable [AzureOpenAI__ApiKey]",
+    "Endpoint__Samples": "Google AI Studio: https://generativelanguage.googleapis.com/v1beta/openai | GitHub: https://models.inference.ai.azure.com",
+    "Endpoint__Samples2": "xAI(Grok): https://api.x.ai/v1 | Azure AI Foundry: https://YOUR_AZURE_FOUNDRY.services.ai.azure.com/openai/v1",
     "ApiKey": null,
-    "ApiKey__Comment": "Required if using Azure: API Key. Can be set here OR via Environment Variable [AzureOpenAI__ApiKey]"
+    "ApiKey__Comment": "API key can be set here OR via [OpenAI__ApiKey] environment variable",
   }
 }
 ```
 
-***Security Note:*** It is highly recommended to provide your ApiKey using environment variables (`OpenAI__ApiKey` or `AzureOpenAI__ApiKey`) instead of hardcoding it directly in the `Bit.RexsTranslator.json` file,
+***Security Note:*** It is highly recommended to provide your ApiKey using environment variable `OpenAI__ApiKey` instead of hardcoding it directly in the `Bit.ResxTranslator.json` file,
 especially if this file is checked into version control. The tool uses standard .NET configuration practices, meaning environment variables will override values present in the JSON file.
 
 ## Usage

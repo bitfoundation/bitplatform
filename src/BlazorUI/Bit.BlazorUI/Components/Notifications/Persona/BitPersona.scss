@@ -33,15 +33,20 @@
 }
 
 .bit-prs-imc {
-    display: flex;
+    display: grid;
     overflow: hidden;
     font-weight: 600;
     position: relative;
     border-radius: 50%;
-    align-items: center;
-    justify-content: center;
+    place-items: center;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
+
+    // Stack every in-flow child (initials, image, unknown icon) in the same cell
+    // so they overlap naturally without absolute positioning.
+    > * {
+        grid-area: 1 / 1;
+    }
 }
 
 .bit-prs-rvs {
@@ -81,15 +86,11 @@
 }
 
 .bit-prs-img {
-    top: 0;
-    left: 0;
     opacity: 1;
-    z-index: 1;
     width: 100%;
     height: 100%;
     display: block;
     object-fit: cover;
-    position: absolute;
 }
 
 .bit-prs-pre {

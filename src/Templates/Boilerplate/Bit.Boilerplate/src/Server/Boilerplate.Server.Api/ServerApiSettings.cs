@@ -142,22 +142,10 @@ public partial class AppIdentityOptions : IdentityOptions
 public partial class AIOptions
 {
     public OpenAIOptions? OpenAI { get; set; }
-    public AzureOpenAIOptions? AzureOpenAI { get; set; }
     public HuggingFaceOptions? HuggingFace { get; set; }
 }
 
 public class OpenAIOptions
-{
-    public string? ChatModel { get; set; }
-    public Uri? ChatEndpoint { get; set; }
-    public string? ChatApiKey { get; set; }
-
-    public string? EmbeddingModel { get; set; }
-    public Uri? EmbeddingEndpoint { get; set; }
-    public string? EmbeddingApiKey { get; set; }
-}
-
-public class AzureOpenAIOptions
 {
     public string? ChatModel { get; set; }
     public Uri? ChatEndpoint { get; set; }

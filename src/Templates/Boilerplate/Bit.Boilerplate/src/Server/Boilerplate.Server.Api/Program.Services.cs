@@ -510,20 +510,6 @@ public static partial class Program
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()
         }
-        else if (string.IsNullOrEmpty(appSettings.AI?.AzureOpenAI?.ChatApiKey) is false)
-        {
-            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.AzureAIInference#microsoftextensionsaiazureaiinference
-            services.AddChatClient(sp => new Azure.AI.Inference.ChatCompletionsClient(endpoint: appSettings.AI.AzureOpenAI.ChatEndpoint,
-                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.ChatApiKey),
-                options: new()
-                {
-                    Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-                }).AsIChatClient(appSettings.AI.AzureOpenAI.ChatModel))
-            .UseLogging()
-            .UseFunctionInvocation()
-            .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
-            // .UseDistributedCache()
-        }
 
         if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
         {
@@ -532,18 +518,6 @@ public static partial class Program
                 Endpoint = appSettings.AI.OpenAI.EmbeddingEndpoint,
                 Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
             }).AsIEmbeddingGenerator())
-            .UseLogging()
-            .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
-            // .UseDistributedCache()
-        }
-        else if (string.IsNullOrEmpty(appSettings.AI?.AzureOpenAI?.EmbeddingApiKey) is false)
-        {
-            services.AddEmbeddingGenerator(sp => new Azure.AI.Inference.EmbeddingsClient(endpoint: appSettings.AI.AzureOpenAI.EmbeddingEndpoint,
-                credential: new Azure.AzureKeyCredential(appSettings.AI.AzureOpenAI.EmbeddingApiKey),
-                options: new()
-                {
-                    Transport = new Azure.Core.Pipeline.HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-                }).AsIEmbeddingGenerator(appSettings.AI.AzureOpenAI.EmbeddingModel))
             .UseLogging()
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()

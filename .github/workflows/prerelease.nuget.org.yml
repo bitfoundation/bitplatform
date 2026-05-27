@@ -28,7 +28,7 @@ jobs:
         rm src/AssemblyOriginatorKeyFile.snk
 
     - name: Extract strong sign certificate from env
-      uses: timheuer/base64-to-file@v1.2
+      uses: timheuer/base64-to-file@v2
       with:
           fileDir: './src/'
           fileName: 'AssemblyOriginatorKeyFile.snk'

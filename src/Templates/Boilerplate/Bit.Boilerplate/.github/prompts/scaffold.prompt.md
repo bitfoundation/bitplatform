@@ -1,11 +1,26 @@
 ---
 mode: 'agent'
-description: Scaffolds complete CRUD entity implementations including entity model, EF configuration, DTO, Mapperly mapper, API controller, IAppController interface, resource strings, and Blazor pages.
+description: Scaffolds complete CRUD entity implementations including entity model, EF configuration, DTO, Mapperly mapper, API controller, IAppController interface, resource strings, Blazor pages, and AppFeatures registration.
 ---
 
 # Scaffold Complete Entity with Full CRUD
 
 You are an expert at scaffolding complete entity implementations for the project.
+
+## Pre-Implementation Research
+
+**MANDATORY for First-Time CRUD Setup**: Before generating any page files (`.razor`, `.razor.cs`, `.razor.scss`), check the project for existing implementations of `<BitDataGrid`.
+
+* **If a `<BitDataGrid` is already present in the project:** Skip this research step and follow the existing project patterns.
+* **If NO `<BitDataGrid` can be found (First CRUD Implementation):** You **MUST** use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform` to retrieve the authoritative CRUD page patterns.
+
+  There are **two types of CRUD pages** — choose the appropriate one based on the DTO being scaffolded:
+  - **Modal Dialog CRUD** — suited for DTOs with a small number of simple properties. The `bitfoundation/bitplatform` reference sample for this pattern is **Categories**.
+  - **Detailed Page CRUD** — suited for DTOs with many properties, rich text editors, file uploads, or complex forms. The `bitfoundation/bitplatform` reference sample for this pattern is **Products**.
+
+  **Before proceeding, ask the user which mode is appropriate** given the current DTO's structure and requirements.
+
+Use the returned patterns as the authoritative reference for all generated Blazor page files in this initial scaffold.
 
 ## Instructions
 
@@ -20,8 +35,9 @@ Generate a complete CRUD implementation for an entity including:
 8. **IAppController Interface** (Strongly-typed HTTP client)
 9. **Resource Strings** (AppStrings.resx)
 10. **Data Grid Page**
-11. **Add/Edit Page**
+11. **Add/Edit Modal or Page**
 12. **PageUrls.cs**, **NavBar.razor** and **MainLayout.razor.items.cs** integration
+13. **AppFeatures.cs** registration
 
 ### Entity (Model)
 - **Location**: `src/Server/Boilerplate.Server.Api/Features/{FeatureName}/`
@@ -106,7 +122,7 @@ background: $bit-color-background-secondary;
 color: $bit-color-primary;
 ```
 
-Always use `WrapHandled` for event handlers and lifecycle methods. Exceptions are caught and handled by `ExceptionHandler`:
+Always use `WrapHandled` for all event handlers. Exceptions are caught and handled by `ExceptionHandler`:
 ```razor
 <BitButton OnClick="WrapHandled(SaveData)" />
 <BitTextField OnEnter="WrapHandled(async (args) => await Submit())" />

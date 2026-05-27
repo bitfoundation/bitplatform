@@ -9,9 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.ClientModel.Primitives;
 
-using Azure.AI.Inference;
-using Azure.Core.Pipeline;
-
 using OpenAI.Chat;
 
 var services = new ServiceCollection();
@@ -59,18 +56,6 @@ if (string.IsNullOrEmpty(settings.OpenAI?.ApiKey) is false)
         Endpoint = settings.OpenAI.Endpoint,
         Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
     }).AsIChatClient())
-    .UseLogging()
-    .UseFunctionInvocation();
-}
-else if (string.IsNullOrEmpty(settings.AzureOpenAI?.ApiKey) is false)
-{
-    // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.AzureAIInference#microsoftextensionsaiazureaiinference
-    services.AddChatClient(sp => new ChatCompletionsClient(endpoint: settings.AzureOpenAI.Endpoint,
-        credential: new Azure.AzureKeyCredential(settings.AzureOpenAI.ApiKey),
-        options: new()
-        {
-            Transport = new HttpClientTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
-        }).AsIChatClient(settings.AzureOpenAI.Model))
     .UseLogging()
     .UseFunctionInvocation();
 }
