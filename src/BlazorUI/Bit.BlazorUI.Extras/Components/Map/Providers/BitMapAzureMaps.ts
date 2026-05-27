@@ -459,16 +459,23 @@ namespace BitBlazorUI {
         }
 
         private static _notifyView(s: any) {
-            if (!s.dotnetObj) return;
+            // Capture the .NET handle and camera snapshot synchronously. dispose() can
+            // null s.dotnetObj before the queueMicrotask callback runs, so referencing
+            // s.dotnetObj inside the microtask risks a TypeError or a no-op invocation
+            // on a stale object. The local `dotnet` constant remains a valid handle even
+            // if dispose() runs after this microtask is scheduled.
+            const dotnet = s.dotnetObj;
+            if (!dotnet) return;
             const cam = s.map.getCamera();
             if (!cam) return;
-            const c = cam.center ?? [0, 0];
-            const b = cam.bounds;
-            queueMicrotask(() => s.dotnetObj.invokeMethodAsync('OnViewChanged', {
-                center: { lat: c[1], lng: c[0] },
-                zoom: cam.zoom ?? 0,
-                bounds: b
-                    ? { southWest: { lat: b[1], lng: b[0] }, northEast: { lat: b[3], lng: b[2] } }
+            const center = cam.center ?? [0, 0];
+            const bounds = cam.bounds;
+            const zoom = cam.zoom ?? 0;
+            queueMicrotask(() => dotnet.invokeMethodAsync('OnViewChanged', {
+                center: { lat: center[1], lng: center[0] },
+                zoom,
+                bounds: bounds
+                    ? { southWest: { lat: bounds[1], lng: bounds[0] }, northEast: { lat: bounds[3], lng: bounds[2] } }
                     : { southWest: { lat: 0, lng: 0 }, northEast: { lat: 0, lng: 0 } },
             }));
         }

@@ -384,6 +384,14 @@ namespace BitBlazorUI {
             const dn = s.dotnetObj;
             const layer = L.geoJSON(gj, {
                 style: () => BitMapLeaflet._pathStyle(style),
+                // Default L.geoJSON renders Point/MultiPoint features as a vanilla
+                // L.marker which ignores the path style passed above. Provide a
+                // pointToLayer that wraps each point as a styled circleMarker so
+                // points pick up the same color/weight/opacity as polylines and
+                // polygons in the same GeoJSON document.
+                pointToLayer(_feature: any, latlng: any) {
+                    return L.circleMarker(latlng, BitMapLeaflet._pathStyle(style));
+                },
                 onEachFeature(feature: any, lyr: any) {
                     if (dn) {
                         lyr.on('click', (e: any) => {

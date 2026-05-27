@@ -22,9 +22,21 @@ namespace BitBlazorUI {
         } } = {};
 
         private static readonly _defaultTileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+        private static readonly _osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
         private static _resolveTileUrl(o: any): string {
             return (o.tileUrl || BitMapOpenLayers._defaultTileUrl).replace('{s}', 'a');
+        }
+
+        // When the resolved tileUrl is the built-in OSM URL and the caller didn't
+        // supply a non-empty attribution, fall back to the standard OSM credit
+        // (OSM's tile usage policy contractually requires it). Mirrors the URL-keyed
+        // attribution rule in BitMapLeaflet so the two providers behave consistently
+        // when consumers leave tileUrl/tileAttribution unset.
+        private static _resolveTileAttribution(tileUrl: string, tileAttribution: any): string {
+            if (typeof tileAttribution === 'string' && tileAttribution.length > 0) return tileAttribution;
+            if (tileUrl === BitMapOpenLayers._defaultTileUrl) return BitMapOpenLayers._osmAttribution;
+            return typeof tileAttribution === 'string' ? tileAttribution : '';
         }
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
@@ -36,7 +48,7 @@ namespace BitBlazorUI {
 
             const tileUrl = BitMapOpenLayers._resolveTileUrl(o);
             const tileMaxZoom = o.tileMaxZoom ?? 19;
-            const tileAttribution = o.tileAttribution || '';
+            const tileAttribution = BitMapOpenLayers._resolveTileAttribution(tileUrl, o.tileAttribution);
             const tileOpacity = o.tileOpacity ?? 1;
 
             const baseTile = new ol.TileLayer({
@@ -177,7 +189,23 @@ namespace BitBlazorUI {
                 ? BitMapOpenLayers._resolveTileUrl(o)
                 : s.tileUrl;
             const nextTileMaxZoom = o.tileMaxZoom ?? s.tileMaxZoom;
-            const nextTileAttribution = o.tileAttribution ?? s.tileAttribution;
+            // Mirror init's URL-keyed attribution rule so an attribution from a
+            // previous OSM-default base layer doesn't leak onto a newly-set custom
+            // tileUrl, and a switch back to the OSM default re-applies the OSM
+            // credit when the caller left tileAttribution unset.
+            const callerAttrProvided = typeof o.tileAttribution === 'string';
+            const callerAttrNonEmpty = callerAttrProvided && (o.tileAttribution as string).length > 0;
+            const urlChanged = nextTileUrl !== s.tileUrl;
+            let nextTileAttribution: string;
+            if (callerAttrNonEmpty) {
+                nextTileAttribution = o.tileAttribution as string;
+            } else if (callerAttrProvided || urlChanged) {
+                nextTileAttribution = BitMapOpenLayers._resolveTileAttribution(
+                    nextTileUrl,
+                    callerAttrProvided ? o.tileAttribution : '');
+            } else {
+                nextTileAttribution = s.tileAttribution;
+            }
             if (nextTileUrl !== s.tileUrl ||
                 nextTileMaxZoom !== s.tileMaxZoom ||
                 nextTileAttribution !== s.tileAttribution) {

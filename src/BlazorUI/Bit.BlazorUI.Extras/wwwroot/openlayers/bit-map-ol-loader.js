@@ -53,10 +53,12 @@ const p = globalThis.__bitMapOlBundle || Promise.all([
 }));
 
 // Clear the global on failure so future loader injections can retry the imports
-// instead of being permanently stuck on a rejected promise.
-p.catch((err) => {
+// instead of being permanently stuck on a rejected promise. This handler only
+// performs cleanup — it must not rethrow, otherwise it would surface a second
+// unhandled rejection in addition to the original `p`. Awaiters receive the
+// original rejection through `p` itself.
+p.catch(() => {
     if (globalThis.__bitMapOlBundle === p) delete globalThis.__bitMapOlBundle;
-    throw err;
 });
 
 globalThis.__bitMapOlBundle = p;

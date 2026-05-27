@@ -528,6 +528,21 @@ namespace BitBlazorUI {
             const view = s.view;
             let active: any = null; // { graphic, markerId }
 
+            // Restore any actionMap.dragPrimary override and clear `active`. Used by
+            // pointer-up / pointer-leave to defend against a hitTest promise that
+            // resolves AFTER the user has already released the pointer: without this
+            // cleanup the hitTest's `active = ...; am.dragPrimary = null;` block
+            // would leave panning permanently disabled and `active` permanently
+            // pinned to a stale graphic.
+            const releaseActive = () => {
+                if (!active) return;
+                const am = view.navigation?.actionMap;
+                if (am && (active as any)._prevDrag !== undefined) {
+                    am.dragPrimary = (active as any)._prevDrag;
+                }
+                active = null;
+            };
+
             view.on('pointer-down', (event: any) => {
                 view.hitTest(event).then((response: any) => {
                     for (const r of response.results) {
@@ -544,6 +559,13 @@ namespace BitBlazorUI {
                     }
                 }).catch(() => { /* ignore */ });
             });
+
+            // pointer-up / pointer-leave clear `active` and restore actionMap.dragPrimary
+            // even if the corresponding pointer-down hitTest promise hasn't resolved
+            // yet — and even if it resolves later, releaseActive() ensures the
+            // override is undone the next time the pointer is released or leaves.
+            view.on('pointer-up', () => releaseActive());
+            view.on('pointer-leave', () => releaseActive());
 
             view.on('drag', (event: any) => {
                 if (!active) return;

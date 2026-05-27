@@ -14,6 +14,11 @@ namespace BitBlazorUI {
             _cesiumHandler: any,
             _viewTimer: any,
             _moveEndCallback: any,
+            ionAccessToken: string | undefined,
+            imageryStyle: string | undefined,
+            terrainEnabled: boolean,
+            sceneMode: string | undefined,
+            shadowsEnabled: boolean,
         } } = {};
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
@@ -22,28 +27,31 @@ namespace BitBlazorUI {
             const Cesium = (globalThis as any).Cesium;
             const o = options || {};
 
-            // Default to OSM imagery if no ion token
-            if (o.ionAccessToken) {
-                Cesium.Ion.defaultAccessToken = o.ionAccessToken;
-            }
+            // Per-instance Ion access token. We deliberately do NOT mutate
+            // Cesium.Ion.defaultAccessToken: that is process-global state shared by
+            // every Viewer in the page, so a token set for one BitMap instance would
+            // leak into unrelated viewers (and a later Viewer with a different token
+            // would silently overwrite an earlier one). Pass o.ionAccessToken to each
+            // Ion resource we construct instead.
+            const ionAccessToken: string | undefined = o.ionAccessToken || undefined;
 
             // Cesium 1.104+ deprecated imageryProvider in Viewer constructor;
             // use baseLayer instead. createWorldTerrain() is also deprecated in
             // favor of createWorldTerrainAsync().
             const baseLayer = await (async () => {
-                if ((o.imageryStyle === 'bing_aerial' || o.imageryStyle === 'bing_labels') && o.ionAccessToken) {
-                    // Use Cesium's Ion-based Bing imagery.
-                    // bing_aerial = satellite only; bing_labels = satellite + roads/labels (hybrid).
-                    if (o.imageryStyle === 'bing_labels' && Cesium.IonImageryProvider) {
-                        // Ion asset 3 = Bing Maps Aerial with Labels
+                if ((o.imageryStyle === 'bing_aerial' || o.imageryStyle === 'bing_labels') && ionAccessToken) {
+                    // Use Cesium's Ion-based Bing imagery. bing_aerial uses Ion asset 2
+                    // (Bing Maps Aerial). bing_labels uses Ion asset 3 (Bing Maps
+                    // Aerial with Labels).
+                    const assetId = o.imageryStyle === 'bing_labels' ? 3 : 2;
+                    if (Cesium.IonImageryProvider) {
                         const provider = await (Cesium.IonImageryProvider.fromAssetId
-                            ? Cesium.IonImageryProvider.fromAssetId(3)
-                            : new Cesium.IonImageryProvider({ assetId: 3 }));
+                            ? Cesium.IonImageryProvider.fromAssetId(assetId, { accessToken: ionAccessToken })
+                            : new Cesium.IonImageryProvider({ assetId, accessToken: ionAccessToken }));
                         return Cesium.ImageryLayer
                             ? new Cesium.ImageryLayer(provider)
                             : provider;
                     }
-                    // bing_aerial: Viewer will use Ion default (Bing Aerial) when baseLayer is undefined and token is set
                     return undefined;
                 }
                 if (o.imageryStyle === 'none') {
@@ -61,12 +69,19 @@ namespace BitBlazorUI {
                     : osmProvider; // fallback for older Cesium builds
             })();
 
-            // Terrain: use async API (Cesium 1.104+)
+            // Terrain: use async API (Cesium 1.104+). Build Ion world terrain
+            // directly via CesiumTerrainProvider.fromIonAssetId so we can pass the
+            // per-instance accessToken without relying on Cesium.Ion.defaultAccessToken.
             let terrainProvider: any;
-            if (o.terrainEnabled && o.ionAccessToken) {
-                terrainProvider = Cesium.createWorldTerrainAsync
-                    ? await Cesium.createWorldTerrainAsync()
-                    : Cesium.createWorldTerrain();
+            if (o.terrainEnabled && ionAccessToken) {
+                if (Cesium.CesiumTerrainProvider?.fromIonAssetId) {
+                    // Ion asset 1 = Cesium World Terrain
+                    terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1, { accessToken: ionAccessToken });
+                } else if (Cesium.createWorldTerrainAsync) {
+                    terrainProvider = await Cesium.createWorldTerrainAsync();
+                } else {
+                    terrainProvider = Cesium.createWorldTerrain();
+                }
             } else {
                 terrainProvider = new Cesium.EllipsoidTerrainProvider();
             }
@@ -110,6 +125,11 @@ namespace BitBlazorUI {
                 Cesium, viewer, dotnetObj,
                 markers: {} as any, layers: {} as any, geoJsonLayers: {} as any, tileOverlays: {} as any,
                 _cesiumHandler: null as any, _viewTimer: null as any, _moveEndCallback: null as any,
+                ionAccessToken,
+                imageryStyle: o.imageryStyle,
+                terrainEnabled: !!o.terrainEnabled,
+                sceneMode: o.sceneMode,
+                shadowsEnabled: !!o.shadowsEnabled,
             };
             BitMapCesium._wireEvents(state);
             BitMapCesium._maps[id] = state;
@@ -119,18 +139,65 @@ namespace BitBlazorUI {
         public static sync(id: string, options: any) {
             const s = BitMapCesium._maps[id];
             if (!s) return;
+            const Cesium = s.Cesium;
             const o = options || {};
 
+            // ---- imagery ----
+            // Replace the base imagery layer when o.imageryStyle is provided and
+            // differs from the currently-applied style. We keep the logic in step
+            // with init: bing_* uses an Ion provider (requires ionAccessToken); 'none'
+            // disables imagery; anything else falls back to OSM tiles.
+            if (Object.prototype.hasOwnProperty.call(o, 'imageryStyle') && o.imageryStyle !== s.imageryStyle) {
+                BitMapCesium._applyImagery(s, o.imageryStyle).catch(() => { /* ignore */ });
+                s.imageryStyle = o.imageryStyle;
+            }
+
+            // ---- terrain ----
+            if (Object.prototype.hasOwnProperty.call(o, 'terrainEnabled') && !!o.terrainEnabled !== s.terrainEnabled) {
+                const enabled = !!o.terrainEnabled;
+                if (enabled && s.ionAccessToken && Cesium.CesiumTerrainProvider?.fromIonAssetId) {
+                    Cesium.CesiumTerrainProvider.fromIonAssetId(1, { accessToken: s.ionAccessToken })
+                        .then((tp: any) => { try { s.viewer.terrainProvider = tp; } catch { /* ignore */ } })
+                        .catch(() => { /* ignore */ });
+                } else if (enabled && Cesium.createWorldTerrainAsync) {
+                    Cesium.createWorldTerrainAsync()
+                        .then((tp: any) => { try { s.viewer.terrainProvider = tp; } catch { /* ignore */ } })
+                        .catch(() => { /* ignore */ });
+                } else {
+                    try { s.viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider(); } catch { /* ignore */ }
+                }
+                s.terrainEnabled = enabled;
+            }
+
+            // ---- scene mode ----
+            if (Object.prototype.hasOwnProperty.call(o, 'sceneMode') && o.sceneMode !== s.sceneMode) {
+                try {
+                    if (o.sceneMode === 'scene2d') s.viewer.scene.morphTo2D(0);
+                    else if (o.sceneMode === 'columbus') s.viewer.scene.morphToColumbusView(0);
+                    else s.viewer.scene.morphTo3D(0);
+                } catch { /* ignore */ }
+                s.sceneMode = o.sceneMode;
+            }
+
+            // ---- shadows ----
+            if (Object.prototype.hasOwnProperty.call(o, 'shadowsEnabled') && !!o.shadowsEnabled !== s.shadowsEnabled) {
+                const v = !!o.shadowsEnabled;
+                try { s.viewer.shadows = v; } catch { /* ignore */ }
+                try { s.viewer.scene.shadowMap.enabled = v; } catch { /* ignore */ }
+                s.shadowsEnabled = v;
+            }
+
+            // ---- camera ----
             let lat: number, lng: number, altitude: number;
 
-            const currentCartographic = s.Cesium.Cartographic.fromCartesian(s.viewer.camera.position);
+            const currentCartographic = Cesium.Cartographic.fromCartesian(s.viewer.camera.position);
 
             if (o.center !== undefined && o.center !== null) {
                 lat = o.center.lat;
                 lng = o.center.lng;
             } else if (currentCartographic) {
-                lat = s.Cesium.Math.toDegrees(currentCartographic.latitude);
-                lng = s.Cesium.Math.toDegrees(currentCartographic.longitude);
+                lat = Cesium.Math.toDegrees(currentCartographic.latitude);
+                lng = Cesium.Math.toDegrees(currentCartographic.longitude);
             } else {
                 lat = 51.505;
                 lng = -0.09;
@@ -147,9 +214,55 @@ namespace BitBlazorUI {
             }
 
             s.viewer.camera.flyTo({
-                destination: s.Cesium.Cartesian3.fromDegrees(lng, lat, altitude),
+                destination: Cesium.Cartesian3.fromDegrees(lng, lat, altitude),
                 duration: 0,
             });
+        }
+
+        private static async _applyImagery(s: any, imageryStyle: string | undefined) {
+            const Cesium = s.Cesium;
+            const layers = s.viewer.imageryLayers;
+            if (!layers) return;
+
+            const buildOsmLayer = () => {
+                const osmProvider = new Cesium.UrlTemplateImageryProvider({
+                    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    subdomains: ['a', 'b', 'c'],
+                    credit: '© OpenStreetMap contributors',
+                    maximumLevel: 19,
+                });
+                return Cesium.ImageryLayer ? new Cesium.ImageryLayer(osmProvider) : null;
+            };
+
+            // Remove the existing base layer (index 0). User-added overlays sit
+            // above it and are preserved.
+            try {
+                if (layers.length > 0) {
+                    const base = layers.get(0);
+                    layers.remove(base, true);
+                }
+            } catch { /* ignore */ }
+
+            if (imageryStyle === 'none') {
+                return;
+            }
+
+            if ((imageryStyle === 'bing_aerial' || imageryStyle === 'bing_labels') && s.ionAccessToken && Cesium.IonImageryProvider) {
+                const assetId = imageryStyle === 'bing_labels' ? 3 : 2;
+                try {
+                    const provider = await (Cesium.IonImageryProvider.fromAssetId
+                        ? Cesium.IonImageryProvider.fromAssetId(assetId, { accessToken: s.ionAccessToken })
+                        : new Cesium.IonImageryProvider({ assetId, accessToken: s.ionAccessToken }));
+                    const lyr = Cesium.ImageryLayer ? new Cesium.ImageryLayer(provider) : provider;
+                    if (lyr) try { layers.add(lyr, 0); } catch { layers.add(lyr); }
+                    return;
+                } catch { /* fall through to OSM */ }
+            }
+
+            const osm = buildOsmLayer();
+            if (osm) {
+                try { layers.add(osm, 0); } catch { layers.add(osm); }
+            }
         }
 
         public static dispose(id: string) {
@@ -503,7 +616,13 @@ namespace BitBlazorUI {
 
         private static _notifyView(s: any) {
             if (!s.dotnetObj) return;
-            queueMicrotask(() => s.dotnetObj.invokeMethodAsync('OnViewChanged', BitMapCesium._readView(s)));
+            // Capture the view snapshot synchronously. dispose() can destroy s.viewer
+            // and null s.dotnetObj before this microtask runs, so deferring _readView
+            // would risk reading from a destroyed Cesium Viewer. We snapshot the
+            // dotnet handle and the view payload here while everything is still alive.
+            const dotnet = s.dotnetObj;
+            const view = BitMapCesium._readView(s);
+            queueMicrotask(() => dotnet.invokeMethodAsync('OnViewChanged', view));
         }
 
         private static _wireEvents(s: any) {

@@ -7,7 +7,7 @@ public partial class BitMapDemo
         new() { Name = "TMapProvider", Type = "Type (generic)", DefaultValue = "", Description = "The map provider type. One of: BitLeafletMapProvider, BitMapLibreMapProvider, BitMapboxMapProvider, BitOpenLayersMapProvider, BitArcGisMapProvider, BitAzureMapsMapProvider, BitCesiumMapProvider." },
         new() { Name = "Provider", Type = "TMapProvider?", DefaultValue = "null", Description = "Provider configuration instance (center, zoom, tokens, etc.). When null a default instance is created." },
         new() { Name = "ChildContent", Type = "RenderFragment?", DefaultValue = "null", Description = "Optional content rendered above the map canvas." },
-        new() { Name = "OnReady", Type = "EventCallback", DefaultValue = "", Description = "Fires once after the map is ready for imperative calls." },
+        new() { Name = "OnReady", Type = "EventCallback", DefaultValue = "", Description = "Fires after the map is ready for imperative calls. Fires once on initial mount, and fires again after a destructive provider swap each time the new provider becomes ready." },
         new() { Name = "OnClick", Type = "EventCallback<BitMapLatLng>", DefaultValue = "", Description = "Fires when the user clicks the map canvas." },
         new() { Name = "OnDoubleClick", Type = "EventCallback<BitMapLatLng>", DefaultValue = "", Description = "Fires when the user double-clicks the map." },
         new() { Name = "OnViewChanged", Type = "EventCallback<BitMapViewState>", DefaultValue = "", Description = "Fires whenever the map view changes." },
