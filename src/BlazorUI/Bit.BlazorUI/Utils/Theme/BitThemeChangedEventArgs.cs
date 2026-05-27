@@ -8,6 +8,9 @@ public sealed class BitThemeChangedEventArgs : EventArgs
 {
     public BitThemeChangedEventArgs(string newTheme, string oldTheme)
     {
+        ArgumentNullException.ThrowIfNull(newTheme);
+        ArgumentNullException.ThrowIfNull(oldTheme);
+
         NewTheme = newTheme;
         OldTheme = oldTheme;
     }
