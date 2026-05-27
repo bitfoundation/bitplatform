@@ -66,10 +66,19 @@ public abstract class BitMapProviderBase : IBitMapProvider
     public abstract object BuildOptionsPayload();
 
     /// <summary>
-    /// Shared options dictionary that every provider's payload should include.
-    /// Returns a dictionary so concrete providers can spread/extend it before sending.
+    /// Validates the cross-provider options on this base type. Concrete subclasses
+    /// should call this from <see cref="BuildOptionsPayload"/> before adding their
+    /// own provider-specific options. Splitting validation out of
+    /// <see cref="GetCommonOptions"/> lets callers introspect the common payload
+    /// without triggering side-effecting throws.
     /// </summary>
-    protected Dictionary<string, object?> GetCommonOptions()
+    /// <exception cref="ArgumentException">
+    /// Thrown when <see cref="MinZoom"/> &gt; <see cref="MaxZoom"/>.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <see cref="Zoom"/> falls outside <see cref="MinZoom"/>/<see cref="MaxZoom"/>.
+    /// </exception>
+    protected void ValidateCommonOptions()
     {
         if (MinZoom.HasValue && MaxZoom.HasValue && MinZoom.Value > MaxZoom.Value)
         {
@@ -91,6 +100,18 @@ public abstract class BitMapProviderBase : IBitMapProvider
                 Zoom,
                 $"Zoom ({Zoom}) must be less than or equal to MaxZoom ({MaxZoom.Value}).");
         }
+    }
+
+    /// <summary>
+    /// Shared options dictionary that every provider's payload should include.
+    /// Returns a dictionary so concrete providers can spread/extend it before sending.
+    /// Calls <see cref="ValidateCommonOptions"/> first; subclasses can call
+    /// <see cref="ValidateCommonOptions"/> directly if they need to validate without
+    /// allocating the payload.
+    /// </summary>
+    protected Dictionary<string, object?> GetCommonOptions()
+    {
+        ValidateCommonOptions();
 
         return new Dictionary<string, object?>
         {
@@ -117,41 +138,16 @@ public abstract class BitMapProviderBase : IBitMapProvider
     }
 
     /// <summary>
-    /// Validates an XYZ tile URL template. The value must be non-empty and contain the
-    /// <c>{z}</c>, <c>{x}</c> and <c>{y}</c> placeholders that every supported tile
-    /// backend expects. Throws <see cref="ArgumentException"/> on failure so configuration
-    /// mistakes surface in .NET rather than as opaque JS errors.
+    /// Validates an XYZ tile URL template. Wraps <see cref="BitMapValidation.ValidateTileUrl"/>
+    /// for backwards compatibility with subclasses that already call this protected helper.
     /// </summary>
     protected static void ValidateTileUrl(string? tileUrl, string propertyName)
-    {
-        if (string.IsNullOrWhiteSpace(tileUrl))
-        {
-            throw new ArgumentException($"{propertyName} must be a non-empty XYZ tile URL template.", propertyName);
-        }
-
-        if (tileUrl.Contains("{z}", StringComparison.Ordinal) is false
-            || tileUrl.Contains("{x}", StringComparison.Ordinal) is false
-            || tileUrl.Contains("{y}", StringComparison.Ordinal) is false)
-        {
-            // Intentionally do not echo the raw tileUrl back in the message — it can carry
-            // API keys or other sensitive query parameters and would land in logs/stack traces.
-            throw new ArgumentException(
-                $"{propertyName} must contain the {{z}}, {{x}} and {{y}} placeholders.",
-                propertyName);
-        }
-    }
+        => BitMapValidation.ValidateTileUrl(tileUrl, propertyName);
 
     /// <summary>
     /// Validates a tile max-zoom value is within the broadly supported XYZ range (0–30).
+    /// Wraps <see cref="BitMapValidation.ValidateTileMaxZoom"/>.
     /// </summary>
     protected static void ValidateTileMaxZoom(int tileMaxZoom, string propertyName)
-    {
-        if (tileMaxZoom is < 0 or > 30)
-        {
-            throw new ArgumentOutOfRangeException(
-                propertyName,
-                tileMaxZoom,
-                $"{propertyName} must be between 0 and 30.");
-        }
-    }
+        => BitMapValidation.ValidateTileMaxZoom(tileMaxZoom, propertyName);
 }

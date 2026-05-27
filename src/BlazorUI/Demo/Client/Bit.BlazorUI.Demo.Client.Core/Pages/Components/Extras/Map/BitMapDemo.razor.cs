@@ -7,6 +7,7 @@ public partial class BitMapDemo
         new() { Name = "TMapProvider", Type = "Type (generic)", DefaultValue = "", Description = "The map provider type. One of: BitLeafletMapProvider, BitMapLibreMapProvider, BitMapboxMapProvider, BitOpenLayersMapProvider, BitArcGisMapProvider, BitAzureMapsMapProvider, BitCesiumMapProvider." },
         new() { Name = "Provider", Type = "TMapProvider?", DefaultValue = "null", Description = "Provider configuration instance (center, zoom, tokens, etc.). When null a default instance is created." },
         new() { Name = "ChildContent", Type = "RenderFragment?", DefaultValue = "null", Description = "Optional content rendered above the map canvas." },
+        new() { Name = "ReplayStateOnProviderSwap", Type = "bool", DefaultValue = "false", Description = "When true, imperatively-added markers, vector layers, and tile overlays are replayed after a destructive provider swap (different JsObjectName)." },
         new() { Name = "OnReady", Type = "EventCallback", DefaultValue = "", Description = "Fires after the map is ready for imperative calls. Fires once on initial mount, and fires again after a destructive provider swap each time the new provider becomes ready." },
         new() { Name = "OnClick", Type = "EventCallback<BitMapLatLng>", DefaultValue = "", Description = "Fires when the user clicks the map canvas." },
         new() { Name = "OnDoubleClick", Type = "EventCallback<BitMapLatLng>", DefaultValue = "", Description = "Fires when the user double-clicks the map." },
@@ -15,6 +16,7 @@ public partial class BitMapDemo
         new() { Name = "OnMarkerDragEnd", Type = "EventCallback<BitMapMarkerDragEndArgs>", DefaultValue = "", Description = "Fires when a draggable marker is dropped." },
         new() { Name = "OnVectorClick", Type = "EventCallback<BitMapVectorClickArgs>", DefaultValue = "", Description = "Fires when the user clicks a vector layer." },
         new() { Name = "OnGeoJsonFeatureClick", Type = "EventCallback<BitMapGeoJsonFeatureClickArgs>", DefaultValue = "", Description = "Fires when the user clicks a GeoJSON feature." },
+        new() { Name = "OnInteropError", Type = "EventCallback<BitMapInteropErrorArgs>", DefaultValue = "", Description = "Fires when an interop call into the underlying provider fails. Lets consumers surface errors that the component would otherwise swallow to prevent circuit-breaking exceptions." },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -63,14 +65,14 @@ public partial class BitMapDemo
         await markersMapRef.AddMarker(new BitMapMarker
         {
             Id = "paris", Position = new(48.8566, 2.3522),
-            Title = "Paris", PopupHtml = "<b>Paris</b><br/>Click to open popup.",
+            Title = "Paris", PopupHtml = (MarkupString)"<b>Paris</b><br/>Click to open popup.",
         });
         await markersMapRef.AddMarker(new BitMapMarker
         {
             Id = "london", Position = new(51.5074, -0.1278),
-            Title = "London", PopupHtml = "<b>London</b><br/>Draggable marker.",
+            Title = "London", PopupHtml = (MarkupString)"<b>London</b><br/>Draggable marker.",
             Draggable = true,
-            TooltipHtml = "Drag me!",
+            TooltipHtml = (MarkupString)"Drag me!",
         });
         await markersMapRef.FitBoundsToMarkers();
     }
@@ -106,10 +108,10 @@ public partial class BitMapDemo
         {
             Id = id, Position = new(lat, lng),
             Title = $"Marker {id}{(draggable ? " (draggable)" : "")}",
-            PopupHtml = $"Marker <code>{id}</code><br/>{lat:F4}, {lng:F4}" +
-                        (draggable ? "<br/><i>Drag me!</i>" : ""),
+            PopupHtml = (MarkupString)($"Marker <code>{id}</code><br/>{lat:F4}, {lng:F4}" +
+                        (draggable ? "<br/><i>Drag me!</i>" : "")),
             Draggable = draggable,
-            TooltipHtml = draggable ? "Drag me!" : null,
+            TooltipHtml = draggable ? (MarkupString?)(MarkupString)"Drag me!" : null,
         });
         markersLog = $"Added {id}{(draggable ? " (draggable)" : "")} at {lat:F4}, {lng:F4}";
     }
@@ -349,9 +351,9 @@ public partial class BitMapDemo
     private async Task AddTooltipMarkers()
     {
         await advMapRef.ClearMarkers();
-        await advMapRef.AddMarker(new BitMapMarker { Id = "a", Position = new(51.52, -0.10), TooltipHtml = "<b>West End</b>", PopupHtml = "Popup A", ZIndexOffset = 10 });
-        await advMapRef.AddMarker(new BitMapMarker { Id = "b", Position = new(51.50, -0.08), TooltipHtml = "City", PopupHtml = "Popup B" });
-        await advMapRef.AddMarker(new BitMapMarker { Id = "c", Position = new(51.48, -0.06), TooltipHtml = "South Bank", PopupHtml = "Popup C" });
+        await advMapRef.AddMarker(new BitMapMarker { Id = "a", Position = new(51.52, -0.10), TooltipHtml = (MarkupString)"<b>West End</b>", PopupHtml = (MarkupString)"Popup A", ZIndexOffset = 10 });
+        await advMapRef.AddMarker(new BitMapMarker { Id = "b", Position = new(51.50, -0.08), TooltipHtml = (MarkupString)"City", PopupHtml = (MarkupString)"Popup B" });
+        await advMapRef.AddMarker(new BitMapMarker { Id = "c", Position = new(51.48, -0.06), TooltipHtml = (MarkupString)"South Bank", PopupHtml = (MarkupString)"Popup C" });
         await advMapRef.FitBoundsToMarkers(56);
         advLog = "Three tooltip markers added; view fitted.";
     }
@@ -423,14 +425,14 @@ private async Task OnMarkersReady()
     await markersMapRef.AddMarker(new BitMapMarker
     {
         Id = ""paris"", Position = new(48.8566, 2.3522),
-        Title = ""Paris"", PopupHtml = ""<b>Paris</b><br/>Click to open popup."",
+        Title = ""Paris"", PopupHtml = (MarkupString)""<b>Paris</b><br/>Click to open popup."",
     });
     await markersMapRef.AddMarker(new BitMapMarker
     {
         Id = ""london"", Position = new(51.5074, -0.1278),
-        Title = ""London"", PopupHtml = ""<b>London</b><br/>Draggable marker."",
+        Title = ""London"", PopupHtml = (MarkupString)""<b>London</b><br/>Draggable marker."",
         Draggable = true,
-        TooltipHtml = ""Drag me!"",
+        TooltipHtml = (MarkupString)""Drag me!"",
     });
     await markersMapRef.FitBoundsToMarkers();
 }
@@ -463,10 +465,10 @@ private async Task AddRandomMarker()
     {
         Id = id, Position = new(lat, lng),
         Title = $""Marker {id}{(draggable ? "" (draggable)"" : """")}"",
-        PopupHtml = $""Marker <code>{id}</code><br/>{lat:F4}, {lng:F4}"" +
-                    (draggable ? ""<br/><i>Drag me!</i>"" : """"),
+        PopupHtml = (MarkupString)($""Marker <code>{id}</code><br/>{lat:F4}, {lng:F4}"" +
+                    (draggable ? ""<br/><i>Drag me!</i>"" : """")),
         Draggable = draggable,
-        TooltipHtml = draggable ? ""Drag me!"" : null,
+        TooltipHtml = draggable ? (MarkupString?)(MarkupString)""Drag me!"" : null,
     });
     markersLog = $""Added {id}{(draggable ? "" (draggable)"" : """")} at {lat:F4}, {lng:F4}"";
 }
@@ -802,9 +804,9 @@ private async Task OnAdvancedReady() => await AddTooltipMarkers();
 private async Task AddTooltipMarkers()
 {
     await advMapRef.ClearMarkers();
-    await advMapRef.AddMarker(new BitMapMarker { Id = ""a"", Position = new(51.52, -0.10), TooltipHtml = ""<b>West End</b>"", PopupHtml = ""Popup A"", ZIndexOffset = 10 });
-    await advMapRef.AddMarker(new BitMapMarker { Id = ""b"", Position = new(51.50, -0.08), TooltipHtml = ""City"", PopupHtml = ""Popup B"" });
-    await advMapRef.AddMarker(new BitMapMarker { Id = ""c"", Position = new(51.48, -0.06), TooltipHtml = ""South Bank"", PopupHtml = ""Popup C"" });
+    await advMapRef.AddMarker(new BitMapMarker { Id = ""a"", Position = new(51.52, -0.10), TooltipHtml = (MarkupString)""<b>West End</b>"", PopupHtml = (MarkupString)""Popup A"", ZIndexOffset = 10 });
+    await advMapRef.AddMarker(new BitMapMarker { Id = ""b"", Position = new(51.50, -0.08), TooltipHtml = (MarkupString)""City"", PopupHtml = (MarkupString)""Popup B"" });
+    await advMapRef.AddMarker(new BitMapMarker { Id = ""c"", Position = new(51.48, -0.06), TooltipHtml = (MarkupString)""South Bank"", PopupHtml = (MarkupString)""Popup C"" });
     await advMapRef.FitBoundsToMarkers(56);
     advLog = ""Three tooltip markers added; view fitted."";
 }

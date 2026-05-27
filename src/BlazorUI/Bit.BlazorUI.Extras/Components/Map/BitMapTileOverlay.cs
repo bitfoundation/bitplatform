@@ -14,13 +14,13 @@ public sealed class BitMapTileOverlay
     /// <summary>Optional attribution string shown in the map's attribution control.</summary>
     public string? Attribution { get; init; }
 
-    /// <summary>Layer opacity (0–1).</summary>
+    /// <summary>Layer opacity (0–1). Non-finite (NaN/±Infinity) inputs default to 0; out-of-range values are clamped.</summary>
     public double Opacity
     {
         get => _opacity;
-        init => _opacity = Math.Clamp(value, 0, 1);
+        init => _opacity = double.IsFinite(value) ? Math.Clamp(value, 0, 1) : 0;
     }
-    private double _opacity = 1;
+    private readonly double _opacity = 1;
 
     /// <summary>Stack order index of the overlay.</summary>
     public int ZIndex { get; init; } = 100;
@@ -50,28 +50,7 @@ public sealed class BitMapTileOverlay
                 nameof(Id));
         }
 
-        if (string.IsNullOrWhiteSpace(UrlTemplate))
-        {
-            throw new ArgumentException(
-                $"{nameof(BitMapTileOverlay)}.{nameof(UrlTemplate)} must be a non-empty, non-whitespace value.",
-                nameof(UrlTemplate));
-        }
-
-        if (UrlTemplate.Contains("{z}", StringComparison.Ordinal) is false ||
-            UrlTemplate.Contains("{x}", StringComparison.Ordinal) is false ||
-            UrlTemplate.Contains("{y}", StringComparison.Ordinal) is false)
-        {
-            throw new ArgumentException(
-                $"{nameof(BitMapTileOverlay)}.{nameof(UrlTemplate)} must contain the '{{z}}', '{{x}}', and '{{y}}' placeholders. The optional '{{s}}' placeholder is also supported.",
-                nameof(UrlTemplate));
-        }
-
-        if (MaxZoom is < 0 or > 30)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(MaxZoom),
-                MaxZoom,
-                $"{nameof(BitMapTileOverlay)}.{nameof(MaxZoom)} must be between 0 and 30.");
-        }
+        BitMapValidation.ValidateTileUrl(UrlTemplate, $"{nameof(BitMapTileOverlay)}.{nameof(UrlTemplate)}");
+        BitMapValidation.ValidateTileMaxZoom(MaxZoom, $"{nameof(BitMapTileOverlay)}.{nameof(MaxZoom)}");
     }
 }

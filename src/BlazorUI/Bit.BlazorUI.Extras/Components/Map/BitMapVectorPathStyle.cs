@@ -8,30 +8,30 @@ public sealed class BitMapVectorPathStyle
     /// <summary>Stroke color.</summary>
     public string Color { get; set; } = "#3388ff";
 
-    /// <summary>Stroke width in pixels. Negative values are clamped to 0.</summary>
+    /// <summary>Stroke width in pixels. Negative or non-finite (NaN/±Infinity) inputs are clamped to 0.</summary>
     public double Weight
     {
         get => _weight;
-        set => _weight = value < 0 ? 0 : value;
+        set => _weight = double.IsFinite(value) && value > 0 ? value : 0;
     }
     private double _weight = 3;
 
-    /// <summary>Stroke opacity (0–1). Values outside this range are clamped.</summary>
+    /// <summary>Stroke opacity (0–1). Non-finite (NaN/±Infinity) inputs default to 0; out-of-range values are clamped.</summary>
     public double Opacity
     {
         get => _opacity;
-        set => _opacity = Math.Clamp(value, 0, 1);
+        set => _opacity = double.IsFinite(value) ? Math.Clamp(value, 0, 1) : 0;
     }
     private double _opacity = 1;
 
     /// <summary>Fill color (defaults to <see cref="Color"/> when null).</summary>
     public string? FillColor { get; set; }
 
-    /// <summary>Fill opacity (0–1). Values outside this range are clamped.</summary>
+    /// <summary>Fill opacity (0–1). Non-finite (NaN/±Infinity) inputs default to 0; out-of-range values are clamped.</summary>
     public double FillOpacity
     {
         get => _fillOpacity;
-        set => _fillOpacity = Math.Clamp(value, 0, 1);
+        set => _fillOpacity = double.IsFinite(value) ? Math.Clamp(value, 0, 1) : 0;
     }
     private double _fillOpacity = 0.2;
 

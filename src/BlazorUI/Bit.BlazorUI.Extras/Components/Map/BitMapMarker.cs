@@ -15,11 +15,11 @@ public sealed class BitMapMarker
     /// Raw HTML content rendered inside the click popup.
     /// <para>
     /// <b>Security:</b> This value is injected as raw HTML into the map popup (via <c>setHTML</c> / <c>innerHTML</c>).
-    /// Never pass unsanitized user input. The caller is responsible for escaping or sanitizing any
-    /// user-provided content before assigning it here. Prefer <see cref="PopupText"/> for plain-text content.
+    /// It is typed as <see cref="MarkupString"/> so the call site is loud about the intent — never construct one
+    /// from unsanitized user input. Prefer <see cref="PopupText"/> for plain-text content.
     /// </para>
     /// </summary>
-    public string? PopupHtml { get; init; }
+    public MarkupString? PopupHtml { get; init; }
 
     /// <summary>
     /// Plain-text content rendered inside the click popup. The text is safely escaped by the provider
@@ -38,12 +38,12 @@ public sealed class BitMapMarker
     /// (see <see cref="Title"/> for details).
     /// </para>
     /// <para>
-    /// <b>Security:</b> This value is injected as raw HTML into the map tooltip.
-    /// Never pass unsanitized user input. The caller is responsible for escaping or sanitizing any
-    /// user-provided content before assigning it here. Prefer <see cref="TooltipText"/> for plain-text content.
+    /// <b>Security:</b> This value is injected as raw HTML into the map tooltip and is typed as
+    /// <see cref="MarkupString"/> so the call site is loud about the intent — never construct one
+    /// from unsanitized user input. Prefer <see cref="TooltipText"/> for plain-text content.
     /// </para>
     /// </summary>
-    public string? TooltipHtml { get; init; }
+    public MarkupString? TooltipHtml { get; init; }
 
     /// <summary>
     /// Plain-text content rendered as a tooltip on hover. The text is safely escaped by the provider
@@ -58,8 +58,8 @@ public sealed class BitMapMarker
     /// <summary>When true, the tooltip stays visible (use sparingly). Leaflet only.</summary>
     public bool TooltipPermanent { get; init; }
 
-    /// <summary>Tooltip placement direction: <c>top</c>, <c>bottom</c>, <c>right</c>, <c>left</c>, <c>center</c>, or <c>auto</c>. Leaflet only.</summary>
-    public string? TooltipDirection { get; init; }
+    /// <summary>Tooltip placement direction. Leaflet only.</summary>
+    public BitMapTooltipDirection TooltipDirection { get; init; } = BitMapTooltipDirection.Auto;
 
     /// <summary>
     /// Hover label for the marker. Rendering varies by provider:
@@ -78,19 +78,19 @@ public sealed class BitMapMarker
     /// <summary>Optional URL to a custom marker icon image.</summary>
     public string? IconUrl { get; init; }
 
-    /// <summary>Width in pixels of the custom marker icon. Negative values are clamped to 0.</summary>
+    /// <summary>Width in pixels of the custom marker icon. Values below 1 are clamped to 1.</summary>
     public int? IconWidth
     {
         get => _iconWidth;
-        init => _iconWidth = value is null ? null : Math.Max(0, value.Value);
+        init => _iconWidth = value is null ? null : Math.Max(1, value.Value);
     }
     private readonly int? _iconWidth;
 
-    /// <summary>Height in pixels of the custom marker icon. Negative values are clamped to 0.</summary>
+    /// <summary>Height in pixels of the custom marker icon. Values below 1 are clamped to 1.</summary>
     public int? IconHeight
     {
         get => _iconHeight;
-        init => _iconHeight = value is null ? null : Math.Max(0, value.Value);
+        init => _iconHeight = value is null ? null : Math.Max(1, value.Value);
     }
     private readonly int? _iconHeight;
 
