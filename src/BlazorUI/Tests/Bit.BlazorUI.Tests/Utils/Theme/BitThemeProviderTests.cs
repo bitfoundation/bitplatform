@@ -68,8 +68,10 @@ public sealed class BitThemeProviderTests : BunitTestContext
         // Render <Outer Theme=parent> -> <Inner Theme=null> -> probe.
         // Previously, Inner with Theme=null broke the cascade entirely; the probe should still
         // see the parent theme.
+        const string ParentPrimary = "#AABBCC";
+
         var parent = new BitTheme();
-        parent.Color.Primary.Main = "#PARENT";
+        parent.Color.Primary.Main = ParentPrimary;
 
         var component = RenderComponent<BitThemeProviderTestHost>(parameters =>
         {
@@ -78,18 +80,22 @@ public sealed class BitThemeProviderTests : BunitTestContext
         });
 
         var probe = component.Find("span");
-        Assert.AreEqual("#PARENT", probe.GetAttribute("data-primary"));
+        Assert.AreEqual(ParentPrimary, probe.GetAttribute("data-primary"));
     }
 
     [TestMethod]
     public void InnerThemeMergesOverParentTheme()
     {
+        const string ParentPrimary = "#AABBCC";
+        const string ParentSecondary = "#DDEEFF";
+        const string InnerPrimary = "#112233";
+
         var parent = new BitTheme();
-        parent.Color.Primary.Main = "#PARENT";
-        parent.Color.Secondary.Main = "#PARENT-SEC";
+        parent.Color.Primary.Main = ParentPrimary;
+        parent.Color.Secondary.Main = ParentSecondary;
 
         var inner = new BitTheme();
-        inner.Color.Primary.Main = "#INNER";
+        inner.Color.Primary.Main = InnerPrimary;
 
         var component = RenderComponent<BitThemeProviderTestHost>(parameters =>
         {
@@ -99,7 +105,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
 
         var probe = component.Find("span");
         // Inner Theme's Primary.Main should win.
-        Assert.AreEqual("#INNER", probe.GetAttribute("data-primary"));
+        Assert.AreEqual(InnerPrimary, probe.GetAttribute("data-primary"));
     }
 
     /// <summary>

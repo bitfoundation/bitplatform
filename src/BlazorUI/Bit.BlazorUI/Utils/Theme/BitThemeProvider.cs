@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public sealed class BitThemeProvider : ComponentBase
 {
@@ -44,16 +42,16 @@ public sealed class BitThemeProvider : ComponentBase
     // CascadingValue<BitTheme?> value reference-stable across re-renders so descendants do not
     // re-render just because the provider's parent re-rendered (CascadingValue uses reference
     // equality for change detection on reference types).
+    //
+    // Note: this does NOT cache the CSS-variable mapping itself. BitTheme is mutable, so a static
+    // per-instance cache would return stale variables after a caller mutates the theme between
+    // renders. The mapping is rebuilt whenever Theme/ParentTheme references change, which is also
+    // the only time we re-render the inline style.
     private BitTheme? _cachedMergedTheme;
     private string? _cachedCssVarStyle;
     private BitTheme? _lastTheme;
     private BitTheme? _lastParentTheme;
     private bool _hasCachedInputs;
-
-    // Per-theme CSS-variable dictionary cache. The mapper produces a ~280-entry dictionary on every
-    // call; for a theme reference that doesn't change we want to reuse it. ConditionalWeakTable
-    // ties the cache to the theme's lifetime — when the BitTheme is GC'd the entry goes with it.
-    private static readonly ConditionalWeakTable<BitTheme, IReadOnlyDictionary<string, string>> _cssVarCache = new();
 
     protected override void OnParametersSet()
     {
@@ -133,11 +131,7 @@ public sealed class BitThemeProvider : ComponentBase
 
     private static string BuildCssVarStyle(BitTheme theme)
     {
-        // ConditionalWeakTable.GetValue calls the factory under an internal lock, so cache misses
-        // produce a single mapping per theme instance even under concurrent reads. Wrapping in a
-        // lambda gives us a clean Func<BitTheme, IReadOnlyDictionary<string, string>> match —
-        // BitThemeUtilities.ToCssVariables takes BitTheme? which is a nullable-mismatched delegate.
-        var cssVars = _cssVarCache.GetValue(theme, t => BitThemeUtilities.ToCssVariables(t));
+        var cssVars = BitThemeUtilities.ToCssVariables(theme);
         return string.Join(';', cssVars.Select(kv => $"{kv.Key}:{kv.Value}"));
     }
 }
