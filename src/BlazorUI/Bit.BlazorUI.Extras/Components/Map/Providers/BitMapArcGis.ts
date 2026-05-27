@@ -512,8 +512,14 @@ namespace BitBlazorUI {
         }
 
         private static _notifyView(s: any) {
-            if (!s.dotnetObj) return;
-            queueMicrotask(() => s.dotnetObj.invokeMethodAsync('OnViewChanged', BitMapArcGis._readView(s)));
+            const dotnet = s.dotnetObj;
+            if (!dotnet) return;
+            queueMicrotask(() => {
+                // dispose() may have run between scheduling and execution; only invoke if
+                // the captured handle is still associated with a live state.
+                if (s.dotnetObj !== dotnet) return;
+                dotnet.invokeMethodAsync('OnViewChanged', BitMapArcGis._readView(s));
+            });
         }
 
         /**

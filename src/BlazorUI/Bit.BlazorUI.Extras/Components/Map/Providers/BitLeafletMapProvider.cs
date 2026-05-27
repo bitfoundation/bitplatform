@@ -17,11 +17,11 @@ public sealed class BitLeafletMapProvider : BitMapProviderBase
     /// <summary>Maximum zoom of the base tile source.</summary>
     public int TileMaxZoom { get; set; } = 19;
 
-    /// <summary>Base tile layer opacity (0–1).</summary>
+    /// <summary>Base tile layer opacity (0–1). Non-finite inputs (NaN/±Infinity) default to 0.</summary>
     public double TileOpacity
     {
         get => _tileOpacity;
-        set => _tileOpacity = value < 0 ? 0 : value > 1 ? 1 : value;
+        set => _tileOpacity = double.IsFinite(value) ? Math.Clamp(value, 0, 1) : 0;
     }
     private double _tileOpacity = 1;
 
