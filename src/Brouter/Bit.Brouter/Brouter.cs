@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.JSInterop;
 
 namespace Bit.Brouter;
 
@@ -80,7 +81,10 @@ public partial class Brouter : ComponentBase, IDisposable
 
         _navManager.LocationChanged += NavManagerLocationChanged;
 
-        UpdateLocation();
+        // Establish the initial location synchronously so any code that reads
+        // BrouterService.Location before the first navigation pipeline runs sees
+        // the real URL (not BrouterLocation.Empty).
+        CurrentLocation = ComputeLocation();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -89,9 +93,24 @@ public partial class Brouter : ComponentBase, IDisposable
 
         if (firstRender is false) return;
 
-        await _navInterception.EnableNavigationInterceptionAsync();
+        // Enabling navigation interception is best-effort: under prerender, on a disconnected
+        // circuit, or on an interop failure it can throw, but the navigation pipeline itself
+        // (and any subsequent reconnects / interactivity handoff) does not depend on it
+        // succeeding right now. Mirror the defensive style used in BrouterLink and
+        // BrouterService.BackAsync so a transient failure here can't kill the whole first
+        // navigation. Once the circuit/runtime is fully ready, Blazor will retry interception
+        // attachment naturally on the next user click via NavigationManager fallback paths.
+        try
+        {
+            await _navInterception.EnableNavigationInterceptionAsync();
+        }
+        catch (JSDisconnectedException) { /* circuit disconnected before/during interop */ }
+        catch (JSException) { /* JS interop failure; non-fatal */ }
+        catch (InvalidOperationException) { /* interop unavailable during prerender */ }
+        catch (TaskCanceledException) { /* component disposed mid-call */ }
 
-        await ProcessNavigationAsync(BrouterLocation.Empty);
+        // Initial render: the From is Empty (we just mounted), the To is the URL we're at now.
+        await ProcessNavigationAsync(BrouterLocation.Empty, CurrentLocation);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -119,32 +138,80 @@ public partial class Brouter : ComponentBase, IDisposable
 
     private async void NavManagerLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        var from = CurrentLocation;
+        // The handler thread is whatever raised LocationChanged (renderer dispatcher in most
+        // cases, but never something we can rely on). We:
+        //   1. Capture `from` (the location the previous pipeline left in CurrentLocation) and
+        //      compute `to` for THIS event synchronously, so they can never desync from each
+        //      other if a second LocationChanged fires before this one is dispatched.
+        //   2. Dispatch onto the renderer's synchronization context via InvokeAsync, so the
+        //      navigation pipeline runs where StateHasChanged() / NavigateTo() / component
+        //      state mutations are valid.
+        // We deliberately do NOT mutate CurrentLocation here on the raw event thread; that
+        // happens at the start of ProcessNavigationAsync once we own the dispatcher.
+        BrouterLocation from = CurrentLocation;
+        BrouterLocation to;
         try
         {
-            UpdateLocation();
-            // No ConfigureAwait(false): keep the navigation pipeline on the renderer's
-            // dispatcher so subsequent StateHasChanged() / UI mutations are valid.
-            await ProcessNavigationAsync(from);
+            to = ComputeLocation();
         }
         catch (Exception ex)
         {
-            // ProcessNavigationAsync routes its own exceptions to OnError. This outer catch
-            // mainly covers failures around it (e.g. UpdateLocation). Surface them through
-            // IBrouter.OnError so they don't disappear silently, and never let an exception
-            // escape async void.
-            try
-            {
-                await _brouterService.InvokeOnError(
-                    new BrouterNavigationContext(from, CurrentLocation, CancellationToken.None), ex);
-            }
-            catch { /* OnError must never crash the navigation handler */ }
+            // Defense in depth: ComputeLocation is intended to be no-throw (it normalises
+            // off-base URLs to an empty-path location), but if a future change ever lets an
+            // exception escape, we still surface it through OnError instead of letting it
+            // out of the async-void event handler.
+            await SafeInvokeOnError(from, CurrentLocation, ex);
+            return;
+        }
+
+        try
+        {
+            await InvokeAsync(() => ProcessNavigationAsync(from, to).AsTask());
+        }
+        catch (Exception ex)
+        {
+            // ProcessNavigationAsync routes its own exceptions to OnError, so reaching this
+            // catch generally means InvokeAsync itself failed (renderer detached / disposed,
+            // or an exception during dispatcher scheduling). Surface it through OnError, never
+            // let it escape async void.
+            await SafeInvokeOnError(from, to, ex);
         }
     }
 
-    private void UpdateLocation()
+    private async ValueTask SafeInvokeOnError(BrouterLocation from, BrouterLocation to, Exception ex)
     {
-        var raw = _navManager.ToBaseRelativePath(_navManager.Uri);
+        try
+        {
+            await _brouterService.InvokeOnError(
+                new BrouterNavigationContext(from, to, CancellationToken.None), ex);
+        }
+        catch { /* OnError must never crash the navigation handler */ }
+    }
+
+    /// <summary>
+    /// Pure: builds a <see cref="BrouterLocation"/> from the current <c>NavigationManager.Uri</c>.
+    /// Does not mutate <see cref="CurrentLocation"/>. Never throws: an off-base URL or other
+    /// malformed input is normalised to an empty-path location so the navigation pipeline can
+    /// run and surface the issue through NotFound / OnError instead of crashing the handler.
+    /// </summary>
+    private BrouterLocation ComputeLocation()
+    {
+        var uri = _navManager.Uri;
+
+        // ToBaseRelativePath throws ArgumentException if the current Uri is not within
+        // NavigationManager.BaseUri (base href misconfigured, programmatic NavigateTo to an
+        // off-base absolute URL, etc.). Don't propagate: that would kill an async-void
+        // handler permanently. Synthesise an empty-path location so the pipeline runs and
+        // typically routes through NotFound, which surfaces the issue cleanly.
+        string raw;
+        try
+        {
+            raw = _navManager.ToBaseRelativePath(uri);
+        }
+        catch (ArgumentException)
+        {
+            return new BrouterLocation(uri, "/", [], "", "");
+        }
 
         var hashIndex = raw.IndexOf('#');
         var hash = string.Empty;
@@ -177,11 +244,9 @@ public partial class Brouter : ComponentBase, IDisposable
         for (int i = 0; i < rawSegments.Length; i++)
         {
             // Decode defensively: malformed percent-encoding (e.g. "%ZZ" or a stray "%") would
-            // otherwise throw UriFormatException and bubble out of the async-void LocationChanged
-            // handler, silently breaking routing without surfacing NotFound / OnError. Falling
-            // back to the raw segment lets ProcessNavigationAsync run normally - the bad URL
-            // typically won't match any route, which routes the request through NotFound/OnError
-            // as it should.
+            // otherwise throw UriFormatException. Falling back to the raw segment lets the
+            // pipeline run normally - the bad URL typically won't match any route, which routes
+            // the request through NotFound/OnError as it should.
             try
             {
                 rawSegments[i] = Uri.UnescapeDataString(rawSegments[i]);
@@ -189,23 +254,32 @@ public partial class Brouter : ComponentBase, IDisposable
             catch (UriFormatException) { /* keep the raw, still-escaped segment */ }
         }
 
-        CurrentLocation = new BrouterLocation(_navManager.Uri, path, rawSegments, query, hash, hasTrailingSlash);
+        return new BrouterLocation(uri, path, rawSegments, query, hash, hasTrailingSlash);
     }
 
-    private async ValueTask ProcessNavigationAsync(BrouterLocation from)
+    private async ValueTask ProcessNavigationAsync(BrouterLocation from, BrouterLocation to)
     {
+        // Now that we own the renderer's dispatcher (via InvokeAsync from the LocationChanged
+        // handler, or directly from OnAfterRenderAsync for the initial render), publish the
+        // target location atomically with the start of this pipeline. The whole pipeline below
+        // reads `to` rather than CurrentLocation, so a later navigation publishing a newer
+        // CurrentLocation cannot make our `ctx.To` desync from what we're matching against.
+        CurrentLocation = to;
+
         // Supersede any in-flight navigation work.
         var version = Interlocked.Increment(ref _navVersion);
         var newCts = new CancellationTokenSource();
         var oldCts = Interlocked.Exchange(ref _navCts, newCts);
-        if (oldCts is not null)
-        {
-            oldCts.Cancel();
-            oldCts.Dispose();
-        }
+        // Cancel the previous navigation if any. We do NOT dispose oldCts here: the
+        // superseded pipeline may still be observing its token (e.g. inside an awaited
+        // user guard/loader, or via OperationCanceledException continuations) and disposing
+        // would race that with ObjectDisposedException. The superseded pipeline disposes
+        // its own CTS in its `finally` block once it returns. See ProcessNavigationAsync's
+        // finally below.
+        oldCts?.Cancel();
         var token = newCts.Token;
 
-        var ctx = new BrouterNavigationContext(from, CurrentLocation, token);
+        var ctx = new BrouterNavigationContext(from, to, token);
         var service = _brouterService;
 
         try
@@ -217,14 +291,26 @@ public partial class Brouter : ComponentBase, IDisposable
             if (HandleSideEffects(ctx, from)) return;
             if (token.IsCancellationRequested || version != _navVersion) return;
 
-            // Match routes.
-            foreach (var r in _routes) r.Matched = false;
-            var candidates = _routes.Where(r => Match(r, CurrentLocation.SegmentsArray, CurrentLocation.HasTrailingSlash)).ToList();
+            // Snapshot the route list before any awaits / chain walks below: routes can register
+            // or unregister during awaits (component lifecycle on the renderer dispatcher), and
+            // the chain walks (winner.Parent) read state we mustn't see torn.
+            var routesSnapshot = _routes.ToArray();
+
+            // Match routes. Match is pure: it returns a MatchResult and never mutates the route.
+            foreach (var r in routesSnapshot) r.Matched = false;
+            var candidates = new List<MatchResult>();
+            foreach (var r in routesSnapshot)
+            {
+                if (TryMatch(r, to.SegmentsArray, to.HasTrailingSlash, out var result))
+                {
+                    candidates.Add(result);
+                }
+            }
 
             if (candidates.Count == 0)
             {
                 _noRouteMatched = true;
-                if (OnNotFound is not null) await OnNotFound(CurrentLocation);
+                if (OnNotFound is not null) await OnNotFound(to);
 
                 // The OnNotFound handler may have awaited; if a newer navigation has started or
                 // this one was cancelled in the meantime, abandon the fallback path so we don't
@@ -251,14 +337,32 @@ public partial class Brouter : ComponentBase, IDisposable
             // Pick the most specific match. Ties broken by deeper nesting (so an index child
             // wins over its parent when their full templates are identical), then by index-route
             // preference, then by declaration order.
-            var winner = candidates
-                .Select((r, i) => (Route: r, Specificity: r.Specificity, Depth: r.Depth, IsIndex: r.IsIndex, Order: i))
-                .OrderByDescending(t => t.Specificity)
-                .ThenByDescending(t => t.Depth)
-                .ThenByDescending(t => t.IsIndex)
-                .ThenBy(t => t.Order)
-                .First()
-                .Route;
+            MatchResult winnerMatch = candidates[0];
+            int winnerIndex = 0;
+            for (int i = 1; i < candidates.Count; i++)
+            {
+                var c = candidates[i];
+                var w = winnerMatch;
+                int cmp = c.Route.Specificity - w.Route.Specificity;
+                if (cmp == 0) cmp = c.Route.Depth - w.Route.Depth;
+                if (cmp == 0) cmp = (c.Route.IsIndex ? 1 : 0) - (w.Route.IsIndex ? 1 : 0);
+                if (cmp > 0)
+                {
+                    winnerMatch = c;
+                    winnerIndex = i;
+                }
+            }
+            // Suppress unused-variable warning while documenting that declaration order is the
+            // final tiebreaker (lower index wins, which is what the loop above naturally yields).
+            _ = winnerIndex;
+
+            var winner = winnerMatch.Route;
+
+            // Commit the winner's matched parameters / constraints. Until this point Match was
+            // pure, so candidates that lost have not had their Parameters/Constraints touched
+            // (avoiding a race where a still-rendering, previously-matched route gets blanked).
+            winner.Parameters = winnerMatch.Parameters;
+            winner.ConstraintsByParameter = winnerMatch.ConstraintsByParameter;
 
             ctx.Route = winner;
             ctx.Parameters = new BrouterRouteParameters(winner.Parameters);
@@ -287,6 +391,10 @@ public partial class Brouter : ComponentBase, IDisposable
             // navigation can't leak into parent layouts whose current loader is null.
             // Capture each loader's result into a local before committing to shared state,
             // so a superseded navigation can't leave stale LoadedData on the route.
+            //
+            // Snapshot the chain BEFORE any await: a parent route can be disposed while
+            // an await is in-flight (conditional rendering, route tree mutation), and we
+            // must not walk a torn `Parent` chain afterwards.
             var matchedChain = new List<BrouterRoute>();
             for (var node = winner; node is not null; node = node.Parent) matchedChain.Add(node);
             matchedChain.Reverse();
@@ -369,6 +477,20 @@ public partial class Brouter : ComponentBase, IDisposable
         {
             await service.InvokeOnError(ctx, ex);
         }
+        finally
+        {
+            // Dispose our CTS exactly when it can no longer be observed by any other path:
+            //   - It's been superseded (a newer pipeline replaced _navCts), or
+            //   - The Brouter has been disposed (Dispose() swapped _navCts out and disposed it).
+            // While our CTS is still the active one, leave it alive: future supersedes need
+            // to call Cancel() on it, and Dispose() needs to find a usable CTS to tear down.
+            // CancellationTokenSource.Dispose() is idempotent, so a benign race with Dispose()
+            // (which may have already disposed this same CTS) is safe.
+            if (ReferenceEquals(Volatile.Read(ref _navCts), newCts) is false)
+            {
+                newCts.Dispose();
+            }
+        }
     }
 
     private bool HandleSideEffects(BrouterNavigationContext ctx, BrouterLocation from)
@@ -393,10 +515,29 @@ public partial class Brouter : ComponentBase, IDisposable
         return false;
     }
 
-    private bool Match(BrouterRoute route, string[] segments, bool hasTrailingSlash)
+    /// <summary>
+    /// Result of a single match attempt. Pure value type: matching never mutates the route,
+    /// so candidates that lose can't blank a previously-matched, still-rendering route.
+    /// </summary>
+    private readonly struct MatchResult
     {
-        route.Parameters = new Dictionary<string, object?>();
-        route.ConstraintsByParameter = new Dictionary<string, string[]>();
+        public BrouterRoute Route { get; }
+        public Dictionary<string, object?> Parameters { get; }
+        public Dictionary<string, string[]> ConstraintsByParameter { get; }
+
+        public MatchResult(BrouterRoute route,
+                           Dictionary<string, object?> parameters,
+                           Dictionary<string, string[]> constraintsByParameter)
+        {
+            Route = route;
+            Parameters = parameters;
+            ConstraintsByParameter = constraintsByParameter;
+        }
+    }
+
+    private bool TryMatch(BrouterRoute route, string[] segments, bool hasTrailingSlash, out MatchResult result)
+    {
+        result = default;
 
         var routeTemplate = route.RouteTemplate;
         if (routeTemplate is null) return false;
@@ -406,7 +547,15 @@ public partial class Brouter : ComponentBase, IDisposable
             : StringComparison.OrdinalIgnoreCase;
 
         var templateSegments = routeTemplate.TemplateSegments;
-        if (templateSegments.Count == 0) return segments.Length == 0 && hasTrailingSlash is false;
+        if (templateSegments.Count == 0)
+        {
+            if (segments.Length == 0 && hasTrailingSlash is false)
+            {
+                result = new MatchResult(route, [], []);
+                return true;
+            }
+            return false;
+        }
 
         var lastIdx = templateSegments.Count - 1;
         var last = templateSegments[lastIdx];
@@ -443,6 +592,11 @@ public partial class Brouter : ComponentBase, IDisposable
             }
         }
 
+        // Build matched parameter values into local dictionaries; only published onto the
+        // winning route after selection.
+        var parameters = new Dictionary<string, object?>();
+        var constraints = new Dictionary<string, string[]>();
+
         for (int i = 0; i < templateSegments.Count; i++)
         {
             var templateSegment = templateSegments[i];
@@ -456,9 +610,10 @@ public partial class Brouter : ComponentBase, IDisposable
                         ? string.Join('/', segments[i..])
                         : string.Empty;
 
-                    route.Parameters[templateSegment.Value] = remaining;
-                    route.ConstraintsByParameter[templateSegment.Value] = [];
+                    parameters[templateSegment.Value] = remaining;
+                    constraints[templateSegment.Value] = [];
                 }
+                result = new MatchResult(route, parameters, constraints);
                 return true;
             }
 
@@ -475,12 +630,13 @@ public partial class Brouter : ComponentBase, IDisposable
 
             if (templateSegment.IsParameter)
             {
-                route.Parameters[templateSegment.Value] = matchedValue;
-                route.ConstraintsByParameter[templateSegment.Value] =
+                parameters[templateSegment.Value] = matchedValue;
+                constraints[templateSegment.Value] =
                     templateSegment.Constraints.Select(rc => rc.Name).ToArray();
             }
         }
 
+        result = new MatchResult(route, parameters, constraints);
         return true;
     }
 
@@ -491,12 +647,15 @@ public partial class Brouter : ComponentBase, IDisposable
         _disposed = true;
 
         _navManager.LocationChanged -= NavManagerLocationChanged;
+        // Detach the active CTS and cancel it, but DON'T dispose here. A still-running
+        // ProcessNavigationAsync may be observing this CTS via its `token` parameter or
+        // about to throw OperationCanceledException through it; disposing now would race
+        // those continuations with ObjectDisposedException. The pipeline's own `finally`
+        // checks "am I still the published CTS?" and disposes itself when it sees we've
+        // detached. CancellationTokenSource.Dispose() is idempotent, so even if both
+        // paths reach disposal, the second call is a no-op.
         var cts = Interlocked.Exchange(ref _navCts, null);
-        if (cts is not null)
-        {
-            cts.Cancel();
-            cts.Dispose();
-        }
+        cts?.Cancel();
         _brouterService.Detach(this);
     }
 

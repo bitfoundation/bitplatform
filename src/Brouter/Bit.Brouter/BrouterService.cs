@@ -23,6 +23,20 @@ internal sealed class BrouterService : IBrouter
 
     internal void Attach(Brouter brouter, NavigationManager navManager)
     {
+        // Only one <Brouter/> may be mounted per scope. Two competing instances would race
+        // each other through this single _activeBrouter slot: each LocationChanged event
+        // would only be processed by whichever instance happened to win the slot at the
+        // moment, route registrations would split between the two, and IBrouter.Navigate
+        // would target whichever one was attached last. Fail fast with a clear message
+        // rather than silently dropping events.
+        if (_activeBrouter is not null && ReferenceEquals(_activeBrouter, brouter) is false)
+        {
+            throw new InvalidOperationException(
+                "Another <Brouter/> instance is already attached to this scope. " +
+                "Only a single Brouter component may be mounted at a time per DI scope. " +
+                "Move the second instance into its own scope, or remove it.");
+        }
+
         _activeBrouter = brouter;
         _navigationManager = navManager;
     }
@@ -137,6 +151,17 @@ internal sealed class BrouterService : IBrouter
             }
 
             var rawValue = FormatRouteValue(normalizedParams![segment.Value]);
+
+            // An optional parameter supplied with an empty value is treated the same as a
+            // missing one: drop the trailing '/' and mark the optional as omitted so the
+            // ordering check above catches any later optional that does carry a value.
+            if (segment.IsOptional && string.IsNullOrEmpty(rawValue))
+            {
+                if (sb.Length > 0 && sb[^1] == '/') sb.Length--;
+                optionalOmitted = true;
+                omittedOptionalName ??= segment.Value;
+                continue;
+            }
 
             // Required non-catch-all segments must round-trip through the router; an empty
             // formatted value would emit a stray '/' (e.g. "/users//edit") that the matcher
