@@ -8,9 +8,18 @@ namespace Bit.Brouter;
 /// custom constraints can be added via <see cref="Register"/>.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Each registered <see cref="BrouterRouteConstraint"/> instance is cached and reused across all
 /// route matches (and across threads). Implementations must therefore be stateless and
 /// thread-safe.
+/// </para>
+/// <para>
+/// <b>Process scope.</b> The registry is a process-wide static. On Blazor Server every circuit
+/// observes the same set, and on parallel test runs (e.g. <c>dotnet test</c> with multi-target
+/// frameworks or per-class parallelism) registrations can race. Register custom constraints
+/// once during application startup, before any route is parsed; in tests, prefer
+/// <see cref="Unregister"/> in <c>[TestCleanup]</c> to keep test classes independent.
+/// </para>
 /// </remarks>
 public static class BrouterConstraints
 {

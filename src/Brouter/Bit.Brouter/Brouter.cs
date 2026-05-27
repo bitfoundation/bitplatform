@@ -10,9 +10,9 @@ namespace Bit.Brouter;
 /// The root component of Bit.Brouter. Hosts a tree of <see cref="BrouterRoute"/> children and renders
 /// the matching one for the current URL.
 /// </summary>
-public partial class Brouter : ComponentBase, IDisposable
+public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 {
-    private static readonly char[] _separator = ['/'];
+    private static readonly char[] _separators = ['/'];
 
 
     /// <summary>The route declarations and any other markup.</summary>
@@ -43,6 +43,14 @@ public partial class Brouter : ComponentBase, IDisposable
     internal BrouterOptions Options => _brouterService.Options;
 
     private readonly List<BrouterRoute> _routes = [];
+    // Snapshot of _routes refreshed lazily after Register/Unregister. The matching loop
+    // iterates this snapshot so we don't allocate a fresh array on every navigation.
+    // Volatile read/write keeps the snapshot publication ordered relative to the dirty
+    // flag (we only ever flip _routesDirty -> true under the same dispatcher that calls
+    // Register/Unregister, but a navigation pipeline awaiting back can re-enter on the
+    // dispatcher and observe a stale snapshot if not for the volatile read/write pair).
+    private BrouterRoute[] _routesSnapshot = [];
+    private bool _routesDirty = true;
     internal void RegisterRoute(BrouterRoute route)
     {
         // Enforce the documented uniqueness contract for Route.Name. Comparison matches
@@ -62,8 +70,31 @@ public partial class Brouter : ComponentBase, IDisposable
         }
 
         _routes.Add(route);
+        _routesDirty = true;
     }
-    internal void UnregisterRoute(BrouterRoute route) => _routes.Remove(route);
+    internal void UnregisterRoute(BrouterRoute route)
+    {
+        if (_routes.Remove(route)) _routesDirty = true;
+    }
+
+    /// <summary>
+    /// Returns a snapshot of the registered routes. The array is reused across navigations
+    /// while the registration set is stable; <see cref="RegisterRoute"/> /
+    /// <see cref="UnregisterRoute"/> mark it dirty so the next call rebuilds it.
+    /// </summary>
+    /// <remarks>
+    /// The returned array is treated as a read-only snapshot by callers. We never hand the
+    /// underlying List itself out so a caller can't accidentally mutate the registration
+    /// set mid-pipeline.
+    /// </remarks>
+    private BrouterRoute[] GetRoutesSnapshot()
+    {
+        if (_routesDirty is false) return _routesSnapshot;
+        var arr = _routes.ToArray();
+        _routesSnapshot = arr;
+        _routesDirty = false;
+        return arr;
+    }
 
     internal BrouterRoute? FindRouteByName(string name) =>
         _routes.FirstOrDefault(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase));
@@ -115,6 +146,12 @@ public partial class Brouter : ComponentBase, IDisposable
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
+        // Sequence numbers are per RenderFragment scope: each lambda passed to
+        // builder.AddAttribute("ChildContent", ...) starts its own 0-based sequence. The
+        // outer scope here uses 0..3 for the CascadingValue<Brouter> open/attributes; the
+        // inner ChildContent lambda restarts at 0 for its own AddContent calls. Renumbering
+        // these manually after edits is required - Blazor's diff relies on stable, ordered
+        // sequence numbers within each scope to match frames across renders.
         base.BuildRenderTree(builder);
 
         builder.OpenComponent<CascadingValue<Brouter>>(0);
@@ -126,8 +163,7 @@ public partial class Brouter : ComponentBase, IDisposable
             // Render the inline fallback when no route matched and either NotFound is unset, or
             // NotFound resolves to the current URL (no redirect happened, so we'd otherwise show nothing).
             if (_noRouteMatched && NotFoundContent is not null &&
-                (string.IsNullOrEmpty(NotFound) ||
-                 string.Equals(_navManager.ToAbsoluteUri(NotFound).ToString(), _navManager.Uri, StringComparison.Ordinal)))
+                (string.IsNullOrEmpty(NotFound) || IsSamePath(CurrentLocation.Path, NotFound)))
             {
                 b.AddContent(1, NotFoundContent(CurrentLocation));
             }
@@ -240,7 +276,7 @@ public partial class Brouter : ComponentBase, IDisposable
             path = path[..^1];
         }
 
-        var rawSegments = path.Trim('/').Split(_separator, StringSplitOptions.RemoveEmptyEntries);
+        var rawSegments = path.Trim('/').Split(_separators, StringSplitOptions.RemoveEmptyEntries);
         for (int i = 0; i < rawSegments.Length; i++)
         {
             // Decode defensively: malformed percent-encoding (e.g. "%ZZ" or a stray "%") would
@@ -255,6 +291,76 @@ public partial class Brouter : ComponentBase, IDisposable
         }
 
         return new BrouterLocation(uri, path, rawSegments, query, hash, hasTrailingSlash);
+    }
+
+    // Cache the most recently-computed normalisation. NotFound is typically a constant per
+    // Brouter instance, and BuildRenderTree calls IsSamePath on every render (NotFoundContent
+    // fallback check). One-slot cache is enough; on a NotFound parameter change the cached
+    // entry is replaced.
+    private string? _isSamePathCacheTarget;
+    private string? _isSamePathCacheNormalised;
+
+    /// <summary>
+    /// Compares an already-normalised <paramref name="currentPath"/> (as produced by
+    /// <see cref="ComputeLocation"/>) against an arbitrary target URL/path. Returns true
+    /// when their normalised path components are equal.
+    /// </summary>
+    /// <remarks>
+    /// Used by the NotFound logic to detect the "we're already at the NotFound target"
+    /// case without triggering a redirect loop. The target may be absolute, base-relative,
+    /// trailing-slash, query-bearing, or fragment-bearing; we strip query/fragment, drop
+    /// the trailing slash under <see cref="BrouterOptions.IgnoreTrailingSlash"/>, and apply
+    /// the same case sensitivity rule the matcher uses for literal segments.
+    /// </remarks>
+    private bool IsSamePath(string currentPath, string target)
+    {
+        if (string.IsNullOrEmpty(target)) return false;
+
+        string targetPath;
+        if (ReferenceEquals(_isSamePathCacheTarget, target)
+            || string.Equals(_isSamePathCacheTarget, target, StringComparison.Ordinal))
+        {
+            // Cache hit: skip the ToAbsoluteUri / ToBaseRelativePath / split work.
+            // _isSamePathCacheNormalised is null only when the previous call returned false
+            // for an off-base/malformed target; replicate that result.
+            if (_isSamePathCacheNormalised is null) return false;
+            targetPath = _isSamePathCacheNormalised;
+        }
+        else
+        {
+            string raw;
+            try
+            {
+                // ToAbsoluteUri + ToBaseRelativePath gives us the canonical base-relative form
+                // for absolute URLs, base-relative paths, and "/"-prefixed paths alike.
+                var abs = _navManager.ToAbsoluteUri(target);
+                raw = _navManager.ToBaseRelativePath(abs.ToString());
+            }
+            catch (Exception ex) when (ex is ArgumentException or UriFormatException or InvalidOperationException)
+            {
+                // Off-base or malformed target: not equal to anything we'd legitimately be at.
+                _isSamePathCacheTarget = target;
+                _isSamePathCacheNormalised = null;
+                return false;
+            }
+
+            var qIdx2 = raw.IndexOf('?');
+            if (qIdx2 >= 0) raw = raw[..qIdx2];
+            var hIdx2 = raw.IndexOf('#');
+            if (hIdx2 >= 0) raw = raw[..hIdx2];
+
+            targetPath = "/" + raw;
+            if (Options.IgnoreTrailingSlash && targetPath.Length > 1 && targetPath[^1] == '/')
+            {
+                targetPath = targetPath[..^1];
+            }
+
+            _isSamePathCacheTarget = target;
+            _isSamePathCacheNormalised = targetPath;
+        }
+
+        var comparison = Options.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+        return string.Equals(currentPath, targetPath, comparison);
     }
 
     private async ValueTask ProcessNavigationAsync(BrouterLocation from, BrouterLocation to)
@@ -293,8 +399,9 @@ public partial class Brouter : ComponentBase, IDisposable
 
             // Snapshot the route list before any awaits / chain walks below: routes can register
             // or unregister during awaits (component lifecycle on the renderer dispatcher), and
-            // the chain walks (winner.Parent) read state we mustn't see torn.
-            var routesSnapshot = _routes.ToArray();
+            // the chain walks (winner.Parent) read state we mustn't see torn. The snapshot is
+            // reused across navigations while the registration set is stable - see GetRoutesSnapshot.
+            var routesSnapshot = GetRoutesSnapshot();
 
             // Match routes. Match is pure: it returns a MatchResult and never mutates the route.
             foreach (var r in routesSnapshot) r.Matched = false;
@@ -321,8 +428,11 @@ public partial class Brouter : ComponentBase, IDisposable
                 {
                     // Avoid a self-redirect loop when the current URL is already the NotFound target
                     // (and still doesn't match any route). Render the fallback UI instead.
-                    var targetUri = _navManager.ToAbsoluteUri(NotFound).ToString();
-                    if (string.Equals(_navManager.Uri, targetUri, StringComparison.Ordinal) is false)
+                    // Compare normalised base-relative paths rather than raw absolute URIs:
+                    // "http://host/x" vs "http://host/x/" or vs "http://host/x?foo=1" would
+                    // otherwise miss the equality check and trigger an infinite redirect loop
+                    // (the NotFound URL keeps not matching, we keep navigating to it).
+                    if (IsSamePath(to.Path, NotFound) is false)
                     {
                         _navManager.NavigateTo(NotFound);
                         return;
@@ -657,6 +767,18 @@ public partial class Brouter : ComponentBase, IDisposable
         var cts = Interlocked.Exchange(ref _navCts, null);
         cts?.Cancel();
         _brouterService.Detach(this);
+    }
+
+    /// <summary>
+    /// Async dispose. Currently sync-only work; the override exists so callers using
+    /// <c>await using</c> get a deterministic teardown signal and the type can grow
+    /// async cleanup (e.g. JS module teardown) in the future without changing its
+    /// public contract.
+    /// </summary>
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
+        return ValueTask.CompletedTask;
     }
 
     private bool _disposed;

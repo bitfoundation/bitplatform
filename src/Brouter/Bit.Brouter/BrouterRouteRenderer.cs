@@ -7,6 +7,16 @@ internal class BrouterRouteRenderer
 {
     private readonly BrouterRoute _route;
 
+    // Cache the last merged BrouterRouteParameters and the (inherited, local) reference pair
+    // it was derived from. RenderRoute runs on every render of every route in the matched
+    // chain; each one used to allocate a fresh dictionary + BrouterRouteParameters even when
+    // nothing changed. Cache hit -> zero allocations on the hot render path. Cache miss
+    // (parameters changed because a new match committed fresh dictionaries onto the route
+    // and/or the cascading inherited value got a new instance) -> rebuild and store.
+    private BrouterRouteParameters? _cachedRouteParams;
+    private BrouterRouteParameters? _cachedInheritedRef;
+    private IReadOnlyDictionary<string, object?>? _cachedLocalRef;
+
     public BrouterRouteRenderer(BrouterRoute route)
     {
         _route = route;
@@ -35,8 +45,31 @@ internal class BrouterRouteRenderer
 
     private void RenderRoute(RenderTreeBuilder builder)
     {
-        var merged = MergeParameters(_route.InheritedParameters, _route.Parameters);
-        var routeParams = new BrouterRouteParameters(merged);
+        var inherited = _route.InheritedParameters;
+        var local = _route.Parameters;
+
+        // Reuse the previously-built BrouterRouteParameters when neither the inherited
+        // cascading instance nor the local match dictionary has been replaced. Both refs
+        // get a fresh instance whenever a navigation actually changes the routing state
+        // (Brouter.ProcessNavigationAsync commits fresh dictionaries on a match commit, and
+        // the cascading inherited reference is reissued by the parent renderer), so this
+        // is conservative: equal refs mean nothing user-visible has changed.
+        BrouterRouteParameters routeParams;
+        if (_cachedRouteParams is not null
+            && ReferenceEquals(_cachedInheritedRef, inherited)
+            && ReferenceEquals(_cachedLocalRef, local))
+        {
+            routeParams = _cachedRouteParams;
+        }
+        else
+        {
+            var merged = MergeParameters(inherited, local);
+            routeParams = new BrouterRouteParameters(merged);
+
+            _cachedRouteParams = routeParams;
+            _cachedInheritedRef = inherited;
+            _cachedLocalRef = local;
+        }
 
         builder.OpenComponent<CascadingValue<BrouterRouteParameters>>(0);
         builder.AddAttribute(1, "Name", "RouteParameters");
@@ -216,14 +249,17 @@ internal class BrouterRouteRenderer
             value = System.Convert.ChangeType(raw, underlying, System.Globalization.CultureInfo.InvariantCulture);
             return true;
         }
-        catch
+        catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException or ArgumentException)
         {
+            // See BrouterRouteParameters.TryGetWeak for the rationale: these are the documented
+            // Convert.ChangeType failure modes. Narrower catch keeps genuine programming bugs
+            // (NREs, OOM) visible.
             value = null;
             return false;
         }
     }
 
-    private static IDictionary<string, object?> MergeParameters(BrouterRouteParameters? inherited, IDictionary<string, object?>? local)
+    private static IReadOnlyDictionary<string, object?> MergeParameters(BrouterRouteParameters? inherited, IReadOnlyDictionary<string, object?>? local)
     {
         var result = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         if (inherited is not null)
@@ -240,62 +276,77 @@ internal class BrouterRouteRenderer
 
 internal static class BrouterTypedParameterCache
 {
-    private static readonly Dictionary<Type, BrouterParameterBinding[]> _cache = new();
-    private static readonly object _lock = new();
+    // ConcurrentDictionary lets cold-start renders run reflection in parallel instead of
+    // serializing on a single lock. The cache is read every render of every component that
+    // uses [BrouterParameter] / [BrouterQuery], so contention on a coarse lock matters when
+    // many such components are mounted at once (e.g. a list page with many cards).
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, BrouterParameterBinding[]> _cache = new();
 
     public static BrouterParameterBinding[] GetBindings([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
     {
-        lock (_lock)
+        // Fast path: hit the cached value without going through the factory delegate.
+        if (_cache.TryGetValue(type, out var cached)) return cached;
+
+        // Compute outside GetOrAdd so the trimmer can see the [DynamicallyAccessedMembers]
+        // requirement is satisfied at the call site (passing BuildBindings as a delegate would
+        // trip IL2111 because the trimmer can't follow annotation through delegate invocation).
+        // Under contention multiple threads may race here and produce equivalent arrays; only
+        // one wins via TryAdd, the rest are GC'd. BuildBindings is pure for a given Type so
+        // either result is correct.
+        var bindings = BuildBindings(type);
+        _cache.TryAdd(type, bindings);
+        return _cache.TryGetValue(type, out var stored) ? stored : bindings;
+    }
+
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2067",
+        Justification = "type flows from GetBindings whose parameter is annotated with " +
+                        "DynamicallyAccessedMemberTypes.PublicProperties; the factory only reads public properties.")]
+    private static BrouterParameterBinding[] BuildBindings([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] Type type)
+    {
+        var bindings = new List<BrouterParameterBinding>();
+        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            if (_cache.TryGetValue(type, out var cached)) return cached;
+            var paramAttr = prop.GetCustomAttribute<BrouterParameterAttribute>();
+            var queryAttr = prop.GetCustomAttribute<BrouterQueryAttribute>();
+            if (paramAttr is null && queryAttr is null) continue;
 
-            var bindings = new List<BrouterParameterBinding>();
-            foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            // Reject ambiguous annotations up front: a property carrying both attributes
+            // would silently bind as one or the other, leaving the developer unaware that
+            // half of their intent was dropped. Fail fast with a clear message that names
+            // the offending property and both attribute names.
+            if (paramAttr is not null && queryAttr is not null)
+                throw new InvalidOperationException(
+                    $"Property '{type.FullName}.{prop.Name}' is annotated with both " +
+                    $"[{nameof(BrouterParameterAttribute)}] and [{nameof(BrouterQueryAttribute)}]. " +
+                    "Pick exactly one: a property can bind to either a route parameter or a query string value, not both.");
+
+            // [BrouterParameter] / [BrouterQuery] only have an effect when Blazor recognises
+            // the property as a component parameter, i.e. it's annotated with [Parameter]
+            // (or [CascadingParameter], which Brouter doesn't drive) and has a public setter.
+            // Without that, AddAttribute below would feed an unknown attribute into the
+            // component and Blazor would throw a generic exception the moment the route
+            // matches. Failing here gives the developer a clear, actionable message.
+            var attrName = paramAttr is not null ? nameof(BrouterParameterAttribute) : nameof(BrouterQueryAttribute);
+            if (prop.GetCustomAttribute<ParameterAttribute>() is null)
+                throw new InvalidOperationException(
+                    $"Property '{type.FullName}.{prop.Name}' is annotated with [{attrName}] but is missing [Parameter]. " +
+                    "Add [Parameter] (or remove the Brouter binding attribute).");
+            if (prop.SetMethod is null || prop.SetMethod.IsPublic is false)
+                throw new InvalidOperationException(
+                    $"Property '{type.FullName}.{prop.Name}' is annotated with [{attrName}] but has no public setter. " +
+                    "Add a public setter so the router can assign the bound value.");
+
+            if (paramAttr is not null)
             {
-                var paramAttr = prop.GetCustomAttribute<BrouterParameterAttribute>();
-                var queryAttr = prop.GetCustomAttribute<BrouterQueryAttribute>();
-                if (paramAttr is null && queryAttr is null) continue;
-
-                // Reject ambiguous annotations up front: a property carrying both attributes
-                // would silently bind as one or the other, leaving the developer unaware that
-                // half of their intent was dropped. Fail fast with a clear message that names
-                // the offending property and both attribute names.
-                if (paramAttr is not null && queryAttr is not null)
-                    throw new InvalidOperationException(
-                        $"Property '{type.FullName}.{prop.Name}' is annotated with both " +
-                        $"[{nameof(BrouterParameterAttribute)}] and [{nameof(BrouterQueryAttribute)}]. " +
-                        "Pick exactly one: a property can bind to either a route parameter or a query string value, not both.");
-
-                // [BrouterParameter] / [BrouterQuery] only have an effect when Blazor recognises
-                // the property as a component parameter, i.e. it's annotated with [Parameter]
-                // (or [CascadingParameter], which Brouter doesn't drive) and has a public setter.
-                // Without that, AddAttribute below would feed an unknown attribute into the
-                // component and Blazor would throw a generic exception the moment the route
-                // matches. Failing here gives the developer a clear, actionable message.
-                var attrName = paramAttr is not null ? nameof(BrouterParameterAttribute) : nameof(BrouterQueryAttribute);
-                if (prop.GetCustomAttribute<ParameterAttribute>() is null)
-                    throw new InvalidOperationException(
-                        $"Property '{type.FullName}.{prop.Name}' is annotated with [{attrName}] but is missing [Parameter]. " +
-                        "Add [Parameter] (or remove the Brouter binding attribute).");
-                if (prop.SetMethod is null || prop.SetMethod.IsPublic is false)
-                    throw new InvalidOperationException(
-                        $"Property '{type.FullName}.{prop.Name}' is annotated with [{attrName}] but has no public setter. " +
-                        "Add a public setter so the router can assign the bound value.");
-
-                if (paramAttr is not null)
-                {
-                    bindings.Add(new BrouterParameterBinding(prop.Name, paramAttr.Name ?? prop.Name, prop.PropertyType, IsQuery: false));
-                }
-                else
-                {
-                    bindings.Add(new BrouterParameterBinding(prop.Name, queryAttr!.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
-                }
+                bindings.Add(new BrouterParameterBinding(prop.Name, paramAttr.Name ?? prop.Name, prop.PropertyType, IsQuery: false));
             }
-
-            var arr = bindings.ToArray();
-            _cache[type] = arr;
-            return arr;
+            else
+            {
+                bindings.Add(new BrouterParameterBinding(prop.Name, queryAttr!.Name ?? prop.Name, prop.PropertyType, IsQuery: true));
+            }
         }
+
+        return bindings.ToArray();
     }
 }
 

@@ -12,9 +12,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
+        <!-- Use floating low-bound version ranges so consumers can pin to any patch release on
+             their TFM. Pinning to an exact version (e.g. "8.0.0") forced applications onto that
+             specific patch even when they wanted a newer servicing release. The upper bound
+             prevents accidentally pulling a major-version package that targets a newer TFM. -->
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0,9.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0,10.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0)" />
     </ItemGroup>
 
     <ItemGroup>

@@ -22,14 +22,12 @@ public class BrouterOutlet : ComponentBase, IDisposable
     }
 
 
-    protected override Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         if (Parent is null)
             throw new InvalidOperationException("An Outlet must be placed inside a Brouter route.");
 
         Parent.Outlet = this;
-
-        return base.OnInitializedAsync();
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

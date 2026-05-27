@@ -7,7 +7,7 @@ namespace Bit.Brouter;
 /// <summary>
 /// Declares a single route inside a <see cref="Brouter"/>.
 /// </summary>
-public partial class BrouterRoute : ComponentBase, IDisposable
+public class BrouterRoute : ComponentBase, IDisposable
 {
     /// <summary>
     /// The route path to match. Supports literal segments, parameter segments, constraints and wildcards.
@@ -68,8 +68,12 @@ public partial class BrouterRoute : ComponentBase, IDisposable
     internal BrouterOutlet? Outlet { get; set; }
 
     internal BrouterRouteTemplate? RouteTemplate { get; private set; }
-    internal IDictionary<string, object?> Parameters { get; set; } = new Dictionary<string, object?>();
-    internal IDictionary<string, string[]> ConstraintsByParameter { get; set; } = new Dictionary<string, string[]>();
+    // Tightened from IDictionary to IReadOnlyDictionary: callers only ever read these and the
+    // pipeline replaces them wholesale on a match commit. Exposing the mutable interface let
+    // any internal caller .Add/.Remove/.Clear them mid-render which would be a footgun against
+    // a route that's still part of an actively-rendering matched chain.
+    internal IReadOnlyDictionary<string, object?> Parameters { get; set; } = new Dictionary<string, object?>();
+    internal IReadOnlyDictionary<string, string[]> ConstraintsByParameter { get; set; } = new Dictionary<string, string[]>();
     internal object? LoadedData { get; set; }
 
     private BrouterRouteRenderer? _renderer;
@@ -105,6 +109,20 @@ public partial class BrouterRoute : ComponentBase, IDisposable
 
         RouteTemplate = BrouterTemplateParser.ParseTemplate(FullTemplate);
 
+        // Precompute Specificity / Depth / IsIndex once. These are stable for the lifetime
+        // of the route (template and parent chain don't change after registration), so the
+        // matching loop and the winner-selection in Brouter.ProcessNavigationAsync can read
+        // them as plain field accesses instead of recomputing on every navigation.
+        var specificity = 0;
+        foreach (var seg in RouteTemplate.TemplateSegments) specificity += seg.Specificity;
+        Specificity = specificity;
+
+        var depth = 0;
+        for (var p = Parent; p is not null; p = p.Parent) depth++;
+        Depth = depth;
+
+        IsIndex = Parent is not null && string.IsNullOrEmpty(Path.Trim('/'));
+
         _renderer = new BrouterRouteRenderer(this);
 
         Brouter.RegisterRoute(this);
@@ -112,30 +130,20 @@ public partial class BrouterRoute : ComponentBase, IDisposable
     }
 
     /// <summary>The combined specificity score of this route's full template.</summary>
-    internal int Specificity
-    {
-        get
-        {
-            if (RouteTemplate is null) return 0;
-            var sum = 0;
-            foreach (var s in RouteTemplate.TemplateSegments) sum += s.Specificity;
-            return sum;
-        }
-    }
+    /// <remarks>
+    /// Cached at construction. RouteTemplate / parent chain are assigned in OnInitialized
+    /// and don't change after registration, so the score never needs to be recomputed.
+    /// Recomputing per navigation showed up as a hot loop on apps with many routes.
+    /// </remarks>
+    internal int Specificity { get; private set; }
 
     /// <summary>Nesting depth (root routes are 0, each level of nesting adds 1).</summary>
-    internal int Depth
-    {
-        get
-        {
-            var d = 0;
-            for (var p = Parent; p is not null; p = p.Parent) d++;
-            return d;
-        }
-    }
+    /// <remarks>Cached at construction. See <see cref="Specificity"/>.</remarks>
+    internal int Depth { get; private set; }
 
     /// <summary>True for nested index routes (child routes whose <see cref="Path"/> is empty or contains only slashes).</summary>
-    internal bool IsIndex => Parent is not null && string.IsNullOrEmpty(Path.Trim('/'));
+    /// <remarks>Cached at construction. See <see cref="Specificity"/>.</remarks>
+    internal bool IsIndex { get; private set; }
 
 
     internal bool Matched { get; set; }

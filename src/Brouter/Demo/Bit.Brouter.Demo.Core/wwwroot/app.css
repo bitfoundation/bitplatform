@@ -251,6 +251,7 @@ button.btn-primary {
 
 .btn-primary:hover,
 button.btn-primary:hover {
+    color: #fff;
     background: var(--bb-primary-hover);
     border-color: var(--bb-primary-hover);
 }

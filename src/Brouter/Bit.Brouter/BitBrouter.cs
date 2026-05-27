@@ -21,10 +21,9 @@ public static class BitBrouter
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when this method has already been called on the same <paramref name="services"/>
-    /// instance. Calling it twice would either silently discard the new <paramref name="configure"/>
-    /// callback (because the second <c>AddSingleton(BrouterOptions)</c> would lose to the first
-    /// via <c>TryAdd</c>) or replace previously-registered configuration; both are surprising,
-    /// so we fail loud instead.
+    /// instance. Calling it twice is almost always a configuration bug; if you genuinely want
+    /// to add additional <see cref="BrouterOptions"/> configuration after the fact, call
+    /// <c>services.Configure&lt;BrouterOptions&gt;(...)</c> directly instead.
     /// </exception>
     public static IServiceCollection AddBitBrouterServices(this IServiceCollection services,
                                                            Action<BrouterOptions>? configure = null)
@@ -39,15 +38,18 @@ public static class BitBrouter
             {
                 throw new InvalidOperationException(
                     $"{nameof(AddBitBrouterServices)} has already been called on this service collection. " +
-                    "Bit.Brouter services must only be registered once to avoid silently discarding configuration.");
+                    "Bit.Brouter services must only be registered once to avoid silently discarding configuration. " +
+                    "If you need to add more configuration after the fact, call services.Configure<BrouterOptions>(...) directly.");
             }
         }
 
-        var options = new BrouterOptions();
-        configure?.Invoke(options);
+        // Use the standard Options pattern so callers can compose configuration from multiple
+        // sources (e.g. appsettings binding + a Configure callback), use IOptionsMonitor for
+        // change notifications in long-running processes, and integrate with PostConfigure.
+        var optionsBuilder = services.AddOptions<BrouterOptions>();
+        if (configure is not null) optionsBuilder.Configure(configure);
 
         services.AddSingleton(new BitBrouterMarker());
-        services.AddSingleton(options);
         services.TryAddScoped<BrouterService>();
         services.TryAddScoped<IBrouter>(sp => sp.GetRequiredService<BrouterService>());
         return services;

@@ -22,8 +22,43 @@ public interface IBrouter
     /// the SPA process is replaced by the new document.</param>
     void Navigate(string url, bool replace = false, bool forceLoad = false);
 
-    /// <summary>Navigate one entry back in history.</summary>
+    /// <summary>
+    /// Navigate one entry back in history. Fire-and-forget; failures (e.g. JS interop
+    /// disconnected) are swallowed. Use <see cref="BackAsync"/> when you need to observe failures.
+    /// </summary>
     void Back();
+
+    /// <summary>
+    /// Navigate <paramref name="delta"/> entries back in history. Returns a task that
+    /// completes when the underlying <c>history.go(-delta)</c> call resolves.
+    /// </summary>
+    /// <param name="delta">Number of history entries to skip backwards. Must be &gt;= 1.
+    /// Defaults to 1 for parity with <see cref="Back"/>.</param>
+    /// <remarks>
+    /// Default implementation throws <see cref="NotSupportedException"/>. The shipped
+    /// <see cref="IBrouter"/> service implements it; implement on custom test doubles if
+    /// your code under test exercises history navigation.
+    /// </remarks>
+    ValueTask BackAsync(int delta = 1) =>
+        throw new NotSupportedException(
+            $"This {nameof(IBrouter)} implementation does not support {nameof(BackAsync)}. " +
+            "Override the method on your custom implementation to enable history navigation.");
+
+    /// <summary>Navigate one entry forward in history. Fire-and-forget; see <see cref="ForwardAsync"/> for the observable variant.</summary>
+    /// <remarks>Default implementation calls <see cref="ForwardAsync"/>. Override either to suit a custom implementation.</remarks>
+    void Forward() => _ = ForwardAsync(1);
+
+    /// <summary>Navigate <paramref name="delta"/> entries forward in history.</summary>
+    /// <param name="delta">Number of history entries to skip forward. Must be &gt;= 1. Defaults to 1.</param>
+    /// <remarks>
+    /// Default implementation throws <see cref="NotSupportedException"/>. The shipped
+    /// <see cref="IBrouter"/> service implements it; implement on custom test doubles if
+    /// your code under test exercises history navigation.
+    /// </remarks>
+    ValueTask ForwardAsync(int delta = 1) =>
+        throw new NotSupportedException(
+            $"This {nameof(IBrouter)} implementation does not support {nameof(ForwardAsync)}. " +
+            "Override the method on your custom implementation to enable history navigation.");
 
     /// <summary>Navigate to a named route, substituting the given parameters into the path.</summary>
     void NavigateToName(string name, IReadOnlyDictionary<string, object?>? parameters = null,

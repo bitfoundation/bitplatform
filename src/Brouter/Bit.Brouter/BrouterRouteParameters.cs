@@ -16,7 +16,7 @@ public sealed class BrouterRouteParameters
     private readonly Dictionary<string, object?> _values;
     private readonly ReadOnlyDictionary<string, object?> _readOnlyValues;
 
-    internal BrouterRouteParameters(IDictionary<string, object?> values)
+    internal BrouterRouteParameters(IReadOnlyDictionary<string, object?> values)
     {
         _values = new Dictionary<string, object?>(values, StringComparer.OrdinalIgnoreCase);
         _readOnlyValues = new ReadOnlyDictionary<string, object?>(_values);
@@ -32,12 +32,32 @@ public sealed class BrouterRouteParameters
     public bool Contains(string key) => _values.ContainsKey(key);
 
     /// <summary>
-    /// Returns the parameter as <typeparamref name="T"/>. Throws if missing or not convertible.
+    /// Returns the parameter as <typeparamref name="T"/>.
     /// </summary>
+    /// <exception cref="KeyNotFoundException">
+    /// Thrown when no parameter named <paramref name="key"/> is present. Use
+    /// <see cref="GetOrDefault{T}"/> or <see cref="TryGet{T}(string, out T)"/> when absence
+    /// is expected.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the parameter exists but cannot be converted to <typeparamref name="T"/>
+    /// (e.g. the URL provided <c>"abc"</c> for an <c>int</c> parameter that wasn't constrained
+    /// at the template). The parameter name and target type are both included in the message.
+    /// </exception>
     public T Get<T>(string key)
     {
+        // Differentiate "missing" from "present but unconvertible": the two failure modes
+        // call for different reactions at the call site (one is a routing/template bug, the
+        // other is a value/typing mismatch). Throwing KeyNotFoundException for both, as the
+        // previous version did, conflated them.
+        if (Contains(key) is false)
+            throw new KeyNotFoundException($"Route parameter '{key}' is missing.");
+
         if (TryGet<T>(key, out var value)) return value!;
-        throw new KeyNotFoundException($"Route parameter '{key}' is missing or cannot be converted to {typeof(T).Name}.");
+
+        throw new InvalidOperationException(
+            $"Route parameter '{key}' is present but cannot be converted to {typeof(T).Name}. " +
+            "Add a route constraint (e.g. {{id:int}}) or use TryGet/GetOrDefault to handle the conversion failure explicitly.");
     }
 
     /// <summary>Returns the parameter as <typeparamref name="T"/> or <paramref name="defaultValue"/> when missing/unconvertible.</summary>
@@ -101,8 +121,12 @@ public sealed class BrouterRouteParameters
             value = Convert.ChangeType(raw, underlying, CultureInfo.InvariantCulture);
             return true;
         }
-        catch
+        catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException or ArgumentException)
         {
+            // Narrow the catch so genuine programming errors (e.g. NullReferenceException
+            // from a buggy IConvertible implementation, OutOfMemoryException, etc.) still
+            // surface. The four types above are the documented failure modes for
+            // Convert.ChangeType when given a string -> primitive/decimal/datetime conversion.
             value = null;
             return false;
         }

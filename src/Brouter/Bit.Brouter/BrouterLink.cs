@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
 namespace Bit.Brouter;
@@ -22,10 +23,14 @@ public enum BrouterLinkMatch
 public sealed class BrouterLink : ComponentBase, IAsyncDisposable
 {
     [Inject] private IBrouter Brouter { get; set; } = default!;
-    [Inject] private BrouterOptions Options { get; set; } = default!;
+    [Inject] private IOptions<BrouterOptions> OptionsAccessor { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object>? AdditionalAttributes { get; set; }
+    // Cache the resolved options to keep per-render reads cheap. IOptions<T>.Value is a
+    // light call, but UpdateActiveState runs on every render of every link.
+    private BrouterOptions Options => OptionsAccessor.Value;
+
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
     /// <summary>The destination URL or path.</summary>
     [Parameter, EditorRequired] public string Href { get; set; } = "/";
@@ -57,10 +62,23 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
     private IJSObjectReference? _handle;
     private bool _replaceWired;
 
+    // UpdateActiveState memoisation. UpdateActiveState runs on every render of every link
+    // (OnParametersSet) and on every successful navigation (OnNavigated). For pages with many
+    // nav links this multiplies. Cache the inputs the last computation observed; on a re-call
+    // with the same inputs we just keep _isActive untouched and return.
+    private string? _cachedCurrent;
+    private string? _cachedHref;
+    private BrouterLinkMatch? _cachedMatch;
+    private string? _cachedTarget; // normalised form of _cachedHref
+
     protected override void OnInitialized()
     {
+        base.OnInitialized();
+
         Brouter.OnNavigated += OnNavigated;
-        UpdateActiveState();
+        // Note: no UpdateActiveState() here. OnParametersSet runs immediately after
+        // OnInitialized for every parameter pass and unconditionally calls UpdateActiveState,
+        // so doing it twice on the very first pass is wasted work.
     }
 
     protected override void OnParametersSet()
@@ -73,18 +91,47 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
     {
         var was = _isActive;
         UpdateActiveState();
-        if (was != _isActive) InvokeAsync(StateHasChanged);
-        return ValueTask.CompletedTask;
+        // Return the InvokeAsync task wrapped as a ValueTask so any exception thrown by the
+        // re-render flows up the OnNavigated invocation chain instead of becoming an unobserved
+        // task. ValueTask.CompletedTask is correct when nothing changed.
+        return _isActive == was
+            ? ValueTask.CompletedTask
+            : new ValueTask(InvokeAsync(StateHasChanged));
     }
 
     private void UpdateActiveState()
     {
         var current = Brouter.Location.Path;
-        // Brouter.UpdateLocation() only strips a trailing slash from Path when
-        // Options.IgnoreTrailingSlash is true, so we must mirror that here when normalising
-        // the link's Href. Otherwise BrouterLinkMatch.All would never match a current path
-        // that legitimately ends in '/' under Options.IgnoreTrailingSlash == false.
-        var target = NormalisePath(Href, stripTrailingSlash: Options.IgnoreTrailingSlash);
+
+        // Fast path: same current path, same Href, same Match -> result hasn't changed.
+        // String reference equality on Brouter.Location.Path is reasonable because
+        // BrouterLocation is rebuilt only on navigation (via ComputeLocation), and within a
+        // single navigation every link reads the same instance. Fall through to the value
+        // equality comparison for the rare case where two distinct strings happen to be equal.
+        if (_cachedHref is not null
+            && ReferenceEquals(_cachedHref, Href)
+            && _cachedMatch == Match
+            && (ReferenceEquals(_cachedCurrent, current)
+                || string.Equals(_cachedCurrent, current, StringComparison.Ordinal)))
+        {
+            return;
+        }
+
+        // Recompute. Target only needs renormalising when Href actually changed.
+        string target;
+        if (_cachedTarget is not null && ReferenceEquals(_cachedHref, Href))
+        {
+            target = _cachedTarget;
+        }
+        else
+        {
+            // Brouter.ComputeLocation() only strips a trailing slash from Path when
+            // Options.IgnoreTrailingSlash is true, so we must mirror that here when normalising
+            // the link's Href. Otherwise BrouterLinkMatch.All would never match a current path
+            // that legitimately ends in '/' under Options.IgnoreTrailingSlash == false.
+            target = NormalisePath(Href, stripTrailingSlash: Options.IgnoreTrailingSlash);
+            _cachedTarget = target;
+        }
         var comparison = Options.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
         _isActive = Match switch
@@ -97,6 +144,10 @@ public sealed class BrouterLink : ComponentBase, IAsyncDisposable
                  (current.Length == target.Length || target == "/" || target[^1] == '/' ||
                   current[target.Length] == '/' || current[target.Length] == '?' || current[target.Length] == '#')
         };
+
+        _cachedCurrent = current;
+        _cachedHref = Href;
+        _cachedMatch = Match;
     }
 
     private static string NormalisePath(string href, bool stripTrailingSlash)
