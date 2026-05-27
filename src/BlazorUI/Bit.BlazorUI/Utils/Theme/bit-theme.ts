@@ -1,3 +1,14 @@
+// Attribute / storage names — kept aligned with BitThemeAttributeNames.cs and BitThemeSsr.cs in
+// C#. If you rename a constant here, mirror the change there (the contract test under
+// Bit.BlazorUI.Tests.Utils.Theme will catch a mismatch).
+const ATTR_THEME = 'bit-theme';
+const ATTR_THEME_DEFAULT = 'bit-theme-default';
+const ATTR_THEME_SYSTEM = 'bit-theme-system';
+const ATTR_THEME_PERSIST = 'bit-theme-persist';
+const ATTR_THEME_DARK = 'bit-theme-dark';
+const ATTR_THEME_LIGHT = 'bit-theme-light';
+const STORAGE_KEY = 'bit-current-theme';
+
 type onThemeChangeType = (newThemeName: string, oldThemeName: string) => void;
 
 interface BitThemeOptions {
@@ -17,10 +28,19 @@ interface BitThemeSetOptions {
     internalOsRefresh?: boolean;
 }
 
+// Type-safe global handle. Avoids `(window as any)` plumbing at the bottom of the file and gives
+// downstream TypeScript users a real surface to consume.
+declare global {
+    interface Window {
+        BitTheme: typeof BitTheme;
+        BitExternalTheme: typeof BitExternalTheme;
+    }
+}
+
 class BitTheme {
     private static SYSTEM_THEME = 'system';
-    private static THEME_ATTRIBUTE = 'bit-theme';
-    private static THEME_STORAGE_KEY = 'bit-current-theme';
+    private static THEME_ATTRIBUTE = ATTR_THEME;
+    private static THEME_STORAGE_KEY = STORAGE_KEY;
 
     private static _persist = false;
     private static _darkTheme: string = 'dark';
@@ -46,7 +66,19 @@ class BitTheme {
 
     private static _appliedVarKeys = new WeakMap<HTMLElement, string[]>();
 
+    /** Tracks whether init() has already run to make a duplicate script load (HMR, double inclusion) idempotent. */
+    private static _initialized = false;
+
     public static init(options: BitThemeOptions) {
+        // Idempotent: a duplicate script load (e.g. two host pages including the bundle, or HMR
+        // restarting the IIFE) must not blow away listeners or replay setAttribute side-effects.
+        // Subsequent init() calls are accepted only when called explicitly with a different
+        // option set — the auto-IIFE at the bottom guards itself with this flag.
+        if (BitTheme._initialized) {
+            return;
+        }
+        BitTheme._initialized = true;
+
         Object.assign(BitTheme._initOptions, options);
 
         let deferPersist = false;
@@ -111,6 +143,11 @@ class BitTheme {
     }
 
     public static set(themeName: string, options?: BitThemeSetOptions) {
+        // Reject null / undefined / empty inputs up-front so we never call setAttribute(...) with
+        // a value that coerces to the literal string "null" or "undefined". The non-null
+        // assertion below was unsafe because getActualTheme can return null for null input.
+        if (!themeName) return BitTheme._currentTheme;
+
         const fromInit = options?.fromInit === true;
         const internalOs = options?.internalOsRefresh === true;
 
@@ -124,10 +161,17 @@ class BitTheme {
             }
         }
 
-        BitTheme._currentTheme = BitTheme.getActualTheme(themeName)!;
+        const resolved = BitTheme.getActualTheme(themeName);
+        if (!resolved) return BitTheme._currentTheme;
+        BitTheme._currentTheme = resolved;
 
         if (BitTheme._persist) {
-            localStorage.setItem(BitTheme.THEME_STORAGE_KEY, themeName);
+            // localStorage can throw in Safari private mode, in iframes that block storage,
+            // when over quota, or under restrictive document policies (e.g. file:// in some
+            // browsers). Theme persistence is best-effort — never let it break theme switching.
+            try {
+                localStorage.setItem(BitTheme.THEME_STORAGE_KEY, themeName);
+            } catch { /* persistence unavailable; continue without storing */ }
         }
 
         const oldTheme = document.documentElement.getAttribute(BitTheme.THEME_ATTRIBUTE) || '';
@@ -180,7 +224,14 @@ class BitTheme {
     public static getPersisted() {
         if (!BitTheme._persist) return null;
 
-        return localStorage.getItem(BitTheme.THEME_STORAGE_KEY);
+        // Mirror the write side: localStorage.getItem can throw under the same conditions as
+        // setItem (Safari private mode, blocked storage, etc.). Treat failure as "no persisted
+        // value" so the rest of the resolution chain (system / default / lightTheme) takes over.
+        try {
+            return localStorage.getItem(BitTheme.THEME_STORAGE_KEY);
+        } catch {
+            return null;
+        }
     }
 
     public static registerDotNetNotifier(dotNetRef: DotNetObject) {
@@ -202,7 +253,7 @@ class BitTheme {
             if (persisted === BitTheme.SYSTEM_THEME) return true;
         }
         if (BitTheme._runtimeFollowSystem) return true;
-        if (document.documentElement.hasAttribute('bit-theme-system')) return true;
+        if (document.documentElement.hasAttribute(ATTR_THEME_SYSTEM)) return true;
         return false;
     }
 
@@ -298,17 +349,22 @@ class BitExternalTheme {
 }
 
 (function () {
-    const options = {
-        system: document.documentElement.hasAttribute('bit-theme-system'),
-        persist: document.documentElement.hasAttribute('bit-theme-persist'),
-        theme: document.documentElement.getAttribute('bit-theme'),
-        default: document.documentElement.getAttribute('bit-theme-default'),
-        darkTheme: document.documentElement.getAttribute('bit-theme-dark'),
-        lightTheme: document.documentElement.getAttribute('bit-theme-light'),
+    // If a previous load already published BitTheme on window, leave it alone. This makes the
+    // bundle safe to include twice (HMR, multiple host pages) — the first invocation wins and the
+    // second is a no-op rather than overwriting state and re-attaching event listeners.
+    if ((window as any).BitTheme) return;
+
+    const options: BitThemeOptions = {
+        system: document.documentElement.hasAttribute(ATTR_THEME_SYSTEM),
+        persist: document.documentElement.hasAttribute(ATTR_THEME_PERSIST),
+        theme: document.documentElement.getAttribute(ATTR_THEME),
+        default: document.documentElement.getAttribute(ATTR_THEME_DEFAULT),
+        darkTheme: document.documentElement.getAttribute(ATTR_THEME_DARK),
+        lightTheme: document.documentElement.getAttribute(ATTR_THEME_LIGHT),
     };
 
     BitTheme.init(options);
-}());
 
-(window as any).BitTheme = BitTheme;
-(window as any).BitExternalTheme = BitExternalTheme;
+    window.BitTheme = BitTheme;
+    window.BitExternalTheme = BitExternalTheme;
+}());

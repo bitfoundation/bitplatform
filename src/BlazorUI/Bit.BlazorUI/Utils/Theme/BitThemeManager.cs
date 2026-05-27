@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using Microsoft.Extensions.Logging;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Bridges Blazor to the client <c>BitTheme</c> script: preset names on the <c>bit-theme</c> attribute vs inline CSS variables from <see cref="BitTheme"/>.
@@ -10,6 +12,7 @@ public class BitThemeManager : IAsyncDisposable
 {
     private readonly IJSRuntime _js;
     private readonly BitThemeJsNotifierReceiver? _jsNotifierReceiver;
+    private readonly ILogger<BitThemeManager>? _logger;
     private readonly SemaphoreSlim _jsNotifierRegistrationLock = new(1, 1);
 
     private DotNetObjectReference<BitThemeJsNotifierReceiver>? _jsNotifierReference;
@@ -18,18 +21,24 @@ public class BitThemeManager : IAsyncDisposable
 
     /// <summary>
     /// Creates a manager without a .NET notifier receiver. <see cref="BitThemeNotifications"/> won't fire from JS until a receiver is provided
-    /// (use the other constructor or resolve <see cref="BitThemeManager"/> from DI).
+    /// (resolve <see cref="BitThemeManager"/> from DI to get a fully-wired instance).
     /// </summary>
     public BitThemeManager(IJSRuntime js)
     {
+        ArgumentNullException.ThrowIfNull(js);
         _js = js;
-        _jsNotifierReceiver = null;
     }
 
-    public BitThemeManager(IJSRuntime js, BitThemeJsNotifierReceiver jsNotifierReceiver)
+    // Internal ctor: BitThemeJsNotifierReceiver is internal, so this signature can't be public.
+    // DI wires this via a factory in IBitBlazorUIServiceCollectionExtensions.
+    internal BitThemeManager(IJSRuntime js, BitThemeJsNotifierReceiver jsNotifierReceiver, ILoggerFactory? loggerFactory)
     {
+        ArgumentNullException.ThrowIfNull(js);
+        ArgumentNullException.ThrowIfNull(jsNotifierReceiver);
+
         _js = js;
         _jsNotifierReceiver = jsNotifierReceiver;
+        _logger = loggerFactory?.CreateLogger<BitThemeManager>();
     }
 
     /// <summary>Returns the active <c>bit-theme</c> name from the document element.</summary>
@@ -76,7 +85,11 @@ public class BitThemeManager : IAsyncDisposable
         await _js.BitThemeClearAppliedBitTheme(element);
     }
 
-    public async ValueTask<bool> IsSystemInDarkMode()
+    /// <summary>
+    /// Returns true when the OS / browser reports a dark <c>prefers-color-scheme</c>. Returns
+    /// <see langword="false"/> when JS interop is unavailable (e.g. prerendering / disconnected circuit).
+    /// </summary>
+    public async ValueTask<bool> IsSystemInDarkModeAsync()
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
         return await _js.BitThemeIsSystemDark();
@@ -88,7 +101,17 @@ public class BitThemeManager : IAsyncDisposable
         return await _js.BitThemeGetCurrentPersistedTheme();
     }
 
-    /// <summary>Ensures the client script can notify <see cref="BitThemeNotifications"/>; safe to call multiple times.</summary>
+    /// <summary>
+    /// Eagerly wires up the JS-to-.NET notifier so <see cref="BitThemeNotifications.ThemeChanged"/>
+    /// can fire from the client script.
+    /// </summary>
+    /// <remarks>
+    /// Every other public method on <see cref="BitThemeManager"/> already calls the same
+    /// registration step internally, so this is only useful when an app wants to subscribe to
+    /// <see cref="BitThemeNotifications"/> at startup without yet calling any other manager
+    /// method. Safe to call multiple times — registration is idempotent and serialized by an
+    /// internal semaphore.
+    /// </remarks>
     public async ValueTask EnsureThemeNotificationsRegisteredAsync()
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
@@ -149,8 +172,11 @@ public class BitThemeManager : IAsyncDisposable
             catch (JSDisconnectedException) { } // circuit gone — nothing to unregister
             catch (JSException ex)
             {
-                // missing JS module (e.g. after a page refresh or navigation) — safe to ignore at teardown.
-                Console.WriteLine(ex.Message);
+                // Missing JS module (e.g. after a page refresh or navigation) — safe to ignore at
+                // teardown. Route through ILogger when a factory was provided so hosts get their
+                // configured pipeline (Console.WriteLine bypasses logging filters and shows up
+                // raw in production terminals).
+                _logger?.LogDebug(ex, "BitTheme.unregisterDotNetNotifier failed during dispose; ignoring.");
             }
             finally
             {

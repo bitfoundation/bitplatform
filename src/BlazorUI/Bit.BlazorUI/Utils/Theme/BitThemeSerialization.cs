@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
@@ -61,36 +59,66 @@ public static class BitThemeSerialization
         }
     }
 
-    /// <summary>Replaces null reference-type properties (except <see cref="string"/>) so the tree matches a <c>new BitTheme()</c> graph after sparse JSON.</summary>
-#pragma warning disable IL2072 // Activator.CreateInstance — BitTheme-related POCOs only, all have public parameterless constructors.
-#pragma warning disable IL2075 // GetType().GetProperties — only instances from BitTheme deserialization.
-    private static void EnsureNestedObjects(object obj, HashSet<object>? visited = null)
+    /// <summary>
+    /// Replaces <see langword="null"/> branch objects on a deserialized <see cref="BitTheme"/> so the
+    /// graph matches a freshly-constructed <c>new BitTheme()</c>. Sparse JSON (the format produced
+    /// by <see cref="Serialize"/>) omits empty nested objects, and <see cref="JsonSerializer"/>
+    /// then leaves those branches null on the result; callers that walk the graph (the mapper,
+    /// merge, derivation helpers) rely on every branch being non-null.
+    /// </summary>
+    /// <remarks>
+    /// Previously this method walked the type via reflection. Reflection breaks under trimming /
+    /// AOT (IL2070/IL2075/IL3050) unless the entire <see cref="BitTheme"/> graph is preserved by
+    /// <c>[DynamicallyAccessedMembers]</c>, which is hard to keep correct as the model evolves.
+    /// Walking the graph explicitly is verbose but trim-safe and removes the reflection
+    /// suppression pragmas that previously hid genuine warnings.
+    /// </remarks>
+    private static void EnsureNestedObjects(BitTheme theme)
     {
-        visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
-        if (!visited.Add(obj))
-            return;
+        // Top-level branches.
+        theme.Color ??= new BitThemeColors();
+        theme.BoxShadow ??= new BitThemeBoxShadows();
+        theme.Spacing ??= new BitThemeSpacings();
+        theme.ZIndex ??= new BitThemeZIndices();
+        theme.Shape ??= new BitThemeShapes();
+        theme.Typography ??= new BitThemeTypography();
+        theme.Motion ??= new BitThemeMotion();
+        theme.Layout ??= new BitThemeLayout();
 
-        foreach (var prop in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-        {
-            if (!prop.CanRead || !prop.CanWrite || prop.GetIndexParameters().Length > 0)
-                continue;
+        // Color branch.
+        var color = theme.Color;
+        color.Primary ??= new BitThemeColorVariants();
+        color.Secondary ??= new BitThemeColorVariants();
+        color.Tertiary ??= new BitThemeColorVariants();
+        color.Info ??= new BitThemeColorVariants();
+        color.Success ??= new BitThemeColorVariants();
+        color.Warning ??= new BitThemeColorVariants();
+        color.SevereWarning ??= new BitThemeColorVariants();
+        color.Error ??= new BitThemeColorVariants();
+        color.Foreground ??= new BitThemeGeneralColorVariants();
+        color.Background ??= new BitThemeBackgroundColorVariants();
+        color.Border ??= new BitThemeGeneralColorVariants();
+        color.Neutral ??= new BitThemeNeutralColorVariants();
 
-            var pt = prop.PropertyType;
-            if (pt == typeof(string) || pt.IsValueType)
-                continue;
+        // Typography branch.
+        var typography = theme.Typography;
+        typography.H1 ??= new BitThemeTypographyVariants();
+        typography.H2 ??= new BitThemeTypographyVariants();
+        typography.H3 ??= new BitThemeTypographyVariants();
+        typography.H4 ??= new BitThemeTypographyVariants();
+        typography.H5 ??= new BitThemeTypographyVariants();
+        typography.H6 ??= new BitThemeTypographyVariants();
+        typography.Subtitle1 ??= new BitThemeTypographyVariants();
+        typography.Subtitle2 ??= new BitThemeTypographyVariants();
+        typography.Body1 ??= new BitThemeTypographyVariants();
+        typography.Body2 ??= new BitThemeTypographyVariants();
+        typography.Button ??= new BitThemeTypographyVariants();
+        typography.Caption1 ??= new BitThemeTypographyVariants();
+        typography.Caption2 ??= new BitThemeTypographyVariants();
+        typography.Overline ??= new BitThemeTypographyVariants();
+        typography.Inherit ??= new BitThemeTypographyVariants();
 
-            var val = prop.GetValue(obj);
-            if (val is null)
-            {
-                val = Activator.CreateInstance(pt);
-                if (val is null)
-                    continue;
-                prop.SetValue(obj, val);
-            }
-
-            EnsureNestedObjects(val, visited);
-        }
+        // Layout branch.
+        theme.Layout.Breakpoints ??= new BitThemeBreakpoints();
     }
-#pragma warning restore IL2075
-#pragma warning restore IL2072
 }

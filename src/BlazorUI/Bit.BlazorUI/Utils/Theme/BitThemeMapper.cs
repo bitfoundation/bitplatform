@@ -420,7 +420,15 @@ internal static class BitThemeMapper
 
         return result;
 
-        void addCssVar(string key, string? value) { if (value is not null) result!.Add(key, value); }
+        // Skip null *and* empty/whitespace-only values so we never emit an invalid declaration
+        // like `--bit-x: ;` (which the browser drops anyway, but only after parsing). Treating
+        // whitespace as "skip" matches the convention used elsewhere in the theme system, e.g.
+        // BitThemeColorDerivation's IsNullOrWhiteSpace guard.
+        void addCssVar(string key, string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return;
+            result!.Add(key, value);
+        }
     }
 
     internal static BitTheme Merge(BitTheme bitTheme, BitTheme other)

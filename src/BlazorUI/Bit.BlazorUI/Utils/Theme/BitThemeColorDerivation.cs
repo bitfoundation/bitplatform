@@ -1,12 +1,21 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Optional helpers to populate semantic color steps from a single main color (HSV-based). Explicit non-null values on <paramref name="variants"/> are never overwritten.
+/// Optional helpers to populate semantic color steps from a single main color (HSV-based).
+/// Caller-provided non-null values on the variants object are never overwritten.
 /// </summary>
 public static class BitThemeColorDerivation
 {
-    /// <summary>Fills unset <see cref="BitThemeColorVariants"/> fields from <paramref name="mainHex"/>.</summary>
-    /// <param name="adjustTextForWcagAa">When true, flips suggested on-color text if contrast vs <see cref="BitThemeColorVariants.Main"/> fails WCAG AA for normal text.</param>
+    /// <summary>Fills unset <see cref="BitThemeColorVariants"/> fields by deriving HSV-shifted hex values from <paramref name="mainHex"/>.</summary>
+    /// <param name="variants">Target variants to fill in-place. Already-populated properties are preserved.</param>
+    /// <param name="mainHex">Source color in <c>#RRGGBB</c> form. Whitespace is trimmed; null/empty is a silent no-op.</param>
+    /// <param name="adjustTextForWcagAa">When true, flips the suggested on-color text if its contrast vs <see cref="BitThemeColorVariants.Main"/> fails WCAG AA for normal text.</param>
+    /// <remarks>
+    /// Invalid hex inputs (e.g. <c>"not-a-color"</c>) are tolerated: the underlying
+    /// <c>BitInternalColor</c> parser silently falls back to white, and the resulting all-white
+    /// derivation is still a usable theme branch. The outer <c>try/catch</c> below is defense-in-depth
+    /// for unforeseen exceptions; nothing currently throws past <c>BitInternalColor</c>.
+    /// </remarks>
     public static void FillColorRoleFromMain(BitThemeColorVariants? variants, string? mainHex, bool adjustTextForWcagAa = false)
     {
         if (variants is null || string.IsNullOrWhiteSpace(mainHex)) return;
@@ -52,9 +61,11 @@ public static class BitThemeColorDerivation
                 }
             }
         }
-        catch
+        catch (Exception)
         {
-            // ignore invalid color strings
+            // Defense-in-depth: BitInternalColor's parser swallows hex format errors and falls back
+            // to white, so this catch is rarely hit in practice. Suppressing here mirrors the
+            // public contract documented above (FillColorRoleFromMain never throws on bad input).
         }
     }
 
