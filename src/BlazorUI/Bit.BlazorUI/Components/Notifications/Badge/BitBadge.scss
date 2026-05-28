@@ -5,7 +5,7 @@
     display: inline-block;
 
     &.bit-dis {
-        --bit-bdg-cnt-clr-txt: #{$clr-fg-dis};
+        --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-dis-text);
         --bit-bdg-cnt-clr-bg: var(--bit-bdg-clr-bg-dis);
         --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr-brd-dis);
     }

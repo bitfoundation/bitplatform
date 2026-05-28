@@ -412,11 +412,13 @@ internal static class BitThemeMapper
 
         addCssVar("--bit-layout-dir", bitTheme.Layout.Direction);
         addCssVar("--bit-layout-density-scale", bitTheme.Layout.DensityScale);
+
         addCssVar("--bit-bp-xs", bitTheme.Layout.Breakpoints.Xs);
         addCssVar("--bit-bp-sm", bitTheme.Layout.Breakpoints.Sm);
         addCssVar("--bit-bp-md", bitTheme.Layout.Breakpoints.Md);
         addCssVar("--bit-bp-lg", bitTheme.Layout.Breakpoints.Lg);
         addCssVar("--bit-bp-xl", bitTheme.Layout.Breakpoints.Xl);
+        addCssVar("--bit-bp-xxl", bitTheme.Layout.Breakpoints.Xxl);
 
         return result;
 
@@ -844,6 +846,7 @@ internal static class BitThemeMapper
         result.Layout.Breakpoints.Md = bitTheme.Layout.Breakpoints.Md ?? other.Layout.Breakpoints.Md;
         result.Layout.Breakpoints.Lg = bitTheme.Layout.Breakpoints.Lg ?? other.Layout.Breakpoints.Lg;
         result.Layout.Breakpoints.Xl = bitTheme.Layout.Breakpoints.Xl ?? other.Layout.Breakpoints.Xl;
+        result.Layout.Breakpoints.Xxl = bitTheme.Layout.Breakpoints.Xxl ?? other.Layout.Breakpoints.Xxl;
 
         return result;
     }

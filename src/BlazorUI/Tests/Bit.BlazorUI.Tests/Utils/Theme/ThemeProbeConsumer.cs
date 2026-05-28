@@ -15,7 +15,7 @@ internal sealed class ThemeProbeConsumer : ComponentBase
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, "span");
-        builder.AddAttribute(1, "data-primary", Theme?.Color.Primary.Main ?? "(none)");
+        builder.AddAttribute(1, "data-primary", Theme?.Color?.Primary?.Main ?? "(none)");
         builder.CloseElement();
     }
 }

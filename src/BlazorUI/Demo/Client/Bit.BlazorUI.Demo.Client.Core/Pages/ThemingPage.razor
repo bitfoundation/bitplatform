@@ -12,26 +12,51 @@
 
 <PageOutlet Url="theming"
             Title="Theming"
-            Description="Customize the look and feel of bit BlazorUI components." />
+            Description="Customize the look and feel of bit BlazorUI components: design tokens, presets, providers, and JS/.NET APIs." />
 
 <section class="page-container">
     <BitParams Parameters="_cascadingParams">
+
         <BitText Typography="BitTypography.H3">Theming</BitText>
 
         <br />
 
         <BitText Typography="BitTypography.H6">
-            Using bit BlazorUI, you can customize the look and feel of your app using the theme features by specifying
-            the color of the components, the darkness of the surfaces, the level of shadow, the appropriate opacity of elements, etc.
+            bit BlazorUI ships a complete design-token system built on CSS custom properties, plus a small surface of C# and JavaScript APIs to drive it at runtime.
+            Pick a packaged Fluent preset, override individual tokens for your brand, or compose multi-tenant themes that respect OS settings, user preferences, and accessibility hints.
             <br /><br />
-            Different aspects of the UI element styles are pre-defined in CSS variables that let you apply a consistent tone to your app.
-            It allows you to customize all design aspects of your project to meet the specific needs of your business or brand.
-            <br /><br />
-            The default theme is based on the Microsoft Fluent design system with light and dark theme types available to choose from.
-            By default, components use the light theme type.
+            The default theme is based on the Microsoft Fluent design system. Light and dark variants are bundled, and the entire token set is overridable so you can tailor color, motion, density, typography, and layout to match your product.
         </BitText>
-        
+
         <br /><br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">At a glance</BitText>
+
+            <br />
+
+            <BitText>
+                The theme system has three cooperating layers. Pick the layer that matches the change you want to make:
+            </BitText>
+
+            <br />
+
+            <BitText>
+                <b>1. HTML attributes on <BitTag>&lt;html&gt;</BitTag></b> &mdash; declarative bootstrap. Pick a preset, follow OS appearance, persist the user's choice, or rename the dark/light keys. No code required.
+                <br /><br />
+                <b>2. C# APIs</b> &mdash; <BitTag>BitThemeManager</BitTag> for runtime preset switching and token overrides, <BitTag>BitThemeProvider</BitTag> for scoped overrides on a subtree, <BitTag>BitThemeNotifications</BitTag> for change events.
+                <br /><br />
+                <b>3. JavaScript API</b> &mdash; <BitTag>BitBlazorUI.Theme</BitTag> mirrors the C# manager for non-Blazor code (host pages, custom scripts, third-party widgets).
+            </BitText>
+
+            <br />
+
+            <BitText>
+                Underneath, every component reads <BitTag>--bit-*</BitTag> CSS custom properties. Presets set them via stylesheet rules selected by <BitTag>:root[bit-theme="…"]</BitTag>; <BitTag>BitThemeProvider</BitTag> and <BitTag>ApplyBitThemeAsync</BitTag> override them via inline <BitTag>style</BitTag>. Inline wins, so brand tweaks apply on top of any preset.
+            </BitText>
+        </BitCard>
+
+        <br />
 
         <BitCard>
             <BitText Typography="BitTypography.H4">Quick setup</BitText>
@@ -39,9 +64,7 @@
             <br />
 
             <BitText>
-                To get started with bit BlazorUI Theme as fast as possible, you can try the system theme feature of it.
-                <br />
-                First you need to register the bit BlazorUI services as follows:
+                Register the bit BlazorUI services so <BitTag>BitThemeManager</BitTag>, <BitTag>BitThemeNotifications</BitTag>, and <BitTag>BitExternalThemeLoader</BitTag> are available via DI:
             </BitText>
 
             <br />
@@ -51,29 +74,113 @@
             <br />
 
             <BitText>
-                And then add a specific attribute named <BitTag>bit-theme-system</BitTag> to the <BitTag>html</BitTag> tag:
+                Then enable system theme tracking on the host document so the app follows the OS automatically on first paint:
             </BitText>
 
             <br />
 
-            <CodeBox Language="html">&lt;html bit-theme-system>...&lt;/html></CodeBox>
+            <CodeBox Language="html">&lt;html bit-theme-system bit-theme-persist&gt;...&lt;/html&gt;</CodeBox>
 
             <br />
 
             <BitText>
-                Now with this setup, the app will follow the system theme (dark or light) automatically.
+                The two attributes work together: <BitTag>bit-theme-system</BitTag> resolves to <BitTag>light</BitTag> or <BitTag>dark</BitTag> from <BitTag>prefers-color-scheme</BitTag>, and <BitTag>bit-theme-persist</BitTag> stores the user's eventual explicit choice in <BitTag>localStorage</BitTag> (key <BitTag>bit-current-theme</BitTag>) so the next visit restores it.
             </BitText>
         </BitCard>
 
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">CSS variables</BitText>
+            <BitText Typography="BitTypography.H4">HTML attributes</BitText>
 
             <br />
 
             <BitText>
-                All CSS variables defined in the Theme system of the bit BlazorUI are attached to the root element like this:
+                Every theme behavior can be configured declaratively on the <BitTag>&lt;html&gt;</BitTag> element. Names are normalized through <BitTag>BitThemeAttributeNames</BitTag> so the SSR script and the runtime script stay in sync.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="html">&lt;!-- Pick a starting preset --&gt;
+&lt;html bit-theme="fluent-dark"&gt;...&lt;/html&gt;
+
+&lt;!-- Use a different default when no preset is set --&gt;
+&lt;html bit-theme-default="dark"&gt;...&lt;/html&gt;
+
+&lt;!-- Follow the operating system (light/dark) --&gt;
+&lt;html bit-theme-system&gt;...&lt;/html&gt;
+
+&lt;!-- Persist the user's pick in localStorage --&gt;
+&lt;html bit-theme-persist&gt;...&lt;/html&gt;
+
+&lt;!-- Rename the resolved keys (combine with bit-theme-system) --&gt;
+&lt;html bit-theme-system
+      bit-theme-light="brand-light"
+      bit-theme-dark="brand-dark"&gt;...&lt;/html&gt;
+
+&lt;!-- Mix and match --&gt;
+&lt;html bit-theme-system bit-theme-persist bit-theme-default="fluent-light"&gt;...&lt;/html&gt;</CodeBox>
+
+            <br />
+
+            <BitText>
+                <b>Resolution order</b> (mirrored in the SSR script and <BitTag>BitBlazorUI.Theme.init</BitTag>):
+            </BitText>
+
+            <br />
+
+            <BitText>
+                1. <BitTag>bit-theme</BitTag> &nbsp;&rarr;&nbsp; explicit preset wins.
+                <br />
+                2. <BitTag>bit-theme-default</BitTag> &nbsp;&rarr;&nbsp; fallback when <BitTag>bit-theme</BitTag> is absent.
+                <br />
+                3. <BitTag>bit-theme-system</BitTag> &nbsp;&rarr;&nbsp; resolved from <BitTag>prefers-color-scheme</BitTag> using <BitTag>bit-theme-light</BitTag> / <BitTag>bit-theme-dark</BitTag> (default <BitTag>light</BitTag> / <BitTag>dark</BitTag>).
+                <br />
+                4. <BitTag>bit-theme-persist</BitTag> &nbsp;&rarr;&nbsp; <BitTag>localStorage</BitTag> override (when present and not <BitTag>system</BitTag>).
+            </BitText>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">Design tokens (CSS variables)</BitText>
+
+            <br />
+
+            <BitText>
+                Tokens are organized into stable families. Each preset writes the same token names from a different palette, so swapping presets re-skins every component without touching component CSS.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                <b>Color</b> &mdash; <BitTag>--bit-clr-*</BitTag> (semantic roles + neutral grays)
+                <br />
+                <b>Background, foreground, border</b> &mdash; <BitTag>--bit-clr-bg-*</BitTag>, <BitTag>--bit-clr-fg-*</BitTag>, <BitTag>--bit-clr-brd-*</BitTag>
+                <br />
+                <b>Shadow</b> &mdash; <BitTag>--bit-shd-*</BitTag> (callouts, sizes <BitTag>sm</BitTag>&hellip;<BitTag>2xl</BitTag>, <BitTag>focus-ring</BitTag>, plus <BitTag>1</BitTag>&hellip;<BitTag>24</BitTag> elevation steps)
+                <br />
+                <b>Shape</b> &mdash; <BitTag>--bit-shp-brd-radius</BitTag>, <BitTag>--bit-shp-brd-width</BitTag>, <BitTag>--bit-shp-brd-style</BitTag>, <BitTag>--bit-shp-focus-ring-width</BitTag>, <BitTag>--bit-shp-focus-ring-offset</BitTag>
+                <br />
+                <b>Spacing</b> &mdash; <BitTag>--bit-spa-scaling-factor</BitTag>
+                <br />
+                <b>Z-index</b> &mdash; <BitTag>--bit-zin-{snackbar,modal,callout,overlay,base}</BitTag>
+                <br />
+                <b>Typography</b> &mdash; <BitTag>--bit-tpg-*</BitTag> (font family/weight/line-height plus per-variant <BitTag>h1..h6</BitTag>, <BitTag>body1/2</BitTag>, <BitTag>subtitle1/2</BitTag>, <BitTag>caption1/2</BitTag>, <BitTag>button</BitTag>, <BitTag>overline</BitTag>, <BitTag>inherit</BitTag>)
+                <br />
+                <b>Motion</b> &mdash; <BitTag>--bit-mot-duration</BitTag>, <BitTag>--bit-mot-duration-short</BitTag>, <BitTag>--bit-mot-duration-long</BitTag>, <BitTag>--bit-mot-easing</BitTag>
+                <br />
+                <b>Layout</b> &mdash; <BitTag>--bit-layout-dir</BitTag>, <BitTag>--bit-layout-density-scale</BitTag>, breakpoints <BitTag>--bit-bp-{xs,sm,md,lg,xl,xxl}</BitTag>
+                <br />
+                <b>Semantic aliases</b> &mdash; <BitTag>--bit-sem-*</BitTag> (intent-named pointers to the primitives)
+            </BitText>
+
+            <br />
+
+            <BitText>
+                The full source is in the
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/Styles/Fluent" Target="_blank">Fluent styles folder on GitHub</BitLink>.
+                Here's the shape of the color tokens:
             </BitText>
 
             <br />
@@ -82,360 +189,244 @@
 :root[bit-theme="light"],
 :root[bit-theme="fluent"],
 :root[bit-theme="fluent-light"] {
+    /* primary brand color, with hover/active and dark/light steps */
+    --bit-clr-pri:               #1A86D8;
+    --bit-clr-pri-hover:         #197FCD;
+    --bit-clr-pri-active:        #1779C2;
+    --bit-clr-pri-dark:          #096FBD;
+    --bit-clr-pri-dark-hover:    #0969B4;
+    --bit-clr-pri-dark-active:   #0864AA;
+    --bit-clr-pri-light:         #A3CFEF;
+    --bit-clr-pri-light-hover:   #8CC3EC;
+    --bit-clr-pri-light-active:  #76B6E8;
+    --bit-clr-pri-text:          #FFF;
+    --bit-clr-pri-focus:         #1A86D8;
 
-...
-
-    --bit-clr-pri: #1A86D8;
-    --bit-clr-pri-hover: #197FCD;
-    --bit-clr-pri-active: #1779C2;
-    --bit-clr-pri-dark: #096FBD;
-    --bit-clr-pri-dark-hover: #0969B4;
-    --bit-clr-pri-dark-active: #0864AA;
-    --bit-clr-pri-light: #A3CFEF;
-    --bit-clr-pri-light-hover: #8CC3EC;
-    --bit-clr-pri-light-active: #76B6E8;
-    --bit-clr-pri-text: #FFF;
-
-...
-
+    /* same shape for sec / ter / inf / suc / wrn / swr / err */
+    /* and for fg-* / bg-* / brd-* surfaces */
 }</CodeBox>
 
             <br />
 
             <BitText>
-                The source code of these CSS variables is available in the
-                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/Styles/Fluent" 
-                         Target="_blank">
-                    bit BlazorUI GitHub repo
-                </BitLink>.
-                You can simply override these values to customize the UI like what we did in our main website (<BitLink Href="https://bitplatform.dev">bitplatform.dev</BitLink>) in
-                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/Websites/Platform/src/Bit.Websites.Platform.Client/Styles/app.scss">
-                    this file
-                </BitLink>:
+                Override any of them in your app stylesheet to reskin the matching theme:
             </BitText>
 
             <br />
 
-            <CodeBox Language="css">// overridden values:
-
-:root[bit-theme="dark"] {
-    --bit-clr-sec: transparent;
-    --bit-clr-sec-hover: #061342;
-    --bit-clr-bg-pri: #060E2D;
-    --bit-clr-bg-sec: #0a153d;
-    --bit-clr-bg-pri-hover: #07154a;
+            <CodeBox Language="css">:root[bit-theme="dark"] {
+    --bit-clr-bg-pri:        #060E2D;
+    --bit-clr-bg-sec:        #0A153D;
+    --bit-clr-bg-pri-hover:  #07154A;
     --bit-clr-bg-pri-active: #061241;
-    --bit-clr-bg-sec-hover: #07154a;
-    --bit-clr-fg-sec: #dddddd;
+    --bit-clr-fg-sec:        #DDDDDD;
 }</CodeBox>
 
             <br />
 
             <BitText>
-                <b>Note:</b> If you're using <BitTag>scss</BitTag> in your project, you can use <BitTag>_bit-css-variables.scss</BitTag>
-                file which introduces scss variables for each bit theme css variable. you can find the latest version of this file
-                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Styles/abstracts/_bit-css-variables.scss" 
-                Target="_blank">
-                    here
-                </BitLink>.
+                <b>Semantic aliases</b> let app code declare intent without coupling to a specific primitive token. They live in
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/Styles/Fluent/semantic-tokens.fluent.scss" Target="_blank">semantic-tokens.fluent.scss</BitLink>:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="css">--bit-sem-surface-page      /* &rarr; var(--bit-clr-bg-pri) */
+--bit-sem-surface-elevated  /* &rarr; var(--bit-clr-bg-sec) */
+--bit-sem-surface-muted     /* &rarr; var(--bit-clr-bg-ter) */
+--bit-sem-text-primary      /* &rarr; var(--bit-clr-fg-pri) */
+--bit-sem-text-secondary    /* &rarr; var(--bit-clr-fg-sec) */
+--bit-sem-border-default    /* &rarr; var(--bit-clr-brd-pri) */
+--bit-sem-accent-primary    /* &rarr; var(--bit-clr-pri) */
+--bit-sem-focus-ring        /* &rarr; var(--bit-shd-focus-ring) */
+--bit-sem-focus-color       /* &rarr; var(--bit-clr-pri-focus) */</CodeBox>
+
+            <br />
+
+            <BitText>
+                <b>SCSS variables.</b> If you author styles in <BitTag>scss</BitTag>, the
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Styles/abstracts/_bit-css-variables.scss" Target="_blank">_bit-css-variables.scss</BitLink>
+                file mirrors every <BitTag>--bit-*</BitTag> token as an SCSS variable so you can write <BitTag>color: $clr-pri</BitTag> instead of <BitTag>var(--bit-clr-pri)</BitTag>.
             </BitText>
         </BitCard>
 
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">ThemeManager</BitText>
+            <BitText Typography="BitTypography.H4">Presets</BitText>
 
             <br />
 
             <BitText>
-                In bit BlazorUI the <BitTag>BitThemeManager</BitTag> class is available to customize the Theme.
-                <br />
-                To start using the BitThemeManager, you first need to register bit BlazorUI services like this:
+                <BitTag>BitThemePresets</BitTag> exposes the built-in theme names. Use them with <BitTag>SetThemeAsync</BitTag>, <BitTag>BitThemeName</BitTag>, or directly as the <BitTag>bit-theme</BitTag> attribute value.
             </BitText>
 
             <br />
 
-            <CodeBox Language="csharp">builder.Services.AddBitBlazorUIServices();</CodeBox>
+            <CodeBox Language="csharp">public static class BitThemePresets
+{
+    public const string Light       = "light";
+    public const string Dark        = "dark";
+    public const string Fluent      = "fluent";        // alias for fluent-light
+    public const string FluentLight = "fluent-light";
+    public const string FluentDark  = "fluent-dark";
+    public const string System      = "system";        // pseudo-preset: follow OS
+}</CodeBox>
 
             <br />
 
             <BitText>
-                Now you can call methods of an injected instance of the <BitTag>BitThemeManager</BitTag>
-                class to customize the UI:
+                For type-safety, the <BitTag>BitThemeName</BitTag> readonly struct wraps a normalized (trimmed, lower-cased) preset name and converts implicitly to <BitTag>string</BitTag>:
             </BitText>
 
             <br />
 
-            <CodeBox Language="csharp">[Inject] private BitThemeManager _bitThemeManager { get; set; }</CodeBox>
+            <CodeBox Language="csharp">// Built-in factories
+await _bitThemeManager.SetThemeAsync(BitThemeName.FluentDark);
+await _bitThemeManager.SetThemeAsync(BitThemeName.System);
+
+// Custom theme name (matches your CSS selector)
+var corporate = BitThemeName.Custom("acme-dark");
+await _bitThemeManager.SetThemeAsync(corporate);</CodeBox>
 
             <br />
 
             <BitText>
-                For example using <BitTag>ApplyBitThemeAsync</BitTag> method and an instance of the
-                <BitTag>BitTheme</BitTag> class, which contains the desired theme values,
-                you can change the current theme styles.
-                <br />
-                The <BitTag>ApplyBitThemeAsync</BitTag> method accepts two parameters: a BitTheme instace
-                and an optional target element which is by default the body element.
-                <br />
-                Here's an example of how to apply custom theme values to the entire body:
+                Pair a preset with <BitTag>BitAccentColorPresets</BitTag> when you want a starter brand hex without picking your own:
             </BitText>
 
             <br />
 
-            <CodeBox Language="csharp">var myTheme = new BitTheme();
-myTheme.Color.Foreground.Primary = "#111";
-myTheme.Color.Background.Primary = "#777";
-_bitThemeManager.ApplyBitThemeAsync(myTheme);</CodeBox>
-
-            <br />
-
-            <BitText>
-                You can set the current theme using the <BitTag>SetThemeAsync</BitTag> method:
-            </BitText>
-
-            <br />
-
-            <CodeBox Language="csharp">await _bitThemeManager.SetThemeAsync("fluent-dark");</CodeBox>
-
-            <br />
-
-            <BitText>
-                You can also toggle current theme between dark/light using the
-                <BitTag>ToggleDarkLightAsync</BitTag> method:
-            </BitText>
-
-            <br />
-
-            <CodeBox Language="csharp">await _bitThemeManager.ToggleDarkLightAsync();</CodeBox>
-
-            <br />
-
-            <BitText>
-                This method returns the name of the new toggled theme.
-                <br />
-                The <BitTag>BitThemeManager</BitTag> has a method named <BitTag>GetCurrentThemeAsync</BitTag>
-                which returns the name of the current theme:
-            </BitText>
-
-            <br />
-
-            <CodeBox Language="csharp">var currentTheme = await _bitThemeManager.GetCurrentThemeAsync();</CodeBox>
-
-            <br />
-
-            <BitText Typography="BitTypography.H5">Precedence</BitText>
-            <BitText>
-                <BitTag>SetThemeAsync</BitTag> updates the <BitTag>bit-theme</BitTag> attribute on the document root so the packaged Fluent stylesheets supply the base token values.
-                <BitTag>ApplyBitThemeAsync</BitTag> writes CSS variables onto an element (default: <BitTag>body</BitTag>), which overrides those tokens for the subtree because inline styles win over stylesheet rules for the same property.
-                Use a named preset (see <BitTag>BitThemePresets</BitTag>) with <BitTag>SetThemeAsync</BitTag>, then call <BitTag>ApplyBitThemeAsync</BitTag> with a partial <BitTag>BitTheme</BitTag> for runtime brand tweaks.
-            </BitText>
-
-            <br />
-
-            <BitText Typography="BitTypography.H5">Presets, utilities, SSR</BitText>
-            <BitText>
-                <BitTag>BitThemePresets</BitTag> exposes well-known <BitTag>bit-theme</BitTag> names (for example <BitTag>BitThemePresets.FluentDark</BitTag>).
-                <BitTag>BitThemeUtilities.ToCssVariables</BitTag> maps a <BitTag>BitTheme</BitTag> to a dictionary of CSS custom properties; <BitTag>BitThemeUtilities.Merge</BitTag> merges a child theme over a parent (same rules as <BitTag>BitThemeProvider</BitTag>).
-                <BitTag>BitThemeSerialization</BitTag> serializes or deserializes a theme as JSON for storage.
-                <BitTag>BitThemeColorDerivation.FillColorRoleFromMain</BitTag> can fill unset steps on <BitTag>BitThemeColorVariants</BitTag> from a single main hex color.
-                <BitTag>Bit.BlazorUI.Extras</BitTag> reuses the same design tokens (for example <BitTag>$clr-pri</BitTag> in SCSS) so preset and <BitTag>BitTheme</BitTag> overrides apply consistently.
-                For an optional early <BitTag>head</BitTag> script that reduces theme flash with persistence, see the <BitTag>BitThemeSsr</BitTag> section below.
-            </BitText>
-
-            <br />
-
-            <CodeBox Language="csharp">await _bitThemeManager.SetThemeAsync(BitThemePresets.FluentDark);
-
-var json = BitThemeSerialization.Serialize(myTheme);
-var copy = BitThemeSerialization.Deserialize(json);
-
-BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");</CodeBox>
+            <CodeBox Language="csharp">// Sample accents (hex)
+BitAccentColorPresets.Blue;    // #1A86D8
+BitAccentColorPresets.Purple;  // #8764B8
+BitAccentColorPresets.Green;   // #107C10
+BitAccentColorPresets.Orange;  // #CA5010
+BitAccentColorPresets.Teal;    // #038387
+BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
         </BitCard>
 
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">BitThemeSsr</BitText>
+            <BitText Typography="BitTypography.H4">BitThemeManager</BitText>
 
             <br />
 
             <BitText>
-                <BitTag>BitThemeSsr</BitTag> helps reduce the wrong-theme flash on first paint when you use <BitTag>bit-theme-persist</BitTag> (and optional <BitTag>bit-theme</BitTag>, <BitTag>bit-theme-default</BitTag>, <BitTag>bit-theme-light</BitTag>, <BitTag>bit-theme-dark</BitTag> on <BitTag>&lt;html&gt;</BitTag>).
-                It injects a tiny script at the very start of <BitTag>&lt;head&gt;</BitTag> so <BitTag>bit-theme</BitTag> is restored from <BitTag>localStorage</BitTag> (when persist is enabled) or resolved for <BitTag>system</BitTag> before your Fluent stylesheets run.
+                <BitTag>BitThemeManager</BitTag> is the C# counterpart of the JS theme runtime. Inject it from any component or service:
             </BitText>
 
             <br />
+
+            <CodeBox Language="csharp">[Inject] private BitThemeManager BitThemeManager { get; set; } = default!;</CodeBox>
+
+            <br />
+
+            <BitText Typography="BitTypography.H5">Switching presets</BitText>
+
+            <CodeBox Language="csharp">// Set a packaged preset; updates the bit-theme attribute on &lt;html&gt;.
+await BitThemeManager.SetThemeAsync(BitThemePresets.FluentDark);
+
+// Toggle between configured light / dark names.
+var newName = await BitThemeManager.ToggleDarkLightAsync();
+
+// Read the active name (null when JS interop is unavailable, e.g. prerender).
+var current = await BitThemeManager.GetCurrentThemeAsync();
+
+// Read what's persisted in localStorage (returns "system" when following OS).
+var stored = await BitThemeManager.GetCurrentPersistedThemeAsync();
+
+// Re-follow the OS even after the user picked an explicit preset.
+await BitThemeManager.SetThemeAsync(BitThemePresets.System);
+
+// Detect OS appearance directly.
+var systemIsDark = await BitThemeManager.IsSystemInDarkModeAsync();</CodeBox>
+
+            <br />
+
+            <BitText Typography="BitTypography.H5">Applying token overrides</BitText>
 
             <BitText>
-                Place it at the start of <BitTag>&lt;head&gt;</BitTag>, before bit BlazorUI / Fluent CSS links, so selectors such as <BitTag>:root[bit-theme="…"]</BitTag> match immediately.
+                <BitTag>ApplyBitThemeAsync</BitTag> writes a <BitTag>BitTheme</BitTag> as inline CSS variables on the target element (default: <BitTag>document.body</BitTag>). Inline beats stylesheet rules for the same property, so this is how you brand-tweak on top of a preset:
             </BitText>
 
+            <CodeBox Language="csharp">var brand = new BitTheme
+{
+    Color =
+    {
+        Primary    = { Main = "#7C3AED", Text = "#FFFFFF" },
+        Background = { Primary = "#FAF5FF" },
+        Foreground = { Primary = "#1E1B4B" },
+    },
+    Shape  = { BorderRadius = "0.5rem" },
+    Motion = { Duration = "180ms" },
+};
+
+await BitThemeManager.ApplyBitThemeAsync(brand);
+
+// Scope the same overrides to a single element instead of the body.
+await BitThemeManager.ApplyBitThemeAsync(brand, myCardElement);
+
+// Remove only the variables ApplyBitThemeAsync set on the target element.
+await BitThemeManager.ClearBitThemeOverridesAsync();
+await BitThemeManager.ClearBitThemeOverridesAsync(myCardElement);</CodeBox>
+
             <br />
 
-            <BitText>In a Blazor Web App root document (for example <BitTag>Components/App.razor</BitTag>), emit the full script tag:</BitText>
-
-            <br />
-
-            <CodeBox Language="razor">&lt;head&gt;
-    @@((MarkupString)@@BitThemeSsr.InlineHeadScript)
-    @@* stylesheet links after this *@@
-&lt;/head&gt;</CodeBox>
-
-            <br />
-
-            <BitText>If you prefer your own <BitTag>&lt;script&gt;</BitTag> wrapper, use only the JavaScript body:</BitText>
-
-            <br />
-
-            <CodeBox Language="razor">&lt;script&gt;@@BitThemeSsr.InlineHeadScriptBody&lt;/script&gt;</CodeBox>
-
-            <br />
+            <BitText Typography="BitTypography.H5">Precedence cheatsheet</BitText>
 
             <BitText>
-                Behavior matches the client <BitTag>BitBlazorUI.Theme</BitTag> script: with <BitTag>bit-theme-persist</BitTag>, the stored key <BitTag>bit-current-theme</BitTag> is read; if the value is <BitTag>system</BitTag>, <BitTag>prefers-color-scheme</BitTag> picks the light or dark name from <BitTag>bit-theme-light</BitTag> / <BitTag>bit-theme-dark</BitTag> (defaulting to <BitTag>light</BitTag> and <BitTag>dark</BitTag> when those attributes are omitted).
+                <BitTag>SetThemeAsync</BitTag> swaps the preset by changing the <BitTag>bit-theme</BitTag> attribute on the document root, so the packaged Fluent stylesheet supplies base values.
+                <BitTag>ApplyBitThemeAsync</BitTag> overlays inline CSS variables on top.
+                <BitTag>BitThemeProvider</BitTag> overlays inline CSS variables on a subtree.
+                Inline always wins when the same property is set, so combine them freely:
             </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">// 1. Pick the base palette
+await BitThemeManager.SetThemeAsync(BitThemePresets.FluentDark);
+
+// 2. Override a couple of brand tokens globally
+await BitThemeManager.ApplyBitThemeAsync(new BitTheme
+{
+    Color = { Primary = { Main = "#7C3AED" } }
+});
+
+// 3. (optional) Override the same tokens for a region using BitThemeProvider</CodeBox>
         </BitCard>
 
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">System Theme</BitText>
+            <BitText Typography="BitTypography.H4">BitThemeProvider</BitText>
 
             <br />
 
             <BitText>
-                Using bit BlazorUI, you can use the system theme as the default theme when the app starts up.
-                <br />
-                In order to enable this feature a specific attribute named
-                <BitTag>bit-theme-system</BitTag> should be added to the <BitTag>html</BitTag> tag:
+                <BitTag>BitThemeProvider</BitTag> applies a <BitTag>BitTheme</BitTag> to a subtree without touching <BitTag>document.body</BitTag>. Use it for component-level theming, multi-tenant regions, or previewing brand changes side by side.
             </BitText>
 
             <br />
 
-            <CodeBox Language="html">&lt;html bit-theme-system>...&lt;/html></CodeBox>
-        </BitCard>
-
-        <br />
-
-        <BitCard>
-            <BitText Typography="BitTypography.H4">Persist Theme</BitText>
-
-            <br />
-
-            <BitText>
-                Using bit BlazorUI, you can persist the current theme in the local storage.
-                <br />
-                To enable this feature a specific attribute named
-                <BitTag>bit-theme-persist</BitTag> should be added to the <BitTag>html</BitTag> tag:
-            </BitText>
-
-            <br />
-
-            <CodeBox Language="html">&lt;html bit-theme-persist>...&lt;/html></CodeBox>
-        </BitCard>
-
-        <br />
-
-        <BitCard>
-            <BitText Typography="BitTypography.H4">Default Theme</BitText>
-
-            <br />
-
-            <BitText>
-                Using bit BlazorUI, you can change the default theme which is <BitTag>light</BitTag> using a specific attribute named
-                <BitTag>bit-theme-default</BitTag> on the <BitTag>html</BitTag> tag:
-            </BitText>
-
-            <br />
-
-            <CodeBox Language="html">&lt;html bit-theme-default="dark">...&lt;/html></CodeBox>
-        </BitCard>
-
-        <br />
-
-        <BitCard>
-            <BitText Typography="BitTypography.H4">Customizing theme names</BitText>
-            
-            <br />
-
-            <BitText>
-                In bit BlazorUI, the default name of the available themes are <BitTag>light</BitTag> and <BitTag>dark</BitTag>.
-                you can change these default names using the following attributes on the <BitTag>html</BitTag> tag:
-            </BitText>
-
-            <br />
-
-            <CodeBox Language="html">&lt;html bit-theme-dark="custom-dark" bit-theme-light="custom-light">...&lt;/html></CodeBox>
-        </BitCard>
-
-        <br />
-
-        <BitCard>
-            <BitText Typography="BitTypography.H4">CSS in C#</BitText>
-            
-            <br />
-
-            <BitText>
-                In bit BlazorUI, the <BitTag>BitCss</BitTag> class is available to access theme related CSS classes & variables in C#.
-                <br />
-                You can use different properties of this class to further customize your UI:
-            </BitText>
-
-            <br />
-
-            <CodeBox Language="html">&lt;html>
-    &lt;head>...&lt;/head>
-    &lt;body class="@@BitCss.Class.Color.Background.Primary.Main @@BitCss.Class.Color.Foreground.Primary.Main">
-        ...
-    &lt;/body>
-&lt;/html></CodeBox>
-
-            <br />
-
-            <BitText>
-                This class contians two main property for accessing CSS classes (<BitTag>BitCss.Class</BitTag>) and CSS variables (<BitTag>BitCss.Var</BitTag>).
-            </BitText>
-
-            <br />
-
-            <CodeBox Language="html">&lt;div style="border-color:var(@@BitCss.Var.Color.Border.Secondary.Main)">
-    hello world!
-&lt;/div></CodeBox>
-
-        </BitCard>
-
-        <br />
-
-        <BitCard>
-            <BitText Typography="BitTypography.H4">ThemeProvider</BitText>
-
-            <br />
-
-            <BitText>
-                In bit BlazorUI, the <BitTag>BitThemeProvider</BitTag> component is available to further customize the Theme.
-                <br />
-                You can wrap any elements with the <BitTag>BitThemeProvider</BitTag> component and assign an instance of <BitTag>BitTheme</BitTag> to it:
-            </BitText>
-
-            <br />
-
-            <CodeBox Language="cshtml">&lt;BitThemeProvider Theme="myTheme">
-    &lt;BitCheckbox Label="Check me!" />
-&lt;/BitThemeProvider>
+            <CodeBox Language="cshtml">&lt;BitThemeProvider Theme="purpleTheme"&gt;
+    &lt;BitButton&gt;Purple action&lt;/BitButton&gt;
+    &lt;BitCheckbox Label="Notify me" /&gt;
+&lt;/BitThemeProvider&gt;
 
 @@code {
-    BitTheme myTheme = new()
+    BitTheme purpleTheme = new()
     {
-        Color = { Primary = { Main = "red" } }
+        Color = { Primary = { Main = "#7C3AED", Text = "#FFFFFF" } },
+        Shape = { BorderRadius = "0.5rem" },
     };
 }</CodeBox>
 
             <br />
 
             <BitText>
-                The applied theme provided by the <BitTag>BitThemeProvider</BitTag> can be accessed directly using a CascadingParameter in the child components:
+                Read the merged theme inside any descendant via <BitTag>CascadingParameter</BitTag>:
             </BitText>
 
             <br />
@@ -445,174 +436,654 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
             <br />
 
             <BitText>
-                You can also nest <BitTag>BitThemeProvider</BitTag> components to achieve the desired style:
+                Providers nest, and inner overrides win. Missing values cascade through the parent (same rules as <BitTag>BitThemeUtilities.Merge</BitTag>):
             </BitText>
 
             <br />
 
-            <CodeBox Language="cshtml">&lt;BitThemeProvider Theme="myTheme">
-    &lt;BitCheckbox Label="Check me!" />
-    &lt;BitThemeProvider Theme="myTheme2">
-        &lt;BitCheckbox Label="Check me 2!" />
-    &lt;/BitThemeProvider>
-&lt;/BitThemeProvider>
+            <CodeBox Language="cshtml">&lt;BitThemeProvider Theme="brandTheme"&gt;
+    &lt;BitButton&gt;Default brand&lt;/BitButton&gt;
+
+    &lt;BitThemeProvider Theme="dangerOverlay"&gt;
+        &lt;BitButton&gt;Destructive&lt;/BitButton&gt;
+    &lt;/BitThemeProvider&gt;
+&lt;/BitThemeProvider&gt;
 
 @@code {
-    BitTheme myTheme = new()
+    BitTheme brandTheme = new()
     {
-        Color = { Primary = { Main = "red" } }
+        Color = { Primary = { Main = "#1A86D8" } }
     };
 
-    BitTheme myTheme2 = new()
+    BitTheme dangerOverlay = new()
     {
-        Color = { Primary = { Main = "blue" } }
+        Color = { Primary = { Main = "#C50F1F" } }   // overrides only Primary.Main
     };
 }</CodeBox>
+
+            <br />
+
+            <BitText>
+                Set <BitTag>RootElement</BitTag> when you need a different host tag (default is <BitTag>div</BitTag>) and add HTML attributes via splatting. The provider only renders a wrapping element when it actually contributes overrides; otherwise it forwards <BitTag>ChildContent</BitTag> as-is.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="cshtml">&lt;BitThemeProvider Theme="cardTheme"
+                  RootElement="section"
+                  class="brand-region"
+                  data-tenant="acme"&gt;
+    @@ChildContent
+&lt;/BitThemeProvider&gt;</CodeBox>
+
+            <br />
+
+            <BitText>
+                Need a named cascade so multiple providers can coexist? Set <BitTag>ThemeName</BitTag> and read it with <BitTag>[CascadingParameter(Name = "&hellip;")]</BitTag>.
+            </BitText>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">Theme change notifications (.NET)</BitText>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitThemeNotifications</BitTag> is a scoped DI service that fires <BitTag>ThemeChanged</BitTag> whenever <BitTag>bit-theme</BitTag> changes &mdash; whether the change came from <BitTag>SetThemeAsync</BitTag>, <BitTag>ToggleDarkLightAsync</BitTag>, the JS API, or the OS while following <BitTag>prefers-color-scheme</BitTag>.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">@@inject BitThemeNotifications ThemeNotifications
+@@inject BitThemeManager ThemeManager
+@@implements IDisposable
+
+protected override async Task OnInitializedAsync()
+{
+    // Make sure the JS&harr;.NET notifier is registered, even if we never call
+    // any other manager method first.
+    await ThemeManager.EnsureThemeNotificationsRegisteredAsync();
+
+    ThemeNotifications.ThemeChanged += OnThemeChanged;
+}
+
+private void OnThemeChanged(object? sender, BitThemeChangedEventArgs e)
+{
+    if (!e.HasNewTheme) return;
+
+    // Marshal back to the Blazor sync context before touching component state.
+    InvokeAsync(() =>
+    {
+        Console.WriteLine($"theme: {e.OldTheme} -&gt; {e.NewTheme}");
+        StateHasChanged();
+    });
+}
+
+public void Dispose()
+{
+    ThemeNotifications.ThemeChanged -= OnThemeChanged;
+}</CodeBox>
+
+            <br />
+
+            <BitText>
+                <b>Always unsubscribe.</b> <BitTag>BitThemeNotifications</BitTag> is scoped, so a leaked handler keeps a disposed component rooted for the lifetime of the circuit. <BitTag>NewTheme</BitTag> and <BitTag>OldTheme</BitTag> are nullable; check <BitTag>HasNewTheme</BitTag> / <BitTag>HasOldTheme</BitTag> instead of comparing against the empty string.
+            </BitText>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">Reduce theme flash (BitThemeSsr)</BitText>
+
+            <br />
+
+            <BitText>
+                Server-rendered apps that use <BitTag>bit-theme-persist</BitTag> and/or <BitTag>bit-theme-system</BitTag> can flash the wrong theme on first paint while Blazor hydrates. <BitTag>BitThemeSsr</BitTag> emits a tiny synchronous script that resolves the correct <BitTag>bit-theme</BitTag> from <BitTag>localStorage</BitTag> / <BitTag>prefers-color-scheme</BitTag> <i>before</i> stylesheets run.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                Drop the full <BitTag>&lt;script&gt;</BitTag> at the very start of <BitTag>&lt;head&gt;</BitTag> in your root document (e.g. <BitTag>Components/App.razor</BitTag>):
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="razor">&lt;head&gt;
+    @@((MarkupString)BitThemeSsr.InlineHeadScript)
+
+    &lt;!-- bit BlazorUI / Fluent stylesheet links AFTER the script --&gt;
+    &lt;link rel="stylesheet" href="..." /&gt;
+&lt;/head&gt;</CodeBox>
+
+            <br />
+
+            <BitText>
+                Need a CSP <BitTag>nonce</BitTag>? Use <BitTag>BuildInlineHeadScript(nonce)</BitTag>:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="razor">@@((MarkupString)BitThemeSsr.BuildInlineHeadScript(Context.Items["csp-nonce"]?.ToString()))</CodeBox>
+
+            <br />
+
+            <BitText>
+                Or wrap the body yourself when you need full control of script attributes (<BitTag>defer</BitTag>, <BitTag>type</BitTag>, &hellip;):
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="razor">&lt;script&gt;@@BitThemeSsr.InlineHeadScriptBody&lt;/script&gt;</CodeBox>
+
+            <br />
+
+            <BitText>
+                The script logic mirrors the runtime <BitTag>BitBlazorUI.Theme</BitTag>: with <BitTag>bit-theme-persist</BitTag>, the stored key <BitTag>bit-current-theme</BitTag> is read; if the value is <BitTag>system</BitTag>, <BitTag>prefers-color-scheme</BitTag> picks the light or dark name from <BitTag>bit-theme-light</BitTag> / <BitTag>bit-theme-dark</BitTag> (defaulting to <BitTag>light</BitTag> and <BitTag>dark</BitTag>).
+            </BitText>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">SSR cookie convention</BitText>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitThemeSsr</BitTag> handles the client side. For full server-side parity, persist the user's preference in a cookie and emit the same <BitTag>bit-theme</BitTag> attribute server-side. <BitTag>BitThemeCookie.PreferenceCookieName</BitTag> documents the conventional cookie name (<BitTag>bit-theme-preference</BitTag>) so client and server agree:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">// On the server (Razor / middleware): read the cookie and emit the attribute.
+var preference = Context.Request.Cookies[BitThemeCookie.PreferenceCookieName] ?? "system";
+
+// In your root document:
+&lt;html bit-theme="@@preference" bit-theme-system bit-theme-persist&gt;</CodeBox>
+
+            <br />
+
+            <BitText>
+                Subscribe to <BitTag>BitThemeNotifications.ThemeChanged</BitTag> to keep the cookie updated when the user toggles in the client.
+            </BitText>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">Color derivation &amp; contrast</BitText>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitThemeColorDerivation</BitTag> fills the role steps (<BitTag>Main</BitTag>, <BitTag>MainHover</BitTag>, <BitTag>MainActive</BitTag>, <BitTag>Dark</BitTag>, <BitTag>Light</BitTag>, <BitTag>Text</BitTag>, &hellip;) from a single brand color via HSV math. Caller-set values are preserved.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">var theme = new BitTheme();
+
+// Derive every primary step from #7C3AED.
+BitThemeColorDerivation.FillColorRoleFromMain(
+    theme.Color.Primary,
+    mainHex: "#7C3AED");
+
+// Optional: flip the auto-generated Text between #000 / #FFF if it
+// fails WCAG AA contrast (4.5:1) against Main.
+BitThemeColorDerivation.FillColorRoleFromMain(
+    theme.Color.Success,
+    mainHex: "#107C10",
+    adjustTextForWcagAa: true);
+
+await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
+
+            <br />
+
+            <BitText>
+                For ad-hoc contrast checks, use <BitTag>BitThemeColorContrast</BitTag>:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">var ratio = BitThemeColorContrast.GetContrastRatio("#FFFFFF", "#1A86D8"); // 3.74
+
+bool passesNormal = BitThemeColorContrast.MeetsWcagAaNormalText(ratio); // false
+bool passesLarge  = BitThemeColorContrast.MeetsWcagAaLargeText(ratio);  // true</CodeBox>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">Theme utilities</BitText>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitThemeUtilities</BitTag> exposes the same primitives the manager and provider use internally.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">// Flatten a theme to its CSS custom properties (~280 entries).
+IReadOnlyDictionary&lt;string, string&gt; vars = BitThemeUtilities.ToCssVariables(myTheme);
+
+// Merge two themes: 'overrides' wins, missing values fall through to 'baseline'.
+BitTheme effective = BitThemeUtilities.Merge(overrides: brandOverrides, baseline: tenantTheme);</CodeBox>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitThemeSerialization</BitTag> serializes a theme as JSON for storage or admin UIs. Empty branches are pruned, and deserialization restores every nested object so downstream helpers never see <BitTag>null</BitTag>:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">// Persist a theme (camelCase JSON, sparse output)
+string json = BitThemeSerialization.Serialize(myTheme, writeIndented: true);
+
+// Load it back (every nested object is rehydrated, even if the JSON omitted it)
+BitTheme restored = BitThemeSerialization.Deserialize(json);</CodeBox>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">Density, layout, &amp; RTL</BitText>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitTheme.Layout</BitTag> drives the layout-level tokens. Set <BitTag>Direction</BitTag> for right-to-left UIs, <BitTag>DensityScale</BitTag> for compact spacing, and <BitTag>Breakpoints</BitTag> to align with your app media queries.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">var theme = new BitTheme
+{
+    Layout =
+    {
+        Direction    = "rtl",   // &rarr; --bit-layout-dir
+        DensityScale = "0.95",  // &rarr; --bit-layout-density-scale
+        Breakpoints =
+        {
+            // &rarr; --bit-bp-{xs,sm,md,lg,xl,xxl}
+            Xs = BitThemeBreakpointDefaults.Xs,
+            Sm = BitThemeBreakpointDefaults.Sm,
+            Md = BitThemeBreakpointDefaults.Md,
+            Lg = BitThemeBreakpointDefaults.Lg,
+            Xl = BitThemeBreakpointDefaults.Xl,
+            Xxl = BitThemeBreakpointDefaults.Xxl,
+        }
+    },
+    Spacing = { ScalingFactor = "0.5rem" },
+};</CodeBox>
+
+            <br />
+
+            <BitText>
+                For full RTL support, also set <BitTag>dir="rtl"</BitTag> on <BitTag>&lt;html&gt;</BitTag> (or your root element) so HTML-level features like text selection and cursor direction follow.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitThemeDensityPresets.CreateCompactOverlay()</BitTag> ships a ready-made overlay you can merge with your baseline theme:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">// Compact overlay = Layout.DensityScale "0.9" + Spacing.ScalingFactor "0.95"
+var compact = BitThemeDensityPresets.CreateCompactOverlay();
+
+// Merge on top of your tenant theme
+var dense = BitThemeUtilities.Merge(overrides: compact, baseline: tenantTheme);
+
+await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitThemeBreakpointDefaults</BitTag> exposes the recommended widths in pixels (<BitTag>Xs = 0px</BitTag>, <BitTag>Sm = 600px</BitTag>, <BitTag>Md = 900px</BitTag>, <BitTag>Lg = 1200px</BitTag>, <BitTag>Xl = 1536px</BitTag>) so your media queries and theme breakpoints stay aligned.
+            </BitText>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">Motion &amp; accessibility</BitText>
+
+            <br />
+
+            <BitText>
+                Motion tokens drive transitions and animations across components:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">var theme = new BitTheme
+{
+    Motion =
+    {
+        Duration       = "200ms",                              // --bit-mot-duration
+        DurationShort  = "100ms",                              // --bit-mot-duration-short
+        DurationLong   = "300ms",                              // --bit-mot-duration-long
+        EasingStandard = "cubic-bezier(0.33, 0, 0.67, 1)",     // --bit-mot-easing
+    }
+};</CodeBox>
+
+            <br />
+
+            <BitText>
+                Accessibility safety nets are built into the Fluent stylesheets:
+            </BitText>
+
+            <br />
+
+            <BitText>
+                <b>Reduced motion.</b> Under <BitTag>prefers-reduced-motion: reduce</BitTag>, all <BitTag>--bit-mot-duration*</BitTag> tokens collapse to <BitTag>0.01ms</BitTag>, so transitions effectively disable.
+                <br /><br />
+                <b>Forced colors / high contrast.</b> Under <BitTag>forced-colors: active</BitTag> (Windows High Contrast), the palette switches to system colors (<BitTag>CanvasText</BitTag>, <BitTag>Canvas</BitTag>, <BitTag>Highlight</BitTag>, <BitTag>LinkText</BitTag>), shadows drop to <BitTag>none</BitTag>, and the focus ring uses the system <BitTag>Highlight</BitTag> color so it stays visible.
+                <br /><br />
+                <b>Stronger contrast.</b> Under <BitTag>prefers-contrast: more</BitTag>, border widths are bumped to keep edges crisp.
+            </BitText>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">External CSS bundles</BitText>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitExternalThemeLoader</BitTag> swaps an external stylesheet at runtime by id (creates or updates a <BitTag>&lt;link rel="stylesheet"&gt;</BitTag>). Useful for tenant-specific palettes, brand variants, or seasonal themes shipped as separate CSS files.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">@@inject BitExternalThemeLoader ThemeLoader
+
+// Attach (or update) a link element with id "tenant-theme"
+await ThemeLoader.AttachStylesheetAsync("tenant-theme", "/themes/acme.css");
+
+// Detach when the user signs out / switches tenant
+await ThemeLoader.DetachStylesheetAsync("tenant-theme");</CodeBox>
+
+            <br />
+
+            <BitText>
+                Only same-origin paths and absolute <BitTag>http(s)</BitTag> URLs are accepted. Unsafe schemes such as <BitTag>javascript:</BitTag>, <BitTag>data:</BitTag>, and <BitTag>vbscript:</BitTag> are rejected. Always pass URLs you control or have explicitly trusted.
+            </BitText>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">CSS in C# (BitCss)</BitText>
+
+            <br />
+
+            <BitText>
+                <BitTag>BitCss</BitTag> exposes the same tokens as strongly-typed constants. <BitTag>BitCss.Class</BitTag> gives you <BitTag>bit-css-*</BitTag> utility class names, and <BitTag>BitCss.Var</BitTag> gives you the matching <BitTag>--bit-*</BitTag> CSS custom property names. Refactor-friendly, IntelliSense-driven, and free of magic strings.
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="razor">&lt;body class="@@BitCss.Class.Color.Background.Primary.Main @@BitCss.Class.Color.Foreground.Primary.Main"&gt;
+    ...
+&lt;/body&gt;
+
+&lt;div style="border-color: var(@@BitCss.Var.Color.Border.Secondary.Main);
+            background:   var(@@BitCss.Var.Color.Background.Tertiary.Main);
+            box-shadow:   var(@@BitCss.Var.Shadow.Md);
+            border-radius:var(@@BitCss.Var.Shape.BorderRadius);"&gt;
+    Hello world!
+&lt;/div&gt;</CodeBox>
+
+            <br />
+
+            <BitText>
+                <b>Note.</b> <BitTag>BitCss.Var</BitTag> covers color, shadow, z-index, shape, spacing, and typography tokens today. Motion (<BitTag>--bit-mot-*</BitTag>), layout (<BitTag>--bit-layout-*</BitTag>), breakpoints (<BitTag>--bit-bp-*</BitTag>), and semantic aliases (<BitTag>--bit-sem-*</BitTag>) are not yet wrapped &mdash; reference them by name (<BitTag>var(--bit-mot-duration)</BitTag>) until that surface lands.
+            </BitText>
         </BitCard>
 
         <br />
 
         <BitCard>
             <BitText Typography="BitTypography.H4">JavaScript API</BitText>
-            
+
             <br />
 
             <BitText>
-                bit BlazorUI has a rather extensive JavaScript API through <BitTag>BitTheme</BitTag> javascript object
-                to customize the UI of the app even further.
-                <br />
-                The differnet functions available in this object are as follows:
+                The runtime <BitTag>BitBlazorUI.Theme</BitTag> object mirrors <BitTag>BitThemeManager</BitTag>. Use it from host pages, custom scripts, or component libraries that aren't Blazor.
             </BitText>
 
-            <br /><br />
+            <br />
 
-            <BitText>
-                <b>get</b>: gets the current theme.
-            </BitText>
+            <BitText><b>get / set / toggle / useSystem</b> &mdash; preset and OS-following helpers.</BitText>
 
-            <CodeBox Language="js">const currentTheme = BitBlazorUI.Theme.get();</CodeBox>
+            <CodeBox Language="js">// Read the active theme name
+const current = BitBlazorUI.Theme.get();
 
-            <br /><br />
-            
-            <BitText>
-                <b>set</b>: sets the current theme.
-            </BitText>
+// Set a preset (or any name matching your CSS)
+BitBlazorUI.Theme.set('fluent-dark');
 
-            <CodeBox Language="js">BitBlazorUI.Theme.set('dark');</CodeBox>
+// Toggle between configured light / dark names
+BitBlazorUI.Theme.toggleDarkLight();
 
-            <br /><br />
+// Re-follow the OS even after the user picked an explicit preset
+BitBlazorUI.Theme.useSystem();</CodeBox>
 
-            <BitText>
-                <b>toggleDarkLight</b>: toggles the current theme between dark & light.
-            </BitText>
+            <br />
 
-            <CodeBox Language="js">BitBlazorUI.Theme.toggleDarkLight();</CodeBox>
+            <BitText><b>applyTheme / clearAppliedTheme</b> &mdash; inline CSS variable overrides.</BitText>
 
-            <br /><br />
+            <CodeBox Language="js">// Set inline CSS variables on document.body (or a target element)
+BitBlazorUI.Theme.applyTheme(
+    {
+        '--bit-clr-pri': '#7C3AED',
+        '--bit-clr-pri-text': '#FFFFFF',
+        '--bit-shp-brd-radius': '0.5rem'
+    },
+    document.body
+);
 
-            <BitText>
-                <b>useSystem</b>: uses the current theme of the system (dark or light) as the app theme.
-            </BitText>
+// Remove only the variables we set above
+BitBlazorUI.Theme.clearAppliedTheme(document.body);</CodeBox>
 
-            <CodeBox Language="js">BitBlazorUI.Theme.useSystem();</CodeBox>
+            <br />
 
-            <br /><br />
-
-            <BitText>
-                <b>onChange</b>: an event that fires when the current theme changes.
-            </BitText>
+            <BitText><b>onChange / isSystemDark / getPersisted</b> &mdash; observation helpers.</BitText>
 
             <CodeBox Language="js">BitBlazorUI.Theme.onChange((newTheme, oldTheme) => {
-    if (newTheme.includes('dark')) {
-        document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#0d1117');
-    } else {
-        document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#ffffff');
-    }
-});</CodeBox>
+    const meta = document.querySelector('meta[name=theme-color]');
+    meta?.setAttribute('content', newTheme.includes('dark') ? '#0d1117' : '#ffffff');
+});
 
-            <br /><br />
+const dark = BitBlazorUI.Theme.isSystemDark();          // boolean
+const stored = BitBlazorUI.Theme.getPersisted();        // null when persistence is off</CodeBox>
 
-            <BitText>
-                <b>applyTheme</b>: applies an instance of BitTheme to the specified element or the body element, just like the
-                <BitTag>ApplyBitThemeAsync</BitTag> method of the <BitTag>BitThemeManager</BitTag>.
-            </BitText>
+            <br />
 
-            <CodeBox Language="js">BitBlazorUI.Theme.applyTheme({ '--bit-clr-pri': '#1A86D8' }, myElement)</CodeBox>
-
-            <br /><br />
-
-            <BitText>
-                <b>isSystemDark</b>: checks if the current theme of the system is dark.
-            </BitText>
-
-            <CodeBox Language="js">BitBlazorUI.Theme.isSystemDark();</CodeBox>
-
-            <br /><br />
-
-            <BitText>
-                <b>init</b>: initializes the BitBlazorUI.Theme object using the provided options.
-            </BitText>
+            <BitText><b>init</b> &mdash; manual bootstrap (the script self-initializes from <BitTag>&lt;html&gt;</BitTag> attributes; call <BitTag>init</BitTag> only when you bypass them).</BitText>
 
             <CodeBox Language="js">BitBlazorUI.Theme.init({
     system: true,
     persist: true,
-    theme: 'custom-dark',
-    default: 'custom-dark',
-    darkTheme: 'custom-dark',
-    lightTheme: 'custom-light',
-    onChange: (newTheme: string, oldTheme: string) => {
-        if (newTheme === 'custom-dark') {
-            document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#0d1117');
-        } else {
-            document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#ffffff');
-        }
+    theme: 'fluent-dark',
+    default: 'fluent-light',
+    darkTheme: 'brand-dark',
+    lightTheme: 'brand-light',
+    onChange: (newTheme, oldTheme) =&gt; {
+        document.querySelector('meta[name=theme-color]')
+                ?.setAttribute('content', newTheme === 'brand-dark' ? '#0d1117' : '#ffffff');
     }
 });</CodeBox>
+
+            <br />
+
+            <BitText><b>External stylesheets.</b> The same loader is exposed in JS:</BitText>
+
+            <CodeBox Language="js">BitBlazorUI.ExternalTheme.attach('tenant-theme', '/themes/acme.css');
+BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
         </BitCard>
 
         <br />
 
         <BitCard>
-            <BitText Typography="BitTypography.H4">Advanced theming (API overview)</BitText>
+            <BitText Typography="BitTypography.H4">End-to-end recipe</BitText>
+
             <br />
-            <BitText Typography="BitTypography.Body1">
-                <strong>OS appearance:</strong> When <BitTag>bit-theme-system</BitTag> is on <BitTag>&lt;html&gt;</BitTag> or the persisted key is <BitTag>system</BitTag>, the client script listens for <BitTag>prefers-color-scheme</BitTag> changes and updates <BitTag>bit-theme</BitTag> without a reload. Call <BitTag>BitBlazorUI.Theme.useSystem()</BitTag> or <BitTag>SetThemeAsync(&quot;system&quot;)</BitTag> to follow the OS again after choosing an explicit preset.
+
+            <BitText>
+                A common production setup combines a few of the pieces above. Bootstrap declaratively for first paint, switch presets via <BitTag>BitThemeManager</BitTag>, override brand tokens via <BitTag>BitThemeProvider</BitTag>, and react to changes through <BitTag>BitThemeNotifications</BitTag>.
             </BitText>
+
             <br />
-            <BitText Typography="BitTypography.Body1">
-                <strong>.NET notifications:</strong> Inject <BitTag>BitThemeNotifications</BitTag> and subscribe to <BitTag>ThemeChanged</BitTag>. Use any method on <BitTag>BitThemeManager</BitTag> once per circuit so the script registers the JS bridge (or call <BitTag>EnsureThemeNotificationsRegisteredAsync</BitTag>).
+
+            <BitText><b>1. Host document</b> &mdash; opt into system tracking, persistence, and reduce flash:</BitText>
+
+            <CodeBox Language="razor">&lt;html bit-theme-system bit-theme-persist bit-theme-default="fluent-light"&gt;
+&lt;head&gt;
+    @@((MarkupString)BitThemeSsr.InlineHeadScript)
+    &lt;link rel="stylesheet" href="@@Assets["_content/Bit.BlazorUI/styles/bit.blazorui.css"]" /&gt;
+&lt;/head&gt;
+...
+&lt;/html&gt;</CodeBox>
+
+            <br />
+
+            <BitText><b>2. Service registration</b>:</BitText>
+
+            <CodeBox Language="csharp">builder.Services.AddBitBlazorUIServices();</CodeBox>
+
+            <br />
+
+            <BitText><b>3. Theme switcher component</b>:</BitText>
+
+            <CodeBox Language="razor">@@inject BitThemeManager ThemeManager
+@@inject BitThemeNotifications ThemeNotifications
+@@implements IDisposable
+
+&lt;BitToggleButton Text="@@(_isDark ? "Light" : "Dark")" OnClick="ToggleTheme" /&gt;
+&lt;BitButton OnClick="FollowSystem"&gt;Follow OS&lt;/BitButton&gt;
+
+@@code {
+    private bool _isDark;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ThemeManager.EnsureThemeNotificationsRegisteredAsync();
+        ThemeNotifications.ThemeChanged += OnThemeChanged;
+
+        var current = await ThemeManager.GetCurrentThemeAsync();
+        _isDark = current?.Contains("dark") == true;
+    }
+
+    private Task ToggleTheme() =&gt; ThemeManager.ToggleDarkLightAsync().AsTask();
+
+    private Task FollowSystem() =&gt; ThemeManager.SetThemeAsync(BitThemePresets.System).AsTask();
+
+    private void OnThemeChanged(object? sender, BitThemeChangedEventArgs e) =&gt;
+        InvokeAsync(() =&gt;
+        {
+            _isDark = e.NewTheme?.Contains("dark") == true;
+            StateHasChanged();
+        });
+
+    public void Dispose() =&gt; ThemeNotifications.ThemeChanged -= OnThemeChanged;
+}</CodeBox>
+
+            <br />
+
+            <BitText><b>4. Tenant brand region</b> &mdash; derive a palette from a single hex and scope it:</BitText>
+
+            <CodeBox Language="cshtml">&lt;BitThemeProvider Theme="_tenantTheme"&gt;
+    &lt;TenantDashboard /&gt;
+&lt;/BitThemeProvider&gt;
+
+@@code {
+    private BitTheme _tenantTheme = BuildTenantTheme(BitAccentColorPresets.Purple);
+
+    private static BitTheme BuildTenantTheme(string accent)
+    {
+        var theme = new BitTheme { Shape = { BorderRadius = "0.5rem" } };
+        BitThemeColorDerivation.FillColorRoleFromMain(theme.Color.Primary, accent, adjustTextForWcagAa: true);
+        return theme;
+    }
+}</CodeBox>
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Typography="BitTypography.H4">API quick reference</BitText>
+
+            <br />
+
+            <BitText>
+                <b>Bootstrap</b>
+                <br />
+                <BitTag>AddBitBlazorUIServices()</BitTag> &nbsp;&middot;&nbsp;
+                <BitTag>BitThemeAttributeNames</BitTag> &nbsp;&middot;&nbsp;
+                <BitTag>BitThemePresets</BitTag> &nbsp;&middot;&nbsp;
+                <BitTag>BitThemeName</BitTag>
             </BitText>
+
             <br />
-            <BitText Typography="BitTypography.Body1">
-                <strong>Clearing token overrides:</strong> <BitTag>ClearBitThemeOverridesAsync</BitTag> removes variables previously applied by <BitTag>ApplyBitThemeAsync</BitTag>. Prefer scoping brand tweaks inside <BitTag>BitThemeProvider</BitTag> instead of <BitTag>document.body</BitTag>.
+
+            <BitText>
+                <b>Runtime</b>
+                <br />
+                <BitTag>BitThemeManager</BitTag>: <BitTag>SetThemeAsync</BitTag>, <BitTag>ToggleDarkLightAsync</BitTag>, <BitTag>GetCurrentThemeAsync</BitTag>, <BitTag>GetCurrentPersistedThemeAsync</BitTag>, <BitTag>IsSystemInDarkModeAsync</BitTag>, <BitTag>ApplyBitThemeAsync</BitTag>, <BitTag>ClearBitThemeOverridesAsync</BitTag>, <BitTag>EnsureThemeNotificationsRegisteredAsync</BitTag>
+                <br /><br />
+                <BitTag>BitThemeProvider</BitTag> (component): <BitTag>Theme</BitTag>, <BitTag>RootElement</BitTag>, <BitTag>ThemeName</BitTag>, splatted attributes
+                <br /><br />
+                <BitTag>BitThemeNotifications.ThemeChanged</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeChangedEventArgs</BitTag>
             </BitText>
+
             <br />
-            <BitText Typography="BitTypography.Body1">
-                <strong>Accessibility:</strong> Fluent bundles include <BitTag>forced-colors</BitTag> / <BitTag>prefers-contrast</BitTag> guards and motion tokens (<BitTag>--bit-mot-*</BitTag>) with <BitTag>prefers-reduced-motion</BitTag>. Use <BitTag>BitThemeColorContrast</BitTag> for WCAG ratios and optional <BitTag>FillColorRoleFromMain(..., adjustTextForWcagAa: true)</BitTag>.
+
+            <BitText>
+                <b>Authoring</b>
+                <br />
+                <BitTag>BitTheme</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeUtilities</BitTag> (Merge, ToCssVariables) &nbsp;&middot;&nbsp; <BitTag>BitThemeSerialization</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeColorDerivation</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeColorContrast</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitAccentColorPresets</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeBreakpointDefaults</BitTag> &nbsp;&middot;&nbsp; <BitTag>BitThemeDensityPresets</BitTag>
             </BitText>
+
             <br />
-            <BitText Typography="BitTypography.Body1">
-                <strong>Layout tokens:</strong> <BitTag>BitTheme.Motion</BitTag>, <BitTag>BitTheme.Layout</BitTag> (direction, density scale, breakpoints) map to <BitTag>--bit-mot-*</BitTag>, <BitTag>--bit-layout-*</BitTag>, <BitTag>--bit-bp-*</BitTag>. Defaults include <BitTag>BitThemeBreakpointDefaults</BitTag>; compact presets via <BitTag>BitThemeDensityPresets.CreateCompactOverlay()</BitTag>. Semantic aliases such as <BitTag>--bit-sem-surface-page</BitTag> point at primitive tokens.
+
+            <BitText>
+                <b>Hosting</b>
+                <br />
+                <BitTag>BitThemeSsr</BitTag>: <BitTag>InlineHeadScript</BitTag>, <BitTag>InlineHeadScriptBody</BitTag>, <BitTag>BuildInlineHeadScript(nonce)</BitTag>
+                <br />
+                <BitTag>BitThemeCookie.PreferenceCookieName</BitTag>
+                <br />
+                <BitTag>BitExternalThemeLoader</BitTag>: <BitTag>AttachStylesheetAsync</BitTag>, <BitTag>DetachStylesheetAsync</BitTag>
             </BitText>
+
             <br />
-            <BitText Typography="BitTypography.Body1">
-                <strong>RTL:</strong> Set <BitTag>dir=&quot;rtl&quot;</BitTag> on <BitTag>&lt;html&gt;</BitTag> or a root element, and optionally <BitTag>Layout.Direction</BitTag> on <BitTag>BitTheme</BitTag> for <BitTag>--bit-layout-dir</BitTag>. Use logical properties in your app CSS where needed.
+
+            <BitText>
+                <b>Authoring helpers in C#</b>
+                <br />
+                <BitTag>BitCss.Class</BitTag> &mdash; <BitTag>bit-css-*</BitTag> utility class names
+                <br />
+                <BitTag>BitCss.Var</BitTag> &mdash; <BitTag>--bit-*</BitTag> custom property names
             </BitText>
+
             <br />
-            <BitText Typography="BitTypography.Body1">
-                <strong>Accent samples:</strong> <BitTag>BitAccentColorPresets</BitTag> lists starter hex values for primary branding.
-            </BitText>
-            <br />
-            <BitText Typography="BitTypography.Body1">
-                <strong>External CSS bundles:</strong> <BitTag>BitExternalThemeLoader</BitTag> attaches or removes a stylesheet link by id (<BitTag>BitBlazorUI.ExternalTheme.attach</BitTag> in JS). Use trusted URLs only.
-            </BitText>
-            <br />
-            <BitText Typography="BitTypography.Body1">
-                <strong>SSR cookies:</strong> <BitTag>BitThemeCookie.PreferenceCookieName</BitTag> documents a conventional cookie for server-rendered first paint; combine with your host reading the cookie and emitting the same theme key the client will use.
-            </BitText>
-            <br />
-            <BitText Typography="BitTypography.Body1">
-                <strong>Component defaults:</strong> Use cascading <BitTag>BitParams</BitTag> for per-tree defaults; a single global &quot;component defaults registry&quot; in <BitTag>BitTheme</BitTag> would need a design pass to avoid duplicating that model.
+
+            <BitText>
+                <b>JavaScript</b>
+                <br />
+                <BitTag>BitBlazorUI.Theme</BitTag>: <BitTag>get</BitTag>, <BitTag>set</BitTag>, <BitTag>toggleDarkLight</BitTag>, <BitTag>useSystem</BitTag>, <BitTag>applyTheme</BitTag>, <BitTag>clearAppliedTheme</BitTag>, <BitTag>onChange</BitTag>, <BitTag>isSystemDark</BitTag>, <BitTag>getPersisted</BitTag>, <BitTag>init</BitTag>
+                <br />
+                <BitTag>BitBlazorUI.ExternalTheme</BitTag>: <BitTag>attach</BitTag>, <BitTag>detach</BitTag>
             </BitText>
         </BitCard>
 

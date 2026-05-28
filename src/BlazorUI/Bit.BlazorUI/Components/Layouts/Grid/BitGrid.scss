@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 
 .bit-grd {
@@ -13,7 +13,7 @@
 .bit-grd-itm {
     flex-basis: calc((100% / var(--columns) * var(--span)) - var(--spacing));
 
-    $breakpoints: ( 'xs': $brk-sm-min, 'sm': $brk-md-min, 'md': $brk-lg-min, 'lg': $brk-xl-min, 'xl': $brk-xxl-min );
+    $breakpoints: ( 'xs': $mq-sm-min, 'sm': $mq-md-min, 'md': $mq-lg-min, 'lg': $mq-xl-min, 'xl': $mq-xxl-min );
 
     @each $name, $breakpoint in $breakpoints {
         @media (min-width: $breakpoint) {

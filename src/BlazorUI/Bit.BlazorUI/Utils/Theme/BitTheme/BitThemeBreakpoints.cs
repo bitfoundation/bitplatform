@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitThemeBreakpoints
 {
@@ -7,4 +7,5 @@ public class BitThemeBreakpoints
     public string? Md { get; set; }
     public string? Lg { get; set; }
     public string? Xl { get; set; }
+    public string? Xxl { get; set; }
 }
