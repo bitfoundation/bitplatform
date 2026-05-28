@@ -38,6 +38,13 @@ namespace BitBlazorUI {
                 },
             });
 
+            // ArcGIS MapView has no first-class actionMap entries for double-click zoom
+            // or keyboard navigation, so honor those public options via best-effort
+            // event interception instead of silently ignoring them. Without this
+            // BitMapProviderBase.DoubleClickZoom / KeyboardNavigation = false would
+            // be a no-op only on the ArcGIS provider.
+            BitMapArcGis._applyInteractivity(view, element, o);
+
             const markerLayer = new esri.GraphicsLayer({ listMode: 'hide' });
             map.add(markerLayer);
 
@@ -87,6 +94,14 @@ namespace BitBlazorUI {
                 if (Object.prototype.hasOwnProperty.call(o, 'dragging')) {
                     actionMap.dragPrimary = o.dragging !== false ? 'pan' : null;
                 }
+            }
+
+            // doubleClickZoom and keyboardNavigation aren't part of actionMap, so
+            // re-apply them via the same best-effort path used during init().
+            if (Object.prototype.hasOwnProperty.call(o, 'doubleClickZoom')
+                || Object.prototype.hasOwnProperty.call(o, 'keyboardNavigation')) {
+                const container = s.view.container as HTMLElement | null | undefined;
+                if (container) BitMapArcGis._applyInteractivity(s.view, container, o);
             }
         }
 
@@ -486,6 +501,57 @@ namespace BitBlazorUI {
                 s.view.ui.remove(s.scaleBar);
                 s.scaleBar.destroy();
                 s.scaleBar = null;
+            }
+        }
+
+        /**
+         * ArcGIS MapView's actionMap exposes mouseWheel/dragPrimary/etc. but has no
+         * first-class entry for double-click zoom or keyboard navigation, so honor
+         * BitMapProviderBase.DoubleClickZoom / KeyboardNavigation via best-effort
+         * event interception. Only the keys the caller explicitly supplied are
+         * applied, and previous overrides are torn down before new ones are wired
+         * so partial sync()s don't leak listeners or pin tabIndex permanently.
+         */
+        private static _applyInteractivity(view: any, container: HTMLElement, o: any) {
+            const has = (k: string) => Object.prototype.hasOwnProperty.call(o, k);
+
+            if (has('doubleClickZoom')) {
+                if (view.__bmDblClickHandler) {
+                    container.removeEventListener('dblclick', view.__bmDblClickHandler, true);
+                    view.__bmDblClickHandler = null;
+                }
+                if (o.doubleClickZoom === false) {
+                    const handler = (ev: Event) => { ev.stopPropagation(); ev.preventDefault(); };
+                    container.addEventListener('dblclick', handler, true);
+                    view.__bmDblClickHandler = handler;
+                }
+            }
+
+            if (has('keyboardNavigation')) {
+                // ArcGIS' keyboard navigation requires a focusable container with a
+                // tabIndex; if the caller opts out, also drop tabIndex so the view
+                // can't receive focus and the SDK's key handlers can't fire.
+                if (o.keyboardNavigation === false) {
+                    if (view.__bmPrevTabIndex === undefined) {
+                        view.__bmPrevTabIndex = container.getAttribute('tabindex');
+                    }
+                    container.setAttribute('tabindex', '-1');
+                    if (!view.__bmKeyHandler) {
+                        const handler = (ev: Event) => { ev.stopPropagation(); ev.preventDefault(); };
+                        container.addEventListener('keydown', handler, true);
+                        view.__bmKeyHandler = handler;
+                    }
+                } else {
+                    if (view.__bmKeyHandler) {
+                        container.removeEventListener('keydown', view.__bmKeyHandler, true);
+                        view.__bmKeyHandler = null;
+                    }
+                    if (view.__bmPrevTabIndex !== undefined) {
+                        if (view.__bmPrevTabIndex === null) container.removeAttribute('tabindex');
+                        else container.setAttribute('tabindex', view.__bmPrevTabIndex);
+                        view.__bmPrevTabIndex = undefined;
+                    }
+                }
             }
         }
 

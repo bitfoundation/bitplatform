@@ -8,9 +8,15 @@ namespace Bit.BlazorUI;
 /// to express bounding boxes that cross the antimeridian.
 /// </para>
 /// <para>
-/// Because the type is a <c>record struct</c>, <c>with</c> expressions bypass
-/// constructor validation. Prefer constructing a fresh instance over <c>with</c>
-/// when you need the latitude invariant to be re-checked.
+/// Because the type is a <c>record struct</c>, both <c>with</c> expressions and
+/// object initializers that assign the <c>init</c> properties bypass constructor
+/// validation: in either case the instance is created first (the implicit
+/// parameterless struct constructor produces a <c>default</c> value), then the
+/// <c>init</c> members are assigned. Only construction via the explicit
+/// constructor — <c>new BitMapLatLngBounds(southWest, northEast)</c> — enforces
+/// the latitude invariant. Prefer constructing a fresh instance via the
+/// constructor over <c>with</c> or object initializers when you need the
+/// invariant to be re-checked.
 /// </para>
 /// </summary>
 public readonly record struct BitMapLatLngBounds

@@ -562,10 +562,20 @@ namespace BitBlazorUI {
 
         private static _stroke(ol: any, style: any) {
             const st = BitMapHelpers.readPathStyle(style);
+            // Accept commas and/or any whitespace as separators (e.g. "4 2" or "4, 2"),
+            // and drop empty/NaN tokens so a stray separator can't poison the dash array.
+            let lineDash: number[] | undefined;
+            if (st.dashArray) {
+                const parsed = String(st.dashArray)
+                    .split(/[\s,]+/)
+                    .map((x: string) => parseFloat(x))
+                    .filter((n: number) => Number.isFinite(n));
+                if (parsed.length > 0) lineDash = parsed;
+            }
             return new ol.Stroke({
                 color: BitMapHelpers.hexToRgba(st.color, st.opacity),
                 width: st.weight,
-                lineDash: st.dashArray ? st.dashArray.split(',').map((x: string) => parseFloat(x.trim())) : undefined,
+                lineDash,
             });
         }
 
@@ -660,8 +670,16 @@ namespace BitBlazorUI {
                 dn.invokeMethodAsync('OnDoubleClick', { lat: ll[1], lng: ll[0] });
             });
             map.on('moveend', () => {
-                if (!dn) return;
-                queueMicrotask(() => dn.invokeMethodAsync('OnViewChanged', BitMapOpenLayers._readView(s)));
+                // Snapshot the .NET handle so the microtask can verify it's still
+                // associated with a live state. dispose() nulls s.dotnetObj, so we
+                // bail out if it has been replaced (or cleared) by the time the
+                // microtask runs — otherwise we'd invoke a disposed DotNetObject.
+                const capturedDn = s.dotnetObj;
+                if (!capturedDn) return;
+                queueMicrotask(() => {
+                    if (s.dotnetObj !== capturedDn) return;
+                    capturedDn.invokeMethodAsync('OnViewChanged', BitMapOpenLayers._readView(s));
+                });
             });
         }
 

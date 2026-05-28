@@ -9,6 +9,8 @@ namespace BitBlazorUI {
         tileOverlayCatalog: { [id: string]: { sourceId: string, layerId: string } };
         navControl: any;
         lastStyleUrl: string;
+        isDisposed: boolean;
+        viewListeners?: { notify: () => void };
     };
 
     /**
@@ -84,6 +86,7 @@ namespace BitBlazorUI {
                 tileOverlayCatalog: {},
                 navControl: null,
                 lastStyleUrl: styleUrl,
+                isDisposed: false,
             };
             BitMapGlBase._ensureNavControl(state, o);
 
@@ -99,12 +102,24 @@ namespace BitBlazorUI {
                             if (hits && hits.length > 0) return;
                         } catch { /* ignore — fall through and fire OnClick */ }
                     }
-                    dotnetObj.invokeMethodAsync('OnClick', { lat: e.lngLat.lat, lng: e.lngLat.lng });
+                    if (state.isDisposed || !state.dotnetObj) return;
+                    state.dotnetObj.invokeMethodAsync('OnClick', { lat: e.lngLat.lat, lng: e.lngLat.lng });
                 });
-                map.on('dblclick', (e: any) => dotnetObj.invokeMethodAsync('OnDoubleClick', { lat: e.lngLat.lat, lng: e.lngLat.lng }));
-                const notify = () => queueMicrotask(() => dotnetObj.invokeMethodAsync('OnViewChanged', BitMapGlBase._readView(map)));
+                map.on('dblclick', (e: any) => {
+                    if (state.isDisposed || !state.dotnetObj) return;
+                    state.dotnetObj.invokeMethodAsync('OnDoubleClick', { lat: e.lngLat.lat, lng: e.lngLat.lng });
+                });
+                // The microtask can run after dispose() has nulled state.dotnetObj
+                // and removed the map. Guard the lambda so it never invokes a disposed
+                // .NET object and never reads from a disposed map. dispose() also
+                // unwires these listeners explicitly via state.viewListeners.
+                const notify = () => queueMicrotask(() => {
+                    if (state.isDisposed || !state.dotnetObj) return;
+                    state.dotnetObj.invokeMethodAsync('OnViewChanged', BitMapGlBase._readView(map));
+                });
                 map.on('moveend', notify);
                 map.on('zoomend', notify);
+                state.viewListeners = { notify };
             }
 
             BitMapGlBase._store(provider)[id] = state;
@@ -159,7 +174,19 @@ namespace BitBlazorUI {
             const store = BitMapGlBase._store(provider);
             const s = store[id];
             if (!s) return;
+            // Mark disposed first so any queued microtask notify can short-circuit
+            // before invoking the .NET object.
+            s.isDisposed = true;
             try {
+                // Remove the view-change listeners so no further notifications can
+                // be queued after dispose. map.remove() below also tears down all
+                // listeners, but doing this explicitly defends against any callback
+                // that might already be in flight before remove() runs.
+                if (s.viewListeners) {
+                    try { s.map.off('moveend', s.viewListeners.notify); } catch { /* ignore */ }
+                    try { s.map.off('zoomend', s.viewListeners.notify); } catch { /* ignore */ }
+                    s.viewListeners = undefined;
+                }
                 for (const key in s.markers) {
                     try { s.markers[key].marker.remove(); } catch { /* ignore */ }
                 }
