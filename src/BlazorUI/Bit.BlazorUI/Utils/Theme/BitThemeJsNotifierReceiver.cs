@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// JS-invokable bridge for <c>BitTheme.registerDotNetNotifier</c>; registered lazily by <see cref="BitThemeManager"/>.
+/// JS-invokable bridge for <c>BitBlazorUI.Theme.registerDotNetNotifier</c>; registered lazily by <see cref="BitThemeManager"/>.
 /// Internal because consumers should subscribe to <see cref="BitThemeNotifications.ThemeChanged"/>
 /// instead of constructing this type directly.
 /// </summary>

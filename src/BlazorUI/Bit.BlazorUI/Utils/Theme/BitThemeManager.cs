@@ -176,7 +176,7 @@ public class BitThemeManager : IAsyncDisposable
                 // teardown. Route through ILogger when a factory was provided so hosts get their
                 // configured pipeline (Console.WriteLine bypasses logging filters and shows up
                 // raw in production terminals).
-                _logger?.LogDebug(ex, "BitTheme.unregisterDotNetNotifier failed during dispose; ignoring.");
+                _logger?.LogDebug(ex, "BitBlazorUI.Theme.unregisterDotNetNotifier failed during dispose; ignoring.");
             }
             finally
             {

@@ -294,7 +294,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
             <br />
 
             <BitText>
-                Behavior matches the client <BitTag>BitTheme</BitTag> script: with <BitTag>bit-theme-persist</BitTag>, the stored key <BitTag>bit-current-theme</BitTag> is read; if the value is <BitTag>system</BitTag>, <BitTag>prefers-color-scheme</BitTag> picks the light or dark name from <BitTag>bit-theme-light</BitTag> / <BitTag>bit-theme-dark</BitTag> (defaulting to <BitTag>light</BitTag> and <BitTag>dark</BitTag> when those attributes are omitted).
+                Behavior matches the client <BitTag>BitBlazorUI.Theme</BitTag> script: with <BitTag>bit-theme-persist</BitTag>, the stored key <BitTag>bit-current-theme</BitTag> is read; if the value is <BitTag>system</BitTag>, <BitTag>prefers-color-scheme</BitTag> picks the light or dark name from <BitTag>bit-theme-light</BitTag> / <BitTag>bit-theme-dark</BitTag> (defaulting to <BitTag>light</BitTag> and <BitTag>dark</BitTag> when those attributes are omitted).
             </BitText>
         </BitCard>
 
@@ -490,7 +490,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
                 <b>get</b>: gets the current theme.
             </BitText>
 
-            <CodeBox Language="js">const currentTheme = BitTheme.get();</CodeBox>
+            <CodeBox Language="js">const currentTheme = BitBlazorUI.Theme.get();</CodeBox>
 
             <br /><br />
             
@@ -498,7 +498,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
                 <b>set</b>: sets the current theme.
             </BitText>
 
-            <CodeBox Language="js">BitTheme.set('dark');</CodeBox>
+            <CodeBox Language="js">BitBlazorUI.Theme.set('dark');</CodeBox>
 
             <br /><br />
 
@@ -506,7 +506,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
                 <b>toggleDarkLight</b>: toggles the current theme between dark & light.
             </BitText>
 
-            <CodeBox Language="js">BitTheme.toggleDarkLight();</CodeBox>
+            <CodeBox Language="js">BitBlazorUI.Theme.toggleDarkLight();</CodeBox>
 
             <br /><br />
 
@@ -514,7 +514,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
                 <b>useSystem</b>: uses the current theme of the system (dark or light) as the app theme.
             </BitText>
 
-            <CodeBox Language="js">BitTheme.useSystem();</CodeBox>
+            <CodeBox Language="js">BitBlazorUI.Theme.useSystem();</CodeBox>
 
             <br /><br />
 
@@ -522,7 +522,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
                 <b>onChange</b>: an event that fires when the current theme changes.
             </BitText>
 
-            <CodeBox Language="js">BitTheme.onChange((newTheme, oldTheme) => {
+            <CodeBox Language="js">BitBlazorUI.Theme.onChange((newTheme, oldTheme) => {
     if (newTheme.includes('dark')) {
         document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#0d1117');
     } else {
@@ -533,11 +533,11 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
             <br /><br />
 
             <BitText>
-                <b>applyBitTheme</b>: applies an instance of BitTheme to the specified element or the body element, just like the
+                <b>applyTheme</b>: applies an instance of BitTheme to the specified element or the body element, just like the
                 <BitTag>ApplyBitThemeAsync</BitTag> method of the <BitTag>BitThemeManager</BitTag>.
             </BitText>
 
-            <CodeBox Language="js">BitTheme.applyBitTheme({ '--bit-clr-pri': '#1A86D8' }, myElement)</CodeBox>
+            <CodeBox Language="js">BitBlazorUI.Theme.applyTheme({ '--bit-clr-pri': '#1A86D8' }, myElement)</CodeBox>
 
             <br /><br />
 
@@ -545,15 +545,15 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
                 <b>isSystemDark</b>: checks if the current theme of the system is dark.
             </BitText>
 
-            <CodeBox Language="js">BitTheme.isSystemDark();</CodeBox>
+            <CodeBox Language="js">BitBlazorUI.Theme.isSystemDark();</CodeBox>
 
             <br /><br />
 
             <BitText>
-                <b>init</b>: initializes the BitTheme object using the provided options.
+                <b>init</b>: initializes the BitBlazorUI.Theme object using the provided options.
             </BitText>
 
-            <CodeBox Language="js">BitTheme.init({
+            <CodeBox Language="js">BitBlazorUI.Theme.init({
     system: true,
     persist: true,
     theme: 'custom-dark',
@@ -576,7 +576,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
             <BitText Typography="BitTypography.H4">Advanced theming (API overview)</BitText>
             <br />
             <BitText Typography="BitTypography.Body1">
-                <strong>OS appearance:</strong> When <BitTag>bit-theme-system</BitTag> is on <BitTag>&lt;html&gt;</BitTag> or the persisted key is <BitTag>system</BitTag>, the client script listens for <BitTag>prefers-color-scheme</BitTag> changes and updates <BitTag>bit-theme</BitTag> without a reload. Call <BitTag>BitTheme.useSystem()</BitTag> or <BitTag>SetThemeAsync(&quot;system&quot;)</BitTag> to follow the OS again after choosing an explicit preset.
+                <strong>OS appearance:</strong> When <BitTag>bit-theme-system</BitTag> is on <BitTag>&lt;html&gt;</BitTag> or the persisted key is <BitTag>system</BitTag>, the client script listens for <BitTag>prefers-color-scheme</BitTag> changes and updates <BitTag>bit-theme</BitTag> without a reload. Call <BitTag>BitBlazorUI.Theme.useSystem()</BitTag> or <BitTag>SetThemeAsync(&quot;system&quot;)</BitTag> to follow the OS again after choosing an explicit preset.
             </BitText>
             <br />
             <BitText Typography="BitTypography.Body1">
@@ -604,7 +604,7 @@ BitThemeColorDerivation.FillColorRoleFromMain(myTheme.Color.Primary, "#1A86D8");
             </BitText>
             <br />
             <BitText Typography="BitTypography.Body1">
-                <strong>External CSS bundles:</strong> <BitTag>BitExternalThemeLoader</BitTag> attaches or removes a stylesheet link by id (<BitTag>BitExternalTheme.attach</BitTag> in JS). Use trusted URLs only.
+                <strong>External CSS bundles:</strong> <BitTag>BitExternalThemeLoader</BitTag> attaches or removes a stylesheet link by id (<BitTag>BitBlazorUI.ExternalTheme.attach</BitTag> in JS). Use trusted URLs only.
             </BitText>
             <br />
             <BitText Typography="BitTypography.Body1">

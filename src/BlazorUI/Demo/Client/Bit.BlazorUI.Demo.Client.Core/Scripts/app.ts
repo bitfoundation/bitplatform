@@ -35,9 +35,11 @@ function getInnerText(element: HTMLElement) {
     return element?.innerText;
 }
 
-declare class BitTheme { static init(options: any): void; };
+declare namespace BitBlazorUI {
+    class Theme { static init(options: any): void; }
+}
 
-BitTheme.init({
+BitBlazorUI.Theme.init({
     system: true,
     persist: true,
     onChange: (newTheme: string, oldTheme: string) => {

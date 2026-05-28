@@ -35,7 +35,7 @@ public sealed class BitThemeNotifications
         _logger = loggerFactory?.CreateLogger<BitThemeNotifications>();
     }
 
-    /// <summary>Fires after <c>BitTheme.set</c>, <c>toggleDarkLight</c>, or <c>prefers-color-scheme</c> updates while following system theme.</summary>
+    /// <summary>Fires after <c>BitBlazorUI.Theme.set</c>, <c>toggleDarkLight</c>, or <c>prefers-color-scheme</c> updates while following system theme.</summary>
     public event EventHandler<BitThemeChangedEventArgs>? ThemeChanged;
 
     internal void Raise(string? newTheme, string? oldTheme)

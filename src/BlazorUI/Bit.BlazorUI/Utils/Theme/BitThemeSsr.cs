@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// Emit <see cref="InlineHeadScript"/> at the start of <c>&lt;head&gt;</c> (before stylesheets) so the correct <c>bit-theme</c> attribute is set before first paint.
 /// </summary>
 /// <remarks>
-/// Attribute and storage key names come from <see cref="BitThemeAttributeNames"/> so the inline script and the runtime <c>BitTheme</c> client stay in sync.
+/// Attribute and storage key names come from <see cref="BitThemeAttributeNames"/> so the inline script and the runtime <c>BitBlazorUI.Theme</c> client stay in sync.
 /// </remarks>
 public static class BitThemeSsr
 {
@@ -55,7 +55,7 @@ public static class BitThemeSsr
         var storageKey = BitThemeAttributeNames.ThemeStorageKey;
 
         // The inline script is intentionally compact; it runs on every first paint before stylesheets.
-        // Logic mirrors BitTheme.init in bit-theme.ts.
+        // Logic mirrors Theme.init in bit-theme.ts.
         return
             "(function(){var r=document.documentElement," +
             $"k='{storageKey}'," +
