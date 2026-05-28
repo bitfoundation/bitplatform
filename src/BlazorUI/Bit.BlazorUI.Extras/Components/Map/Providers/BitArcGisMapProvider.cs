@@ -34,23 +34,28 @@ public sealed class BitArcGisMapProvider : BitMapProviderBase
     /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
-        if (string.IsNullOrWhiteSpace(BasemapId))
+        // Trim inputs so values like " osm " are treated as "osm" for both
+        // validation (Equals against "osm") and the payload sent to JS.
+        var basemapId = BasemapId?.Trim();
+        var apiKey = ApiKey?.Trim();
+
+        if (string.IsNullOrWhiteSpace(basemapId))
         {
             throw new InvalidOperationException(
                 "BitArcGisMapProvider: A BasemapId is required. " +
                 "Use 'osm' for the no-key default, or an Esri-hosted basemap id such as 'streets-vector' or 'satellite' along with an ApiKey.");
         }
 
-        if (!string.Equals(BasemapId, "osm", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(ApiKey))
+        if (!string.Equals(basemapId, "osm", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(apiKey))
         {
             throw new InvalidOperationException(
-                $"BitArcGisMapProvider: An ApiKey is required for the '{BasemapId}' basemap. " +
+                $"BitArcGisMapProvider: An ApiKey is required for the '{basemapId}' basemap. " +
                 "Only the 'osm' basemap works without an API key.");
         }
 
         var common = GetCommonOptions();
-        common["basemapId"] = BasemapId;
-        common["apiKey"] = ApiKey;
+        common["basemapId"] = basemapId;
+        common["apiKey"] = apiKey;
         common["showScaleControl"] = ShowScaleControl;
         return common;
     }

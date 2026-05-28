@@ -62,7 +62,25 @@ namespace BitBlazorUI {
             BitMapArcGis._wireEvents(state);
             BitMapArcGis._maps[id] = state;
 
-            await view.when();
+            try {
+                await view.when();
+            } catch (err) {
+                // view.when() rejected after we registered the partially-built state.
+                // Roll back so a stale instance isn't left in BitMapArcGis._maps and
+                // the DOM listeners + scaleBar wired by _applyInteractivity / _ensureScaleBar
+                // are torn down. Then rethrow so initialization still fails upstream.
+                try { if (state.scaleBar) state.scaleBar.destroy(); } catch { /* ignore */ }
+                if (element) {
+                    const dblHandler = (view as any).__bmDblClickHandler;
+                    const keyHandler = (view as any).__bmKeyHandler;
+                    if (dblHandler) try { element.removeEventListener('dblclick', dblHandler, true); } catch { /* ignore */ }
+                    if (keyHandler) try { element.removeEventListener('keydown', keyHandler, true); } catch { /* ignore */ }
+                }
+                try { view?.destroy?.(); } catch { /* ignore */ }
+                state.dotnetObj = null;
+                delete BitMapArcGis._maps[id];
+                throw err;
+            }
 
             if (o.zoomControl === false) { try { const w = view.ui.find('zoom'); if (w) view.ui.remove(w); } catch { /* ignore */ } }
             if (o.attributionControl === false) { try { const w = view.ui.find('attribution'); if (w) view.ui.remove(w); } catch { /* ignore */ } }
@@ -108,6 +126,24 @@ namespace BitBlazorUI {
         public static dispose(id: string) {
             const s = BitMapArcGis._maps[id];
             if (!s) return;
+
+            // Remove DOM listeners that _applyInteractivity attached to the
+            // container BEFORE destroying the view (which may null out
+            // s.view.container), so dblclick/keydown handlers don't outlive
+            // the map and stay attached to the user's element.
+            const container = s.view?.container as HTMLElement | null | undefined;
+            if (container) {
+                const view = s.view as any;
+                if (view.__bmDblClickHandler) {
+                    try { container.removeEventListener('dblclick', view.__bmDblClickHandler, true); } catch { /* ignore */ }
+                    view.__bmDblClickHandler = null;
+                }
+                if (view.__bmKeyHandler) {
+                    try { container.removeEventListener('keydown', view.__bmKeyHandler, true); } catch { /* ignore */ }
+                    view.__bmKeyHandler = null;
+                }
+            }
+
             try {
                 if (s.scaleBar) { s.scaleBar.destroy(); }
                 s.view.destroy();

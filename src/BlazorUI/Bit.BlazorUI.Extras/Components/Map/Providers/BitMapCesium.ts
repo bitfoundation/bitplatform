@@ -14,6 +14,7 @@ namespace BitBlazorUI {
             _cesiumHandler: any,
             _viewTimer: any,
             _moveEndCallback: any,
+            _baseImageryLayer: any,
             ionAccessToken: string | undefined,
             imageryStyle: string | undefined,
             terrainEnabled: boolean,
@@ -125,12 +126,23 @@ namespace BitBlazorUI {
                 Cesium, viewer, dotnetObj,
                 markers: {} as any, layers: {} as any, geoJsonLayers: {} as any, tileOverlays: {} as any,
                 _cesiumHandler: null as any, _viewTimer: null as any, _moveEndCallback: null as any,
+                _baseImageryLayer: null as any,
                 ionAccessToken,
                 imageryStyle: o.imageryStyle,
                 terrainEnabled: !!o.terrainEnabled,
                 sceneMode: o.sceneMode,
                 shadowsEnabled: !!o.shadowsEnabled,
             };
+            // Capture the base imagery layer (when present) so subsequent
+            // _applyImagery() calls remove/replace exactly this layer instead of
+            // unconditionally dropping imageryLayers.get(0), which could be a
+            // user-added overlay if addTileOverlay was called before sync.
+            try {
+                const initialLayers = viewer?.imageryLayers;
+                if (initialLayers && initialLayers.length > 0) {
+                    state._baseImageryLayer = initialLayers.get(0);
+                }
+            } catch { /* ignore */ }
             BitMapCesium._wireEvents(state);
             BitMapCesium._maps[id] = state;
             BitMapCesium._notifyView(state);
@@ -257,14 +269,15 @@ namespace BitBlazorUI {
                 return Cesium.ImageryLayer ? new Cesium.ImageryLayer(osmProvider) : null;
             };
 
-            // Remove the existing base layer (index 0). User-added overlays sit
-            // above it and are preserved.
+            // Remove only the tracked base imagery layer, not blindly index 0:
+            // user-added overlays may sit at index 0 if the original base layer
+            // was disabled (imageryStyle === 'none' on init).
             try {
-                if (layers.length > 0) {
-                    const base = layers.get(0);
-                    layers.remove(base, true);
+                if (s._baseImageryLayer && layers.contains?.(s._baseImageryLayer) !== false) {
+                    layers.remove(s._baseImageryLayer, true);
                 }
             } catch { /* ignore */ }
+            s._baseImageryLayer = null;
 
             if (imageryStyle === 'none') {
                 return;
@@ -277,7 +290,10 @@ namespace BitBlazorUI {
                         ? Cesium.IonImageryProvider.fromAssetId(assetId, { accessToken: s.ionAccessToken })
                         : new Cesium.IonImageryProvider({ assetId, accessToken: s.ionAccessToken }));
                     const lyr = Cesium.ImageryLayer ? new Cesium.ImageryLayer(provider) : provider;
-                    if (lyr) try { layers.add(lyr, 0); } catch { layers.add(lyr); }
+                    if (lyr) {
+                        try { layers.add(lyr, 0); } catch { layers.add(lyr); }
+                        s._baseImageryLayer = lyr;
+                    }
                     return;
                 } catch { /* fall through to OSM */ }
             }
@@ -285,6 +301,7 @@ namespace BitBlazorUI {
             const osm = buildOsmLayer();
             if (osm) {
                 try { layers.add(osm, 0); } catch { layers.add(osm); }
+                s._baseImageryLayer = osm;
             }
         }
 

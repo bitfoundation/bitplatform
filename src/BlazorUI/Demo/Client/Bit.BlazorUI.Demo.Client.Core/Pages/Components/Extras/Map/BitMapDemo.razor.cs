@@ -885,12 +885,13 @@ private void SetTileProvider(string p)
         {
             Center = new(20, 0), Zoom = 2,
             TileUrl = ""https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"",
-            TileAttribution = ""&copy; OSM &copy; CARTO"",
+            TileAttribution = ""&copy; OpenStreetMap contributors &copy; <a href=\""https://carto.com/attributions\"">CARTO</a>"",
         },
         ""topo"" => new BitLeafletMapProvider
         {
             Center = new(46.5, 11.3), Zoom = 10,
             TileUrl = ""https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"",
+            TileAttribution = ""Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap"",
             TileMaxZoom = 17,
         },
         _ => new BitLeafletMapProvider { Center = new(51.505, -0.09), Zoom = 13 },
