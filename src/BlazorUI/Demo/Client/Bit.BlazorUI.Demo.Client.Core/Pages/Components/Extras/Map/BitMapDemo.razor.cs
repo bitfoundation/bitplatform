@@ -4,45 +4,255 @@ public partial class BitMapDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
-        new() { Name = "TMapProvider", Type = "Type (generic)", DefaultValue = "", Description = "The map provider type. One of: BitLeafletMapProvider, BitMapLibreMapProvider, BitMapboxMapProvider, BitOpenLayersMapProvider, BitArcGisMapProvider, BitAzureMapsMapProvider, BitCesiumMapProvider." },
-        new() { Name = "Provider", Type = "TMapProvider?", DefaultValue = "null", Description = "Provider configuration instance (center, zoom, tokens, etc.). When null a default instance is created." },
-        new() { Name = "ChildContent", Type = "RenderFragment?", DefaultValue = "null", Description = "Optional content rendered above the map canvas." },
-        new() { Name = "ReplayStateOnProviderSwap", Type = "bool", DefaultValue = "false", Description = "When true, imperatively-added markers, vector layers, and tile overlays are replayed after a destructive provider swap (different JsObjectName)." },
-        new() { Name = "OnReady", Type = "EventCallback", DefaultValue = "", Description = "Fires after the map is ready for imperative calls. Fires once on initial mount, and fires again after a destructive provider swap each time the new provider becomes ready." },
-        new() { Name = "OnClick", Type = "EventCallback<BitMapLatLng>", DefaultValue = "", Description = "Fires when the user clicks the map canvas." },
-        new() { Name = "OnDoubleClick", Type = "EventCallback<BitMapLatLng>", DefaultValue = "", Description = "Fires when the user double-clicks the map." },
-        new() { Name = "OnViewChanged", Type = "EventCallback<BitMapViewState>", DefaultValue = "", Description = "Fires whenever the map view changes." },
-        new() { Name = "OnMarkerClick", Type = "EventCallback<string>", DefaultValue = "", Description = "Fires when the user clicks a marker (argument is the marker id)." },
-        new() { Name = "OnMarkerDragEnd", Type = "EventCallback<BitMapMarkerDragEndArgs>", DefaultValue = "", Description = "Fires when a draggable marker is dropped." },
-        new() { Name = "OnVectorClick", Type = "EventCallback<BitMapVectorClickArgs>", DefaultValue = "", Description = "Fires when the user clicks a vector layer." },
-        new() { Name = "OnGeoJsonFeatureClick", Type = "EventCallback<BitMapGeoJsonFeatureClickArgs>", DefaultValue = "", Description = "Fires when the user clicks a GeoJSON feature." },
-        new() { Name = "OnInteropError", Type = "EventCallback<BitMapInteropErrorArgs>", DefaultValue = "", Description = "Fires when an interop call into the underlying provider fails. Lets consumers surface errors that the component would otherwise swallow to prevent circuit-breaking exceptions." },
+         new()
+         {
+            Name = "TMapProvider",
+            Type = "Type (generic)",
+            DefaultValue = "",
+            Description = "The map provider type. One of: BitLeafletMapProvider, BitMapLibreMapProvider, BitMapboxMapProvider, BitOpenLayersMapProvider, BitArcGisMapProvider, BitAzureMapsMapProvider, BitCesiumMapProvider.",
+         },
+         new()
+         {
+            Name = "Provider",
+            Type = "TMapProvider?",
+            DefaultValue = "null",
+            Description = "Provider configuration instance (center, zoom, tokens, etc.). When null a default instance is created.",
+         },
+         new()
+         {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Optional content rendered above the map canvas.",
+         },
+         new()
+         {
+            Name = "ReplayStateOnProviderSwap",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "When true, imperatively-added markers, vector layers, and tile overlays are replayed after a destructive provider swap (different JsObjectName).",
+         },
+         new()
+         {
+            Name = "OnReady",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Fires after the map is ready for imperative calls. Fires once on initial mount, and fires again after a destructive provider swap each time the new provider becomes ready.",
+         },
+         new()
+         {
+            Name = "OnClick",
+            Type = "EventCallback<BitMapLatLng>",
+            DefaultValue = "",
+            Description = "Fires when the user clicks the map canvas.",
+         },
+         new()
+         {
+            Name = "OnDoubleClick",
+            Type = "EventCallback<BitMapLatLng>",
+            DefaultValue = "",
+            Description = "Fires when the user double-clicks the map.",
+         },
+         new()
+         {
+            Name = "OnViewChanged",
+            Type = "EventCallback<BitMapViewState>",
+            DefaultValue = "",
+            Description = "Fires whenever the map view changes.",
+         },
+         new()
+         {
+            Name = "OnMarkerClick",
+            Type = "EventCallback<string>",
+            DefaultValue = "",
+            Description = "Fires when the user clicks a marker (argument is the marker id).",
+         },
+         new()
+         {
+            Name = "OnMarkerDragEnd",
+            Type = "EventCallback<BitMapMarkerDragEndArgs>",
+            DefaultValue = "",
+            Description = "Fires when a draggable marker is dropped.",
+         },
+         new()
+         {
+            Name = "OnVectorClick",
+            Type = "EventCallback<BitMapVectorClickArgs>",
+            DefaultValue = "",
+            Description = "Fires when the user clicks a vector layer.",
+         },
+         new()
+         {
+            Name = "OnGeoJsonFeatureClick",
+            Type = "EventCallback<BitMapGeoJsonFeatureClickArgs>",
+            DefaultValue = "",
+            Description = "Fires when the user clicks a GeoJSON feature.",
+         },
+         new()
+         {
+            Name = "OnInteropError",
+            Type = "EventCallback<BitMapInteropErrorArgs>",
+            DefaultValue = "",
+            Description = "Fires when an interop call into the underlying provider fails. Lets consumers surface errors that the component would otherwise swallow to prevent circuit-breaking exceptions.",
+         },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
     [
-        new() { Name = "IsReady", Type = "bool", DefaultValue = "false", Description = "True after the map is ready for interop calls." },
-        new() { Name = "GetView", Type = "Func<ValueTask<BitMapViewState>>", DefaultValue = "", Description = "Returns a snapshot of the current viewport." },
-        new() { Name = "SetView", Type = "Func<BitMapLatLng, double?, bool, ValueTask>", DefaultValue = "", Description = "Pan and optionally zoom to the given center." },
-        new() { Name = "FlyTo", Type = "Func<BitMapLatLng, double?, ValueTask>", DefaultValue = "", Description = "Animated pan/zoom to the given center." },
-        new() { Name = "FitBounds", Type = "Func<BitMapLatLngBounds, int, ValueTask>", DefaultValue = "", Description = "Fit the view to the given bounding box." },
-        new() { Name = "FitBoundsToMarkers", Type = "Func<int, ValueTask>", DefaultValue = "", Description = "Fit the view to include all current markers." },
-        new() { Name = "InvalidateSize", Type = "Func<ValueTask>", DefaultValue = "", Description = "Recalculate map size after a container resize." },
-        new() { Name = "AddMarker", Type = "Func<BitMapMarker, ValueTask>", DefaultValue = "", Description = "Add a marker to the map." },
-        new() { Name = "RemoveMarker", Type = "Func<string, ValueTask>", DefaultValue = "", Description = "Remove a marker by id." },
-        new() { Name = "ClearMarkers", Type = "Func<ValueTask>", DefaultValue = "", Description = "Remove all markers." },
-        new() { Name = "SetMarkerPosition", Type = "Func<string, BitMapLatLng, ValueTask>", DefaultValue = "", Description = "Move a marker to a new position." },
-        new() { Name = "OpenMarkerPopup", Type = "Func<string, ValueTask>", DefaultValue = "", Description = "Open a marker's popup." },
-        new() { Name = "SyncMarkers", Type = "Func<IEnumerable<BitMapMarker>, ValueTask>", DefaultValue = "", Description = "Replace all markers in one batch." },
-        new() { Name = "AddPolyline", Type = "Func<string, IReadOnlyList<BitMapLatLng>, BitMapVectorPathStyle?, ValueTask>", DefaultValue = "", Description = "Add a polyline." },
-        new() { Name = "AddPolygon", Type = "Func<string, IReadOnlyList<BitMapLatLng>, BitMapVectorPathStyle?, ValueTask>", DefaultValue = "", Description = "Add a polygon." },
-        new() { Name = "AddCircle", Type = "Func<string, BitMapLatLng, double, BitMapVectorPathStyle?, ValueTask>", DefaultValue = "", Description = "Add a circle (radius in meters)." },
-        new() { Name = "AddRectangle", Type = "Func<string, BitMapLatLngBounds, BitMapVectorPathStyle?, ValueTask>", DefaultValue = "", Description = "Add a rectangle." },
-        new() { Name = "AddGeoJson", Type = "Func<string, string, BitMapVectorPathStyle?, ValueTask>", DefaultValue = "", Description = "Add a GeoJSON layer." },
-        new() { Name = "RemoveLayer", Type = "Func<string, ValueTask>", DefaultValue = "", Description = "Remove a vector layer by id." },
-        new() { Name = "ClearVectorLayers", Type = "Func<ValueTask>", DefaultValue = "", Description = "Remove all vector layers." },
-        new() { Name = "AddTileOverlay", Type = "Func<BitMapTileOverlay, ValueTask>", DefaultValue = "", Description = "Add a tile overlay above the base map." },
-        new() { Name = "RemoveTileOverlay", Type = "Func<string, ValueTask>", DefaultValue = "", Description = "Remove a tile overlay by id." },
+         new()
+         {
+            Name = "IsReady",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "True after the map is ready for interop calls.",
+         },
+         new()
+         {
+            Name = "GetView",
+            Type = "Func<ValueTask<BitMapViewState>>",
+            DefaultValue = "",
+            Description = "Returns a snapshot of the current viewport.",
+         },
+         new()
+         {
+            Name = "SetView",
+            Type = "Func<BitMapLatLng, double?, bool, ValueTask>",
+            DefaultValue = "",
+            Description = "Pan and optionally zoom to the given center.",
+         },
+         new()
+         {
+            Name = "FlyTo",
+            Type = "Func<BitMapLatLng, double?, ValueTask>",
+            DefaultValue = "",
+            Description = "Animated pan/zoom to the given center.",
+         },
+         new()
+         {
+            Name = "FitBounds",
+            Type = "Func<BitMapLatLngBounds, int, ValueTask>",
+            DefaultValue = "",
+            Description = "Fit the view to the given bounding box.",
+         },
+         new()
+         {
+            Name = "FitBoundsToMarkers",
+            Type = "Func<int, ValueTask>",
+            DefaultValue = "",
+            Description = "Fit the view to include all current markers.",
+         },
+         new()
+         {
+            Name = "InvalidateSize",
+            Type = "Func<ValueTask>",
+            DefaultValue = "",
+            Description = "Recalculate map size after a container resize.",
+         },
+         new()
+         {
+            Name = "AddMarker",
+            Type = "Func<BitMapMarker, ValueTask>",
+            DefaultValue = "",
+            Description = "Add a marker to the map.",
+         },
+         new()
+         {
+            Name = "RemoveMarker",
+            Type = "Func<string, ValueTask>",
+            DefaultValue = "",
+            Description = "Remove a marker by id.",
+         },
+         new()
+         {
+            Name = "ClearMarkers",
+            Type = "Func<ValueTask>",
+            DefaultValue = "",
+            Description = "Remove all markers.",
+         },
+         new()
+         {
+            Name = "SetMarkerPosition",
+            Type = "Func<string, BitMapLatLng, ValueTask>",
+            DefaultValue = "",
+            Description = "Move a marker to a new position.",
+         },
+         new()
+         {
+            Name = "OpenMarkerPopup",
+            Type = "Func<string, ValueTask>",
+            DefaultValue = "",
+            Description = "Open a marker's popup.",
+         },
+         new()
+         {
+            Name = "SyncMarkers",
+            Type = "Func<IEnumerable<BitMapMarker>, ValueTask>",
+            DefaultValue = "",
+            Description = "Replace all markers in one batch.",
+         },
+         new()
+         {
+            Name = "AddPolyline",
+            Type = "Func<string, IReadOnlyList<BitMapLatLng>, BitMapVectorPathStyle?, ValueTask>",
+            DefaultValue = "",
+            Description = "Add a polyline.",
+         },
+         new()
+         {
+            Name = "AddPolygon",
+            Type = "Func<string, IReadOnlyList<BitMapLatLng>, BitMapVectorPathStyle?, ValueTask>",
+            DefaultValue = "",
+            Description = "Add a polygon.",
+         },
+         new()
+         {
+            Name = "AddCircle",
+            Type = "Func<string, BitMapLatLng, double, BitMapVectorPathStyle?, ValueTask>",
+            DefaultValue = "",
+            Description = "Add a circle (radius in meters).",
+         },
+         new()
+         {
+            Name = "AddRectangle",
+            Type = "Func<string, BitMapLatLngBounds, BitMapVectorPathStyle?, ValueTask>",
+            DefaultValue = "",
+            Description = "Add a rectangle.",
+         },
+         new()
+         {
+            Name = "AddGeoJson",
+            Type = "Func<string, string, BitMapVectorPathStyle?, ValueTask>",
+            DefaultValue = "",
+            Description = "Add a GeoJSON layer.",
+         },
+         new()
+         {
+            Name = "RemoveLayer",
+            Type = "Func<string, ValueTask>",
+            DefaultValue = "",
+            Description = "Remove a vector layer by id.",
+         },
+         new()
+         {
+            Name = "ClearVectorLayers",
+            Type = "Func<ValueTask>",
+            DefaultValue = "",
+            Description = "Remove all vector layers.",
+         },
+         new()
+         {
+            Name = "AddTileOverlay",
+            Type = "Func<BitMapTileOverlay, ValueTask>",
+            DefaultValue = "",
+            Description = "Add a tile overlay above the base map.",
+         },
+         new()
+         {
+            Name = "RemoveTileOverlay",
+            Type = "Func<string, ValueTask>",
+            DefaultValue = "",
+            Description = "Remove a tile overlay by id.",
+         },
     ];
 
 

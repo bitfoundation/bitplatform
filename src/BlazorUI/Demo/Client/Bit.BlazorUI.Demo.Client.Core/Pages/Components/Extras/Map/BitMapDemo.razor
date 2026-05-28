@@ -26,7 +26,6 @@
     </NotesTemplate>
     <Examples>
 
-        @* ── 1. Basic ─────────────────────────────────────────────────────────── *@
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div>The simplest usage: a Leaflet map centered on London using the bundled Leaflet 1.9.4 library (no CDN, no token).</div>
             <br />
@@ -35,7 +34,6 @@
             </div>
         </DemoExample>
 
-        @* ── 2. Markers ───────────────────────────────────────────────────────── *@
         <DemoExample Title="Markers" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
                 Add markers with HTML popups, tooltips, and drag support via the imperative API.
@@ -61,7 +59,6 @@
             <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@markersLog</pre>
         </DemoExample>
 
-        @* ── 3. Vectors ───────────────────────────────────────────────────────── *@
         <DemoExample Title="Vectors" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
                 Draw polylines, polygons, circles, and rectangles. Each layer has a string id so you can remove or replace it individually.
@@ -84,7 +81,6 @@
             <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@vectorsLog</pre>
         </DemoExample>
 
-        @* ── 4. GeoJSON ───────────────────────────────────────────────────────── *@
         <DemoExample Title="GeoJSON" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 Load any GeoJSON string as a styled layer. Feature clicks forward the feature's <code>properties</code> as a <code>JsonElement</code>.
@@ -105,7 +101,6 @@
             <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@geoJsonLog</pre>
         </DemoExample>
 
-        @* ── 5. Tiles ─────────────────────────────────────────────────────────── *@
         <DemoExample Title="Custom tiles" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 Switch the base tile layer at runtime by updating the <code>Provider</code> parameter.
@@ -122,7 +117,6 @@
             </div>
         </DemoExample>
 
-        @* ── 6. Events ────────────────────────────────────────────────────────── *@
         <DemoExample Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 <code>OnClick</code> returns the clicked coordinate. <code>OnViewChanged</code> fires after every pan or zoom.
@@ -146,7 +140,6 @@
             <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@eventsLog</pre>
         </DemoExample>
 
-        @* ── 7. Advanced ──────────────────────────────────────────────────────── *@
         <DemoExample Title="Advanced" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 Interaction toggles, scale bar, pan limits (<code>MaxBounds</code>), marker tooltips, z-order, and tile overlays.
@@ -175,7 +168,6 @@
             <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@advLog</pre>
         </DemoExample>
 
-        @* ── 8. MapLibre GL ───────────────────────────────────────────────────── *@
         <DemoExample Title="MapLibre GL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>MapLibre GL JS is loaded from unpkg on first render. No token required for the default demo style.</div>
             <br />
@@ -184,7 +176,6 @@
             </div>
         </DemoExample>
 
-        @* ── 9. OpenLayers ────────────────────────────────────────────────────── *@
         <DemoExample Title="OpenLayers" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>OpenLayers 10 is loaded as ES modules from esm.sh. No token required; defaults to OpenStreetMap tiles.</div>
             <br />
@@ -193,7 +184,6 @@
             </div>
         </DemoExample>
 
-        @* ── 10. Mapbox ───────────────────────────────────────────────────────── *@
         <DemoExample Title="Mapbox GL (token required)" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 Mapbox GL JS requires a public access token to load <code>mapbox://</code> styles.
@@ -212,7 +202,6 @@
             </div>
         </DemoExample>
 
-        @* ── 11. ArcGIS ───────────────────────────────────────────────────────── *@
         <DemoExample Title="ArcGIS Maps SDK" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 ArcGIS Maps SDK 5.0 is loaded as an ES module from the Esri CDN.
@@ -224,7 +213,6 @@
             </div>
         </DemoExample>
 
-        @* ── 12. Azure Maps ───────────────────────────────────────────────────── *@
         <DemoExample Title="Azure Maps (subscription key required)" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 Azure Maps Web SDK v3 requires a subscription key for authentication.
@@ -243,7 +231,6 @@
             </div>
         </DemoExample>
 
-        @* ── 13. Cesium ───────────────────────────────────────────────────────── *@
         <DemoExample Title="CesiumJS 3D globe" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 CesiumJS renders a 3D globe. OSM imagery and smooth-ellipsoid terrain work without a token.
