@@ -51,7 +51,7 @@
             border-color: $clr-err;
         }
 
-        &.bit-dtp-foc .bit-dtp-icn {
+        &.bit-dtp-foc:not(.bit-dtp-und) .bit-dtp-icn {
             @include focus-ring($clr-err-focus);
         }
 
@@ -170,7 +170,7 @@
     }
 }
 
-.bit-dtp-foc {
+.bit-dtp-foc:not(.bit-dtp-und) {
     .bit-dtp-icn {
         @include focus-ring;
     }

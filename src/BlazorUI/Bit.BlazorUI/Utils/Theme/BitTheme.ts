@@ -100,6 +100,15 @@ namespace BitBlazorUI {
                 }
             }
 
+            // The JS `system: true` option must on its own enable OS follow, otherwise callers that
+            // configure system mode purely from JS (no <html bit-theme-system> attribute, no persisted
+            // "system" value) would never get the prefers-color-scheme listener attached because
+            // shouldFollowSystem() only considers the HTML attribute and persisted value. Runtime
+            // follow is still cleared when the user later pins a concrete theme via set(...).
+            if (Theme._initOptions.system && !Theme._stopFollowingSystem) {
+                Theme._runtimeFollowSystem = true;
+            }
+
             Theme.set(theme, { fromInit: true });
 
             if (deferPersist) {

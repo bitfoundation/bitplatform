@@ -45,7 +45,7 @@
             border-color: $clr-err;
         }
 
-        &.bit-ctp-foc .bit-ctp-icn {
+        &.bit-ctp-foc:not(.bit-ctp-und) .bit-ctp-icn {
             @include focus-ring($clr-err-focus);
         }
 
@@ -129,7 +129,7 @@
     }
 }
 
-.bit-ctp-foc {
+.bit-ctp-foc:not(.bit-ctp-und) {
     .bit-ctp-icn {
         @include focus-ring;
     }
