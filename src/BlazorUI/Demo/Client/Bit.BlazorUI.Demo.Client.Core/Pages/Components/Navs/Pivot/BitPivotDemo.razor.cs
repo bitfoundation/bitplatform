@@ -1157,21 +1157,21 @@ private BitPivotItem selectedPivotItem;";
 
 
 <BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Primary"">
-    <BitPivotItem HeaderText=""Primary""><div>Pivot #1: Primary</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Secondary""><div>Pivot #2: Secondary</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Tertiary""><div>Pivot #3: Tertiary</div></BitPivotItem>
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>
 
 <BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Success"">
-    <BitPivotItem HeaderText=""Info""><div>Pivot #1: Info</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Success""><div>Pivot #2: Success</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Warning""><div>Pivot #3: Warning</div></BitPivotItem>
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>
 
 <BitPivot HeaderType=""BitPivotHeaderType.Tab"" Color=""BitColor.Error"">
-    <BitPivotItem HeaderText=""SevereWarning""><div>Pivot #1: SevereWarning</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Error""><div>Pivot #2: Error</div></BitPivotItem>
-    <BitPivotItem HeaderText=""Info""><div>Pivot #3: Info</div></BitPivotItem>
+    <BitPivotItem HeaderText=""File""><div>Pivot #1: File</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Shared""><div>Pivot #2: Shared</div></BitPivotItem>
+    <BitPivotItem HeaderText=""Recent""><div>Pivot #3: Recent</div></BitPivotItem>
 </BitPivot>";
 
     private readonly string example12RazorCode = @"

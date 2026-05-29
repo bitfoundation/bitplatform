@@ -39,7 +39,9 @@ public static class BitThemeColorDerivation
             var textWasNull = variants.Text is null;
             variants.Text ??= SuggestOnColorText(baseColor);
 
-            if (adjustTextForWcagAa && textWasNull && variants.Main is not null && variants.Text is not null)
+            if (adjustTextForWcagAa && textWasNull
+                && !string.IsNullOrWhiteSpace(variants.Main)
+                && !string.IsNullOrWhiteSpace(variants.Text))
             {
                 var blackRatio = BitThemeColorContrast.GetContrastRatio("#000000", variants.Main);
                 var whiteRatio = BitThemeColorContrast.GetContrastRatio("#FFFFFF", variants.Main);

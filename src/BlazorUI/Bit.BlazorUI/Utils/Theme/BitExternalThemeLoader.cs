@@ -3,7 +3,8 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Loads optional alternate CSS bundles by id (creates or updates a <c>&lt;link rel="stylesheet"&gt;</c>).
 /// Use only trusted/same-origin URLs. The loader rejects relative-with-scheme strings such as
-/// <c>javascript:</c> and <c>data:</c>; for absolute URLs the scheme must be <c>http</c> or <c>https</c>.
+/// <c>javascript:</c> and <c>data:</c>, rejects protocol-relative URLs (<c>//host/...</c>);
+/// for absolute URLs the scheme must be <c>http</c> or <c>https</c>.
 /// </summary>
 public sealed class BitExternalThemeLoader
 {
@@ -30,8 +31,11 @@ public sealed class BitExternalThemeLoader
         // Defense-in-depth href validation. The XML doc warns the caller to use trusted URLs, but
         // the JS side does no checking, so a tampered or user-supplied href could attach a
         // `javascript:`/`data:` link that browsers may actually load when probed. Rejecting them
-        // here keeps the loader honest. Relative paths (no scheme) are allowed because that's the
-        // common same-origin case ("/css/dark.css", "themes/light.css").
+        // here keeps the loader honest. Protocol-relative URLs (e.g. `//host/x.css`) are also
+        // rejected because the browser resolves them as cross-origin http(s), which violates the
+        // documented "same-origin relative path or absolute http/https URL" contract. Relative
+        // paths (no scheme) are allowed because that's the common same-origin case
+        // ("/css/dark.css", "themes/light.css").
         ValidateHref(href);
 
         return _js.BitExternalThemeAttach(linkElementId, href);
@@ -48,6 +52,23 @@ public sealed class BitExternalThemeLoader
 
     private static void ValidateHref(string href)
     {
+        // Protocol-relative URLs (e.g. "//evil.example/x.css") are not absolute URIs as far as
+        // Uri.TryCreate(Absolute) is concerned, so they would otherwise slip past the scheme
+        // check below and reach the browser, which resolves them to a cross-origin
+        // http(s)://evil.example/x.css. Reject them up front; callers must use a same-origin
+        // relative path or an explicit http/https URL. Browsers also normalize backslashes to
+        // forward slashes in URLs, so `\\host\x.css` is the same attack surface — block it too.
+        var trimmed = href.TrimStart();
+        if (trimmed.StartsWith("//", StringComparison.Ordinal) ||
+            trimmed.StartsWith(@"\\", StringComparison.Ordinal) ||
+            trimmed.StartsWith(@"/\", StringComparison.Ordinal) ||
+            trimmed.StartsWith(@"\/", StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "Stylesheet href must not be a protocol-relative URL. Use a same-origin relative path or an explicit http/https URL.",
+                nameof(href));
+        }
+
         if (Uri.TryCreate(href, UriKind.Absolute, out var absolute))
         {
             // Reject every absolute-URL scheme other than http(s). That covers javascript:, data:,
@@ -68,7 +89,7 @@ public sealed class BitExternalThemeLoader
         // Relative URLs are allowed. We still want to reject the `javascript:` form even when
         // Uri.TryCreate refuses to parse it as absolute (it does for some inputs depending on
         // platform), so a final string-prefix sanity check covers the residual surface.
-        if (LooksLikeDangerousRelativeScheme(href))
+        if (LooksLikeDangerousRelativeScheme(trimmed))
         {
             throw new ArgumentException(
                 "Stylesheet href appears to use a non-http scheme (javascript:, data:, vbscript:). Use http, https, or a same-origin relative path.",
@@ -76,10 +97,9 @@ public sealed class BitExternalThemeLoader
         }
     }
 
-    private static bool LooksLikeDangerousRelativeScheme(string href)
+    private static bool LooksLikeDangerousRelativeScheme(string trimmed)
     {
         // Match common attack vectors that browsers used to (or still) accept on attribute values.
-        var trimmed = href.TrimStart();
         return trimmed.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase)
             || trimmed.StartsWith("data:", StringComparison.OrdinalIgnoreCase)
             || trimmed.StartsWith("vbscript:", StringComparison.OrdinalIgnoreCase);
