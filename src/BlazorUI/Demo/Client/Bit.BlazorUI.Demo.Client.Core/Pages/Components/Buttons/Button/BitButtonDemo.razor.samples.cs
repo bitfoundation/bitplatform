@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.Button;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.Button;
 
 public partial class BitButtonDemo
 {
@@ -268,17 +268,29 @@ private readonly List<BitDropdownItem<BitPosition>> floatPositionList = Enum.Get
                                                                             .ToList();";
 
     private readonly string example11RazorCode = @"
-<EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">
-    <DataAnnotationsValidator />
-    <BitTextField Label=""Required"" Required @bind-Value=""buttonValidationModel.RequiredText"" />
-    <ValidationMessage For=""() => buttonValidationModel.RequiredText"" style=""color:red"" />
-    <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
-    <div>
-        <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-        <BitButton ButtonType=""BitButtonType.Reset"">Reset</BitButton>
-        <BitButton ButtonType=""BitButtonType.Button"">Button</BitButton>
-    </div>
-</EditForm>";
+@if (formIsValidSubmit is false)
+{
+    <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
+        <DataAnnotationsValidator />
+
+        <BitTextField Label=""Required"" Required @bind-Value=""buttonValidationModel.RequiredText"" />
+        <ValidationMessage For=""() => buttonValidationModel.RequiredText"" style=""color:red"" />
+        
+        <BitTextField Label=""Non Required"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
+        
+        <div>
+            <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+            <BitButton ButtonType=""BitButtonType.Reset"">Reset</BitButton>
+            <BitButton ButtonType=""BitButtonType.Button"">Button</BitButton>
+        </div>
+    </EditForm>
+}
+else
+{
+    <BitMessage Color=""BitColor.Success"">
+        The form submitted successfully.
+    </BitMessage>
+}";
     private readonly string example11CsharpCode = @"
 public class ButtonValidationModel
 {
@@ -287,15 +299,25 @@ public class ButtonValidationModel
     public string? NonRequiredText { get; set; }
 }
 
+private bool formIsValidSubmit;
 private ButtonValidationModel buttonValidationModel = new();
 
 private async Task HandleValidSubmit()
 {
+    formIsValidSubmit = true;
+
     await Task.Delay(2000);
 
     buttonValidationModel = new();
 
+    formIsValidSubmit = false;
+
     StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    formIsValidSubmit = false;
 }";
 
     private readonly string example12RazorCode = @"
