@@ -96,8 +96,6 @@
     </div>
 </DemoExample>
 
-
-
 <DemoExample Title="Sticky" RazorCode="@example4RazorCode" Id="example4">
     <div>Experience the Sticky functionality of BitMenuButton, showcasing a button that remains sticky after an item selection. The button displays the selected item and retains its state for continuous user interaction.</div>
     <br />
@@ -182,7 +180,7 @@
     <br />
     <div>Non-Sticky:</div>
     <BitMenuButton Text="Non-Sticky" TItem="BitMenuButtonOption" Variant="BitVariant.Text">
-        <BitMenuButtonOption Text="Option A (Default)" Key="A" IconName="@BitIconName.Emoji" Style="color:brown" />
+        <BitMenuButtonOption Text="Option A (Default)" Key="A" IconName="@BitIconName.Emoji" Style="color: brown" />
         <BitMenuButtonOption Text="Option B (Styled)" Key="B" IconName="@BitIconName.Emoji" Style="color: tomato; border-color: brown; background-color: peachpuff;" />
         <BitMenuButtonOption Text="Option C (Classed)" Key="C" IconName="@BitIconName.Emoji2" Class="custom-item" />
     </BitMenuButton>
@@ -199,9 +197,9 @@
     <div>
         <BitMenuButton Text="Classes" TItem="BitMenuButtonOption" IconName="@BitIconName.FormatPainter" Variant="BitVariant.Text"
                        Classes="@(new() { OperatorButton = "custom-button",
-                                              Opened = "custom-opened",
-                                              Callout = "custom-callout",
-                                              ItemButton = "custom-item-button" })">
+                                         Opened = "custom-opened",
+                                         Callout = "custom-callout",
+                                         ItemButton = "custom-item-button" })">
             <BitMenuButtonOption Text="Option A" Key="A" />
             <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
             <BitMenuButtonOption Text="Option C" Key="C" />
@@ -209,10 +207,10 @@
         <br />
         <BitMenuButton Text="Styles" TItem="BitMenuButtonOption" IconName="@BitIconName.Brush"
                        Styles="@(new() { Root = "--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;",
-                                             Opened = "--button-background: orangered;",
-                                             OperatorButton = "background: var(--button-background);",
-                                             ItemButton = "background: lightcoral;",
-                                             Callout = "border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;" })">
+                                        Opened = "--button-background: orangered;",
+                                        OperatorButton = "background: var(--button-background);",
+                                        ItemButton = "background: lightcoral;",
+                                        Callout = "border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;" })">
             <BitMenuButtonOption Text="Option A" Key="A" />
             <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
             <BitMenuButtonOption Text="Option C" Key="C" />
