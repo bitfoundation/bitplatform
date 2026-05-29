@@ -289,7 +289,6 @@ private int clickCounter;";
                  OffText=""Classed Button: Unmuted"" OffIconName=""@BitIconName.Microphone""
                  Classes=""@(new() { Root = ""custom-root"",
                                     Checked = ""custom-checked"",
-                                    Container = ""custom-content"",
                                     Icon = ""custom-icon"",
                                     Text = ""custom-text"" })"" />";
 
