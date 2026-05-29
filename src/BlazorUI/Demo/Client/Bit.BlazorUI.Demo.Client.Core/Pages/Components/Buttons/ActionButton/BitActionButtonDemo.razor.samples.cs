@@ -7,24 +7,19 @@ public partial class BitActionButtonDemo
     Create account
 </BitActionButton>
 
-<BitActionButton IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.AddFriend"">
-    End Icon
-</BitActionButton>
-
 <BitActionButton IconName=""@BitIconName.AddFriend"" IsEnabled=""false"">
     Disabled
 </BitActionButton>
 
 <BitActionButton IconName=""@BitIconName.AlarmClock"" AriaLabel=""Call"">
-    AriaLabel
+    AriaLabel=""Call""
 </BitActionButton>
 
 <BitActionButton>
     No Icon
 </BitActionButton>
 
-<BitActionButton IconOnly IconName=""@BitIconName.Phone"">
-</BitActionButton>";
+<BitActionButton IconOnly IconName=""@BitIconName.Phone"" />";
 
     private readonly string example2RazorCode = @"
 <BitActionButton IconPosition=""BitIconPosition.Start"" IconName=""@BitIconName.AddFriend"">
