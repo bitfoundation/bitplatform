@@ -75,6 +75,19 @@ namespace BitBlazorUI {
                     const keyHandler = (view as any).__bmKeyHandler;
                     if (dblHandler) try { element.removeEventListener('dblclick', dblHandler, true); } catch { /* ignore */ }
                     if (keyHandler) try { element.removeEventListener('keydown', keyHandler, true); } catch { /* ignore */ }
+                    // _applyInteractivity may have stashed the original tabindex and
+                    // forced the container to '-1' so ArcGIS' built-in keyboard nav
+                    // couldn't fire. Restore the prior value (or remove the attribute
+                    // entirely when it was originally absent) so a failed init doesn't
+                    // leave the user's element in a non-focusable state.
+                    const prevTab = (view as any).__bmPrevTabIndex;
+                    if (prevTab !== undefined) {
+                        try {
+                            if (prevTab === null) element.removeAttribute('tabindex');
+                            else element.setAttribute('tabindex', prevTab);
+                        } catch { /* ignore */ }
+                        (view as any).__bmPrevTabIndex = undefined;
+                    }
                 }
                 try { view?.destroy?.(); } catch { /* ignore */ }
                 state.dotnetObj = null;
@@ -141,6 +154,17 @@ namespace BitBlazorUI {
                 if (view.__bmKeyHandler) {
                     try { container.removeEventListener('keydown', view.__bmKeyHandler, true); } catch { /* ignore */ }
                     view.__bmKeyHandler = null;
+                }
+                // Restore the original tabindex captured by _applyInteractivity. Without
+                // this the container is left pinned at tabindex="-1" (or absent when it
+                // was originally absent and we forced a value) after dispose, leaving
+                // the user's element non-focusable for whatever replaces the map.
+                if (view.__bmPrevTabIndex !== undefined) {
+                    try {
+                        if (view.__bmPrevTabIndex === null) container.removeAttribute('tabindex');
+                        else container.setAttribute('tabindex', view.__bmPrevTabIndex);
+                    } catch { /* ignore */ }
+                    view.__bmPrevTabIndex = undefined;
                 }
             }
 

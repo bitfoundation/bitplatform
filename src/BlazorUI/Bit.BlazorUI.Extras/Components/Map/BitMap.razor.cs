@@ -149,10 +149,11 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
 
     /// <summary>Recalculate map size after a container resize.</summary>
-    public ValueTask InvalidateSize()
-        => _initialized
-            ? SafeInvokeAsync(_js.BitMapInvalidateSize(JsObject, _Id), nameof(InvalidateSize))
-            : ValueTask.CompletedTask;
+    public async ValueTask InvalidateSize()
+    {
+        if (_initialized is false) return;
+        await SafeInvokeAsync(_js.BitMapInvalidateSize(JsObject, _Id), nameof(InvalidateSize));
+    }
 
     /// <summary>Returns a snapshot of the current viewport.</summary>
     /// <remarks>Throws <see cref="JSException"/> if the underlying provider's getView fails.</remarks>
@@ -164,89 +165,101 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     }
 
     /// <summary>Pan and (optionally) zoom the map to the given center.</summary>
-    public ValueTask SetView(BitMapLatLng center, double? zoom = null, bool animate = true)
+    public async ValueTask SetView(BitMapLatLng center, double? zoom = null, bool animate = true)
     {
         EnsureReady();
-        return SafeInvokeAsync(_js.BitMapSetView(JsObject, _Id, center.Latitude, center.Longitude, zoom, animate), nameof(SetView));
+        await SafeInvokeAsync(_js.BitMapSetView(JsObject, _Id, center.Latitude, center.Longitude, zoom, animate), nameof(SetView));
     }
 
     /// <summary>Animated pan/zoom to the given center.</summary>
-    public ValueTask FlyTo(BitMapLatLng center, double? zoom = null)
+    public async ValueTask FlyTo(BitMapLatLng center, double? zoom = null)
     {
         EnsureReady();
-        return SafeInvokeAsync(_js.BitMapFlyTo(JsObject, _Id, center.Latitude, center.Longitude, zoom), nameof(FlyTo));
+        await SafeInvokeAsync(_js.BitMapFlyTo(JsObject, _Id, center.Latitude, center.Longitude, zoom), nameof(FlyTo));
     }
 
     /// <summary>Fit the view to the given bounding box.</summary>
-    public ValueTask FitBounds(BitMapLatLngBounds bounds, int paddingPixels = 48)
+    public async ValueTask FitBounds(BitMapLatLngBounds bounds, int paddingPixels = 48)
     {
         EnsureReady();
-        return SafeInvokeAsync(_js.BitMapFitBounds(JsObject, _Id,
+        await SafeInvokeAsync(_js.BitMapFitBounds(JsObject, _Id,
             bounds.SouthWest.Latitude, bounds.SouthWest.Longitude,
             bounds.NorthEast.Latitude, bounds.NorthEast.Longitude,
             paddingPixels), nameof(FitBounds));
     }
 
     /// <summary>Fit the view to include all currently rendered markers.</summary>
-    public ValueTask FitBoundsToMarkers(int paddingPixels = 48)
+    public async ValueTask FitBoundsToMarkers(int paddingPixels = 48)
     {
         EnsureReady();
-        return SafeInvokeAsync(_js.BitMapFitBoundsToMarkers(JsObject, _Id, paddingPixels), nameof(FitBoundsToMarkers));
+        await SafeInvokeAsync(_js.BitMapFitBoundsToMarkers(JsObject, _Id, paddingPixels), nameof(FitBoundsToMarkers));
     }
 
     /// <summary>Add a marker to the map.</summary>
-    public ValueTask AddMarker(BitMapMarker marker)
+    public async ValueTask AddMarker(BitMapMarker marker)
     {
         EnsureReady();
         ArgumentNullException.ThrowIfNull(marker);
 
-        _markerState[marker.Id] = marker;
-        return SafeInvokeAsync(_js.BitMapAddMarker(JsObject, _Id, marker.Id, ToMarkerPayload(marker)), nameof(AddMarker));
+        // Snapshot mutation is deferred until the interop call succeeds so that a failed
+        // BitMapAddMarker doesn't leave the replay dictionary referencing a marker the JS
+        // side never created (which would re-add a phantom on the next provider swap).
+        if (await SafeInvokeAsync(_js.BitMapAddMarker(JsObject, _Id, marker.Id, ToMarkerPayload(marker)), nameof(AddMarker)))
+        {
+            _markerState[marker.Id] = marker;
+        }
     }
 
     /// <summary>Remove a single marker by its id.</summary>
-    public ValueTask RemoveMarker(string markerId)
+    public async ValueTask RemoveMarker(string markerId)
     {
         EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(markerId);
 
-        _markerState.Remove(markerId);
-        return SafeInvokeAsync(_js.BitMapRemoveMarker(JsObject, _Id, markerId), nameof(RemoveMarker));
+        if (await SafeInvokeAsync(_js.BitMapRemoveMarker(JsObject, _Id, markerId), nameof(RemoveMarker)))
+        {
+            _markerState.Remove(markerId);
+        }
     }
 
     /// <summary>Remove all markers from the map.</summary>
-    public ValueTask ClearMarkers()
+    public async ValueTask ClearMarkers()
     {
         EnsureReady();
-        _markerState.Clear();
-        return SafeInvokeAsync(_js.BitMapClearMarkers(JsObject, _Id), nameof(ClearMarkers));
+        if (await SafeInvokeAsync(_js.BitMapClearMarkers(JsObject, _Id), nameof(ClearMarkers)))
+        {
+            _markerState.Clear();
+        }
     }
 
     /// <summary>Move an existing marker to a new position.</summary>
-    public ValueTask SetMarkerPosition(string markerId, BitMapLatLng position)
+    public async ValueTask SetMarkerPosition(string markerId, BitMapLatLng position)
     {
         EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(markerId);
 
-        // Keep the snapshot in sync so a later replay places the marker at its current position.
-        // BitMapMarker is a sealed class without a record clone helper — rebuild manually.
-        if (_markerState.TryGetValue(markerId, out var prev))
+        // Keep the snapshot in sync so a later replay places the marker at its current
+        // position. We only commit the position update after the JS side accepted it,
+        // otherwise a replay would relocate the marker even though the live map didn't.
+        if (await SafeInvokeAsync(_js.BitMapSetMarkerPosition(JsObject, _Id, markerId, position.Latitude, position.Longitude), nameof(SetMarkerPosition)))
         {
-            _markerState[markerId] = CloneWithPosition(prev, position);
+            if (_markerState.TryGetValue(markerId, out var prev))
+            {
+                _markerState[markerId] = CloneWithPosition(prev, position);
+            }
         }
-        return SafeInvokeAsync(_js.BitMapSetMarkerPosition(JsObject, _Id, markerId, position.Latitude, position.Longitude), nameof(SetMarkerPosition));
     }
 
     /// <summary>Open the popup of the marker with the given id.</summary>
-    public ValueTask OpenMarkerPopup(string markerId)
+    public async ValueTask OpenMarkerPopup(string markerId)
     {
         EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(markerId);
-        return SafeInvokeAsync(_js.BitMapOpenMarkerPopup(JsObject, _Id, markerId), nameof(OpenMarkerPopup));
+        await SafeInvokeAsync(_js.BitMapOpenMarkerPopup(JsObject, _Id, markerId), nameof(OpenMarkerPopup));
     }
 
     /// <summary>Replace all markers in a single batch operation.</summary>
-    public ValueTask SyncMarkers(IEnumerable<BitMapMarker> markers)
+    public async ValueTask SyncMarkers(IEnumerable<BitMapMarker> markers)
     {
         EnsureReady();
         ArgumentNullException.ThrowIfNull(markers);
@@ -255,110 +268,138 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         var payload = new object[list.Count];
         var ids = new string[list.Count];
         var i = 0;
-        _markerState.Clear();
         foreach (var m in list)
         {
             ids[i] = m.Id;
             payload[i] = ToMarkerPayload(m);
-            _markerState[m.Id] = m;
             i++;
         }
-        return SafeInvokeAsync(_js.BitMapSyncMarkers(JsObject, _Id, ids, payload), nameof(SyncMarkers));
+        // Defer the snapshot rewrite until the JS-side bulk replace succeeds. If interop
+        // failed we keep the previous _markerState so a provider swap still replays the
+        // last state the JS layer actually rendered.
+        if (await SafeInvokeAsync(_js.BitMapSyncMarkers(JsObject, _Id, ids, payload), nameof(SyncMarkers)))
+        {
+            _markerState.Clear();
+            foreach (var m in list)
+            {
+                _markerState[m.Id] = m;
+            }
+        }
     }
 
     /// <summary>Add a polyline vector layer.</summary>
-    public ValueTask AddPolyline(string layerId, IReadOnlyList<BitMapLatLng> path, BitMapVectorPathStyle? style = null)
+    public async ValueTask AddPolyline(string layerId, IReadOnlyList<BitMapLatLng> path, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
         ArgumentNullException.ThrowIfNull(path);
 
-        _vectorState[layerId] = new PolylineSnapshot(layerId, [.. path], style);
-        return SafeInvokeAsync(_js.BitMapAddPolyline(JsObject, _Id, layerId, ToLatLngArray(path), ToStylePayload(style)), nameof(AddPolyline));
+        var snapshot = new PolylineSnapshot(layerId, [.. path], style);
+        if (await SafeInvokeAsync(_js.BitMapAddPolyline(JsObject, _Id, layerId, ToLatLngArray(path), ToStylePayload(style)), nameof(AddPolyline)))
+        {
+            _vectorState[layerId] = snapshot;
+        }
     }
 
     /// <summary>Add a polygon vector layer.</summary>
-    public ValueTask AddPolygon(string layerId, IReadOnlyList<BitMapLatLng> ring, BitMapVectorPathStyle? style = null)
+    public async ValueTask AddPolygon(string layerId, IReadOnlyList<BitMapLatLng> ring, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
         ArgumentNullException.ThrowIfNull(ring);
 
-        _vectorState[layerId] = new PolygonSnapshot(layerId, [.. ring], style);
-        return SafeInvokeAsync(_js.BitMapAddPolygon(JsObject, _Id, layerId, ToLatLngArray(ring), ToStylePayload(style)), nameof(AddPolygon));
+        var snapshot = new PolygonSnapshot(layerId, [.. ring], style);
+        if (await SafeInvokeAsync(_js.BitMapAddPolygon(JsObject, _Id, layerId, ToLatLngArray(ring), ToStylePayload(style)), nameof(AddPolygon)))
+        {
+            _vectorState[layerId] = snapshot;
+        }
     }
 
     /// <summary>Add a circle vector layer (radius in meters).</summary>
-    public ValueTask AddCircle(string layerId, BitMapLatLng center, double radiusMeters, BitMapVectorPathStyle? style = null)
+    public async ValueTask AddCircle(string layerId, BitMapLatLng center, double radiusMeters, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
 
-        _vectorState[layerId] = new CircleSnapshot(layerId, center, radiusMeters, style);
-        return SafeInvokeAsync(_js.BitMapAddCircle(JsObject, _Id, layerId, center.Latitude, center.Longitude, radiusMeters, ToStylePayload(style)), nameof(AddCircle));
+        if (await SafeInvokeAsync(_js.BitMapAddCircle(JsObject, _Id, layerId, center.Latitude, center.Longitude, radiusMeters, ToStylePayload(style)), nameof(AddCircle)))
+        {
+            _vectorState[layerId] = new CircleSnapshot(layerId, center, radiusMeters, style);
+        }
     }
 
     /// <summary>Add a rectangle vector layer.</summary>
-    public ValueTask AddRectangle(string layerId, BitMapLatLngBounds bounds, BitMapVectorPathStyle? style = null)
+    public async ValueTask AddRectangle(string layerId, BitMapLatLngBounds bounds, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
 
-        _vectorState[layerId] = new RectangleSnapshot(layerId, bounds, style);
-        return SafeInvokeAsync(_js.BitMapAddRectangle(JsObject, _Id, layerId,
+        if (await SafeInvokeAsync(_js.BitMapAddRectangle(JsObject, _Id, layerId,
             bounds.SouthWest.Latitude, bounds.SouthWest.Longitude,
             bounds.NorthEast.Latitude, bounds.NorthEast.Longitude,
-            ToStylePayload(style)), nameof(AddRectangle));
+            ToStylePayload(style)), nameof(AddRectangle)))
+        {
+            _vectorState[layerId] = new RectangleSnapshot(layerId, bounds, style);
+        }
     }
 
     /// <summary>Add a GeoJSON layer rendered with the given style.</summary>
-    public ValueTask AddGeoJson(string layerId, string geoJson, BitMapVectorPathStyle? style = null)
+    public async ValueTask AddGeoJson(string layerId, string geoJson, BitMapVectorPathStyle? style = null)
     {
         EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
         ArgumentException.ThrowIfNullOrEmpty(geoJson);
 
-        _vectorState[layerId] = new GeoJsonSnapshot(layerId, geoJson, style);
-        return SafeInvokeAsync(_js.BitMapAddGeoJson(JsObject, _Id, layerId, geoJson, ToStylePayload(style)), nameof(AddGeoJson));
+        if (await SafeInvokeAsync(_js.BitMapAddGeoJson(JsObject, _Id, layerId, geoJson, ToStylePayload(style)), nameof(AddGeoJson)))
+        {
+            _vectorState[layerId] = new GeoJsonSnapshot(layerId, geoJson, style);
+        }
     }
 
     /// <summary>Remove a vector layer by id.</summary>
-    public ValueTask RemoveLayer(string layerId)
+    public async ValueTask RemoveLayer(string layerId)
     {
         EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(layerId);
 
-        _vectorState.Remove(layerId);
-        return SafeInvokeAsync(_js.BitMapRemoveLayer(JsObject, _Id, layerId), nameof(RemoveLayer));
+        if (await SafeInvokeAsync(_js.BitMapRemoveLayer(JsObject, _Id, layerId), nameof(RemoveLayer)))
+        {
+            _vectorState.Remove(layerId);
+        }
     }
 
     /// <summary>Remove all vector layers.</summary>
-    public ValueTask ClearVectorLayers()
+    public async ValueTask ClearVectorLayers()
     {
         EnsureReady();
-        _vectorState.Clear();
-        return SafeInvokeAsync(_js.BitMapClearVectorLayers(JsObject, _Id), nameof(ClearVectorLayers));
+        if (await SafeInvokeAsync(_js.BitMapClearVectorLayers(JsObject, _Id), nameof(ClearVectorLayers)))
+        {
+            _vectorState.Clear();
+        }
     }
 
     /// <summary>Add a tile overlay (raster XYZ layer) above the base map.</summary>
-    public ValueTask AddTileOverlay(BitMapTileOverlay overlay)
+    public async ValueTask AddTileOverlay(BitMapTileOverlay overlay)
     {
         EnsureReady();
         ArgumentNullException.ThrowIfNull(overlay);
 
         overlay.Validate();
-        _tileOverlayState[overlay.Id] = overlay;
-        return SafeInvokeAsync(_js.BitMapAddTileOverlay(JsObject, _Id, ToTileOverlayPayload(overlay)), nameof(AddTileOverlay));
+        if (await SafeInvokeAsync(_js.BitMapAddTileOverlay(JsObject, _Id, ToTileOverlayPayload(overlay)), nameof(AddTileOverlay)))
+        {
+            _tileOverlayState[overlay.Id] = overlay;
+        }
     }
 
     /// <summary>Remove a tile overlay by id.</summary>
-    public ValueTask RemoveTileOverlay(string overlayId)
+    public async ValueTask RemoveTileOverlay(string overlayId)
     {
         EnsureReady();
         ArgumentException.ThrowIfNullOrEmpty(overlayId);
 
-        _tileOverlayState.Remove(overlayId);
-        return SafeInvokeAsync(_js.BitMapRemoveTileOverlay(JsObject, _Id, overlayId), nameof(RemoveTileOverlay));
+        if (await SafeInvokeAsync(_js.BitMapRemoveTileOverlay(JsObject, _Id, overlayId), nameof(RemoveTileOverlay)))
+        {
+            _tileOverlayState.Remove(overlayId);
+        }
     }
 
 
@@ -938,13 +979,16 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>
     /// Awaits a JS interop call and surfaces common transport / provider failures via
     /// <see cref="OnInteropError"/> instead of letting them propagate as unhandled exceptions
-    /// that would tear down the host app.
+    /// that would tear down the host app. Returns <c>true</c> when the call completed without
+    /// a known interop failure, so callers that mirror state in managed snapshots can decide
+    /// whether to commit or skip the mutation.
     /// </summary>
-    private async ValueTask SafeInvokeAsync(ValueTask task, string callSite)
+    private async ValueTask<bool> SafeInvokeAsync(ValueTask task, string callSite)
     {
         try
         {
             await task;
+            return true;
         }
         catch (JSDisconnectedException ex)
         {
@@ -962,5 +1006,6 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         {
             await RaiseInteropError(BitMapInteropErrorSource.Imperative, ex, callSite);
         }
+        return false;
     }
 }
