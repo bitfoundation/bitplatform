@@ -217,7 +217,7 @@ public partial class _BitMenuButtonOptionDemo
 
 
 <BitMenuButton Text=""Non-Sticky"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"">
-    <BitMenuButtonOption Text=""Option A (Default)"" Key=""A"" IconName=""@BitIconName.Emoji"" Style=""background:brown"" />
+    <BitMenuButtonOption Text=""Option A (Default)"" Key=""A"" IconName=""@BitIconName.Emoji"" Style=""color: brown"" />
     <BitMenuButtonOption Text=""Option B (Styled)"" Key=""B"" IconName=""@BitIconName.Emoji"" Style=""color: tomato; border-color: brown; background-color: peachpuff;"" />
     <BitMenuButtonOption Text=""Option C (Classed)"" Key=""C"" IconName=""@BitIconName.Emoji2"" Class=""custom-item"" />
 </BitMenuButton>
