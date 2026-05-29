@@ -13,15 +13,15 @@ private List<BitButtonGroupItem> basicItems =
     private readonly string example2RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicItems"" />
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""disabledItems"" />
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicItems"" IsEnabled=false />
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicItems"" IsEnabled=""false"" />
 
 <BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicItems"" />
 <BitButtonGroup Variant=""BitVariant.Outline"" Items=""disabledItems"" />
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicItems"" IsEnabled=false />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicItems"" IsEnabled=""false"" />
 
 <BitButtonGroup Variant=""BitVariant.Text"" Items=""basicItems"" />
 <BitButtonGroup Variant=""BitVariant.Text"" Items=""disabledItems"" />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicItems"" IsEnabled=false />";
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicItems"" IsEnabled=""false"" />";
     private readonly string example2CsharpCode = @"
 private List<BitButtonGroupItem> basicItems =
 [

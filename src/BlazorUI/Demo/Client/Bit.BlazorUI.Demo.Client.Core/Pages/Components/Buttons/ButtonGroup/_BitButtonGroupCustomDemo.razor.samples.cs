@@ -26,9 +26,9 @@ private List<Operation> basicCustoms =
 <BitButtonGroup Variant=""BitVariant.Outline"" Items=""disabledCustoms"" NameSelectors=""nameSelector"" />
 <BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" IsEnabled=""false"" />
 
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms""NameSelectors=""nameSelector"" />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""disabledCustoms""NameSelectors=""nameSelector"" />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" IsEnabled=""false"" />";
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""disabledCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms""  NameSelectors=""nameSelector"" IsEnabled=""false"" />";
     private readonly string example2CsharpCode = @"
 private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
@@ -51,103 +51,103 @@ private List<Operation> disabledCustoms =
     private readonly string example3RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""iconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" />
+                                         IconName = { Selector = i => i.Image } })"" />
 
 <BitButtonGroup Variant=""BitVariant.Outline"" Items=""iconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" />
+                                         IconName = { Selector = i => i.Image } })"" />
 
 <BitButtonGroup Variant=""BitVariant.Text"" Items=""iconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" />";
+                                         IconName = { Selector = i => i.Image } })"" />";
     private readonly string example3CsharpCode = @"
 public class Operation
 {
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
 }
 
 private List<Operation> iconCustoms =
 [
-    new() { Name = ""Add"", Icon = BitIconName.Add },
-    new() { Name = ""Edit"", Icon = BitIconName.Edit },
-    new() { Name = ""Delete"", Icon = BitIconName.Delete }
+    new() { Name = ""Add"", Image = BitIconName.Add },
+    new() { Name = ""Edit"", Image = BitIconName.Edit },
+    new() { Name = ""Delete"", Image = BitIconName.Delete }
 ];";
 
     private readonly string example4RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""iconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" IconOnly />
+                                         IconName = { Selector = i => i.Image } })"" IconOnly />
 
 <BitButtonGroup Variant=""BitVariant.Outline"" Items=""iconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" IconOnly />
+                                         IconName = { Selector = i => i.Image } })"" IconOnly />
 
 <BitButtonGroup Variant=""BitVariant.Text"" Items=""iconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" IconOnly />
+                                         IconName = { Selector = i => i.Image } })"" IconOnly />
 
 
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""onlyIconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" />
+                                         IconName = { Selector = i => i.Image } })"" />
 
 <BitButtonGroup Variant=""BitVariant.Outline"" Items=""onlyIconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" />
+                                         IconName = { Selector = i => i.Image } })"" />
 
 <BitButtonGroup Variant=""BitVariant.Text"" Items=""onlyIconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" />";
+                                         IconName = { Selector = i => i.Image } })"" />";
     private readonly string example4CsharpCode = @"
 public class Operation
 {
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
 }
 
 private List<Operation> iconCustoms =
 [
-    new() { Name = ""Add"", Icon = BitIconName.Add },
-    new() { Name = ""Edit"", Icon = BitIconName.Edit },
-    new() { Name = ""Delete"", Icon = BitIconName.Delete }
+    new() { Name = ""Add"", Image = BitIconName.Add },
+    new() { Name = ""Edit"", Image = BitIconName.Edit },
+    new() { Name = ""Delete"", Image = BitIconName.Delete }
 ];
 
 private List<Operation> onlyIconCustoms =
 [
-    new() { Name = ""Add"", Icon = BitIconName.Add },
-    new() { Icon = BitIconName.Edit },
-    new() { Name = ""Delete"", Icon = BitIconName.Delete }
+    new() { Name = ""Add"", Image = BitIconName.Add },
+    new() { Image = BitIconName.Edit },
+    new() { Name = ""Delete"", Image = BitIconName.Delete }
 ];";
 
     private readonly string example5RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""reversedIconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                            IconName = { Selector = i => i.Icon },
+                                            IconName = { Selector = i => i.Image },
                                             ReversedIcon = { Selector = i => i.ReversedIcon } })"" />
 
 <BitButtonGroup Variant=""BitVariant.Outline"" Items=""reversedIconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                            IconName = { Selector = i => i.Icon },
+                                            IconName = { Selector = i => i.Image },
                                             ReversedIcon = { Selector = i => i.ReversedIcon } })"" />
 
 <BitButtonGroup Variant=""BitVariant.Text"" Items=""reversedIconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                            IconName = { Selector = i => i.Icon },
+                                            IconName = { Selector = i => i.Image },
                                             ReversedIcon = { Selector = i => i.ReversedIcon } })"" />";
     private readonly string example5CsharpCode = @"
 public class Operation
 {
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public bool ReversedIcon { get; set; }
 }
 
 private List<Operation> reversedIconCustoms =
 [
-    new() { Name = ""Add"", Icon = BitIconName.Add, ReversedIcon = true },
-    new() { Name = ""Edit"", Icon = BitIconName.Edit, ReversedIcon = true },
-    new() { Name = ""Delete"", Icon = BitIconName.Delete, ReversedIcon = true }
+    new() { Name = ""Add"", Image = BitIconName.Add, ReversedIcon = true },
+    new() { Name = ""Edit"", Image = BitIconName.Edit, ReversedIcon = true },
+    new() { Name = ""Delete"", Image = BitIconName.Delete, ReversedIcon = true }
 ];";
 
     private readonly string example6RazorCode = @"
@@ -165,8 +165,8 @@ private List<Operation> reversedIconCustoms =
 public class Operation
 {
     public string? Id { get; set; }
-    public string? OnIcon { get; set; }
-    public string? OffIcon { get; set; }
+    public string? OnImage { get; set; }
+    public string? OffImage { get; set; }
     public string? OnName { get; set; }
     public string? OffName { get; set; }
     public string? OnTitle { get; set; }
@@ -182,8 +182,8 @@ private BitButtonGroupNameSelectors<Operation> toggledNameSelectors = new()
     OffText = { Selector = i => i.OffName },
     OnTitle = { Selector = i => i.OnTitle },
     OffTitle = { Selector = i => i.OffTitle },
-    OnIconName = { Selector = i => i.OnIcon },
-    OffIconName = { Selector = i => i.OffIcon },
+    OnIconName = { Selector = i => i.OnImage },
+    OffIconName = { Selector = i => i.OffImage },
     ReversedIcon = { Selector = i => i.ReversedIcon },
     IsToggled = { Name = nameof(Operation.IsSelected) }
 };
@@ -191,17 +191,17 @@ private BitButtonGroupNameSelectors<Operation> toggledNameSelectors = new()
 private string? toggleKey = ""play"";
 private List<Operation> toggledCustoms =
 [
-    new() { Id = ""back"", OnName = ""Back (2X)"", OffName = ""Back (1X)"", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
-    new() { Id = ""play"", OnTitle = ""Resume"", OffTitle = ""Play"", OnIcon = BitIconName.PlayResume, OffIcon = BitIconName.Play },
-    new() { Id = ""forward"", OnName = ""Forward (2X)"", OffName = ""Forward (1X)"", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
+    new() { Id = ""back"", OnName = ""Back (2X)"", OffName = ""Back (1X)"", OnImage = BitIconName.RewindTwoX, OffImage = BitIconName.Rewind },
+    new() { Id = ""play"", OnTitle = ""Resume"", OffTitle = ""Play"", OnImage = BitIconName.PlayResume, OffImage = BitIconName.Play },
+    new() { Id = ""forward"", OnName = ""Forward (2X)"", OffName = ""Forward (1X)"", OnImage = BitIconName.FastForwardTwoX, OffImage = BitIconName.FastForward, ReversedIcon = true }
 ];
 
 private Operation? onChangeToggleCustom;
 private List<Operation> changeToggledCustoms =
 [
-    new() { Id = ""back"", OnName = ""Back (2X)"", OffName = ""Back (1X)"", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
-    new() { Id = ""play"", OnTitle = ""Resume"", OffTitle = ""Play"", OnIcon = BitIconName.PlayResume, OffIcon = BitIconName.Play },
-    new() { Id = ""forward"", OnName = ""Forward (2X)"", OffName = ""Forward (1X)"", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
+    new() { Id = ""back"", OnName = ""Back (2X)"", OffName = ""Back (1X)"", OnImage = BitIconName.RewindTwoX, OffImage = BitIconName.Rewind },
+    new() { Id = ""play"", OnTitle = ""Resume"", OffTitle = ""Play"", OnImage = BitIconName.PlayResume, OffImage = BitIconName.Play },
+    new() { Id = ""forward"", OnName = ""Forward (2X)"", OffName = ""Forward (1X)"", OnImage = BitIconName.FastForwardTwoX, OffImage = BitIconName.FastForward, ReversedIcon = true }
 ];";
 
     private readonly string example7RazorCode = @"
@@ -229,7 +229,7 @@ private List<Operation> basicCustoms =
 
 <BitButtonGroup Items=""eventsCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon },
+                                         IconName = { Selector = i => i.Image },
                                          OnClick = { Selector = i => i.Clicked } })"" />
 <div>Click count: <b>@clickCounter</b></div>";
     private readonly string example8CsharpCode = @"
@@ -238,7 +238,7 @@ private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { S
 public class Operation
 {
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public Action<Operation>? Clicked { get; set; }
 }
 
@@ -251,9 +251,9 @@ private List<Operation> basicCustoms =
 
 private List<Operation> eventsCustoms =
 [
-    new() { Name = ""Increase"", Icon = BitIconName.Add },
-    new() { Name = ""Reset"", Icon = BitIconName.Reset },
-    new() { Name = ""Decrease"", Icon = BitIconName.Remove }
+    new() { Name = ""Increase"", Image = BitIconName.Add },
+    new() { Name = ""Reset"", Image = BitIconName.Reset },
+    new() { Name = ""Decrease"", Image = BitIconName.Remove }
 ];
 
 protected override void OnInitialized()
@@ -456,7 +456,7 @@ private List<Operation> externalIconCustoms =
 <BitButtonGroup Items=""styleClassCustoms""
                 Variant=""BitVariant.Text""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" />
+                                         IconName = { Selector = i => i.Image } })"" />
 
 <BitButtonGroup Items=""basicCustoms""
                 Variant=""BitVariant.Text""
@@ -473,7 +473,7 @@ private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { S
 public class Operation
 {
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
     public string? Class { get; set; }
     public string? Style { get; set; }
 }
@@ -489,13 +489,13 @@ private List<Operation> styleClassCustoms =
     {
         Name = ""Styled"",
         Style = ""color: tomato; border-color: brown; background-color: peachpuff;"",
-        Icon = BitIconName.Brush,
+        Image = BitIconName.Brush,
     },
     new()
     {
         Name = ""Classed"",
         Class = ""custom-item"",
-        Icon = BitIconName.FormatPainter,
+        Image = BitIconName.FormatPainter,
     }
 ];";
 
@@ -504,30 +504,30 @@ private List<Operation> styleClassCustoms =
                 Items=""rtlCustoms""
                 Variant=""BitVariant.Fill""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" />
+                                         IconName = { Selector = i => i.Image } })"" />
 
 <BitButtonGroup Dir=""BitDir.Rtl""
                 Items=""rtlCustoms""
                 Variant=""BitVariant.Outline""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" />
+                                         IconName = { Selector = i => i.Image } })"" />
 
 <BitButtonGroup Dir=""BitDir.Rtl""
                 Items=""rtlCustoms""
                 Variant=""BitVariant.Text""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon } })"" />";
+                                         IconName = { Selector = i => i.Image } })"" />";
     private readonly string example14CsharpCode = @"
 public class Operation
 {
     public string? Name { get; set; }
-    public string? Icon { get; set; }
+    public string? Image { get; set; }
 }
 
 private List<Operation> rtlCustoms =
 [
-    new() { Name = ""اضافه کردن"", Icon = BitIconName.Add },
-    new() { Name = ""ویرایش"", Icon = BitIconName.Edit },
-    new() { Name = ""حذف"", Icon = BitIconName.Delete }
+    new() { Name = ""اضافه کردن"", Image = BitIconName.Add },
+    new() { Name = ""ویرایش"", Image = BitIconName.Edit },
+    new() { Name = ""حذف"", Image = BitIconName.Delete }
 ];";
 }
