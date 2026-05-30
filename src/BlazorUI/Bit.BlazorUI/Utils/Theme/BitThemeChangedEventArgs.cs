@@ -33,9 +33,15 @@ public sealed class BitThemeChangedEventArgs : EventArgs
     /// <summary>Previous resolved theme name, or <see langword="null"/> if unknown/unset.</summary>
     public string? OldTheme { get; }
 
-    /// <summary>True when <see cref="NewTheme"/> is non-null and non-whitespace.</summary>
-    public bool HasNewTheme => !string.IsNullOrWhiteSpace(NewTheme);
+    /// <summary>
+    /// True when <see cref="NewTheme"/> is non-null. Empty string is treated as a distinct, valid
+    /// theme name; only <see langword="null"/> is considered unset per the API contract.
+    /// </summary>
+    public bool HasNewTheme => NewTheme is not null;
 
-    /// <summary>True when <see cref="OldTheme"/> is non-null and non-whitespace.</summary>
-    public bool HasOldTheme => !string.IsNullOrWhiteSpace(OldTheme);
+    /// <summary>
+    /// True when <see cref="OldTheme"/> is non-null. Empty string is treated as a distinct, valid
+    /// theme name; only <see langword="null"/> is considered unset per the API contract.
+    /// </summary>
+    public bool HasOldTheme => OldTheme is not null;
 }

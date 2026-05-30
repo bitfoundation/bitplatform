@@ -1,25 +1,46 @@
+using System.Text.RegularExpressions;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
 /// WCAG 2.x contrast helpers for pairs of solid hex colors (sRGB).
 /// </summary>
-public static class BitThemeColorContrast
+public static partial class BitThemeColorContrast
 {
+    // Accepts #RGB or #RRGGBB (case-insensitive). The underlying BitInternalColor parser silently
+    // falls back to white on invalid input, which would produce a misleading ratio — so we gate
+    // GetContrastRatio with this stricter check before constructing BitInternalColor.
+    [GeneratedRegex(@"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")]
+    private static partial Regex HexColorRegex();
+
     /// <summary>Returns the contrast ratio in [1, 21].</summary>
-    /// <exception cref="ArgumentException">When either input is null, empty, or whitespace.</exception>
-    /// <remarks>
-    /// Invalid hex strings (e.g. <c>"not-a-color"</c>) are <em>not</em> rejected here — the
-    /// underlying <c>BitInternalColor</c> parser silently falls back to white in that case, which
-    /// makes the resulting ratio meaningless. Callers that need strict parsing should validate the
-    /// hex format up front.
-    /// </remarks>
+    /// <exception cref="ArgumentException">
+    /// When either input is null, empty, or whitespace, or is not a <c>#RGB</c>/<c>#RRGGBB</c> hex string.
+    /// </exception>
     public static double GetContrastRatio(string foregroundHex, string backgroundHex)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(foregroundHex);
         ArgumentException.ThrowIfNullOrWhiteSpace(backgroundHex);
 
-        var fg = new BitInternalColor(foregroundHex.Trim());
-        var bg = new BitInternalColor(backgroundHex.Trim());
+        var fgTrimmed = foregroundHex.Trim();
+        var bgTrimmed = backgroundHex.Trim();
+
+        if (HexColorRegex().IsMatch(fgTrimmed) is false)
+        {
+            throw new ArgumentException(
+                $"'{foregroundHex}' is not a valid hex color. Expected '#RGB' or '#RRGGBB'.",
+                nameof(foregroundHex));
+        }
+
+        if (HexColorRegex().IsMatch(bgTrimmed) is false)
+        {
+            throw new ArgumentException(
+                $"'{backgroundHex}' is not a valid hex color. Expected '#RGB' or '#RRGGBB'.",
+                nameof(backgroundHex));
+        }
+
+        var fg = new BitInternalColor(fgTrimmed);
+        var bg = new BitInternalColor(bgTrimmed);
         var l1 = RelativeLuminance(fg.R, fg.G, fg.B);
         var l2 = RelativeLuminance(bg.R, bg.G, bg.B);
         var lighter = Math.Max(l1, l2);

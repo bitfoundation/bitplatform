@@ -832,29 +832,31 @@ private readonly List<Order> iconCustoms =
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
-                Color=""BitColor.PrimaryBackground""
-                Label=""PrimaryBackground""
-                Horizontal
-                Items=""basicCustoms""
-                DefaultValue=""basicCustoms[0].ItemValue""
-                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+<div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
+    <BitChoiceGroup IsEnabled=""false""
+                    Color=""BitColor.PrimaryBackground""
+                    Label=""PrimaryBackground""
+                    Horizontal
+                    Items=""basicCustoms""
+                    DefaultValue=""basicCustoms[0].ItemValue""
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
-                Color=""BitColor.SecondaryBackground""
-                Label=""SecondaryBackground""
-                Horizontal
-                Items=""basicCustoms""
-                DefaultValue=""basicCustoms[0].ItemValue""
-                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+    <BitChoiceGroup IsEnabled=""false""
+                    Color=""BitColor.SecondaryBackground""
+                    Label=""SecondaryBackground""
+                    Horizontal
+                    Items=""basicCustoms""
+                    DefaultValue=""basicCustoms[0].ItemValue""
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup IsEnabled=""false""
-                Color=""BitColor.TertiaryBackground""
-                Label=""TertiaryBackground""
-                Horizontal
-                Items=""basicCustoms""
-                DefaultValue=""basicCustoms[0].ItemValue""
-                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+    <BitChoiceGroup IsEnabled=""false""
+                    Color=""BitColor.TertiaryBackground""
+                    Label=""TertiaryBackground""
+                    Horizontal
+                    Items=""basicCustoms""
+                    DefaultValue=""basicCustoms[0].ItemValue""
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+</div>
 
 <BitChoiceGroup IsEnabled=""false""
                 Color=""BitColor.PrimaryForeground""
