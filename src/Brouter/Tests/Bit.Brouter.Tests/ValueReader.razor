@@ -1,0 +1,5 @@
+<div data-testid="val">@(Data?.ToString())</div>
+
+@code {
+    [CascadingParameter(Name = "RouteData")] public object? Data { get; set; }
+}

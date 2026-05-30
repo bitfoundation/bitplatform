@@ -41,7 +41,7 @@ public partial class _BitMenuButtonCustomDemo
     private static List<Operation> basicIconCustoms =
     [
         new() { Name = "Custom A", Id = "A", Image = BitIconName.Emoji },
-        new() { Name = "Custom B", Id = "B", Image = BitIconName.Emoji },
+        new() { Name = "Custom B", Id = "B", Image = BitIconName.Emoji, Disabled = true },
         new() { Name = "Custom C", Id = "C", Image = BitIconName.Emoji2 }
     ];
 

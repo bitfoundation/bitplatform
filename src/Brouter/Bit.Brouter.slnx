@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Bit.Brouter.Demo.Core/Bit.Brouter.Demo.Core.csproj" />
+    <Project Path="Demo/Bit.Brouter.Demo.Maui/Bit.Brouter.Demo.Maui.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="Demo/Bit.Brouter.Demo.Web/Bit.Brouter.Demo.Web.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />
+  </Folder>
+  <Project Path="Bit.Brouter/Bit.Brouter.csproj" />
+</Solution>

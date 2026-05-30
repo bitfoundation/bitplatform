@@ -1,0 +1,244 @@
+﻿@inject IBrouter brouter
+@implements IDisposable
+
+@code {
+    private int _currentCount;
+
+    private Func<BrouterNavigationContext, ValueTask>? _onNavigatingHandler;
+
+    void ChangeCountValue(int value)
+    {
+        _currentCount = value;
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _onNavigatingHandler = ctx =>
+        {
+            // analytics, telemetry, page title, ...
+            return ValueTask.CompletedTask;
+        };
+        brouter.OnNavigating += _onNavigatingHandler;
+    }
+
+    public void Dispose()
+    {
+        if (_onNavigatingHandler is not null)
+        {
+            brouter.OnNavigating -= _onNavigatingHandler;
+            _onNavigatingHandler = null;
+        }
+    }
+
+    private ValueTask GuardEvenSecond(BrouterNavigationContext ctx)
+    {
+        if (DateTime.Now.Second % 2 != 0) ctx.Redirect("/403");
+        return ValueTask.CompletedTask;
+    }
+
+    private async ValueTask CheckEvenMinute(BrouterNavigationContext ctx)
+    {
+        await Task.Delay(1, ctx.CancellationToken);
+        if (DateTime.Now.Minute % 2 != 0)
+        {
+            ctx.Redirect("/403");
+        }
+    }
+}
+
+<Brouter NotFound="404">
+    <BrouterRoute Path="/" RedirectTo="/home" />
+
+    <BrouterRoute Name="home" Path="/home">
+        <Content><HomePage CountValue="@_currentCount" /></Content>
+    </BrouterRoute>
+
+    <BrouterRoute Path="/counter">
+        <Content><CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" /></Content>
+    </BrouterRoute>
+
+    <BrouterRoute Name="counter" Path="/counter/{init:int}">
+        <Content><CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" /></Content>
+    </BrouterRoute>
+
+    <BrouterRoute Path="/counter/multi/{id:int:long}/{age:long:decimal:double}/{name}">
+        <Content><CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" /></Content>
+    </BrouterRoute>
+
+    <BrouterRoute Path="/fetchdata" Component="@typeof(FetchDataPage)" />
+
+    @* Optional parameter: /profile or /profile/saleh both match. *@
+    <BrouterRoute Path="/profile/{username?}" Component="@typeof(ProfilePage)" />
+
+    @* Catch-all parameter: /posts/2024/12/hello-world binds the whole tail. *@
+    <BrouterRoute Path="/posts/{**slug}" Component="@typeof(PostPage)" />
+
+    <BrouterRoute Path="/{prefix}/test2/{postfix}">
+        <Content Context="p">
+            <div class="bb-intro">
+                <h1>Test2 pattern</h1>
+                <p class="bb-subtitle">Matched <code>{prefix}/test2/{postfix}</code>.</p>
+            </div>
+            <dl class="bb-params">
+                <dt>prefix</dt><dd>@p["prefix"]</dd>
+                <dt>postfix</dt><dd>@p["postfix"]</dd>
+            </dl>
+        </Content>
+    </BrouterRoute>
+
+    @* Wildcard route - only wins if nothing more specific matches. *@
+    <BrouterRoute Path="/*/test">
+        <Content>
+            <div class="bb-intro">
+                <h1>Wildcard test</h1>
+                <p class="bb-subtitle">Matched the wildcard pattern <code>/*/test</code>.</p>
+            </div>
+        </Content>
+    </BrouterRoute>
+
+    @*============================================================================*@
+
+    <BrouterRoute Path="/nested-route">
+        <BrouterRoute Path="/{id:int}" Component="@typeof(FetchDataPage)" />
+        <BrouterRoute Path="/{id:int}/hello">
+            <Content Context="p">
+                <div class="bb-intro">
+                    <h1>Nested route <code>/{id:int}/hello</code></h1>
+                </div>
+                <dl class="bb-params">
+                    <dt>id</dt><dd>@p["id"]</dd>
+                </dl>
+                <hr />
+                <FetchDataPage Value="2" />
+            </Content>
+        </BrouterRoute>
+        <BrouterRoute Path="/{id:int}/world">
+            <Content Context="p">
+                <div class="bb-intro">
+                    <h1>Nested route <code>/{id:int}/world</code></h1>
+                </div>
+                <dl class="bb-params">
+                    <dt>id</dt><dd>@p["id"]</dd>
+                </dl>
+                <hr />
+                <FetchDataPage Value="3" />
+            </Content>
+        </BrouterRoute>
+    </BrouterRoute>
+
+    @*============================================================================*@
+
+    <BrouterRoute Path="g1" Guard="@GuardEvenSecond">
+        <Content>
+            <div class="bb-intro">
+                <h1>Guarded route <code>/g1</code></h1>
+                <p class="bb-subtitle">Allowed only when the current second is even - otherwise redirects to <code>/403</code>.</p>
+            </div>
+            <div class="bb-card">
+                <span class="bb-badge bb-badge-success">access granted</span>
+                <p style="margin-top: .5rem;">You made it through the guard.</p>
+            </div>
+        </Content>
+    </BrouterRoute>
+
+    <BrouterRoute Path="g2" Guard="@CheckEvenMinute">
+        <Content>
+            <div class="bb-intro">
+                <h1>Guarded route <code>/g2</code></h1>
+                <p class="bb-subtitle">Allowed only when the current minute is even - otherwise redirects to <code>/403</code>.</p>
+            </div>
+            <div class="bb-card">
+                <span class="bb-badge bb-badge-success">access granted</span>
+                <p style="margin-top: .5rem;">You made it through the async guard.</p>
+            </div>
+        </Content>
+    </BrouterRoute>
+
+    @*============================================================================*@
+
+    <BrouterRoute Path="nested" Component="@typeof(Nested)">
+        <BrouterRoute Path="n1/{count:int}">
+            <Content Context="p">
+                <h3>Child: <code>/nested/n1</code></h3>
+                <dl class="bb-params"><dt>count</dt><dd>@p["count"]</dd></dl>
+            </Content>
+        </BrouterRoute>
+    </BrouterRoute>
+
+    <BrouterRoute Path="nested2" Component="@typeof(Nested2)">
+        <BrouterRoute Path="n1/{count:int}">
+            <Content Context="p">
+                <h3>Child: <code>/nested2/n1</code></h3>
+                <dl class="bb-params"><dt>count</dt><dd>@p["count"]</dd></dl>
+            </Content>
+        </BrouterRoute>
+        <BrouterRoute Path="n2/{count:int}">
+            <Content Context="p">
+                <h3>Child: <code>/nested2/n2</code></h3>
+                <dl class="bb-params"><dt>count</dt><dd><strong>@p["count"]</strong></dd></dl>
+            </Content>
+        </BrouterRoute>
+    </BrouterRoute>
+
+    <BrouterRoute Path="nested3">
+        <Content>
+            <div class="bb-intro">
+                <h1>Nested route <code>/nested3</code></h1>
+                <p class="bb-subtitle">An inline parent route that also defines its own outlet.</p>
+            </div>
+            <div class="bb-card">
+                <h3 class="bb-card-title">Children</h3>
+                <ul class="bb-link-list">
+                    <li><BrouterLink Href="/nested3/n1/1">/nested3/n1/1</BrouterLink></li>
+                    <li><BrouterLink Href="/nested3/n2/2">/nested3/n2/2</BrouterLink></li>
+                </ul>
+            </div>
+            <div class="bb-card">
+                <h3 class="bb-card-title">
+                    <span class="bb-dot bb-dot-success"></span>
+                    Outlet
+                </h3>
+                <BrouterOutlet />
+            </div>
+        </Content>
+        <ChildContent>
+            <BrouterRoute Path="n1/{count:int}">
+                <Content Context="p">
+                    <h3>Child: <code>/nested3/n1</code></h3>
+                    <dl class="bb-params"><dt>count</dt><dd><em>@p["count"]</em></dd></dl>
+                </Content>
+            </BrouterRoute>
+            <BrouterRoute Path="n2/{count:int}">
+                <Content Context="p">
+                    <h3>Child: <code>/nested3/n2</code></h3>
+                    <dl class="bb-params"><dt>count</dt><dd><strong>@p["count"]</strong></dd></dl>
+                </Content>
+            </BrouterRoute>
+        </ChildContent>
+    </BrouterRoute>
+
+    @*============================================================================*@
+
+    <BrouterRoute Path="404">
+        <Content>
+            <div class="bb-error bb-error-404">
+                <h1>404</h1>
+                <p>Sorry, there's nothing at this address.</p>
+                <BrouterLink Href="/" class="btn btn-primary">Back to home</BrouterLink>
+            </div>
+        </Content>
+    </BrouterRoute>
+
+    <BrouterRoute Path="/403">
+        <Content>
+            <div class="bb-error bb-error-403">
+                <h1>403</h1>
+                <p>Oops! You can't go there yet.</p>
+                <BrouterLink Href="/" class="btn btn-primary">Back to home</BrouterLink>
+            </div>
+        </Content>
+    </BrouterRoute>
+</Brouter>

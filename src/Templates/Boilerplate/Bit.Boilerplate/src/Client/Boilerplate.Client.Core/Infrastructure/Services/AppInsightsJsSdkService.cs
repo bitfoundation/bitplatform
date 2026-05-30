@@ -7,14 +7,18 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 /// <summary>
 /// A Blazor Hybrid / Blazor Server compatible version of <see cref="ApplicationInsights"/>
 /// </summary>
-public partial class AppInsightsJsSdkService : IApplicationInsights
+public class AppInsightsJsSdkService : IApplicationInsights
 {
     private TaskCompletionSource? telemetryInitializerIsAddedTcs;
     private readonly TaskCompletionSource appInsightsJsFilesAreLoaded = new();
 
+    private IJSRuntime jsRuntime = default!;
     private readonly ApplicationInsights applicationInsights = new();
 
-    [AutoInject] private IJSRuntime jsRuntime = default!;
+    public AppInsightsJsSdkService(IJSRuntime jsRuntime)
+    {
+        InitJSRuntime(jsRuntime);
+    }
 
     public CookieMgr GetCookieMgr()
     {
@@ -23,6 +27,7 @@ public partial class AppInsightsJsSdkService : IApplicationInsights
 
     public void InitJSRuntime(IJSRuntime jSRuntime)
     {
+        this.jsRuntime = jSRuntime;
         applicationInsights.InitJSRuntime(jSRuntime);
     }
 

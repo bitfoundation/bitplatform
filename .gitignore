@@ -222,6 +222,12 @@ ModelManifest.xml
 # Rider
 .idea
 
+#kiro
+.kiro
+
+#cursor
+.cursor
+
 profile.arm.json
 
 # bit
@@ -243,6 +249,7 @@ _book
 /src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/**/*.css.gz
 !/src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/quilljs/*.css
+!/src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/leaflet/*.css
 
 /src/BlazorUI/Bit.BlazorUI.Assets/**/*.css
 /src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/scripts/*.js

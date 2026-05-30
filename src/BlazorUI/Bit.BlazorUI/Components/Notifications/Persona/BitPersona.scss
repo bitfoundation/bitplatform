@@ -54,10 +54,11 @@
 }
 
 .bit-prs-him {
-    .bit-prs-imc {
-        border: none;
-        border-width: 0;
-    }
+    // TODO: the following lines seem redundant, we will remove it later if no issues found.
+    // .bit-prs-imc {
+    //     border: none;
+    //     border-width: 0;
+    // }
 }
 
 .bit-prs-sqr {

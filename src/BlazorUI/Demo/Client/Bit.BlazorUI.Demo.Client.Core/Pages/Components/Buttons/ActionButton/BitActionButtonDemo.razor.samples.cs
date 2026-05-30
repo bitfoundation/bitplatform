@@ -7,24 +7,19 @@ public partial class BitActionButtonDemo
     Create account
 </BitActionButton>
 
-<BitActionButton IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.AddFriend"">
-    End Icon
-</BitActionButton>
-
 <BitActionButton IconName=""@BitIconName.AddFriend"" IsEnabled=""false"">
     Disabled
 </BitActionButton>
 
 <BitActionButton IconName=""@BitIconName.AlarmClock"" AriaLabel=""Call"">
-    AriaLabel
+    AriaLabel=""Call""
 </BitActionButton>
 
 <BitActionButton>
     No Icon
 </BitActionButton>
 
-<BitActionButton IconOnly IconName=""@BitIconName.Phone"">
-</BitActionButton>";
+<BitActionButton IconOnly IconName=""@BitIconName.Phone"" />";
 
     private readonly string example2RazorCode = @"
 <BitActionButton IconPosition=""BitIconPosition.Start"" IconName=""@BitIconName.AddFriend"">
@@ -62,28 +57,37 @@ public partial class BitActionButtonDemo
 </BitActionButton>";
 
     private readonly string example6RazorCode = @"
-<EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"">
-    <DataAnnotationsValidator />
+@if (formIsValidSubmit is false)
+{
+    <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
+        <DataAnnotationsValidator />
 
-    <ValidationSummary />
+        <BitTextField Label=""Required"" Required @bind-Value=""buttonValidationModel.RequiredText"" />
+        <ValidationMessage For=""() => buttonValidationModel.RequiredText"" style=""color:red"" />
 
-    <BitTextField Label=""Required"" Required @bind-Value=""validationButtonModel.RequiredText"" />
-    <ValidationMessage For=""() => validationButtonModel.RequiredText"" style=""color:red"" />
+        <BitTextField Label=""Non-required"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
+                    
+        <div>
+            <BitActionButton IconName=""@BitIconName.SendMirrored"" ButtonType=""BitButtonType.Submit"">
+                Submit
+            </BitActionButton>
 
-    <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonRequiredText"" />
+            <BitActionButton IconName=""@BitIconName.Reset"" ButtonType=""BitButtonType.Reset"">
+                Reset
+            </BitActionButton>
 
-    <div>
-        <BitActionButton IconName=""@BitIconName.SendMirrored"" ButtonType=""BitButtonType.Submit"">
-            Submit
-        </BitActionButton>
-        <BitActionButton IconName=""@BitIconName.Reset"" ButtonType=""BitButtonType.Reset"">
-            Reset
-        </BitActionButton>
-        <BitActionButton IconName=""@BitIconName.ButtonControl"" ButtonType=""BitButtonType.Button"">
-            Button
-        </BitActionButton>
-    </div>
-</EditForm>";
+            <BitActionButton IconName=""@BitIconName.ButtonControl"" ButtonType=""BitButtonType.Button"">
+                Button
+            </BitActionButton>
+        </div>
+    </EditForm>
+}
+else
+{
+    <BitMessage Color=""BitColor.Success"">
+        The form submitted successfully.
+    </BitMessage>
+}";
     private readonly string example6CsharpCode = @"
 public class ButtonValidationModel
 {
@@ -93,15 +97,25 @@ public class ButtonValidationModel
     public string? NonRequiredText { get; set; }
 }
 
-private ButtonValidationModel validationButtonModel = new();
+private bool formIsValidSubmit;
+private ButtonValidationModel buttonValidationModel = new();
 
 private async Task HandleValidSubmit()
 {
+    formIsValidSubmit = true;
+
     await Task.Delay(2000);
 
-    validationButtonModel = new();
+    buttonValidationModel = new();
+
+    formIsValidSubmit = false;
 
     StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    formIsValidSubmit = false;
 }";
 
     private readonly string example7RazorCode = @"

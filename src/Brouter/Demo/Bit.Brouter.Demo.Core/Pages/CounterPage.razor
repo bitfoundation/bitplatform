@@ -1,0 +1,84 @@
+﻿<div class="bb-intro">
+    <h1>Counter</h1>
+    <p class="bb-subtitle">A simple counter that reads its initial value from the route.</p>
+</div>
+
+<div class="bb-counter">
+    <div>
+        <div class="bb-counter-label">Current count</div>
+        <div class="bb-counter-value">@CurrentCount</div>
+    </div>
+    <button class="btn btn-primary" @onclick="IncrementCount">+ Increment</button>
+</div>
+
+@if (Parameters is not null && (Parameters.Contains("init") || Parameters.Contains("id") || Parameters.Contains("age") || Parameters.Contains("name")))
+{
+    <h3 style="margin-top: 1.25rem;">Route parameters</h3>
+    <dl class="bb-params">
+        @if (Parameters.Contains("init"))
+        {
+            <dt>init</dt>
+            <dd>@(Parameters.GetOrDefault<int>("init"))</dd>
+        }
+        @if (Parameters.Contains("id"))
+        {
+            <dt>id</dt>
+            <dd>@(Parameters.GetOrDefault<long>("id"))</dd>
+        }
+        @if (Parameters.Contains("age"))
+        {
+            <dt>age</dt>
+            <dd>@(Parameters.GetOrDefault<double>("age"))</dd>
+        }
+        @if (Parameters.Contains("name"))
+        {
+            <dt>name</dt>
+            <dd>@Parameters["name"]</dd>
+        }
+    </dl>
+}
+
+@code {
+    [Parameter] public int CurrentCount { get; set; } = 0;
+    [Parameter] public EventCallback<int> CurrentCountChanged { get; set; }
+    [Parameter] public Action<int>? ChangeCount { get; set; }
+
+    [CascadingParameter(Name = "RouteParameters")] BrouterRouteParameters? Parameters { get; set; }
+
+    private int? _appliedInit;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        // Apply the route 'init' parameter only once per distinct value. Otherwise, every
+        // re-render would overwrite user-driven increments with the original route value.
+        if (Parameters?.TryGet<int>("init", out var init) == true)
+        {
+            if (_appliedInit is null || _appliedInit != init)
+            {
+                CurrentCount = init;
+                _appliedInit = init;
+                ChangeCount?.Invoke(CurrentCount);
+                if (CurrentCountChanged.HasDelegate)
+                    await CurrentCountChanged.InvokeAsync(CurrentCount);
+            }
+        }
+        else
+        {
+            // Clear the applied init so a future navigation back to a route with the
+            // same init value will be re-applied instead of being treated as already-applied.
+            _appliedInit = null;
+        }
+    }
+
+    private async Task IncrementCount()
+    {
+        var next = CurrentCount + 1;
+        CurrentCount = next;
+        ChangeCount?.Invoke(next);
+        if (CurrentCountChanged.HasDelegate)
+            await CurrentCountChanged.InvokeAsync(next);
+    }
+}

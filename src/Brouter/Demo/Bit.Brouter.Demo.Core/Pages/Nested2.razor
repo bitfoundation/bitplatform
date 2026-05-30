@@ -1,0 +1,26 @@
+<div class="bb-intro">
+    <h1>Nested route <code>/nested2</code></h1>
+    <p class="bb-subtitle">Two children rendered into the same outlet, switched by URL.</p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title">Parent state</h3>
+    <p class="bb-card-desc">Bump the counter, then choose which child route to render.</p>
+    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <button class="btn btn-outline" @onclick="() => count++">Count: @count</button>
+        <BrouterLink Href="@($"/nested2/n1/{count}")">@($"/nested2/n1/{count}")</BrouterLink>
+        <BrouterLink Href="@($"/nested2/n2/{count}")">@($"/nested2/n2/{count}")</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title">
+        <span class="bb-dot bb-dot-success"></span>
+        Outlet
+    </h3>
+    <BrouterOutlet />
+</div>
+
+@code {
+    private int count;
+}

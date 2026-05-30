@@ -1,0 +1,71 @@
+<div class="bb-intro">
+    <h1>Weather forecast</h1>
+    <p class="bb-subtitle">A static sample dataset rendered as a styled table.</p>
+</div>
+
+@if (forecasts is null)
+{
+    <div class="bb-empty"><em>Loading forecast...</em></div>
+}
+else
+{
+    @if (Parameters?.Contains("id") == true)
+    {
+        <dl class="bb-params">
+            <dt>id</dt>
+            <dd>@Parameters["id"]</dd>
+            <dt>value</dt>
+            <dd>@Value</dd>
+        </dl>
+    }
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public string Value { get; set; } = "N/A";
+
+    [CascadingParameter(Name = "RouteParameters")] BrouterRouteParameters? Parameters { get; set; }
+
+    private WeatherForecast[]? forecasts;
+
+    protected override void OnInitialized()
+    {
+        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+        var rng = new Random();
+        forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        {
+            Date = DateTime.Now.AddDays(index),
+            TemperatureC = rng.Next(-20, 55),
+            Summary = summaries[rng.Next(summaries.Length)]
+        }).ToArray();
+    }
+
+    public class WeatherForecast
+    {
+        public DateTime Date { get; set; }
+        public int TemperatureC { get; set; }
+        public string? Summary { get; set; }
+        public int TemperatureF => 32 + (int)(TemperatureC * 1.8);
+    }
+}

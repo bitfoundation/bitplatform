@@ -1,4 +1,4 @@
-// bit version: 10.4.5-pre-01
+// bit version: 10.4.5
 
 // In development, always fetch from the network and do not enable offline support.
 // This is because caching would make development more difficult (changes would not
@@ -24,7 +24,7 @@ self.externalAssets = [
         "url": "app.css"
     },
     {
-        "url": "_framework/blazor.web.js?v=9.0.0"
+        "url": "_framework/blazor.web.js?v=10.0.0"
     },
     {
         "url": "Bit.Bswup.NewDemo.styles.css"

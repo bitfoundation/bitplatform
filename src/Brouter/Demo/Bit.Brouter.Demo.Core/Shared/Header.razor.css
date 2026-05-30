@@ -1,0 +1,115 @@
+.bb-header {
+    background: #ffffff;
+    border-bottom: 1px solid var(--bb-border);
+    box-shadow: var(--bb-shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.bb-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: .75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+/* The <a> rendered by <BrouterLink class="bb-brand"> lives inside a child
+   component, so its scope attribute isn't ours - reach it via ::deep. */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-header-inner ::deep a.bb-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--bb-text);
+    text-decoration: none;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-header-inner ::deep a.bb-brand:hover {
+    text-decoration: none;
+    color: var(--bb-text);
+}
+
+.bb-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, var(--bb-primary) 0%, var(--bb-accent) 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: .9rem;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, .3);
+}
+
+.bb-brand-tag {
+    font-size: .65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    padding: .15rem .45rem;
+    border-radius: 4px;
+}
+
+.bb-nav {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+
+/* The nav anchors are also rendered by <BrouterLink>, so we need ::deep. */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-nav ::deep a {
+    padding: .4rem .75rem;
+    border-radius: var(--bb-radius-sm);
+    font-size: .9rem;
+    font-weight: 500;
+    color: var(--bb-text-muted);
+    text-decoration: none;
+    transition: background .15s ease, color .15s ease;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-nav ::deep a:hover {
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    text-decoration: none;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-nav ::deep a.active {
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .bb-header-inner {
+        padding: .65rem 1rem;
+        gap: .75rem;
+    }
+
+    .bb-nav {
+        margin-left: 0;
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+    .bb-nav ::deep a {
+        white-space: nowrap;
+    }
+}

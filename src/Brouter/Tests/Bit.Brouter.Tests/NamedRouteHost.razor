@@ -1,0 +1,12 @@
+@using Bit.Brouter
+
+<Brouter>
+    <BrouterRoute Name="@Name" Path="@Path">
+        <Content><div>x</div></Content>
+    </BrouterRoute>
+</Brouter>
+
+@code {
+    [Parameter, EditorRequired] public string Name { get; set; } = default!;
+    [Parameter, EditorRequired] public string Path { get; set; } = default!;
+}

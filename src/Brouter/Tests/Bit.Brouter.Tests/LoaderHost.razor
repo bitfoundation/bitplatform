@@ -1,0 +1,13 @@
+@using Bit.Brouter
+
+<Brouter>
+    <BrouterRoute Path="/data" Loader="@Load">
+        <Content>
+            <ValueReader />
+        </Content>
+    </BrouterRoute>
+</Brouter>
+
+@code {
+    private ValueTask<object?> Load(BrouterNavigationContext ctx) => ValueTask.FromResult<object?>("loaded!");
+}

@@ -1,0 +1,21 @@
+@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TMapProvider where TMapProvider : class, IBitMapProvider, new()
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLowerInvariant()">
+    <div id="@_canvasId"
+         @ref="_mapElement"
+         class="bit-map-canvas"
+         tabindex="0"
+         role="region"
+         aria-label="@(AriaLabel ?? "Map")"></div>
+    @if (ChildContent is not null)
+    {
+        <div class="bit-map-overlay">@ChildContent</div>
+    }
+</div>

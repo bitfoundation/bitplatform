@@ -1,0 +1,65 @@
+.bit-map {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+}
+
+.bit-map-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.bit-map-canvas:focus-visible {
+    outline: 2px solid Highlight;
+    outline: 2px solid -webkit-focus-ring-color;
+    outline-offset: -2px;
+}
+
+.bit-map-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+
+    > * {
+        pointer-events: auto;
+    }
+}
+
+// OpenLayers popup. Styles live here (instead of inline cssText in the TS provider)
+// so they aren't blocked under strict CSP configurations that disallow inline styles
+// and so consumers can theme them from their own stylesheets.
+.bit-map-ol-popup {
+    position: relative;
+    max-width: 280px;
+    padding: 10px 12px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    overflow-wrap: break-word;
+}
+
+.bit-map-ol-popup--hidden {
+    display: none;
+}
+
+.bit-map-ol-popup__close {
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    padding: 2px 4px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bit-map-ol-popup__content {
+    margin-top: 4px;
+}
