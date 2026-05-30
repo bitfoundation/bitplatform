@@ -16,7 +16,10 @@ self.externalAssets = [
         "url": "/"
     },
     {
-        "url": "_framework/blazor.web.js"
+        "url": "app.css"
+    },
+    {
+        "url": "_framework/blazor.web.js?v=10.0.0"
     },
     {
         "url": "Bit.Bswup.NewDemo.styles.css"

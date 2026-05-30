@@ -65,7 +65,7 @@ BitBswup.version = window['bit-bswup version'] = '10.4.5';
             // never start. If the SW is already active we can safely force-start Blazor
             // here; assets are served from network for this page and the SW will keep
             // the cache fresh in the background.
-            if (!navigator.serviceWorker.controller && reg.active && !reg.installing && !reg.waiting) {
+            if (!navigator.serviceWorker.controller && reg.active && !reg.installing) {
                 info('uncontrolled page with active registration (e.g. hard reload) - force starting Blazor.');
                 startBlazor(true);
             }
