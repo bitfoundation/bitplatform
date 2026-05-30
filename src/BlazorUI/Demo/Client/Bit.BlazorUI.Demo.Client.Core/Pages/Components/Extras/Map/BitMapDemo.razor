@@ -195,10 +195,12 @@
                     <li>Pass it to <code>BitMapboxMapProvider.AccessToken</code></li>
                 </ol>
                 Without a valid token the map canvas will remain blank.
-            </div>
-            <br />
-            <div style="height:100px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--bit-clr-brd-pri);border-radius:4px">
-                <BitText Typography="BitTypography.Body1" Style="opacity:0.6">Mapbox map renders here when a valid AccessToken is provided.</BitText>
+                <br /><br />
+                <b>Security:</b> only ship a public token (<code>pk.*</code>) to the browser, never a secret token (<code>sk.*</code>).
+                Public tokens are visible to anyone using your site, so restrict each token to your production domains via the
+                URL allowlist on the <BitLink Href="https://account.mapbox.com/access-tokens/" Target="_blank">Access Tokens</BitLink> page,
+                set a billing cap, and use a separate token per environment so you can rotate or revoke without downtime.
+                For stricter scenarios, mint a short-lived token from a server endpoint or proxy tile requests through your backend.
             </div>
         </DemoExample>
 
@@ -206,6 +208,10 @@
             <div>
                 ArcGIS Maps SDK 5.0 is loaded as an ES module from the Esri CDN.
                 The <code>osm</code> basemap works without an API key.
+                <br /><br />
+                <b>Security:</b> if you supply an API key for non-OSM basemaps, configure HTTP referrer restrictions on the key in the
+                <BitLink Href="https://developers.arcgis.com/api-keys/" Target="_blank">ArcGIS Developer dashboard</BitLink>
+                so it can only be used from your own domains, and scope it to the minimum required services.
             </div>
             <br />
             <div style="height:360px">
@@ -224,10 +230,11 @@
                     <li>Copy the Primary Key and pass it to <code>BitAzureMapsMapProvider.SubscriptionKey</code></li>
                 </ol>
                 Without a valid key the map will not render.
-            </div>
-            <br />
-            <div style="height:100px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--bit-clr-brd-pri);border-radius:4px">
-                <BitText Typography="BitTypography.Body1" Style="opacity:0.6">Azure Maps renders here when a valid SubscriptionKey is provided.</BitText>
+                <br /><br />
+                <b>Security:</b> shipping a shared subscription key to the browser is fine for demos but not recommended for production.
+                For production, prefer Microsoft Entra ID or SAS token authentication: a backend mints a short-lived token and the client
+                uses that instead of the primary key. If you must use a subscription key, restrict allowed origins on the Maps account
+                and set usage alerts so a leaked key cannot quietly drain your quota.
             </div>
         </DemoExample>
 
@@ -235,6 +242,11 @@
             <div>
                 CesiumJS renders a 3D globe. OSM imagery and smooth-ellipsoid terrain work without a token.
                 A Cesium ion token unlocks Cesium World Terrain and Bing imagery.
+                <br /><br />
+                <b>Security:</b> if you provide a Cesium ion token, create a dedicated token in the
+                <BitLink Href="https://ion.cesium.com/tokens" Target="_blank">Cesium ion dashboard</BitLink>,
+                grant only the asset access it needs, and add your production domains to the token's allowed URLs list
+                so a copied token cannot be used from other origins.
             </div>
             <br />
             <div style="height:420px">
