@@ -48,15 +48,23 @@
 }
 
 .docs-image-scroll {
-    overflow-x: auto;
-    white-space: nowrap;
     width: 100%;
     margin: 0 auto;
+    overflow-x: auto;
+    white-space: nowrap;
 }
 
 .docs-image {
-    display: inline-block;
-    max-width: none;
+    width: 100%;
     height: auto;
+    max-width: none;
+    display: inline-block;
     box-shadow: $bit-box-shadow-callout;
+}
+
+.wiki-item {
+    scroll-margin-top: 5rem;
+    @include lt-lg {
+        scroll-margin-top: 8rem;
+    }
 }
