@@ -44,7 +44,7 @@ BitBlazorUI.Theme.init({
     persist: true,
     onChange: (newTheme: string, oldTheme: string) => {
         const name = (newTheme ?? '').toLowerCase();
-        const isDark = name === 'dark' || name.endsWith('-dark') || name.includes('dark');
+        const isDark = name === 'dark' || name.endsWith('-dark');
         if (isDark) {
             document.body.classList.add('bit-blazorui-dark-theme');
             document.body.classList.remove('bit-blazorui-light-theme');

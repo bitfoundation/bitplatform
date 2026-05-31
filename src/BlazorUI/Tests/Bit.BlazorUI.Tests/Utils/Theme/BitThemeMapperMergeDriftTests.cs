@@ -104,7 +104,16 @@ public sealed class BitThemeMapperMergeDriftTests
                     var val = prop.GetValue(obj);
                     if (val is null)
                     {
-                        val = Activator.CreateInstance(pt);
+                        // Guard against types without a public parameterless ctor — treat a
+                        // failed construction the same as a null instance and keep walking.
+                        try
+                        {
+                            val = Activator.CreateInstance(pt);
+                        }
+                        catch
+                        {
+                            continue;
+                        }
                         if (val is null) continue;
                         prop.SetValue(obj, val);
                     }

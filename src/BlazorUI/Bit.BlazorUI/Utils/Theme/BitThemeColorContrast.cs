@@ -39,8 +39,10 @@ public static partial class BitThemeColorContrast
                 nameof(backgroundHex));
         }
 
-        var fg = new BitInternalColor(fgTrimmed);
-        var bg = new BitInternalColor(bgTrimmed);
+        // BitInternalColor parses hex strings as 24-bit '#RRGGBB', so a shorthand like '#FFF'
+        // would be read as '#000FFF' instead of white. Expand 3-digit values to 6 digits first.
+        var fg = new BitInternalColor(ExpandShorthandHex(fgTrimmed));
+        var bg = new BitInternalColor(ExpandShorthandHex(bgTrimmed));
         var l1 = RelativeLuminance(fg.R, fg.G, fg.B);
         var l2 = RelativeLuminance(bg.R, bg.G, bg.B);
         var lighter = Math.Max(l1, l2);
@@ -59,6 +61,30 @@ public static partial class BitThemeColorContrast
     /// helper to body copy at your own risk — for paragraph text use <see cref="MeetsWcagAaNormalText"/>.
     /// </remarks>
     public static bool MeetsWcagAaLargeText(double contrastRatio) => contrastRatio >= 3.0;
+
+    /// <summary>
+    /// Expands a 3-digit shorthand hex (e.g. <c>#FFF</c>) to its 6-digit form (<c>#FFFFFF</c>).
+    /// Inputs already in 6-digit form are returned unchanged.
+    /// </summary>
+    private static string ExpandShorthandHex(string hex)
+    {
+        // hex is already validated as '#RGB' or '#RRGGBB' at this point.
+        if (hex.Length != 4) return hex;
+
+        var r = hex[1];
+        var g = hex[2];
+        var b = hex[3];
+        return string.Create(7, (r, g, b), static (span, c) =>
+        {
+            span[0] = '#';
+            span[1] = c.r;
+            span[2] = c.r;
+            span[3] = c.g;
+            span[4] = c.g;
+            span[5] = c.b;
+            span[6] = c.b;
+        });
+    }
 
     private static double RelativeLuminance(byte r, byte g, byte b)
     {
