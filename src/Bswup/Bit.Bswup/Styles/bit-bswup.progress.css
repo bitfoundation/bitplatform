@@ -54,3 +54,42 @@
     height: 50vh;
     text-align: left;
 }
+
+.bit-bswup-error {
+    margin-top: 20px;
+    padding: 12px 14px;
+    border: 1px solid rgb(168, 0, 0);
+    background-color: rgb(253, 231, 233);
+    color: rgb(89, 0, 0);
+    border-radius: 4px;
+    text-align: left;
+}
+
+.bit-bswup-error-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+}
+
+.bit-bswup-error-message {
+    font-size: 13px;
+    margin: 0 0 8px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.bit-bswup-error-details {
+    font-size: 11px;
+    margin: 0 0 8px 0;
+    padding: 6px 8px;
+    background-color: rgba(0, 0, 0, 0.04);
+    border-radius: 3px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 30vh;
+    overflow: auto;
+}
+
+#bit-bswup-error-retry {
+    display: none;
+}

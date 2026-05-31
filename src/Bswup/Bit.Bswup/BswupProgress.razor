@@ -25,6 +25,12 @@
             </div>
             <p id="bit-bswup-percent">0 %</p>
             <ul id="bit-bswup-assets" style="display: @(ShowAssets ? "block" : "none");"></ul>
+            <div id="bit-bswup-error" class="bit-bswup-error" style="display: none;" role="alert">
+                <p class="bit-bswup-error-title">Update failed to install</p>
+                <p id="bit-bswup-error-message" class="bit-bswup-error-message"></p>
+                <pre id="bit-bswup-error-details" class="bit-bswup-error-details"></pre>
+                <button id="bit-bswup-error-retry" type="button">Retry</button>
+            </div>
         </div>
         <button id="bit-bswup-reload">Update ready to install!</button>
     }

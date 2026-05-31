@@ -40,13 +40,18 @@ app.UseStaticFiles(new StaticFileOptions
         scope="/"
         log="verbose"
         sw="service-worker.js"
-        handler="bitBswupHandler"></script>
+        handler="bitBswupHandler"
+        updateInterval="3600"
+        updateOnVisibility="true"></script>
 ```
 
 - `scope`: The scope of the service-worker ([read more](https://developer.chrome.com/docs/workbox/service-worker-lifecycle/#scope)).
-- `log`: The log level of the Bswup logger. available options are: `info`, `verbose`, `debug`, and `error`. (not implemented yet)
+- `log`: The log level of the Bswup logger. Available options are: `none`, `error`, `warn`, `info`, `verbose`, and `debug` (case-insensitive). Each level includes everything above it (e.g. `info` also shows `warn` and `error`). Defaults to `warn`. Use `none` to silence all output.
 - `sw`: The file path of the service-worker file.
 - `handler`: The name of the handler function for the service-worker events.
+- `blazorScript`: The path of the Blazor entry-point script (the one you added `autostart="false"` to in step 3). When omitted, Bswup auto-detects both the Blazor Web App script (`_framework/blazor.web.js`) and the standalone Blazor WebAssembly script (`_framework/blazor.webassembly.js`), so you only need to set this if your script lives at a non-default path.
+- `updateInterval`: Number of seconds between automatic update checks. By default the browser only re-checks the service worker on navigation and roughly every 24 hours, so a long-lived SPA tab can run a stale version for a long time. Set this to a positive number (e.g. `3600` for hourly) to have Bswup call `reg.update()` on a timer. Checks are skipped while the tab is in the background (the browser throttles those timers anyway) and resume when it becomes visible again. Omit or set to `0` to disable (the default).
+- `updateOnVisibility`: When set to `true`, Bswup checks for an update every time the tab returns to the foreground (the `visibilitychange` event). This is a lightweight way to catch updates right when a user comes back to a tab they left open. Disabled by default.
 
 > You can remove any of these attributes, and use the default values mentioned above.
 
@@ -92,9 +97,21 @@ function bitBswupHandler(type, data) {
             reloadButton.style.display = 'block';
             reloadButton.onclick = data.reload;
             return console.log('new update ready.');
+
+        case BswupMessage.updateNotFound:
+            return console.log('checked for an update, already on the latest version.');
     }
 }
 ```
+
+> **Multi-tab updates:** Service workers are single-instance per origin, so accepting an
+> update in one tab activates the new version for every open tab. When that happens, Bswup
+> has the new worker claim all clients and each *other* tab reloads itself automatically
+> (via the `controllerchange` event) onto the new version. This keeps every tab consistent
+> and avoids the classic failure where an old tab keeps running old app code while its
+> asset requests are served from the new version's cache (mismatched boot config / DLL
+> hashes). The first install is exempt: claiming a client for the first time starts Blazor
+> and does not trigger a reload.
 
 6. Configure additional settings in the service-worker file like the following code:
 
@@ -115,6 +132,7 @@ self.externalAssets = [
 ];
 self.assetsUrl = '/service-worker-assets.js';
 self.noPrerenderQuery = 'no-prerender=true';
+self.cacheVersion = '2026.05.31-abc1234';
 
 self.caseInsensitiveUrl = true;
 self.ignoreDefaultInclude = true;
@@ -156,14 +174,45 @@ The other settings are:
     #### Keep in mind that caching service-worker related files will corrupt the update cycle of the service-worker. Only the browser should handle these files. 
 - `isPassive`: Enables the Bswup's passive mode. In this mode, the assets won't be cached in advance but rather upon initial request.
 - `enableIntegrityCheck`: Enables the default integrity check available in browsers by setting the `integrity` attribute of the request object created in the service-worker to fetch the assets.
-- `errorTolerance`: Determines how the Bswup should handle the errors while downloading assets. Possible values are: `strict`, `lax`, `config`.
+- `errorTolerance`: Controls how the service worker reacts to asset download / cache failures during install. Possible values:
+    - `strict` (default): mirrors the standard Microsoft template / Workbox behavior. If any required asset fails to fetch or store during install, the install promise rejects, the partially populated cache is discarded, and the previous service-worker (if any) keeps serving the app. Failed assets are reported via the `error` message and are *not* counted toward the progress percentage, so 100% means every asset succeeded.
+    - `lax`: best-effort install. The install always succeeds; missing assets are filled in lazily on the first fetch (in both passive and non-passive modes). Failed assets are still reported as errors but are counted toward the progress so the bar can reach 100% even with failures. Use this only when you knowingly accept a partial cache, for example when listing optional `externalAssets` that may legitimately 404.
 - `enableDiagnostics`: Enables diagnostics by pushing service-worker logs to the browser console.
 - `enableFetchDiagnostics`: Enables fetch event diagnostics by pushing service-worker fetch event logs to the browser console.
 - `disableHashlessAssetsUpdate`: Disables the update of the hash-less assets. By default, the Bswup tries to automatically update all of the hash-less assets (e.g. the external assets) every time an update found for the app.
 - `forcePrerender`: Forces the prerendering of the default document for every navigation request to ensure that the server always has the latest version of the app. This is useful when you have a server-rendered app and you want to make sure that the client always has the latest version of the app.
 - `enableCacheControl`: Enables the cache-control mechanism by providing cache busting setting and header to each request (`cache:no-store` settings and `cache-control:no-cache` header).
+- `cacheVersion`: Overrides the value used to name the cache storage bucket (`bit-bswup - <version>`). By default this tracks Blazor's `assetsManifest.version` (a hash over the published assets), which means the cache is rotated automatically whenever any asset hash changes - and *only* then. Set `cacheVersion` to take manual control: pin it to a stable string so noisy dev rebuilds that perturb asset hashes don't needlessly evict the whole cache (runtime `.dll`/`.wasm` included), or bump it to force a refresh when a meaningful change lives outside Blazor's asset manifest. Only the cache bucket name is affected; the per-asset `?v=` cache-buster and the Subresource Integrity hashes still derive from the manifest version, so asset integrity is unchanged. When unset (or not a non-empty string) it falls back to the manifest version. Tip: feed it a build-stamped value (commit SHA, build timestamp, or your app's informational version) so it bumps automatically per publish.
 - `mode`: Determines the mode of the Bswup. Possible values are:
     - `NoPrerender`: Disables the prerendering of the default document for every navigation request.
     - `InitialPrerender`: Enables the prerendering of the default document only for the initial navigation request.
     - `AlwaysPrerender`: Enables the prerendering of the default document for every navigation request.
     - `FullOffline`: Enables the full offline mode where all assets are cached and served from the cache from first time the app is loaded.
+
+## JavaScript API
+
+Bswup exposes a small global `BitBswup` object on the page so you can drive the update lifecycle from your own code (a "check for updates" button, a custom poller, a "reset app" action, etc.):
+
+- `BitBswup.checkForUpdate()`: Asks the browser to re-fetch the service-worker script and check for a new version. If a new version is found, the normal update flow runs (`updateFound` -> `stateChanged` -> `updateReady`/`downloadFinished`). If the app is already on the latest version, Bswup raises the `updateNotFound` event so you can stop a spinner or show an "up to date" message. This is the registration-aware version that powers the built-in polling; it is safe to call as often as you like.
+- `BitBswup.skipWaiting()`: If an update has finished downloading and is waiting, this activates it immediately (equivalent to calling the `reload` callback you receive in `updateReady`/`downloadFinished`). Returns `true` when there was a waiting worker to activate, otherwise `false`.
+- `BitBswup.forceRefresh()`: Clears the Bswup and Blazor caches, unregisters all service workers, and reloads the page. Use this as a last-resort "reset" when a client gets into a bad state.
+
+### Polling for updates
+
+By default a service worker is only re-checked by the browser on navigation and roughly every 24 hours, so a tab that stays open for a long time can keep running an old version. There are three ways to check more often:
+
+1. Set `updateInterval` (and/or `updateOnVisibility`) on the script tag for built-in polling (see the options above). This is the simplest approach and requires no extra code.
+2. Call `BitBswup.checkForUpdate()` yourself, for example from a timer or after a user action.
+
+```js
+// check every hour from your own code (equivalent to updateInterval="3600")
+setInterval(() => BitBswup.checkForUpdate(), 60 * 60 * 1000);
+
+// or check whenever the user clicks a button, and react to the result
+document.getElementById('check-updates').onclick = () => BitBswup.checkForUpdate();
+```
+
+Either way, the result surfaces through your `bitBswupHandler`: a found update flows through `updateFound`/`updateReady`, and "nothing new" flows through `updateNotFound`.
+
+> Built-in polling skips checks while the tab is in the background (the browser throttles
+> those timers anyway) and catches up automatically when the tab becomes visible again.

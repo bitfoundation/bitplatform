@@ -22,6 +22,10 @@
         const percentEl = document.getElementById('bit-bswup-percent');
         const assetsEl = document.getElementById('bit-bswup-assets');
         const reloadButton = document.getElementById('bit-bswup-reload');
+        const errorEl = document.getElementById('bit-bswup-error');
+        const errorMessageEl = document.getElementById('bit-bswup-error-message');
+        const errorDetailsEl = document.getElementById('bit-bswup-error-details');
+        const errorRetryButton = document.getElementById('bit-bswup-error-retry');
 
         const appElOriginalDisplay = appEl && appEl.style.display;
 
@@ -100,6 +104,36 @@
                             reloadButton && (reloadButton.onclick = data.reload);
                         }
                         return showLogs_ ? console.log('new update is ready.') : undefined;
+
+                    case BswupMessage.error:
+                        // Reveal the install panel even if no progress event landed first
+                        // (manifest validation failures fire before any progress message).
+                        hideApp_ && appEl && (appEl.style.display = 'none');
+                        bswupEl && (bswupEl.style.display = 'block');
+
+                        if (errorEl) {
+                            errorEl.style.display = 'block';
+                            if (errorMessageEl) errorMessageEl.textContent = (data && data.message) || 'Service worker install failed.';
+                            if (errorDetailsEl) {
+                                const reasonText = data && data.reason ? `[${data.reason}] ` : '';
+                                const urlText = data && data.url ? `\nasset: ${data.url}` : '';
+                                const hashText = data && data.hash ? `\nhash: ${data.hash}` : '';
+                                errorDetailsEl.textContent = `${reasonText}${urlText}${hashText}`.trim();
+                            }
+                            if (errorRetryButton) {
+                                errorRetryButton.style.display = 'inline-block';
+                                errorRetryButton.onclick = () => {
+                                    if (data && typeof data.reload === 'function') {
+                                        data.reload();
+                                    } else {
+                                        window.location.reload();
+                                    }
+                                };
+                            }
+                        }
+                        // Always log errors regardless of showLogs - this is actionable info.
+                        console.error('BitBswup install error:', data);
+                        return;
                 }
             }
         }

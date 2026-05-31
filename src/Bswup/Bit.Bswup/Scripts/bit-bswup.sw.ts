@@ -26,6 +26,7 @@ interface Window {
     disableHashlessAssetsUpdate: any
     forcePrerender: any
     enableCacheControl: any
+    cacheVersion: any
 
     mode: any
 }
@@ -43,9 +44,30 @@ diag('ASSETS_URL:', ASSETS_URL);
 
 self.importScripts(ASSETS_URL);
 
-const VERSION = self.assetsManifest.version;
+const MANIFEST_ERRORS = validateAssetsManifest(self.assetsManifest);
+if (MANIFEST_ERRORS.length) {
+    diag('*** assetsManifest validation failed:', MANIFEST_ERRORS);
+    sendError({
+        reason: 'manifest',
+        message: 'service-worker-assets.js is missing or malformed: ' + MANIFEST_ERRORS.join('; '),
+        url: ASSETS_URL,
+    });
+}
+
+const VERSION = (self.assetsManifest && self.assetsManifest.version) || '0.0.0-invalid-manifest';
 const CACHE_NAME_PREFIX = 'bit-bswup';
-const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${VERSION}`;
+
+// Cache identity normally tracks Blazor's manifest version (assetsManifest.version), a
+// hash over the published assets. cacheVersion lets an app override the value used in the
+// cache name: pin a stable string across noisy dev rebuilds (so perturbed asset hashes
+// don't needlessly evict the whole cache), or bump it to force a refresh when a meaningful
+// change lives outside Blazor's asset manifest. Only the cache *bucket name* is affected;
+// the per-asset `?v=` cache-buster and SRI hashes still derive from VERSION, so integrity
+// is unchanged. Falls back to the manifest version when unset or not a non-empty string.
+const CACHE_VERSION = (typeof self.cacheVersion === 'string' && self.cacheVersion) || VERSION;
+const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${CACHE_VERSION}`;
+
+let integrityFailureCount = 0;
 
 switch (self.mode) {
     case 'NoPrerender': // like adminpanel
@@ -82,6 +104,16 @@ switch (self.mode) {
         break;
 }
 
+// Default error tolerance when no mode preset applies. 'strict' matches the standard
+// Microsoft template / Workbox semantics: any precache failure aborts the install and
+// the previous SW keeps serving. Set 'lax' explicitly to opt into best-effort installs
+// (e.g. when listing optional externalAssets that may legitimately 404).
+self.errorTolerance ||= 'strict';
+if (self.errorTolerance !== 'strict' && self.errorTolerance !== 'lax') {
+    diag('*** unknown errorTolerance, falling back to strict:', self.errorTolerance);
+    self.errorTolerance = 'strict';
+}
+
 self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
 self.addEventListener('activate', e => e.waitUntil(handleActivate(e)));
 self.addEventListener('fetch', e => e.respondWith(handleFetch(e)));
@@ -92,7 +124,17 @@ async function handleInstall(e: any) {
 
     sendMessage({ type: 'install', data: { version: VERSION, isPassive: self.isPassive } });
 
-    createAssetsCache();
+    if (self.errorTolerance === 'strict') {
+        // Strict: any required asset that fails to fetch / store must reject the install
+        // promise so the SW lifecycle treats it as a failed install. Without this, a
+        // partially-populated cache becomes the new active cache on the next reload.
+        await createAssetsCache();
+    } else {
+        // Lax: lifecycle proceeds immediately; missing assets are filled lazily by
+        // handleFetch. This preserves best-effort behavior for callers that explicitly
+        // opt in via errorTolerance: 'lax'.
+        createAssetsCache();
+    }
 }
 
 async function handleActivate(e: any) {
@@ -153,7 +195,11 @@ async function handleFetch(e: any) {
     if (PROHIBITED_URLS.some(pattern => pattern.test(req.url))) {
         diagFetch('+++ handleFetch ended - prohibited:', e, req);
 
-        return new Response(new Blob(), { status: 405, "statusText": `prohibited URL: ${req.url}` });
+        return new Response('This URL is prohibited!', {
+            status: 403,
+            statusText: 'Prohibited',
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
     }
 
     const isServerHandled = SERVER_HANDLED_URLS.some(pattern => pattern.test(req.url));
@@ -210,7 +256,15 @@ async function handleFetch(e: any) {
     const request = createNewAssetRequest(asset);
     const response = await fetch(request);
     if (response.ok) {
-        bitBswupCache.put(cacheUrl, response.clone());
+        if (self.errorTolerance === 'strict') {
+            await bitBswupCache.put(cacheUrl, response.clone());
+        } else {
+            try {
+                bitBswupCache.put(cacheUrl, response.clone());
+            } catch (err) {
+                diagFetch('+++ handleFetch - lazy-fill put failed:', err, asset);
+            }
+        }
     }
 
     diagFetch('+++ handleFetch ended - passive saving asset:', start, asset, e, req);
@@ -222,13 +276,26 @@ function handleMessage(e: MessageEvent<string>) {
     diag('handleMessage:', e);
 
     if (e.data === 'SKIP_WAITING') {
-        deleteOldCaches(); // remove the old caches when the new sw skips waiting
-        return self.skipWaiting().then(() => sendMessage('WAITING_SKIPPED'));
+        // Activate the waiting worker, then take control of every open client so each tab
+        // receives a 'controllerchange' and reloads onto the new version (handled in
+        // bit-bswup.ts > handleControllerChange). Claiming is what makes multi-tab updates
+        // consistent: without it, sibling tabs keep running the old app code while their
+        // asset requests are served from the new worker - or from a cache we just deleted -
+        // which corrupts boot config / DLL hashes. Old caches are removed only *after* the
+        // claim so no controlled client is left pointing at a cache that no longer exists.
+        return self.skipWaiting()
+            .then(() => self.clients.claim())
+            .then(() => deleteOldCaches())
+            .then(() => sendMessage('WAITING_SKIPPED'));
     }
 
     if (e.data === 'CLAIM_CLIENTS') {
-        deleteOldCaches(); // remove the old caches when the new sw claims all clients
-        return self.clients.claim().then(() => e.source.postMessage('CLIENTS_CLAIMED'));
+        // First-install claim. Take control so this page can start Blazor; sibling tabs
+        // that observe the resulting 'controllerchange' will NOT reload because there was
+        // no previously-active worker (see hadActiveWorkerAtStartup in bit-bswup.ts).
+        return self.clients.claim()
+            .then(() => deleteOldCaches())
+            .then(() => e.source.postMessage('CLIENTS_CLAIMED'));
     }
 
     if (e.data === 'BLAZOR_STARTED') {
@@ -314,10 +381,40 @@ async function createAssetsCache(ignoreProgressReport = false) {
     diag('assetsToCache:', assetsToCache);
 
     total = assetsToCache.length;
+    integrityFailureCount = 0;
     const promises = assetsToCache.map(addCache.bind(null, !ignoreProgressReport));
+
+    // Await install batch so SRI/network failures surface as install rejections instead of
+    // unhandled promise rejections. We keep using allSettled (rather than Promise.all) so a
+    // single failure doesn't cancel sibling fetches: we want every asset attempted and
+    // reported even when the install will ultimately fail.
+    const results = await Promise.allSettled(promises);
+    const rejectedCount = results.reduce((n, r) => n + (r.status === 'rejected' ? 1 : 0), 0);
+
+    if (integrityFailureCount > 0 && !ignoreProgressReport) {
+        sendError({
+            reason: 'install-incomplete',
+            message: `Install completed with ${integrityFailureCount} integrity failure(s). The service worker will not activate cleanly; check that service-worker-assets.js, blazor.boot.json, and the framework files are served byte-identical (no on-the-fly gzip/minify by a CDN or proxy).`,
+            count: integrityFailureCount,
+        });
+    }
 
     diag('createAssetsCache ended.');
     diagGroupEnd();
+
+    // Strict tolerance: if any required asset failed to fetch / store, reject so the SW
+    // lifecycle aborts the install and the previous SW (if any) keeps serving. The cache
+    // we partially populated is discarded explicitly here; the next install will recreate
+    // it under the version-suffixed CACHE_NAME.
+    // ignoreProgressReport === true means this run is the post-BLAZOR_STARTED top-up; that
+    // path must never reject because install has already activated.
+    if (!ignoreProgressReport && self.errorTolerance === 'strict' && rejectedCount > 0) {
+        try { await caches.delete(CACHE_NAME); } catch { /* best effort */ }
+        throw new Error(
+            `Install aborted under errorTolerance 'strict': ${rejectedCount} of ${total} asset(s) failed. ` +
+            `Switch to errorTolerance 'lax' to allow a partial cache plus runtime fallback.`
+        );
+    }
 
     async function addCache(report: boolean, asset: any) {
         try {
@@ -327,6 +424,14 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 try {
                     if (!response.ok) {
                         diag('*** addCache - !response.ok:', request);
+                        sendError({
+                            reason: 'fetch',
+                            message: `Asset fetch failed with HTTP ${response.status} ${response.statusText || ''}`.trim(),
+                            url: asset.url,
+                            hash: asset.hash,
+                            status: response.status,
+                            integrity: !!(request as any).integrity,
+                        });
                         doReport(true);
                         return Promise.reject(response);
                     }
@@ -340,12 +445,45 @@ async function createAssetsCache(ignoreProgressReport = false) {
 
                 } catch (err) {
                     diag('*** addCache - put cache err:', err);
+                    sendError({
+                        reason: 'cache',
+                        message: 'Failed to store asset in cache: ' + (err && (err as any).message || String(err)),
+                        url: asset.url,
+                        hash: asset.hash,
+                    });
                     doReport(true);
                     return Promise.reject(err);
                 }
+            }, async fetchErr => {
+                // Browsers reject fetch() with a TypeError when SRI validation fails. The
+                // browser also logs "Failed to find a valid digest in the 'integrity' attribute"
+                // to the console, but the SW would otherwise silently swallow this. Surface it.
+                const isIntegrity =
+                    !!(request as any).integrity &&
+                    (fetchErr instanceof TypeError ||
+                        /integrity|digest|EPRPROTO|ERR_FAILED/i.test(String(fetchErr && (fetchErr as any).message || fetchErr)));
+                if (isIntegrity) integrityFailureCount++;
+                diag('*** addCache - fetch rejected:', fetchErr, 'integrity?', isIntegrity);
+                sendError({
+                    reason: isIntegrity ? 'integrity' : 'fetch',
+                    message: isIntegrity
+                        ? `Subresource Integrity check failed for ${asset.url}. The bytes served do not match the SHA hash recorded in service-worker-assets.js / blazor.boot.json. This is the classic Blazor "Failed to find a valid digest" failure and usually means a CDN, reverse proxy, or compression layer is rewriting the response after publish.`
+                        : 'Asset fetch rejected: ' + (fetchErr && (fetchErr as any).message || String(fetchErr)),
+                    url: asset.url,
+                    hash: asset.hash,
+                    integrity: !!(request as any).integrity,
+                });
+                doReport(true);
+                return Promise.reject(fetchErr);
             });
         } catch (err) {
             diag('*** addCache - catch err:', err);
+            sendError({
+                reason: 'request',
+                message: 'Failed to build asset request: ' + (err && (err as any).message || String(err)),
+                url: asset && asset.url,
+                hash: asset && asset.hash,
+            });
             doReport(true);
             return Promise.reject(err);
         }
@@ -414,6 +552,39 @@ function sendMessage(message: any) {
         .then((clients: any) => (clients || []).forEach((client: any) => client.postMessage(typeof message === 'string' ? message : JSON.stringify(message))));
 }
 
+function sendError(data: { reason: string; message: string;[key: string]: any }) {
+    diag('*** error:', data);
+    try {
+        // Best-effort console output so the failure is visible even before any client connects.
+        console.error('BitBswup SW:', data.message, data);
+    } catch { /* ignore */ }
+    sendMessage({ type: 'error', data });
+}
+
+function validateAssetsManifest(manifest: any): string[] {
+    const errors: string[] = [];
+    if (!manifest || typeof manifest !== 'object') {
+        errors.push('assetsManifest is not defined');
+        return errors;
+    }
+    if (typeof manifest.version !== 'string' || !manifest.version) {
+        errors.push('assetsManifest.version is missing');
+    }
+    if (!Array.isArray(manifest.assets)) {
+        errors.push('assetsManifest.assets is not an array');
+        return errors;
+    }
+    let badEntries = 0;
+    for (let i = 0; i < manifest.assets.length; i++) {
+        const a = manifest.assets[i];
+        if (!a || typeof a.url !== 'string' || !a.url) badEntries++;
+    }
+    if (badEntries > 0) {
+        errors.push(`${badEntries} asset entr${badEntries === 1 ? 'y has' : 'ies have'} no url`);
+    }
+    return errors;
+}
+
 function prepareExternalAssetsArray(value: any) {
     const array = value ? (value instanceof Array ? value : [value]) : [];
 
@@ -431,7 +602,25 @@ function prepareExternalAssetsArray(value: any) {
 }
 
 function prepareRegExpArray(value: any) {
-    return value ? (value instanceof Array ? value : [value]).filter(p => p instanceof RegExp) : [];
+    const array = value ? (value instanceof Array ? value : [value]) : [];
+
+    return array.map(p => {
+        if (p instanceof RegExp) {
+            return p;
+        }
+
+        if (typeof p === 'string') {
+            try {
+                return new RegExp(p);
+            } catch (err) {
+                console.warn('BitBswup SW: ignoring invalid RegExp pattern:', p, err);
+                return null;
+            }
+        }
+
+        console.warn('BitBswup SW: ignoring non-RegExp entry (expected RegExp or string):', p);
+        return null;
+    }).filter((p): p is RegExp => p !== null);
 }
 
 function trimEnd(str: string, char: string) {
