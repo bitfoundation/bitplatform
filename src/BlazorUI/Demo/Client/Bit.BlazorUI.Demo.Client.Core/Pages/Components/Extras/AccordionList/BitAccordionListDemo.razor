@@ -1,0 +1,60 @@
+@page "/components/accordionlist"
+@inherits AppComponentBase
+
+@using Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList
+
+<PageOutlet Url="components/accordionlist"
+            Title="AccordionList"
+            Description="accordionlist component of the bit BlazorUI components" />
+
+<div>
+    <DemoPage Name="AccordionList"
+              SecondaryNames="@(["ExpanderList"])"
+              Description="BitAccordionList is an advanced version of the BitAccordion that renders a list of expandable items from a single collection and manages their expand/collapse state."
+              Parameters="componentParameters"
+              SubClasses="componentSubClasses"
+              PublicMembers="componentPublicMembers"
+              GitHubExtrasUrl="AccordionList/BitAccordionList.razor"
+              GitHubDemoUrl="Extras/AccordionList/BitAccordionListDemo.razor">
+        <NotesTemplate>
+            <BitText>
+                To use this component, you need to install the
+                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                    <BitTag Reversed
+                            Text="Bit.BlazorUI.Extras"
+                            Color="BitColor.SecondaryBackground"
+                            IconName="@BitIconName.NavigateExternalInline" />
+                </BitLink>
+                nuget package, as described in the Optional steps of the
+                <BitLink Href="/getting-started">Getting started</BitLink> page.
+            </BitText>
+            <br />
+            <BitText>
+                The BitAccordionList is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
+                which can accept the list of Items in 3 different ways:
+                <br />
+                1. The <BitLink Href="#accordion-list-item"><BitTag Color="BitColor.SecondaryBackground">BitAccordionListItem</BitTag></BitLink> class <br />
+                2. A <BitTag Color="BitColor.SecondaryBackground">Custom Generic</BitTag> class <br />
+                3. The <BitLink Href="#accordion-list-option"><BitTag Color="BitColor.SecondaryBackground">BitAccordionListOption</BitTag></BitLink> component
+            </BitText>
+        </NotesTemplate>
+        <DescriptionTemplate>
+            BitAccordionList is a sugar component over the single-item <BitLink Href="/components/accordion">BitAccordion</BitLink> component. Instead of wiring multiple accordions manually, you provide a list of items and it handles rendering and expand/collapse state for you.
+        </DescriptionTemplate>
+        <Examples>
+            <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })" MountAll="ShowAllCodes">
+                <BitPivotItem HeaderText="Item">
+                    <_BitAccordionListItemDemo />
+                </BitPivotItem>
+
+                <BitPivotItem HeaderText="Custom">
+                    <_BitAccordionListCustomDemo />
+                </BitPivotItem>
+
+                <BitPivotItem HeaderText="Option">
+                    <_BitAccordionListOptionDemo />
+                </BitPivotItem>
+            </BitPivot>
+        </Examples>
+    </DemoPage>
+</div>

@@ -1,0 +1,146 @@
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <div>The items can be declared using the BitAccordionListOption child components.</div>
+    <br />
+    <BitAccordionList TItem="BitAccordionListOption">
+        <BitAccordionListOption Title="Accordion 1" Description="The first item">
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+        </BitAccordionListOption>
+        <BitAccordionListOption Title="Accordion 2" Description="The second item">
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        </BitAccordionListOption>
+        <BitAccordionListOption Title="Accordion 3" Description="The third item">
+            In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+        </BitAccordionListOption>
+    </BitAccordionList>
+</DemoExample>
+
+<DemoExample Title="Multiple" RazorCode="@example2RazorCode" Id="example2">
+    <div>Enable the <code>Multiple</code> parameter to allow more than one item to be expanded at the same time.</div>
+    <br />
+    <BitAccordionList Multiple TItem="BitAccordionListOption">
+        <BitAccordionListOption Title="Accordion 1" Description="The first item">
+            Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+        </BitAccordionListOption>
+        <BitAccordionListOption Title="Accordion 2" Description="The second item">
+            Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        </BitAccordionListOption>
+        <BitAccordionListOption Title="Accordion 3" Description="The third item">
+            In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+        </BitAccordionListOption>
+    </BitAccordionList>
+</DemoExample>
+
+<DemoExample Title="DefaultExpanded" RazorCode="@example3RazorCode" Id="example3">
+    <div>Use <code>DefaultExpandedKey</code> (single) or <code>DefaultExpandedKeys</code> (multiple) to set the initially expanded items.</div>
+    <br /><br />
+    <div class="example-content">
+        <div>Single (DefaultExpandedKey):</div>
+        <BitAccordionList TItem="BitAccordionListOption" DefaultExpandedKey="users">
+            <BitAccordionListOption Key="general" Title="General settings">
+                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Key="users" Title="Users">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Key="advanced" Title="Advanced settings">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
+        </BitAccordionList>
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>Multiple (DefaultExpandedKeys):</div>
+        <BitAccordionList Multiple TItem="BitAccordionListOption" DefaultExpandedKeys="@(["general", "advanced"])">
+            <BitAccordionListOption Key="general" Title="General settings">
+                Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Key="users" Title="Users">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+            </BitAccordionListOption>
+            <BitAccordionListOption Key="advanced" Title="Advanced settings">
+                In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+            </BitAccordionListOption>
+        </BitAccordionList>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <div>Handle the OnExpand, OnCollapse and OnToggle events of the component.</div>
+    <br />
+    <BitAccordionList TItem="BitAccordionListOption"
+                      OnExpand="(BitAccordionListOption item) => expandedTitle = item.Title"
+                      OnCollapse="(BitAccordionListOption item) => collapsedTitle = item.Title"
+                      OnToggle="(BitAccordionListOption item) => toggledTitle = item.Title">
+        <BitAccordionListOption Title="Accordion 1">Body of the first item.</BitAccordionListOption>
+        <BitAccordionListOption Title="Accordion 2">Body of the second item.</BitAccordionListOption>
+        <BitAccordionListOption Title="Accordion 3">Body of the third item.</BitAccordionListOption>
+    </BitAccordionList>
+    <br />
+    <div>Last expanded: <b>@expandedTitle</b></div>
+    <div>Last collapsed: <b>@collapsedTitle</b></div>
+    <div>Last toggled: <b>@toggledTitle</b></div>
+    <br /><br />
+    <div>Each option can also have its own click handler.</div>
+    <br />
+    <BitAccordionList TItem="BitAccordionListOption">
+        <BitAccordionListOption Title="Accordion 1" OnClick="_ => { clickCounter++; StateHasChanged(); }">Click my header.</BitAccordionListOption>
+        <BitAccordionListOption Title="Accordion 2" OnClick="_ => { clickCounter++; StateHasChanged(); }">Click my header.</BitAccordionListOption>
+    </BitAccordionList>
+    <div>Item click count: <b>@clickCounter</b></div>
+</DemoExample>
+
+<DemoExample Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <div>Two-way bind the expanded key in single-expand mode using <code>@@bind-ExpandedKey</code>.</div>
+    <br />
+    <BitButtonGroup Items="bindingButtons" TItem="BitButtonGroupItem" />
+    <br />
+    <div>Bound expanded key: <b>@boundExpandedKey</b></div>
+    <br />
+    <BitAccordionList @bind-ExpandedKey="boundExpandedKey" TItem="BitAccordionListOption">
+        <BitAccordionListOption Key="general" Title="General settings">The general settings of the application.</BitAccordionListOption>
+        <BitAccordionListOption Key="users" Title="Users">You are currently not an owner.</BitAccordionListOption>
+        <BitAccordionListOption Key="advanced" Title="Advanced settings">Filtering has been entirely disabled.</BitAccordionListOption>
+    </BitAccordionList>
+</DemoExample>
+
+<DemoExample Title="ExpanderIcon" RazorCode="@example6RazorCode" Id="example6">
+    <div>Customize the expander icon of each option using its ExpanderIconName parameter.</div>
+    <br />
+    <BitAccordionList TItem="BitAccordionListOption">
+        <BitAccordionListOption Title="Profile" ExpanderIconName="@BitIconName.Contact">Your profile information.</BitAccordionListOption>
+        <BitAccordionListOption Title="Settings" ExpanderIconName="@BitIconName.Settings">The application settings.</BitAccordionListOption>
+        <BitAccordionListOption Title="Notifications" ExpanderIconName="@BitIconName.Ringer">Your notification preferences.</BitAccordionListOption>
+    </BitAccordionList>
+</DemoExample>
+
+<DemoExample Title="Templates" RazorCode="@example7RazorCode" Id="example7">
+    <div>Customize the header of an option using its HeaderTemplate.</div>
+    <br />
+    <BitAccordionList TItem="BitAccordionListOption">
+        <BitAccordionListOption Title="Custom">
+            <HeaderTemplate Context="option">
+                <BitIcon IconName="@BitIconName.FavoriteStarFill" Color="BitColor.Warning" />
+                <b>@option.Title</b>
+            </HeaderTemplate>
+            <Body Context="option">
+                The body of the option with a custom header.
+            </Body>
+        </BitAccordionListOption>
+        <BitAccordionListOption Title="Accordion 2">
+            The body of a regular option.
+        </BitAccordionListOption>
+    </BitAccordionList>
+</DemoExample>
+
+<DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+    <div>Use BitAccordionList in right-to-left (RTL).</div>
+    <br />
+    <BitAccordionList Dir="BitDir.Rtl" TItem="BitAccordionListOption">
+        <BitAccordionListOption Title="تنظیمات عمومی" Description="تنظیمات کلی برنامه">
+            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ است.
+        </BitAccordionListOption>
+        <BitAccordionListOption Title="کاربران" Description="شما در حال حاضر مالک نیستید">
+            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ است.
+        </BitAccordionListOption>
+    </BitAccordionList>
+</DemoExample>
