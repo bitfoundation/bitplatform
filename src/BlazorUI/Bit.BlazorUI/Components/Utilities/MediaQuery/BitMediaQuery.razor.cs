@@ -87,24 +87,24 @@ public partial class BitMediaQuery : BitComponentBase
     {
         return query switch
         {
-            BitScreenQuery.Xs => "(max-width: 600px)",
-            BitScreenQuery.Sm => "(min-width: 601px) and (max-width: 960px)",
-            BitScreenQuery.Md => "(min-width: 961px) and (max-width: 1280px)",
-            BitScreenQuery.Lg => "(min-width: 1281px) and (max-width: 1920px)",
-            BitScreenQuery.Xl => "(min-width: 1921px) and (max-width: 2560px)",
-            BitScreenQuery.Xxl => "(min-width: 2561px)",
+            BitScreenQuery.Xs => "(max-width: 599px)",
+            BitScreenQuery.Sm => "(min-width: 600px) and (max-width: 959px)",
+            BitScreenQuery.Md => "(min-width: 960px) and (max-width: 1279px)",
+            BitScreenQuery.Lg => "(min-width: 1280px) and (max-width: 1919px)",
+            BitScreenQuery.Xl => "(min-width: 1920px) and (max-width: 2559px)",
+            BitScreenQuery.Xxl => "(min-width: 2560px)",
 
-            BitScreenQuery.LtSm => "(max-width: 600px)",
-            BitScreenQuery.LtMd => "(max-width: 960px)",
-            BitScreenQuery.LtLg => "(max-width: 1280px)",
-            BitScreenQuery.LtXl => "(max-width: 1920px)",
-            BitScreenQuery.LtXxl => "(max-width: 2560px)",
+            BitScreenQuery.LtSm => "(max-width: 599px)",
+            BitScreenQuery.LtMd => "(max-width: 959px)",
+            BitScreenQuery.LtLg => "(max-width: 1279px)",
+            BitScreenQuery.LtXl => "(max-width: 1919px)",
+            BitScreenQuery.LtXxl => "(max-width: 2559px)",
 
-            BitScreenQuery.GtXs => "(min-width: 601px)",
-            BitScreenQuery.GtSm => "(min-width: 961px)",
-            BitScreenQuery.GtMd => "(min-width: 1281px)",
-            BitScreenQuery.GtLg => "(min-width: 1921px)",
-            BitScreenQuery.GtXl => "(min-width: 2561px)",
+            BitScreenQuery.GtXs => "(min-width: 600px)",
+            BitScreenQuery.GtSm => "(min-width: 960px)",
+            BitScreenQuery.GtMd => "(min-width: 1280px)",
+            BitScreenQuery.GtLg => "(min-width: 1920px)",
+            BitScreenQuery.GtXl => "(min-width: 2560px)",
             _ => string.Empty
         };
     }
