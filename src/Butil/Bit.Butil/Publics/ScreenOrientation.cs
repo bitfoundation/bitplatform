@@ -93,6 +93,16 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
+    /// Subscribe variant returning an <see cref="IAsyncDisposable"/> handle.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScreenOrientationListenersManager))]
+    public async ValueTask<ButilSubscription> SubscribeChange(Action<OrientationState> handler)
+    {
+        var id = await AddChange(handler);
+        return new ButilSubscription(id, () => RemoveChange(id));
+    }
+
+    /// <summary>
     /// The change event of the ScreenOrientation interface fires when the orientation of the 
     /// screen has changed, for example when a user rotates their mobile phone.
     /// <br/>

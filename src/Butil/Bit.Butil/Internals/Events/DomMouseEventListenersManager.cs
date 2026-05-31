@@ -31,6 +31,8 @@ public static class DomMouseEventListenersManager
         }).ToArray();
     }
 
+    internal static void RemoveById(Guid id) => Listeners.TryRemove(id, out _);
+
     [JSInvokable(InvokeMethodName)]
     public static void Invoke(Guid id, ButilMouseEventArgs args)
     {

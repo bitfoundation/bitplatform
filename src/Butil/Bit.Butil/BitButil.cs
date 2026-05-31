@@ -6,24 +6,55 @@ public static class BitButil
 {
     public static IServiceCollection AddBitButilServices(this IServiceCollection services)
     {
-        services.AddTransient<Clipboard>();
-        services.AddTransient<Console>();
-        services.AddTransient<Cookie>();
-        services.AddTransient<Crypto>();
-        services.AddTransient<Document>();
-        services.AddTransient<History>();
-        services.AddTransient<Keyboard>();
-        services.AddTransient<LocalStorage>();
-        services.AddTransient<SessionStorage>();
-        services.AddTransient<Location>();
-        services.AddTransient<Navigator>();
-        services.AddTransient<Notification>();
-        services.AddTransient<Screen>();
-        services.AddTransient<ScreenOrientation>();
-        services.AddTransient<UserAgent>();
-        services.AddTransient<VisualViewport>();
-        services.AddTransient<Window>();
-        services.AddTransient<WebAuthn>();
+        // Scoped matches Blazor's "one circuit / one WASM app instance per user" model.
+        // Transient would create a fresh wrapper on every @inject, fragmenting per-instance
+        // listener bookkeeping and keeping captured component delegates alive longer than
+        // the component itself.
+        services.AddScoped<Clipboard>();
+        services.AddScoped<Console>();
+        services.AddScoped<Cookie>();
+        services.AddScoped<CookieStore>();
+        services.AddScoped<Crypto>();
+        services.AddScoped<Battery>();
+        services.AddScoped<BackgroundSync>();
+        services.AddScoped<BroadcastChannel>();
+        services.AddScoped<CacheStorage>();
+        services.AddScoped<ContactPicker>();
+        services.AddScoped<Document>();
+        services.AddScoped<EyeDropper>();
+        services.AddScoped<Fetch>();
+        services.AddScoped<FileReader>();
+        services.AddScoped<Geolocation>();
+        services.AddScoped<History>();
+        services.AddScoped<IdleDetector>();
+        services.AddScoped<IndexedDb>();
+        services.AddScoped<Keyboard>();
+        services.AddScoped<LocalStorage>();
+        services.AddScoped<SessionStorage>();
+        services.AddScoped<Location>();
+        services.AddScoped<MediaDevices>();
+        services.AddScoped<Navigator>();
+        services.AddScoped<NetworkInformation>();
+        services.AddScoped<Nfc>();
+        services.AddScoped<Notification>();
+        services.AddScoped<ObjectUrls>();
+        services.AddScoped<Performance>();
+        services.AddScoped<Permissions>();
+        services.AddScoped<Push>();
+        services.AddScoped<Reporting>();
+        services.AddScoped<Screen>();
+        services.AddScoped<ScreenOrientation>();
+        services.AddScoped<ServiceWorker>();
+        services.AddScoped<SpeechRecognition>();
+        services.AddScoped<SpeechSynthesis>();
+        services.AddScoped<StorageManager>();
+        services.AddScoped<UserAgent>();
+        services.AddScoped<VisualViewport>();
+        services.AddScoped<WakeLock>();
+        services.AddScoped<WebAudio>();
+        services.AddScoped<WebLocks>();
+        services.AddScoped<Window>();
+        services.AddScoped<WebAuthn>();
 
         return services;
     }

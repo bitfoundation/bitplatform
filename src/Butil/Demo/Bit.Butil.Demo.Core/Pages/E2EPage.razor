@@ -1,0 +1,182 @@
+@page "/e2e"
+@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.SessionStorage sessionStorage
+@inject Bit.Butil.Cookie cookie
+@inject Bit.Butil.Crypto crypto
+@inject Bit.Butil.Performance performance
+@inject Bit.Butil.Document document
+@inject Bit.Butil.Window window
+@inject Bit.Butil.History history
+@inject Bit.Butil.Location location
+
+@*
+    Deterministic end-to-end harness for Playwright. Every interactive element exposes
+    a stable id and outputs are written to a single status element. The page deliberately
+    avoids APIs that trigger permission prompts so the suite can run headless without flakes.
+*@
+
+<PageTitle>Butil E2E Harness</PageTitle>
+
+<h1>Butil E2E</h1>
+
+<div data-testid="status" id="status">@_status</div>
+
+<section>
+    <h3>Storage</h3>
+    <button id="ls-set" @onclick="LocalStorageSet">localStorage.setItem</button>
+    <button id="ls-get" @onclick="LocalStorageGet">localStorage.getItem</button>
+    <button id="ls-typed-set" @onclick="LocalStorageTypedSet">SetItem&lt;T&gt;</button>
+    <button id="ls-typed-get" @onclick="LocalStorageTypedGet">GetItem&lt;T&gt;</button>
+    <button id="ss-set" @onclick="SessionStorageSet">sessionStorage.setItem</button>
+    <button id="ss-get" @onclick="SessionStorageGet">sessionStorage.getItem</button>
+    <button id="ls-clear" @onclick="LocalStorageClear">localStorage.clear</button>
+    <button id="ss-clear" @onclick="SessionStorageClear">sessionStorage.clear</button>
+</section>
+
+<section>
+    <h3>Cookie</h3>
+    <button id="cookie-set" @onclick="CookieSet">Set cookie with reserved chars</button>
+    <button id="cookie-get" @onclick="CookieGet">Get cookie</button>
+    <button id="cookie-remove" @onclick="CookieRemove">Remove cookie</button>
+</section>
+
+<section>
+    <h3>Crypto</h3>
+    <button id="crypto-uuid" @onclick="CryptoUuid">randomUUID</button>
+    <button id="crypto-rand" @onclick="CryptoRand">getRandomValues(32)</button>
+    <button id="crypto-digest" @onclick="CryptoDigestSha256">SHA-256("hello")</button>
+    <button id="crypto-roundtrip" @onclick="CryptoAesRoundTrip">AES-GCM roundtrip</button>
+</section>
+
+<section>
+    <h3>Performance + Window + Document + History</h3>
+    <button id="perf-now" @onclick="PerfNow">performance.now</button>
+    <button id="window-base64" @onclick="WindowBase64">btoa/atob roundtrip</button>
+    <button id="doc-title" @onclick="DocSetTitle">Set document.title</button>
+    <button id="loc-href" @onclick="LocationHref">location.href</button>
+    <button id="history-state" @onclick="HistoryPush">history.pushState</button>
+</section>
+
+@code {
+    private const string TestCookieName = "butil_e2e";
+    private const string TestCookieValue = "v=1; b=hello world & again";
+    private string _status = "ready";
+
+    private void Set(string value) { _status = value; StateHasChanged(); }
+
+    // ─── Storage ────────────────────────────────────────────────────────────────
+    private async Task LocalStorageSet()
+    {
+        await localStorage.SetItem("butil-e2e-key", "butil-e2e-value");
+        Set("ls:set");
+    }
+    private async Task LocalStorageGet()
+    {
+        var v = await localStorage.GetItem("butil-e2e-key");
+        Set($"ls:get:{v}");
+    }
+    private async Task LocalStorageTypedSet()
+    {
+        await localStorage.SetItem("butil-e2e-typed", new SamplePayload(42, "answer"));
+        Set("ls:typed-set");
+    }
+    private async Task LocalStorageTypedGet()
+    {
+        var v = await localStorage.GetItem<SamplePayload>("butil-e2e-typed");
+        Set($"ls:typed-get:{v?.Number}/{v?.Label}");
+    }
+    private async Task SessionStorageSet()
+    {
+        await sessionStorage.SetItem("butil-e2e-skey", "butil-e2e-svalue");
+        Set("ss:set");
+    }
+    private async Task SessionStorageGet()
+    {
+        var v = await sessionStorage.GetItem("butil-e2e-skey");
+        Set($"ss:get:{v}");
+    }
+    private async Task LocalStorageClear() { await localStorage.Clear(); Set("ls:clear"); }
+    private async Task SessionStorageClear() { await sessionStorage.Clear(); Set("ss:clear"); }
+
+    // ─── Cookie ─────────────────────────────────────────────────────────────────
+    private async Task CookieSet()
+    {
+        await cookie.Set(new ButilCookie { Name = TestCookieName, Value = TestCookieValue, Path = "/" });
+        Set("cookie:set");
+    }
+    private async Task CookieGet()
+    {
+        var c = await cookie.Get(TestCookieName);
+        Set($"cookie:get:{c?.Value}");
+    }
+    private async Task CookieRemove()
+    {
+        await cookie.Remove(new ButilCookie { Name = TestCookieName, Path = "/" });
+        var c = await cookie.Get(TestCookieName);
+        Set($"cookie:removed:{c is null}");
+    }
+
+    // ─── Crypto ─────────────────────────────────────────────────────────────────
+    private async Task CryptoUuid()
+    {
+        var id = await crypto.RandomUuid();
+        Set($"crypto:uuid:{id}");
+    }
+    private async Task CryptoRand()
+    {
+        var bytes = await crypto.GetRandomValues(32);
+        Set($"crypto:rand:{bytes.Length}");
+    }
+    private async Task CryptoDigestSha256()
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes("hello");
+        var hash = await crypto.Digest(CryptoKeyHash.Sha256, bytes);
+        Set($"crypto:sha256:{Convert.ToHexString(hash).ToLowerInvariant()}");
+    }
+    private async Task CryptoAesRoundTrip()
+    {
+        var key = await crypto.GenerateAesKey(256);
+        var iv = await crypto.GetRandomValues(12);
+        var data = System.Text.Encoding.UTF8.GetBytes("payload");
+        var cipher = await crypto.Encrypt(CryptoAlgorithm.AesGcm, key, data, iv);
+        var plain = await crypto.Decrypt(CryptoAlgorithm.AesGcm, key, cipher, iv);
+        var matches = plain is not null && System.Text.Encoding.UTF8.GetString(plain) == "payload";
+        Set($"crypto:aes-gcm:{matches}");
+    }
+
+    // ─── Misc ──────────────────────────────────────────────────────────────────
+    private async Task PerfNow()
+    {
+        var n = await performance.Now();
+        Set($"perf:now:{n > 0}");
+    }
+    private async Task WindowBase64()
+    {
+        var encoded = await window.Btoa("butil");
+        var decoded = await window.Atob(encoded);
+        Set($"window:b64:{encoded}/{decoded}");
+    }
+    private async Task DocSetTitle()
+    {
+        await document.SetTitle("butil-e2e-title");
+        var t = await document.GetTitle();
+        Set($"doc:title:{t}");
+    }
+    private async Task LocationHref()
+    {
+        var href = await location.GetHref();
+        Set($"loc:href:{href.Contains("/e2e")}");
+    }
+    private async Task HistoryPush()
+    {
+        await history.PushState(new SamplePayload(1, "marker"), "/e2e?marked");
+        var len = await history.GetLength();
+        Set($"history:len:{len > 0}");
+    }
+
+    public class SamplePayload(int number, string label)
+    {
+        public int Number { get; set; } = number;
+        public string Label { get; set; } = label;
+    }
+}

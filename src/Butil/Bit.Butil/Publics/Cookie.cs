@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -17,8 +18,15 @@ public class Cookie(IJSRuntime js)
     /// </summary>
     public async Task<ButilCookie[]> GetAll()
     {
-        var cookie = await js.Invoke<string>("BitButil.cookie.get");
-        return cookie.Split(';').Select(ButilCookie.Parse).ToArray();
+        var raw = await js.Invoke<string>("BitButil.cookie.get");
+
+        if (string.IsNullOrWhiteSpace(raw)) return [];
+
+        return raw.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                  .Select(ButilCookie.Parse)
+                  .Where(c => c is not null)
+                  .Select(c => c!)
+                  .ToArray();
     }
 
     /// <summary>

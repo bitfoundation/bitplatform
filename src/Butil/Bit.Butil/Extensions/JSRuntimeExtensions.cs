@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -60,20 +59,14 @@ public static class JSRuntimeExtensions
     {
         if (jsRuntime is IJSInProcessRuntime jsInProcessRuntime)
         {
-            try
-            {
-                return ValueTask.FromResult(jsInProcessRuntime.Invoke<TResult>(identifier, args));
-            }
-            catch (JsonException ex)
-            {
-                System.Console.Error.WriteLine($"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}. A JSON-related issue occurred: {ex.Message}.");
-                return ValueTask.FromResult(default(TResult)!);
-            }
+            // We deliberately do not catch JsonException here. Calling the synchronous
+            // Invoke<T> against a JS function that returns a Promise produces a JSON
+            // payload that cannot deserialize to TResult; surfacing the error makes the
+            // mistake visible instead of silently returning default(TResult).
+            return ValueTask.FromResult(jsInProcessRuntime.Invoke<TResult>(identifier, args));
         }
-        else
-        {
-            return jsRuntime.InvokeAsync<TResult>(identifier, cancellationToken, args);
-        }
+
+        return jsRuntime.InvokeAsync<TResult>(identifier, cancellationToken, args);
     }
 
 
@@ -117,21 +110,12 @@ public static class JSRuntimeExtensions
     {
         if (jsRuntime is IJSInProcessRuntime jsInProcessRuntime)
         {
-            try
-            {
-                jsInProcessRuntime.Invoke<IJSVoidResult>(identifier, args);
-                return ValueTask.CompletedTask;
-            }
-            catch (JsonException ex)
-            {
-                System.Console.Error.WriteLine($"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}. A JSON-related issue occurred: {ex.Message}.");
-                return ValueTask.CompletedTask;
-            }
+            // Don't swallow JsonException — see FastInvokeAsync<TResult> for rationale.
+            jsInProcessRuntime.Invoke<IJSVoidResult>(identifier, args);
+            return ValueTask.CompletedTask;
         }
-        else
-        {
-            return jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
-        }
+
+        return jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
     }
 
 

@@ -54,6 +54,13 @@ public class History(IJSRuntime js) : IAsyncDisposable
         => await js.Invoke<object>("BitButil.history.state");
 
     /// <summary>
+    /// Strongly-typed accessor for <see cref="GetState"/>.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
+    public async Task<T?> GetState<[System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T>()
+        => await js.Invoke<T?>("BitButil.history.state");
+
+    /// <summary>
     /// This asynchronous method goes to the previous page in session history, the same action as 
     /// when the user clicks the browser's Back button. Calling this method to go back beyond the 
     /// first page in the session history has no effect and doesn't raise an exception.
@@ -121,6 +128,17 @@ public class History(IJSRuntime js) : IAsyncDisposable
         await js.InvokeVoid("BitButil.history.addPopState", HistoryListenersManager.InvokeMethodName, listenerId);
 
         return listenerId;
+    }
+
+    /// <summary>
+    /// Subscribes to <c>popstate</c> and returns an <see cref="IAsyncDisposable"/> handle that
+    /// detaches the listener when disposed. Pair with <c>await using</c>.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HistoryListenersManager))]
+    public async ValueTask<ButilSubscription> SubscribePopState(Action<object> handler)
+    {
+        var id = await AddPopState(handler);
+        return new ButilSubscription(id, () => RemovePopState(id));
     }
 
     /// <summary>

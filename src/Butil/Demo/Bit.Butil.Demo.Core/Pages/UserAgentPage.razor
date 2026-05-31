@@ -1,41 +1,38 @@
 ﻿@page "/userAgent"
-@inject Bit.Butil.Console console
 @inject Bit.Butil.UserAgent userAgent
 
 <PageTitle>UserAgent Samples</PageTitle>
 
-<h1>UserAgent</h1>
+<PageHeader Category="Browser & Device"
+            Title="UserAgent"
+            Lead="Parse a user-agent string into structured details — browser, engine, OS and device — without writing a single regex."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent" />
 
-<pre style="font-family:Consolas">
+<pre>
 @@inject Bit.Butil.UserAgent userAgent
 
-@@code {
-    ...
-    var userAgentProps = await userAgent.Extract();
-    ...
-}
+var props = await userAgent.Extract();          // current browser
+var props = await userAgent.Extract(uaString);  // a specific string
 </pre>
 
-<br />
-<hr />
+<DemoCard Title="Extract user-agent details" Api="Extract"
+          Description="Leave the field empty to parse the current browser's user-agent, or paste any user-agent string to parse it.">
+    <div class="field">
+        <span class="field-label">User-agent string (optional)</span>
+        <input @bind="userAgentString" placeholder="Leave empty for the current browser" />
+    </div>
+    <button @onclick="Extract">Extract</button>
+</DemoCard>
 
-<h3>Open the DevTools' console and start clicking on buttons</h3>
-
-<hr />
-<br />
-
-<input @bind="userAgentString" />
-<button @onclick="Extract">Extract</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="userAgent output" />
 
 @code {
+    private DemoConsole output = default!;
     private string? userAgentString;
 
     private async Task Extract()
     {
-        var userAgentProps = await userAgent.Extract(userAgentString);
-        await console.Log("UserAgent properties:", userAgentProps);
+        var props = await userAgent.Extract(userAgentString);
+        await output.Success("UserAgent properties →", props);
     }
 }

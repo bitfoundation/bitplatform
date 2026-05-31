@@ -32,6 +32,52 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         return listenerId;
     }
 
+    /// <summary>
+    /// Same as <see cref="Add"/> but returns an <see cref="IAsyncDisposable"/> handle that
+    /// detaches the shortcut when disposed.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(KeyboardListenersManager))]
+    public async Task<ButilSubscription> Subscribe(string code, Action handler,
+        ButilModifiers modifiers = ButilModifiers.None,
+        bool preventDefault = true,
+        bool stopPropagation = true,
+        bool repeat = false)
+    {
+        var id = await Add(code, handler, modifiers, preventDefault, stopPropagation, repeat);
+        return new ButilSubscription(id, () => Remove(id));
+    }
+
+    /// <summary>
+    /// Element-scoped variant of <see cref="Subscribe"/>: the shortcut only fires while the given
+    /// element (or one of its descendants) has focus or receives the keyboard event.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(KeyboardListenersManager))]
+    public async Task<ButilSubscription> SubscribeOn(Microsoft.AspNetCore.Components.ElementReference element,
+        string code, Action handler,
+        ButilModifiers modifiers = ButilModifiers.None,
+        bool preventDefault = true,
+        bool stopPropagation = true,
+        bool repeat = false)
+    {
+        var listenerId = KeyboardListenersManager.AddListener(handler);
+        _handlers.TryAdd(listenerId, handler);
+
+        await js.InvokeVoid("BitButil.keyboard.addOn",
+            KeyboardListenersManager.InvokeMethodName,
+            listenerId,
+            element,
+            code,
+            modifiers.HasFlag(ButilModifiers.Alt),
+            modifiers.HasFlag(ButilModifiers.Ctrl),
+            modifiers.HasFlag(ButilModifiers.Meta),
+            modifiers.HasFlag(ButilModifiers.Shift),
+            preventDefault,
+            stopPropagation,
+            repeat);
+
+        return new ButilSubscription(listenerId, () => Remove(listenerId));
+    }
+
     public async ValueTask<Guid[]> Remove(Action handler)
     {
         var ids = KeyboardListenersManager.RemoveListener(handler);

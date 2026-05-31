@@ -1,6 +1,9 @@
 var BitButil = BitButil || {};
 
 (function (butil: any) {
+    // Element-scoped event handlers, indexed by listenerId so element teardown can find them.
+    const _elementHandlers: { [listenerId: string]: { element: HTMLElement, eventName: string, handler: any, options: any } } = {};
+
     butil.element = {
         blur(element: HTMLElement) { element.blur() },
         getAttribute(element: HTMLElement, name: string) { return element.getAttribute(name) },
@@ -61,6 +64,8 @@ var BitButil = BitButil || {};
         offsetWidth(element: HTMLElement) { return element.offsetWidth },
         getTabIndex(element: HTMLElement) { return element.tabIndex },
         setTabIndex(element: HTMLElement, value: number) { element.tabIndex = value },
+        subscribeEvent,
+        unsubscribeEvent,
     };
 
     function scroll(element: HTMLElement, options?: ScrollToOptions, x?: number, y?: number) {
@@ -81,5 +86,27 @@ var BitButil = BitButil || {};
 
     function scrollIntoView(element: HTMLElement, alignToTop?: boolean, options?: ScrollIntoViewOptions) {
         element.scrollIntoView(alignToTop ?? options);
+    }
+
+    function subscribeEvent(element: HTMLElement, elementId: string, eventName: string, methodName: string,
+        listenerId: string, argsMembers: string[], useCapture: boolean,
+        preventDefault: boolean, stopPropagation: boolean) {
+        if (!element) return;
+        const handler = (e: any) => {
+            preventDefault && e.preventDefault();
+            stopPropagation && e.stopPropagation();
+            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, butil.events.mapEvent(e, argsMembers));
+        };
+        _elementHandlers[listenerId] = { element, eventName, handler, options: useCapture };
+        element.addEventListener(eventName, handler, useCapture);
+    }
+
+    function unsubscribeEvent(elementId: string, eventName: string, listenerId: string, useCapture: boolean) {
+        const entry = _elementHandlers[listenerId];
+        if (!entry) return;
+        delete _elementHandlers[listenerId];
+        try {
+            entry.element.removeEventListener(entry.eventName, entry.handler, entry.options);
+        } catch { /* element may already be detached */ }
     }
 }(BitButil));

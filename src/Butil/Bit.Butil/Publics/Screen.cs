@@ -92,6 +92,16 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
+    /// Subscribe variant returning an <see cref="IAsyncDisposable"/> handle.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScreenListenersManager))]
+    public async ValueTask<ButilSubscription> SubscribeChange(Action handler)
+    {
+        var id = await AddChange(handler);
+        return new ButilSubscription(id, () => RemoveChange(id));
+    }
+
+    /// <summary>
     /// Fired on a specific screen when it changes in some way — width or height, 
     /// available width or height, color depth, or orientation.
     /// <br />

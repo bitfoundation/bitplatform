@@ -31,6 +31,8 @@ public static class DomKeyboardEventListenersManager
         }).ToArray();
     }
 
+    internal static void RemoveById(Guid id) => Listeners.TryRemove(id, out _);
+
     [JSInvokable(InvokeMethodName)]
     public static void Invoke(Guid id, ButilKeyboardEventArgs args)
     {

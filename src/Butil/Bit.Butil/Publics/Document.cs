@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public class Document(IJSRuntime js)
+public class Document(IJSRuntime js) : IAsyncDisposable
 {
     private const string ElementName = "document";
+
+    // Track listener ids registered through this *instance* so dispose actually drains them.
+    private readonly ConcurrentDictionary<(Guid Id, string Event, bool UseCapture), byte> _listenerIds = new();
 
     public async Task AddEventListener<T>(
         string domEvent,
@@ -14,10 +19,39 @@ public class Document(IJSRuntime js)
         bool useCapture = false,
         bool preventDefault = false,
         bool stopPropagation = false)
-        => await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture, preventDefault, stopPropagation);
+    {
+        var id = await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture, preventDefault, stopPropagation);
+        _listenerIds.TryAdd((id, domEvent, useCapture), 0);
+    }
 
     public async Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
-        => await DomEventDispatcher.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
+    {
+        var ids = await DomEventDispatcher.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
+        foreach (var id in ids) _listenerIds.TryRemove((id, domEvent, useCapture), out _);
+    }
+
+    /// <summary>
+    /// Subscribe variant of <see cref="AddEventListener{T}"/> returning an <see cref="IAsyncDisposable"/> handle.
+    /// Pair with <c>await using</c> to guarantee detachment.
+    /// </summary>
+    public async Task<ButilSubscription> SubscribeEvent<T>(
+        string domEvent,
+        Action<T> listener,
+        bool useCapture = false,
+        bool preventDefault = false,
+        bool stopPropagation = false)
+    {
+        var id = await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture, preventDefault, stopPropagation);
+        var key = (id, domEvent, useCapture);
+        _listenerIds.TryAdd(key, 0);
+
+        return new ButilSubscription(id, async () =>
+        {
+            _listenerIds.TryRemove(key, out _);
+            if (OperatingSystem.IsBrowser() is false) return;
+            await DomEventDispatcher.RemoveEventListenerById(js, ElementName, domEvent, id, useCapture);
+        });
+    }
 
     /// <summary>
     /// Returns the character set being used by the document.
@@ -148,4 +182,158 @@ public class Document(IJSRuntime js)
     /// </summary>
     public async Task ExitPointerLock()
         => await js.InvokeVoid("BitButil.document.exitPointerLock");
+
+    /// <summary>
+    /// Indicates whether the document is currently visible.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState">https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState</see>
+    /// </summary>
+    public async Task<VisibilityState> GetVisibilityState()
+    {
+        var raw = await js.Invoke<string>("BitButil.document.visibilityState");
+        return raw == "hidden" ? VisibilityState.Hidden : VisibilityState.Visible;
+    }
+
+    /// <summary>
+    /// True when the document is currently hidden.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/hidden">https://developer.mozilla.org/en-US/docs/Web/API/Document/hidden</see>
+    /// </summary>
+    public async Task<bool> IsHidden()
+        => await js.Invoke<bool>("BitButil.document.hidden");
+
+    /// <summary>
+    /// True when the document or any element inside it has focus.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/hasFocus">https://developer.mozilla.org/en-US/docs/Web/API/Document/hasFocus</see>
+    /// </summary>
+    public async Task<bool> HasFocus()
+        => await js.Invoke<bool>("BitButil.document.hasFocus");
+
+    /// <summary>
+    /// True when the page is restored from a discarded state by the browser
+    /// (e.g. tab was reclaimed under memory pressure and is now being reactivated).
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/wasDiscarded">Document.wasDiscarded</see>
+    /// </summary>
+    public ValueTask<bool> WasDiscarded() => js.Invoke<bool>("BitButil.document.wasDiscarded");
+
+    // ─── Convenience subscription helpers built on SubscribeEvent ───────────────
+
+    /// <summary>
+    /// Fires when <see cref="GetVisibilityState"/> flips. The handler receives the new state.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event">visibilitychange</see>
+    /// </summary>
+    public async Task<ButilSubscription> SubscribeVisibilityChange(Action<VisibilityState> handler)
+    {
+        Action<object> bridge = _ =>
+        {
+            // We don't get the state on the event itself — fetch it on the fly.
+            // It's cheap (sync property) so the extra interop is acceptable.
+            _ = ReportVisibilityAsync(handler);
+        };
+        return await SubscribeEvent(ButilEvents.VisibilityChange, bridge);
+    }
+
+    private async Task ReportVisibilityAsync(Action<VisibilityState> handler)
+    {
+        try { handler(await GetVisibilityState()); }
+        catch (JSDisconnectedException) { }
+    }
+
+    /// <summary>
+    /// Fires when an element enters or leaves fullscreen. The handler receives true when
+    /// the document currently has a fullscreen element.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenchange_event">fullscreenchange</see>
+    /// </summary>
+    public async Task<ButilSubscription> SubscribeFullscreenChange(Action<bool> handler)
+    {
+        Action<object> bridge = _ => _ = ReportFullscreenAsync(handler);
+        return await SubscribeEvent(ButilEvents.FullscreenChange, bridge);
+    }
+
+    private async Task ReportFullscreenAsync(Action<bool> handler)
+    {
+        try
+        {
+            var hasFs = await js.Invoke<bool>("BitButil.document.hasFullscreenElement");
+            handler(hasFs);
+        }
+        catch (JSDisconnectedException) { }
+    }
+
+    /// <summary>
+    /// Fires when entering fullscreen fails. The handler receives no payload — the spec
+    /// doesn't expose a structured reason.
+    /// </summary>
+    public Task<ButilSubscription> SubscribeFullscreenError(Action handler)
+    {
+        Action<object> bridge = _ => handler();
+        return SubscribeEvent(ButilEvents.FullscreenError, bridge);
+    }
+
+    /// <summary>
+    /// Fires when pointer lock is entered or exited. The handler receives true when an
+    /// element currently has pointer lock.
+    /// </summary>
+    public async Task<ButilSubscription> SubscribePointerLockChange(Action<bool> handler)
+    {
+        Action<object> bridge = _ => _ = ReportPointerLockAsync(handler);
+        return await SubscribeEvent(ButilEvents.PointerLockChange, bridge);
+    }
+
+    private async Task ReportPointerLockAsync(Action<bool> handler)
+    {
+        try
+        {
+            var hasLock = await js.Invoke<bool>("BitButil.document.hasPointerLockElement");
+            handler(hasLock);
+        }
+        catch (JSDisconnectedException) { }
+    }
+
+    /// <summary>Fires when entering pointer lock fails.</summary>
+    public Task<ButilSubscription> SubscribePointerLockError(Action handler)
+    {
+        Action<object> bridge = _ => handler();
+        return SubscribeEvent(ButilEvents.PointerLockError, bridge);
+    }
+
+    /// <summary>
+    /// Fires when the DOMContentLoaded event has just been raised. Useful when bootstrapping
+    /// post-render work after circuit reconnect.
+    /// </summary>
+    public Task<ButilSubscription> SubscribeDomContentLoaded(Action handler)
+    {
+        Action<object> bridge = _ => handler();
+        return SubscribeEvent(ButilEvents.DomContentLoaded, bridge);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing is false) return;
+        if (_listenerIds.IsEmpty) return;
+
+        var snapshot = _listenerIds.Keys.ToArray();
+        _listenerIds.Clear();
+
+        if (OperatingSystem.IsBrowser() is false) return;
+
+        try
+        {
+            foreach (var (id, evt, useCapture) in snapshot)
+            {
+                await DomEventDispatcher.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
 }

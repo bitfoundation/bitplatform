@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
@@ -57,19 +56,24 @@ internal static class InternalJSRuntimeExtensions
     }
 
 
-    [SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
-    internal static bool IsJsRuntimeInvalid(this IJSRuntime jsRuntime)
+    /// <summary>
+    /// Returns true when calling into JavaScript right now would either be impossible
+    /// (no runtime / pre-render) or guaranteed to fail (disposed circuit).
+    /// </summary>
+    /// <remarks>
+    /// We deliberately avoid reflecting over private fields of <c>RemoteJSRuntime</c>
+    /// or <c>WebViewJSRuntime</c>; those internals have changed across .NET releases.
+    /// Instead we rely on the only documented sentinel — the
+    /// <c>UnsupportedJavaScriptRuntime</c> type used during static SSR / pre-render —
+    /// and let actual disconnect surface as <see cref="JSDisconnectedException"/> at
+    /// the call site, which callers already catch.
+    /// </remarks>
+    internal static bool IsJsRuntimeInvalid(this IJSRuntime? jsRuntime)
     {
-        if (jsRuntime is null) return false;
+        if (jsRuntime is null) return true;
 
-        var type = jsRuntime.GetType();
-
-        return type.Name switch
-        {
-            "UnsupportedJavaScriptRuntime" => true, // Prerendering
-            "RemoteJSRuntime" => (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)! is false, // Blazor server
-            "WebViewJSRuntime" => type.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(jsRuntime) is null, // Blazor Hybrid
-            _ => false // Blazor WASM
-        };
+        // During pre-rendering ASP.NET injects an UnsupportedJavaScriptRuntime that
+        // throws on every call. We special-case it to keep prerender silent.
+        return jsRuntime.GetType().Name == "UnsupportedJavaScriptRuntime";
     }
 }

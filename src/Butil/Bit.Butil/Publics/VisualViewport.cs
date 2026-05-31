@@ -105,6 +105,16 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
+    /// Subscribe variant of <see cref="AddResize"/> returning an <see cref="IAsyncDisposable"/> handle.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(VisualViewportListenersManager))]
+    public async ValueTask<ButilSubscription> SubscribeResize(Action handler)
+    {
+        var id = await AddResize(handler);
+        return new ButilSubscription(id, () => RemoveResize(id));
+    }
+
+    /// <summary>
     /// Fired when the visual viewport is resized.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event</see>
@@ -163,6 +173,16 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
         await js.InvokeVoid("BitButil.visualViewport.addScroll", VisualViewportListenersManager.InvokeMethodName, listenerId);
 
         return listenerId;
+    }
+
+    /// <summary>
+    /// Subscribe variant of <see cref="AddScroll"/> returning an <see cref="IAsyncDisposable"/> handle.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(VisualViewportListenersManager))]
+    public async ValueTask<ButilSubscription> SubscribeScroll(Action handler)
+    {
+        var id = await AddScroll(handler);
+        return new ButilSubscription(id, () => RemoveScroll(id));
     }
 
     /// <summary>

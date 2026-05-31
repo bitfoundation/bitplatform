@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -14,11 +16,38 @@ public class Window(IJSRuntime js) : IAsyncDisposable
 {
     private const string ElementName = "window";
 
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action<MediaQueryList>> _matchMediaHandlers = new();
+
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<(Guid Id, string Event, bool UseCapture), byte> _listenerIds = new();
+
     public async Task AddEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
-        => await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture);
+    {
+        var id = await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture);
+        _listenerIds.TryAdd((id, domEvent, useCapture), 0);
+    }
 
     public async Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
-        => await DomEventDispatcher.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
+    {
+        var ids = await DomEventDispatcher.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
+        foreach (var id in ids) _listenerIds.TryRemove((id, domEvent, useCapture), out _);
+    }
+
+    /// <summary>
+    /// Subscribe variant of <see cref="AddEventListener{T}"/> returning an <see cref="IAsyncDisposable"/> handle.
+    /// </summary>
+    public async Task<ButilSubscription> SubscribeEvent<T>(string domEvent, Action<T> listener, bool useCapture = false)
+    {
+        var id = await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture);
+        var key = (id, domEvent, useCapture);
+        _listenerIds.TryAdd(key, 0);
+
+        return new ButilSubscription(id, async () =>
+        {
+            _listenerIds.TryRemove(key, out _);
+            if (OperatingSystem.IsBrowser() is false) return;
+            await DomEventDispatcher.RemoveEventListenerById(js, ElementName, domEvent, id, useCapture);
+        });
+    }
 
     /// <summary>
     /// The beforeunload event is fired when the current window, contained document, and associated resources are about to be unloaded. 
@@ -30,6 +59,14 @@ public class Window(IJSRuntime js) : IAsyncDisposable
         => await js.InvokeVoid("BitButil.window.addBeforeUnload");
 
     /// <summary>
+    /// Same as <see cref="AddBeforeUnload()"/> but stores a confirmation message. Modern browsers
+    /// ignore the message text and show their own generic warning, but supplying a message
+    /// guarantees the prompt fires consistently across user-gesture vs auto-navigation cases.
+    /// </summary>
+    public Task AddBeforeUnload(string message)
+        => js.InvokeVoid("BitButil.window.addBeforeUnload", message).AsTask();
+
+    /// <summary>
     /// The beforeunload event is fired when the current window, contained document, and associated resources are about to be unloaded. 
     /// The document is still visible and the event is still cancelable at this point.
     /// <br/>
@@ -37,6 +74,31 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async Task RemoveBeforeUnload()
         => await js.InvokeVoid("BitButil.window.removeBeforeUnload");
+
+    // ─── Page Lifecycle ─────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Fires when the page is frozen by the browser (typically because it has been moved
+    /// to the back/forward cache). Use this to release expensive resources.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/freeze_event">freeze</see>
+    /// </summary>
+    public Task<ButilSubscription> SubscribeFreeze(Action handler)
+    {
+        Action<object> bridge = _ => handler();
+        return SubscribeEvent("freeze", bridge);
+    }
+
+    /// <summary>
+    /// Fires when the page resumes from the back/forward cache.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/resume_event">resume</see>
+    /// </summary>
+    public Task<ButilSubscription> SubscribeResume(Action handler)
+    {
+        Action<object> bridge = _ => handler();
+        return SubscribeEvent("resume", bridge);
+    }
 
     /// <summary>
     /// Gets the height of the content area of the browser window in px including, if rendered, the horizontal scrollbar.
@@ -213,12 +275,34 @@ public class Window(IJSRuntime js) : IAsyncDisposable
         => await js.InvokeVoid("BitButil.window.focus");
 
     /// <summary>
-    /// Returns the selection text representing the selected item(s).
+    /// Returns a snapshot of the current selection (selected text plus range metadata).
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection">https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection</see>
     /// </summary>
-    public async Task<string> GetSelection()
-        => await js.Invoke<string>("BitButil.window.getSelection");
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WindowSelection))]
+    public async Task<WindowSelection?> GetSelection()
+        => await js.Invoke<WindowSelection?>("BitButil.window.getSelection");
+
+    /// <summary>
+    /// Returns just the selected text (equivalent to <c>window.getSelection().toString()</c>).
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection">https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection</see>
+    /// </summary>
+    public async Task<string> GetSelectionText()
+        => await js.Invoke<string>("BitButil.window.getSelectionText");
+
+    /// <summary>Removes any current selection.</summary>
+    public Task ClearSelection() => js.InvokeVoid("BitButil.window.clearSelection").AsTask();
+
+    /// <summary>
+    /// Selects every text node inside <paramref name="element"/>. Works on form-control inputs
+    /// too, falling back to <c>HTMLInputElement.select()</c>.
+    /// </summary>
+    public Task SelectElement(Microsoft.AspNetCore.Components.ElementReference element)
+        => js.InvokeVoid("BitButil.window.selectElement", element).AsTask();
+
+    /// <summary>Copies the current selection to the clipboard, returning true on success.</summary>
+    public Task<bool> CopySelection() => js.Invoke<bool>("BitButil.window.copySelection").AsTask();
 
     /// <summary>
     /// Returns a MediaQueryList object representing the specified media query string.
@@ -227,6 +311,69 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async Task<MediaQueryList> MatchMedia(string query)
         => await js.Invoke<MediaQueryList>("BitButil.window.matchMedia", query);
+
+    /// <summary>
+    /// Subscribes to the <c>change</c> event of <c>matchMedia(query)</c>. The handler fires whenever
+    /// the media query's evaluation flips (e.g. when the user toggles dark mode or rotates the device).
+    /// Use <see cref="UnsubscribeMatchMedia(Guid)"/> with the returned id to stop listening.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList/change_event">https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList/change_event</see>
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaQueryListenersManager))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaQueryList))]
+    public async Task<Guid> SubscribeMatchMedia(string query, Action<MediaQueryList> handler)
+    {
+        var listenerId = MediaQueryListenersManager.AddListener(handler);
+        _matchMediaHandlers.TryAdd(listenerId, handler);
+
+        await js.InvokeVoid("BitButil.window.subscribeMatchMedia",
+            MediaQueryListenersManager.InvokeMethodName,
+            listenerId,
+            query);
+
+        return listenerId;
+    }
+
+    /// <summary>
+    /// Subscribe variant of <see cref="SubscribeMatchMedia(string, Action{MediaQueryList})"/>
+    /// returning an <see cref="IAsyncDisposable"/> handle.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaQueryListenersManager))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaQueryList))]
+    public async Task<ButilSubscription> WatchMatchMedia(string query, Action<MediaQueryList> handler)
+    {
+        var id = await SubscribeMatchMedia(query, handler);
+        return new ButilSubscription(id, () => UnsubscribeMatchMedia(id));
+    }
+
+    /// <summary>
+    /// Removes a previously registered match-media listener.
+    /// </summary>
+    public async ValueTask UnsubscribeMatchMedia(Guid id)
+    {
+        MediaQueryListenersManager.RemoveListeners([id]);
+        _matchMediaHandlers.TryRemove(id, out _);
+        if (OperatingSystem.IsBrowser() is false) return;
+        await js.InvokeVoid("BitButil.window.unsubscribeMatchMedia", new[] { id });
+    }
+
+    /// <summary>
+    /// Removes a previously registered match-media listener by handler reference.
+    /// </summary>
+    public async ValueTask<Guid[]> UnsubscribeMatchMedia(Action<MediaQueryList> handler)
+    {
+        var ids = MediaQueryListenersManager.RemoveListener(handler);
+        if (ids.Length == 0) return ids;
+
+        foreach (var id in ids) _matchMediaHandlers.TryRemove(id, out _);
+
+        if (OperatingSystem.IsBrowser())
+        {
+            await js.InvokeVoid("BitButil.window.unsubscribeMatchMedia", ids);
+        }
+
+        return ids;
+    }
 
     /// <summary>
     /// Opens a new window.
@@ -310,6 +457,30 @@ public class Window(IJSRuntime js) : IAsyncDisposable
 
         try
         {
+            if (_matchMediaHandlers.Count > 0)
+            {
+                var ids = _matchMediaHandlers.Keys.ToArray();
+                _matchMediaHandlers.Clear();
+                MediaQueryListenersManager.RemoveListeners(ids);
+                if (OperatingSystem.IsBrowser())
+                {
+                    await js.InvokeVoid("BitButil.window.unsubscribeMatchMedia", ids);
+                }
+            }
+
+            if (_listenerIds.IsEmpty is false)
+            {
+                var snapshot = _listenerIds.Keys.ToArray();
+                _listenerIds.Clear();
+                if (OperatingSystem.IsBrowser())
+                {
+                    foreach (var (id, evt, useCapture) in snapshot)
+                    {
+                        await DomEventDispatcher.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
+                    }
+                }
+            }
+
             await js.InvokeVoid("BitButil.window.dispose");
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here

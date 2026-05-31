@@ -1,46 +1,55 @@
 ﻿@page "/crypto"
-@inject Bit.Butil.Console console
 @inject Bit.Butil.Crypto crypto
 
 <PageTitle>Crypto Samples</PageTitle>
 
-<h1>Crypto</h1>
+<PageHeader Category="Utilities"
+            Title="Crypto"
+            Lead="Use the browser's Web Crypto engine from C#: encrypt and decrypt data, hash values and generate cryptographically-strong random bytes."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Crypto" />
 
-<pre style="font-family:Consolas; overflow: auto;">
+<pre>
 @@inject Bit.Butil.Crypto crypto
 
-@@code {
-    ...
-    await crypto.Encrypt(...);
-    ...
-}
+var cipher = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, data, iv: iv);
+var plain  = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, cipher, iv: iv);
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="AES-CBC encrypt / decrypt" Api="Encrypt / Decrypt"
+              Description="A random 128-bit key and IV are generated when the page loads. Encrypt your text, then decrypt the cipher back to the original.">
+        <div class="field">
+            <span class="field-label">Plain text</span>
+            <input @bind="@inputText" placeholder="Secret message..." />
+        </div>
+        <button @onclick="Encrypt">Encrypt</button>
 
-<h3>Open the DevTools' console and start clicking</h3>
+        <hr />
 
-<hr />
-<br />
+        <div class="field">
+            <span class="field-label">Cipher (hex)</span>
+            <input value="@cipherHex" readonly placeholder="Encrypt first to see the cipher" />
+        </div>
+        <button class="secondary" @onclick="Decrypt">Decrypt</button>
 
-<input @bind="@inputText" />
-<br />
-<br />
-<button @onclick="Encrypt">Encrypt</button>
-<br />
-<br />
-<br />
-<input @bind="@outputText" />
-<br />
-<br />
-<button @onclick="Decrypt">Decrypt</button>
+        @if (!string.IsNullOrEmpty(outputText))
+        {
+            <p style="margin-top:1rem">
+                <span class="result-pill">Decrypted: <b>@outputText</b></span>
+            </p>
+        }
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="crypto output" />
 
 @code {
+    private DemoConsole output = default!;
     private string inputText;
     private byte[] iv = new byte[16];
     private byte[] key = new byte[16];
     private byte[] encryptedBytes;
+    private string cipherHex;
     private string outputText;
 
     protected override void OnInitialized()
@@ -51,19 +60,30 @@
 
     private async Task Encrypt()
     {
-        await console.Log("Start encrypting...");
+        if (string.IsNullOrEmpty(inputText))
+        {
+            await output.Warn("Enter some text to encrypt first.");
+            return;
+        }
+
+        await output.Info("Encrypting...");
         var textAsUtf8Bytes = System.Text.Encoding.UTF8.GetBytes(inputText);
         encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
-        await console.Log("Encrypted bytes:", encryptedBytes);
-        await console.Log("Encrypted text:", BitConverter.ToString(encryptedBytes));
+        cipherHex = BitConverter.ToString(encryptedBytes);
+        await output.Success("Encrypted →", cipherHex);
     }
 
     private async Task Decrypt()
     {
-        await console.Log("Start decrypting...");
+        if (encryptedBytes is null)
+        {
+            await output.Warn("Encrypt something first.");
+            return;
+        }
+
+        await output.Info("Decrypting...");
         var decryptedBytes = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, encryptedBytes, iv: iv);
-        await console.Log("Decrypted bytes:", decryptedBytes);
         outputText = System.Text.Encoding.UTF8.GetString(decryptedBytes);
-        await console.Log("Decrypted text:", outputText);
+        await output.Success("Decrypted →", outputText);
     }
 }
