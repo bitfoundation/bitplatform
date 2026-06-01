@@ -173,7 +173,7 @@ private readonly List<Section> keyedItems =
 private static RenderFragment<Section> BodyFor(string? text) => section => builder => builder.AddContent(0, text);";
 
     private readonly string example4RazorCode = @"
-<BitAccordionList Items=""basicItems""
+<BitAccordionList Items=""eventsItems""
                   TItem=""Section""
                   NameSelectors=""nameSelectors""
                   OnExpand=""(Section item) => expandedTitle = item.Name""

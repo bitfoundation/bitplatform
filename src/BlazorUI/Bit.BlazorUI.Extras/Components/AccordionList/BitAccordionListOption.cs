@@ -95,8 +95,8 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
     {
         if (disposing is false || _disposed) return;
 
-        // Await the unregistration so the UpdateBoundKeys and ExpandedKey/ExpandedKeys callbacks
-        // it may trigger are observed instead of running as fire-and-forget.
+        // Await the unregistration so any UpdateBoundKeys / ExpandedKey(s) callbacks it triggers
+        // are observed (instead of running as fire-and-forget).
         await Parent.UnregisterOption(this);
 
         _disposed = true;
