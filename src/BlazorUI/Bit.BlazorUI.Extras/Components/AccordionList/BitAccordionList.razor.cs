@@ -203,8 +203,8 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         if (ShouldExpandOnRegister(option.Key!, option.IsExpanded))
         {
             _expandedKeys.Add(option.Key!);
-            _internalExpandedKey = _expandedKeys.FirstOrDefault();
-            _internalExpandedKeys = [.. _expandedKeys];
+            _internalExpandedKeys = GetOrderedExpandedKeys();
+            _internalExpandedKey = _internalExpandedKeys.FirstOrDefault();
         }
 
         StateHasChanged();
@@ -298,7 +298,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     {
         BuildItemClassStyles();
 
-        if (ChildContent is null && Options is null && Items is not null && Items.Any())
+        if (ChildContent is null && Options is null && Items is not null)
         {
             if (_oldItems is null || Items.SequenceEqual(_oldItems) is false)
             {
@@ -332,12 +332,30 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
     private void AssignItemKeys()
     {
+        // Collect the explicit keys first so the auto-generated keys never collide with them.
+        var usedKeys = new HashSet<string>();
+        foreach (var item in _items)
+        {
+            var key = GetItemKey(item);
+            if (key.HasValue()) usedKeys.Add(key!);
+        }
+
         for (int i = 0; i < _items.Count; i++)
         {
             var item = _items[i];
             if (GetItemKey(item).HasValue()) continue;
 
-            SetItemKey(item, i.ToString());
+            // Start from the loop index and increment until a non-colliding key is found so the
+            // result stays deterministic across renders while remaining unique.
+            var suffix = i;
+            var candidate = suffix.ToString();
+            while (usedKeys.Contains(candidate))
+            {
+                candidate = (++suffix).ToString();
+            }
+
+            SetItemKey(item, candidate);
+            usedKeys.Add(candidate);
         }
     }
 
@@ -387,8 +405,8 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
         SyncItemsExpandedState();
 
-        _internalExpandedKey = _expandedKeys.FirstOrDefault();
-        _internalExpandedKeys = [.. _expandedKeys];
+        _internalExpandedKeys = GetOrderedExpandedKeys();
+        _internalExpandedKey = _internalExpandedKeys.FirstOrDefault();
     }
 
     private void AddExpandedKeys(IEnumerable<string> keys)
@@ -410,6 +428,31 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         }
     }
 
+    // Emits the expanded keys in a stable order (the order of _items) so the two-way bound
+    // ExpandedKeys and the internal SequenceEqual comparisons stay deterministic across renders.
+    private List<string> GetOrderedExpandedKeys()
+    {
+        var ordered = new List<string>(_expandedKeys.Count);
+        var seen = new HashSet<string>();
+
+        foreach (var item in _items)
+        {
+            var key = GetItemKey(item);
+            if (key.HasValue() && _expandedKeys.Contains(key!) && seen.Add(key!))
+            {
+                ordered.Add(key!);
+            }
+        }
+
+        // Preserve any expanded keys that don't currently map to an item.
+        foreach (var key in _expandedKeys)
+        {
+            if (seen.Add(key)) ordered.Add(key);
+        }
+
+        return ordered;
+    }
+
     private void SyncFromExpandedKey(string? key)
     {
         _expandedKeys.Clear();
@@ -423,7 +466,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         _expandedKeys.Clear();
         if (keys is not null) AddExpandedKeys(keys);
         SyncItemsExpandedState();
-        _internalExpandedKeys = [.. _expandedKeys];
+        _internalExpandedKeys = GetOrderedExpandedKeys();
     }
 
     private async Task HandleOnItemClick(TItem item)
@@ -484,8 +527,8 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     {
         if (Multiple)
         {
-            _internalExpandedKeys = [.. _expandedKeys];
-            await AssignExpandedKeys([.. _expandedKeys]);
+            _internalExpandedKeys = GetOrderedExpandedKeys();
+            await AssignExpandedKeys([.. _internalExpandedKeys]);
         }
         else
         {

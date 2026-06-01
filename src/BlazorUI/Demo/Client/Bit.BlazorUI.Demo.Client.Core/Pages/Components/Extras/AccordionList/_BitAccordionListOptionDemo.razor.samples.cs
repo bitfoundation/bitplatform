@@ -229,7 +229,31 @@ private List<BitButtonGroupItem> bindingButtons =>
     </BitAccordionListOption>
 </BitAccordionList>
 
+<BitAccordionList Gap=""8"" Class=""custom-item"" TItem=""BitAccordionListOption"">
+    <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Users"" Description=""You are currently not an owner"">
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"">
+        In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+    </BitAccordionListOption>
+</BitAccordionList>
+
 <BitAccordionList Styles=""@(new() { ItemTitle = ""color: tomato;"", ItemHeader = ""background-color: var(--bit-clr-bg-sec);"" })"" TItem=""BitAccordionListOption"">
+    <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
+        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Users"" Description=""You are currently not an owner"">
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+    </BitAccordionListOption>
+    <BitAccordionListOption Title=""Advanced settings"" Description=""Filtering has been entirely disabled"">
+        In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.
+    </BitAccordionListOption>
+</BitAccordionList>
+
+<BitAccordionList Classes=""@(new() { ItemTitle = ""custom-title"" })"" TItem=""BitAccordionListOption"">
     <BitAccordionListOption Title=""General settings"" Description=""The general settings of the application"">
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
     </BitAccordionListOption>

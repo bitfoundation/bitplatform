@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Represents a single item (panel) of the <see cref="BitAccordionList{TItem}"/> component provided as a child component.
 /// </summary>
-public partial class BitAccordionListOption : ComponentBase, IDisposable
+public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
 {
     private bool _disposed;
 
@@ -85,17 +85,19 @@ public partial class BitAccordionListOption : ComponentBase, IDisposable
         await base.OnInitializedAsync();
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing is false || _disposed) return;
 
-        _ = Parent.UnregisterOption(this);
+        // Await the unregistration so the UpdateBoundKeys and ExpandedKey/ExpandedKeys callbacks
+        // it may trigger are observed instead of running as fire-and-forget.
+        await Parent.UnregisterOption(this);
 
         _disposed = true;
     }
