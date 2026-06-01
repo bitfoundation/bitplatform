@@ -78,6 +78,7 @@ function bitBswupHandler(type, data) {
             return console.log('downloading assets started:', data?.version);
 
         case BswupMessage.downloadProgress:
+            const percent = Math.round(data.percent);
             progressBar.style.width = `${percent}%`;
             return console.log('asset downloaded:', data);
 
@@ -151,6 +152,26 @@ The most important line here is the last line which is the only mandatory config
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
 ```
 
+> **Security note - the service worker is part of your trusted base.** Unlike the assets in
+> `service-worker-assets.js` (which Bswup verifies with Subresource Integrity), the
+> service-worker script itself cannot be integrity-pinned: browsers do not support an
+> `integrity` option on `navigator.serviceWorker.register()`, and `importScripts()` has no
+> SRI mechanism either. This is not Bswup-specific - Workbox and every other SW library share
+> the limitation - but it matters because a service worker can intercept every request, so a
+> tampered `service-worker.js` or `bit-bswup.sw.js` is effectively persistent, fully-privileged
+> XSS. Treat the origin/CDN that serves these two files as part of your trusted computing base:
+> serve them over HTTPS from an origin you control, and apply a strict Content-Security-Policy.
+>
+> To keep clients from getting stuck on a stale worker, Bswup registers with
+> `updateViaCache: 'none'`, which tells the browser to bypass the HTTP cache for the
+> service-worker script **and** the scripts it pulls in via `importScripts()` during update
+> checks (the browser default, `'imports'`, would still serve imported scripts from the HTTP
+> cache). That covers the whole `service-worker.js` -> `bit-bswup.sw.js` -> `service-worker-assets.js`
+> import chain. As defense-in-depth - and because `updateViaCache` support is uneven (older
+> Safari/iOS in particular) and intermediary proxies are not bound by it - also configure your
+> server to send `Cache-Control: no-cache` (or `no-store`) for `service-worker.js` and
+> `_content/Bit.Bswup/bit-bswup.sw.js` so every fetch revalidates against the origin.
+
 The other settings are:
 
 - `assetsInclude`: The list of file names from the assets list to **include** when the Bswup tries to store them in the cache storage (regex supported).
@@ -195,7 +216,7 @@ Bswup exposes a small global `BitBswup` object on the page so you can drive the 
 
 - `BitBswup.checkForUpdate()`: Asks the browser to re-fetch the service-worker script and check for a new version. If a new version is found, the normal update flow runs (`updateFound` -> `stateChanged` -> `updateReady`/`downloadFinished`). If the app is already on the latest version, Bswup raises the `updateNotFound` event so you can stop a spinner or show an "up to date" message. This is the registration-aware version that powers the built-in polling; it is safe to call as often as you like.
 - `BitBswup.skipWaiting()`: If an update has finished downloading and is waiting, this activates it immediately (equivalent to calling the `reload` callback you receive in `updateReady`/`downloadFinished`). Returns `true` when there was a waiting worker to activate, otherwise `false`.
-- `BitBswup.forceRefresh()`: Clears the Bswup and Blazor caches, unregisters all service workers, and reloads the page. Use this as a last-resort "reset" when a client gets into a bad state.
+- `BitBswup.forceRefresh(cacheFilter?)`: Clears caches, unregisters all service workers, and reloads the page. Use this as a last-resort "reset" when a client gets into a bad state. By default it clears **every** CacheStorage bucket (Bswup, Blazor framework, and any app-owned caches such as Workbox add-ons or API caches) so nothing stale survives the reload. To narrow what gets cleared, pass an optional `cacheFilter`: a string (prefix match against the cache name, e.g. `'bit-bswup'`), a `RegExp` (tested against the cache name), or a predicate function `(key) => boolean` that returns `true` for caches to delete.
 
 ### Polling for updates
 

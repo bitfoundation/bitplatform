@@ -141,6 +141,15 @@
 
     function config(newConfig: IBswupProgressConfigs) {
         Object.assign(_config, newConfig);
+
+        // Keep the assets list visibility in sync when toggled at runtime.
+        // The <ul> is server-rendered with an inline display style based on the
+        // initial ShowAssets parameter, so flipping the config alone wouldn't
+        // reveal/hide it without also updating the element here.
+        if (newConfig.showAssets !== undefined) {
+            const assetsEl = document.getElementById('bit-bswup-assets');
+            if (assetsEl) assetsEl.style.display = newConfig.showAssets ? 'block' : 'none';
+        }
     }
 }());
 

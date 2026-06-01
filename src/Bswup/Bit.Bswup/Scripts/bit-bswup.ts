@@ -1,491 +1,522 @@
 var BitBswup = BitBswup || {};
 BitBswup.version = window['bit-bswup version'] = '10.4.5';
 
-(function () {
-    // Level ordering (lowest priority first). A message is logged when its
-    // level is at or below the configured threshold. `none` silences everything.
-    const logLevels: { [k: string]: number } = {
-        none: 0,
-        error: 1,
-        warn: 2,
-        info: 3,
-        verbose: 4,
-        debug: 5,
-    };
+// Idempotency guard. bit-bswup.js wires up a DOMContentLoaded handler (and through it
+// the service-worker registration, event listeners, update timers and reload handlers)
+// and assigns the public BitBswup.* API - all as side effects that run the moment the
+// script is parsed. If the script is included more than once (e.g. a stray duplicate
+// <script src="...bit-bswup.js"> tag, or a second injection after startup) every one of
+// those would run again: duplicate listeners, a second polling timer, double reloads,
+// and the load-time `checkForUpdate` fallback clobbering the registration-aware version
+// installed by the first load. Run the setup exactly once; later inclusions are a no-op.
+if (!BitBswup.initialized) {
+    BitBswup.initialized = true;
 
-    // Default Blazor entry-point scripts to auto-detect when `blazorScript` is
-    // not set explicitly. Covers both the .NET 8+ Blazor Web App template
-    // (blazor.web.js) and the standalone Blazor WebAssembly template
-    // (blazor.webassembly.js), so the same setup works without extra config.
-    const defaultBlazorScripts = ['_framework/blazor.web.js', '_framework/blazor.webassembly.js'];
+    (function () {
+        // Level ordering (lowest priority first). A message is logged when its
+        // level is at or below the configured threshold. `none` silences everything.
+        const logLevels: { [k: string]: number } = {
+            none: 0,
+            error: 1,
+            warn: 2,
+            info: 3,
+            verbose: 4,
+            debug: 5,
+        };
 
-    const bitBswupScript = document.currentScript;
+        // Default Blazor entry-point scripts to auto-detect when `blazorScript` is
+        // not set explicitly. Covers both the .NET 8+ Blazor Web App template
+        // (blazor.web.js) and the standalone Blazor WebAssembly template
+        // (blazor.webassembly.js), so the same setup works without extra config.
+        const defaultBlazorScripts = ['_framework/blazor.web.js', '_framework/blazor.webassembly.js'];
 
-    window.addEventListener('DOMContentLoaded', runBswup); // important event!
+        const bitBswupScript = document.currentScript;
 
-    function runBswup() {
-        const options = extract();
+        window.addEventListener('DOMContentLoaded', runBswup); // important event!
 
-        info('starting...');
+        function runBswup() {
+            const options = extract();
 
-        if (!('serviceWorker' in navigator)) {
-            startBlazor(true);
-            return warn('no serviceWorker in navigator');
-        }
+            info('starting...');
 
-        startBlazor();
-
-        let reload: () => Promise<void>;
-        let cleanup: () => void;
-        let blazorStartResolver: (value: unknown) => void;
-
-        // Captured once the registration resolves so the polling helpers (timer /
-        // visibilitychange) and the page-facing BitBswup.checkForUpdate() can all call
-        // reg.update() against the same registration without re-resolving it each time.
-        let registration: ServiceWorkerRegistration;
-        let updateTimer: ReturnType<typeof setInterval>;
-
-        // Guards against reloading more than once. A single update can surface through
-        // several channels (the 'WAITING_SKIPPED' message to the initiating tab and a
-        // 'controllerchange' in every tab once the new worker claims clients); they all
-        // funnel through reloadOnce() so the page navigates exactly one time.
-        let refreshing = false;
-
-        // Snapshot of "was an active worker already present when registration resolved".
-        // This is the stable signal for first-install vs update. Reading
-        // navigator.serviceWorker.controller at message time is NOT reliable: controller
-        // is null whenever the current navigation wasn't served by the SW - most notably
-        // on a hard reload (Ctrl+Shift+R) - even when an active worker exists. Using that
-        // as the discriminator makes Bswup mistake every hard reload for a first install.
-        let hadActiveWorkerAtStartup = false;
-
-        try {
-            navigator.serviceWorker
-                .register(options.sw, { scope: options.scope, updateViaCache: 'none' })
-                .then(prepareRegistration)
-                .catch((err) => {
-                    startBlazor(true);
-                    error('serviceWorker register promise failed', err);
-                });
-            navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-            navigator.serviceWorker.addEventListener('message', handleMessage);
-        } catch (e) {
-            startBlazor(true);
-            error('serviceWorker registration failed', e);
-        }
-
-        function prepareRegistration(reg) {
-            // Capture the install/update discriminator exactly once, at the moment the
-            // registration resolves. reg.active being set here means a previous version
-            // was already installed => this is an update; otherwise it's a first install.
-            hadActiveWorkerAtStartup = !!reg.active;
-
-            // Keep the resolved registration around so checkForUpdate() (page API) and the
-            // optional polling helpers can drive reg.update() without re-resolving it.
-            registration = reg;
-            setupUpdatePolling(reg);
-
-            // Replace the load-time fallback (which re-resolves the registration on every
-            // call and can't report results) with the registration-aware implementation
-            // now that we have a live registration to work against.
-            BitBswup.checkForUpdate = checkForUpdate;
-
-            reload = () => {
-                // An update is staged (a new worker finished installing and is waiting).
-                // Tell it to skip waiting; the resulting 'WAITING_SKIPPED' message triggers
-                // the page reload. We deliberately keep the returned promise *pending*: the
-                // page is about to navigate away, so resolving early would let callers run
-                // teardown (e.g. hiding the splash) against a page that's already reloading.
-                if (reg.waiting) {
-                    reg.waiting.postMessage('SKIP_WAITING');
-                    return new Promise<void>(() => { });
-                }
-
-                // First install: a worker is active but not yet controlling this page.
-                // Ask it to claim clients; once 'CLIENTS_CLAIMED' arrives we start Blazor
-                // and resolve this promise so callers can finalize (e.g. hide the splash).
-                if (reg.active) {
-                    reg.active.postMessage('CLAIM_CLIENTS');
-                    return new Promise<void>((res) => blazorStartResolver = res as (value: unknown) => void);
-                }
-
-                // No worker to coordinate with - fall back to a plain reload.
-                window.location.reload();
-                return new Promise<void>(() => { });
-            };
-
-            cleanup = () => {
-                reg.waiting?.postMessage('CLEAN_UP');
-                reg.active?.postMessage('CLEAN_UP');
-            };
-
-            // The page can be loaded without a controlling service worker even though
-            // a registration already exists - most notably on a hard reload (Ctrl+F5 /
-            // Shift+Reload), which bypasses the SW for the navigation request. In that
-            // case no install/activate runs, no controllerchange fires, and the normal
-            // startBlazor() call above is a no-op (controller is null), so Blazor would
-            // never start. If the SW is already active we can safely force-start Blazor
-            // here; assets are served from network for this page and the SW will keep
-            // the cache fresh in the background.
-            if (!navigator.serviceWorker.controller && reg.active && !reg.installing) {
-                info('uncontrolled page with active registration (e.g. hard reload) - force starting Blazor.');
+            if (!('serviceWorker' in navigator)) {
                 startBlazor(true);
+                return warn('no serviceWorker in navigator');
             }
 
-            if (reg.waiting) {
-                info('registration waiting:', reg.waiting);
-                if (reg.installing) {
-                    info('registration installing:', reg.installing);
-                } else {
-                    info('registration is ready:', reg.waiting);
-                    handle(BswupMessage.updateReady, { reload });
+            startBlazor();
+
+            let reload: () => Promise<void>;
+            let cleanup: () => void;
+            let blazorStartResolver: (value: unknown) => void;
+
+            // Captured once the registration resolves so the polling helpers (timer /
+            // visibilitychange) and the page-facing BitBswup.checkForUpdate() can all call
+            // reg.update() against the same registration without re-resolving it each time.
+            let registration: ServiceWorkerRegistration;
+            let updateTimer: ReturnType<typeof setInterval>;
+
+            // Guards against reloading more than once. A single update can surface through
+            // several channels (the 'WAITING_SKIPPED' message to the initiating tab and a
+            // 'controllerchange' in every tab once the new worker claims clients); they all
+            // funnel through reloadOnce() so the page navigates exactly one time.
+            let refreshing = false;
+
+            // Snapshot of "was an active worker already present when registration resolved".
+            // This is the stable signal for first-install vs update. Reading
+            // navigator.serviceWorker.controller at message time is NOT reliable: controller
+            // is null whenever the current navigation wasn't served by the SW - most notably
+            // on a hard reload (Ctrl+Shift+R) - even when an active worker exists. Using that
+            // as the discriminator makes Bswup mistake every hard reload for a first install.
+            let hadActiveWorkerAtStartup = false;
+
+            try {
+                navigator.serviceWorker
+                    .register(options.sw, { scope: options.scope, updateViaCache: 'none' })
+                    .then(prepareRegistration)
+                    .catch((err) => {
+                        startBlazor(true);
+                        error('serviceWorker register promise failed', err);
+                    });
+                navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+                navigator.serviceWorker.addEventListener('message', handleMessage);
+            } catch (e) {
+                startBlazor(true);
+                error('serviceWorker registration failed', e);
+            }
+
+            function prepareRegistration(reg) {
+                // Capture the install/update discriminator exactly once, at the moment the
+                // registration resolves. reg.active being set here means a previous version
+                // was already installed => this is an update; otherwise it's a first install.
+                hadActiveWorkerAtStartup = !!reg.active;
+
+                // Keep the resolved registration around so checkForUpdate() (page API) and the
+                // optional polling helpers can drive reg.update() without re-resolving it.
+                registration = reg;
+                setupUpdatePolling(reg);
+
+                // Replace the load-time fallback (which re-resolves the registration on every
+                // call and can't report results) with the registration-aware implementation
+                // now that we have a live registration to work against.
+                BitBswup.checkForUpdate = checkForUpdate;
+
+                reload = () => {
+                    // An update is staged (a new worker finished installing and is waiting).
+                    // Tell it to skip waiting; the resulting 'WAITING_SKIPPED' message triggers
+                    // the page reload. We deliberately keep the returned promise *pending*: the
+                    // page is about to navigate away, so resolving early would let callers run
+                    // teardown (e.g. hiding the splash) against a page that's already reloading.
+                    if (reg.waiting) {
+                        reg.waiting.postMessage('SKIP_WAITING');
+                        return new Promise<void>(() => { });
+                    }
+
+                    // First install: a worker is active but not yet controlling this page.
+                    // Ask it to claim clients; once 'CLIENTS_CLAIMED' arrives we start Blazor
+                    // and resolve this promise so callers can finalize (e.g. hide the splash).
+                    if (reg.active) {
+                        reg.active.postMessage('CLAIM_CLIENTS');
+                        return new Promise<void>((res) => blazorStartResolver = res as (value: unknown) => void);
+                    }
+
+                    // No worker to coordinate with - fall back to a plain reload.
+                    window.location.reload();
+                    return new Promise<void>(() => { });
+                };
+
+                cleanup = () => {
+                    reg.waiting?.postMessage('CLEAN_UP');
+                    reg.active?.postMessage('CLEAN_UP');
+                };
+
+                // The page can be loaded without a controlling service worker even though
+                // a registration already exists - most notably on a hard reload (Ctrl+F5 /
+                // Shift+Reload), which bypasses the SW for the navigation request. In that
+                // case no install/activate runs, no controllerchange fires, and the normal
+                // startBlazor() call above is a no-op (controller is null), so Blazor would
+                // never start. If the SW is already active we can safely force-start Blazor
+                // here; assets are served from network for this page and the SW will keep
+                // the cache fresh in the background.
+                if (!navigator.serviceWorker.controller && reg.active && !reg.installing) {
+                    info('uncontrolled page with active registration (e.g. hard reload) - force starting Blazor.');
+                    startBlazor(true);
                 }
+
+                if (reg.waiting) {
+                    info('registration waiting:', reg.waiting);
+                    if (reg.installing) {
+                        info('registration installing:', reg.installing);
+                    } else {
+                        info('registration is ready:', reg.waiting);
+                        handle(BswupMessage.updateReady, { reload });
+                    }
+                }
+
+                reg.addEventListener('updatefound', function (e) {
+                    info('update found', e);
+                    handle(BswupMessage.updateFound, e);
+
+                    if (!reg.installing) {
+                        warn('no registration.installing found!');
+                        return;
+                    }
+
+                    reg.installing.addEventListener('statechange', function (e) {
+                        debug('state changed', e, 'eventPhase:', e.eventPhase, 'currentTarget.state:', e.currentTarget.state);
+                        handle(BswupMessage.stateChanged, e);
+
+                        if (!reg.waiting) return;
+
+                        if (hadActiveWorkerAtStartup) {
+                            info('update finished.'); // not first install
+                        } else {
+                            info('initialization finished.'); // first install
+                        }
+                    });
+                });
             }
 
-            reg.addEventListener('updatefound', function (e) {
-                info('update found', e);
-                handle(BswupMessage.updateFound, e);
+            function handleControllerChange(e) {
+                info('controller changed.', e);
 
-                if (!reg.installing) {
-                    warn('no registration.installing found!');
+                // A new service worker has taken control of this page. This fires in three
+                // situations:
+                //   1. This tab triggered the update (clicked "reload") - handleMessage already
+                //      reloads on 'WAITING_SKIPPED', so reloadOnce() here is a harmless no-op.
+                //   2. First install, where we deliberately claim clients to start Blazor. In
+                //      that case there was no previously-controlling worker, so we must NOT
+                //      reload (doing so would refresh the splash mid-startup).
+                //   3. A *sibling* tab accepted an update: its worker called skipWaiting and
+                //      claimed every client, so this tab is now controlled by a newer worker
+                //      while still running the old app code and (more dangerously) the old
+                //      worker's cache has been swapped out underneath it. Mixing old app JS
+                //      with new-version assets corrupts boot config / DLL hashes, so this tab
+                //      must reload to re-sync. See "Stuff I wish I'd known about service
+                //      workers" on the controllerchange reload pattern.
+                //
+                // We distinguish case 2 from case 3 with hadActiveWorkerAtStartup: a controller
+                // change only signals a real *update* when a worker was already active when this
+                // page started. First install never had one, so we skip the reload there.
+                if (!hadActiveWorkerAtStartup) {
+                    info('controller changed on first install - not reloading.');
                     return;
                 }
 
-                reg.installing.addEventListener('statechange', function (e) {
-                    debug('state changed', e, 'eventPhase:', e.eventPhase, 'currentTarget.state:', e.currentTarget.state);
-                    handle(BswupMessage.stateChanged, e);
-
-                    if (!reg.waiting) return;
-
-                    if (hadActiveWorkerAtStartup) {
-                        info('update finished.'); // not first install
-                    } else {
-                        info('initialization finished.'); // first install
-                    }
-                });
-            });
-        }
-
-        function handleControllerChange(e) {
-            info('controller changed.', e);
-
-            // A new service worker has taken control of this page. This fires in three
-            // situations:
-            //   1. This tab triggered the update (clicked "reload") - handleMessage already
-            //      reloads on 'WAITING_SKIPPED', so reloadOnce() here is a harmless no-op.
-            //   2. First install, where we deliberately claim clients to start Blazor. In
-            //      that case there was no previously-controlling worker, so we must NOT
-            //      reload (doing so would refresh the splash mid-startup).
-            //   3. A *sibling* tab accepted an update: its worker called skipWaiting and
-            //      claimed every client, so this tab is now controlled by a newer worker
-            //      while still running the old app code and (more dangerously) the old
-            //      worker's cache has been swapped out underneath it. Mixing old app JS
-            //      with new-version assets corrupts boot config / DLL hashes, so this tab
-            //      must reload to re-sync. See "Stuff I wish I'd known about service
-            //      workers" on the controllerchange reload pattern.
-            //
-            // We distinguish case 2 from case 3 with hadActiveWorkerAtStartup: a controller
-            // change only signals a real *update* when a worker was already active when this
-            // page started. First install never had one, so we skip the reload there.
-            if (!hadActiveWorkerAtStartup) {
-                info('controller changed on first install - not reloading.');
-                return;
-            }
-
-            reloadOnce();
-        }
-
-        // Reload the page exactly once. Multiple update signals (the initiating tab's
-        // 'WAITING_SKIPPED' message and the 'controllerchange' event raised in every tab)
-        // can race; this guard ensures only the first one wins so the page doesn't reload
-        // repeatedly.
-        function reloadOnce() {
-            if (refreshing) return;
-            refreshing = true;
-            window.location.reload();
-        }
-
-        function handleMessage(e) {
-            if (e.data === 'START_BLAZOR') {
-                startBlazor(true);
-                return;
-            }
-
-            if (e.data === 'WAITING_SKIPPED') {
-                // The worker we asked to skip waiting has activated. Reload to pick up the
-                // new version. reloadOnce() coordinates with the 'controllerchange' that
-                // also fires once the new worker claims this client, so we reload only once.
                 reloadOnce();
-                return;
             }
 
-            if (e.data === 'CLIENTS_CLAIMED') {
-                Blazor.start().then(() => {
-                    blazorStartResolver?.(undefined);
-                    e.source.postMessage('BLAZOR_STARTED');
-                });
-                return;
+            // Reload the page exactly once. Multiple update signals (the initiating tab's
+            // 'WAITING_SKIPPED' message and the 'controllerchange' event raised in every tab)
+            // can race; this guard ensures only the first one wins so the page doesn't reload
+            // repeatedly.
+            function reloadOnce() {
+                if (refreshing) return;
+                refreshing = true;
+                window.location.reload();
             }
 
-            if (e.data === 'UNREGISTER') {
-                navigator.serviceWorker.getRegistrations().then(regs => {
-                    const regPromises = regs.map(r => r.unregister());
-                    Promise.all(regPromises).then(() => window.location.reload());
-                });
-                return;
-            }
+            function handleMessage(e) {
+                if (e.data === 'START_BLAZOR') {
+                    startBlazor(true);
+                    return;
+                }
 
-            const message = JSON.parse(e.data);
-            const { type, data } = message;
+                if (e.data === 'WAITING_SKIPPED') {
+                    // The worker we asked to skip waiting has activated. Reload to pick up the
+                    // new version. reloadOnce() coordinates with the 'controllerchange' that
+                    // also fires once the new worker claims this client, so we reload only once.
+                    reloadOnce();
+                    return;
+                }
 
-            if (type === 'install') {
-                handle(BswupMessage.downloadStarted, data);
-            }
+                if (e.data === 'CLIENTS_CLAIMED') {
+                    Blazor.start().then(() => {
+                        blazorStartResolver?.(undefined);
+                        e.source.postMessage('BLAZOR_STARTED');
+                    });
+                    return;
+                }
 
-            if (type === 'progress') {
-                handle(BswupMessage.downloadProgress, data);
+                if (e.data === 'UNREGISTER') {
+                    navigator.serviceWorker.getRegistrations().then(regs => {
+                        const regPromises = regs.map(r => r.unregister());
+                        Promise.all(regPromises).then(() => window.location.reload());
+                    });
+                    return;
+                }
 
-                if (data.percent >= 100) {
-                    const firstInstall = !hadActiveWorkerAtStartup;
+                const message = JSON.parse(e.data);
+                const { type, data } = message;
+
+                if (type === 'install') {
+                    handle(BswupMessage.downloadStarted, data);
+                }
+
+                if (type === 'progress') {
+                    handle(BswupMessage.downloadProgress, data);
+
+                    if (data.percent >= 100) {
+                        const firstInstall = !hadActiveWorkerAtStartup;
+                        handle(BswupMessage.downloadFinished, { reload, cleanup, firstInstall });
+                    }
+                }
+
+                if (type === 'error') {
+                    error('install error:', data);
+                    handle(BswupMessage.error, { ...data, reload });
+                }
+
+                if (type === 'bypass') {
+                    const firstInstall = data?.firstTime || !hadActiveWorkerAtStartup;
                     handle(BswupMessage.downloadFinished, { reload, cleanup, firstInstall });
                 }
-            }
 
-            if (type === 'error') {
-                error('install error:', data);
-                handle(BswupMessage.error, { ...data, reload });
-            }
-
-            if (type === 'bypass') {
-                const firstInstall = data?.firstTime || !hadActiveWorkerAtStartup;
-                handle(BswupMessage.downloadFinished, { reload, cleanup, firstInstall });
-            }
-
-            if (type === 'activate') {
-                handle(BswupMessage.activate, data);
-            }
-        }
-
-        // ============================================================
-
-        // Opt-in update polling. The browser only re-checks the service worker script on
-        // navigation and roughly every 24h, so a long-lived SPA tab can run a stale version
-        // for a long time. When configured, we proactively call reg.update() on a timer
-        // and/or whenever the tab returns to the foreground. This only *checks*; if a new
-        // version is found the normal install flow (updatefound -> updateReady) takes over.
-        function setupUpdatePolling(reg: ServiceWorkerRegistration) {
-            const intervalSeconds = Number(options.updateInterval) || 0;
-            if (intervalSeconds > 0) {
-                info(`update polling enabled - every ${intervalSeconds}s.`);
-                updateTimer = setInterval(() => {
-                    // Skip background tabs: browsers heavily throttle their timers and the
-                    // request would be wasted. The visibilitychange check below catches up
-                    // the moment the tab is focused again.
-                    if (document.visibilityState !== 'visible') return;
-                    checkForUpdate();
-                }, intervalSeconds * 1000);
-            }
-
-            if (options.updateOnVisibility) {
-                info('update-on-visibility enabled.');
-                document.addEventListener('visibilitychange', () => {
-                    if (document.visibilityState === 'visible') checkForUpdate();
-                });
-            }
-        }
-
-        // Registration-aware update check used by the timer, the visibility handler, and
-        // the page-facing BitBswup.checkForUpdate(). Unlike the load-time fallback it can
-        // report the outcome: if nothing new is staged after the check it emits
-        // updateNotFound so callers can stop a spinner / show an "up to date" message.
-        async function checkForUpdate(): Promise<void> {
-            if (!registration) {
-                warn('checkForUpdate called before the service worker registration was ready.');
-                return;
-            }
-
-            info('checking for update...');
-
-            try {
-                await registration.update();
-
-                // A new worker installing/waiting means an update was found; the existing
-                // 'updatefound' listener already drives updateFound/stateChanged/updateReady.
-                // Nothing installing or waiting means we're already on the latest version,
-                // which is exactly the "finished, found nothing" case the page can't infer
-                // on its own - so announce it explicitly.
-                if (!registration.installing && !registration.waiting) {
-                    info('no update found.');
-                    handle(BswupMessage.updateNotFound);
-                }
-            } catch (err) {
-                error('checkForUpdate failed', err);
-                handle(BswupMessage.error, { reason: 'update', message: String((err && (err as any).message) || err), reload });
-            }
-        }
-
-        // ============================================================
-
-        function startBlazor(forceStart = false) {
-            const scriptTags = [].slice.call(document.scripts);
-
-            // `blazorScript` may be a single path (explicitly configured) or a list
-            // of candidates to auto-detect. Normalize to an array and match the first
-            // script tag whose src contains any of the candidates.
-            const candidates = Array.isArray(options.blazorScript) ? options.blazorScript : [options.blazorScript];
-
-            const blazorWasmScriptTag = scriptTags.find(s => s.src && candidates.some(c => s.src.indexOf(c) !== -1));
-            if (!blazorWasmScriptTag) {
-                return warn(`blazor script (${candidates.join(' or ')}) not found!`);
-            }
-
-            const autostart = blazorWasmScriptTag.attributes['autostart'];
-            if (!autostart || autostart.value !== 'false') {
-                return warn('no "autostart=false" found on the blazor script tag!');
-            }
-
-            if (forceStart || navigator?.serviceWorker?.controller) {
-                Blazor.start();
-            }
-        }
-
-        function extract(): BswupOptions {
-            const defaultoptions = {
-                scope: '/',
-                log: 'warn',
-                sw: 'service-worker.js',
-                handlerName: 'bitBswupHandler',
-                blazorScript: defaultBlazorScripts,
-            }
-
-            const optionsAttribute = (bitBswupScript.attributes)['options'];
-            const optionsName = (optionsAttribute || {}).value || 'bitBswup';
-            const options = (window[optionsName] || defaultoptions) as BswupOptions;
-
-            const logAttribute = bitBswupScript.attributes['log'];
-            options.log = (logAttribute && logAttribute.value) || options.log;
-
-            const swAttribute = bitBswupScript.attributes['sw'];
-            options.sw = (swAttribute && swAttribute.value) || options.sw;
-
-            const scopeAttribute = bitBswupScript.attributes['scope'];
-            options.scope = (scopeAttribute && scopeAttribute.value) || options.scope;
-
-            const handlerAttribute = bitBswupScript.attributes['handler'];
-            options.handlerName = (handlerAttribute && handlerAttribute.value) || options.handlerName;
-
-            const blazorScriptAttribute = bitBswupScript.attributes['blazorScript'];
-            options.blazorScript = (blazorScriptAttribute && blazorScriptAttribute.value) || options.blazorScript || defaultBlazorScripts;
-
-            // Polling is opt-in: absent attributes leave the options untouched so the
-            // default (no timer, no visibility check) is preserved.
-            const updateIntervalAttribute = bitBswupScript.attributes['updateInterval'];
-            if (updateIntervalAttribute) options.updateInterval = Number(updateIntervalAttribute.value);
-
-            const updateOnVisibilityAttribute = bitBswupScript.attributes['updateOnVisibility'];
-            if (updateOnVisibilityAttribute) options.updateOnVisibility = updateOnVisibilityAttribute.value === 'true';
-
-            return options;
-        }
-
-        function handle(...args: any[]) {
-            if (!options.handler) {
-                options.handler = window[options.handlerName];
-
-                if (!options.handler || typeof options.handler !== 'function') {
-                    warn('progress handler not found or is not a function!');
-                    options.handler = () => { };
+                if (type === 'activate') {
+                    handle(BswupMessage.activate, data);
                 }
             }
 
-            options.handler && options.handler(...args);
+            // ============================================================
+
+            // Opt-in update polling. The browser only re-checks the service worker script on
+            // navigation and roughly every 24h, so a long-lived SPA tab can run a stale version
+            // for a long time. When configured, we proactively call reg.update() on a timer
+            // and/or whenever the tab returns to the foreground. This only *checks*; if a new
+            // version is found the normal install flow (updatefound -> updateReady) takes over.
+            function setupUpdatePolling(reg: ServiceWorkerRegistration) {
+                const intervalSeconds = Number(options.updateInterval) || 0;
+                if (intervalSeconds > 0) {
+                    info(`update polling enabled - every ${intervalSeconds}s.`);
+                    updateTimer = setInterval(() => {
+                        // Skip background tabs: browsers heavily throttle their timers and the
+                        // request would be wasted. The visibilitychange check below catches up
+                        // the moment the tab is focused again.
+                        if (document.visibilityState !== 'visible') return;
+                        checkForUpdate();
+                    }, intervalSeconds * 1000);
+                }
+
+                if (options.updateOnVisibility) {
+                    info('update-on-visibility enabled.');
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') checkForUpdate();
+                    });
+                }
+            }
+
+            // Registration-aware update check used by the timer, the visibility handler, and
+            // the page-facing BitBswup.checkForUpdate(). Unlike the load-time fallback it can
+            // report the outcome: if nothing new is staged after the check it emits
+            // updateNotFound so callers can stop a spinner / show an "up to date" message.
+            async function checkForUpdate(): Promise<void> {
+                if (!registration) {
+                    warn('checkForUpdate called before the service worker registration was ready.');
+                    return;
+                }
+
+                info('checking for update...');
+
+                try {
+                    await registration.update();
+
+                    // A new worker installing/waiting means an update was found; the existing
+                    // 'updatefound' listener already drives updateFound/stateChanged/updateReady.
+                    // Nothing installing or waiting means we're already on the latest version,
+                    // which is exactly the "finished, found nothing" case the page can't infer
+                    // on its own - so announce it explicitly.
+                    if (!registration.installing && !registration.waiting) {
+                        info('no update found.');
+                        handle(BswupMessage.updateNotFound);
+                    }
+                } catch (err) {
+                    error('checkForUpdate failed', err);
+                    handle(BswupMessage.error, { reason: 'update', message: String((err && (err as any).message) || err), reload });
+                }
+            }
+
+            // ============================================================
+
+            function startBlazor(forceStart = false) {
+                const scriptTags = [].slice.call(document.scripts);
+
+                // `blazorScript` may be a single path (explicitly configured) or a list
+                // of candidates to auto-detect. Normalize to an array and match the first
+                // script tag whose src contains any of the candidates.
+                const candidates = Array.isArray(options.blazorScript) ? options.blazorScript : [options.blazorScript];
+
+                const blazorWasmScriptTag = scriptTags.find(s => s.src && candidates.some(c => s.src.indexOf(c) !== -1));
+                if (!blazorWasmScriptTag) {
+                    return warn(`blazor script (${candidates.join(' or ')}) not found!`);
+                }
+
+                const autostart = blazorWasmScriptTag.attributes['autostart'];
+                if (!autostart || autostart.value !== 'false') {
+                    return warn('no "autostart=false" found on the blazor script tag!');
+                }
+
+                if (forceStart || navigator?.serviceWorker?.controller) {
+                    Blazor.start();
+                }
+            }
+
+            function extract(): BswupOptions {
+                const defaultoptions = {
+                    scope: '/',
+                    log: 'warn',
+                    sw: 'service-worker.js',
+                    handlerName: 'bitBswupHandler',
+                    blazorScript: defaultBlazorScripts,
+                }
+
+                const optionsAttribute = (bitBswupScript.attributes)['options'];
+                const optionsName = (optionsAttribute || {}).value || 'bitBswup';
+                const options = (window[optionsName] || defaultoptions) as BswupOptions;
+
+                const logAttribute = bitBswupScript.attributes['log'];
+                options.log = (logAttribute && logAttribute.value) || options.log;
+
+                const swAttribute = bitBswupScript.attributes['sw'];
+                options.sw = (swAttribute && swAttribute.value) || options.sw;
+
+                const scopeAttribute = bitBswupScript.attributes['scope'];
+                options.scope = (scopeAttribute && scopeAttribute.value) || options.scope;
+
+                const handlerAttribute = bitBswupScript.attributes['handler'];
+                options.handlerName = (handlerAttribute && handlerAttribute.value) || options.handlerName;
+
+                const blazorScriptAttribute = bitBswupScript.attributes['blazorScript'];
+                options.blazorScript = (blazorScriptAttribute && blazorScriptAttribute.value) || options.blazorScript || defaultBlazorScripts;
+
+                // Polling is opt-in: absent attributes leave the options untouched so the
+                // default (no timer, no visibility check) is preserved.
+                const updateIntervalAttribute = bitBswupScript.attributes['updateInterval'];
+                if (updateIntervalAttribute) options.updateInterval = Number(updateIntervalAttribute.value);
+
+                const updateOnVisibilityAttribute = bitBswupScript.attributes['updateOnVisibility'];
+                if (updateOnVisibilityAttribute) options.updateOnVisibility = updateOnVisibilityAttribute.value === 'true';
+
+                return options;
+            }
+
+            function handle(...args: any[]) {
+                if (!options.handler) {
+                    options.handler = window[options.handlerName];
+
+                    if (!options.handler || typeof options.handler !== 'function') {
+                        warn('progress handler not found or is not a function!');
+                        options.handler = () => { };
+                    }
+                }
+
+                options.handler && options.handler(...args);
+            }
+
+            function shouldLog(level: 'error' | 'warn' | 'info' | 'verbose' | 'debug'): boolean {
+                const configured = logLevels[options.log];
+                // Unknown values fall back to `warn` (matches the documented default behavior).
+                const threshold = configured == null ? logLevels.warn : configured;
+                return logLevels[level] <= threshold;
+            }
+
+            function error(...args: any[]) {
+                if (!shouldLog('error')) return;
+                console.error(...['BitBswup:', ...args]);
+            }
+
+            function warn(...args: any[]) {
+                if (!shouldLog('warn')) return;
+                console.warn(...['BitBswup:', ...args]);
+            }
+
+            function info(...args: any[]) {
+                if (!shouldLog('info')) return;
+                console.info(...['BitBswup:', ...args]);
+            }
+
+            function verbose(...args: any[]) {
+                if (!shouldLog('verbose')) return;
+                console.log(...['BitBswup:', ...args]);
+            }
+
+            function debug(...args: any[]) {
+                if (!shouldLog('debug')) return;
+                console.debug(...['BitBswup:', ...args]);
+            }
+        }
+    }());
+
+    // Load-time fallback. This is replaced by the registration-aware implementation (which
+    // can report updateNotFound) once runBswup resolves the service worker registration. It
+    // stays as the public entry point so the API is callable even before registration
+    // completes, and on browsers without service worker support.
+    BitBswup.checkForUpdate = async (): Promise<void> => {
+        if (!('serviceWorker' in navigator)) {
+            return console.warn('no serviceWorker in navigator');
         }
 
-        function shouldLog(level: 'error' | 'warn' | 'info' | 'verbose' | 'debug'): boolean {
-            const configured = logLevels[options.log];
-            // Unknown values fall back to `warn` (matches the documented default behavior).
-            const threshold = configured == null ? logLevels.warn : configured;
-            return logLevels[level] <= threshold;
-        }
-
-        function error(...args: any[]) {
-            if (!shouldLog('error')) return;
-            console.error(...['BitBswup:', ...args]);
-        }
-
-        function warn(...args: any[]) {
-            if (!shouldLog('warn')) return;
-            console.warn(...['BitBswup:', ...args]);
-        }
-
-        function info(...args: any[]) {
-            if (!shouldLog('info')) return;
-            console.info(...['BitBswup:', ...args]);
-        }
-
-        function verbose(...args: any[]) {
-            if (!shouldLog('verbose')) return;
-            console.log(...['BitBswup:', ...args]);
-        }
-
-        function debug(...args: any[]) {
-            if (!shouldLog('debug')) return;
-            console.debug(...['BitBswup:', ...args]);
-        }
+        const reg = await navigator.serviceWorker.getRegistration();
+        await reg?.update();
     }
-}());
 
-// Load-time fallback. This is replaced by the registration-aware implementation (which
-// can report updateNotFound) once runBswup resolves the service worker registration. It
-// stays as the public entry point so the API is callable even before registration
-// completes, and on browsers without service worker support.
-BitBswup.checkForUpdate = async (): Promise<void> => {
-    if (!('serviceWorker' in navigator)) {
-        return console.warn('no serviceWorker in navigator');
+    // `forceRefresh` is the last-resort "reset" when a client is wedged. Because it is a full
+    // reset it now clears *every* CacheStorage bucket by default - not just the Bswup and
+    // Blazor framework caches - so app-owned caches (Workbox add-ons, app-data, third-party
+    // API caches, etc.) can't survive and re-poison the freshly reloaded app. Callers that
+    // need to be selective can pass a filter:
+    //   - string:   prefix match against the cache name (e.g. 'bit-bswup')
+    //   - RegExp:   tested against the cache name
+    //   - function: predicate receiving the cache name, return true to delete
+    // Anything else (or omitted) means "clear all".
+    BitBswup.forceRefresh = async (cacheFilter?: string | RegExp | ((key: string) => boolean)): Promise<void> => {
+        if (!('serviceWorker' in navigator)) {
+            return console.warn('no serviceWorker in navigator');
+        }
+
+        const shouldDelete =
+            typeof cacheFilter === 'function' ? cacheFilter :
+            cacheFilter instanceof RegExp ? (key: string) => cacheFilter.test(key) :
+            typeof cacheFilter === 'string' ? (key: string) => key.startsWith(cacheFilter) :
+            () => true;
+
+        const cacheKeys = await caches.keys();
+        const cachePromises = cacheKeys.filter(shouldDelete).map(key => caches.delete(key));
+        await Promise.all(cachePromises);
+
+        const regs = await navigator.serviceWorker.getRegistrations();
+        const regPromises = regs.map(r => r.unregister());
+        await Promise.all(regPromises);
+
+        window.location.reload();
     }
 
-    const reg = await navigator.serviceWorker.getRegistration();
-    await reg?.update();
-}
+    BitBswup.skipWaiting = async (): Promise<boolean> => {
+        if (!('serviceWorker' in navigator)) {
+            console.warn('no serviceWorker in navigator');
+            return false;
+        }
 
-BitBswup.forceRefresh = async (): Promise<void> => {
-    if (!('serviceWorker' in navigator)) {
-        return console.warn('no serviceWorker in navigator');
-    }
+        const reg = await navigator.serviceWorker.getRegistration();
 
-    const cacheKeys = await caches.keys();
-    const cachePromises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
-    await Promise.all(cachePromises);
+        if (reg?.waiting) {
+            reg.waiting.postMessage('SKIP_WAITING');
+            return true;
+        }
 
-    const regs = await navigator.serviceWorker.getRegistrations();
-    const regPromises = regs.map(r => r.unregister());
-    await Promise.all(regPromises);
-
-    window.location.reload();
-}
-
-BitBswup.skipWaiting = async (): Promise<boolean> => {
-    if (!('serviceWorker' in navigator)) {
-        console.warn('no serviceWorker in navigator');
         return false;
     }
-
-    const reg = await navigator.serviceWorker.getRegistration();
-
-    if (reg?.waiting) {
-        reg.waiting.postMessage('SKIP_WAITING');
-        return true;
-    }
-
-    return false;
 }
 
-const BswupMessage = {
+// Shared message-type constants. Kept as a top-level global (rather than scoped inside the
+// guard above) so the companion bit-bswup.progress.js script can read the same object, and
+// declared with the `||` idempotent pattern - instead of `const` - so a duplicate inclusion
+// of bit-bswup.js doesn't throw a "BswupMessage has already been declared" redeclaration
+// error before the guard can take effect.
+var BswupMessage = BswupMessage || {
     downloadStarted: 'DOWNLOAD_STARTED',
     downloadProgress: 'DOWNLOAD_PROGRESS',
     downloadFinished: 'DOWNLOAD_FINISHED',
     activate: 'ACTIVATE',
-    updateInstalled: 'UPDATE_INSTALLED',
     updateReady: 'UPDATE_READY',
     updateFound: 'UPDATE_FOUND',
     updateNotFound: 'UPDATE_NOT_FOUND',

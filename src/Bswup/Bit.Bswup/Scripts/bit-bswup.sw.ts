@@ -21,6 +21,8 @@ interface Window {
     isPassive: any
     enableIntegrityCheck: any
     errorTolerance: any
+    maxRetries: any
+    retryDelay: any
     enableDiagnostics: any
     enableFetchDiagnostics: any
     disableHashlessAssetsUpdate: any
@@ -113,6 +115,19 @@ if (self.errorTolerance !== 'strict' && self.errorTolerance !== 'lax') {
     diag('*** unknown errorTolerance, falling back to strict:', self.errorTolerance);
     self.errorTolerance = 'strict';
 }
+
+// Transient-failure retry policy for asset downloads. A single flaky request (CDN blip,
+// dropped connection, 5xx/429/408) shouldn't fail the whole strict install or silently
+// drop an asset under lax. We retry such failures with exponential backoff before giving
+// up. Deterministic failures (SRI/integrity mismatch, 404/403 and other permanent 4xx) are
+// NOT retried because re-fetching identical bytes would just fail again.
+// MAX_RETRIES is the number of *additional* attempts after the first try (default 2 => up
+// to 3 total attempts). RETRY_DELAY is the base backoff in ms; attempt n waits
+// RETRY_DELAY * 2^(n-1) (e.g. 300ms, 600ms) plus jitter.
+const MAX_RETRIES = normalizeNonNegativeInt(self.maxRetries, 2);
+const RETRY_DELAY = normalizeNonNegativeInt(self.retryDelay, 300);
+
+diag('MAX_RETRIES:', MAX_RETRIES, 'RETRY_DELAY:', RETRY_DELAY);
 
 self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
 self.addEventListener('activate', e => e.waitUntil(handleActivate(e)));
@@ -255,16 +270,24 @@ async function handleFetch(e: any) {
 
     const request = createNewAssetRequest(asset);
     const response = await fetch(request);
+
     if (response.ok) {
-        if (self.errorTolerance === 'strict') {
-            await bitBswupCache.put(cacheUrl, response.clone());
-        } else {
-            try {
-                bitBswupCache.put(cacheUrl, response.clone());
-            } catch (err) {
-                diagFetch('+++ handleFetch - lazy-fill put failed:', err, asset);
-            }
-        }
+        // Stream the response to the page immediately and write to the cache in the
+        // background. Awaiting cache.put() here would block the (potentially large
+        // .wasm / .dll) body from reaching the page until the whole file had been
+        // downloaded and stored. response.clone() lets the browser tee the stream so the
+        // page and the cache write consume bytes as they arrive, and e.waitUntil keeps the
+        // service worker alive until the background write completes. This mirrors how
+        // Workbox's Strategy.handle returns the response while caching transparently.
+        //
+        // Lazy-fill is best-effort under both error tolerances: at runtime there is no
+        // install promise to reject, so a failed write just means the asset is re-fetched
+        // next time instead of being served from cache. (errorTolerance is enforced during
+        // install in createAssetsCache, not on this passive runtime path.)
+        const cachePut = bitBswupCache.put(cacheUrl, response.clone()).catch(err => {
+            diagFetch('+++ handleFetch - lazy-fill put failed:', err, asset);
+        });
+        e.waitUntil(cachePut);
     }
 
     diagFetch('+++ handleFetch ended - passive saving asset:', start, asset, e, req);
@@ -357,7 +380,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
         let hash = lastIndex === -1 ? '' : key.url.substring(lastIndex + 1);
         oldUrls.push({ url, hash });
 
-        const foundAsset = UNIQUE_ASSETS.find(a => url.endsWith(a.url));
+        const foundAsset = UNIQUE_ASSETS.find(a => urlEndsWith(url, a.url));
         if (!foundAsset) {
             diag('*** removed oldUrl:', key.url);
             newCache.delete(key.url);
@@ -376,7 +399,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
     diag('oldUrls:', oldUrls);
     diag('updatedAssets:', updatedAssets);
 
-    const assetsToCache = updatedAssets.concat(UNIQUE_ASSETS.filter(a => !oldUrls.find(u => u.url.endsWith(a.url) || a.url.endsWith(u.url))));
+    const assetsToCache = updatedAssets.concat(UNIQUE_ASSETS.filter(a => !oldUrls.find(u => urlEndsWith(u.url, a.url) || urlEndsWith(a.url, u.url))));
 
     diag('assetsToCache:', assetsToCache);
 
@@ -417,65 +440,9 @@ async function createAssetsCache(ignoreProgressReport = false) {
     }
 
     async function addCache(report: boolean, asset: any) {
+        let request: Request;
         try {
-            const request = createNewAssetRequest(asset);
-            const responsePromise = fetch(request);
-            return responsePromise.then(async response => {
-                try {
-                    if (!response.ok) {
-                        diag('*** addCache - !response.ok:', request);
-                        sendError({
-                            reason: 'fetch',
-                            message: `Asset fetch failed with HTTP ${response.status} ${response.statusText || ''}`.trim(),
-                            url: asset.url,
-                            hash: asset.hash,
-                            status: response.status,
-                            integrity: !!(request as any).integrity,
-                        });
-                        doReport(true);
-                        return Promise.reject(response);
-                    }
-
-                    const cacheUrl = createCacheUrl(asset);
-                    await newCache.put(cacheUrl, response.clone());
-
-                    doReport();
-
-                    return response;
-
-                } catch (err) {
-                    diag('*** addCache - put cache err:', err);
-                    sendError({
-                        reason: 'cache',
-                        message: 'Failed to store asset in cache: ' + (err && (err as any).message || String(err)),
-                        url: asset.url,
-                        hash: asset.hash,
-                    });
-                    doReport(true);
-                    return Promise.reject(err);
-                }
-            }, async fetchErr => {
-                // Browsers reject fetch() with a TypeError when SRI validation fails. The
-                // browser also logs "Failed to find a valid digest in the 'integrity' attribute"
-                // to the console, but the SW would otherwise silently swallow this. Surface it.
-                const isIntegrity =
-                    !!(request as any).integrity &&
-                    (fetchErr instanceof TypeError ||
-                        /integrity|digest|EPRPROTO|ERR_FAILED/i.test(String(fetchErr && (fetchErr as any).message || fetchErr)));
-                if (isIntegrity) integrityFailureCount++;
-                diag('*** addCache - fetch rejected:', fetchErr, 'integrity?', isIntegrity);
-                sendError({
-                    reason: isIntegrity ? 'integrity' : 'fetch',
-                    message: isIntegrity
-                        ? `Subresource Integrity check failed for ${asset.url}. The bytes served do not match the SHA hash recorded in service-worker-assets.js / blazor.boot.json. This is the classic Blazor "Failed to find a valid digest" failure and usually means a CDN, reverse proxy, or compression layer is rewriting the response after publish.`
-                        : 'Asset fetch rejected: ' + (fetchErr && (fetchErr as any).message || String(fetchErr)),
-                    url: asset.url,
-                    hash: asset.hash,
-                    integrity: !!(request as any).integrity,
-                });
-                doReport(true);
-                return Promise.reject(fetchErr);
-            });
+            request = createNewAssetRequest(asset);
         } catch (err) {
             diag('*** addCache - catch err:', err);
             sendError({
@@ -487,6 +454,106 @@ async function createAssetsCache(ignoreProgressReport = false) {
             doReport(true);
             return Promise.reject(err);
         }
+
+        const hasIntegrity = !!(request as any).integrity;
+        let lastError: any;
+
+        // Attempt the download up to MAX_RETRIES additional times after the first try.
+        // Only transient failures fall through to the next iteration; deterministic ones
+        // (integrity mismatch, permanent HTTP statuses) reject immediately.
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            if (attempt > 0) {
+                // Exponential backoff with jitter: attempt 1 waits ~RETRY_DELAY, attempt 2
+                // ~2*RETRY_DELAY, etc. Jitter spreads the retry storm when many of the 200+
+                // assets fail at once (e.g. a brief CDN outage) so they don't all re-hit the
+                // origin on the same tick.
+                const backoff = RETRY_DELAY * Math.pow(2, attempt - 1);
+                const wait = backoff + Math.floor(Math.random() * RETRY_DELAY);
+                diag(`*** addCache - retrying (${attempt}/${MAX_RETRIES}) in ${wait}ms:`, asset.url);
+                await delay(wait);
+            }
+
+            let response: Response;
+            try {
+                response = await fetch(request);
+            } catch (fetchErr) {
+                // Browsers reject fetch() with a TypeError when SRI validation fails. The
+                // browser also logs "Failed to find a valid digest in the 'integrity' attribute"
+                // to the console, but the SW would otherwise silently swallow this. Surface it.
+                const isIntegrity =
+                    hasIntegrity &&
+                    (fetchErr instanceof TypeError ||
+                        /integrity|digest|EPRPROTO|ERR_FAILED/i.test(String(fetchErr && (fetchErr as any).message || fetchErr)));
+
+                // Integrity failures are deterministic: re-fetching identical bytes fails the
+                // same way, so never retry them. Genuine network errors are transient and
+                // worth another attempt while retries remain.
+                if (!isIntegrity && attempt < MAX_RETRIES) {
+                    lastError = fetchErr;
+                    diag('*** addCache - fetch rejected (will retry):', fetchErr, asset.url);
+                    continue;
+                }
+
+                if (isIntegrity) integrityFailureCount++;
+                diag('*** addCache - fetch rejected:', fetchErr, 'integrity?', isIntegrity);
+                sendError({
+                    reason: isIntegrity ? 'integrity' : 'fetch',
+                    message: isIntegrity
+                        ? `Subresource Integrity check failed for ${asset.url}. The bytes served do not match the SHA hash recorded in service-worker-assets.js / blazor.boot.json. This is the classic Blazor "Failed to find a valid digest" failure and usually means a CDN, reverse proxy, or compression layer is rewriting the response after publish.`
+                        : 'Asset fetch rejected' + (attempt > 0 ? ` after ${attempt + 1} attempts` : '') + ': ' + (fetchErr && (fetchErr as any).message || String(fetchErr)),
+                    url: asset.url,
+                    hash: asset.hash,
+                    integrity: hasIntegrity,
+                });
+                doReport(true);
+                return Promise.reject(fetchErr);
+            }
+
+            if (!response.ok) {
+                // Retry only transient HTTP statuses (request timeout, rate limit, 5xx).
+                // Permanent ones (404, 403, ...) will not change on retry.
+                if (isRetryableStatus(response.status) && attempt < MAX_RETRIES) {
+                    lastError = response;
+                    diag('*** addCache - !response.ok (will retry):', response.status, asset.url);
+                    continue;
+                }
+
+                diag('*** addCache - !response.ok:', request);
+                sendError({
+                    reason: 'fetch',
+                    message: `Asset fetch failed with HTTP ${response.status} ${response.statusText || ''}`.trim() + (attempt > 0 ? ` after ${attempt + 1} attempts` : ''),
+                    url: asset.url,
+                    hash: asset.hash,
+                    status: response.status,
+                    integrity: hasIntegrity,
+                });
+                doReport(true);
+                return Promise.reject(response);
+            }
+
+            try {
+                const cacheUrl = createCacheUrl(asset);
+                await newCache.put(cacheUrl, response.clone());
+
+                doReport();
+
+                return response;
+            } catch (err) {
+                diag('*** addCache - put cache err:', err);
+                sendError({
+                    reason: 'cache',
+                    message: 'Failed to store asset in cache: ' + (err && (err as any).message || String(err)),
+                    url: asset.url,
+                    hash: asset.hash,
+                });
+                doReport(true);
+                return Promise.reject(err);
+            }
+        }
+
+        // Unreachable in practice (the loop returns on success or rejects on the final
+        // attempt), but keep a defensive fallback so the promise always settles.
+        return Promise.reject(lastError);
 
         function doReport(rejected = false) {
             if (!report) return;
@@ -500,6 +567,41 @@ async function createAssetsCache(ignoreProgressReport = false) {
 
 function createCacheUrl(asset: any) {
     return asset.hash ? `${asset.url}.${asset.hash}` : asset.url;
+}
+
+// Resolves after `ms` milliseconds. Used to space out asset-download retries.
+function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Whether an HTTP status code represents a transient failure worth retrying. 408 (Request
+// Timeout) and 429 (Too Many Requests) are explicitly transient; any 5xx is treated as a
+// server-side hiccup. Everything else (notably 404/403 and other 4xx) is permanent and
+// must not be retried.
+function isRetryableStatus(status: number) {
+    return status === 408 || status === 429 || (status >= 500 && status <= 599);
+}
+
+// Coerces a self.* config value into a non-negative integer, falling back to `fallback`
+// when the value is missing or not a sane number. Keeps MAX_RETRIES / RETRY_DELAY robust
+// against bad app configuration.
+function normalizeNonNegativeInt(value: any, fallback: number) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n < 0) return fallback;
+    return Math.floor(n);
+}
+
+// Case-folding aware `endsWith` for asset URLs. handleFetch already resolves assets
+// case-insensitively when self.caseInsensitiveUrl is set; the install/update diff must use
+// the same folding so a pure casing change in the manifest/served path (e.g. IIS serving
+// Bit.Bswup.Foo.css vs bit.bswup.foo.css) is not mistaken for a removed+added asset, which
+// would needlessly evict and re-download a byte-identical file. Hashes stay case-sensitive
+// and are compared separately, so SRI/base64 integrity is unaffected.
+function urlEndsWith(value: string, suffix: string) {
+    if (self.caseInsensitiveUrl) {
+        return value.toLowerCase().endsWith(suffix.toLowerCase());
+    }
+    return value.endsWith(suffix);
 }
 
 function createNewAssetRequest(asset: any) {
