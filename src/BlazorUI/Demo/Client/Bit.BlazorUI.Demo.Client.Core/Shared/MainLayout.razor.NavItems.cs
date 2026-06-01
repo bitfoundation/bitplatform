@@ -166,6 +166,7 @@ public partial class MainLayout
                 new() { Text = "MessageBox", Url = "/components/messagebox" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
                 new() { Text = "PdfReader", Url = "/components/pdfreader" },
+                new() { Text = "ProModal", Url = "/components/promodal" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
                 new()
