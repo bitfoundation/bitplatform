@@ -95,7 +95,7 @@ public partial class BitAccordionListOption : ComponentBase, IDisposable
     {
         if (disposing is false || _disposed) return;
 
-        Parent.UnregisterOption(this);
+        _ = Parent.UnregisterOption(this);
 
         _disposed = true;
     }

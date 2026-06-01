@@ -7,6 +7,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitAccordionList<TItem> : BitComponentBase where TItem : class
 {
+    private int _optionKeySeed;
     private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
     private string? _internalExpandedKey;
@@ -185,7 +186,14 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     {
         if (option.Key.HasNoValue())
         {
-            option.Key = _items.Count.ToString();
+            // Use a monotonic seed so keys remain unique even after removals, and guard
+            // against colliding with any existing explicit keys.
+            var key = (_optionKeySeed++).ToString();
+            while (_items.Any(i => GetItemKey(i) == key))
+            {
+                key = (_optionKeySeed++).ToString();
+            }
+            option.Key = key;
         }
 
         var item = (option as TItem)!;
@@ -235,13 +243,21 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         return optionIsExpanded && _expandedKeys.Count == 0;
     }
 
-    internal void UnregisterOption(BitAccordionListOption option)
+    internal async Task UnregisterOption(BitAccordionListOption option)
     {
         _items.Remove((option as TItem)!);
 
+        var wasExpanded = false;
         if (option.Key.HasValue())
         {
-            _expandedKeys.Remove(option.Key!);
+            wasExpanded = _expandedKeys.Remove(option.Key!);
+        }
+
+        // When a removed option was expanded, refresh the internal representations and the
+        // two-way bound values so they don't keep referencing the removed key.
+        if (wasExpanded)
+        {
+            await UpdateBoundKeys();
         }
 
         StateHasChanged();

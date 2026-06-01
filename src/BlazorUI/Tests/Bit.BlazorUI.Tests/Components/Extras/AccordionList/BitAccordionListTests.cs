@@ -115,6 +115,7 @@ public class BitAccordionListTests : BunitTestContext
     {
         string? expanded = null;
         string? collapsed = null;
+        string? clicked = null;
         var toggleCount = 0;
 
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
@@ -123,14 +124,17 @@ public class BitAccordionListTests : BunitTestContext
             parameters.Add(p => p.OnExpand, (BitAccordionListItem i) => expanded = i.Key);
             parameters.Add(p => p.OnCollapse, (BitAccordionListItem i) => collapsed = i.Key);
             parameters.Add(p => p.OnToggle, (BitAccordionListItem i) => toggleCount++);
+            parameters.Add(p => p.OnItemClick, (BitAccordionListItem i) => clicked = i.Key);
         });
 
         component.FindAll(".bit-acd-hdr")[0].Click();
         Assert.AreEqual("a", expanded);
+        Assert.AreEqual("a", clicked);
         Assert.AreEqual(1, toggleCount);
 
         component.FindAll(".bit-acd-hdr")[0].Click();
         Assert.AreEqual("a", collapsed);
+        Assert.AreEqual("a", clicked);
         Assert.AreEqual(2, toggleCount);
     }
 

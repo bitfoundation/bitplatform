@@ -359,10 +359,14 @@ private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => ite
 
     private readonly string example10RazorCode = @"
 <BitAccordionList Items=""basicItems"" TItem=""BitAccordionListItem"" Gap=""8"" Style=""border: 1px solid var(--bit-clr-pri); border-radius: 0.5rem; padding: 0.5rem;"" />
+<BitAccordionList Items=""basicItems"" TItem=""BitAccordionListItem"" Gap=""8"" Class=""custom-item"" />
 
 <BitAccordionList Items=""basicItems""
                   TItem=""BitAccordionListItem""
-                  Styles=""@(new() { ItemTitle = ""color: tomato;"", ItemHeader = ""background-color: var(--bit-clr-bg-sec);"" })"" />";
+                  Styles=""@(new() { ItemTitle = ""color: tomato;"", ItemHeader = ""background-color: var(--bit-clr-bg-sec);"" })"" />
+<BitAccordionList Items=""basicItems""
+                  TItem=""BitAccordionListItem""
+                  Classes=""@(new() { ItemTitle = ""custom-title"" })"" />";
     private readonly string example10CsharpCode = @"
 private readonly List<BitAccordionListItem> basicItems =
 [
