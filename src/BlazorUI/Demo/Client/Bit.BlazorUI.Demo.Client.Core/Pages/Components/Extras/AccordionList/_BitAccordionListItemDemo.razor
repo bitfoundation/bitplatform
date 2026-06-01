@@ -1,5 +1,5 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-    <div>The simplest usage is to provide a list of items. By default it works in single-expand mode.</div>
+    <div>The items are provided as a list of <code>BitAccordionListItem</code> objects. By default it works in single-expand mode.</div>
     <br />
     <BitAccordionList Items="basicItems" TItem="BitAccordionListItem" />
 </DemoExample>
@@ -37,7 +37,7 @@
     <div>Last collapsed: <b>@collapsedTitle</b></div>
     <div>Last toggled: <b>@toggledTitle</b></div>
     <br /><br />
-    <div>Each item can also have its own click handler through the <code>OnClick</code> field.</div>
+    <div>Each item can also have its own click handler.</div>
     <br />
     <BitAccordionList Items="eventsItems" TItem="BitAccordionListItem" />
     <div>Item click count: <b>@clickCounter</b></div>
@@ -55,7 +55,7 @@
 <DemoExample Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <div>Two-way bind the expanded key in single-expand mode using <code>@@bind-ExpandedKey</code>.</div>
     <br />
-    <BitButtonGroup Items="bindingButtons" TItem="BitButtonGroupItem" />
+    <BitButtonGroup Toggle Items="bindingButtons" TItem="BitButtonGroupItem" @bind-ToggleKey="boundExpandedKey" />
     <br />
     <div>Bound expanded key: <b>@boundExpandedKey</b></div>
     <br />
@@ -66,12 +66,12 @@
     <div>Customize the expander icon for the whole list or per item.</div>
     <br /><br />
     <div class="example-content">
-        <div>Component-level ExpanderIconName:</div>
-        <BitAccordionList Items="basicItems" TItem="BitAccordionListItem" ExpanderIconName="@BitIconName.ChevronDownMed" />
+        <div>Component-level:</div>
+        <BitAccordionList Items="basicItems" TItem="BitAccordionListItem" ExpanderIconName="@BitIconName.Add" />
     </div>
     <br /><br />
     <div class="example-content">
-        <div>Item-level ExpanderIconName:</div>
+        <div>Per-item:</div>
         <BitAccordionList Items="iconItems" TItem="BitAccordionListItem" />
     </div>
 </DemoExample>

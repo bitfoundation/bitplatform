@@ -3,61 +3,71 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
 public partial class _BitAccordionListCustomDemo
 {
     private int clickCounter;
-    private string? expandedName;
-    private string? collapsedName;
-    private string? toggledName;
+    private string? expandedTitle;
+    private string? collapsedTitle;
+    private string? toggledTitle;
     private string? boundExpandedKey = "users";
+    private BitAccordionList<Section> accordionListRef = default!;
 
     private readonly BitAccordionListNameSelectors<Section> nameSelectors = new()
     {
         Key = { Selector = i => i.Id },
         Title = { Selector = i => i.Name },
         Description = { Selector = i => i.Info },
-        IsExpanded = { Selector = i => i.Open },
         IsEnabled = { Selector = i => i.IsEnabled },
+        ExpanderIconName = { Selector = i => i.Image },
+        Style = { Selector = i => i.Style },
+        Class = { Selector = i => i.Class },
+        OnClick = { Selector = i => i.Clicked },
         Body = { Selector = i => i.Content },
     };
 
-    private readonly List<Section> basicSections =
+    private readonly List<Section> basicItems =
     [
-        new() { Id = "general", Name = "General settings", Info = "The general settings", Content = BodyFor("The general settings of the application.") },
-        new() { Id = "users", Name = "Users", Info = "You are currently not an owner", Content = BodyFor("Manage the users of the application.") },
-        new() { Id = "advanced", Name = "Advanced settings", Info = "Be careful here", Content = BodyFor("The advanced settings of the application.") },
+        new() { Id = "general", Name = "General settings", Info = "The general settings of the application", Content = BodyFor("Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.") },
+        new() { Id = "users", Name = "Users", Info = "You are currently not an owner", Content = BodyFor("Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.") },
+        new() { Id = "advanced", Name = "Advanced settings", Info = "Filtering has been entirely disabled", Content = BodyFor("In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.") },
     ];
 
-    private readonly List<Section> iconSections =
+    private readonly List<Section> keyedItems =
     [
-        new() { Id = "profile", Name = "Profile", Image = BitIconName.Contact, Content = BodyFor("Your profile information.") },
-        new() { Id = "settings", Name = "Settings", Image = BitIconName.Settings, Content = BodyFor("The application settings.") },
-        new() { Id = "notifications", Name = "Notifications", Image = BitIconName.Ringer, Content = BodyFor("Your notification preferences.") },
+        new() { Id = "general", Name = "General settings", Info = "The general settings of the application", Content = BodyFor("Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.") },
+        new() { Id = "users", Name = "Users", Info = "You are currently not an owner", Content = BodyFor("Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.") },
+        new() { Id = "advanced", Name = "Advanced settings", Info = "Filtering has been entirely disabled", Content = BodyFor("In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.") },
     ];
 
-    private readonly List<Section> styleClassSections =
+    private readonly List<Section> iconItems =
     [
-        new() { Id = "styled", Name = "Styled", Style = "color: tomato;", Content = BodyFor("This item header has a custom style.") },
-        new() { Id = "classed", Name = "Classed", Class = "custom-item", Content = BodyFor("This item has a custom class.") },
+        new() { Id = "general", Name = "General settings", Info = "The general settings of the application", Image = BitIconName.Settings, Content = BodyFor("Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.") },
+        new() { Id = "users", Name = "Users", Info = "You are currently not an owner", Image = BitIconName.Contact, Content = BodyFor("Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.") },
+        new() { Id = "advanced", Name = "Advanced settings", Info = "Filtering has been entirely disabled", Image = BitIconName.Ringer, Content = BodyFor("In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.") },
+    ];
+
+    private readonly List<Section> rtlItems =
+    [
+        new() { Id = "general", Name = "تنظیمات عمومی", Info = "تنظیمات کلی برنامه", Content = BodyFor("لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ است.") },
+        new() { Id = "users", Name = "کاربران", Info = "شما در حال حاضر مالک نیستید", Content = BodyFor("لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ است.") },
     ];
 
     private List<BitButtonGroupItem> bindingButtons =>
     [
-        new() { Text = "General", OnClick = _ => boundExpandedKey = "general" },
-        new() { Text = "Users", OnClick = _ => boundExpandedKey = "users" },
-        new() { Text = "Advanced", OnClick = _ => boundExpandedKey = "advanced" },
-        new() { Text = "None", OnClick = _ => boundExpandedKey = null },
+        new() { Key = "general", Text = "General" },
+        new() { Key = "users", Text = "Users" },
+        new() { Key = "advanced", Text = "Advanced" },
     ];
 
-    private List<Section> eventsSections =
+    private List<Section> eventsItems =
     [
-        new() { Id = "s1", Name = "Section 1", Content = BodyFor("Click my header to increase the counter.") },
-        new() { Id = "s2", Name = "Section 2", Content = BodyFor("Click my header to increase the counter.") },
-        new() { Id = "s3", Name = "Section 3", Content = BodyFor("Click my header to increase the counter.") },
+        new() { Id = "general", Name = "General settings", Info = "The general settings of the application", Content = BodyFor("Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.") },
+        new() { Id = "users", Name = "Users", Info = "You are currently not an owner", Content = BodyFor("Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.") },
+        new() { Id = "advanced", Name = "Advanced settings", Info = "Filtering has been entirely disabled", Content = BodyFor("In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken.") },
     ];
 
     protected override void OnInitialized()
     {
-        foreach (var section in eventsSections)
+        foreach (var item in eventsItems)
         {
-            section.Clicked = _ => { clickCounter++; StateHasChanged(); };
+            item.Clicked = _ => { clickCounter++; StateHasChanged(); };
         }
     }
 

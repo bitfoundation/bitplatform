@@ -8,8 +8,6 @@ public class Section
 
     public string? Info { get; set; }
 
-    public bool Open { get; set; }
-
     public bool IsEnabled { get; set; } = true;
 
     public string? Class { get; set; }

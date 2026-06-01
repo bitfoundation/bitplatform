@@ -7,9 +7,24 @@ public partial class _BitAccordionListItemDemo
     private readonly string example1CsharpCode = @"
 private readonly List<BitAccordionListItem> basicItems =
 [
-    new() { Title = ""Accordion 1"", Description = ""The first item"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 2"", Description = ""The second item"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 3"", Description = ""The third item"", Body = BodyFor(""..."") },
+    new()
+    {
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
 ];
 
 private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
@@ -19,10 +34,27 @@ private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => ite
     private readonly string example2CsharpCode = @"
 private readonly List<BitAccordionListItem> basicItems =
 [
-    new() { Title = ""Accordion 1"", Description = ""The first item"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 2"", Description = ""The second item"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 3"", Description = ""The third item"", Body = BodyFor(""..."") },
-];";
+    new()
+    {
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
+];
+
+private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
 
     private readonly string example3RazorCode = @"
 <BitAccordionList Items=""keyedItems"" TItem=""BitAccordionListItem"" DefaultExpandedKey=""users"" />
@@ -31,10 +63,30 @@ private readonly List<BitAccordionListItem> basicItems =
     private readonly string example3CsharpCode = @"
 private readonly List<BitAccordionListItem> keyedItems =
 [
-    new() { Key = ""general"", Title = ""General settings"", Body = BodyFor(""..."") },
-    new() { Key = ""users"", Title = ""Users"", Body = BodyFor(""..."") },
-    new() { Key = ""advanced"", Title = ""Advanced settings"", Body = BodyFor(""..."") },
-];";
+    new()
+    {
+        Key = ""general"",
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Key = ""users"",
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Key = ""advanced"",
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
+];
+
+private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
 
     private readonly string example4RazorCode = @"
 <BitAccordionList Items=""basicItems""
@@ -55,11 +107,48 @@ private string? expandedTitle;
 private string? collapsedTitle;
 private string? toggledTitle;
 
+private readonly List<BitAccordionListItem> basicItems =
+[
+    new()
+    {
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
+];
+
 private List<BitAccordionListItem> eventsItems =
 [
-    new() { Title = ""Accordion 1"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 2"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 3"", Body = BodyFor(""..."") },
+    new()
+    {
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
 ];
 
 protected override void OnInitialized()
@@ -68,7 +157,9 @@ protected override void OnInitialized()
     {
         item.OnClick = _ => { clickCounter++; StateHasChanged(); };
     }
-}";
+}
+
+private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
 
     private readonly string example5RazorCode = @"
 <BitButton OnClick=""() => accordionListRef.ExpandAll()"">Expand all</BitButton>
@@ -76,10 +167,34 @@ protected override void OnInitialized()
 
 <BitAccordionList @ref=""accordionListRef"" Multiple Items=""basicItems"" TItem=""BitAccordionListItem"" />";
     private readonly string example5CsharpCode = @"
-private BitAccordionList<BitAccordionListItem> accordionListRef = default!;";
+private BitAccordionList<BitAccordionListItem> accordionListRef = default!;
+
+private readonly List<BitAccordionListItem> basicItems =
+[
+    new()
+    {
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
+];
+
+private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
 
     private readonly string example6RazorCode = @"
-<BitButtonGroup Items=""bindingButtons"" TItem=""BitButtonGroupItem"" />
+<BitButtonGroup Toggle Items=""bindingButtons"" TItem=""BitButtonGroupItem"" @bind-ToggleKey=""boundExpandedKey"" />
 
 <div>Bound expanded key: <b>@boundExpandedKey</b></div>
 
@@ -89,23 +204,91 @@ private string? boundExpandedKey = ""users"";
 
 private List<BitButtonGroupItem> bindingButtons =>
 [
-    new() { Text = ""General"", OnClick = _ => boundExpandedKey = ""general"" },
-    new() { Text = ""Users"", OnClick = _ => boundExpandedKey = ""users"" },
-    new() { Text = ""Advanced"", OnClick = _ => boundExpandedKey = ""advanced"" },
-    new() { Text = ""None"", OnClick = _ => boundExpandedKey = null },
-];";
+    new() { Key = ""general"", Text = ""General"" },
+    new() { Key = ""users"", Text = ""Users"" },
+    new() { Key = ""advanced"", Text = ""Advanced"" },
+];
+
+private readonly List<BitAccordionListItem> keyedItems =
+[
+    new()
+    {
+        Key = ""general"",
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Key = ""users"",
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Key = ""advanced"",
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
+];
+
+private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
 
     private readonly string example7RazorCode = @"
-<BitAccordionList Items=""basicItems"" TItem=""BitAccordionListItem"" ExpanderIconName=""@BitIconName.ChevronDownMed"" />
+<BitAccordionList Items=""basicItems"" TItem=""BitAccordionListItem"" ExpanderIconName=""@BitIconName.Add"" />
 
 <BitAccordionList Items=""iconItems"" TItem=""BitAccordionListItem"" />";
     private readonly string example7CsharpCode = @"
+private readonly List<BitAccordionListItem> basicItems =
+[
+    new()
+    {
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
+];
+
 private readonly List<BitAccordionListItem> iconItems =
 [
-    new() { Title = ""Profile"", ExpanderIconName = BitIconName.Contact, Body = BodyFor(""..."") },
-    new() { Title = ""Settings"", ExpanderIconName = BitIconName.Settings, Body = BodyFor(""..."") },
-    new() { Title = ""Notifications"", ExpanderIconName = BitIconName.Ringer, Body = BodyFor(""..."") },
-];";
+    new()
+    {
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        ExpanderIconName = BitIconName.Settings,
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        ExpanderIconName = BitIconName.Contact,
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        ExpanderIconName = BitIconName.Ringer,
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
+];
+
+private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
 
     private readonly string example8RazorCode = @"
 <BitAccordionList NoBorder Items=""basicItems"" TItem=""BitAccordionListItem"" />
@@ -117,10 +300,27 @@ private readonly List<BitAccordionListItem> iconItems =
     private readonly string example8CsharpCode = @"
 private readonly List<BitAccordionListItem> basicItems =
 [
-    new() { Title = ""Accordion 1"", Description = ""The first item"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 2"", Description = ""The second item"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 3"", Description = ""The third item"", Body = BodyFor(""..."") },
-];";
+    new()
+    {
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
+];
+
+private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
 
     private readonly string example9RazorCode = @"
 <BitAccordionList Items=""basicItems"" TItem=""BitAccordionListItem"">
@@ -135,10 +335,27 @@ private readonly List<BitAccordionListItem> basicItems =
     private readonly string example9CsharpCode = @"
 private readonly List<BitAccordionListItem> basicItems =
 [
-    new() { Title = ""Accordion 1"", Description = ""The first item"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 2"", Description = ""The second item"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 3"", Description = ""The third item"", Body = BodyFor(""..."") },
-];";
+    new()
+    {
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
+];
+
+private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
 
     private readonly string example10RazorCode = @"
 <BitAccordionList Items=""basicItems"" TItem=""BitAccordionListItem"" Gap=""8"" Style=""border: 1px solid var(--bit-clr-pri); border-radius: 0.5rem; padding: 0.5rem;"" />
@@ -149,17 +366,46 @@ private readonly List<BitAccordionListItem> basicItems =
     private readonly string example10CsharpCode = @"
 private readonly List<BitAccordionListItem> basicItems =
 [
-    new() { Title = ""Accordion 1"", Description = ""The first item"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 2"", Description = ""The second item"", Body = BodyFor(""..."") },
-    new() { Title = ""Accordion 3"", Description = ""The third item"", Body = BodyFor(""..."") },
-];";
+    new()
+    {
+        Title = ""General settings"",
+        Description = ""The general settings of the application"",
+        Body = BodyFor(""Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams."")
+    },
+    new()
+    {
+        Title = ""Users"",
+        Description = ""You are currently not an owner"",
+        Body = BodyFor(""Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams."")
+    },
+    new()
+    {
+        Title = ""Advanced settings"",
+        Description = ""Filtering has been entirely disabled"",
+        Body = BodyFor(""In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits to awaken."")
+    },
+];
+
+private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
 
     private readonly string example11RazorCode = @"
 <BitAccordionList Dir=""BitDir.Rtl"" Items=""rtlItems"" TItem=""BitAccordionListItem"" />";
     private readonly string example11CsharpCode = @"
 private readonly List<BitAccordionListItem> rtlItems =
 [
-    new() { Title = ""تنظیمات عمومی"", Description = ""تنظیمات کلی برنامه"", Body = BodyFor(""..."") },
-    new() { Title = ""کاربران"", Description = ""شما در حال حاضر مالک نیستید"", Body = BodyFor(""..."") },
-];";
+    new()
+    {
+        Title = ""تنظیمات عمومی"",
+        Description = ""تنظیمات کلی برنامه"",
+        Body = BodyFor(""لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ است."")
+    },
+    new()
+    {
+        Title = ""کاربران"",
+        Description = ""شما در حال حاضر مالک نیستید"",
+        Body = BodyFor(""لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ است."")
+    },
+];
+
+private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => item => builder => builder.AddContent(0, text);";
 }
