@@ -1,0 +1,20 @@
+@*
+    Catch-all host page. The Blazor router maps EVERY url to this single page; from here on
+    Bit.Brouter's <AppRouter /> takes over and matches the real route. The catch-all template is
+    what lets deep links (e.g. /counter/1234, /profile/saleh) be requested directly and still be
+    prerendered server-side - Brouter now matches them during OnInitializedAsync, so the matched
+    page's HTML is in the initial response.
+
+    MainLayout is supplied by the Blazor router (Routes.razor -> RouteView DefaultLayout), so we
+    only render AppRouter here and do not wrap it in a layout again.
+*@
+@page "/"
+@page "/{*path}"
+
+<AppRouter />
+
+@code {
+    // Captured but unused: Brouter reads the live URL from NavigationManager itself. The
+    // parameter only exists so the catch-all route template is satisfied for arbitrary depths.
+    [Parameter] public string? Path { get; set; }
+}

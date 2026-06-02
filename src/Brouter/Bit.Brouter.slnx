@@ -13,6 +13,9 @@
     </Project>
     <Project Path="Demo/Bit.Brouter.Demo.Web/Bit.Brouter.Demo.Web.csproj" />
   </Folder>
+  <Folder Name="/NewDemo/">
+    <Project Path="NewDemo/Bit.Brouter.NewDemo.Server/Bit.Brouter.NewDemo.Server.csproj" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />
   </Folder>
