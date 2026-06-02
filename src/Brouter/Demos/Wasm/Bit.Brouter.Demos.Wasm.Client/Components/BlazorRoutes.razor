@@ -1,0 +1,12 @@
+@*
+    Standard Blazor router. Its only job here is endpoint routing: it funnels every request to
+    the single catch-all Host page (see Host.razor). The actual route matching is done by
+    Bit.Brouter inside that page's <AppRouter />.
+
+    Lives in the Client assembly so InteractiveWebAssembly can resolve this root component.
+*@
+<Router AppAssembly="@typeof(BlazorRoutes).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+    </Found>
+</Router>
