@@ -36,7 +36,8 @@ public class Fetch(IJSRuntime js)
             ? cancellationToken.Register(static state =>
             {
                 var (j, rid) = ((IJSRuntime, Guid))state!;
-                _ = j.InvokeVoid("BitButil.fetch.abort", rid);
+                try { _ = j.InvokeVoid("BitButil.fetch.abort", rid); }
+                catch (JSDisconnectedException) { }
             }, (js, id))
             : default;
 

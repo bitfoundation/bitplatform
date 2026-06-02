@@ -1,3 +1,4 @@
+@using System.Text.Json
 @inject Bit.Butil.Console console
 
 <div class="demo-console">
@@ -68,12 +69,24 @@
         StateHasChanged();
     }
 
-    private static string Format(object? value) => value switch
+    private static string Format(object? value)
     {
-        null => "null",
-        string s => s,
-        _ => value.ToString() ?? ""
-    };
+        if (value is null) return "null";
+        if (value is string s) return s;
+
+        var type = value.GetType();
+        if (type.IsPrimitive || value is decimal or char) return value.ToString() ?? "";
+        if (type.IsEnum) return value.ToString() ?? "";
+
+        try
+        {
+            return JsonSerializer.Serialize(value);
+        }
+        catch
+        {
+            return value.ToString() ?? "";
+        }
+    }
 
     private record LogLine(string Kind, string Message, string Timestamp);
 }

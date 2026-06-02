@@ -1,7 +1,7 @@
 namespace Bit.Butil;
 
 /// <summary>
-/// Mirrors a subset of <see href="https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord">MutationRecord</type>.
+/// Mirrors a subset of <see href="https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord">MutationRecord</see>.
 /// DOM nodes can't cross interop, so they're flattened to lightweight summaries.
 /// </summary>
 public class MutationRecord
