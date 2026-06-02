@@ -111,6 +111,12 @@
                         hideApp_ && appEl && (appEl.style.display = 'none');
                         bswupEl && (bswupEl.style.display = 'block');
 
+                        // The error supersedes any in-flight progress. Hide the bar and the
+                        // percentage so a stale partial value (e.g. "47%") isn't left sitting
+                        // next to the failure message.
+                        if (progressEl && progressEl.parentElement) progressEl.parentElement.style.display = 'none';
+                        if (percentEl) percentEl.style.display = 'none';
+
                         if (errorEl) {
                             errorEl.style.display = 'block';
                             if (errorMessageEl) errorMessageEl.textContent = (data && data.message) || 'Service worker install failed.';
@@ -121,14 +127,27 @@
                                 errorDetailsEl.textContent = `${reasonText}${urlText}${hashText}`.trim();
                             }
                             if (errorRetryButton) {
-                                errorRetryButton.style.display = 'inline-block';
-                                errorRetryButton.onclick = () => {
-                                    if (data && typeof data.reload === 'function') {
-                                        data.reload();
-                                    } else {
-                                        window.location.reload();
-                                    }
-                                };
+                                // Some failures are deterministic - a plain reload re-fetches the
+                                // same broken bytes and fails identically. A manifest that won't
+                                // parse or an SRI/integrity mismatch needs a redeploy (or fixed
+                                // CDN/proxy), not a retry. For those, hide the retry button so we
+                                // don't invite a pointless reload loop; keep it for transient
+                                // failures (network/fetch/cache) where reloading can genuinely help.
+                                const nonRetriableReasons = ['manifest', 'integrity'];
+                                const isRetriable = !(data && nonRetriableReasons.indexOf(data.reason) !== -1);
+                                if (isRetriable) {
+                                    errorRetryButton.style.display = 'inline-block';
+                                    errorRetryButton.onclick = () => {
+                                        if (data && typeof data.reload === 'function') {
+                                            data.reload();
+                                        } else {
+                                            window.location.reload();
+                                        }
+                                    };
+                                } else {
+                                    errorRetryButton.style.display = 'none';
+                                    errorRetryButton.onclick = null;
+                                }
                             }
                         }
                         // Always log errors regardless of showLogs - this is actionable info.

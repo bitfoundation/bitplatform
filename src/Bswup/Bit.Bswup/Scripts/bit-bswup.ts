@@ -292,7 +292,11 @@ if (!BitBswup.initialized) {
                         // Skip background tabs: browsers heavily throttle their timers and the
                         // request would be wasted. The visibilitychange check below catches up
                         // the moment the tab is focused again.
-                        if (document.visibilityState !== 'visible') return;
+                        if (document.visibilityState !== 'visible') {
+                            verbose('update poll tick skipped - tab not visible.');
+                            return;
+                        }
+                        verbose('update poll tick - checking for update.');
                         checkForUpdate();
                     }, intervalSeconds * 1000);
                 }
@@ -300,7 +304,10 @@ if (!BitBswup.initialized) {
                 if (options.updateOnVisibility) {
                     info('update-on-visibility enabled.');
                     document.addEventListener('visibilitychange', () => {
-                        if (document.visibilityState === 'visible') checkForUpdate();
+                        if (document.visibilityState === 'visible') {
+                            verbose('tab became visible - checking for update.');
+                            checkForUpdate();
+                        }
                     });
                 }
             }
@@ -320,6 +327,14 @@ if (!BitBswup.initialized) {
                 try {
                     await registration.update();
 
+                    // reg.update() resolves once the server has responded and the byte-compare
+                    // is done, but the browser does not necessarily set reg.installing (nor fire
+                    // 'updatefound') synchronously on the same microtask. Reading it immediately
+                    // can therefore report "no update" even while an install is about to start,
+                    // producing a spurious updateNotFound that races the updatefound event. Yield
+                    // a macrotask first so a freshly-found worker has a chance to surface.
+                    await new Promise(resolve => setTimeout(resolve, 0));
+
                     // A new worker installing/waiting means an update was found; the existing
                     // 'updatefound' listener already drives updateFound/stateChanged/updateReady.
                     // Nothing installing or waiting means we're already on the latest version,
@@ -331,7 +346,13 @@ if (!BitBswup.initialized) {
                     }
                 } catch (err) {
                     error('checkForUpdate failed', err);
-                    handle(BswupMessage.error, { reason: 'update', message: String((err && (err as any).message) || err), reload });
+                    // A failed registration.update() is a transient, non-fatal condition (offline,
+                    // server hiccup, throttled background tab) - the app is already running fine.
+                    // Emit a non-blocking updateCheckFailed message rather than the install-path
+                    // 'error', so the default progress handler doesn't hide the app or show the
+                    // install-failed UI. The payload still carries the reason/message so callers
+                    // that care can react.
+                    handle(BswupMessage.updateCheckFailed, { reason: 'update', message: String((err && (err as any).message) || err), reload });
                 }
             }
 
@@ -520,6 +541,7 @@ var BswupMessage = BswupMessage || {
     updateReady: 'UPDATE_READY',
     updateFound: 'UPDATE_FOUND',
     updateNotFound: 'UPDATE_NOT_FOUND',
+    updateCheckFailed: 'UPDATE_CHECK_FAILED',
     stateChanged: 'STATE_CHANGED',
     error: 'ERROR'
 };

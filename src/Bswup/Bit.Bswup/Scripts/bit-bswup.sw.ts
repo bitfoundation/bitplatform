@@ -1,4 +1,4 @@
-self['bit-bswup.sw version'] = '10.4.5';
+(self as any)['bit-bswup.sw version'] = '10.4.5';
 
 interface Window {
     clients: any
@@ -44,19 +44,43 @@ const ASSETS_URL = typeof self.assetsUrl === 'string' ? self.assetsUrl : '/servi
 
 diag('ASSETS_URL:', ASSETS_URL);
 
-self.importScripts(ASSETS_URL);
+// importScripts can throw (404, network error, or a syntax error in the generated assets
+// file). Fail soft: swallow the error here so self.assetsManifest stays undefined and the
+// validateAssetsManifest check below reports a structured 'manifest' error to the page,
+// instead of the whole service-worker script aborting with an unhandled exception before
+// any error event can reach the client.
+try {
+    self.importScripts(ASSETS_URL);
+} catch (err) {
+    diag('*** importScripts failed:', ASSETS_URL, err);
+}
 
 const MANIFEST_ERRORS = validateAssetsManifest(self.assetsManifest);
-if (MANIFEST_ERRORS.length) {
+// When the manifest is missing/malformed the service worker must not proceed to enumerate
+// or cache assets - doing so would dereference self.assetsManifest.assets and crash, or
+// promote a broken cache to the active one. We report the failure (so the page UI can react)
+// and keep MANIFEST_VALID around to gate the rest of startup. We can't `return` at module
+// scope, so the install handler and asset enumeration below guard on this flag instead.
+const MANIFEST_VALID = MANIFEST_ERRORS.length === 0;
+if (!MANIFEST_VALID) {
     diag('*** assetsManifest validation failed:', MANIFEST_ERRORS);
     sendError({
         reason: 'manifest',
         message: 'service-worker-assets.js is missing or malformed: ' + MANIFEST_ERRORS.join('; '),
         url: ASSETS_URL,
     });
+
+    // Normalize to a benign, fully-formed shape so the rest of this module - which reads
+    // self.assetsManifest.assets / .version in several places (some unconditionally, e.g.
+    // createNewAssetRequest) - can finish evaluating without throwing. An exception at
+    // module-evaluation time would tear down the worker before any install/error handling
+    // could run, so the page would never receive the 'manifest' error reported above. With a
+    // safe shape the script keeps reporting errors predictably; MANIFEST_VALID still gates
+    // caching so we never promote this empty manifest over a previously good cache.
+    self.assetsManifest = normalizeAssetsManifest(self.assetsManifest);
 }
 
-const VERSION = (self.assetsManifest && self.assetsManifest.version) || '0.0.0-invalid-manifest';
+const VERSION = (self.assetsManifest && typeof self.assetsManifest.version === 'string') ? self.assetsManifest.version : '0.0.0-invalid-manifest';
 const CACHE_NAME_PREFIX = 'bit-bswup';
 
 // Cache identity normally tracks Blazor's manifest version (assetsManifest.version), a
@@ -137,6 +161,14 @@ self.addEventListener('message', handleMessage);
 async function handleInstall(e: any) {
     diag('installing version:', VERSION);
 
+    if (!MANIFEST_VALID) {
+        // The manifest is missing/malformed - sendError already notified the page. Don't
+        // build a cache from an empty/partial asset list (it would replace the previous good
+        // cache with a broken one). Let the lifecycle settle without caching anything.
+        diag('*** skipping install - invalid assetsManifest.');
+        return;
+    }
+
     sendMessage({ type: 'install', data: { version: VERSION, isPassive: self.isPassive } });
 
     if (self.errorTolerance === 'strict') {
@@ -191,7 +223,7 @@ const ASSETS_EXCLUDE = (self.ignoreDefaultExclude ? [] : DEFAULT_ASSETS_EXCLUDE)
 diag('ASSETS_INCLUDE:', ASSETS_INCLUDE);
 diag('ASSETS_EXCLUDE:', ASSETS_EXCLUDE);
 
-const ALL_ASSETS = self.assetsManifest.assets
+const ALL_ASSETS = (MANIFEST_VALID && Array.isArray(self.assetsManifest.assets) ? self.assetsManifest.assets : [])
     .filter((asset: any) => ASSETS_INCLUDE.some(pattern => pattern.test(asset.url)))
     .filter((asset: any) => !ASSETS_EXCLUDE.some(pattern => pattern.test(asset.url)))
     .concat(EXTERNAL_ASSETS);
@@ -318,7 +350,7 @@ function handleMessage(e: MessageEvent<string>) {
         // no previously-active worker (see hadActiveWorkerAtStartup in bit-bswup.ts).
         return self.clients.claim()
             .then(() => deleteOldCaches())
-            .then(() => e.source.postMessage('CLIENTS_CLAIMED'));
+            .then(() => e.source?.postMessage('CLIENTS_CLAIMED'));
     }
 
     if (e.data === 'BLAZOR_STARTED') {
@@ -349,6 +381,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 if (!oldKey || !oldKey.url) continue;
 
                 const oldRes = await oldCache.match(oldKey.url);
+                if(!oldRes) continue;
                 await newCache.put(oldKey.url, oldRes);
             }
         }
@@ -369,8 +402,8 @@ async function createAssetsCache(ignoreProgressReport = false) {
     let current = 0;
     let total = UNIQUE_ASSETS.length;
 
-    const oldUrls = [];
-    const updatedAssets = [];
+    const oldUrls = [] as any[];
+    const updatedAssets = [] as any[];
     for (let i = 0; i < newCacheKeys.length; i++) {
         const key = newCacheKeys[i];
         if (!key || !key.url) continue;
@@ -635,7 +668,7 @@ async function deleteOldCaches() {
 }
 
 function uniqueAssets(assets: any) {
-    const unique = {};
+    const unique = {} as any;
     const distinct = [];
     for (let i = 0; i < assets.length; i++) {
         const a = assets[i];
@@ -661,6 +694,22 @@ function sendError(data: { reason: string; message: string;[key: string]: any })
         console.error('BitBswup SW:', data.message, data);
     } catch { /* ignore */ }
     sendMessage({ type: 'error', data });
+}
+
+// Coerces an invalid/missing assetsManifest into a benign, fully-formed object so the rest
+// of the module can read .version / .assets without throwing. Preserves any salvageable
+// fields from a partially-valid manifest (e.g. a present version but missing assets array).
+// This never makes an invalid manifest "valid" - MANIFEST_VALID still gates caching - it
+// only guarantees a safe shape so the worker can keep reporting errors instead of crashing.
+function normalizeAssetsManifest(manifest: any) {
+    const safe = (manifest && typeof manifest === 'object') ? manifest : {};
+    if (typeof safe.version !== 'string' || !safe.version) {
+        safe.version = '0.0.0-invalid-manifest';
+    }
+    if (!Array.isArray(safe.assets)) {
+        safe.assets = [];
+    }
+    return safe;
 }
 
 function validateAssetsManifest(manifest: any): string[] {

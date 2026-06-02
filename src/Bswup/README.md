@@ -46,7 +46,7 @@ app.UseStaticFiles(new StaticFileOptions
 ```
 
 - `scope`: The scope of the service-worker ([read more](https://developer.chrome.com/docs/workbox/service-worker-lifecycle/#scope)).
-- `log`: The log level of the Bswup logger. Available options are: `none`, `error`, `warn`, `info`, `verbose`, and `debug` (case-insensitive). Each level includes everything above it (e.g. `info` also shows `warn` and `error`). Defaults to `warn`. Use `none` to silence all output.
+- `log`: The log level of the Bswup logger. Available options are: `none`, `error`, `warn`, `info`, `verbose`, and `debug`. Each level includes everything above it (e.g. `info` also shows `warn` and `error`). Defaults to `warn`. Use `none` to silence all output.
 - `sw`: The file path of the service-worker file.
 - `handler`: The name of the handler function for the service-worker events.
 - `blazorScript`: The path of the Blazor entry-point script (the one you added `autostart="false"` to in step 3). When omitted, Bswup auto-detects both the Blazor Web App script (`_framework/blazor.web.js`) and the standalone Blazor WebAssembly script (`_framework/blazor.webassembly.js`), so you only need to set this if your script lives at a non-default path.
@@ -101,6 +101,13 @@ function bitBswupHandler(type, data) {
 
         case BswupMessage.updateNotFound:
             return console.log('checked for an update, already on the latest version.');
+
+        case BswupMessage.error:
+            // Structured install failure. data.reason is one of 'manifest' | 'integrity' |
+            // 'fetch' | 'cache' | 'request' | 'install-incomplete'; data.message is human
+            // readable, and data.url / data.hash point at the offending asset when known.
+            console.error('Bswup install error:', data.reason, data.message);
+            return;
     }
 }
 ```
