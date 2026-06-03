@@ -5,9 +5,9 @@ Bit.Brouter.
 
 ## Why this demo exists
 
-The original demo heads (`Demo/Bit.Brouter.Demo.Web` and `...Maui`) run Brouter in a client-only
+The original demo heads (`InteralTests/Demo/Bit.Brouter.Demo.Web` and `...Maui`) run Brouter in a client-only
 runtime (WebAssembly / BlazorWebView), where pre-rendering doesn't apply. This project hosts the
-exact same routes - it references `Demo/Bit.Brouter.Demo.Core` - inside an ASP.NET Core server with
+exact same routes - it references `InteralTests/Demo/Bit.Brouter.Demo.Core` - inside an ASP.NET Core server with
 the `InteractiveServer` render mode, which pre-renders on the server by default.
 
 ## What it proves
@@ -20,7 +20,7 @@ You can confirm this without a browser:
 
 ```pwsh
 # Run the server
-dotnet run --project NewDemo/Bit.Brouter.NewDemo.Server
+dotnet run --project InteralTests/NewDemo/Bit.Brouter.NewDemo.Server
 
 # In another shell, request a deep link and inspect the RAW html (no JS executed).
 # The matched page's content appears INSIDE the <!--Blazor:...prerenderId...--> markers.
@@ -45,7 +45,7 @@ For `/counter/1234` the pre-rendered HTML already contains the counter heading, 
 ## Run
 
 ```pwsh
-dotnet run --project NewDemo/Bit.Brouter.NewDemo.Server
+dotnet run --project InteralTests/NewDemo/Bit.Brouter.NewDemo.Server
 ```
 
 Then browse to <http://localhost:5180> (or the HTTPS URL <https://localhost:7180> from `launchSettings.json`).

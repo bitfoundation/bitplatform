@@ -1,17 +1,17 @@
 # Bit.Brouter Demos
 
-Three Blazor Web App hosts that exercise the same routes and pages from `Demo/Bit.Brouter.Demo.Core` in every interactive render mode, with **server prerendering** enabled so Brouter matches the URL during `OnInitializedAsync` and the matched markup is in the initial HTML.
+Three Blazor Web App hosts that exercise the same routes and pages from `InteralTests/Demo/Bit.Brouter.Demo.Core` in every interactive render mode, with **server prerendering** enabled so Brouter matches the URL during `OnInitializedAsync` and the matched markup is in the initial HTML.
 
 | Folder | Render mode | Run |
 |--------|-------------|-----|
-| `Server/` | `InteractiveServer` | `dotnet run --project Demos/Server/Bit.Brouter.Demos.Server` |
-| `Wasm/` | `InteractiveWebAssembly` | `dotnet run --project Demos/Wasm/Bit.Brouter.Demos.Wasm` |
-| `Auto/` | `InteractiveAuto` | `dotnet run --project Demos/Auto/Bit.Brouter.Demos.Auto` |
+| `Server/` | `InteractiveServer` | `dotnet run --project InteralTests/Demos/Server/Bit.Brouter.Demos.Server` |
+| `Wasm/` | `InteractiveWebAssembly` | `dotnet run --project InteralTests/Demos/Wasm/Bit.Brouter.Demos.Wasm` |
+| `Auto/` | `InteractiveAuto` | `dotnet run --project InteralTests/Demos/Auto/Bit.Brouter.Demos.Auto` |
 
 ## Verify prerendering
 
 ```pwsh
-dotnet run --project Demos/Server/Bit.Brouter.Demos.Server
+dotnet run --project InteralTests/Demos/Server/Bit.Brouter.Demos.Server
 # In another shell (no JS):
 curl http://localhost:5181/counter/1234
 curl http://localhost:5181/profile/saleh
