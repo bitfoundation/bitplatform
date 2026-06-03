@@ -57,6 +57,19 @@ BitBswup.version = window['bit-bswup version'] = '10.4.5';
                 reg.active?.postMessage('CLEAN_UP');
             };
 
+            // The page can be loaded without a controlling service worker even though
+            // a registration already exists - most notably on a hard reload (Ctrl+F5 /
+            // Shift+Reload), which bypasses the SW for the navigation request. In that
+            // case no install/activate runs, no controllerchange fires, and the normal
+            // startBlazor() call above is a no-op (controller is null), so Blazor would
+            // never start. If the SW is already active we can safely force-start Blazor
+            // here; assets are served from network for this page and the SW will keep
+            // the cache fresh in the background.
+            if (!navigator.serviceWorker.controller && reg.active && !reg.installing) {
+                info('uncontrolled page with active registration (e.g. hard reload) - force starting Blazor.');
+                startBlazor(true);
+            }
+
             if (reg.waiting) {
                 info('registration waiting:', reg.waiting);
                 if (reg.installing) {
