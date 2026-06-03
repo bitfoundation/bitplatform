@@ -1,9 +1,0 @@
-@*
-    Standard Blazor router funneling every URL to the catch-all Host page; Brouter matches inside AppRouter.
-    Lives in the Client assembly for InteractiveAuto / WebAssembly interactivity.
-*@
-<Router AppAssembly="@typeof(BlazorRoutes).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-    </Found>
-</Router>
