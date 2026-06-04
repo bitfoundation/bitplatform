@@ -35,6 +35,17 @@
         <button id="bit-bswup-reload">Update ready to install!</button>
     }
     <script>
-        BitBswupProgress.start(@(AutoReload ? "true" : "false"), @(ShowLogs ? "true" : "false"), @(ShowAssets ? "true" : "false"), '@(AppContainer)', @(HideApp ? "true" : "false"), @(AutoHide ? "true" : "false"), '@(Handler)');
+        if (window.BitBswupProgress !== undefined) {
+            window.BitBswupProgress.start(
+                @(AutoReload ? "true" : "false"), 
+                @(ShowLogs ? "true" : "false"), 
+                @(ShowAssets ? "true" : "false"), 
+                '@(AppContainer)', 
+                @(HideApp ? "true" : "false"), 
+                @(AutoHide ? "true" : "false"), 
+                '@(Handler)');
+        } else {
+            console.error('BitBswupProgress not found');
+        }
     </script>
 </div>

@@ -513,10 +513,11 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 // Browsers reject fetch() with a TypeError when SRI validation fails. The
                 // browser also logs "Failed to find a valid digest in the 'integrity' attribute"
                 // to the console, but the SW would otherwise silently swallow this. Surface it.
+                // SRI and transient network failures both reject as TypeError; only treat as
+                // integrity when the message signals a digest/SRI problem, not on TypeError alone.
                 const isIntegrity =
                     hasIntegrity &&
-                    (fetchErr instanceof TypeError ||
-                        /integrity|digest|EPRPROTO|ERR_FAILED/i.test(String(fetchErr && (fetchErr as any).message || fetchErr)));
+                    /integrity|digest|EPRPROTO|ERR_FAILED/i.test(String(fetchErr && (fetchErr as any).message || fetchErr));
 
                 // Integrity failures are deterministic: re-fetching identical bytes fails the
                 // same way, so never retry them. Genuine network errors are transient and

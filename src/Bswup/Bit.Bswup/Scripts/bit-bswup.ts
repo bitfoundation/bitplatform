@@ -32,7 +32,11 @@ if (!BitBswup.initialized) {
 
         const bitBswupScript = document.currentScript;
 
-        window.addEventListener('DOMContentLoaded', runBswup); // important event!
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', runBswup); // important event!
+        } else {
+            runBswup();
+        }
 
         function runBswup() {
             const options = extract();
@@ -496,7 +500,10 @@ if (!BitBswup.initialized) {
 
         const shouldDelete =
             typeof cacheFilter === 'function' ? cacheFilter :
-            cacheFilter instanceof RegExp ? (key: string) => cacheFilter.test(key) :
+            cacheFilter instanceof RegExp ? (key: string) => {
+                cacheFilter.lastIndex = 0;
+                return cacheFilter.test(key);
+            } :
             typeof cacheFilter === 'string' ? (key: string) => key.startsWith(cacheFilter) :
             () => true;
 
