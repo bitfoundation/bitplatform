@@ -55,9 +55,9 @@ public class Fetch(IJSRuntime js)
     }
 
     /// <summary>
-    /// Starts the request and immediately returns an <see cref="AbortableFetch"/>. Await
-    /// <see cref="AbortableFetch"/> won't give you the response — use this when you only
-    /// need fire-and-forget abort control. For typical use prefer <see cref="Send"/>.
+    /// Starts the request and immediately returns an <see cref="AbortableFetch"/> abort handle.
+    /// This does not return the response payload — use <see cref="Send"/> for that. Prefer
+    /// <see cref="Send"/> unless you only need fire-and-forget abort control.
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FetchRequest))]
     public async Task<AbortableFetch> Start(FetchRequest request)

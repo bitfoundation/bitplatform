@@ -10,8 +10,8 @@ namespace Bit.Butil;
 /// </summary>
 /// <remarks>
 /// Object URLs leak memory if not revoked. The instance tracks every URL it creates so
-/// disposal automatically revokes outstanding ones. Use <see cref="Create"/> when you want
-/// the URL to outlive disposal and call <see cref="Revoke"/> yourself.
+/// disposal automatically revokes outstanding ones. Call <see cref="Create(byte[], string, bool)"/>
+/// with <c>track: false</c> when you want the URL to outlive disposal and call <see cref="Revoke"/> yourself.
 /// </remarks>
 public class ObjectUrls(IJSRuntime js) : IAsyncDisposable
 {

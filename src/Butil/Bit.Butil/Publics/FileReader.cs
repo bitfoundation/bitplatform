@@ -24,9 +24,9 @@ public class FileReader(IJSRuntime js)
     public ValueTask<BlobInfo[]> GetFileInfos(ElementReference inputElement)
         => js.Invoke<BlobInfo[]>("BitButil.fileReader.getFileInfos", inputElement);
 
-    /// <summary>Reads a single file as raw bytes.</summary>
-    public ValueTask<byte[]> ReadAsBytes(ElementReference inputElement, int index = 0)
-        => js.Invoke<byte[]>("BitButil.fileReader.readAsBytes", inputElement, index);
+    /// <summary>Reads a single file as raw bytes, or <see langword="null"/> when no file exists at <paramref name="index"/>.</summary>
+    public ValueTask<byte[]?> ReadAsBytes(ElementReference inputElement, int index = 0)
+        => js.Invoke<byte[]?>("BitButil.fileReader.readAsBytes", inputElement, index);
 
     /// <summary>Reads a single file as UTF-8 text. Pass a different <paramref name="encoding"/> when the source is non-UTF-8.</summary>
     public ValueTask<string> ReadAsText(ElementReference inputElement, int index = 0, string encoding = "utf-8")
