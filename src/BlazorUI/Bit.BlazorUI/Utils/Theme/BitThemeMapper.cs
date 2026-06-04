@@ -143,6 +143,7 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-fg-sec-light-active", bitTheme.Color.Foreground.SecondaryLightActive);
         addCssVar("--bit-clr-fg-sec-dis", bitTheme.Color.Foreground.SecondaryDisabled);
         addCssVar("--bit-clr-fg-sec-dis-text", bitTheme.Color.Foreground.SecondaryDisabledText);
+        addCssVar("--bit-clr-fg-sec-focus", bitTheme.Color.Foreground.SecondaryFocus);
         addCssVar("--bit-clr-fg-ter", bitTheme.Color.Foreground.Tertiary);
         addCssVar("--bit-clr-fg-ter-hover", bitTheme.Color.Foreground.TertiaryHover);
         addCssVar("--bit-clr-fg-ter-active", bitTheme.Color.Foreground.TertiaryActive);
@@ -154,6 +155,7 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-fg-ter-light-active", bitTheme.Color.Foreground.TertiaryLightActive);
         addCssVar("--bit-clr-fg-ter-dis", bitTheme.Color.Foreground.TertiaryDisabled);
         addCssVar("--bit-clr-fg-ter-dis-text", bitTheme.Color.Foreground.TertiaryDisabledText);
+        addCssVar("--bit-clr-fg-ter-focus", bitTheme.Color.Foreground.TertiaryFocus);
         addCssVar("--bit-clr-fg-dis", bitTheme.Color.Foreground.Disabled);
 
         addCssVar("--bit-clr-bg-pri", bitTheme.Color.Background.Primary);
@@ -179,6 +181,7 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-bg-sec-light-active", bitTheme.Color.Background.SecondaryLightActive);
         addCssVar("--bit-clr-bg-sec-dis", bitTheme.Color.Background.SecondaryDisabled);
         addCssVar("--bit-clr-bg-sec-dis-text", bitTheme.Color.Background.SecondaryDisabledText);
+        addCssVar("--bit-clr-bg-sec-focus", bitTheme.Color.Background.SecondaryFocus);
         addCssVar("--bit-clr-bg-ter", bitTheme.Color.Background.Tertiary);
         addCssVar("--bit-clr-bg-ter-hover", bitTheme.Color.Background.TertiaryHover);
         addCssVar("--bit-clr-bg-ter-active", bitTheme.Color.Background.TertiaryActive);
@@ -190,6 +193,7 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-bg-ter-light-active", bitTheme.Color.Background.TertiaryLightActive);
         addCssVar("--bit-clr-bg-ter-dis", bitTheme.Color.Background.TertiaryDisabled);
         addCssVar("--bit-clr-bg-ter-dis-text", bitTheme.Color.Background.TertiaryDisabledText);
+        addCssVar("--bit-clr-bg-ter-focus", bitTheme.Color.Background.TertiaryFocus);
         addCssVar("--bit-clr-bg-dis", bitTheme.Color.Background.Disabled);
         addCssVar("--bit-clr-bg-overlay", bitTheme.Color.Background.Overlay);
 
@@ -216,6 +220,7 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-brd-sec-light-active", bitTheme.Color.Border.SecondaryLightActive);
         addCssVar("--bit-clr-brd-sec-dis", bitTheme.Color.Border.SecondaryDisabled);
         addCssVar("--bit-clr-brd-sec-dis-text", bitTheme.Color.Border.SecondaryDisabledText);
+        addCssVar("--bit-clr-brd-sec-focus", bitTheme.Color.Border.SecondaryFocus);
         addCssVar("--bit-clr-brd-ter", bitTheme.Color.Border.Tertiary);
         addCssVar("--bit-clr-brd-ter-hover", bitTheme.Color.Border.TertiaryHover);
         addCssVar("--bit-clr-brd-ter-active", bitTheme.Color.Border.TertiaryActive);
@@ -227,6 +232,7 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-brd-ter-light-active", bitTheme.Color.Border.TertiaryLightActive);
         addCssVar("--bit-clr-brd-ter-dis", bitTheme.Color.Border.TertiaryDisabled);
         addCssVar("--bit-clr-brd-ter-dis-text", bitTheme.Color.Border.TertiaryDisabledText);
+        addCssVar("--bit-clr-brd-ter-focus", bitTheme.Color.Border.TertiaryFocus);
         addCssVar("--bit-clr-brd-dis", bitTheme.Color.Border.Disabled);
 
         addCssVar("--bit-clr-req", bitTheme.Color.Required);
@@ -572,6 +578,7 @@ internal static class BitThemeMapper
         result.Color.Foreground.SecondaryLightActive = bitTheme.Color.Foreground.SecondaryLightActive ?? other.Color.Foreground.SecondaryLightActive;
         result.Color.Foreground.SecondaryDisabled = bitTheme.Color.Foreground.SecondaryDisabled ?? other.Color.Foreground.SecondaryDisabled;
         result.Color.Foreground.SecondaryDisabledText = bitTheme.Color.Foreground.SecondaryDisabledText ?? other.Color.Foreground.SecondaryDisabledText;
+        result.Color.Foreground.SecondaryFocus = bitTheme.Color.Foreground.SecondaryFocus ?? other.Color.Foreground.SecondaryFocus;
         result.Color.Foreground.Tertiary = bitTheme.Color.Foreground.Tertiary ?? other.Color.Foreground.Tertiary;
         result.Color.Foreground.TertiaryHover = bitTheme.Color.Foreground.TertiaryHover ?? other.Color.Foreground.TertiaryHover;
         result.Color.Foreground.TertiaryActive = bitTheme.Color.Foreground.TertiaryActive ?? other.Color.Foreground.TertiaryActive;
@@ -583,6 +590,7 @@ internal static class BitThemeMapper
         result.Color.Foreground.TertiaryLightActive = bitTheme.Color.Foreground.TertiaryLightActive ?? other.Color.Foreground.TertiaryLightActive;
         result.Color.Foreground.TertiaryDisabled = bitTheme.Color.Foreground.TertiaryDisabled ?? other.Color.Foreground.TertiaryDisabled;
         result.Color.Foreground.TertiaryDisabledText = bitTheme.Color.Foreground.TertiaryDisabledText ?? other.Color.Foreground.TertiaryDisabledText;
+        result.Color.Foreground.TertiaryFocus = bitTheme.Color.Foreground.TertiaryFocus ?? other.Color.Foreground.TertiaryFocus;
         result.Color.Foreground.Disabled = bitTheme.Color.Foreground.Disabled ?? other.Color.Foreground.Disabled;
 
         result.Color.Background.Primary = bitTheme.Color.Background.Primary ?? other.Color.Background.Primary;
@@ -608,6 +616,7 @@ internal static class BitThemeMapper
         result.Color.Background.SecondaryLightActive = bitTheme.Color.Background.SecondaryLightActive ?? other.Color.Background.SecondaryLightActive;
         result.Color.Background.SecondaryDisabled = bitTheme.Color.Background.SecondaryDisabled ?? other.Color.Background.SecondaryDisabled;
         result.Color.Background.SecondaryDisabledText = bitTheme.Color.Background.SecondaryDisabledText ?? other.Color.Background.SecondaryDisabledText;
+        result.Color.Background.SecondaryFocus = bitTheme.Color.Background.SecondaryFocus ?? other.Color.Background.SecondaryFocus;
         result.Color.Background.Tertiary = bitTheme.Color.Background.Tertiary ?? other.Color.Background.Tertiary;
         result.Color.Background.TertiaryHover = bitTheme.Color.Background.TertiaryHover ?? other.Color.Background.TertiaryHover;
         result.Color.Background.TertiaryActive = bitTheme.Color.Background.TertiaryActive ?? other.Color.Background.TertiaryActive;
@@ -619,6 +628,7 @@ internal static class BitThemeMapper
         result.Color.Background.TertiaryLightActive = bitTheme.Color.Background.TertiaryLightActive ?? other.Color.Background.TertiaryLightActive;
         result.Color.Background.TertiaryDisabled = bitTheme.Color.Background.TertiaryDisabled ?? other.Color.Background.TertiaryDisabled;
         result.Color.Background.TertiaryDisabledText = bitTheme.Color.Background.TertiaryDisabledText ?? other.Color.Background.TertiaryDisabledText;
+        result.Color.Background.TertiaryFocus = bitTheme.Color.Background.TertiaryFocus ?? other.Color.Background.TertiaryFocus;
         result.Color.Background.Disabled = bitTheme.Color.Background.Disabled ?? other.Color.Background.Disabled;
         result.Color.Background.Overlay = bitTheme.Color.Background.Overlay ?? other.Color.Background.Overlay;
 
@@ -645,6 +655,7 @@ internal static class BitThemeMapper
         result.Color.Border.SecondaryLightActive = bitTheme.Color.Border.SecondaryLightActive ?? other.Color.Border.SecondaryLightActive;
         result.Color.Border.SecondaryDisabled = bitTheme.Color.Border.SecondaryDisabled ?? other.Color.Border.SecondaryDisabled;
         result.Color.Border.SecondaryDisabledText = bitTheme.Color.Border.SecondaryDisabledText ?? other.Color.Border.SecondaryDisabledText;
+        result.Color.Border.SecondaryFocus = bitTheme.Color.Border.SecondaryFocus ?? other.Color.Border.SecondaryFocus;
         result.Color.Border.Tertiary = bitTheme.Color.Border.Tertiary ?? other.Color.Border.Tertiary;
         result.Color.Border.TertiaryHover = bitTheme.Color.Border.TertiaryHover ?? other.Color.Border.TertiaryHover;
         result.Color.Border.TertiaryActive = bitTheme.Color.Border.TertiaryActive ?? other.Color.Border.TertiaryActive;
@@ -656,6 +667,7 @@ internal static class BitThemeMapper
         result.Color.Border.TertiaryLightActive = bitTheme.Color.Border.TertiaryLightActive ?? other.Color.Border.TertiaryLightActive;
         result.Color.Border.TertiaryDisabled = bitTheme.Color.Border.TertiaryDisabled ?? other.Color.Border.TertiaryDisabled;
         result.Color.Border.TertiaryDisabledText = bitTheme.Color.Border.TertiaryDisabledText ?? other.Color.Border.TertiaryDisabledText;
+        result.Color.Border.TertiaryFocus = bitTheme.Color.Border.TertiaryFocus ?? other.Color.Border.TertiaryFocus;
         result.Color.Border.Disabled = bitTheme.Color.Border.Disabled ?? other.Color.Border.Disabled;
 
         result.Color.Required = bitTheme.Color.Required ?? other.Color.Required;

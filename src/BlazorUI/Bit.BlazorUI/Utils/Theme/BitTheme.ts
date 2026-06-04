@@ -77,7 +77,8 @@ namespace BitBlazorUI {
 
             let theme = Theme._initOptions.theme || Theme._initOptions.default || Theme._lightTheme;
 
-            if (Theme._initOptions.system) {
+            if (Theme._initOptions.theme === Theme.SYSTEM_THEME ||
+                (!Theme._initOptions.theme && !Theme._initOptions.default && Theme._initOptions.system)) {
                 theme = Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme;
             }
 
@@ -193,8 +194,9 @@ namespace BitBlazorUI {
             const el = element || document.body;
             const keys = Object.keys(theme);
             const prev = Theme._appliedVarKeys.get(el) || [];
+            prev.filter(key => !keys.includes(key)).forEach(key => el.style.removeProperty(key));
             keys.forEach(key => el.style.setProperty(key, theme[key]));
-            Theme._appliedVarKeys.set(el, [...new Set([...prev, ...keys])]);
+            Theme._appliedVarKeys.set(el, keys);
         }
 
         /** Removes --bit-* properties previously applied by applyTheme on the target (default document.body). */
@@ -309,7 +311,34 @@ namespace BitBlazorUI {
 
     /** Attach or swap alternate theme stylesheets at runtime (prefer same-origin / trusted URLs). */
     export class ExternalTheme {
+        private static validateHref(href: string) {
+            const trimmed = href?.trimStart();
+            if (!trimmed) {
+                throw new Error('Stylesheet href is required.');
+            }
+            if (trimmed.startsWith('//') || trimmed.startsWith('\\\\')) {
+                throw new Error('Stylesheet href must not be a protocol-relative URL.');
+            }
+            if (/^javascript:/i.test(trimmed) || /^data:/i.test(trimmed) || /^vbscript:/i.test(trimmed)) {
+                throw new Error('Stylesheet href must not use a non-http scheme.');
+            }
+            let url: URL;
+            try {
+                url = new URL(href, document.baseURI);
+            } catch {
+                throw new Error('Stylesheet href is not a valid URL.');
+            }
+            if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+                throw new Error(`Stylesheet href scheme '${url.protocol}' is not allowed.`);
+            }
+            if (url.origin !== location.origin) {
+                throw new Error('Stylesheet href must be same-origin.');
+            }
+        }
+
         public static attach(linkId: string, href: string) {
+            ExternalTheme.validateHref(href);
+
             const existing = document.getElementById(linkId);
             let link: HTMLLinkElement;
             if (existing && existing.tagName === 'LINK') {

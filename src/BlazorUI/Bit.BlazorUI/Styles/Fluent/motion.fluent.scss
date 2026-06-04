@@ -8,8 +8,8 @@
 
 @media (prefers-reduced-motion: reduce) {
     :root {
-        --bit-mot-duration: 0.01ms;
-        --bit-mot-duration-short: 0.01ms;
-        --bit-mot-duration-long: 0.01ms;
+        --bit-mot-duration: 0ms;
+        --bit-mot-duration-short: 0ms;
+        --bit-mot-duration-long: 0ms;
     }
 }

@@ -9,11 +9,12 @@ public static class BitThemeDensityPresets
     /// <example>
     /// Merge the overlay's density-affecting properties into your baseline <see cref="BitTheme"/>:
     /// <code>
+    /// var bitThemeManager = ...; // inject BitThemeManager
     /// var theme = new BitTheme(); // your app baseline
     /// var overlay = BitThemeDensityPresets.CreateCompactOverlay();
     /// theme.Layout.DensityScale = overlay.Layout.DensityScale;
     /// theme.Spacing.ScalingFactor = overlay.Spacing.ScalingFactor;
-    /// await ThemeManager.ApplyBitThemeAsync(theme);
+    /// await bitThemeManager.ApplyBitThemeAsync(theme);
     /// </code>
     /// </example>
     public static BitTheme CreateCompactOverlay()

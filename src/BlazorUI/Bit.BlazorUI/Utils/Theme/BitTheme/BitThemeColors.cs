@@ -59,6 +59,7 @@ public class BitThemeGeneralColorVariants
     public string? SecondaryLightActive { get; set; }
     public string? SecondaryDisabled { get; set; }
     public string? SecondaryDisabledText { get; set; }
+    public string? SecondaryFocus { get; set; }
     public string? Tertiary { get; set; }
     public string? TertiaryHover { get; set; }
     public string? TertiaryActive { get; set; }
@@ -70,6 +71,7 @@ public class BitThemeGeneralColorVariants
     public string? TertiaryLightActive { get; set; }
     public string? TertiaryDisabled { get; set; }
     public string? TertiaryDisabledText { get; set; }
+    public string? TertiaryFocus { get; set; }
     public string? Disabled { get; set; }
 }
 
