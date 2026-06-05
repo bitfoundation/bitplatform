@@ -106,7 +106,10 @@ function bitBswupHandler(type, data) {
             // Structured install failure. data.reason is one of 'manifest' | 'integrity' |
             // 'fetch' | 'cache' | 'request' | 'install-incomplete'; data.message is human
             // readable, and data.url / data.hash point at the offending asset when known.
-            console.error('Bswup install error:', data.reason, data.message);
+            console.error('Bswup install error:', data.reason, data.message,
+                ...(data.url ? [`url: ${data.url}`] : []),
+                ...(data.hash ? [`hash: ${data.hash}`] : []),
+                data);
             return;
     }
 }
@@ -210,12 +213,12 @@ The other settings are:
 - `disableHashlessAssetsUpdate`: Disables the update of the hash-less assets. By default, the Bswup tries to automatically update all of the hash-less assets (e.g. the external assets) every time an update found for the app.
 - `forcePrerender`: Forces the prerendering of the default document for every navigation request to ensure that the server always has the latest version of the app. This is useful when you have a server-rendered app and you want to make sure that the client always has the latest version of the app.
 - `enableCacheControl`: Enables the cache-control mechanism by providing cache busting setting and header to each request (`cache:no-store` settings and `cache-control:no-cache` header).
-- `cacheVersion`: Overrides the value used to name the cache storage bucket (`bit-bswup - <version>`). By default this tracks Blazor's `assetsManifest.version` (a hash over the published assets), which means the cache is rotated automatically whenever any asset hash changes - and *only* then. Set `cacheVersion` to take manual control: pin it to a stable string so noisy dev rebuilds that perturb asset hashes don't needlessly evict the whole cache (runtime `.dll`/`.wasm` included), or bump it to force a refresh when a meaningful change lives outside Blazor's asset manifest. Only the cache bucket name is affected; the per-asset `?v=` cache-buster and the Subresource Integrity hashes still derive from the manifest version, so asset integrity is unchanged. When unset (or not a non-empty string) it falls back to the manifest version. Tip: feed it a build-stamped value (commit SHA, build timestamp, or your app's informational version) so it bumps automatically per publish.
+- `cacheVersion`: Overrides the value used to name the cache storage bucket (`bit-bswup - <version>`). By default this tracks Blazor's `assetsManifest.version` (a hash over the published assets), which means the cache is rotated automatically whenever any asset hash changes - and *only* then. Set `cacheVersion` to take manual control: pin it to a stable string so noisy dev rebuilds that perturb asset hashes don't needlessly evict the whole cache (runtime `.dll`/`.wasm` included), or bump it to force a refresh when a meaningful change lives outside Blazor's asset manifest. Only the cache bucket name (`CACHE_NAME`) is affected. Per-asset cache busting (`?v=`) is set in `createNewAssetRequest()` from each asset's `asset.hash` (falling back to `assetsManifest.version`), and Subresource Integrity uses `asset.hash` when integrity checking is enabled. When unset (or not a non-empty string) it falls back to the manifest version. Tip: feed it a build-stamped value (commit SHA, build timestamp, or your app's informational version) so it bumps automatically per publish.
 - `mode`: Determines the mode of the Bswup. Possible values are:
     - `NoPrerender`: Disables the prerendering of the default document for every navigation request.
     - `InitialPrerender`: Enables the prerendering of the default document only for the initial navigation request.
     - `AlwaysPrerender`: Enables the prerendering of the default document for every navigation request.
-    - `FullOffline`: Enables the full offline mode where all assets are cached and served from the cache from first time the app is loaded.
+    - `FullOffline`: Enables the full offline mode where all assets are cached and served from the cache from the first time the app is loaded.
 
 ## JavaScript API
 
@@ -227,7 +230,7 @@ Bswup exposes a small global `BitBswup` object on the page so you can drive the 
 
 ### Polling for updates
 
-By default a service worker is only re-checked by the browser on navigation and roughly every 24 hours, so a tab that stays open for a long time can keep running an old version. There are three ways to check more often:
+By default a service worker is only re-checked by the browser on navigation and roughly every 24 hours, so a tab that stays open for a long time can keep running an old version. There are two ways to check more often:
 
 1. Set `updateInterval` (and/or `updateOnVisibility`) on the script tag for built-in polling (see the options above). This is the simplest approach and requires no extra code.
 2. Call `BitBswup.checkForUpdate()` yourself, for example from a timer or after a user action.

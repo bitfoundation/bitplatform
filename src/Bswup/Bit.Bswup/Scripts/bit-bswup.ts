@@ -396,7 +396,7 @@ if (!BitBswup.initialized) {
 
                 const optionsAttribute = (bitBswupScript.attributes)['options'];
                 const optionsName = (optionsAttribute || {}).value || 'bitBswup';
-                const options = (window[optionsName] || defaultoptions) as BswupOptions;
+                const options = Object.assign({}, defaultoptions, window[optionsName]) as BswupOptions;
 
                 const logAttribute = bitBswupScript.attributes['log'];
                 options.log = (logAttribute && logAttribute.value) || options.log;

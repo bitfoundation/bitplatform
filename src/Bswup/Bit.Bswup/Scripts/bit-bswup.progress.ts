@@ -133,7 +133,7 @@
                                 // CDN/proxy), not a retry. For those, hide the retry button so we
                                 // don't invite a pointless reload loop; keep it for transient
                                 // failures (network/fetch/cache) where reloading can genuinely help.
-                                const nonRetriableReasons = ['manifest', 'integrity'];
+                                const nonRetriableReasons = ['manifest', 'integrity', 'install-incomplete'];
                                 const isRetriable = !(data && nonRetriableReasons.indexOf(data.reason) !== -1);
                                 if (isRetriable) {
                                     errorRetryButton.style.display = 'inline-block';
