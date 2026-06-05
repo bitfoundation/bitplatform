@@ -17,9 +17,9 @@ public class MediaDevices(IJSRuntime js)
     /// Lists all input/output media devices. Labels may be empty strings until the user has
     /// granted permission to a matching input.
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaDeviceInfoItem))]
-    public ValueTask<MediaDeviceInfoItem[]> EnumerateDevices()
-        => js.Invoke<MediaDeviceInfoItem[]>("BitButil.mediaDevices.enumerate");
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaDeviceInfo))]
+    public ValueTask<MediaDeviceInfo[]> EnumerateDevices()
+        => js.Invoke<MediaDeviceInfo[]>("BitButil.mediaDevices.enumerate");
 
     /// <summary>
     /// Requests audio and/or video access from the user. Returns a <see cref="MediaStreamHandle"/>

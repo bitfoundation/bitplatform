@@ -9,8 +9,8 @@ namespace Bit.Butil;
 public class Permissions(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>navigator.permissions</c>.</summary>
-    public async ValueTask<bool> IsSupported()
-        => await js.Invoke<bool>("BitButil.permissions.isSupported");
+    public ValueTask<bool> IsSupported()
+        => js.Invoke<bool>("BitButil.permissions.isSupported");
 
     /// <summary>
     /// Returns the current state for a given permission descriptor name.

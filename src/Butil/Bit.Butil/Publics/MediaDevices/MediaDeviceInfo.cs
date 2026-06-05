@@ -3,7 +3,7 @@ namespace Bit.Butil;
 /// <summary>
 /// Mirrors <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDeviceInfo">MediaDeviceInfo</see>.
 /// </summary>
-public class MediaDeviceInfoItem
+public class MediaDeviceInfo
 {
     public string DeviceId { get; set; } = string.Empty;
 
