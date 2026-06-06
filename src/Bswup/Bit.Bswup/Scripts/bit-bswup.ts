@@ -262,7 +262,14 @@ if (!BitBswup.initialized) {
                     return;
                 }
 
-                const message = JSON.parse(e.data);
+                let message: any;
+                 try {
+                     if (typeof e.data !== 'string') return;
+                     message = JSON.parse(e.data);
+                 } catch {
+                     return;
+                 }
+
                 const { type, data } = message;
 
                 if (type === 'install') {

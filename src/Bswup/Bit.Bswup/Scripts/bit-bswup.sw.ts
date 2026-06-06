@@ -195,8 +195,10 @@ async function handleInstall(e: any) {
     } else {
         // Lax: lifecycle proceeds immediately; missing assets are filled lazily by
         // handleFetch. This preserves best-effort behavior for callers that explicitly
-        // opt in via errorTolerance: 'lax'.
-        createAssetsCache();
+        // opt in via errorTolerance: 'lax'. We deliberately do not await, but still
+        // attach a .catch so a rejection is logged rather than surfacing as an unhandled
+        // promise rejection - lifecycle progression is unaffected.
+        createAssetsCache().catch(err => diag('*** createAssetsCache failed (lax):', err));
     }
 }
 
