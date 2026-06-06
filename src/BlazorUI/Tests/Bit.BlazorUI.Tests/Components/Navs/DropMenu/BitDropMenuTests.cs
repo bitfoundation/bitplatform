@@ -1,4 +1,4 @@
-﻿using Bunit;
+using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -88,4 +88,117 @@ public class BitDropMenuTests : BunitTestContext
         Assert.IsTrue(markup.Contains("bit-drm"));
         Assert.IsTrue(markup.Contains("Body"));
     }
+
+    [TestMethod]
+    public void BitDropMenuShouldNotAddNoShadowClassByDefault()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+        });
+
+        var callout = component.Find(".bit-drm-cal");
+
+        Assert.IsFalse(callout.ClassList.Contains("bit-drm-nsh"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldAddNoShadowClassWhenNoShadowIsSet()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.NoShadow, true);
+        });
+
+        var callout = component.Find(".bit-drm-cal");
+
+        Assert.IsTrue(callout.ClassList.Contains("bit-drm-nsh"));
+    }
+
+    [TestMethod]
+    [DataRow(BitColorKind.Primary, "bit-drm-pbg")]
+    [DataRow(BitColorKind.Secondary, "bit-drm-sbg")]
+    [DataRow(BitColorKind.Tertiary, "bit-drm-tbg")]
+    [DataRow(BitColorKind.Transparent, "bit-drm-rbg")]
+    public void BitDropMenuShouldAddBackgroundClass(BitColorKind background, string expectedClass)
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Background, background);
+        });
+
+        var callout = component.Find(".bit-drm-cal");
+
+        Assert.IsTrue(callout.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldNotAddBackgroundClassByDefault()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+        });
+
+        var callout = component.Find(".bit-drm-cal");
+
+        Assert.IsFalse(callout.ClassList.Contains("bit-drm-pbg"));
+        Assert.IsFalse(callout.ClassList.Contains("bit-drm-sbg"));
+        Assert.IsFalse(callout.ClassList.Contains("bit-drm-tbg"));
+        Assert.IsFalse(callout.ClassList.Contains("bit-drm-rbg"));
+    }
+
+    [TestMethod]
+    [DataRow(BitColorKind.Primary, "bit-drm-pbr")]
+    [DataRow(BitColorKind.Secondary, "bit-drm-sbr")]
+    [DataRow(BitColorKind.Tertiary, "bit-drm-tbr")]
+    [DataRow(BitColorKind.Transparent, "bit-drm-rbr")]
+    public void BitDropMenuShouldAddBorderClass(BitColorKind border, string expectedColorClass)
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Border, border);
+        });
+
+        var callout = component.Find(".bit-drm-cal");
+
+        Assert.IsTrue(callout.ClassList.Contains("bit-drm-brd"));
+        Assert.IsTrue(callout.ClassList.Contains(expectedColorClass));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldNotAddBorderClassByDefault()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+        });
+
+        var callout = component.Find(".bit-drm-cal");
+
+        Assert.IsFalse(callout.ClassList.Contains("bit-drm-brd"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldCombineNoShadowBackgroundAndBorderClasses()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.NoShadow, true);
+            parameters.Add(p => p.Background, BitColorKind.Secondary);
+            parameters.Add(p => p.Border, BitColorKind.Tertiary);
+        });
+
+        var callout = component.Find(".bit-drm-cal");
+
+        Assert.IsTrue(callout.ClassList.Contains("bit-drm-nsh"));
+        Assert.IsTrue(callout.ClassList.Contains("bit-drm-sbg"));
+        Assert.IsTrue(callout.ClassList.Contains("bit-drm-brd"));
+        Assert.IsTrue(callout.ClassList.Contains("bit-drm-tbr"));
+    }
 }
+
