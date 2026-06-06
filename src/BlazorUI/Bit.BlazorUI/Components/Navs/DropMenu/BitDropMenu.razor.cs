@@ -313,23 +313,33 @@ public partial class BitDropMenu : BitComponentBase
             classes.Add("bit-drm-nsh");
         }
 
-        classes.Add(Background switch
+        var backgroundClass = Background switch
         {
             BitColorKind.Primary => "bit-drm-pbg",
             BitColorKind.Secondary => "bit-drm-sbg",
             BitColorKind.Tertiary => "bit-drm-tbg",
             BitColorKind.Transparent => "bit-drm-rbg",
             _ => ""
-        });
+        };
+        
+        if (backgroundClass.Length > 0)
+        {
+            classes.Add(backgroundClass);
+        }
 
-        classes.Add(Border switch
+        var borderClass = Border switch
         {
             BitColorKind.Primary => "bit-drm-brd bit-drm-pbr",
             BitColorKind.Secondary => "bit-drm-brd bit-drm-sbr",
             BitColorKind.Tertiary => "bit-drm-brd bit-drm-tbr",
             BitColorKind.Transparent => "bit-drm-brd bit-drm-rbr",
             _ => ""
-        });
+        };
+
+        if (borderClass.Length > 0)
+        {
+            classes.Add(borderClass);
+        }
 
         classes.Add(PanelPosition switch
         {
