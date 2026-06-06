@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// DropMenu component is a versatile dropdown menu used in Blazor applications. It allows you to create a button that, when clicked, opens a callout or dropdown menu.
@@ -149,6 +149,7 @@ public partial class BitDropMenu : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Transparent { get; set; }
+
 
 
     [JSInvokable("CloseCallout")]
@@ -322,7 +323,7 @@ public partial class BitDropMenu : BitComponentBase
             _ => ""
         };
         
-        if (backgroundClass.Length > 0)
+        if (backgroundClass.HasValue())
         {
             classes.Add(backgroundClass);
         }
@@ -336,7 +337,7 @@ public partial class BitDropMenu : BitComponentBase
             _ => ""
         };
 
-        if (borderClass.Length > 0)
+        if (borderClass.HasValue())
         {
             classes.Add(borderClass);
         }
