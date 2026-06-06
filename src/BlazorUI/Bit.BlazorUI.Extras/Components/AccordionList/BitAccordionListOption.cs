@@ -81,7 +81,10 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        Parent?.RegisterOption(this);
+         if (Parent is not null)
+         {
+             Parent.RegisterOption(this);
+         }
 
         await base.OnInitializedAsync();
     }
@@ -96,9 +99,12 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
     {
         if (disposing is false || _disposed) return;
 
-        // Await the unregistration so that any UpdateBoundKeys or ExpandedKey(s) callbacks it
-        // triggers are awaited and observed, rather than running as fire-and-forget.
-        await Parent?.UnregisterOption(this);
+         if (Parent is not null)
+         {
+            // Await the unregistration so that any UpdateBoundKeys or ExpandedKey(s) callbacks it
+            // triggers are awaited and observed, rather than running as fire-and-forget.
+             await Parent.UnregisterOption(this);
+         }
 
         _disposed = true;
     }

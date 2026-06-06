@@ -474,9 +474,9 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
-        await OnItemClick.InvokeAsync(item);
+        _ = OnItemClick.InvokeAsync(item);
 
-        await InvokeItemClick(item);
+        InvokeItemClick(item);
 
         var key = GetItemKey(item);
         if (key.HasNoValue()) return;
