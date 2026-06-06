@@ -40,10 +40,10 @@
                 @(AutoReload ? "true" : "false"), 
                 @(ShowLogs ? "true" : "false"), 
                 @(ShowAssets ? "true" : "false"), 
-                @((MarkupString)JsonSerializer.Serialize(AppContainer)), 
+                @(AppContainer), 
                 @(HideApp ? "true" : "false"), 
                 @(AutoHide ? "true" : "false"), 
-                @((MarkupString)JsonSerializer.Serialize(Handler)));
+                @(Handler));
         } else {
             console.error('BitBswupProgress not found');
         }
