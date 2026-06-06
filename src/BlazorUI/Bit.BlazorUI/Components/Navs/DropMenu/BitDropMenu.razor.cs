@@ -16,9 +16,19 @@ public partial class BitDropMenu : BitComponentBase
 
 
     /// <summary>
+    /// The color kind of the background of the callout of the drop menu.
+    /// </summary>
+    [Parameter] public BitColorKind? Background { get; set; }
+
+    /// <summary>
     /// Alias of the ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
+    /// The color kind of the border of the callout of the drop menu.
+    /// </summary>
+    [Parameter] public BitColorKind? Border { get; set; }
 
     /// <summary>
     /// Gets or sets the icon for the chevron down part of the drop menu using custom CSS classes for external icon libraries.
@@ -103,6 +113,11 @@ public partial class BitDropMenu : BitComponentBase
     /// The position of the responsive panel to show on the screen.
     /// </summary>
     [Parameter] public BitPanelPosition? PanelPosition { get; set; }
+
+    /// <summary>
+    /// Removes the box-shadow from the callout of the drop menu.
+    /// </summary>
+    [Parameter] public bool NoShadow { get; set; }
 
     /// <summary>
     /// The id of the element which needs to be scrollable in the content of the callout of the drop menu.
@@ -292,6 +307,29 @@ public partial class BitDropMenu : BitComponentBase
         {
             classes.Add("bit-drm-res");
         }
+
+        if (NoShadow)
+        {
+            classes.Add("bit-drm-nsh");
+        }
+
+        classes.Add(Background switch
+        {
+            BitColorKind.Primary => "bit-drm-pbg",
+            BitColorKind.Secondary => "bit-drm-sbg",
+            BitColorKind.Tertiary => "bit-drm-tbg",
+            BitColorKind.Transparent => "bit-drm-rbg",
+            _ => ""
+        });
+
+        classes.Add(Border switch
+        {
+            BitColorKind.Primary => "bit-drm-brd bit-drm-pbr",
+            BitColorKind.Secondary => "bit-drm-brd bit-drm-sbr",
+            BitColorKind.Tertiary => "bit-drm-brd bit-drm-tbr",
+            BitColorKind.Transparent => "bit-drm-brd bit-drm-rbr",
+            _ => ""
+        });
 
         classes.Add(PanelPosition switch
         {
