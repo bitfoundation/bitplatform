@@ -438,7 +438,9 @@ if (!BitBswup.initialized) {
             }
 
             function shouldLog(level: 'error' | 'warn' | 'info' | 'verbose' | 'debug'): boolean {
-                const configured = logLevels[options.log];
+                // Normalize the configured level so values like `Info` or `WARN` still match the
+                // lowercase logLevels keys instead of silently falling back to the default.
+                const configured = logLevels[String(options.log).toLowerCase()];
                 // Unknown values fall back to `warn` (matches the documented default behavior).
                 const threshold = configured == null ? logLevels.warn : configured;
                 return logLevels[level] <= threshold;

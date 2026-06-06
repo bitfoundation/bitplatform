@@ -162,11 +162,14 @@ async function handleInstall(e: any) {
     diag('installing version:', VERSION);
 
     if (!MANIFEST_VALID) {
-        // The manifest is missing/malformed - sendError already notified the page. Don't
-        // build a cache from an empty/partial asset list (it would replace the previous good
-        // cache with a broken one). Let the lifecycle settle without caching anything.
-        diag('*** skipping install - invalid assetsManifest.');
-        return;
+        // The manifest is missing/malformed - sendError already notified the page. Reject the
+        // install so the SW lifecycle aborts: a worker that never built a valid cache must not
+        // reach the waiting/active state, otherwise a later SKIP_WAITING could activate it and
+        // run deleteOldCaches(), discarding the last-known-good cache and promoting a broken
+        // update. Throwing keeps the previous service worker in control until the manifest is
+        // fixed.
+        diag('*** aborting install - invalid assetsManifest.');
+        throw new Error('Install aborted: service-worker-assets.js is missing or malformed.');
     }
 
     sendMessage({ type: 'install', data: { version: VERSION, isPassive: self.isPassive } });
@@ -371,7 +374,10 @@ async function createAssetsCache(ignoreProgressReport = false) {
     const cacheKeys = await caches.keys();
 
     if (!ignoreProgressReport) {
-        const oldCacheKey = cacheKeys.find(key => key.startsWith(CACHE_NAME_PREFIX));
+        // Pick an *older* cache to warm-start from. Exclude CACHE_NAME itself: it shares the
+        // CACHE_NAME_PREFIX, and since we just opened it above it would otherwise be selected
+        // here, turning the copy loop into a no-op and forcing every asset to be re-downloaded.
+        const oldCacheKey = cacheKeys.find(key => key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME);
         if (oldCacheKey) {
             diag('copying old cache:', oldCacheKey);
             const oldCache = await caches.open(oldCacheKey);

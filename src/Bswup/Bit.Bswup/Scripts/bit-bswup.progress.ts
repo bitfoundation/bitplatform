@@ -111,6 +111,15 @@
                         hideApp_ && appEl && (appEl.style.display = 'none');
                         bswupEl && (bswupEl.style.display = 'block');
 
+                        // A failed install supersedes any earlier "update ready" prompt. Leaving
+                        // the reload button visible would invite the user to activate an update
+                        // that has already failed, promoting a broken worker / caches. Hide and
+                        // unwire it so the only actionable control is the (conditional) Retry.
+                        if (reloadButton) {
+                            reloadButton.style.display = 'none';
+                            reloadButton.onclick = null;
+                        }
+
                         // The error supersedes any in-flight progress. Hide the bar and the
                         // percentage so a stale partial value (e.g. "47%") isn't left sitting
                         // next to the failure message.
