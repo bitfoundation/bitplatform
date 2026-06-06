@@ -29,7 +29,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     [Parameter] public BitColorKind? Border { get; set; }
 
     /// <summary>
-    /// The content of the AccordionList, that are BitAccordionListOption components.
+    /// The content of the AccordionList, composed of BitAccordionListOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -300,7 +300,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
         if (ChildContent is null && Options is null && Items is not null)
         {
-            if (_oldItems is null || Items.SequenceEqual(_oldItems) is false)
+            if (_oldItems is null || (ReferenceEquals(Items, _oldItems) is false && Items.SequenceEqual(_oldItems) is false))
             {
                 _oldItems = Items;
                 _items = [.. Items];
@@ -444,8 +444,9 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             }
         }
 
-        // Preserve any expanded keys that don't currently map to an item.
-        foreach (var key in _expandedKeys)
+        // Preserve any expanded keys that don't currently map to an item, in a deterministic
+        // order so the bound ExpandedKeys and SequenceEqual comparisons stay stable across renders.
+        foreach (var key in _expandedKeys.Where(k => seen.Contains(k) is false).OrderBy(k => k, StringComparer.Ordinal))
         {
             if (seen.Add(key)) ordered.Add(key);
         }
@@ -475,7 +476,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
         await OnItemClick.InvokeAsync(item);
 
-        InvokeItemClick(item);
+        await InvokeItemClick(item);
 
         var key = GetItemKey(item);
         if (key.HasNoValue()) return;

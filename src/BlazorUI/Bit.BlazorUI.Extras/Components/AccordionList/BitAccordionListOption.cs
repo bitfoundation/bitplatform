@@ -38,7 +38,8 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
     [Parameter] public RenderFragment<BitAccordionListOption>? Body { get; set; }
 
     /// <summary>
-    /// Alias for the <see cref="Body"/> parameter (the default child content). Used for simple inline content.
+    /// The default child content of the option. Used for simple inline content without context.
+    /// For templated content with access to the option instance, use <see cref="Body"/> instead.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -80,7 +81,7 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        Parent.RegisterOption(this);
+        Parent?.RegisterOption(this);
 
         await base.OnInitializedAsync();
     }
@@ -95,9 +96,9 @@ public partial class BitAccordionListOption : ComponentBase, IAsyncDisposable
     {
         if (disposing is false || _disposed) return;
 
-        // Await the unregistration so any UpdateBoundKeys / ExpandedKey(s) callbacks it triggers
-        // are observed (instead of running as fire-and-forget).
-        await Parent.UnregisterOption(this);
+        // Await the unregistration so that any UpdateBoundKeys or ExpandedKey(s) callbacks it
+        // triggers are awaited and observed, rather than running as fire-and-forget.
+        await Parent?.UnregisterOption(this);
 
         _disposed = true;
     }

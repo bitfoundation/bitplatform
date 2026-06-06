@@ -30,7 +30,7 @@ public partial class BitAccordionListDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the AccordionList, that are BitAccordionListOption components.",
+            Description = "The content of the AccordionList, composed of BitAccordionListOption components.",
         },
         new()
         {

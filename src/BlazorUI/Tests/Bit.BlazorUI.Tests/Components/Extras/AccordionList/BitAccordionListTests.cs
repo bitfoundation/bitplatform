@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -155,7 +156,29 @@ public class BitAccordionListTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAccordionListExpandAllAndCollapseAllShouldWorkInMultiple()
+    public void BitAccordionListShouldTwoWayBindExpandedKeysInMultiple()
+    {
+        IEnumerable<string>? boundKeys = null;
+
+        var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Bind(p => p.ExpandedKeys, boundKeys, v => boundKeys = v);
+        });
+
+        component.FindAll(".bit-acd-hdr")[0].Click();
+        component.FindAll(".bit-acd-hdr")[2].Click();
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsNotNull(boundKeys);
+            CollectionAssert.AreEquivalent(new[] { "a", "c" }, boundKeys!.ToList());
+        });
+    }
+
+    [TestMethod]
+    public async Task BitAccordionListExpandAllAndCollapseAllShouldWorkInMultiple()
     {
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
         {
@@ -163,13 +186,13 @@ public class BitAccordionListTests : BunitTestContext
             parameters.Add(p => p.Items, GetItems());
         });
 
-        component.InvokeAsync(() => component.Instance.ExpandAll());
+        await component.InvokeAsync(() => component.Instance.ExpandAll());
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual(3, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
         });
 
-        component.InvokeAsync(() => component.Instance.CollapseAll());
+        await component.InvokeAsync(() => component.Instance.CollapseAll());
         component.WaitForAssertion(() =>
         {
             Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
