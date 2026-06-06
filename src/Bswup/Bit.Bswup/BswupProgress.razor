@@ -1,4 +1,6 @@
-﻿@code {
+﻿@using System.Text.Json
+
+@code {
     [Parameter] public RenderFragment ChildContent { get; set; } = default!;
 
     [Parameter] public bool AutoReload { get; set; } = true;
@@ -40,10 +42,10 @@
                 @(AutoReload ? "true" : "false"), 
                 @(ShowLogs ? "true" : "false"), 
                 @(ShowAssets ? "true" : "false"), 
-                '@(AppContainer)', 
+                @((MarkupString)JsonSerializer.Serialize(AppContainer)), 
                 @(HideApp ? "true" : "false"), 
                 @(AutoHide ? "true" : "false"), 
-                '@(Handler)');
+                @((MarkupString)JsonSerializer.Serialize(Handler)));
         } else {
             console.error('BitBswupProgress not found');
         }

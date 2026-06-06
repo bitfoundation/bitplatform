@@ -177,6 +177,12 @@ if (!BitBswup.initialized) {
                         } else {
                             info('initialization finished.'); // first install
                         }
+
+                        // Notify listeners that an update is staged and ready. The
+                        // registration-time check only fires updateReady for updates already
+                        // waiting on load; updates discovered in the same session surface here
+                        // instead, so emit it for them too.
+                        handle(BswupMessage.updateReady, { reload });
                     });
                 });
             }
@@ -238,6 +244,12 @@ if (!BitBswup.initialized) {
                     Blazor.start().then(() => {
                         blazorStartResolver?.(undefined);
                         e.source.postMessage('BLAZOR_STARTED');
+                    }).catch((err) => {
+                        error('Blazor.start() failed after clients claimed', err);
+                        // Always settle the pending reload() promise so callers can't hang, and
+                        // notify the worker that startup failed (mirrors the success path).
+                        blazorStartResolver?.(undefined);
+                        e.source.postMessage('BLAZOR_START_FAILED');
                     });
                     return;
                 }
