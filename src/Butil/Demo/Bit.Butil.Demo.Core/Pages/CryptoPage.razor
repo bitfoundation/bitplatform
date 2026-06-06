@@ -39,6 +39,26 @@ var plain  = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, cipher, iv: iv);
             </p>
         }
     </DemoCard>
+
+    <DemoCard Title="Random values" Api="RandomUuid / GetRandomValues"
+              Description="Cryptographically strong random UUIDs and byte arrays.">
+        <div class="controls">
+            <button @onclick="RandomUuid">RandomUuid</button>
+            <button @onclick="RandomBytes">GetRandomValues (16 bytes)</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Digest & HMAC" Api="Digest / SignHmac / VerifyHmac"
+              Description="Hash text with SHA-256 and sign/verify with an HMAC key.">
+        <div class="field">
+            <span class="field-label">Message</span>
+            <input @bind="_hashInput" placeholder="Message to hash or sign" />
+        </div>
+        <div class="controls">
+            <button @onclick="DigestSha256">Digest (SHA-256)</button>
+            <button @onclick="HmacSignVerify">Sign + verify HMAC</button>
+        </div>
+    </DemoCard>
 </div>
 
 <DemoConsole @ref="output" Title="crypto output" />
@@ -51,6 +71,7 @@ var plain  = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, cipher, iv: iv);
     private byte[] encryptedBytes;
     private string cipherHex;
     private string outputText;
+    private string _hashInput = "Bit.Butil";
 
     protected override void OnInitialized()
     {
@@ -85,5 +106,45 @@ var plain  = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, cipher, iv: iv);
         var decryptedBytes = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, encryptedBytes, iv: iv);
         outputText = System.Text.Encoding.UTF8.GetString(decryptedBytes);
         await output.Success("Decrypted →", outputText);
+    }
+
+    private async Task RandomUuid()
+    {
+        var uuid = await crypto.RandomUuid();
+        await output.Success("RandomUuid →", uuid);
+    }
+
+    private async Task RandomBytes()
+    {
+        var bytes = await crypto.GetRandomValues(16);
+        await output.Success("GetRandomValues →", BitConverter.ToString(bytes));
+    }
+
+    private async Task DigestSha256()
+    {
+        if (string.IsNullOrEmpty(_hashInput))
+        {
+            await output.Warn("Enter a message to hash.");
+            return;
+        }
+
+        var data = System.Text.Encoding.UTF8.GetBytes(_hashInput);
+        var hash = await crypto.Digest(CryptoKeyHash.Sha256, data);
+        await output.Success("Digest (SHA-256) →", BitConverter.ToString(hash));
+    }
+
+    private async Task HmacSignVerify()
+    {
+        if (string.IsNullOrEmpty(_hashInput))
+        {
+            await output.Warn("Enter a message to sign.");
+            return;
+        }
+
+        var data = System.Text.Encoding.UTF8.GetBytes(_hashInput);
+        var key = await crypto.GenerateHmacKey(CryptoKeyHash.Sha256);
+        var signature = await crypto.SignHmac(CryptoKeyHash.Sha256, key, data);
+        var valid = await crypto.VerifyHmac(CryptoKeyHash.Sha256, key, signature, data);
+        await output.Success("HMAC verify →", valid);
     }
 }

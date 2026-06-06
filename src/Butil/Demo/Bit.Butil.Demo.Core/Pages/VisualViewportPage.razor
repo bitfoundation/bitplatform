@@ -41,12 +41,23 @@ var offsetTop = await visualViewport.GetOffsetTop();
             <button @onclick="GetScale">Scale</button>
         </div>
     </DemoCard>
+
+    <DemoCard Title="Live events" Api="SubscribeResize / SubscribeScroll"
+              Description="Subscribe to resize and scroll events — pinch-zoom or scroll the page to see updates.">
+        <div class="controls">
+            <button @onclick="SubscribeResize">Subscribe resize</button>
+            <button @onclick="SubscribeScroll">Subscribe scroll</button>
+            <button class="danger" @onclick="UnsubscribeAll">Unsubscribe all</button>
+        </div>
+    </DemoCard>
 </div>
 
 <DemoConsole @ref="output" Title="visualViewport output" />
 
 @code {
     private DemoConsole output = default!;
+    private ButilSubscription? _resizeSub;
+    private ButilSubscription? _scrollSub;
 
     private async Task GetOffsetLeft()
     {
@@ -83,8 +94,53 @@ var offsetTop = await visualViewport.GetOffsetTop();
         await output.Success("Scale →", await visualViewport.GetScale());
     }
 
+    private async Task SubscribeResize()
+    {
+        await UnsubscribeResize();
+        _resizeSub = await visualViewport.SubscribeResize(async () =>
+        {
+            var w = await visualViewport.GetWidth();
+            var h = await visualViewport.GetHeight();
+            await output.Log($"Resize → {w:F0}×{h:F0}, scale={await visualViewport.GetScale():F2}");
+        });
+        await output.Log("Subscribed to resize.");
+    }
+
+    private async Task SubscribeScroll()
+    {
+        await UnsubscribeScroll();
+        _scrollSub = await visualViewport.SubscribeScroll(async () =>
+        {
+            await output.Log($"Scroll → offset=({await visualViewport.GetOffsetLeft():F0}, {await visualViewport.GetOffsetTop():F0})");
+        });
+        await output.Log("Subscribed to scroll.");
+    }
+
+    private async Task UnsubscribeAll()
+    {
+        await UnsubscribeResize();
+        await UnsubscribeScroll();
+        await output.Log("All subscriptions removed.");
+    }
+
+    private async Task UnsubscribeResize()
+    {
+        if (_resizeSub is null) return;
+        await _resizeSub.DisposeAsync();
+        _resizeSub = null;
+    }
+
+    private async Task UnsubscribeScroll()
+    {
+        if (_scrollSub is null) return;
+        await _scrollSub.DisposeAsync();
+        _scrollSub = null;
+    }
+
     public async ValueTask DisposeAsync()
     {
+        await UnsubscribeResize();
+        await UnsubscribeScroll();
         await visualViewport.DisposeAsync();
     }
 }

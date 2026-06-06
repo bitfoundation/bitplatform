@@ -1,5 +1,6 @@
 ﻿@page "/cookie"
 @inject Bit.Butil.Cookie cookie
+@inject Bit.Butil.CookieStore cookieStore
 
 <PageTitle>Butil - Cookie Samples</PageTitle>
 
@@ -50,6 +51,27 @@ await cookie.Remove("theme");
         </div>
         <button class="danger" @onclick=RemoveCookie>Remove cookie</button>
     </DemoCard>
+
+    <DemoCard Title="CookieStore (async API)" Api="CookieStore.Get / Set / Delete"
+              Description="Chromium-only modern cookie API with full metadata (domain, path, SameSite, …).">
+        <div class="controls">
+            <button @onclick="CookieStoreSupported">IsSupported</button>
+            <button @onclick="CookieStoreGetAll">GetAll</button>
+        </div>
+        <div class="field" style="margin-top:0.75rem">
+            <span class="field-label">Name</span>
+            <input @bind="_csName" placeholder="butil-demo" />
+        </div>
+        <div class="field">
+            <span class="field-label">Value</span>
+            <input @bind="_csValue" placeholder="cookie-value" />
+        </div>
+        <div class="controls">
+            <button @onclick="CookieStoreSet">Set</button>
+            <button @onclick="CookieStoreGet">Get</button>
+            <button class="danger" @onclick="CookieStoreDelete">Delete</button>
+        </div>
+    </DemoCard>
 </div>
 
 <DemoConsole @ref="output" Title="cookie output" />
@@ -60,6 +82,8 @@ await cookie.Remove("theme");
     private string setCookieName = "";
     private string setCookieValue = "";
     private string removeCookieName = "";
+    private string _csName = "butil-demo";
+    private string _csValue = "from-cookie-store";
 
     private async Task GetAllCookies()
     {
@@ -93,5 +117,37 @@ await cookie.Remove("theme");
     {
         await cookie.Remove(removeCookieName);
         await output.Log($"Removed \"{removeCookieName}\".");
+    }
+
+    private async Task CookieStoreSupported()
+    {
+        await output.Success("CookieStore.IsSupported →", await cookieStore.IsSupported());
+    }
+
+    private async Task CookieStoreGetAll()
+    {
+        var all = await cookieStore.GetAll();
+        await output.Success("CookieStore.GetAll →", all.Length == 0 ? "(none)" : all);
+    }
+
+    private async Task CookieStoreSet()
+    {
+        await cookieStore.Set(new CookieStoreItem { Name = _csName, Value = _csValue, SameSite = "lax" });
+        await output.Log($"CookieStore.Set(\"{_csName}\")");
+    }
+
+    private async Task CookieStoreGet()
+    {
+        var item = await cookieStore.Get(_csName);
+        if (item is null)
+            await output.Warn($"CookieStore.Get(\"{_csName}\") → not found");
+        else
+            await output.Success($"CookieStore.Get(\"{_csName}\") →", item);
+    }
+
+    private async Task CookieStoreDelete()
+    {
+        await cookieStore.Delete(_csName);
+        await output.Log($"CookieStore.Delete(\"{_csName}\")");
     }
 }
