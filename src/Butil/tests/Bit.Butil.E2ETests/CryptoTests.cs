@@ -15,7 +15,7 @@ public class CryptoTests : ButilPageTest
         var status = await CurrentStatusAsync();
         var guid = status["crypto:uuid:".Length..];
         Assert.That(guid, Has.Length.EqualTo(36));
-        Assert.That(Regex.IsMatch(guid, "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
+        Assert.That(Regex.IsMatch(guid, "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"));
     }
 
     [Test]

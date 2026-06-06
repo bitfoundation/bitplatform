@@ -39,7 +39,7 @@ var BitButil = BitButil || {};
     function getCurrentPosition(options: any) {
         return new Promise<any>(resolve => {
             if (!('geolocation' in window.navigator)) {
-                resolve({ position: null, errorCode: 2, errorMessage: 'Geolocation is not supported in this runtime.' });
+                resolve({ position: null, errorCode: 0, errorMessage: 'Geolocation is not supported in this runtime.' });
                 return;
             }
 
@@ -52,7 +52,7 @@ var BitButil = BitButil || {};
 
     function watchPosition(positionMethod: string, errorMethod: string, listenerId: string, options: any) {
         if (!('geolocation' in window.navigator)) {
-            DotNet.invokeMethodAsync('Bit.Butil', errorMethod, listenerId, 2, 'Geolocation is not supported in this runtime.');
+            DotNet.invokeMethodAsync('Bit.Butil', errorMethod, listenerId, 0, 'Geolocation is not supported in this runtime.');
             return;
         }
 

@@ -33,17 +33,20 @@ await keyboard.Add(ButilKeyCodes.F10, () => { ... }, ButilModifiers.Alt | ButilM
 
 @code {
     private DemoConsole output = default!;
+    private Guid _f5Id;
+    private Guid _f10Id;
 
     protected override async Task OnInitializedAsync()
     {
-        await keyboard.Add(ButilKeyCodes.F5, () => _ = output.Success("F5 was pressed!"));
-        await keyboard.Add(ButilKeyCodes.F10, () => _ = output.Success("Ctrl+Alt+F10 was pressed!"), ButilModifiers.Alt | ButilModifiers.Ctrl);
+        _f5Id = await keyboard.Add(ButilKeyCodes.F5, () => _ = output.Success("F5 was pressed!"));
+        _f10Id = await keyboard.Add(ButilKeyCodes.F10, () => _ = output.Success("Ctrl+Alt+F10 was pressed!"), ButilModifiers.Alt | ButilModifiers.Ctrl);
 
         await base.OnInitializedAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
-        await keyboard.DisposeAsync();
+        await keyboard.Remove(_f5Id);
+        await keyboard.Remove(_f10Id);
     }
 }
