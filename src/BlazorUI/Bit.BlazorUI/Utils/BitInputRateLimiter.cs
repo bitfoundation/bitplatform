@@ -19,6 +19,10 @@ public class BitInputRateLimiter<TValue>
     /// or invoking it immediately otherwise.
     /// When throttling, the latest received value is used for the trailing invocation.
     /// </summary>
+    /// <remarks>
+    /// If both <paramref name="debounceTime"/> and <paramref name="throttleTime"/> are greater than zero,
+    /// debounce takes precedence and throttle is ignored.
+    /// </remarks>
     public async Task Run(TValue value, int debounceTime, int throttleTime, Func<TValue, Task> handler)
     {
         if (debounceTime > 0)
