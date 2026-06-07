@@ -277,6 +277,10 @@ public partial class BitOtpInput : BitInputBase<string?>
         if (IsEnabled is false) return;
 
         _inputFocusStates[index] = true;
+        // Re-render so the Focused class/style is applied. This must not rely on the implicit
+        // re-render of EventCallback.InvokeAsync because that only happens when the consumer has
+        // attached an OnFocusIn delegate.
+        StateHasChanged();
         await OnFocusIn.InvokeAsync((e, index));
     }
 
@@ -285,6 +289,9 @@ public partial class BitOtpInput : BitInputBase<string?>
         if (IsEnabled is false) return;
 
         _inputFocusStates[index] = false;
+        // Re-render so the Focused class/style is removed regardless of whether an OnFocusOut
+        // delegate is attached.
+        StateHasChanged();
         await OnFocusOut.InvokeAsync((e, index));
     }
 
@@ -317,8 +324,20 @@ public partial class BitOtpInput : BitInputBase<string?>
                 else
                 {
                     _inputValues[index] = diff;
+
+                    // Commit the current value before moving the focus to the next input.
+                    // Auto-advancing the focus raises the focusout/focusin DOM events (and the
+                    // consumer's OnFocusOut/OnFocusIn callbacks) synchronously while this method
+                    // is awaiting FocusAsync. If the value is committed afterwards, those focus
+                    // callbacks observe a stale, incomplete value. So we set it here first.
+                    CurrentValueAsString = string.Join(string.Empty, _inputValues);
+
                     int nextIndex = index + 1;
                     if (nextIndex < Length) await _inputRefs[nextIndex].FocusAsync();
+
+                    await OnInput.InvokeAsync((e, index));
+                    await CallOnFill();
+                    return;
                 }
             }
         }
