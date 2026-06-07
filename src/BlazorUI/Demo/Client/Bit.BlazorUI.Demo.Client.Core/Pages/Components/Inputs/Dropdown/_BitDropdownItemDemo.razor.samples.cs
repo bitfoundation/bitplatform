@@ -872,7 +872,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
              ShowClearButton
              ClearButtonIcon=""@BitIconInfo.Css(""fa-solid fa-circle-xmark"")""
              Items=""GetBasicItems()""
-             DefaultValue=""f-app""
+             DefaultValue=""@string.Empty""
              Placeholder=""Select an item"" />
 
 <BitDropdown Label=""Chips remove icon (external)""
@@ -880,7 +880,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
              MultiSelect
              ChipsRemoveIcon=""@BitIconInfo.Css(""bi bi-x-circle"")""
              Items=""GetBasicItems()""
-             DefaultValues=""@([""f-app"", ""f-ban""])""
+             DefaultValues=""@(Array.Empty<string>())""
              Placeholder=""Select items"" />
 
 <BitDropdown Label=""Search box icons (external)""
@@ -1149,37 +1149,37 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
 };";
 
     private readonly string example19RazorCode = @"
-<BitDropdown Label=""?? ???????""
+<BitDropdown Label=""تک انتخابی""
              Items=""GetRtlItems()""
              DefaultValue=""@string.Empty""
-             Placeholder=""???? ?????? ????""
+             Placeholder=""لطفا انتخاب کنید""
              Dir=""BitDir.Rtl"" />
 
-<BitDropdown Label=""??? ???????""
+<BitDropdown Label=""چند انتخابی""
              MultiSelect
              Dir=""BitDir.Rtl""
              Items=""GetRtlItems()""
              DefaultValue=""@string.Empty""
-             Placeholder=""?????? ??? ????? ??"" />
+             Placeholder=""انتخاب چند گزینه ای"" />
 
-<BitDropdown Label=""?? ??????? ?????????""
+<BitDropdown Label=""تک انتخابی ریسپانسیو""
              Responsive
              Dir=""BitDir.Rtl""
              Items=""GetRtlItems()""
              DefaultValue=""@string.Empty""
-             Placeholder=""???? ?????? ????"" />";
+             Placeholder=""لطفا انتخاب کنید"" />";
     private readonly string example19CsharpCode = @"
 private List<BitDropdownItem<string>> GetRtlItems() => new()
 {
-    new() { ItemType = BitDropdownItemType.Header, Text = ""???? ??"" },
-    new() { Text = ""???"", Value = ""f-app"" },
-    new() { Text = ""???"", Value = ""f-ban"" },
-    new() { Text = ""??????"", Value = ""f-ora"", IsEnabled = false },
-    new() { Text = ""?????"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""میوه ها"" },
+    new() { Text = ""سیب"", Value = ""f-app"" },
+    new() { Text = ""موز"", Value = ""f-ban"" },
+    new() { Text = ""پرتقال"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""انگور"", Value = ""f-gra"" },
     new() { ItemType = BitDropdownItemType.Divider },
-    new() { ItemType = BitDropdownItemType.Header, Text = ""???????"" },
-    new() { Text = ""??? ??????"", Value = ""v-bro"" },
-    new() { Text = ""????"", Value = ""v-car"" },
-    new() { Text = ""????"", Value = ""v-let"" }
+    new() { ItemType = BitDropdownItemType.Header, Text = ""سیزیجات"" },
+    new() { Text = ""کلم بروكلی"", Value = ""v-bro"" },
+    new() { Text = ""هویج"", Value = ""v-car"" },
+    new() { Text = ""کاهو"", Value = ""v-let"" }
 };";
 }

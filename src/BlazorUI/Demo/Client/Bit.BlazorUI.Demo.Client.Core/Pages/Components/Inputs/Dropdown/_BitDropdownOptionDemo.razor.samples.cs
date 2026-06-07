@@ -1260,9 +1260,9 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
 ];";
 
     private readonly string example19RazorCode = @"
-<BitDropdown Label=""?? ???????""
+<BitDropdown Label=""تک انتخابی""
              Dir=""BitDir.Rtl""
-             Placeholder=""???? ?????? ????""
+             Placeholder=""لطفا انتخاب کنید""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in rtlItems)
     {
@@ -1270,10 +1270,10 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
     }
 </BitDropdown>
 
-<BitDropdown Label=""??? ???????""
+<BitDropdown Label=""چند انتخابی""
              MultiSelect
              Dir=""BitDir.Rtl""
-             Placeholder=""?????? ??? ????? ??""
+             Placeholder=""انتخاب چند گزینه ای""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in rtlItems)
     {
@@ -1281,10 +1281,10 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
     }
 </BitDropdown>
 
-<BitDropdown Label=""?? ??????? ?????????""
+<BitDropdown Label=""تک انتخابی ریسپانسیو""
              Responsive
              Dir=""BitDir.Rtl""
-             Placeholder=""???? ?????? ????""
+             Placeholder=""لطفا انتخاب کنید""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in rtlItems)
     {
@@ -1294,18 +1294,18 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
     private readonly string example19CsharpCode = @"
 private readonly List<BitDropdownItem<string>> rtlItems =
 [
-    new() { ItemType = BitDropdownItemType.Header, Text = ""???? ??"" },
-    new() { Text = ""???"", Value = ""f-app"" },
-    new() { Text = ""???"", Value = ""f-ban"" },
-    new() { Text = ""??????"", Value = ""f-ora"", IsEnabled = false },
-    new() { Text = ""?????"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""میوه ها"" },
+    new() { Text = ""سیب"", Value = ""f-app"" },
+    new() { Text = ""موز"", Value = ""f-ban"" },
+    new() { Text = ""پرتقال"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""انگور"", Value = ""f-gra"" },
     new() { ItemType = BitDropdownItemType.Divider },
-    new() { ItemType = BitDropdownItemType.Header, Text = ""???????"" },
-    new() { Text = ""??? ??????"", Value = ""v-bro"" },
-    new() { Text = ""????"", Value = ""v-car"" },
-    new() { Text = ""????"", Value = ""v-let"" }
+    new() { ItemType = BitDropdownItemType.Header, Text = ""سیزیجات"" },
+    new() { Text = ""کلم بروكلی"", Value = ""v-bro"" },
+    new() { Text = ""هویج"", Value = ""v-car"" },
+    new() { Text = ""کاهو"", Value = ""v-let"" }
 ];";
 
-    private readonly string example20RazorCode = @"";
-    private readonly string example20CsharpCode = @"";
+    private readonly string? example20RazorCode = @"
+<div>Not applicable to option demo!</div>";
 }

@@ -1641,25 +1641,25 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 };";
 
     private readonly string example19RazorCode = @"
-<BitDropdown Label=""?? ???????""
+<BitDropdown Label=""تک انتخابی""
              Dir=""BitDir.Rtl""
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
-             Placeholder=""???? ?????? ????"" />
+             Placeholder=""لطفا انتخاب کنید"" />
 
-<BitDropdown Label=""??? ???????""
+<BitDropdown Label=""چند انتخابی""
              MultiSelect
              Dir=""BitDir.Rtl""
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
-             Placeholder=""?????? ??? ????? ??"" />
+             Placeholder=""انتخاب چند گزینه ای"" />
 
-<BitDropdown Label=""?? ??????? ?????????""
+<BitDropdown Label=""تک انتخابی ریسپانسیو""
              Responsive
              Dir=""BitDir.Rtl""
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
-             Placeholder=""???? ?????? ????"" />";
+             Placeholder=""لطفا انتخاب کنید"" />";
     private readonly string example19CsharpCode = @"
 public class Product
 {
@@ -1676,16 +1676,16 @@ public class Product
 
 private List<Product> GetRtlCustoms() => new()
 {
-    new() { Type = BitDropdownItemType.Header, Text = ""???? ??"" },
-    new() { Text = ""???"", Value = ""f-app"" },
-    new() { Text = ""???"", Value = ""f-ban"" },
-    new() { Text = ""??????"", Value = ""f-ora"", Disabled = true },
-    new() { Text = ""?????"", Value = ""f-gra"" },
+    new() { Type = BitDropdownItemType.Header, Text = ""میوه ها"" },
+    new() { Text = ""سیب"", Value = ""f-app"" },
+    new() { Text = ""موز"", Value = ""f-ban"" },
+    new() { Text = ""پرتقال"", Value = ""f-ora"", Disabled = true },
+    new() { Text = ""انگور"", Value = ""f-gra"" },
     new() { Type = BitDropdownItemType.Divider },
-    new() { Type = BitDropdownItemType.Header, Text = ""???????"" },
-    new() { Text = ""??? ??????"", Value = ""v-bro"" },
-    new() { Text = ""????"", Value = ""v-car"" },
-    new() { Text = ""????"", Value = ""v-let"" }
+    new() { Type = BitDropdownItemType.Header, Text = ""سیزیجات"" },
+    new() { Text = ""کلم بروكلی"", Value = ""v-bro"" },
+    new() { Text = ""هویج"", Value = ""v-car"" },
+    new() { Text = ""کاهو"", Value = ""v-let"" }
 };
 
 private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 

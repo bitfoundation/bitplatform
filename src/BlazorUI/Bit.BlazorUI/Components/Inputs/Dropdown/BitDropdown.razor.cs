@@ -1190,6 +1190,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsEnabled is false) return;
         if (IsOpen is false) return;
 
+        _rateLimiter.Reset();
+
         if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
@@ -1263,6 +1265,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (ShowSearchBox is false) return;
         if (_searchText.HasNoValue()) return;
 
+        _rateLimiter.Reset();
+
         _searchText = null;
 
         await OnSearch.InvokeAsync(_searchText);
@@ -1290,6 +1294,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (Combo is false) return;
         if (IsEnabled is false) return;
         if (_searchText.HasNoValue()) return;
+
+        _rateLimiter.Reset();
 
         _searchText = null;
     }
@@ -1513,6 +1519,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
+
+        _searchText = e.Value?.ToString();
 
         if (Immediate is false) return;
 
@@ -1761,6 +1769,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsDisposed || disposing is false) return;
 
         OnValueChanged -= HandleOnValueChanged;
+
+        _rateLimiter.Reset();
 
         await base.DisposeAsync(disposing);
 

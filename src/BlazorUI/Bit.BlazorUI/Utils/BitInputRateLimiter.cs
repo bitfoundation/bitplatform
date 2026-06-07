@@ -35,4 +35,16 @@ public class BitInputRateLimiter<TValue>
             await handler(value);
         }
     }
+
+    /// <summary>
+    /// Cancels any pending debounced/throttled handler and resets the internal state
+    /// so that stale callbacks are not invoked after the consumer's UI state has changed
+    /// (e.g. when a dropdown is closed or an input is cleared/disposed).
+    /// </summary>
+    public void Reset()
+    {
+        _debouncer.Cancel();
+        _throttler.Reset();
+        _lastThrottleValue = default;
+    }
 }
