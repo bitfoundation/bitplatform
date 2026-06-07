@@ -25,7 +25,7 @@
         };
 
         public static resetPaneDimensions(element: HTMLElement | undefined) {
-            if (!element || !element.style) return;
+            if (!element) return;
 
             element.style.width = '';
             element.style.height = '';

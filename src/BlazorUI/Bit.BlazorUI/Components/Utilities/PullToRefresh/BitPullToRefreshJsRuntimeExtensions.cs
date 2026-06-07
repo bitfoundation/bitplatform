@@ -12,7 +12,7 @@ internal static class BitPullToRefreshJsRuntimeExtensions
                                                                     decimal factor,
                                                                     int margin,
                                                                     int threshold,
-                                                                    DotNetObjectReference<BitPullToRefresh>? dotnetObjectReference)
+                                                                    DotNetObjectReference<BitPullToRefresh> dotnetObjectReference)
     {
         return jsRuntime.FastInvokeVoid("BitBlazorUI.PullToRefresh.setup", id, anchor, loading, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, dotnetObjectReference);
     }

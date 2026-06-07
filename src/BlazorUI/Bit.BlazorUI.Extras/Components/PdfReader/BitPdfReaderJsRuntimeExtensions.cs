@@ -9,12 +9,12 @@ internal static class BitPdfReaderJsRuntimeExtensions
 
     public static ValueTask BitPdfReaderRenderPage(this IJSRuntime jsRuntime, string id, int pageNumber)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PdfReader.renderPage", id, pageNumber);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.PdfReader.renderPage", id, pageNumber);
     }
 
     public static ValueTask BitPdfReaderRefreshPage(this IJSRuntime jsRuntime, BitPdfReaderConfig config, int pageNumber)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PdfReader.refreshPage", config, pageNumber);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.PdfReader.refreshPage", config, pageNumber);
     }
 
     public static ValueTask BitPdfReaderDispose(this IJSRuntime jsRuntime, string id)
