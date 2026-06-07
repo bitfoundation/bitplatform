@@ -1,14 +1,14 @@
 namespace BitBlazorUI {
-    export class Modal {
+    export class ProModal {
         private static _dragDropListeners: any = {};
 
-        public static setupDragDrop(containerId: string, dragElementSelector: string) {
-            Modal.removeDragDrop(containerId, dragElementSelector);
+        public static setupDragDrop(containerSelector: string, dragElementSelector: string) {
+            ProModal.removeDragDrop(containerSelector, dragElementSelector);
             const listeners: any = {};
-            Modal._dragDropListeners[containerId] = listeners;
+            ProModal._dragDropListeners[containerSelector] = listeners;
 
-            const element = document.getElementById(containerId)! as HTMLElement;
-            const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
+            const element = document.querySelector(containerSelector) as HTMLElement;
+            const dragElement = document.querySelector(dragElementSelector) as HTMLElement;
             if (!element || !dragElement) return;
 
             let x = 0;
@@ -20,8 +20,6 @@ namespace BitBlazorUI {
             dragElement.classList.add('bit-mdl-nta');
 
             function handlePointerDown(e: PointerEvent) {
-                //e.preventDefault();
-
                 x = e.clientX;
                 y = e.clientY;
 
@@ -32,8 +30,6 @@ namespace BitBlazorUI {
                 listeners['pointermove'] = handlePointerMove;
 
                 document.addEventListener('pointerup', handlePointerUp);
-                //document.addEventListener('pointerout', handlePointerUp);
-                //document.addEventListener('pointerleave', handlePointerUp);
                 listeners['pointerup'] = handlePointerUp;
             }
 
@@ -49,34 +45,28 @@ namespace BitBlazorUI {
 
             function handlePointerUp() {
                 document.removeEventListener('pointermove', handlePointerMove);
-
                 document.removeEventListener('pointerup', handlePointerUp);
-                //document.removeEventListener('pointerout', handlePointerUp);
-                //document.removeEventListener('pointerleave', handlePointerUp);
             }
         }
 
-        public static removeDragDrop(id: string, dragElementSelector: string) {
-            const listeners = Modal._dragDropListeners[id];
+        public static removeDragDrop(containerSelector: string, dragElementSelector: string) {
+            const listeners = ProModal._dragDropListeners[containerSelector];
             if (!listeners) return;
 
-            const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
-            if (!dragElement) return;
-
-            dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
-            dragElement.style.cursor = '';
-            dragElement.classList.remove('bit-mdl-nta');
+            const dragElement = document.querySelector(dragElementSelector) as HTMLElement;
+            if (dragElement) {
+                dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
+                dragElement.style.cursor = '';
+                dragElement.classList.remove('bit-mdl-nta');
+            }
 
             document.removeEventListener('pointermove', listeners['pointermove']);
-
             document.removeEventListener('pointerup', listeners['pointerup']);
-            //document.removeEventListener('pointerout', listeners['pointerup']);
-            //document.removeEventListener('pointerleave', listeners['pointerup']);
 
             delete listeners['pointerdown'];
             delete listeners['pointermove'];
             delete listeners['pointerup'];
-            delete Modal._dragDropListeners[id];
+            delete ProModal._dragDropListeners[containerSelector];
         }
     }
 }

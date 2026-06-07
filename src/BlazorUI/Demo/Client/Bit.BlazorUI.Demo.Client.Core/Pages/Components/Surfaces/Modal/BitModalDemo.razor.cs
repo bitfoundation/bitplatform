@@ -11,27 +11,6 @@ public partial class BitModalDemo
     [
         new()
         {
-            Name = "AutoToggleScroll",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the auto scrollbar toggle behavior of the Modal.",
-        },
-        new()
-        {
-            Name = "AbsolutePosition",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "When true, the Modal will be positioned absolute instead of fixed.",
-        },
-        new()
-        {
-            Name = "Blocking",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the Modal can be light dismissed by clicking outside the Modal (on the overlay).",
-        },
-        new()
-        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -48,31 +27,10 @@ public partial class BitModalDemo
         },
         new()
         {
-            Name = "DragElementSelector",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The CSS selector of the drag element. by default the Modal container is the drag element.",
-        },
-        new()
-        {
-            Name = "Draggable",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the Modal can be dragged around.",
-        },
-        new()
-        {
             Name = "FullHeight",
             Type = "bool",
             DefaultValue = "false",
             Description = "Makes the Modal height 100% of its parent container.",
-        },
-        new()
-        {
-            Name = "FullSize",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Makes the Modal width and height 100% of its parent container.",
         },
         new()
         {
@@ -86,7 +44,7 @@ public partial class BitModalDemo
             Name = "IsAlert",
             Type = "bool?",
             DefaultValue = "null",
-            Description = "Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.",
+            Description = "Determines the ARIA role of the Modal (alertdialog/dialog).",
         },
         new()
         {
@@ -94,13 +52,6 @@ public partial class BitModalDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the Modal is displayed.",
-        },
-        new()
-        {
-            Name = "Modeless",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: Blocking is ignored, there will be no overlay.",
         },
         new()
         {
@@ -116,26 +67,10 @@ public partial class BitModalDemo
         },
         new()
         {
-            Name = "Position",
-            Type = "BitPosition?",
-            DefaultValue = "null",
-            Description = "Position of the Modal on the screen.",
-            LinkType = LinkType.Link,
-            Href = "#position-enum",
-        },
-        new()
-        {
             Name = "ScrollerElement",
             Type = "ElementReference?",
             DefaultValue = "null",
             Description = "Set the element reference for which the Modal disables its scroll if applicable.",
-        },
-        new()
-        {
-            Name = "ScrollerSelector",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Set the element selector for which the Modal disables its scroll if applicable.",
         },
         new()
         {
@@ -288,27 +223,6 @@ public partial class BitModalDemo
     private bool isOpenBasic;
 
     private bool isOpenCustomContent;
-
-    private bool isOpenBlocking;
-    private bool isOpenAutoToggleScroll;
-    private bool isOpenModeless;
-
-    private bool isOpenAbsolutePosition;
-    private bool isOpenScrollerSelector;
-
-    private bool isOpenPosition;
-    private BitPosition position;
-    private void OpenModalInPosition(BitPosition positionValue)
-    {
-        isOpenPosition = true;
-        position = positionValue;
-    }
-
-    private bool isOpenDraggable;
-    private bool isOpenDraggableSelector;
-
-    private bool isOpenFullSize;
-    private bool isFullSize;
 
     private bool isEventsOpen;
     private bool isDismissed;

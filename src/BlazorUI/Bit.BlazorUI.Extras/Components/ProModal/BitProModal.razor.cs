@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// ProModal is an advanced version of normal Modal with additional features that tailored to more usual use-cases.
@@ -6,6 +6,11 @@ namespace Bit.BlazorUI;
 public partial class BitProModal : BitComponentBase
 {
     private bool _internIsOpen;
+    private float _offsetTop;
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -21,7 +26,7 @@ public partial class BitProModal : BitComponentBase
     [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
-    /// Whether the Modal can be light dismissed by clicking outside the Modal (on the overlay).
+    /// When enabled, prevents the Modal from being light dismissed by clicking outside the Modal (on the overlay).
     /// </summary>
     [Parameter] public bool Blocking { get; set; }
 
@@ -83,20 +88,17 @@ public partial class BitProModal : BitComponentBase
     /// <summary>
     /// Makes the Modal height 100% of its parent container.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FullHeight { get; set; }
+    [Parameter] public bool FullHeight { get; set; }
 
     /// <summary>
     /// Makes the Modal width and height 100% of its parent container.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FullSize { get; set; }
+    [Parameter] public bool FullSize { get; set; }
 
     /// <summary>
     /// Makes the Modal width 100% of its parent container.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FullWidth { get; set; }
+    [Parameter] public bool FullWidth { get; set; }
 
     /// <summary>
     /// The template used to render the header section of the Modal.
@@ -109,7 +111,7 @@ public partial class BitProModal : BitComponentBase
     [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
-    /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.
+    /// Determines the ARIA role of the Modal (alertdialog/dialog).
     /// </summary>
     [Parameter] public bool? IsAlert { get; set; }
 
@@ -128,7 +130,8 @@ public partial class BitProModal : BitComponentBase
     /// <summary>
     /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: Blocking is ignored, there will be no overlay.
     /// </summary>
-    [Parameter] public bool Modeless { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Modeless { get; set; }
 
     /// <summary>
     /// Removes the default top border of the Modal.
@@ -154,7 +157,8 @@ public partial class BitProModal : BitComponentBase
     /// <summary>
     /// Position of the Modal on the screen.
     /// </summary>
-    [Parameter] public BitPosition? Position { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitPosition? Position { get; set; }
 
     /// <summary>
     /// Set the element selector for which the Modal disables its scroll if applicable.
@@ -195,27 +199,105 @@ public partial class BitProModal : BitComponentBase
     {
         ClassBuilder.Register(() => ModeFull ? "bit-pmd-mfl" : string.Empty);
         ClassBuilder.Register(() => NoBorder ? string.Empty : "bit-pmd-tbr");
+        ClassBuilder.Register(() => Modeless ? "bit-pmd-mdl" : string.Empty);
+        ClassBuilder.Register(() => AbsolutePosition ? "bit-mdl-abs" : string.Empty);
+        ClassBuilder.Register(() => Position switch
+        {
+            BitPosition.TopLeft => "bit-mdl-tlf",
+            BitPosition.TopCenter => "bit-mdl-tcr",
+            BitPosition.TopRight => "bit-mdl-trg",
+            BitPosition.TopStart => "bit-mdl-tst",
+            BitPosition.TopEnd => "bit-mdl-ten",
+            BitPosition.CenterLeft => "bit-mdl-clf",
+            BitPosition.Center => "bit-mdl-ctr",
+            BitPosition.CenterRight => "bit-mdl-crg",
+            BitPosition.CenterStart => "bit-mdl-cst",
+            BitPosition.CenterEnd => "bit-mdl-cen",
+            BitPosition.BottomLeft => "bit-mdl-blf",
+            BitPosition.BottomCenter => "bit-mdl-bcr",
+            BitPosition.BottomRight => "bit-mdl-brg",
+            BitPosition.BottomStart => "bit-mdl-bst",
+            BitPosition.BottomEnd => "bit-mdl-ben",
+            _ => string.Empty
+        });
     }
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (IsOpen)
         {
             if (_internIsOpen is false)
             {
                 _internIsOpen = true;
-                OnOpen.InvokeAsync();
+
+                if (Draggable)
+                {
+                    _ = _js.BitProModalSetupDragDrop(_containerSelector, _dragElementSelector);
+                }
+
+                _offsetTop = 0;
+                await ToggleScroll(true);
+                if (AbsolutePosition)
+                {
+                    StyleBuilder.Reset();
+                    StateHasChanged();
+                }
+
+                await OnOpen.InvokeAsync();
             }
         }
         else
         {
-            _internIsOpen = false;
+            if (_internIsOpen)
+            {
+                _internIsOpen = false;
+
+                _ = _js.BitProModalRemoveDragDrop(_containerSelector, _dragElementSelector);
+                await ToggleScroll(false);
+            }
         }
 
-        return base.OnAfterRenderAsync(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
     }
 
 
+
+    private string _modalId => Id ?? UniqueId;
+    private string _containerSelector => $"#{_modalId} .bit-mdl-ctn";
+    private string _dragElementSelector => DragElementSelector ?? _containerSelector;
+
+    private async Task HandleInnerIsOpenChanged(bool open)
+    {
+        if (open)
+        {
+            await AssignIsOpen(true);
+            return;
+        }
+
+        // a dismiss attempt coming from the overlay click of the underlying BitModal.
+        if (Blocking)
+        {
+            // veto the dismiss and keep the Modal open.
+            StateHasChanged();
+            return;
+        }
+
+        if (await AssignIsOpen(false) is false) return;
+
+        _ = OnDismiss.InvokeAsync();
+    }
+
+    private async Task HandleOverlayClick(MouseEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        await OnOverlayClick.InvokeAsync(e);
+    }
 
     private async Task CloseModal(MouseEventArgs e)
     {
@@ -224,5 +306,31 @@ public partial class BitProModal : BitComponentBase
         if (await AssignIsOpen(false) is false) return;
 
         _ = OnDismiss.InvokeAsync(e);
+    }
+
+    private async Task ToggleScroll(bool isOpen)
+    {
+        if (AutoToggleScroll is false) return;
+
+        _offsetTop = await _js.BitProModalToggleOverflow(ScrollerSelector ?? "body", isOpen);
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        try
+        {
+            if (_internIsOpen)
+            {
+                _ = _js.BitProModalRemoveDragDrop(_containerSelector, _dragElementSelector);
+                await ToggleScroll(false);
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        await base.DisposeAsync(disposing);
     }
 }
