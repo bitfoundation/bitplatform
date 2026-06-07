@@ -170,6 +170,9 @@ public partial class _BitDropdownCustomDemo
     private string clearValue = "f-app";
     private IEnumerable<string> clearValues = ["f-app", "f-ban"];
 
+    private string? immediateSearchValue;
+    private string? debouncedSearchValue;
+
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
 
