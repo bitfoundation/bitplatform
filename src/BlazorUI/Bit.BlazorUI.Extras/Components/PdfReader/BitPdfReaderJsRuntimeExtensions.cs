@@ -19,6 +19,6 @@ internal static class BitPdfReaderJsRuntimeExtensions
 
     public static ValueTask BitPdfReaderDispose(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PdfReader.dispose", id);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.PdfReader.dispose", id);
     }
 }

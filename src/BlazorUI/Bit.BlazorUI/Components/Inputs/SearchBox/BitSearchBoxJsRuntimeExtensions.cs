@@ -4,6 +4,6 @@ internal static class BitSearchBoxJsRuntimeExtensions
 {
     internal static ValueTask BitSearchBoxMoveCursorToEnd(this IJSRuntime jsRuntime, ElementReference input)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.SearchBox.moveCursorToEnd", input);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.SearchBox.moveCursorToEnd", input);
     }
 }

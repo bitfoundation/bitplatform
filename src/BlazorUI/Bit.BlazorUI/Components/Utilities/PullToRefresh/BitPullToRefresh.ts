@@ -138,7 +138,7 @@
         factor: number;
         margin: number;
         threshold: number;
-        dotnetObj: DotNetObject;
+        dotnetObj: DotNetObject | undefined;
         disposer: () => void = () => { };
 
         constructor(id: string,
@@ -169,6 +169,7 @@
         public dispose() {
             this.disposer();
             this.dotnetObj?.dispose();
+            this.dotnetObj = undefined;
         }
     }
 }

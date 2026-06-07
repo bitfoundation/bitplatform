@@ -46,11 +46,11 @@ internal static class UtilsJsRuntimeExtensions
 
     internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string scrollerSelector, bool isHidden)
     {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerSelector, isHidden);
+        return jsRuntime.FastInvoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerSelector, isHidden);
     }
 
     internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, ElementReference scrollerElement, bool isHidden)
     {
-        return jsRuntime.Invoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerElement, isHidden);
+        return jsRuntime.FastInvoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerElement, isHidden);
     }
 }
