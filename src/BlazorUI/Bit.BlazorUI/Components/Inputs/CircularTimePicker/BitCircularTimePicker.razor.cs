@@ -611,6 +611,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
         var rect = await _js.BitUtilsGetBoundingClientRect(_clockRef);
+        if (rect is null) return;
+        
         var radius = rect.Width / 2;
         var centerX = radius;
         var centerY = radius;

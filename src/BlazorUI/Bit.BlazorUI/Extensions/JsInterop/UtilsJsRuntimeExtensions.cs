@@ -20,9 +20,9 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask<BoundingClientRect> BitUtilsGetBoundingClientRect(this IJSRuntime jsRuntime, ElementReference element)
+    internal static ValueTask<BoundingClientRect?> BitUtilsGetBoundingClientRect(this IJSRuntime jsRuntime, ElementReference element)
     {
-        return jsRuntime.FastInvoke<BoundingClientRect>("BitBlazorUI.Utils.getBoundingClientRect", element);
+        return jsRuntime.FastInvoke<BoundingClientRect?>("BitBlazorUI.Utils.getBoundingClientRect", element);
     }
 
 

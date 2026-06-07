@@ -293,6 +293,7 @@ public partial class BitCarousel : BitComponentBase
         var itemsCount = _allItems.Count;
         var rect = await _js.BitUtilsGetBoundingClientRect(_carouselContainer);
         if (rect is null) return;
+        
         var sign = Dir == BitDir.Rtl ? -1 : 1;
         for (int i = 0; i < itemsCount; i++)
         {

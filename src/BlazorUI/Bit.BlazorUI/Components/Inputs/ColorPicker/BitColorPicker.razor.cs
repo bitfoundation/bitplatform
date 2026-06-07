@@ -165,6 +165,7 @@ public partial class BitColorPicker : BitComponentBase
         if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
 
         var pickerRect = await _js.BitUtilsGetBoundingClientRect(_saturationPickerRef);
+        if (pickerRect is null) return;
 
         var left = e.ClientX < pickerRect.Left 
                     ? 0
