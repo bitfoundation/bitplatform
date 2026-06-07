@@ -224,6 +224,19 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public BitSpinButtonMode? Mode { get; set; }
 
     /// <summary>
+    /// Normalizes non-Latin (e.g. Persian "۱۲۳" or Arabic "١٢٣") decimal digits to their Latin (0-9) equivalents before parsing.
+    /// This is culture-agnostic and works for any Unicode decimal digit system.
+    /// </summary>
+    [Parameter] public bool NormalizeDigits { get; set; }
+
+    /// <summary>
+    /// A custom function to normalize the raw input string before it gets parsed into the value.
+    /// When provided, it takes precedence over <see cref="NormalizeDigits"/> and lets the developer plug in their own
+    /// culture-specific or domain-specific transformation (e.g. mapping characters from a particular keyboard layout).
+    /// </summary>
+    [Parameter] public Func<string?, string?>? DigitsNormalizer { get; set; }
+
+    /// <summary>
     /// The format of the number in the number field.
     /// </summary>
     [Parameter] public string? NumberFormat { get; set; }
@@ -391,6 +404,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
+        if (DigitsNormalizer is not null)
+        {
+            value = DigitsNormalizer(value);
+        }
+        else if (NormalizeDigits)
+        {
+            value = NormalizeUnicodeDigits(value);
+        }
+
         if (NumberFormat is not null)
         {
             value = CleanValue(value);
@@ -719,6 +741,38 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
              : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(result) < Convert.ToDecimal(_min) ? _min : Convert.ToDecimal(result) > Convert.ToDecimal(_max) ? _max : result
              : _typeOfValue == typeof(double) ? Convert.ToDouble(result) < Convert.ToDouble(_min) ? _min : Convert.ToDouble(result) > Convert.ToDouble(_max) ? _max : result
              : _zeroValue;
+    }
+
+    private static string? NormalizeUnicodeDigits(string? value)
+    {
+        if (value.HasNoValue()) return value;
+
+        var chars = value!.ToCharArray();
+        var changed = false;
+
+        for (var i = 0; i < chars.Length; i++)
+        {
+            var c = chars[i];
+            if (c is >= '0' and <= '9' or '.' or '-') continue;
+
+            // Any Unicode decimal digit (e.g. Persian U+06F0-U+06F9, Arabic-Indic U+0660-U+0669, etc.).
+            var digit = CharUnicodeInfo.GetDecimalDigitValue(c);
+            if (digit >= 0)
+            {
+                chars[i] = (char)('0' + digit);
+                changed = true;
+                continue;
+            }
+
+            // Decimal separator emitted by Persian/Arabic keyboard layouts.
+            if (c is '٫') // U+066B ARABIC DECIMAL SEPARATOR
+            {
+                chars[i] = '.';
+                changed = true;
+            }
+        }
+
+        return changed ? new string(chars) : value;
     }
 
     private static string? CleanValue(string? value)

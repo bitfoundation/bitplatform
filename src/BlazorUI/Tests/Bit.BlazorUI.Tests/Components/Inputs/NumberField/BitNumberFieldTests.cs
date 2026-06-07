@@ -443,6 +443,107 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod,
+         DataRow("۱۲۳", 123),   // Persian / Extended Arabic-Indic digits (U+06F0-U+06F9)
+         DataRow("١٢٣", 123),   // Arabic-Indic digits (U+0660-U+0669)
+         DataRow("۴۵۶", 456),
+         DataRow("123", 123)    // Latin digits remain unchanged
+    ]
+    public void BitNumberFieldShouldNormalizeNonLatinDigitsWhenEnabled(string userInput, int expectedValue)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = userInput });
+
+        Assert.AreEqual(expectedValue, component.Instance.Value);
+    }
+
+    [TestMethod,
+         DataRow("۱۲٫۵", 12.5),   // Persian digits with Arabic decimal separator (U+066B)
+         DataRow("٣٫٢٥", 3.25)     // Arabic-Indic digits with Arabic decimal separator
+    ]
+    public void BitNumberFieldShouldNormalizeNonLatinDecimalsWhenEnabled(string userInput, double expectedValue)
+    {
+        var component = RenderComponent<BitNumberField<double>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+            parameters.Add(p => p.Precision, 2);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = userInput });
+
+        Assert.AreEqual(expectedValue, component.Instance.Value);
+    }
+
+    [TestMethod, DataRow("۱۲۳")]
+    public void BitNumberFieldShouldNotNormalizeNonLatinDigitsWhenDisabled(string userInput)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, false);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = userInput });
+
+        // Parsing fails for non-Latin digits, so the value remains the default.
+        Assert.AreEqual(0, component.Instance.Value);
+    }
+
+    [TestMethod,
+         DataRow("۱٬۲۳۴", 1234),   // Persian digits with a Persian thousands separator and stripping
+         DataRow("1 000", 1000)     // Latin digits with a space group separator
+    ]
+    public void BitNumberFieldShouldUseCustomDigitsNormalizerWhenProvided(string userInput, int expectedValue)
+    {
+        static string? normalizer(string? value)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+
+            var sb = new System.Text.StringBuilder(value.Length);
+            foreach (var c in value)
+            {
+                if (c is ' ' or ',' or '٬') continue;
+                var digit = System.Globalization.CharUnicodeInfo.GetDecimalDigitValue(c);
+                sb.Append(digit >= 0 ? (char)('0' + digit) : c);
+            }
+            return sb.ToString();
+        }
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DigitsNormalizer, normalizer);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = userInput });
+
+        Assert.AreEqual(expectedValue, component.Instance.Value);
+    }
+
+    [TestMethod, DataRow("۹۹")]
+    public void BitNumberFieldCustomDigitsNormalizerShouldTakePrecedenceOverNormalizeDigits(string userInput)
+    {
+        // The custom normalizer forces a constant value, proving it overrides the built-in NormalizeDigits.
+        static string? normalizer(string? value) => "42";
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+            parameters.Add(p => p.DigitsNormalizer, normalizer);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = userInput });
+
+        Assert.AreEqual(42, component.Instance.Value);
+    }
+
+    [TestMethod,
          DataRow(null),
          DataRow("AriaDescription")
     ]
