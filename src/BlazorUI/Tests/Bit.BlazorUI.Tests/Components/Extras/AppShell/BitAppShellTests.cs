@@ -735,8 +735,8 @@ public class BitAppShellTests : BunitTestContext
     [TestMethod]
     public void BitAppShellShouldDisposeCorrectly()
     {
-        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll");
-        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.disposeScroll");
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll").SetVoidResult();
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.disposeScroll").SetVoidResult();
 
         var component = RenderComponent<BitAppShell>(parameters =>
         {
