@@ -12,6 +12,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private int _precision;
     private bool _hasFocus;
     private string? _tempValue;
+    private string? _displayValue;
+    private TValue? _displayValueSource;
     private TValue _min = default!;
     private TValue _max = default!;
     private TValue _step = default!;
@@ -404,13 +406,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
+        // Reset the preserved display text. It is set again below only when the digit
+        // normalization is the sole transformation applied to the user's input.
+        _displayValue = null;
+        _displayValueSource = default;
+
+        var originalValue = value;
+        var digitsNormalized = false;
+
         if (DigitsNormalizer is not null)
         {
             value = DigitsNormalizer(value);
+            digitsNormalized = string.Equals(value, originalValue, StringComparison.Ordinal) is false;
         }
         else if (NormalizeDigits)
         {
             value = NormalizeUnicodeDigits(value);
+            digitsNormalized = string.Equals(value, originalValue, StringComparison.Ordinal) is false;
         }
 
         if (NumberFormat is not null)
@@ -420,9 +432,22 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
         {
+            var parsedValue = result;
+
             result = CheckMinAndMax(result);
 
             result = Normalize(result);
+
+            // Keep the user's original text visible in the input when digit normalization was the
+            // only transformation, i.e. the parsed number wasn't altered by min/max clamping or
+            // precision rounding. This avoids visibly converting the typed digits (culture-agnostic,
+            // since it compares the numeric values rather than their formatted strings) while still
+            // updating the bound .NET value to the normalized number.
+            if (digitsNormalized && EqualityComparer<TValue>.Default.Equals(parsedValue, result))
+            {
+                _displayValue = originalValue;
+                _displayValueSource = result;
+            }
 
             parsingErrorMessage = null;
             return true;
@@ -432,6 +457,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
             return false;
         }
+    }
+
+    /// <summary>
+    /// Returns the string to display in the input. When digit normalization preserved the user's
+    /// original text (see <see cref="TryParseValueFromString"/>), that text is shown as long as it
+    /// still corresponds to the current value; otherwise the regular formatted value is used.
+    /// </summary>
+    private string? GetDisplayValueAsString()
+    {
+        if (_displayValue is not null && EqualityComparer<TValue>.Default.Equals(CurrentValue, _displayValueSource))
+        {
+            return _displayValue;
+        }
+
+        return CurrentValueAsString;
     }
 
     protected override string? FormatValueAsString(TValue? value)
@@ -680,6 +720,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
 
         result = CheckMinAndMax(result);
+
+        // The value is being changed via the spin buttons / wheel / arrow keys, so any preserved
+        // user-typed display text is no longer relevant and the formatted value should be shown.
+        _displayValue = null;
+        _displayValueSource = default;
 
         CurrentValue = result;
 

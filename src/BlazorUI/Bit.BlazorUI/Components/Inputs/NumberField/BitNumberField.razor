@@ -109,7 +109,7 @@
                    @onfocusin="HandleOnFocusIn"
                    @onfocusout="HandleOnFocusOut"
                    @onwheel="HandleOnMouseWheel"
-                   @bind-value:get="@CurrentValueAsString"
+                   @bind-value:get="@GetDisplayValueAsString()"
                    @bind-value:set="@HandleOnStringValueSet"
                    @bind-value:event="@(Immediate ? "oninput" : "onchange")"
                    form=""

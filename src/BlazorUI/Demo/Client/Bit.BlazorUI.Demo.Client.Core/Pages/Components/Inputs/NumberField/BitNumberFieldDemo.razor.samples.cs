@@ -284,14 +284,14 @@ private BitNumberFieldValidationModel validationModel = new();";
 <BitNumberField Label=""Without NormalizeDigits"" @bind-Value=""normalizeOffValue"" Placeholder=""۱۲۳"" />
 <div>Value: @normalizeOffValue</div>
 
-<BitNumberField Label=""With NormalizeDigits"" @bind-Value=""normalizeOnValue"" NormalizeDigits Placeholder=""۱۲۳"" />
+<BitNumberField Label=""With NormalizeDigits (۱۲۳)"" @bind-Value=""normalizeOnValue"" NormalizeDigits Placeholder=""۱۲۳"" />
 <div>Value: @normalizeOnValue</div>
 
-<BitNumberField Label=""Fractioned NormalizeDigits"" @bind-Value=""normalizeDecimalValue"" NormalizeDigits Placeholder=""۱۲٫۵"" />
+<BitNumberField Label=""Fractioned NormalizeDigits (۱۲٫۵)"" @bind-Value=""normalizeDecimalValue"" NormalizeDigits Placeholder=""۱۲٫۵"" Precision=""2"" />
 <div>Value: @normalizeDecimalValue</div>
 
 
-<BitNumberField Label=""Custom DigitsNormalizer"" @bind-Value=""customNormalizerValue"" DigitsNormalizer=""CustomDigitsNormalizer"" Placeholder=""۱٬۲۳۴"" />
+<BitNumberField Label=""Custom DigitsNormalizer (۱٬۲۳۴)"" @bind-Value=""customNormalizerValue"" DigitsNormalizer=""CustomDigitsNormalizer"" Placeholder=""۱٬۲۳۴"" />
 <div>Value: @customNormalizerValue</div>";
     private readonly string example13CsharpCode = @"
 private int? normalizeOffValue;
