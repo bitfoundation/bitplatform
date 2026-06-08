@@ -24,16 +24,20 @@
 
     <div id="@_fieldGroupId" style="@Styles?.FieldGroup" class="bit-phi-fgp @Classes?.FieldGroup">
 
-        <div @onclick="HandleOnDropdownClick"
-             id="@_dropdownId"
-             role="combobox"
-             aria-haspopup="listbox"
-             aria-expanded="@(_isOpen ? "true" : "false")"
-             aria-controls="@(_isOpen ? _calloutId : null)"
-             aria-disabled="@(IsEnabled is false)"
-             tabindex="@(IsEnabled && ReadOnly is false ? 0 : -1)"
-             style="@Styles?.Dropdown"
-             class="bit-phi-drp @Classes?.Dropdown">
+        <button @onclick="HandleOnDropdownClick"
+                @onkeydown="HandleOnDropdownKeyDown"
+                @onkeydown:preventDefault="_isOpen"
+                type="button"
+                id="@_dropdownId"
+                role="combobox"
+                aria-haspopup="listbox"
+                aria-expanded="@(_isOpen ? "true" : "false")"
+                aria-controls="@(_isOpen ? _calloutId : null)"
+                aria-activedescendant="@(_isOpen && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+                disabled="@(IsEnabled is false)"
+                tabindex="@(IsEnabled && ReadOnly is false ? 0 : -1)"
+                style="@Styles?.Dropdown"
+                class="bit-phi-drp @Classes?.Dropdown">
             <span style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
                 @if (Country is not null)
                 {
@@ -46,7 +50,7 @@
                 }
             </span>
             <span aria-hidden="true" class="bit-phi-car"></span>
-        </div>
+        </button>
 
         <input @ref="InputElement"
                @onchange="HandleOnNumberChange"
@@ -83,7 +87,8 @@
     @if (NoSearchBox is false)
     {
         <div style="@Styles?.SearchBox" class="bit-phi-sbx @Classes?.SearchBox">
-            <input @oninput="HandleOnSearchInput"
+            <input @ref="_searchInputRef"
+                   @oninput="HandleOnSearchInput"
                    type="text"
                    role="searchbox"
                    id="@_searchId"
@@ -96,30 +101,35 @@
     }
 
     <div id="@_scrollContainerId" style="@Styles?.ScrollContainer" class="bit-phi-scn @Classes?.ScrollContainer">
-        <ul class="bit-phi-lst">
+        <div class="bit-phi-lst">
             @{
-                var hasResult = false;
+                var items = GetFilteredCountries();
             }
-            @foreach (var country in GetFilteredCountries())
+            @for (var i = 0; i < items.Count; i++)
             {
-                hasResult = true;
-                var isSelected = ReferenceEquals(country, Country);
-                <li @key="country.Iso2"
-                    @onclick="() => HandleOnCountrySelect(country)"
-                    role="option"
-                    title="@country.Name"
-                    aria-selected="@(isSelected ? "true" : "false")"
-                    class="bit-phi-itm@(isSelected ? " bit-phi-sel" : "")">
+                var index = i;
+                var country = items[index];
+                var isSelected = country.Iso2 == Country?.Iso2;
+                var isActive = index == _activeIndex;
+                var itemClass = $"bit-phi-itm{(isSelected ? " bit-phi-sel" : "")}{(isActive ? " bit-phi-act" : "")}";
+                <button @key="country.Iso2"
+                        id="@GetOptionId(index)"
+                        @onclick="() => HandleOnCountrySelect(country)"
+                        type="button"
+                        role="option"
+                        title="@country.Name"
+                        aria-selected="@(isSelected ? "true" : "false")"
+                        class="@itemClass">
                     <img class="bit-phi-flg" src="@GetFlagUrl(country)" alt="@country.Name" loading="lazy" />
                     <span style="@Styles?.ItemName" class="bit-phi-inm @Classes?.ItemName">@country.Name</span>
                     <span style="@Styles?.ItemCode" class="bit-phi-icd @Classes?.ItemCode">+@country.Code</span>
-                </li>
+                </button>
             }
 
-            @if (hasResult is false)
+            @if (items.Count == 0)
             {
-                <li class="bit-phi-nor">@(NoResultsMessage ?? "No results found")</li>
+                <div class="bit-phi-nor">@(NoResultsMessage ?? "No results found")</div>
             }
-        </ul>
+        </div>
     </div>
 </div>

@@ -44,20 +44,33 @@
 
 .bit-phi-drp {
     gap: spacing(0.5);
+    margin: 0;
     display: flex;
     cursor: pointer;
+    appearance: none;
     user-select: none;
+    text-align: start;
     align-items: center;
     white-space: nowrap;
+    color: $clr-fg-pri;
     flex-flow: row nowrap;
     box-sizing: border-box;
     padding: 0 spacing(1);
+    background-color: transparent;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+    border-block: none;
+    border-inline-start: none;
     border-start-start-radius: $shp-border-radius;
     border-end-start-radius: $shp-border-radius;
     border-inline-end: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &:hover {
         background-color: $clr-bg-pri-hover;
+    }
+
+    &:disabled {
+        cursor: default;
     }
 }
 
@@ -182,14 +195,20 @@
 
 .bit-phi-itm {
     gap: spacing(1);
+    margin: 0;
     width: 100%;
+    border: none;
     display: flex;
     cursor: pointer;
+    appearance: none;
+    text-align: start;
     color: $clr-fg-pri;
     align-items: center;
     flex-flow: row nowrap;
     box-sizing: border-box;
+    background-color: transparent;
     font-size: spacing(1.75);
+    font-family: $tg-font-family;
     padding: spacing(0.75) spacing(1.5);
 
     &:hover {
@@ -199,6 +218,10 @@
 
 .bit-phi-sel {
     background-color: $clr-bg-sec;
+}
+
+.bit-phi-act {
+    background-color: $clr-bg-pri-hover;
 }
 
 .bit-phi-inm {

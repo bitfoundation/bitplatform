@@ -10,7 +10,9 @@ public partial class BitPhoneInput : BitInputBase<string?>
 {
     private bool _isOpen;
     private bool _hasFocus;
+    private int _activeIndex = -1;
     private string? _searchText;
+    private List<BitCountry> _viewItems = [];
     private string _labelId = string.Empty;
     private string _inputId = string.Empty;
     private string _searchId = string.Empty;
@@ -20,6 +22,7 @@ public partial class BitPhoneInput : BitInputBase<string?>
     private string _fieldGroupId = string.Empty;
     private string _scrollContainerId = string.Empty;
     private DotNetObjectReference<BitPhoneInput>? _dotnetObj;
+    private ElementReference _searchInputRef;
 
 
 
@@ -134,12 +137,11 @@ public partial class BitPhoneInput : BitInputBase<string?>
     [JSInvokable("CloseCallout")]
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
-        if (IsEnabled is false) return;
-
         if (_isOpen is false) return;
 
         _isOpen = false;
         _searchText = null;
+        _activeIndex = -1;
 
         await InvokeAsync(StateHasChanged);
     }
@@ -213,17 +215,25 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
 
 
-    private IEnumerable<BitCountry> GetFilteredCountries()
+    private List<BitCountry> GetFilteredCountries()
     {
-        if (_searchText.HasNoValue()) return Countries;
+        if (_searchText.HasNoValue())
+        {
+            _viewItems = Countries as List<BitCountry> ?? [.. Countries];
+            return _viewItems;
+        }
 
         var text = _searchText!.Trim();
 
-        return Countries.Where(c => c.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
-                                    c.Code.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
-                                    c.Iso2.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
-                                    c.Iso3.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+        _viewItems = [.. Countries.Where(c => c.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
+                                              c.Code.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
+                                              c.Iso2.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
+                                              c.Iso3.Contains(text, StringComparison.InvariantCultureIgnoreCase))];
+
+        return _viewItems;
     }
+
+    private string GetOptionId(int index) => $"{_calloutId}-opt-{index}";
 
     private static string GetFlagUrl(BitCountry country)
     {
@@ -244,16 +254,88 @@ public partial class BitPhoneInput : BitInputBase<string?>
         }
     }
 
+    private async Task HandleOnDropdownKeyDown(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        var key = e.Key;
+
+        if (_isOpen is false)
+        {
+            // Enter/Space are handled by the button's native click (which calls
+            // HandleOnDropdownClick -> OpenCallout), so they are intentionally
+            // excluded here to avoid a double toggle.
+            if (key is "ArrowDown" or "ArrowUp" or "Home" or "End")
+            {
+                await OpenCallout();
+            }
+
+            return;
+        }
+
+        switch (key)
+        {
+            case "Escape":
+                await CloseCallout();
+                break;
+
+            case "ArrowDown":
+                if (_viewItems.Count > 0)
+                {
+                    _activeIndex = _activeIndex < _viewItems.Count - 1 ? _activeIndex + 1 : 0;
+                }
+                break;
+
+            case "ArrowUp":
+                if (_viewItems.Count > 0)
+                {
+                    _activeIndex = _activeIndex > 0 ? _activeIndex - 1 : _viewItems.Count - 1;
+                }
+                break;
+
+            case "Home":
+                if (_viewItems.Count > 0) _activeIndex = 0;
+                break;
+
+            case "End":
+                if (_viewItems.Count > 0) _activeIndex = _viewItems.Count - 1;
+                break;
+
+            case "Enter":
+            case " ":
+            case "Spacebar":
+                if (_activeIndex >= 0 && _activeIndex < _viewItems.Count)
+                {
+                    await HandleOnCountrySelect(_viewItems[_activeIndex]);
+                }
+                break;
+        }
+    }
+
     private async Task OpenCallout()
     {
         _isOpen = true;
+
+        var selectedIndex = _viewItems.FindIndex(c => c.Iso2 == Country?.Iso2);
+        _activeIndex = selectedIndex >= 0 ? selectedIndex : (_viewItems.Count > 0 ? 0 : -1);
+
         await ToggleCallout();
+
+        if (NoSearchBox is false)
+        {
+            try
+            {
+                await _searchInputRef.FocusAsync();
+            }
+            catch (JSException) { } // the element might not be ready/visible yet
+        }
     }
 
     private async Task CloseCallout()
     {
         _isOpen = false;
         _searchText = null;
+        _activeIndex = -1;
         await ToggleCallout();
     }
 
