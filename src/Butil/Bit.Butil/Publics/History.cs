@@ -14,7 +14,24 @@ namespace Bit.Butil;
 /// </summary>
 public class History(IJSRuntime js) : IAsyncDisposable
 {
+    internal const string InvokeMethodName = nameof(InvokeHistoryPopState);
+
     private readonly ConcurrentDictionary<Guid, Action<object>> _handlers = new();
+
+    // Per-instance callback reference (see Keyboard/Geolocation): listeners are isolated per
+    // circuit / WASM app and released on disposal — no static state, no cross-circuit leak.
+    private DotNetObjectReference<History>? _dotNetRef;
+    private DotNetObjectReference<History> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+
+    /// <summary>
+    /// Invoked from JS on <c>popstate</c>. Public + <see cref="JSInvokableAttribute"/> so it can be
+    /// dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(InvokeMethodName)]
+    public void InvokeHistoryPopState(Guid id, object state)
+    {
+        if (_handlers.TryGetValue(id, out var handler)) handler.Invoke(state);
+    }
 
     /// <summary>
     /// Returns an Integer representing the number of elements in the session history, including the currently loaded page.
@@ -119,13 +136,12 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event</see>
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HistoryListenersManager))]
     public async ValueTask<Guid> AddPopState(Action<object> handler)
     {
-        var listenerId = HistoryListenersManager.AddListener(handler);
+        var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoid("BitButil.history.addPopState", HistoryListenersManager.InvokeMethodName, listenerId);
+        await js.InvokeVoid("BitButil.history.addPopState", DotNetRef, listenerId);
 
         return listenerId;
     }
@@ -134,7 +150,6 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// Subscribes to <c>popstate</c> and returns an <see cref="IAsyncDisposable"/> handle that
     /// detaches the listener when disposed. Pair with <c>await using</c>.
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HistoryListenersManager))]
     public async ValueTask<ButilSubscription> SubscribePopState(Action<object> handler)
     {
         var id = await AddPopState(handler);
@@ -147,9 +162,16 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event</see>
     /// </summary>
+    /// <remarks>
+    /// Listeners are matched by delegate identity, so you must pass the very same
+    /// <paramref name="handler"/> instance that was registered. A newly-created lambda will not
+    /// match and the returned array will be empty. To avoid this, keep the <see cref="Guid"/>
+    /// returned by <see cref="AddPopState"/> and remove by id, or use <see cref="SubscribePopState"/>
+    /// which returns a disposable <see cref="ButilSubscription"/>.
+    /// </remarks>
     public async ValueTask<Guid[]> RemovePopState(Action<object> handler)
     {
-        var ids = HistoryListenersManager.RemoveListener(handler);
+        var ids = _handlers.Where(h => h.Value == handler).Select(h => h.Key).ToArray();
 
         await RemovePopState(ids);
 
@@ -164,8 +186,6 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask RemovePopState(Guid id)
     {
-        HistoryListenersManager.RemoveListeners([id]);
-
         await RemovePopState([id]);
     }
 
@@ -189,15 +209,11 @@ public class History(IJSRuntime js) : IAsyncDisposable
 
         _handlers.Clear();
 
-        HistoryListenersManager.RemoveListeners(ids);
-
         await RemoveFromJs(ids);
     }
 
     private async ValueTask RemoveFromJs(Guid[] ids)
     {
-        if (OperatingSystem.IsBrowser() is false) return;
-
         await js.InvokeVoid("BitButil.history.removePopState", ids);
     }
 
@@ -217,5 +233,10 @@ public class History(IJSRuntime js) : IAsyncDisposable
             await RemoveAllPopStates();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
     }
 }

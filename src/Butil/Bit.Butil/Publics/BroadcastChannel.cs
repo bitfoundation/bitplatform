@@ -20,10 +20,35 @@ namespace Bit.Butil;
 /// </remarks>
 public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
 {
-    private readonly ConcurrentDictionary<Guid, string> _subscriptions = new();
+    internal const string MessageMethodName = nameof(InvokeBroadcastChannelMessage);
+    internal const string ErrorMethodName = nameof(InvokeBroadcastChannelError);
+
+    private readonly ConcurrentDictionary<Guid, Listener> _subscriptions = new();
+
+    // Per-instance callback reference (see Keyboard): subscriptions are isolated per circuit / WASM
+    // app and released on disposal — no static state, no cross-circuit leak.
+    private DotNetObjectReference<BroadcastChannel>? _dotNetRef;
+    private DotNetObjectReference<BroadcastChannel> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
     /// <summary>True when the runtime exposes <c>BroadcastChannel</c>.</summary>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.broadcastChannel.isSupported");
+
+    /// <summary>
+    /// Invoked from JS for each channel message. Public + <see cref="JSInvokableAttribute"/> so it can
+    /// be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(MessageMethodName)]
+    public void InvokeBroadcastChannelMessage(Guid id, JsonElement data)
+    {
+        if (_subscriptions.TryGetValue(id, out var listener)) listener.OnMessage?.Invoke(data);
+    }
+
+    /// <summary>Invoked from JS on a channel <c>messageerror</c>. See <see cref="InvokeBroadcastChannelMessage"/>.</summary>
+    [JSInvokable(ErrorMethodName)]
+    public void InvokeBroadcastChannelError(Guid id)
+    {
+        if (_subscriptions.TryGetValue(id, out var listener)) listener.OnError?.Invoke();
+    }
 
     /// <summary>
     /// Sends <paramref name="message"/> to every other listener on <paramref name="channelName"/>
@@ -39,7 +64,8 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
     /// <see cref="JsonElement"/> so callers can deserialize into whatever shape they expect.
     /// Use the returned <see cref="ButilSubscription"/> to detach.
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BroadcastChannelListenersManager))]
+    [DynamicDependency(nameof(InvokeBroadcastChannelMessage), typeof(BroadcastChannel))]
+    [DynamicDependency(nameof(InvokeBroadcastChannelError), typeof(BroadcastChannel))]
     public async Task<ButilSubscription> Subscribe(string channelName,
         Action<JsonElement>? onMessage,
         Action? onError = null)
@@ -47,20 +73,14 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
         if (onMessage is null && onError is null)
             throw new ArgumentException("At least one of onMessage or onError must be provided.");
 
-        var id = BroadcastChannelListenersManager.AddListener(onMessage, onError);
-        _subscriptions.TryAdd(id, channelName);
+        var id = Guid.NewGuid();
+        _subscriptions.TryAdd(id, new Listener { OnMessage = onMessage, OnError = onError });
 
-        await js.InvokeVoid("BitButil.broadcastChannel.subscribe",
-            BroadcastChannelListenersManager.MessageMethodName,
-            BroadcastChannelListenersManager.ErrorMethodName,
-            id,
-            channelName);
+        await js.InvokeVoid("BitButil.broadcastChannel.subscribe", DotNetRef, id, channelName);
 
         return new ButilSubscription(id, async () =>
         {
-            BroadcastChannelListenersManager.RemoveListener(id);
             _subscriptions.TryRemove(id, out _);
-            if (OperatingSystem.IsBrowser() is false) return;
             await js.InvokeVoid("BitButil.broadcastChannel.unsubscribe", id);
         });
     }
@@ -75,15 +95,22 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
                 _subscriptions.Clear();
                 foreach (var id in ids)
                 {
-                    BroadcastChannelListenersManager.RemoveListener(id);
-                    if (OperatingSystem.IsBrowser())
-                    {
-                        await js.InvokeVoid("BitButil.broadcastChannel.unsubscribe", id);
-                    }
+                    await js.InvokeVoid("BitButil.broadcastChannel.unsubscribe", id);
                 }
             }
         }
         catch (JSDisconnectedException) { }
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
         GC.SuppressFinalize(this);
+    }
+
+    private class Listener
+    {
+        public Action<JsonElement>? OnMessage { get; set; }
+        public Action? OnError { get; set; }
     }
 }

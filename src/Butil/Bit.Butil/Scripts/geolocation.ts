@@ -50,15 +50,15 @@ var BitButil = BitButil || {};
         });
     }
 
-    function watchPosition(positionMethod: string, errorMethod: string, listenerId: string, options: any) {
+    function watchPosition(dotNetRef: any, listenerId: string, options: any) {
         if (!('geolocation' in window.navigator)) {
-            DotNet.invokeMethodAsync('Bit.Butil', errorMethod, listenerId, 0, 'Geolocation is not supported in this runtime.');
+            dotNetRef.invokeMethodAsync('InvokeError', listenerId, 0, 'Geolocation is not supported in this runtime.');
             return;
         }
 
         const watchId = window.navigator.geolocation.watchPosition(
-            p => DotNet.invokeMethodAsync('Bit.Butil', positionMethod, listenerId, toPosition(p)),
-            err => DotNet.invokeMethodAsync('Bit.Butil', errorMethod, listenerId, err.code, err.message),
+            p => dotNetRef.invokeMethodAsync('InvokePosition', listenerId, toPosition(p)),
+            err => dotNetRef.invokeMethodAsync('InvokeError', listenerId, err.code, err.message),
             toJsOptions(options));
 
         _watches[listenerId] = watchId;

@@ -10,8 +10,39 @@ namespace Bit.Butil;
 /// <br/>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification">https://developer.mozilla.org/en-US/docs/Web/API/Notification</see>
 /// </summary>
-public class Notification(IJSRuntime js)
+public class Notification(IJSRuntime js) : IAsyncDisposable
 {
+    internal const string ClickMethodName = nameof(InvokeNotificationClick);
+    internal const string ShowMethodName = nameof(InvokeNotificationShow);
+    internal const string CloseMethodName = nameof(InvokeNotificationClose);
+    internal const string ErrorMethodName = nameof(InvokeNotificationError);
+
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Listener> _listeners = new();
+
+    // Per-instance callback reference (see Keyboard): tracked notifications are isolated per circuit
+    // / WASM app and released on disposal — no static state, no cross-circuit leak.
+    private DotNetObjectReference<Notification>? _dotNetRef;
+    private DotNetObjectReference<Notification> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+
+    /// <summary>Removes a tracked notification's callbacks. Called by <see cref="NotificationHandle"/>.</summary>
+    internal void RemoveListener(Guid id) => _listeners.TryRemove(id, out _);
+
+    /// <summary>Invoked from JS on notification click. Dispatched via the per-instance ref.</summary>
+    [JSInvokable(ClickMethodName)]
+    public void InvokeNotificationClick(Guid id) { if (_listeners.TryGetValue(id, out var l)) l.OnClick?.Invoke(); }
+
+    /// <summary>Invoked from JS when the notification is shown.</summary>
+    [JSInvokable(ShowMethodName)]
+    public void InvokeNotificationShow(Guid id) { if (_listeners.TryGetValue(id, out var l)) l.OnShow?.Invoke(); }
+
+    /// <summary>Invoked from JS when the notification is closed.</summary>
+    [JSInvokable(CloseMethodName)]
+    public void InvokeNotificationClose(Guid id) { if (_listeners.TryGetValue(id, out var l)) l.OnClose?.Invoke(); }
+
+    /// <summary>Invoked from JS on a notification error.</summary>
+    [JSInvokable(ErrorMethodName)]
+    public void InvokeNotificationError(Guid id) { if (_listeners.TryGetValue(id, out var l)) l.OnError?.Invoke(); }
+
     /// <summary>
     /// Checks if the runtime (browser or web-view) is supporting the Web Notification API.
     /// </summary>
@@ -79,9 +110,12 @@ public class Notification(IJSRuntime js)
     /// click / show / close / error callbacks and close the toast programmatically. The notification
     /// stays open until the user dismisses it (or you call <see cref="NotificationHandle.Close"/>).
     /// </summary>
+    [DynamicDependency(nameof(InvokeNotificationClick), typeof(Notification))]
+    [DynamicDependency(nameof(InvokeNotificationShow), typeof(Notification))]
+    [DynamicDependency(nameof(InvokeNotificationClose), typeof(Notification))]
+    [DynamicDependency(nameof(InvokeNotificationError), typeof(Notification))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NotificationOptions))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(InternalNotificationOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NotificationListenersManager))]
     public async ValueTask<NotificationHandle> ShowTracked(string title,
                                                            NotificationOptions? options = null,
                                                            Action? onClick = null,
@@ -89,26 +123,36 @@ public class Notification(IJSRuntime js)
                                                            Action? onClose = null,
                                                            Action? onError = null)
     {
-        var listener = new NotificationListenersManager.Listener
+        var id = Guid.NewGuid();
+        _listeners.TryAdd(id, new Listener
         {
             OnClick = onClick,
             OnShow = onShow,
             OnClose = onClose,
             OnError = onError
-        };
-        var id = NotificationListenersManager.Add(listener);
+        });
 
         InternalNotificationOptions? opts = options is null ? null : new(options);
 
-        await js.InvokeVoid("BitButil.notification.showTracked",
-            id,
-            title,
-            opts,
-            NotificationListenersManager.ClickMethodName,
-            NotificationListenersManager.ShowMethodName,
-            NotificationListenersManager.CloseMethodName,
-            NotificationListenersManager.ErrorMethodName);
+        await js.InvokeVoid("BitButil.notification.showTracked", id, title, opts, DotNetRef);
 
-        return new NotificationHandle(js, id);
+        return new NotificationHandle(this, js, id);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _listeners.Clear();
+        _dotNetRef?.Dispose();
+        _dotNetRef = null;
+        GC.SuppressFinalize(this);
+        return ValueTask.CompletedTask;
+    }
+
+    private class Listener
+    {
+        public Action? OnClick { get; set; }
+        public Action? OnShow { get; set; }
+        public Action? OnClose { get; set; }
+        public Action? OnError { get; set; }
     }
 }

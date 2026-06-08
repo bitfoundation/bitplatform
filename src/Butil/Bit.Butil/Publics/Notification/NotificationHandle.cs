@@ -9,11 +9,12 @@ namespace Bit.Butil;
 /// </summary>
 public sealed class NotificationHandle : IAsyncDisposable
 {
+    private readonly Notification _owner;
     private readonly IJSRuntime _js;
     private readonly Guid _id;
     private bool _disposed;
 
-    internal NotificationHandle(IJSRuntime js, Guid id) { _js = js; _id = id; }
+    internal NotificationHandle(Notification owner, IJSRuntime js, Guid id) { _owner = owner; _js = js; _id = id; }
 
     /// <summary>The internal notification id.</summary>
     public Guid Id => _id;
@@ -25,7 +26,7 @@ public sealed class NotificationHandle : IAsyncDisposable
     {
         if (_disposed) return;
         _disposed = true;
-        NotificationListenersManager.Remove(_id);
+        _owner.RemoveListener(_id);
         try { await _js.InvokeVoid("BitButil.notification.dispose", _id); }
         catch (JSDisconnectedException) { }
     }

@@ -15,9 +15,9 @@ var BitButil = BitButil || {};
         addScroll, removeScroll
     };
 
-    function addResize(methodName, listenerId) {
+    function addResize(dotNetRef, listenerId) {
         const handler = e => {
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId);
+            dotNetRef.invokeMethodAsync('InvokeVisualViewport', listenerId);
         };
 
         _handlers[listenerId] = handler;
@@ -31,9 +31,9 @@ var BitButil = BitButil || {};
         });
     }
 
-    function addScroll(methodName, listenerId) {
+    function addScroll(dotNetRef, listenerId) {
         const handler = e => {
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId);
+            dotNetRef.invokeMethodAsync('InvokeVisualViewport', listenerId);
         };
 
         _handlers[listenerId] = handler;

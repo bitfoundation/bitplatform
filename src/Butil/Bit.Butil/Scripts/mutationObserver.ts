@@ -8,7 +8,7 @@ var BitButil = BitButil || {};
         unobserve
     };
 
-    function observe(methodName: string, listenerId: string, element: HTMLElement, options: any) {
+    function observe(dotNetRef: any, listenerId: string, element: HTMLElement, options: any) {
         if (!element || !('MutationObserver' in window)) return;
 
         const init: MutationObserverInit = {
@@ -32,7 +32,7 @@ var BitButil = BitButil || {};
                 addedCount: r.addedNodes?.length ?? 0,
                 removedCount: r.removedNodes?.length ?? 0
             }));
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, payload);
+            dotNetRef.invokeMethodAsync('InvokeMutation', listenerId, payload);
         });
 
         try { observer.observe(element, init); }

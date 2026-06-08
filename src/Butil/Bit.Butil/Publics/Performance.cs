@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -10,8 +11,17 @@ namespace Bit.Butil;
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/Performance">Performance</see>
 /// timing and marker API.
 /// </summary>
-public class Performance(IJSRuntime js)
+public class Performance(IJSRuntime js) : IAsyncDisposable
 {
+    internal const string InvokeMethodName = nameof(InvokePerformanceObserver);
+
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action<JsonElement[]>> _handlers = new();
+
+    // Per-instance callback reference (see Keyboard): observers are isolated per circuit / WASM app
+    // and released on disposal — no static state, no cross-circuit leak.
+    private DotNetObjectReference<Performance>? _dotNetRef;
+    private DotNetObjectReference<Performance> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+
     /// <summary>
     /// High-resolution timestamp (<c>DOMHighResTimeStamp</c>) since the time origin, in milliseconds.
     /// <br />
@@ -69,6 +79,16 @@ public class Performance(IJSRuntime js)
         => js.Invoke<PerformanceMemory>("BitButil.performance.memory");
 
     /// <summary>
+    /// Invoked from JS on each observer report. Public + <see cref="JSInvokableAttribute"/> so it can
+    /// be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(InvokeMethodName)]
+    public void InvokePerformanceObserver(Guid id, JsonElement[] entries)
+    {
+        if (_handlers.TryGetValue(id, out var handler)) handler.Invoke(entries);
+    }
+
+    /// <summary>
     /// Subscribes to <see href="https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver">PerformanceObserver</see>
     /// for one or more entry types. Common values: <c>"resource"</c>, <c>"navigation"</c>,
     /// <c>"longtask"</c>, <c>"largest-contentful-paint"</c>, <c>"layout-shift"</c>,
@@ -76,7 +96,7 @@ public class Performance(IJSRuntime js)
     /// </summary>
     /// <param name="buffered">When true, the observer is also notified about entries that
     /// were already in the buffer when the observer registered.</param>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PerformanceObserverListenersManager))]
+    [DynamicDependency(nameof(InvokePerformanceObserver), typeof(Performance))]
     public async Task<ButilSubscription> SubscribeObserver(string[] entryTypes,
                                                           Action<JsonElement[]> handler,
                                                           bool buffered = true)
@@ -84,18 +104,34 @@ public class Performance(IJSRuntime js)
         if (entryTypes is null || entryTypes.Length == 0)
             throw new ArgumentException("At least one entry type is required.", nameof(entryTypes));
 
-        var id = PerformanceObserverListenersManager.AddListener(handler);
-        await js.InvokeVoid("BitButil.performance.observe",
-            PerformanceObserverListenersManager.InvokeMethodName,
-            id,
-            entryTypes,
-            buffered);
+        var id = Guid.NewGuid();
+        _handlers.TryAdd(id, handler);
+        await js.InvokeVoid("BitButil.performance.observe", DotNetRef, id, entryTypes, buffered);
 
         return new ButilSubscription(id, async () =>
         {
-            PerformanceObserverListenersManager.RemoveListener(id);
-            if (OperatingSystem.IsBrowser() is false) return;
+            _handlers.TryRemove(id, out _);
             await js.InvokeVoid("BitButil.performance.disconnect", id);
         });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            var ids = _handlers.Keys.ToArray();
+            _handlers.Clear();
+            foreach (var id in ids)
+            {
+                await js.InvokeVoid("BitButil.performance.disconnect", id);
+            }
+        }
+        catch (JSDisconnectedException) { }
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
+        GC.SuppressFinalize(this);
     }
 }

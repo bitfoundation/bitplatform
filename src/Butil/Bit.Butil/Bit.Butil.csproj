@@ -5,8 +5,13 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
-        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net10.0'">
-            BeforeBuildTasks;
+        <!-- Ensure the JS bundle is generated/refreshed before THIS framework's static web assets
+             are resolved, so wwwroot/bit-butil.js is always packaged up-to-date for every TFM
+             (not just one). The generation is incremental (see the Inputs/Outputs below), and in a
+             multi-targeted build the outer build already produced it (BuildButilJavaScriptOnCrossTargeting),
+             so these per-TFM runs are cheap up-to-date no-ops. -->
+        <ResolveStaticWebAssetsInputsDependsOn>
+            BuildButilJavaScript;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
         <NoWarn>$(NoWarn);IL2026</NoWarn>
@@ -31,10 +36,20 @@
         <TypeScriptFiles Include="**\*.ts" />
     </ItemGroup>
 
-        <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net10.0'">
-        <CallTarget Targets="InstallNodejsDependencies" />
-        <CallTarget Targets="BuildJavaScript" />
-    </Target>
+    <!-- Restores npm packages then compiles the TypeScript bundle. Both sub-targets are incremental
+         via their Inputs/Outputs, so this is a no-op when nothing changed. -->
+    <Target Name="BuildButilJavaScript" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript" />
+
+    <!-- In a multi-targeted build, produce the bundle exactly once in the outer (cross-targeting)
+         build, before the per-TFM inner builds are dispatched. This prevents several inner builds
+         from invoking tsc/esbuild concurrently against the same shared wwwroot output file.
+         The Condition is evaluated at execution time (when IsCrossTargetingBuild is set), so the
+         target only runs in the outer build; inner builds emit a harmless "DispatchToInnerBuilds
+         does not exist" message at detailed verbosity only. -->
+    <Target Name="BuildButilJavaScriptOnCrossTargeting"
+            BeforeTargets="DispatchToInnerBuilds"
+            Condition="'$(IsCrossTargetingBuild)' == 'true'"
+            DependsOnTargets="BuildButilJavaScript" />
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />

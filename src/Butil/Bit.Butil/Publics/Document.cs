@@ -13,6 +13,10 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     // Track listener ids registered through this *instance* so dispose actually drains them.
     private readonly ConcurrentDictionary<(Guid Id, string Event, bool UseCapture), byte> _listenerIds = new();
 
+    // Per-instance DOM event dispatcher: listeners are isolated per circuit / WASM app and released
+    // on disposal — no static state, no cross-circuit leak.
+    private readonly DomEventsInterop _events = new();
+
     public async Task AddEventListener<T>(
         string domEvent,
         Action<T> listener,
@@ -20,13 +24,22 @@ public class Document(IJSRuntime js) : IAsyncDisposable
         bool preventDefault = false,
         bool stopPropagation = false)
     {
-        var id = await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture, preventDefault, stopPropagation);
+        var id = await _events.AddEventListener(js, ElementName, domEvent, listener, useCapture, preventDefault, stopPropagation);
         _listenerIds.TryAdd((id, domEvent, useCapture), 0);
     }
 
+    /// <summary>
+    /// Removes a listener previously added with <see cref="AddEventListener{T}"/>.
+    /// </summary>
+    /// <remarks>
+    /// Listeners are matched by delegate identity, so you must pass the very same
+    /// <paramref name="listener"/> instance that was registered. A newly-created lambda will not
+    /// match and nothing will be removed. For lambdas, prefer <see cref="SubscribeEvent{T}"/>,
+    /// which returns a disposable <see cref="ButilSubscription"/> you can dispose to detach.
+    /// </remarks>
     public async Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
     {
-        var ids = await DomEventDispatcher.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
+        var ids = await _events.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
         foreach (var id in ids) _listenerIds.TryRemove((id, domEvent, useCapture), out _);
     }
 
@@ -41,15 +54,14 @@ public class Document(IJSRuntime js) : IAsyncDisposable
         bool preventDefault = false,
         bool stopPropagation = false)
     {
-        var id = await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture, preventDefault, stopPropagation);
+        var id = await _events.AddEventListener(js, ElementName, domEvent, listener, useCapture, preventDefault, stopPropagation);
         var key = (id, domEvent, useCapture);
         _listenerIds.TryAdd(key, 0);
 
         return new ButilSubscription(id, async () =>
         {
             _listenerIds.TryRemove(key, out _);
-            if (OperatingSystem.IsBrowser() is false) return;
-            await DomEventDispatcher.RemoveEventListenerById(js, ElementName, domEvent, id, useCapture);
+            await _events.RemoveEventListenerById(js, ElementName, domEvent, id, useCapture);
         });
     }
 
@@ -325,15 +337,17 @@ public class Document(IJSRuntime js) : IAsyncDisposable
         var snapshot = _listenerIds.Keys.ToArray();
         _listenerIds.Clear();
 
-        if (OperatingSystem.IsBrowser() is false) return;
-
         try
         {
             foreach (var (id, evt, useCapture) in snapshot)
             {
-                await DomEventDispatcher.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
+                await _events.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            _events.Dispose();
+        }
     }
 }

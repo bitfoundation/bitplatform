@@ -11,9 +11,9 @@ var BitButil = BitButil || {};
         addChange, removeChange,
     };
 
-    function addChange(methodName, listenerId) {
+    function addChange(dotNetRef, listenerId) {
         const handler = e => {
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, { angle: e.target.angle, type: e.target.type });
+            dotNetRef.invokeMethodAsync('InvokeScreenOrientationChange', listenerId, { angle: e.target.angle, type: e.target.type });
         };
 
         _handlers[listenerId] = handler;

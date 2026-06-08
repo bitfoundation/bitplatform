@@ -34,12 +34,15 @@ public static class JSRuntimeExtensions
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TResult"/> obtained by JSON-deserializing the return value.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    public static ValueTask<TResult> FastInvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TResult>(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
+    public static async ValueTask<TResult> FastInvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TResult>(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
+        // Must be async: the CancellationTokenSource's timer enforces the timeout and has to
+        // remain alive until the call finishes. Disposing it synchronously (as a non-async
+        // method would) cancels the timer and defeats the timeout.
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
-        return FastInvokeAsync<TResult>(jsRuntime, identifier, cancellationToken, args);
+        return await FastInvokeAsync<TResult>(jsRuntime, identifier, cancellationToken, args);
     }
 
     /// <summary>
@@ -88,12 +91,13 @@ public static class JSRuntimeExtensions
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    public static ValueTask FastInvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
+    public static async ValueTask FastInvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
+        // Async on purpose — the CTS timer must outlive the call for the timeout to fire.
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
-        return FastInvokeVoidAsync(jsRuntime, identifier, cancellationToken, args);
+        await FastInvokeVoidAsync(jsRuntime, identifier, cancellationToken, args);
     }
 
     /// <summary>

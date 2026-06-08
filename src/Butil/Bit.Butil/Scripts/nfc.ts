@@ -32,26 +32,26 @@ var BitButil = BitButil || {};
         return out;
     }
 
-    async function scan(id: string, readingMethod: string, errorMethod: string) {
+    async function scan(id: string, dotNetRef: any) {
         const W = window as any;
         if (typeof W.NDEFReader !== 'function') {
-            DotNet.invokeMethodAsync('Bit.Butil', errorMethod, id, 'NFC is not supported.');
+            dotNetRef.invokeMethodAsync('InvokeNdefError', id, 'NFC is not supported.');
             return;
         }
         const reader = new W.NDEFReader();
         const controller = new AbortController();
         reader.onreading = (event: any) => {
-            DotNet.invokeMethodAsync('Bit.Butil', readingMethod, id, {
+            dotNetRef.invokeMethodAsync('InvokeNdefReading', id, {
                 serialNumber: event.serialNumber ?? '',
                 records: (event.message?.records ?? []).map(decodeRecord)
             });
         };
         reader.onreadingerror = () => {
-            DotNet.invokeMethodAsync('Bit.Butil', errorMethod, id, 'reading-error');
+            dotNetRef.invokeMethodAsync('InvokeNdefError', id, 'reading-error');
         };
         try { await reader.scan({ signal: controller.signal }); _readers[id] = { reader, controller }; }
         catch (e: any) {
-            DotNet.invokeMethodAsync('Bit.Butil', errorMethod, id, e?.message ?? String(e));
+            dotNetRef.invokeMethodAsync('InvokeNdefError', id, e?.message ?? String(e));
         }
     }
 

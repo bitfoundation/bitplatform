@@ -18,7 +18,24 @@ namespace Bit.Butil;
 /// <param name="js"></param>
 public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 {
+    internal const string InvokeMethodName = nameof(InvokeVisualViewport);
+
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
+
+    // Per-instance callback reference (see Keyboard): resize/scroll listeners are isolated per
+    // circuit / WASM app and released on disposal — no static state, no cross-circuit leak.
+    private DotNetObjectReference<VisualViewport>? _dotNetRef;
+    private DotNetObjectReference<VisualViewport> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+
+    /// <summary>
+    /// Invoked from JS on a resize/scroll event. Public + <see cref="JSInvokableAttribute"/> so it can
+    /// be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(InvokeMethodName)]
+    public void InvokeVisualViewport(Guid id)
+    {
+        if (_handlers.TryGetValue(id, out var handler)) handler.Invoke();
+    }
 
     /// <summary>
     /// Returns the offset of the left edge of the visual viewport from the left edge of 
@@ -93,13 +110,13 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event</see>
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(VisualViewportListenersManager))]
+    [DynamicDependency(nameof(InvokeVisualViewport), typeof(VisualViewport))]
     public async ValueTask<Guid> AddResize(Action handler)
     {
-        var listenerId = VisualViewportListenersManager.AddListener(handler);
+        var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoid("BitButil.visualViewport.addResize", VisualViewportListenersManager.InvokeMethodName, listenerId);
+        await js.InvokeVoid("BitButil.visualViewport.addResize", DotNetRef, listenerId);
 
         return listenerId;
     }
@@ -107,7 +124,6 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Subscribe variant of <see cref="AddResize"/> returning an <see cref="IAsyncDisposable"/> handle.
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(VisualViewportListenersManager))]
     public async ValueTask<ButilSubscription> SubscribeResize(Action handler)
     {
         var id = await AddResize(handler);
@@ -119,9 +135,16 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event</see>
     /// </summary>
+    /// <remarks>
+    /// Listeners are matched by delegate identity, so you must pass the very same
+    /// <paramref name="handler"/> instance that was registered. A newly-created lambda will not
+    /// match and the returned array will be empty. To avoid this, keep the <see cref="Guid"/>
+    /// returned by <see cref="AddResize"/> and remove by id, or use <see cref="SubscribeResize"/>
+    /// which returns a disposable <see cref="ButilSubscription"/>.
+    /// </remarks>
     public async ValueTask<Guid[]> RemoveResize(Action handler)
     {
-        var ids = VisualViewportListenersManager.RemoveListener(handler);
+        var ids = _handlers.Where(h => h.Value == handler).Select(h => h.Key).ToArray();
 
         await RemoveResize(ids);
 
@@ -135,8 +158,6 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask RemoveResize(Guid id)
     {
-        VisualViewportListenersManager.RemoveListeners([id]);
-
         await RemoveResize([id]);
     }
 
@@ -154,8 +175,6 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
     private async ValueTask RemoveResizeFromJs(Guid[] ids)
     {
-        if (OperatingSystem.IsBrowser() is false) return;
-
         await js.InvokeVoid("BitButil.visualViewport.removeResize", ids);
     }
 
@@ -164,13 +183,13 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event</see>
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(VisualViewportListenersManager))]
+    [DynamicDependency(nameof(InvokeVisualViewport), typeof(VisualViewport))]
     public async ValueTask<Guid> AddScroll(Action handler)
     {
-        var listenerId = VisualViewportListenersManager.AddListener(handler);
+        var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoid("BitButil.visualViewport.addScroll", VisualViewportListenersManager.InvokeMethodName, listenerId);
+        await js.InvokeVoid("BitButil.visualViewport.addScroll", DotNetRef, listenerId);
 
         return listenerId;
     }
@@ -178,7 +197,6 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Subscribe variant of <see cref="AddScroll"/> returning an <see cref="IAsyncDisposable"/> handle.
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(VisualViewportListenersManager))]
     public async ValueTask<ButilSubscription> SubscribeScroll(Action handler)
     {
         var id = await AddScroll(handler);
@@ -190,9 +208,16 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event</see>
     /// </summary>
+    /// <remarks>
+    /// Listeners are matched by delegate identity, so you must pass the very same
+    /// <paramref name="handler"/> instance that was registered. A newly-created lambda will not
+    /// match and the returned array will be empty. To avoid this, keep the <see cref="Guid"/>
+    /// returned by <see cref="AddScroll"/> and remove by id, or use <see cref="SubscribeScroll"/>
+    /// which returns a disposable <see cref="ButilSubscription"/>.
+    /// </remarks>
     public async ValueTask<Guid[]> RemoveScroll(Action handler)
     {
-        var ids = VisualViewportListenersManager.RemoveListener(handler);
+        var ids = _handlers.Where(h => h.Value == handler).Select(h => h.Key).ToArray();
 
         await RemoveScroll(ids);
 
@@ -206,8 +231,6 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask RemoveScroll(Guid id)
     {
-        VisualViewportListenersManager.RemoveListeners([id]);
-
         await RemoveScroll([id]);
     }
 
@@ -223,8 +246,6 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
     private async ValueTask RemoveScrollFromJs(Guid[] ids)
     {
-        if (OperatingSystem.IsBrowser() is false) return;
-
         await js.InvokeVoid("BitButil.visualViewport.removeScroll", ids);
     }
 
@@ -236,8 +257,6 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
         var ids = _handlers.Select(h => h.Key).ToArray();
 
         _handlers.Clear();
-
-        VisualViewportListenersManager.RemoveListeners(ids);
 
         var toAwait = new List<Task>();
 
@@ -273,5 +292,10 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
             await RemoveAllEventHandlers();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
     }
 }

@@ -16,9 +16,19 @@ public class Cookie(IJSRuntime js)
     /// <summary>
     /// Gets all cookies registered on the current document.
     /// </summary>
+    /// <remarks>
+    /// The browser's <c>document.cookie</c> API exposes only <c>name=value</c> pairs, so each
+    /// returned <see cref="ButilCookie"/> has only its <see cref="ButilCookie.Name"/> and
+    /// <see cref="ButilCookie.Value"/> populated. Attributes such as <see cref="ButilCookie.Domain"/>,
+    /// <see cref="ButilCookie.Expires"/>, <see cref="ButilCookie.MaxAge"/>, <see cref="ButilCookie.Path"/>,
+    /// <see cref="ButilCookie.SameSite"/>, <see cref="ButilCookie.Secure"/> and
+    /// <see cref="ButilCookie.Partitioned"/> are never returned by the browser and will be at their
+    /// default values regardless of how the cookie was originally set. <c>HttpOnly</c> cookies are not
+    /// visible at all.
+    /// </remarks>
     public async Task<ButilCookie[]> GetAll()
     {
-        var raw = await js.Invoke<string>("BitButil.cookie.get");
+        var raw = await js.InvokeFast<string>("BitButil.cookie.get");
 
         if (string.IsNullOrWhiteSpace(raw)) return [];
 
@@ -32,6 +42,10 @@ public class Cookie(IJSRuntime js)
     /// <summary>
     /// Returns a cookie by providing the cookie name.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="ButilCookie.Name"/> and <see cref="ButilCookie.Value"/> are populated; see
+    /// <see cref="GetAll"/> for why the other attributes can't be read back from the browser.
+    /// </remarks>
     public async Task<ButilCookie?> Get(string name)
     {
         var allCookies = await GetAll();
@@ -70,5 +84,5 @@ public class Cookie(IJSRuntime js)
     /// Sets a cookie.
     /// </summary>
     public async Task Set(ButilCookie cookie)
-        => await js.InvokeVoid("BitButil.cookie.set", cookie.ToString());
+        => await js.InvokeVoidFast("BitButil.cookie.set", cookie.ToString());
 }

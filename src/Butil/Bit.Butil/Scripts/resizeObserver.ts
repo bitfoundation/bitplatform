@@ -16,7 +16,7 @@ var BitButil = BitButil || {};
         return { inlineSize: first?.inlineSize ?? 0, blockSize: first?.blockSize ?? 0 };
     }
 
-    function observe(methodName: string, listenerId: string, element: HTMLElement, box: string) {
+    function observe(dotNetRef: any, listenerId: string, element: HTMLElement, box: string) {
         if (!element || !('ResizeObserver' in window)) return;
 
         const observer = new ResizeObserver(entries => {
@@ -32,7 +32,7 @@ var BitButil = BitButil || {};
                     devicePixelBlockSize: device.blockSize,
                 };
             });
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, payload);
+            dotNetRef.invokeMethodAsync('InvokeResize', listenerId, payload);
         });
 
         try {

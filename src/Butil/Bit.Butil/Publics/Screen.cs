@@ -15,7 +15,24 @@ namespace Bit.Butil;
 /// </summary>
 public class Screen(IJSRuntime js) : IAsyncDisposable
 {
+    internal const string InvokeMethodName = nameof(InvokeScreenChange);
+
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
+
+    // Per-instance callback reference (see Keyboard): listeners are isolated per circuit / WASM app
+    // and released on disposal — no static state, no cross-circuit leak.
+    private DotNetObjectReference<Screen>? _dotNetRef;
+    private DotNetObjectReference<Screen> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+
+    /// <summary>
+    /// Invoked from JS on the screen <c>change</c> event. Public + <see cref="JSInvokableAttribute"/>
+    /// so it can be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(InvokeMethodName)]
+    public void InvokeScreenChange(Guid id)
+    {
+        if (_handlers.TryGetValue(id, out var handler)) handler.Invoke();
+    }
 
     /// <summary>
     /// Specifies the height of the screen, in pixels, minus permanent or semipermanent user interface 
@@ -80,13 +97,13 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event">https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event</see>
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScreenListenersManager))]
+    [DynamicDependency(nameof(InvokeScreenChange), typeof(Screen))]
     public async ValueTask<Guid> AddChange(Action handler)
     {
-        var listenerId = ScreenListenersManager.AddListener(handler);
+        var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoid("BitButil.screen.addChange", ScreenListenersManager.InvokeMethodName, listenerId);
+        await js.InvokeVoid("BitButil.screen.addChange", DotNetRef, listenerId);
 
         return listenerId;
     }
@@ -94,7 +111,6 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Subscribe variant returning an <see cref="IAsyncDisposable"/> handle.
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScreenListenersManager))]
     public async ValueTask<ButilSubscription> SubscribeChange(Action handler)
     {
         var id = await AddChange(handler);
@@ -107,9 +123,16 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event">https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event</see>
     /// </summary>
+    /// <remarks>
+    /// Listeners are matched by delegate identity, so you must pass the very same
+    /// <paramref name="handler"/> instance that was registered. A newly-created lambda will not
+    /// match and the returned array will be empty. To avoid this, keep the <see cref="Guid"/>
+    /// returned by <c>AddChange</c> and remove by id, or use <c>SubscribeChange</c> which returns a
+    /// disposable <see cref="ButilSubscription"/>.
+    /// </remarks>
     public async ValueTask<Guid[]> RemoveChange(Action handler)
     {
-        var ids = ScreenListenersManager.RemoveListener(handler);
+        var ids = _handlers.Where(h => h.Value == handler).Select(h => h.Key).ToArray();
 
         await RemoveChange(ids);
 
@@ -124,8 +147,6 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask RemoveChange(Guid id)
     {
-        ScreenListenersManager.RemoveListeners([id]);
-
         await RemoveChange([id]);
     }
 
@@ -149,15 +170,11 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
 
         _handlers.Clear();
 
-        ScreenListenersManager.RemoveListeners(ids);
-
         await RemoveFromJs(ids);
     }
 
     private async ValueTask RemoveFromJs(Guid[] ids)
     {
-        if (OperatingSystem.IsBrowser() is false) return;
-
         await js.InvokeVoid("BitButil.screen.removeChange", ids);
     }
 
@@ -177,5 +194,10 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
             await RemoveAllChanges();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
     }
 }

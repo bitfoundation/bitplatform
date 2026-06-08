@@ -34,14 +34,14 @@ var BitButil = BitButil || {};
         try { ch.postMessage(message); } finally { ch.close(); }
     }
 
-    function subscribe(messageMethod: string, errorMethod: string, listenerId: string, channelName: string) {
+    function subscribe(dotNetRef: any, listenerId: string, channelName: string) {
         if (!('BroadcastChannel' in window)) return;
         const entry = getChannel(channelName);
         const onMessage = (e: MessageEvent) => {
-            DotNet.invokeMethodAsync('Bit.Butil', messageMethod, listenerId, e.data ?? null);
+            dotNetRef.invokeMethodAsync('InvokeBroadcastChannelMessage', listenerId, e.data ?? null);
         };
         const onError = () => {
-            DotNet.invokeMethodAsync('Bit.Butil', errorMethod, listenerId);
+            dotNetRef.invokeMethodAsync('InvokeBroadcastChannelError', listenerId);
         };
         entry.ch.addEventListener('message', onMessage);
         entry.ch.addEventListener('messageerror', onError);

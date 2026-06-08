@@ -67,11 +67,11 @@ var BitButil = BitButil || {};
         try { ctrl.postMessage(message); return true; } catch { return false; }
     }
 
-    function subscribeMessage(methodName: string, listenerId: string) {
+    function subscribeMessage(dotNetRef: any, listenerId: string) {
         const sw = window.navigator.serviceWorker;
         if (!sw) return;
         const handler = (e: MessageEvent) => {
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, e.data ?? null);
+            dotNetRef.invokeMethodAsync('InvokeServiceWorkerMessage', listenerId, e.data ?? null);
         };
         _msgListeners[listenerId] = handler;
         sw.addEventListener('message', handler);
@@ -84,10 +84,10 @@ var BitButil = BitButil || {};
         try { window.navigator.serviceWorker?.removeEventListener('message', handler); } catch { /* ignore */ }
     }
 
-    function subscribeControllerChange(methodName: string, listenerId: string) {
+    function subscribeControllerChange(dotNetRef: any, listenerId: string) {
         const sw = window.navigator.serviceWorker;
         if (!sw) return;
-        const handler = () => { DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId); };
+        const handler = () => { dotNetRef.invokeMethodAsync('InvokeServiceWorkerControllerChange', listenerId); };
         _ccListeners[listenerId] = handler;
         sw.addEventListener('controllerchange', handler);
     }

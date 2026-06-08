@@ -16,10 +16,38 @@ namespace Bit.Butil;
 /// <see cref="Unregister"/>. Subscriptions returned by <see cref="SubscribeMessage"/> /
 /// <see cref="SubscribeControllerChange"/> are detached on dispose.
 /// </remarks>
-public class ServiceWorker(IJSRuntime js)
+public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
 {
+    internal const string MessageMethodName = nameof(InvokeServiceWorkerMessage);
+    internal const string ControllerChangeMethodName = nameof(InvokeServiceWorkerControllerChange);
+
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action<JsonElement>> _messageHandlers = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action> _controllerChangeHandlers = new();
+
+    // Per-instance callback reference (see Keyboard): subscriptions are isolated per circuit / WASM
+    // app and released on disposal — no static state, no cross-circuit leak.
+    private DotNetObjectReference<ServiceWorker>? _dotNetRef;
+    private DotNetObjectReference<ServiceWorker> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+
     /// <summary>True when the runtime exposes <c>navigator.serviceWorker</c>.</summary>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.serviceWorker.isSupported");
+
+    /// <summary>
+    /// Invoked from JS on a worker message. Public + <see cref="JSInvokableAttribute"/> so it can be
+    /// dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(MessageMethodName)]
+    public void InvokeServiceWorkerMessage(Guid id, JsonElement data)
+    {
+        if (_messageHandlers.TryGetValue(id, out var handler)) handler.Invoke(data);
+    }
+
+    /// <summary>Invoked from JS when the controlling worker changes. See <see cref="InvokeServiceWorkerMessage"/>.</summary>
+    [JSInvokable(ControllerChangeMethodName)]
+    public void InvokeServiceWorkerControllerChange(Guid id)
+    {
+        if (_controllerChangeHandlers.TryGetValue(id, out var handler)) handler.Invoke();
+    }
 
     /// <summary>
     /// Registers a service worker script. The promise resolves once the registration is created.
@@ -63,32 +91,52 @@ public class ServiceWorker(IJSRuntime js)
     /// Subscribes to messages broadcast from the service worker. The handler receives every
     /// payload as a <see cref="JsonElement"/>.
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ServiceWorkerListenersManager))]
+    [DynamicDependency(nameof(InvokeServiceWorkerMessage), typeof(ServiceWorker))]
     public async Task<ButilSubscription> SubscribeMessage(Action<JsonElement> handler)
     {
-        var id = ServiceWorkerListenersManager.AddMessageListener(handler);
-        await js.InvokeVoid("BitButil.serviceWorker.subscribeMessage",
-            ServiceWorkerListenersManager.MessageMethodName, id);
+        var id = Guid.NewGuid();
+        _messageHandlers.TryAdd(id, handler);
+        await js.InvokeVoid("BitButil.serviceWorker.subscribeMessage", DotNetRef, id);
         return new ButilSubscription(id, async () =>
         {
-            ServiceWorkerListenersManager.RemoveMessageListener(id);
-            if (OperatingSystem.IsBrowser() is false) return;
+            _messageHandlers.TryRemove(id, out _);
             await js.InvokeVoid("BitButil.serviceWorker.unsubscribeMessage", id);
         });
     }
 
     /// <summary>Fires when <c>navigator.serviceWorker.controller</c> changes.</summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ServiceWorkerListenersManager))]
+    [DynamicDependency(nameof(InvokeServiceWorkerControllerChange), typeof(ServiceWorker))]
     public async Task<ButilSubscription> SubscribeControllerChange(Action handler)
     {
-        var id = ServiceWorkerListenersManager.AddControllerChangeListener(handler);
-        await js.InvokeVoid("BitButil.serviceWorker.subscribeControllerChange",
-            ServiceWorkerListenersManager.ControllerChangeMethodName, id);
+        var id = Guid.NewGuid();
+        _controllerChangeHandlers.TryAdd(id, handler);
+        await js.InvokeVoid("BitButil.serviceWorker.subscribeControllerChange", DotNetRef, id);
         return new ButilSubscription(id, async () =>
         {
-            ServiceWorkerListenersManager.RemoveControllerChangeListener(id);
-            if (OperatingSystem.IsBrowser() is false) return;
+            _controllerChangeHandlers.TryRemove(id, out _);
             await js.InvokeVoid("BitButil.serviceWorker.unsubscribeControllerChange", id);
         });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            var messageIds = System.Linq.Enumerable.ToArray(_messageHandlers.Keys);
+            var controllerIds = System.Linq.Enumerable.ToArray(_controllerChangeHandlers.Keys);
+            _messageHandlers.Clear();
+            _controllerChangeHandlers.Clear();
+            foreach (var id in messageIds)
+                await js.InvokeVoid("BitButil.serviceWorker.unsubscribeMessage", id);
+            foreach (var id in controllerIds)
+                await js.InvokeVoid("BitButil.serviceWorker.unsubscribeControllerChange", id);
+        }
+        catch (JSDisconnectedException) { }
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
+        GC.SuppressFinalize(this);
     }
 }

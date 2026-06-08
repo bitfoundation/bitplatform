@@ -35,7 +35,7 @@ var BitButil = BitButil || {};
         return out;
     }
 
-    async function send(id: string, req: any, progressMethod: string, withProgress: boolean): Promise<any> {
+    async function send(id: string, req: any, dotNetRef: any, withProgress: boolean): Promise<any> {
         const controller = new AbortController();
         _controllers[id] = controller;
 
@@ -56,7 +56,7 @@ var BitButil = BitButil || {};
                     if (done) break;
                     chunks.push(value);
                     loaded += value.byteLength;
-                    DotNet.invokeMethodAsync('Bit.Butil', progressMethod, id, { loaded, total });
+                    dotNetRef?.invokeMethodAsync('InvokeFetchProgress', id, { loaded, total });
                 }
                 bytes = new Uint8Array(loaded);
                 let offset = 0;
@@ -65,7 +65,7 @@ var BitButil = BitButil || {};
                 const buf = await resp.arrayBuffer();
                 bytes = new Uint8Array(buf);
                 if (withProgress) {
-                    DotNet.invokeMethodAsync('Bit.Butil', progressMethod, id, { loaded: bytes.byteLength, total });
+                    dotNetRef?.invokeMethodAsync('InvokeFetchProgress', id, { loaded: bytes.byteLength, total });
                 }
             }
 

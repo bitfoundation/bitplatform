@@ -44,7 +44,9 @@ var BitButil = BitButil || {};
                     out[m] = e.clipboardData?.getData?.('text/plain') ?? null;
                     break;
                 case 'relatedTarget':
-                    // RelatedTarget is a DOM node — we can only safely send a stringy id.
+                    // A DOM node can't be marshaled to .NET, so we surface only its id.
+                    // Empty string when there's no related target or it has no id — this matches
+                    // the string contract of ButilMouseEventArgs.RelatedTarget.
                     out[m] = e.relatedTarget?.id ?? '';
                     break;
                 default:
@@ -54,23 +56,40 @@ var BitButil = BitButil || {};
         return out;
     }
 
-    function addEventListener(elementName, eventName, methodName, listenerId, argsMembers, options, preventDefault, stopPropagation) {
+    function resolveTarget(elementName: string): EventTarget | undefined {
+        const target = (window as any)[elementName];
+        if (target && typeof target.addEventListener === 'function') return target;
+        // The C# side controls elementName ("window"/"document"), so reaching here means the
+        // target isn't available yet (or an unexpected name was passed). Warn instead of throwing
+        // an unhandled error from inside the interop call.
+        console.warn(`BitButil.events: '${elementName}' is not an available EventTarget; listener skipped.`);
+        return undefined;
+    }
+
+    function addEventListener(elementName, eventName, methodName, dotNetRef, listenerId, argsMembers, options, preventDefault, stopPropagation) {
+        const target = resolveTarget(elementName);
+        if (!target) return;
+
         const handler = e => {
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, mapEvent(e, argsMembers));
+            dotNetRef.invokeMethodAsync(methodName, listenerId, mapEvent(e, argsMembers));
         };
 
         _handlers[listenerId] = handler;
 
-        window[elementName].addEventListener(eventName, handler, options);
+        target.addEventListener(eventName, handler, options);
     }
 
     function removeEventListener(elementName, eventName, dotnetListenerIds, options) {
+        const target = resolveTarget(elementName);
+
         dotnetListenerIds.forEach(id => {
             const handler = _handlers[id];
             delete _handlers[id];
-            window[elementName].removeEventListener(eventName, handler, options);
+            if (target && handler) {
+                target.removeEventListener(eventName, handler, options);
+            }
         });
     }
 }(BitButil));

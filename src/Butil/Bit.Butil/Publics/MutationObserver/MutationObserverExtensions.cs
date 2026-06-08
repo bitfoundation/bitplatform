@@ -17,7 +17,6 @@ public static class MutationObserverExtensions
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MutationRecord))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MutationObserverOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MutationObserverListenersManager))]
     public static async Task<ButilSubscription> ObserveMutations(
         this ElementReference element,
         IJSRuntime js,
@@ -28,19 +27,19 @@ public static class MutationObserverExtensions
         // (watching for nodes being added/removed inside a region).
         options ??= new MutationObserverOptions { ChildList = true, Subtree = true };
 
-        var listenerId = MutationObserverListenersManager.AddListener(handler);
+        var host = new MutationObserverInterop(handler);
+        var listenerId = Guid.NewGuid();
 
         await js.InvokeVoid("BitButil.mutationObserver.observe",
-            MutationObserverListenersManager.InvokeMethodName,
+            host.DotNetRef,
             listenerId,
             element,
             options);
 
         return new ButilSubscription(listenerId, async () =>
         {
-            MutationObserverListenersManager.RemoveListener(listenerId);
-            if (OperatingSystem.IsBrowser() is false) return;
-            await js.InvokeVoid("BitButil.mutationObserver.unobserve", listenerId);
+            try { await js.InvokeVoid("BitButil.mutationObserver.unobserve", listenerId); }
+            finally { host.Dispose(); }
         });
     }
 }

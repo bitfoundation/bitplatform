@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -9,31 +11,56 @@ namespace Bit.Butil;
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/Web_NFC_API">Web NFC API</see>
 /// (<c>NDEFReader</c>). Available on Chromium for Android only.
 /// </summary>
-public class Nfc(IJSRuntime js)
+public class Nfc(IJSRuntime js) : IAsyncDisposable
 {
+    internal const string ReadingMethodName = nameof(InvokeNdefReading);
+    internal const string ErrorMethodName = nameof(InvokeNdefError);
+
+    private readonly ConcurrentDictionary<Guid, Listener> _listeners = new();
+
+    // Per-instance callback reference (see Keyboard): scans are isolated per circuit / WASM app
+    // and released on disposal — no static state, no cross-circuit leak.
+    private DotNetObjectReference<Nfc>? _dotNetRef;
+    private DotNetObjectReference<Nfc> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+
     /// <summary>True when the runtime exposes <c>NDEFReader</c>.</summary>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.nfc.isSupported");
 
     /// <summary>
+    /// Invoked from JS when a tag is read. Public + <see cref="JSInvokableAttribute"/> so it can be
+    /// dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(ReadingMethodName)]
+    public void InvokeNdefReading(Guid id, NdefMessage message)
+    {
+        if (_listeners.TryGetValue(id, out var l)) l.OnReading?.Invoke(message);
+    }
+
+    /// <summary>Invoked from JS on a scan/read error. See <see cref="InvokeNdefReading"/>.</summary>
+    [JSInvokable(ErrorMethodName)]
+    public void InvokeNdefError(Guid id, string message)
+    {
+        if (_listeners.TryGetValue(id, out var l)) l.OnError?.Invoke(message);
+    }
+
+    /// <summary>
     /// Starts scanning for NDEF tags. Use the returned <see cref="IAsyncDisposable"/> to stop.
     /// </summary>
+    [DynamicDependency(nameof(InvokeNdefReading), typeof(Nfc))]
+    [DynamicDependency(nameof(InvokeNdefError), typeof(Nfc))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NdefMessage))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NdefRecord))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NdefListenersManager))]
     public async Task<IAsyncDisposable> Scan(Action<NdefMessage>? onReading, Action<string>? onError = null)
     {
         if (onReading is null && onError is null)
             throw new ArgumentException("At least one of onReading/onError must be provided.");
 
-        var listener = new NdefListenersManager.Listener { OnReading = onReading, OnError = onError };
-        var id = NdefListenersManager.Add(listener);
+        var id = Guid.NewGuid();
+        _listeners.TryAdd(id, new Listener { OnReading = onReading, OnError = onError });
 
-        await js.InvokeVoid("BitButil.nfc.scan",
-            id,
-            NdefListenersManager.ReadingMethodName,
-            NdefListenersManager.ErrorMethodName);
+        await js.InvokeVoid("BitButil.nfc.scan", id, DotNetRef);
 
-        return new ScanHandle(js, id);
+        return new ScanHandle(this, js, id);
     }
 
     /// <summary>
@@ -48,7 +75,33 @@ public class Nfc(IJSRuntime js)
     public ValueTask<bool> WriteUrl(string url, string? id = null)
         => js.Invoke<bool>("BitButil.nfc.writeUrl", url, id);
 
-    private sealed class ScanHandle(IJSRuntime js, Guid id) : IAsyncDisposable
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            var ids = _listeners.Keys.ToArray();
+            _listeners.Clear();
+            foreach (var id in ids)
+            {
+                await js.InvokeVoid("BitButil.nfc.stop", id);
+            }
+        }
+        catch (JSDisconnectedException) { }
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
+        GC.SuppressFinalize(this);
+    }
+
+    private class Listener
+    {
+        public Action<NdefMessage>? OnReading { get; set; }
+        public Action<string>? OnError { get; set; }
+    }
+
+    private sealed class ScanHandle(Nfc owner, IJSRuntime js, Guid id) : IAsyncDisposable
     {
         private bool _disposed;
 
@@ -56,7 +109,7 @@ public class Nfc(IJSRuntime js)
         {
             if (_disposed) return;
             _disposed = true;
-            NdefListenersManager.Remove(id);
+            owner._listeners.TryRemove(id, out _);
             try { await js.InvokeVoid("BitButil.nfc.stop", id); }
             catch (JSDisconnectedException) { }
         }

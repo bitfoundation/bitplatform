@@ -117,10 +117,10 @@ var BitButil = BitButil || {};
         };
     }
 
-    function subscribeMatchMedia(methodName: string, listenerId: string, query: string) {
+    function subscribeMatchMedia(dotNetRef: any, listenerId: string, query: string) {
         const mql = window.matchMedia(query);
         const handler = (e: MediaQueryListEvent) => {
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, { matches: e.matches, media: e.media });
+            dotNetRef.invokeMethodAsync('InvokeMediaQueryChange', listenerId, { matches: e.matches, media: e.media });
         };
 
         // addEventListener is supported on MediaQueryList in all evergreen browsers; older

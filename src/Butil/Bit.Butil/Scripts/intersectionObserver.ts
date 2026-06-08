@@ -13,7 +13,7 @@ var BitButil = BitButil || {};
         return { x: r.x, y: r.y, width: r.width, height: r.height };
     }
 
-    function observe(methodName: string, listenerId: string, element: HTMLElement, options: any) {
+    function observe(dotNetRef: any, listenerId: string, element: HTMLElement, options: any) {
         if (!element || !('IntersectionObserver' in window)) return;
 
         const init: IntersectionObserverInit = {
@@ -30,7 +30,7 @@ var BitButil = BitButil || {};
                 intersectionRect: toRect(e.intersectionRect),
                 rootBounds: toRect(e.rootBounds)
             }));
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, payload);
+            dotNetRef.invokeMethodAsync('InvokeIntersection', listenerId, payload);
         }, init);
 
         observer.observe(element);

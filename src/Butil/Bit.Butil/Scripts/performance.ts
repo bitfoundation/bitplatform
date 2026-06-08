@@ -33,11 +33,11 @@ var BitButil = BitButil || {};
                 usedJsHeapSize: m.usedJSHeapSize ?? null
             };
         },
-        observe(methodName: string, listenerId: string, entryTypes: string[], buffered: boolean) {
+        observe(dotNetRef: any, listenerId: string, entryTypes: string[], buffered: boolean) {
             if (!('PerformanceObserver' in window) || !entryTypes?.length) return;
             const observer = new PerformanceObserver(list => {
                 const payload = list.getEntries().map(e => (e as any).toJSON ? (e as any).toJSON() : e);
-                DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, payload);
+                dotNetRef.invokeMethodAsync('InvokePerformanceObserver', listenerId, payload);
             });
             try {
                 // observe() with a "type" + "buffered" can only handle one entry type at a time;

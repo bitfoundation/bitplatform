@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -13,15 +15,38 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage">https://developer.mozilla.org/en-US/docs/Web/API/Storage</see>
 /// </summary>
-public class ButilStorage(IJSRuntime js, string storageName)
+public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
 {
+    internal const string InvokeMethodName = nameof(InvokeStorageEvent);
+
+    private readonly ConcurrentDictionary<Guid, Action<StorageEvent>> _handlers = new();
+
+    // Per-instance callback reference (see Keyboard): subscriptions are isolated per circuit / WASM
+    // app and released on disposal — no static state, no cross-circuit leak.
+    private DotNetObjectReference<ButilStorage>? _dotNetRef;
+    private DotNetObjectReference<ButilStorage> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+
+    /// <summary>
+    /// Invoked from JS on a cross-tab <c>storage</c> event. Public + <see cref="JSInvokableAttribute"/>
+    /// so it can be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>. Only
+    /// events for this instance's storage area are forwarded to the handler.
+    /// </summary>
+    [JSInvokable(InvokeMethodName)]
+    public void InvokeStorageEvent(Guid id, StorageEvent evt)
+    {
+        if (_handlers.TryGetValue(id, out var handler) &&
+            (string.IsNullOrEmpty(storageName) || string.Equals(storageName, evt.StorageArea, StringComparison.Ordinal)))
+        {
+            handler.Invoke(evt);
+        }
+    }
     /// <summary>
     /// Returns an integer representing the number of data items stored in the Storage object.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/length">https://developer.mozilla.org/en-US/docs/Web/API/Storage/length</see>
     /// </summary>
     public async Task<int> GetLength()
-        => await js.Invoke<int>("BitButil.storage.length", storageName);
+        => await js.InvokeFast<int>("BitButil.storage.length", storageName);
 
     /// <summary>
     /// When passed a number n, this method will return the name of the nth key in the storage.
@@ -29,13 +54,13 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/key">https://developer.mozilla.org/en-US/docs/Web/API/Storage/key</see>
     /// </summary>
     public async Task<string?> GetKey(int index)
-        => await js.Invoke<string?>("BitButil.storage.key", storageName, index);
+        => await js.InvokeFast<string?>("BitButil.storage.key", storageName, index);
 
     /// <summary>
     /// True when the storage contains an item with the given key.
     /// </summary>
     public async Task<bool> ContainsKey(string key)
-        => await js.Invoke<bool>("BitButil.storage.containsKey", storageName, key);
+        => await js.InvokeFast<bool>("BitButil.storage.containsKey", storageName, key);
 
     /// <summary>
     /// When passed a key name, will return that key's value.
@@ -43,7 +68,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem">https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem</see>
     /// </summary>
     public async Task<string?> GetItem(string? key)
-        => await js.Invoke<string?>("BitButil.storage.getItem", storageName, key);
+        => await js.InvokeFast<string?>("BitButil.storage.getItem", storageName, key);
 
     /// <summary>
     /// Returns a JSON-deserialized value, or default(<typeparamref name="T"/>) when the key is missing.
@@ -67,7 +92,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem">https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem</see>
     /// </summary>
     public async Task SetItem(string? key, string? value)
-        => await js.InvokeVoid("BitButil.storage.setItem", storageName, key, value);
+        => await js.InvokeVoidFast("BitButil.storage.setItem", storageName, key, value);
 
     /// <summary>
     /// JSON-serializes <paramref name="value"/> and stores it under <paramref name="key"/>.
@@ -87,7 +112,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/removeItem">https://developer.mozilla.org/en-US/docs/Web/API/Storage/removeItem</see>
     /// </summary>
     public async Task RemoveItem(string? key)
-        => await js.InvokeVoid("BitButil.storage.removeItem", storageName, key);
+        => await js.InvokeVoidFast("BitButil.storage.removeItem", storageName, key);
 
     /// <summary>
     /// When invoked, will empty all keys out of the storage.
@@ -95,7 +120,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/clear">https://developer.mozilla.org/en-US/docs/Web/API/Storage/clear</see>
     /// </summary>
     public async Task Clear()
-        => await js.InvokeVoid("BitButil.storage.clear", storageName);
+        => await js.InvokeVoidFast("BitButil.storage.clear", storageName);
 
     /// <summary>
     /// Subscribes to cross-tab <c>storage</c> events for this storage area
@@ -104,17 +129,37 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event">window.storage</see>
     /// </summary>
+    [DynamicDependency(nameof(InvokeStorageEvent), typeof(ButilStorage))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StorageEvent))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StorageListenersManager))]
     public async Task<ButilSubscription> SubscribeChanges(Action<StorageEvent> handler)
     {
-        var id = StorageListenersManager.AddListener(handler, storageName);
-        await js.InvokeVoid("BitButil.storage.subscribe", StorageListenersManager.InvokeMethodName, id);
+        var id = Guid.NewGuid();
+        _handlers.TryAdd(id, handler);
+        await js.InvokeVoid("BitButil.storage.subscribe", DotNetRef, id);
         return new ButilSubscription(id, async () =>
         {
-            StorageListenersManager.RemoveListeners([id]);
-            if (OperatingSystem.IsBrowser() is false) return;
+            _handlers.TryRemove(id, out _);
             await js.InvokeVoid("BitButil.storage.unsubscribe", id);
         });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            var ids = _handlers.Keys.ToArray();
+            _handlers.Clear();
+            foreach (var id in ids)
+            {
+                await js.InvokeVoid("BitButil.storage.unsubscribe", id);
+            }
+        }
+        catch (JSDisconnectedException) { }
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
+        GC.SuppressFinalize(this);
     }
 }

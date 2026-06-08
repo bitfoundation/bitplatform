@@ -16,7 +16,6 @@ public static class ResizeObserverExtensions
     /// <see cref="ButilSubscription"/> to stop observing.
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ResizeObserverEntry))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ResizeObserverListenersManager))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Rect))]
     public static async Task<ButilSubscription> ObserveResize(
         this ElementReference element,
@@ -24,7 +23,8 @@ public static class ResizeObserverExtensions
         Action<ResizeObserverEntry[]> handler,
         ResizeObserverBox box = ResizeObserverBox.ContentBox)
     {
-        var listenerId = ResizeObserverListenersManager.AddListener(handler);
+        var host = new ResizeObserverInterop(handler);
+        var listenerId = Guid.NewGuid();
 
         var boxName = box switch
         {
@@ -34,16 +34,15 @@ public static class ResizeObserverExtensions
         };
 
         await js.InvokeVoid("BitButil.resizeObserver.observe",
-            ResizeObserverListenersManager.InvokeMethodName,
+            host.DotNetRef,
             listenerId,
             element,
             boxName);
 
         return new ButilSubscription(listenerId, async () =>
         {
-            ResizeObserverListenersManager.RemoveListener(listenerId);
-            if (OperatingSystem.IsBrowser() is false) return;
-            await js.InvokeVoid("BitButil.resizeObserver.unobserve", listenerId);
+            try { await js.InvokeVoid("BitButil.resizeObserver.unobserve", listenerId); }
+            finally { host.Dispose(); }
         });
     }
 }

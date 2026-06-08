@@ -11,12 +11,12 @@ var BitButil = BitButil || {};
         setItem(storage: string, key: string, value: string) { (window[storage] as Storage).setItem(key, value) },
         removeItem(storage: string, key: string) { (window[storage] as Storage).removeItem(key) },
         clear(storage: string) { (window[storage] as Storage).clear() },
-        subscribe(methodName: string, listenerId: string) {
+        subscribe(dotNetRef: any, listenerId: string) {
             const handler = (e: StorageEvent) => {
                 const area = e.storageArea === window.localStorage ? 'localStorage'
                     : e.storageArea === window.sessionStorage ? 'sessionStorage'
                         : '';
-                DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, {
+                dotNetRef.invokeMethodAsync('InvokeStorageEvent', listenerId, {
                     key: e.key,
                     oldValue: e.oldValue,
                     newValue: e.newValue,

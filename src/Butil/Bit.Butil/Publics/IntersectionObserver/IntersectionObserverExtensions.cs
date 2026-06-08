@@ -18,7 +18,6 @@ public static class IntersectionObserverExtensions
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IntersectionObserverEntry))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IntersectionObserverOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IntersectionObserverListenersManager))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Rect))]
     public static async Task<ButilSubscription> ObserveIntersection(
         this ElementReference element,
@@ -26,19 +25,19 @@ public static class IntersectionObserverExtensions
         Action<IntersectionObserverEntry[]> handler,
         IntersectionObserverOptions? options = null)
     {
-        var listenerId = IntersectionObserverListenersManager.AddListener(handler);
+        var host = new IntersectionObserverInterop(handler);
+        var listenerId = Guid.NewGuid();
 
         await js.InvokeVoid("BitButil.intersectionObserver.observe",
-            IntersectionObserverListenersManager.InvokeMethodName,
+            host.DotNetRef,
             listenerId,
             element,
             options);
 
         return new ButilSubscription(listenerId, async () =>
         {
-            IntersectionObserverListenersManager.RemoveListener(listenerId);
-            if (OperatingSystem.IsBrowser() is false) return;
-            await js.InvokeVoid("BitButil.intersectionObserver.unobserve", listenerId);
+            try { await js.InvokeVoid("BitButil.intersectionObserver.unobserve", listenerId); }
+            finally { host.Dispose(); }
         });
     }
 }

@@ -16,19 +16,46 @@ public class Window(IJSRuntime js) : IAsyncDisposable
 {
     private const string ElementName = "window";
 
+    internal const string MatchMediaMethodName = nameof(InvokeMediaQueryChange);
+
     private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action<MediaQueryList>> _matchMediaHandlers = new();
 
     private readonly System.Collections.Concurrent.ConcurrentDictionary<(Guid Id, string Event, bool UseCapture), byte> _listenerIds = new();
 
+    // DOM events go through a per-instance dispatcher; matchMedia callbacks are hosted directly on
+    // this instance. Both keep listeners isolated per circuit / WASM app and leak-free on disposal.
+    private readonly DomEventsInterop _events = new();
+    private DotNetObjectReference<Window>? _dotNetRef;
+    private DotNetObjectReference<Window> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+
+    /// <summary>
+    /// Invoked from JS when a watched media query changes. Public + <see cref="JSInvokableAttribute"/>
+    /// so it can be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(MatchMediaMethodName)]
+    public void InvokeMediaQueryChange(Guid id, MediaQueryList state)
+    {
+        if (_matchMediaHandlers.TryGetValue(id, out var handler)) handler.Invoke(state);
+    }
+
     public async Task AddEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
     {
-        var id = await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture);
+        var id = await _events.AddEventListener(js, ElementName, domEvent, listener, useCapture);
         _listenerIds.TryAdd((id, domEvent, useCapture), 0);
     }
 
+    /// <summary>
+    /// Removes a listener previously added with <see cref="AddEventListener{T}"/>.
+    /// </summary>
+    /// <remarks>
+    /// Listeners are matched by delegate identity, so you must pass the very same
+    /// <paramref name="listener"/> instance that was registered. A newly-created lambda will not
+    /// match and nothing will be removed. For lambdas, prefer <see cref="SubscribeEvent{T}"/>,
+    /// which returns a disposable <see cref="ButilSubscription"/> you can dispose to detach.
+    /// </remarks>
     public async Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
     {
-        var ids = await DomEventDispatcher.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
+        var ids = await _events.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
         foreach (var id in ids) _listenerIds.TryRemove((id, domEvent, useCapture), out _);
     }
 
@@ -37,15 +64,14 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async Task<ButilSubscription> SubscribeEvent<T>(string domEvent, Action<T> listener, bool useCapture = false)
     {
-        var id = await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture);
+        var id = await _events.AddEventListener(js, ElementName, domEvent, listener, useCapture);
         var key = (id, domEvent, useCapture);
         _listenerIds.TryAdd(key, 0);
 
         return new ButilSubscription(id, async () =>
         {
             _listenerIds.TryRemove(key, out _);
-            if (OperatingSystem.IsBrowser() is false) return;
-            await DomEventDispatcher.RemoveEventListenerById(js, ElementName, domEvent, id, useCapture);
+            await _events.RemoveEventListenerById(js, ElementName, domEvent, id, useCapture);
         });
     }
 
@@ -319,17 +345,14 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList/change_event">https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList/change_event</see>
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaQueryListenersManager))]
+    [DynamicDependency(nameof(InvokeMediaQueryChange), typeof(Window))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaQueryList))]
     public async Task<Guid> SubscribeMatchMedia(string query, Action<MediaQueryList> handler)
     {
-        var listenerId = MediaQueryListenersManager.AddListener(handler);
+        var listenerId = Guid.NewGuid();
         _matchMediaHandlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoid("BitButil.window.subscribeMatchMedia",
-            MediaQueryListenersManager.InvokeMethodName,
-            listenerId,
-            query);
+        await js.InvokeVoid("BitButil.window.subscribeMatchMedia", DotNetRef, listenerId, query);
 
         return listenerId;
     }
@@ -338,7 +361,6 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// Subscribe variant of <see cref="SubscribeMatchMedia(string, Action{MediaQueryList})"/>
     /// returning an <see cref="IAsyncDisposable"/> handle.
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaQueryListenersManager))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaQueryList))]
     public async Task<ButilSubscription> WatchMatchMedia(string query, Action<MediaQueryList> handler)
     {
@@ -351,9 +373,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask UnsubscribeMatchMedia(Guid id)
     {
-        MediaQueryListenersManager.RemoveListeners([id]);
         _matchMediaHandlers.TryRemove(id, out _);
-        if (OperatingSystem.IsBrowser() is false) return;
         await js.InvokeVoid("BitButil.window.unsubscribeMatchMedia", new[] { id });
     }
 
@@ -362,15 +382,12 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask<Guid[]> UnsubscribeMatchMedia(Action<MediaQueryList> handler)
     {
-        var ids = MediaQueryListenersManager.RemoveListener(handler);
+        var ids = _matchMediaHandlers.Where(h => h.Value == handler).Select(h => h.Key).ToArray();
         if (ids.Length == 0) return ids;
 
         foreach (var id in ids) _matchMediaHandlers.TryRemove(id, out _);
 
-        if (OperatingSystem.IsBrowser())
-        {
-            await js.InvokeVoid("BitButil.window.unsubscribeMatchMedia", ids);
-        }
+        await js.InvokeVoid("BitButil.window.unsubscribeMatchMedia", ids);
 
         return ids;
     }
@@ -461,28 +478,27 @@ public class Window(IJSRuntime js) : IAsyncDisposable
             {
                 var ids = _matchMediaHandlers.Keys.ToArray();
                 _matchMediaHandlers.Clear();
-                MediaQueryListenersManager.RemoveListeners(ids);
-                if (OperatingSystem.IsBrowser())
-                {
-                    await js.InvokeVoid("BitButil.window.unsubscribeMatchMedia", ids);
-                }
+                await js.InvokeVoid("BitButil.window.unsubscribeMatchMedia", ids);
             }
 
             if (_listenerIds.IsEmpty is false)
             {
                 var snapshot = _listenerIds.Keys.ToArray();
                 _listenerIds.Clear();
-                if (OperatingSystem.IsBrowser())
+                foreach (var (id, evt, useCapture) in snapshot)
                 {
-                    foreach (var (id, evt, useCapture) in snapshot)
-                    {
-                        await DomEventDispatcher.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
-                    }
+                    await _events.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
                 }
             }
 
             await js.InvokeVoid("BitButil.window.dispose");
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            _events.Dispose();
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
     }
 }

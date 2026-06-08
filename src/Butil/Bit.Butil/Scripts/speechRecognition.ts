@@ -12,11 +12,11 @@ var BitButil = BitButil || {};
         stop
     };
 
-    function start(id: string, options: any, resultMethod: string, errorMethod: string, endMethod: string) {
+    function start(id: string, options: any, dotNetRef: any) {
         const W = window as any;
         const Ctor = W.SpeechRecognition || W.webkitSpeechRecognition;
         if (!Ctor) {
-            DotNet.invokeMethodAsync('Bit.Butil', errorMethod, id, 'SpeechRecognition is not supported.');
+            dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionError', id, 'SpeechRecognition is not supported.');
             return;
         }
         const r = new Ctor();
@@ -32,7 +32,7 @@ var BitButil = BitButil || {};
                 // maxAlternatives and read each result via getEntries-style observation.
                 const top = res?.[0];
                 if (!top) continue;
-                DotNet.invokeMethodAsync('Bit.Butil', resultMethod, id, {
+                dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionResult', id, {
                     transcript: top.transcript ?? '',
                     confidence: top.confidence ?? 0,
                     isFinal: !!res.isFinal
@@ -40,16 +40,16 @@ var BitButil = BitButil || {};
             }
         };
         r.onerror = (event: any) => {
-            DotNet.invokeMethodAsync('Bit.Butil', errorMethod, id, event?.error ?? 'unknown');
+            dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionError', id, event?.error ?? 'unknown');
         };
         r.onend = () => {
-            DotNet.invokeMethodAsync('Bit.Butil', endMethod, id);
+            dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionEnd', id);
             delete _sessions[id];
         };
 
         try { r.start(); _sessions[id] = r; }
         catch (e: any) {
-            DotNet.invokeMethodAsync('Bit.Butil', errorMethod, id, e?.message ?? String(e));
+            dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionError', id, e?.message ?? String(e));
         }
     }
 

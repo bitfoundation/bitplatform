@@ -11,9 +11,10 @@ namespace Bit.Butil;
 /// component without hand-rolling Add/Remove pairs.
 /// </summary>
 /// <remarks>
-/// Internally this routes through the same per-element JS plumbing used by Document and Window,
-/// so all the typed event-arg classes (<see cref="ButilPointerEventArgs"/>, <see cref="ButilWheelEventArgs"/>, etc.)
-/// are available with no extra wiring.
+/// Each subscription owns a per-subscription <see cref="DotNetObjectReference{T}"/> (there is no
+/// long-lived service instance to host it, since these are extension methods). The reference — and
+/// therefore all captured component state — is released when the returned subscription is disposed,
+/// so there is no static state and no cross-circuit bleed.
 /// </remarks>
 public static class ElementReferenceEventExtensions
 {
@@ -36,17 +37,17 @@ public static class ElementReferenceEventExtensions
 
         // Each element gets a generated id so the JS side can target it directly.
         var elementId = Guid.NewGuid().ToString("N");
-        var members = ResolveMembers(argType);
-        var methodName = ResolveMethodName(argType);
-        var listenerId = RegisterListener(argType, listener, elementId, useCapture);
+        var host = new DomEventsInterop();
+        var (listenerId, methodName, members, dotNetRef) = host.Register(listener, elementId, useCapture);
 
-        var options = useCapture;
+        object options = useCapture;
 
         await js.InvokeVoid("BitButil.element.subscribeEvent",
             element,
             elementId,
             domEvent,
             methodName,
+            dotNetRef,
             listenerId,
             members,
             options,
@@ -55,81 +56,15 @@ public static class ElementReferenceEventExtensions
 
         return new ButilSubscription(listenerId, async () =>
         {
-            UnregisterListener(argType, listenerId);
-            if (OperatingSystem.IsBrowser() is false) return;
-            await js.InvokeVoid("BitButil.element.unsubscribeEvent", elementId, domEvent, listenerId, options);
+            host.Unregister(listenerId);
+            try
+            {
+                await js.InvokeVoid("BitButil.element.unsubscribeEvent", elementId, domEvent, listenerId, options);
+            }
+            finally
+            {
+                host.Dispose();
+            }
         });
-    }
-
-    private static string[] ResolveMembers(Type argType)
-    {
-        if (argType == typeof(ButilKeyboardEventArgs)) return ButilKeyboardEventArgs.EventArgsMembers;
-        if (argType == typeof(ButilMouseEventArgs)) return ButilMouseEventArgs.EventArgsMembers;
-        if (argType == typeof(ButilPointerEventArgs)) return ButilPointerEventArgs.EventArgsMembers;
-        if (argType == typeof(ButilWheelEventArgs)) return ButilWheelEventArgs.EventArgsMembers;
-        if (argType == typeof(ButilTouchEventArgs)) return ButilTouchEventArgs.EventArgsMembers;
-        if (argType == typeof(ButilFocusEventArgs)) return ButilFocusEventArgs.EventArgsMembers;
-        if (argType == typeof(ButilInputEventArgs)) return ButilInputEventArgs.EventArgsMembers;
-        if (argType == typeof(ButilDragEventArgs)) return ButilDragEventArgs.EventArgsMembers;
-        if (argType == typeof(ButilClipboardEventArgs)) return ButilClipboardEventArgs.EventArgsMembers;
-        if (argType == typeof(ButilCompositionEventArgs)) return ButilCompositionEventArgs.EventArgsMembers;
-        return [];
-    }
-
-    private static string ResolveMethodName(Type argType)
-    {
-        if (argType == typeof(ButilKeyboardEventArgs)) return DomKeyboardEventListenersManager.InvokeMethodName;
-        if (argType == typeof(ButilMouseEventArgs)) return DomMouseEventListenersManager.InvokeMethodName;
-        if (argType == typeof(ButilPointerEventArgs)) return DomPointerEventListenersManager.InvokeMethodName;
-        if (argType == typeof(ButilWheelEventArgs)) return DomWheelEventListenersManager.InvokeMethodName;
-        if (argType == typeof(ButilTouchEventArgs)) return DomTouchEventListenersManager.InvokeMethodName;
-        if (argType == typeof(ButilFocusEventArgs)) return DomFocusEventListenersManager.InvokeMethodName;
-        if (argType == typeof(ButilInputEventArgs)) return DomInputEventListenersManager.InvokeMethodName;
-        if (argType == typeof(ButilDragEventArgs)) return DomDragEventListenersManager.InvokeMethodName;
-        if (argType == typeof(ButilClipboardEventArgs)) return DomClipboardEventListenersManager.InvokeMethodName;
-        if (argType == typeof(ButilCompositionEventArgs)) return DomCompositionEventListenersManager.InvokeMethodName;
-        return DomEventListenersManager.InvokeMethodName;
-    }
-
-    private static Guid RegisterListener<T>(Type argType, Action<T> listener, string elementId, bool useCapture)
-    {
-        // The existing element-scoped store key is the elementId — we reuse the same managers.
-        object options = useCapture;
-        if (argType == typeof(ButilKeyboardEventArgs))
-            return DomKeyboardEventListenersManager.SetListener((listener as Action<ButilKeyboardEventArgs>)!, elementId, options);
-        if (argType == typeof(ButilMouseEventArgs))
-            return DomMouseEventListenersManager.SetListener((listener as Action<ButilMouseEventArgs>)!, elementId, options);
-        if (argType == typeof(ButilPointerEventArgs))
-            return DomPointerEventListenersManager.SetListener((listener as Action<ButilPointerEventArgs>)!, elementId, options);
-        if (argType == typeof(ButilWheelEventArgs))
-            return DomWheelEventListenersManager.SetListener((listener as Action<ButilWheelEventArgs>)!, elementId, options);
-        if (argType == typeof(ButilTouchEventArgs))
-            return DomTouchEventListenersManager.SetListener((listener as Action<ButilTouchEventArgs>)!, elementId, options);
-        if (argType == typeof(ButilFocusEventArgs))
-            return DomFocusEventListenersManager.SetListener((listener as Action<ButilFocusEventArgs>)!, elementId, options);
-        if (argType == typeof(ButilInputEventArgs))
-            return DomInputEventListenersManager.SetListener((listener as Action<ButilInputEventArgs>)!, elementId, options);
-        if (argType == typeof(ButilDragEventArgs))
-            return DomDragEventListenersManager.SetListener((listener as Action<ButilDragEventArgs>)!, elementId, options);
-        if (argType == typeof(ButilClipboardEventArgs))
-            return DomClipboardEventListenersManager.SetListener((listener as Action<ButilClipboardEventArgs>)!, elementId, options);
-        if (argType == typeof(ButilCompositionEventArgs))
-            return DomCompositionEventListenersManager.SetListener((listener as Action<ButilCompositionEventArgs>)!, elementId, options);
-        return DomEventListenersManager.SetListener((listener as Action<object>)!, elementId, options);
-    }
-
-    private static void UnregisterListener(Type argType, Guid id)
-    {
-        if (argType == typeof(ButilKeyboardEventArgs)) { DomKeyboardEventListenersManager.RemoveById(id); return; }
-        if (argType == typeof(ButilMouseEventArgs)) { DomMouseEventListenersManager.RemoveById(id); return; }
-        if (argType == typeof(ButilPointerEventArgs)) { DomPointerEventListenersManager.RemoveById(id); return; }
-        if (argType == typeof(ButilWheelEventArgs)) { DomWheelEventListenersManager.RemoveById(id); return; }
-        if (argType == typeof(ButilTouchEventArgs)) { DomTouchEventListenersManager.RemoveById(id); return; }
-        if (argType == typeof(ButilFocusEventArgs)) { DomFocusEventListenersManager.RemoveById(id); return; }
-        if (argType == typeof(ButilInputEventArgs)) { DomInputEventListenersManager.RemoveById(id); return; }
-        if (argType == typeof(ButilDragEventArgs)) { DomDragEventListenersManager.RemoveById(id); return; }
-        if (argType == typeof(ButilClipboardEventArgs)) { DomClipboardEventListenersManager.RemoveById(id); return; }
-        if (argType == typeof(ButilCompositionEventArgs)) { DomCompositionEventListenersManager.RemoveById(id); return; }
-        DomEventListenersManager.RemoveById(id);
     }
 }

@@ -13,7 +13,15 @@ namespace Bit.Butil;
 /// </summary>
 public class Geolocation(IJSRuntime js) : IAsyncDisposable
 {
-    private readonly ConcurrentDictionary<Guid, byte> _watchIds = new();
+    internal const string PositionMethodName = nameof(InvokePosition);
+    internal const string ErrorMethodName = nameof(InvokeError);
+
+    private readonly ConcurrentDictionary<Guid, Listener> _watches = new();
+
+    // Per-instance callback reference: watches live on this (scoped) instance, so they're isolated
+    // per circuit / WASM app and released on disposal — no static state, no cross-circuit leak.
+    private DotNetObjectReference<Geolocation>? _dotNetRef;
+    private DotNetObjectReference<Geolocation> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
     /// <summary>True when the runtime exposes <c>navigator.geolocation</c>.</summary>
     public async ValueTask<bool> IsSupported()
@@ -36,13 +44,39 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
+    /// Invoked from JS for each watch position update. Public + <see cref="JSInvokableAttribute"/>
+    /// so it can be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(PositionMethodName)]
+    public void InvokePosition(Guid id, GeolocationPosition position)
+    {
+        if (_watches.TryGetValue(id, out var listener)) listener.OnPosition?.Invoke(position);
+    }
+
+    /// <summary>Invoked from JS when a watch errors. See <see cref="InvokePosition"/>.</summary>
+    [JSInvokable(ErrorMethodName)]
+    public void InvokeError(Guid id, int code, string message)
+    {
+        if (_watches.TryGetValue(id, out var listener))
+        {
+            var enumCode = code switch
+            {
+                1 => GeolocationErrorCode.PermissionDenied,
+                2 => GeolocationErrorCode.PositionUnavailable,
+                3 => GeolocationErrorCode.Timeout,
+                _ => GeolocationErrorCode.Unknown,
+            };
+            listener.OnError?.Invoke(new GeolocationException(enumCode, message));
+        }
+    }
+
+    /// <summary>
     /// Subscribes to continuous position updates. Use <see cref="ClearWatch(Guid)"/> with the
     /// returned id to stop. The handler runs on the Blazor sync context.
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GeolocationPosition))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GeolocationCoordinates))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GeolocationOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GeolocationListenersManager))]
     public async Task<Guid> Watch(Action<GeolocationPosition>? onPosition,
                                   Action<GeolocationException>? onError = null,
                                   GeolocationOptions? options = null)
@@ -50,14 +84,10 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
         if (onPosition is null && onError is null)
             throw new ArgumentException("At least one of onPosition or onError must be provided.");
 
-        var id = GeolocationListenersManager.AddListener(onPosition, onError);
-        _watchIds.TryAdd(id, 0);
+        var id = Guid.NewGuid();
+        _watches.TryAdd(id, new Listener { OnPosition = onPosition, OnError = onError });
 
-        await js.InvokeVoid("BitButil.geolocation.watchPosition",
-            GeolocationListenersManager.PositionMethodName,
-            GeolocationListenersManager.ErrorMethodName,
-            id,
-            options);
+        await js.InvokeVoid("BitButil.geolocation.watchPosition", DotNetRef, id, options);
 
         return id;
     }
@@ -65,10 +95,8 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
     /// <summary>Stops a previously registered watch.</summary>
     public async ValueTask ClearWatch(Guid id)
     {
-        _watchIds.TryRemove(id, out _);
-        GeolocationListenersManager.RemoveListeners([id]);
+        _watches.TryRemove(id, out _);
 
-        if (OperatingSystem.IsBrowser() is false) return;
         await js.InvokeVoid("BitButil.geolocation.clearWatch", id);
     }
 
@@ -78,7 +106,6 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GeolocationPosition))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GeolocationCoordinates))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GeolocationOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GeolocationListenersManager))]
     public async Task<ButilSubscription> SubscribeWatch(Action<GeolocationPosition>? onPosition,
                                                         Action<GeolocationException>? onError = null,
                                                         GeolocationOptions? options = null)
@@ -90,11 +117,9 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
     /// <summary>Stops every watch this instance has started.</summary>
     public async ValueTask ClearAllWatches()
     {
-        if (_watchIds.IsEmpty) return;
-        var ids = _watchIds.Keys.ToArray();
-        _watchIds.Clear();
-        GeolocationListenersManager.RemoveListeners(ids);
-        if (OperatingSystem.IsBrowser() is false) return;
+        if (_watches.IsEmpty) return;
+        var ids = _watches.Keys.ToArray();
+        _watches.Clear();
         foreach (var id in ids)
         {
             await js.InvokeVoid("BitButil.geolocation.clearWatch", id);
@@ -105,6 +130,11 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
     {
         try { await ClearAllWatches(); }
         catch (JSDisconnectedException) { }
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
         GC.SuppressFinalize(this);
     }
 
@@ -118,6 +148,12 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
             _ => GeolocationErrorCode.Unknown,
         };
         return new GeolocationException(code, result.ErrorMessage ?? "Geolocation request failed.");
+    }
+
+    private class Listener
+    {
+        public Action<GeolocationPosition>? OnPosition { get; set; }
+        public Action<GeolocationException>? OnError { get; set; }
     }
 
     /// <summary>Internal — shape used to bridge a once-off call's success/error path.</summary>

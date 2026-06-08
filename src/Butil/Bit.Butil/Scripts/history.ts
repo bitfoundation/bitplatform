@@ -17,9 +17,9 @@ var BitButil = BitButil || {};
         removePopState
     };
 
-    function addPopState(methodName, listenerId) {
+    function addPopState(dotNetRef, listenerId) {
         const handler = e => {
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, e.state);
+            dotNetRef.invokeMethodAsync('InvokeHistoryPopState', listenerId, e.state);
         };
 
         _handlers[listenerId] = handler;

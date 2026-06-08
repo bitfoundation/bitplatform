@@ -47,23 +47,22 @@ var BitButil = BitButil || {};
         }
     }
 
-    function showTracked(id: string, title: string, options: NotificationOptions | undefined,
-        clickMethod: string, showMethod: string, closeMethod: string, errorMethod: string) {
+    function showTracked(id: string, title: string, options: NotificationOptions | undefined, dotNetRef: any) {
         normalize(options);
         try {
             const n = new Notification(title, options);
             _tracked[id] = n;
-            n.onclick = () => DotNet.invokeMethodAsync('Bit.Butil', clickMethod, id);
-            n.onshow = () => DotNet.invokeMethodAsync('Bit.Butil', showMethod, id);
-            n.onclose = () => DotNet.invokeMethodAsync('Bit.Butil', closeMethod, id);
-            n.onerror = () => DotNet.invokeMethodAsync('Bit.Butil', errorMethod, id);
+            n.onclick = () => dotNetRef.invokeMethodAsync('InvokeNotificationClick', id);
+            n.onshow = () => dotNetRef.invokeMethodAsync('InvokeNotificationShow', id);
+            n.onclose = () => dotNetRef.invokeMethodAsync('InvokeNotificationClose', id);
+            n.onerror = () => dotNetRef.invokeMethodAsync('InvokeNotificationError', id);
         } catch {
             // Service-worker fallback can't be tracked the same way (the toast is owned by the SW)
             // — fire show + error so callers can detect graceful degradation.
             navigator.serviceWorker?.getRegistration().then(reg => {
                 reg?.showNotification(title, options);
-                DotNet.invokeMethodAsync('Bit.Butil', showMethod, id);
-            }).catch(() => DotNet.invokeMethodAsync('Bit.Butil', errorMethod, id));
+                dotNetRef.invokeMethodAsync('InvokeNotificationShow', id);
+            }).catch(() => dotNetRef.invokeMethodAsync('InvokeNotificationError', id));
         }
     }
 

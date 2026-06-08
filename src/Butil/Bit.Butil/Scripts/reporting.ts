@@ -5,7 +5,7 @@ var BitButil = BitButil || {};
 
     butil.reporting = {
         isSupported() { return 'ReportingObserver' in window; },
-        observe(methodName: string, listenerId: string, types: string[] | null, buffered: boolean) {
+        observe(dotNetRef: any, listenerId: string, types: string[] | null, buffered: boolean) {
             const W = window as any;
             if (typeof W.ReportingObserver !== 'function') return;
             const options: any = { buffered };
@@ -16,7 +16,7 @@ var BitButil = BitButil || {};
                     url: r.url,
                     body: r.body ?? null
                 }));
-                DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, payload);
+                dotNetRef.invokeMethodAsync('InvokeBrowserReport', listenerId, payload);
             }, options);
             try { observer.observe(); _observers[listenerId] = observer; }
             catch { /* invalid options — silently ignore */ }

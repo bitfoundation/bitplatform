@@ -89,13 +89,13 @@ var BitButil = BitButil || {};
     }
 
     function subscribeEvent(element: HTMLElement, elementId: string, eventName: string, methodName: string,
-        listenerId: string, argsMembers: string[], useCapture: boolean,
+        dotNetRef: any, listenerId: string, argsMembers: string[], useCapture: boolean,
         preventDefault: boolean, stopPropagation: boolean) {
         if (!element) return;
         const handler = (e: any) => {
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, butil.events.mapEvent(e, argsMembers));
+            dotNetRef.invokeMethodAsync(methodName, listenerId, butil.events.mapEvent(e, argsMembers));
         };
         _elementHandlers[listenerId] = { element, eventName, handler, options: useCapture };
         element.addEventListener(eventName, handler, useCapture);

@@ -9,7 +9,7 @@ var BitButil = BitButil || {};
         remove
     };
 
-    function makeHandler(methodName: string, listenerId: string, code: string, alt: boolean, ctrl: boolean,
+    function makeHandler(dotNetRef: any, listenerId: string, code: string, alt: boolean, ctrl: boolean,
         meta: boolean, shift: boolean, preventDefault: boolean, stopPropagation: boolean, repeat: boolean) {
         return (e: KeyboardEvent) => {
             if (e.code !== code) return;
@@ -24,26 +24,26 @@ var BitButil = BitButil || {};
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
 
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId);
+            dotNetRef.invokeMethodAsync('InvokeKeyboard', listenerId);
         };
     }
 
-    function add(methodName: string, listenerId: string, code: string, alt: boolean, ctrl: boolean,
+    function add(dotNetRef: any, listenerId: string, code: string, alt: boolean, ctrl: boolean,
         meta: boolean, shift: boolean, preventDefault: boolean, stopPropagation: boolean, repeat: boolean) {
-        const handler = makeHandler(methodName, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat);
+        const handler = makeHandler(dotNetRef, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat);
         _handlers[listenerId] = { target: document, handler };
         document.addEventListener('keydown', handler);
     }
 
-    function addOn(methodName: string, listenerId: string, element: HTMLElement, code: string,
+    function addOn(dotNetRef: any, listenerId: string, element: HTMLElement, code: string,
         alt: boolean, ctrl: boolean, meta: boolean, shift: boolean,
         preventDefault: boolean, stopPropagation: boolean, repeat: boolean) {
         if (!element) {
             // Fall back to document so callers don't lose the listener silently when the
             // element ref isn't ready yet.
-            return add(methodName, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat);
+            return add(dotNetRef, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat);
         }
-        const handler = makeHandler(methodName, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat);
+        const handler = makeHandler(dotNetRef, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat);
         _handlers[listenerId] = { target: element, handler };
         element.addEventListener('keydown', handler);
     }

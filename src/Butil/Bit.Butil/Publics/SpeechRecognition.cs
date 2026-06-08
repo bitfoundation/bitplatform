@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -9,17 +11,54 @@ namespace Bit.Butil;
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition">SpeechRecognition</see>
 /// API (Web Speech, prefixed as <c>webkitSpeechRecognition</c> on Chromium).
 /// </summary>
-public class SpeechRecognition(IJSRuntime js)
+public class SpeechRecognition(IJSRuntime js) : IAsyncDisposable
 {
+    internal const string ResultMethodName = nameof(InvokeSpeechRecognitionResult);
+    internal const string ErrorMethodName = nameof(InvokeSpeechRecognitionError);
+    internal const string EndMethodName = nameof(InvokeSpeechRecognitionEnd);
+
+    private readonly ConcurrentDictionary<Guid, Listener> _listeners = new();
+
+    // Per-instance callback reference (see Keyboard): sessions are isolated per circuit / WASM app
+    // and released on disposal — no static state, no cross-circuit leak.
+    private DotNetObjectReference<SpeechRecognition>? _dotNetRef;
+    private DotNetObjectReference<SpeechRecognition> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+
     /// <summary>True when the runtime exposes a SpeechRecognition implementation.</summary>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.speechRecognition.isSupported");
 
     /// <summary>
+    /// Invoked from JS for each recognition result. Public + <see cref="JSInvokableAttribute"/> so it
+    /// can be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(ResultMethodName)]
+    public void InvokeSpeechRecognitionResult(Guid id, SpeechRecognitionResult result)
+    {
+        if (_listeners.TryGetValue(id, out var l)) l.OnResult?.Invoke(result);
+    }
+
+    /// <summary>Invoked from JS on a recognition error. See <see cref="InvokeSpeechRecognitionResult"/>.</summary>
+    [JSInvokable(ErrorMethodName)]
+    public void InvokeSpeechRecognitionError(Guid id, string message)
+    {
+        if (_listeners.TryGetValue(id, out var l)) l.OnError?.Invoke(message);
+    }
+
+    /// <summary>Invoked from JS when recognition ends. See <see cref="InvokeSpeechRecognitionResult"/>.</summary>
+    [JSInvokable(EndMethodName)]
+    public void InvokeSpeechRecognitionEnd(Guid id)
+    {
+        if (_listeners.TryGetValue(id, out var l)) l.OnEnd?.Invoke();
+    }
+
+    /// <summary>
     /// Starts recognition. Returns an <see cref="IAsyncDisposable"/> that calls <see cref="Stop"/> when disposed.
     /// </summary>
+    [DynamicDependency(nameof(InvokeSpeechRecognitionResult), typeof(SpeechRecognition))]
+    [DynamicDependency(nameof(InvokeSpeechRecognitionError), typeof(SpeechRecognition))]
+    [DynamicDependency(nameof(InvokeSpeechRecognitionEnd), typeof(SpeechRecognition))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SpeechRecognitionResult))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SpeechRecognitionOptions))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(SpeechRecognitionListenersManager))]
     public async Task<IAsyncDisposable> Start(SpeechRecognitionOptions options,
                                               Action<SpeechRecognitionResult>? onResult = null,
                                               Action<string>? onError = null,
@@ -28,28 +67,52 @@ public class SpeechRecognition(IJSRuntime js)
         if (onResult is null && onError is null && onEnd is null)
             throw new ArgumentException("At least one of onResult/onError/onEnd must be provided.");
 
-        var listener = new SpeechRecognitionListenersManager.Listener
-        {
-            OnResult = onResult,
-            OnError = onError,
-            OnEnd = onEnd
-        };
-        var id = SpeechRecognitionListenersManager.Add(listener);
+        var id = Guid.NewGuid();
+        _listeners.TryAdd(id, new Listener { OnResult = onResult, OnError = onError, OnEnd = onEnd });
 
         await js.InvokeVoid("BitButil.speechRecognition.start",
             id,
             options ?? new SpeechRecognitionOptions(),
-            SpeechRecognitionListenersManager.ResultMethodName,
-            SpeechRecognitionListenersManager.ErrorMethodName,
-            SpeechRecognitionListenersManager.EndMethodName);
+            DotNetRef);
 
-        return new RecognitionHandle(js, id);
+        return new RecognitionHandle(this, js, id);
     }
 
     /// <summary>Stops the matching recognition session early. Equivalent to disposing the handle.</summary>
-    public ValueTask Stop(Guid id) => js.InvokeVoid("BitButil.speechRecognition.stop", id);
+    public ValueTask Stop(Guid id)
+    {
+        _listeners.TryRemove(id, out _);
+        return js.InvokeVoid("BitButil.speechRecognition.stop", id);
+    }
 
-    private sealed class RecognitionHandle(IJSRuntime js, Guid id) : IAsyncDisposable
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            var ids = _listeners.Keys.ToArray();
+            _listeners.Clear();
+            foreach (var id in ids)
+            {
+                await js.InvokeVoid("BitButil.speechRecognition.stop", id);
+            }
+        }
+        catch (JSDisconnectedException) { }
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
+        GC.SuppressFinalize(this);
+    }
+
+    private class Listener
+    {
+        public Action<SpeechRecognitionResult>? OnResult { get; set; }
+        public Action<string>? OnError { get; set; }
+        public Action? OnEnd { get; set; }
+    }
+
+    private sealed class RecognitionHandle(SpeechRecognition owner, IJSRuntime js, Guid id) : IAsyncDisposable
     {
         private bool _disposed;
 
@@ -57,7 +120,7 @@ public class SpeechRecognition(IJSRuntime js)
         {
             if (_disposed) return;
             _disposed = true;
-            SpeechRecognitionListenersManager.Remove(id);
+            owner._listeners.TryRemove(id, out _);
             try { await js.InvokeVoid("BitButil.speechRecognition.stop", id); }
             catch (JSDisconnectedException) { }
         }

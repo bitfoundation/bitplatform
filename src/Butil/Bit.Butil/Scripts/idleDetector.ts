@@ -11,14 +11,14 @@ var BitButil = BitButil || {};
             try { return await ID.requestPermission(); }
             catch { return 'denied'; }
         },
-        async start(methodName: string, listenerId: string, threshold: number) {
+        async start(dotNetRef: any, listenerId: string, threshold: number) {
             const ID: any = (window as any).IdleDetector;
             if (!ID) return;
             const controller = new AbortController();
             const detector = new ID();
 
             const fire = () => {
-                DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, {
+                dotNetRef.invokeMethodAsync('InvokeIdleDetector', listenerId, {
                     userState: detector.userState ?? 'active',
                     screenState: detector.screenState ?? 'unlocked'
                 });
