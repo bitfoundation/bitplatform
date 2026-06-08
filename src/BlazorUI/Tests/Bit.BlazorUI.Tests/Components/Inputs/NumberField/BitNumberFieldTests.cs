@@ -495,6 +495,85 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod,
+         DataRow("۱۲۳", "۱۲۳"),   // Persian / Extended Arabic-Indic digits (U+06F0-U+06F9)
+         DataRow("١٢٣", "١٢٣")    // Arabic-Indic digits (U+0660-U+0669)
+    ]
+    public void BitNumberFieldShouldPreserveOriginalTextInDisplayWhenNormalizeDigitsEnabled(string userInput, string expectedDisplay)
+    {
+        // The bound .NET value is the normalized Latin number while the input keeps showing the
+        // exact characters the user typed, avoiding a jarring visible conversion of the digits.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = userInput });
+
+        Assert.AreEqual(123, component.Instance.Value);
+        Assert.AreEqual(expectedDisplay, component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldShowFormattedValueWhenNumberFormatIsSetWithNormalizeDigits()
+    {
+        // When NumberFormat is set the formatted string takes precedence over the preserved
+        // user-typed digits, so the input shows the formatted value rather than the raw input.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+            parameters.Add(p => p.NumberFormat, "000");
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = "۱۲۳" });
+
+        Assert.AreEqual(123, component.Instance.Value);
+        Assert.AreEqual("123", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldRevertDisplayToLatinAfterChangeValueWhenNormalizeDigitsEnabled()
+    {
+        // After spinning the value, the preserved user-typed digits are discarded and the regular
+        // (Latin) formatted value is shown again.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+            parameters.Add(p => p.Step, "1");
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = "۱۲۳" });
+
+        // Preconditions: the Persian digits are preserved in the display.
+        Assert.AreEqual("۱۲۳", component.Find("input").GetAttribute("value"));
+
+        // Increment via the up arrow key triggers ChangeValue, which clears the preserved text.
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.AreEqual(124, component.Instance.Value);
+        Assert.AreEqual("124", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod,
+         DataRow("۱٬۲۳۴", 1234),   // Persian digits with the Arabic thousands separator (U+066C)
+         DataRow("١٬٢٣٤", 1234)     // Arabic-Indic digits with the Arabic thousands separator
+    ]
+    public void BitNumberFieldShouldStripArabicThousandsSeparatorWhenNormalizeDigitsEnabled(string userInput, int expectedValue)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = userInput });
+
+        Assert.AreEqual(expectedValue, component.Instance.Value);
+    }
+
+    [TestMethod,
          DataRow("۱٬۲۳۴", 1234),   // Persian digits with a Persian thousands separator and stripping
          DataRow("1 000", 1000)     // Latin digits with a space group separator
     ]

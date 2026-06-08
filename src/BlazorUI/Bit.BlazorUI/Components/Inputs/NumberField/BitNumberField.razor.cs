@@ -228,6 +228,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// Normalizes non-Latin (e.g. Persian "۱۲۳" or Arabic "١٢٣") decimal digits to their Latin (0-9) equivalents before parsing.
     /// This is culture-agnostic and works for any Unicode decimal digit system.
+    /// The Arabic decimal separator (U+066B) is mapped to '.', and the Arabic thousands separator (U+066C) is stripped.
     /// </summary>
     [Parameter] public bool NormalizeDigits { get; set; }
 
@@ -443,7 +444,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // precision rounding. This avoids visibly converting the typed digits (culture-agnostic,
             // since it compares the numeric values rather than their formatted strings) while still
             // updating the bound .NET value to the normalized number.
-            if (digitsNormalized && EqualityComparer<TValue>.Default.Equals(parsedValue, result))
+            // When NumberFormat is set the formatted string takes precedence (e.g. on focus-out the
+            // field should show "123.00" rather than the raw typed digits), so the original text is
+            // only preserved when no further formatting will be applied.
+            if (digitsNormalized && NumberFormat is null && EqualityComparer<TValue>.Default.Equals(parsedValue, result))
             {
                 _displayValue = originalValue;
                 _displayValueSource = result;
@@ -792,19 +796,22 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         if (value.HasNoValue()) return value;
 
-        var chars = value!.ToCharArray();
+        var sb = new System.Text.StringBuilder(value!.Length);
         var changed = false;
 
-        for (var i = 0; i < chars.Length; i++)
+        foreach (var c in value!)
         {
-            var c = chars[i];
-            if (c is >= '0' and <= '9' or '.' or '-') continue;
+            if (c is >= '0' and <= '9' or '.' or '-')
+            {
+                sb.Append(c);
+                continue;
+            }
 
             // Any Unicode decimal digit (e.g. Persian U+06F0-U+06F9, Arabic-Indic U+0660-U+0669, etc.).
             var digit = CharUnicodeInfo.GetDecimalDigitValue(c);
             if (digit >= 0)
             {
-                chars[i] = (char)('0' + digit);
+                sb.Append((char)('0' + digit));
                 changed = true;
                 continue;
             }
@@ -812,12 +819,24 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // Decimal separator emitted by Persian/Arabic keyboard layouts.
             if (c is '٫') // U+066B ARABIC DECIMAL SEPARATOR
             {
-                chars[i] = '.';
+                sb.Append('.');
                 changed = true;
+                continue;
             }
+
+            // Thousands/group separator emitted by Persian/Arabic keyboard layouts. It carries no
+            // numeric meaning, so it's dropped (analogous to how CleanValue strips the Latin grouping
+            // separator) to avoid a silent parse failure on common real-world input like "۱٬۲۳۴".
+            if (c is '٬') // U+066C ARABIC THOUSANDS SEPARATOR
+            {
+                changed = true;
+                continue;
+            }
+
+            sb.Append(c);
         }
 
-        return changed ? new string(chars) : value;
+        return changed ? sb.ToString() : value;
     }
 
     private static string? CleanValue(string? value)
