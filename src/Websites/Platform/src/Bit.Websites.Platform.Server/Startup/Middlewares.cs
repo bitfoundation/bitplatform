@@ -96,7 +96,11 @@ public class Middlewares
             {
                 if (context.Request.Path.Value.Contains("not-found", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    context.Response.OnStarting(() =>
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        return Task.CompletedTask;
+                    });
                 }
             }
 

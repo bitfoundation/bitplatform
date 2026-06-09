@@ -50,9 +50,9 @@
   <Folder Name="/Brouter/">
     <Project Path="Brouter/Bit.Brouter/Bit.Brouter.csproj" />
   </Folder>
-  <Folder Name="/Brouter/Demo/">
-    <Project Path="Brouter/Demo/Bit.Brouter.Demo.Core/Bit.Brouter.Demo.Core.csproj" />
-    <Project Path="Brouter/Demo/Bit.Brouter.Demo.Web/Bit.Brouter.Demo.Web.csproj" />
+  <Folder Name="/Brouter/InteralTests/Demo/">
+    <Project Path="Brouter/InteralTests/Demo/Bit.Brouter.Demo.Core/Bit.Brouter.Demo.Core.csproj" />
+    <Project Path="Brouter/InteralTests/Demo/Bit.Brouter.Demo.Web/Bit.Brouter.Demo.Web.csproj" />
   </Folder>
   <Folder Name="/Brouter/Tests/">
     <Project Path="Brouter/Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />

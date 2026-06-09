@@ -127,7 +127,7 @@ private int onIncrementCounter;
 private int onDecrementCounter;
 private int onChangeCounter;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <EditForm Model=""@validationModel"">
     <DataAnnotationsValidator />
 
@@ -136,7 +136,7 @@ private int onChangeCounter;";
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 public class BitNumberFieldValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
@@ -146,7 +146,7 @@ public class BitNumberFieldValidationModel
 
 private BitNumberFieldValidationModel validationModel = new();";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <div>Component Icon (FontAwesome):</div>
@@ -171,7 +171,7 @@ private BitNumberFieldValidationModel validationModel = new();";
                 IncrementIcon=""@BitIconInfo.Bi(""plus-circle-fill"")""
                 DecrementIcon=""@BitIconInfo.Bi(""dash-circle-fill"")"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -267,7 +267,7 @@ private BitNumberFieldValidationModel validationModel = new();";
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(classesValue is null ? string.Empty : "" custom-label-top"")}"" })"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <CascadingValue Value=""BitDir.Rtl"">
 
     <BitNumberField Label=""برچسب در بالا"" TValue=""int"" ShowButtons />
@@ -279,4 +279,41 @@ private BitNumberFieldValidationModel validationModel = new();";
     <BitNumberField Label=""الزامی"" TValue=""int"" Required />
 
 </CascadingValue>";
+
+    private readonly string example13RazorCode = @"
+<BitNumberField Label=""Without NormalizeDigits"" @bind-Value=""normalizeOffValue"" Placeholder=""۱۲۳"" />
+<div>Value: @normalizeOffValue</div>
+
+<BitNumberField Label=""With NormalizeDigits (۱۲۳)"" @bind-Value=""normalizeOnValue"" NormalizeDigits Placeholder=""۱۲۳"" />
+<div>Value: @normalizeOnValue</div>
+
+<BitNumberField Label=""Fractioned NormalizeDigits (۱۲٫۵)"" @bind-Value=""normalizeDecimalValue"" NormalizeDigits Placeholder=""۱۲٫۵"" Precision=""2"" />
+<div>Value: @normalizeDecimalValue</div>
+
+
+<BitNumberField Label=""Custom DigitsNormalizer (۱٬۲۳۴)"" @bind-Value=""customNormalizerValue"" DigitsNormalizer=""CustomDigitsNormalizer"" Placeholder=""۱٬۲۳۴"" />
+<div>Value: @customNormalizerValue</div>";
+    private readonly string example13CsharpCode = @"
+private int? normalizeOffValue;
+private int? normalizeOnValue;
+private double? normalizeDecimalValue;
+private int? customNormalizerValue;
+
+// Custom normalizer: maps any Unicode decimal digit to its Latin equivalent
+// and strips spaces and thousand separators (Latin ',' and Persian '٬').
+private string? CustomDigitsNormalizer(string? value)
+{
+    if (string.IsNullOrEmpty(value)) return value;
+
+    var sb = new StringBuilder(value.Length);
+    foreach (var c in value)
+    {
+        if (c is ' ' or ',' or '٬') continue;
+
+        var digit = CharUnicodeInfo.GetDecimalDigitValue(c);
+        sb.Append(digit >= 0 ? (char)('0' + digit) : c);
+    }
+
+    return sb.ToString();
+}";
 }

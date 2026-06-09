@@ -1,0 +1,8 @@
+@page "/"
+@page "/{*path}"
+
+<AppRouter />
+
+@code {
+    [Parameter] public string? Path { get; set; }
+}

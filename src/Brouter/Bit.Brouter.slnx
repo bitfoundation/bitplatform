@@ -6,12 +6,19 @@
     <File Path="../global.json" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/Demo/">
-    <Project Path="Demo/Bit.Brouter.Demo.Core/Bit.Brouter.Demo.Core.csproj" />
-    <Project Path="Demo/Bit.Brouter.Demo.Maui/Bit.Brouter.Demo.Maui.csproj">
-      <Deploy />
-    </Project>
-    <Project Path="Demo/Bit.Brouter.Demo.Web/Bit.Brouter.Demo.Web.csproj" />
+  <Folder Name="/InteralDemos/">
+    <Project Path="InteralDemos/Core/Bit.Brouter.Demos.Core.csproj" />
+  </Folder>
+  <Folder Name="/InteralDemos/Auto/">
+    <Project Path="InteralDemos/Auto/Bit.Brouter.Demos.Auto.Client/Bit.Brouter.Demos.Auto.Client.csproj" />
+    <Project Path="InteralDemos/Auto/Bit.Brouter.Demos.Auto/Bit.Brouter.Demos.Auto.csproj" />
+  </Folder>
+  <Folder Name="/InteralDemos/Server/">
+    <Project Path="InteralDemos/Server/Bit.Brouter.Demos.Server.csproj" />
+  </Folder>
+  <Folder Name="/InteralDemos/Wasm/">
+    <Project Path="InteralDemos/Wasm/Bit.Brouter.Demos.Wasm.Client/Bit.Brouter.Demos.Wasm.Client.csproj" />
+    <Project Path="InteralDemos/Wasm/Bit.Brouter.Demos.Wasm/Bit.Brouter.Demos.Wasm.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />

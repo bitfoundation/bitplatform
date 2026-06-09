@@ -154,6 +154,7 @@ public partial class MainLayout
             Text = "Extras",
             ChildItems =
             [
+                new() { Text = "AccordionList", Url = "/components/accordionlist", Description = "Expander, Accordion" },
                 new() { Text = "AppShell", Url = "/components/appshell" },
                 new() { Text = "Chart", Url = "/components/chart" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
