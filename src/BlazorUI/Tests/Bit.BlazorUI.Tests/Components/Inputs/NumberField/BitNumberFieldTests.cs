@@ -740,6 +740,146 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(10, component.Instance.Value);
     }
 
+    [TestMethod]
+    public void BitNumberFieldShouldShowCanonicalValueWhenCustomNormalizerIsNotDigitEquivalent()
+    {
+        // Repro for the value/display divergence: a custom normalizer that maps the typed text to a
+        // different number (here a constant "42") must NOT leave the original "۹۹" visible while
+        // binding 42. The display has to reflect the bound value.
+        static string? normalizer(string? value) => "42";
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DigitsNormalizer, normalizer);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = "۹۹" });
+
+        Assert.AreEqual(42, component.Instance.Value);
+        Assert.AreEqual("42", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldShowCanonicalValueWhenNormalizerStripsNonDigitContent()
+    {
+        // A normalizer that strips units/symbols (here non-digit characters) is not a pure
+        // digit-equivalent transformation, so the canonical value must be displayed, not the raw text.
+        static string? normalizer(string? value)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+
+            var sb = new System.Text.StringBuilder(value.Length);
+            foreach (var c in value)
+            {
+                if (char.IsDigit(c)) sb.Append(c);
+            }
+            return sb.ToString();
+        }
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DigitsNormalizer, normalizer);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = "12kg" });
+
+        Assert.AreEqual(12, component.Instance.Value);
+        Assert.AreEqual("12", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldAriaValueTextShouldMatchPreservedDisplayWhenNormalizeDigitsEnabled()
+    {
+        // When the typed non-Latin digits are preserved in the input, the aria-valuetext must match
+        // the visible text so a screen reader announces what the user sees (not the Latin form).
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = "۱۲۳" });
+
+        var refreshed = component.Find("input");
+        Assert.AreEqual("۱۲۳", refreshed.GetAttribute("value"));
+        Assert.AreEqual("۱۲۳", refreshed.GetAttribute("aria-valuetext"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNotClearNullableValueWhenInputNormalizesToEmpty()
+    {
+        // A lone Arabic thousands separator (U+066C) normalizes to an empty string. For a nullable
+        // type this must be treated as an invalid (unparsable) entry rather than silently clearing
+        // the existing value.
+        var boundValue = (int?)5;
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+            parameters.Add(p => p.Value, boundValue);
+            parameters.Add(p => p.ValueChanged, (int? v) => boundValue = v);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = "٬" });
+
+        Assert.AreEqual(5, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldDerivePrecisionFromNormalizedStep()
+    {
+        // Step "۰٫۱" normalizes to 0.1 -> precision of 1 decimal place. If precision were not
+        // recomputed after normalization it would stay 0 and round 1.23 to 1 instead of 1.2.
+        var component = RenderComponent<BitNumberField<double>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+            parameters.Add(p => p.Step, "۰٫۱");
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = "۱٫۲۳" });
+
+        Assert.AreEqual(1.2, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldResetNormalizedMinWhenNormalizationDisabled()
+    {
+        // While normalization is enabled, Min "۱۰" parses to 10 and clamps 5 up to 10.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+            parameters.Add(p => p.Min, "۱۰");
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "5" });
+        Assert.AreEqual(10, component.Instance.Value);
+
+        // Disabling normalization (with the same non-Latin Min) must drop the previously parsed Min,
+        // since "۱۰" no longer parses, falling back to the type minimum (no clamping).
+        component.SetParametersAndRender(parameters => parameters.Add(p => p.NormalizeDigits, false));
+        component.Find("input").Change(new ChangeEventArgs { Value = "5" });
+        Assert.AreEqual(5, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNormalizeSupplementaryPlaneDigits()
+    {
+        // Mathematical Bold Digits (U+1D7CE..U+1D7D7) live in the Unicode supplementary plane and are
+        // encoded as surrogate pairs, so they exercise the surrogate-aware normalization path.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = "\U0001D7CF\U0001D7D0\U0001D7D1" }); // bold 1, 2, 3
+
+        Assert.AreEqual(123, component.Instance.Value);
+    }
+
     [TestMethod,
          DataRow(null),
          DataRow("AriaDescription")

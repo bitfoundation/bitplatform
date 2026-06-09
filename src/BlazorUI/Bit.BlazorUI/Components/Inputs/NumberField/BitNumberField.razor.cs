@@ -15,6 +15,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private string? _displayValue;
     private TValue? _displayValueSource;
     private bool _keepDisplayValueOnNextChange;
+    private bool _lastNormalizationActive;
     private TValue _min = default!;
     private TValue _max = default!;
     private TValue _step = default!;
@@ -117,6 +118,18 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Initial value of the number field.
     /// </summary>
     [Parameter] public TValue? DefaultValue { get; set; }
+
+    /// <summary>
+    /// A custom function to normalize the raw input string before it gets parsed into the value.
+    /// When provided, it takes precedence over <see cref="NormalizeDigits"/> and lets the developer plug in their own
+    /// culture-specific or domain-specific transformation (e.g. mapping characters from a particular keyboard layout).
+    /// Note that, like <see cref="NormalizeDigits"/>, this function is also applied to the <see cref="Min"/>, <see cref="Max"/>
+    /// and <see cref="Step"/> parameters (and to the precision derived from <see cref="Step"/>), not only to user input, so it
+    /// affects range/step semantics as well. The original typed text is only kept visible in the input when it is digit-equivalent
+    /// to the resulting value (i.e. a pure non-Latin rendering of the same number); transformations that strip units, symbols or
+    /// aliases will display the canonical value instead.
+    /// </summary>
+    [Parameter] public Func<string?, string?>? DigitsNormalizer { get; set; }
 
     /// <summary>
     /// If true, the input is hidden.
@@ -228,17 +241,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>
     /// Normalizes non-Latin (e.g. Persian "۱۲۳" or Arabic "١٢٣") decimal digits to their Latin (0-9) equivalents before parsing.
-    /// This is culture-agnostic and works for any Unicode decimal digit system.
-    /// The Arabic decimal separator (U+066B) is mapped to '.', and the Arabic thousands separator (U+066C) is stripped.
+    /// This is culture-agnostic and works for any Unicode decimal digit system, including digits in the supplementary planes
+    /// (surrogate pairs). The Arabic decimal separator (U+066B) is mapped to '.', and the Arabic thousands separator (U+066C) is stripped.
+    /// The same normalization is also applied to the <see cref="Min"/>, <see cref="Max"/> and <see cref="Step"/> parameters so that
+    /// non-Latin constraints (e.g. <c>Min="۱۰"</c>) are parsed consistently with user input.
     /// </summary>
     [Parameter] public bool NormalizeDigits { get; set; }
-
-    /// <summary>
-    /// A custom function to normalize the raw input string before it gets parsed into the value.
-    /// When provided, it takes precedence over <see cref="NormalizeDigits"/> and lets the developer plug in their own
-    /// culture-specific or domain-specific transformation (e.g. mapping characters from a particular keyboard layout).
-    /// </summary>
-    [Parameter] public Func<string?, string?>? DigitsNormalizer { get; set; }
 
     /// <summary>
     /// The format of the number in the number field.
@@ -408,17 +416,32 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     protected override void OnParametersSet()
     {
-        // The Min/Max/Step CallOnSet handlers run during SetParametersAsync and may execute before the
-        // NormalizeDigits/DigitsNormalizer parameters have been assigned (parameter assignment order is
-        // not guaranteed). Re-run them here, after all parameters are set, so non-Latin numeric
-        // parameters are normalized consistently with user input regardless of attribute order.
-        if (NormalizeDigits || DigitsNormalizer is not null)
+        // Whether digit normalization (built-in NormalizeDigits or a custom DigitsNormalizer) is
+        // currently active. The Min/Max/Step string parameters are parsed through this normalization,
+        // so their cached numeric values (and the derived precision) must be recomputed whenever the
+        // normalization is toggled. Re-running only on a state change - rather than on every render -
+        // avoids repeatedly invoking a potentially expensive or side-effectful custom DigitsNormalizer
+        // delegate, while still covering:
+        //   * the first render, where the Min/Max/Step CallOnSet handlers may have executed during
+        //     SetParametersAsync before NormalizeDigits/DigitsNormalizer were assigned (parameter
+        //     assignment order is not guaranteed), and
+        //   * toggling normalization off, where a previously parsed non-Latin Min/Max/Step no longer
+        //     parses and must fall back to the type defaults instead of keeping its stale value.
+        var normalizationActive = NormalizeDigits || DigitsNormalizer is not null;
+        if (normalizationActive != _lastNormalizationActive)
         {
+            _lastNormalizationActive = normalizationActive;
+
             // Only re-run for parameters that were actually provided. Re-running a setter for an
             // unset parameter would reset it to its default (and is unnecessary work).
             if (Min is not null) OnSetMin();
             if (Max is not null) OnSetMax();
             if (Step is not null) OnSetStep();
+
+            // Precision can be derived from Step (CalculatePrecision), so it must be recomputed using
+            // the now-normalized Step; otherwise a non-Latin decimal Step (e.g. "۰٫۰۱") could leave
+            // the precision stale and round fractional values incorrectly.
+            OnSetPrecision();
         }
 
         base.OnParametersSet();
@@ -451,6 +474,18 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             value = CleanValue(value);
         }
 
+        // The input collapsed to an empty string purely because digit normalization stripped its
+        // contents (e.g. an Arabic thousands separator "٬" typed on its own, or a custom normalizer
+        // removing units/symbols). For nullable types BindConverter would happily turn "" into null,
+        // silently clearing the value. Since the user did type something non-empty, surface a parse
+        // error instead so the value is not silently lost.
+        if (digitsNormalized && value.HasNoValue() && originalValue.HasValue())
+        {
+            result = default;
+            parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+            return false;
+        }
+
         if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
         {
             var parsedValue = result;
@@ -467,7 +502,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // When NumberFormat is set the formatted string takes precedence (e.g. on focus-out the
             // field should show "123.00" rather than the raw typed digits), so the original text is
             // only preserved when no further formatting will be applied.
-            if (digitsNormalized && NumberFormat is null && EqualityComparer<TValue>.Default.Equals(parsedValue, result))
+            // Crucially, the original text is only preserved when it is digit-equivalent to the
+            // canonical value (see IsDisplayDigitEquivalent). This prevents an arbitrary custom
+            // DigitsNormalizer (or one that strips units/symbols/aliases) from showing one thing while
+            // a different number is bound - the visible text and the bound value must represent the
+            // same number.
+            if (digitsNormalized
+                && NumberFormat is null
+                && EqualityComparer<TValue>.Default.Equals(parsedValue, result)
+                && IsDisplayDigitEquivalent(originalValue, result))
             {
                 _displayValue = originalValue;
                 _displayValueSource = result;
@@ -502,6 +545,19 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
 
         return CurrentValueAsString;
+    }
+
+    /// <summary>
+    /// Determines whether <paramref name="originalValue"/> (the raw text the user typed) is merely a
+    /// non-Latin-digit rendering of <paramref name="value"/> (the canonical bound number). It is used
+    /// to decide whether the original text is safe to keep visible: only when mapping its Unicode
+    /// decimal digits to Latin reproduces the canonical formatted value exactly. This guards against a
+    /// custom <see cref="DigitsNormalizer"/> (or any transformation that strips units, symbols, spaces
+    /// or aliases) leaving pre-normalized text visible while a different number is bound.
+    /// </summary>
+    private bool IsDisplayDigitEquivalent(string? originalValue, TValue value)
+    {
+        return string.Equals(NormalizeUnicodeDigits(originalValue), FormatValueAsString(value), StringComparison.Ordinal);
     }
 
     protected override string? FormatValueAsString(TValue? value)
@@ -825,15 +881,39 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         var sb = new System.Text.StringBuilder(value!.Length);
         var changed = false;
 
-        foreach (var c in value!)
+        for (var i = 0; i < value!.Length; i++)
         {
+            var c = value[i];
+
             if (c is >= '0' and <= '9' or '.' or '-')
             {
                 sb.Append(c);
                 continue;
             }
 
-            // Any Unicode decimal digit (e.g. Persian U+06F0-U+06F9, Arabic-Indic U+0660-U+0669, etc.).
+            // Decimal digits in the Unicode supplementary planes (e.g. U+1D7CE..U+1D7FF Mathematical
+            // digits) are represented by surrogate pairs, so they must be handled before the single
+            // 'char' lookup below which cannot see an astral code point. GetDecimalDigitValue(string,
+            // int) understands the surrogate pair when the index points at the high surrogate.
+            if (char.IsHighSurrogate(c) && i + 1 < value.Length && char.IsLowSurrogate(value[i + 1]))
+            {
+                var surrogateDigit = CharUnicodeInfo.GetDecimalDigitValue(value, i);
+                if (surrogateDigit >= 0)
+                {
+                    sb.Append((char)('0' + surrogateDigit));
+                    changed = true;
+                }
+                else
+                {
+                    sb.Append(c);
+                    sb.Append(value[i + 1]);
+                }
+
+                i++; // the low surrogate has been consumed as part of this code point.
+                continue;
+            }
+
+            // Any Unicode decimal digit in the BMP (e.g. Persian U+06F0-U+06F9, Arabic-Indic U+0660-U+0669, etc.).
             var digit = CharUnicodeInfo.GetDecimalDigitValue(c);
             if (digit >= 0)
             {

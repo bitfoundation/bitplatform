@@ -89,6 +89,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "DigitsNormalizer",
+            Type = "Func<string?, string?>?",
+            DefaultValue = "null",
+            Description = "A custom function to normalize the raw input string before it gets parsed into the value. When provided, it takes precedence over NormalizeDigits and lets the developer plug in their own culture-specific or domain-specific transformation.",
+        },
+        new()
+        {
             Name = "HideInput",
             Type = "bool",
             DefaultValue = "false",
@@ -217,13 +224,6 @@ public partial class BitNumberFieldDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Normalizes non-Latin (e.g. Persian \"۱۲۳\" or Arabic \"١٢٣\") decimal digits to their Latin (0-9) equivalents before parsing. This is culture-agnostic and works for any Unicode decimal digit system.",
-        },
-        new()
-        {
-            Name = "DigitsNormalizer",
-            Type = "Func<string?, string?>?",
-            DefaultValue = "null",
-            Description = "A custom function to normalize the raw input string before it gets parsed into the value. When provided, it takes precedence over NormalizeDigits and lets the developer plug in their own culture-specific or domain-specific transformation.",
         },
         new()
         {
