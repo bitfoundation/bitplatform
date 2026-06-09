@@ -172,6 +172,121 @@ public class IJSRuntimeFastExtensionsTests
     }
 
 
+    [TestMethod]
+    public void FastInvokeVoid_WhenServerRuntimeNotInitialized_ShouldNotInvoke()
+    {
+        // Blazor Server: an uninitialized circuit (RemoteJSRuntime.IsInitialized == false) is invalid,
+        // so the call must be skipped rather than attempted against a disconnected circuit.
+        var jsRuntime = new RemoteJSRuntime { IsInitialized = false };
+
+        var task = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff", "arg1");
+
+        Assert.IsTrue(task.IsCompleted);
+        Assert.IsFalse(task.IsFaulted);
+        Assert.AreEqual(0, jsRuntime.AsyncInvocations.Count);
+    }
+
+    [TestMethod]
+    public void FastInvokeVoid_WhenServerRuntimeInitialized_ShouldFallBackToAsync()
+    {
+        // An initialized Blazor Server circuit is a valid, non-in-process runtime, so the call must take
+        // the regular asynchronous path.
+        var jsRuntime = new RemoteJSRuntime { IsInitialized = true };
+
+        _ = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff", "arg1");
+
+        Assert.AreEqual(1, jsRuntime.AsyncInvocations.Count);
+        Assert.AreEqual("BitBlazorUI.Test.doStuff", jsRuntime.AsyncInvocations[0].Identifier);
+    }
+
+    [TestMethod]
+    public void FastInvoke_WhenServerRuntimeInitialized_ShouldFallBackToAsync()
+    {
+        var jsRuntime = new RemoteJSRuntime { IsInitialized = true };
+
+        _ = jsRuntime.FastInvoke<bool>("BitBlazorUI.Test.getStuff", "arg1");
+
+        Assert.AreEqual(1, jsRuntime.AsyncInvocations.Count);
+        Assert.AreEqual("BitBlazorUI.Test.getStuff", jsRuntime.AsyncInvocations[0].Identifier);
+    }
+
+    [TestMethod]
+    public void FastInvokeVoid_WhenHybridRuntimeDisconnected_ShouldNotInvoke()
+    {
+        // Blazor Hybrid: a disposed/disconnected WebView has a null _ipcSender, which marks the runtime
+        // invalid, so the call must be skipped.
+        var jsRuntime = new WebViewJSRuntime();
+        jsRuntime.SetConnected(false);
+
+        var task = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff", "arg1");
+
+        Assert.IsTrue(task.IsCompleted);
+        Assert.IsFalse(task.IsFaulted);
+        Assert.AreEqual(0, jsRuntime.AsyncInvocations.Count);
+    }
+
+    [TestMethod]
+    public void FastInvokeVoid_WhenHybridRuntimeConnected_ShouldFallBackToAsync()
+    {
+        var jsRuntime = new WebViewJSRuntime();
+        jsRuntime.SetConnected(true);
+
+        _ = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff", "arg1");
+
+        Assert.AreEqual(1, jsRuntime.AsyncInvocations.Count);
+        Assert.AreEqual("BitBlazorUI.Test.doStuff", jsRuntime.AsyncInvocations[0].Identifier);
+    }
+
+    [TestMethod]
+    public async Task FastInvokeVoid_WithTimeout_WhenInProcessRuntime_ShouldInvokeSynchronously()
+    {
+        var jsRuntime = new FakeInProcessJsRuntime();
+
+        await jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff", TimeSpan.FromSeconds(30), "arg1");
+
+        // The timeout overload still routes to the synchronous in-process path for a valid WASM runtime.
+        Assert.AreEqual(1, jsRuntime.SyncInvocations.Count);
+        Assert.AreEqual("BitBlazorUI.Test.doStuff", jsRuntime.SyncInvocations[0].Identifier);
+        Assert.AreEqual(0, jsRuntime.AsyncInvocations.Count);
+    }
+
+    [TestMethod]
+    public async Task FastInvoke_WithTimeout_WhenInProcessRuntime_ShouldReturnSynchronousResult()
+    {
+        var jsRuntime = new FakeInProcessJsRuntime { ResultFactory = _ => true };
+
+        var result = await jsRuntime.FastInvoke<bool>("BitBlazorUI.Test.getStuff", TimeSpan.FromSeconds(30), "x");
+
+        Assert.IsTrue(result);
+        Assert.AreEqual(1, jsRuntime.SyncInvocations.Count);
+        Assert.AreEqual(0, jsRuntime.AsyncInvocations.Count);
+    }
+
+    [TestMethod]
+    public async Task FastInvokeVoid_WithInfiniteTimeout_WhenInProcessRuntime_ShouldInvokeSynchronously()
+    {
+        var jsRuntime = new FakeInProcessJsRuntime();
+
+        // Timeout.InfiniteTimeSpan means "no CancellationTokenSource"; the call must still run synchronously.
+        await jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff", Timeout.InfiniteTimeSpan, "arg1");
+
+        Assert.AreEqual(1, jsRuntime.SyncInvocations.Count);
+        Assert.AreEqual(0, jsRuntime.AsyncInvocations.Count);
+    }
+
+    [TestMethod]
+    public void FastInvokeVoid_WithTimeout_WhenServerRuntimeNotInitialized_ShouldNotInvoke()
+    {
+        var jsRuntime = new RemoteJSRuntime { IsInitialized = false };
+
+        var task = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff", TimeSpan.FromSeconds(30), "arg1");
+
+        Assert.IsTrue(task.IsCompleted);
+        Assert.IsFalse(task.IsFaulted);
+        Assert.AreEqual(0, jsRuntime.AsyncInvocations.Count);
+    }
+
+
     private record Invocation(string Identifier, object?[]? Args);
 
     /// <summary>
@@ -243,6 +358,56 @@ public class IJSRuntimeFastExtensionsTests
             SyncInvocations.Add(new Invocation(identifier, args));
             return ResultFactory is null ? default! : (TResult)ResultFactory(identifier)!;
         }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+        {
+            AsyncInvocations.Add(new Invocation(identifier, args));
+            return new ValueTask<TValue>(default(TValue)!);
+        }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            AsyncInvocations.Add(new Invocation(identifier, args));
+            return new ValueTask<TValue>(default(TValue)!);
+        }
+    }
+
+    /// <summary>
+    /// A fake whose type name matches Blazor Server's <c>RemoteJSRuntime</c>. <c>IsRuntimeInvalid</c>
+    /// reflects its public <c>IsInitialized</c> property: <see langword="false"/> models a circuit that
+    /// is not yet connected (invalid), <see langword="true"/> a live circuit (valid, async path).
+    /// </summary>
+    private sealed class RemoteJSRuntime : IJSRuntime
+    {
+        public List<Invocation> AsyncInvocations { get; } = [];
+        public bool IsInitialized { get; set; }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+        {
+            AsyncInvocations.Add(new Invocation(identifier, args));
+            return new ValueTask<TValue>(default(TValue)!);
+        }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            AsyncInvocations.Add(new Invocation(identifier, args));
+            return new ValueTask<TValue>(default(TValue)!);
+        }
+    }
+
+    /// <summary>
+    /// A fake whose type name matches Blazor Hybrid's <c>WebViewJSRuntime</c>. <c>IsRuntimeInvalid</c>
+    /// reflects its private <c>_ipcSender</c> field: a null sender models a disposed/disconnected WebView
+    /// (invalid), a non-null sender a live one (valid, async path).
+    /// </summary>
+    private sealed class WebViewJSRuntime : IJSRuntime
+    {
+        public List<Invocation> AsyncInvocations { get; } = [];
+
+        // Name must match the framework field that IsRuntimeInvalid reflects.
+        private object? _ipcSender;
+
+        public void SetConnected(bool connected) => _ipcSender = connected ? new object() : null;
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {

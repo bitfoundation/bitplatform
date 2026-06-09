@@ -34,13 +34,25 @@ namespace BitBlazorUI {
             const existingPromise = Extras._scriptPromises[url];
             if (existingPromise !== undefined) return existingPromise;
 
-            // A tag we didn't add is assumed to be host-provided and already executed by the time any
-            // component runs (it is part of the initial document), so it is treated as ready.
-            const alreadyOnPage = Array.from(document.scripts).some(s => s.src.includes(url));
-            if (alreadyOnPage) {
-                const resolved = Promise.resolve();
-                Extras._scriptPromises[url] = resolved;
-                return resolved;
+            // A tag we didn't add is host-provided. If the document has finished loading, any non-async
+            // script has already executed, so it is safe to treat as ready. Otherwise the tag may still be
+            // loading (e.g. a deferred/async CDN script the host inserted), so await its load/error event
+            // instead of assuming readiness from the mere presence of the <script> tag. Waiting is gated on
+            // document.readyState so we never block on a 'load' event that has already fired.
+            const existingTag = Array.from(document.scripts).find(s => s.src.includes(url));
+            if (existingTag) {
+                const ready = document.readyState === 'complete'
+                    ? Promise.resolve()
+                    : new Promise<void>((res) => {
+                        existingTag.addEventListener('load', () => res(), { once: true });
+                        // A failed host script shouldn't hang every awaiting caller; resolve and let the
+                        // missing global surface as the usual "not a function" error at the call site.
+                        existingTag.addEventListener('error', () => res(), { once: true });
+                        // Final backstop: the window load event fires once all initial resources settle.
+                        window.addEventListener('load', () => res(), { once: true });
+                    });
+                Extras._scriptPromises[url] = ready;
+                return ready;
             }
 
             const promise = new Promise<void>((res, rej) => {

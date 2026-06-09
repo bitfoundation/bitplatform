@@ -52,14 +52,18 @@
             }
         }
 
-        public static getBoundingClientRect(element: HTMLElement): Partial<DOMRect> {
-            if (!element) return {};
+        public static getBoundingClientRect(element: HTMLElement): DOMRect | null {
+            // Returns null (not {}) on any failure. The C# signature is BoundingClientRect?, and an empty
+            // object would deserialize into a non-null rect with all-zero dimensions, defeating the caller's
+            // null checks and letting components (Carousel, ColorPicker, CircularTimePicker, ...) proceed
+            // with bogus geometry. Null makes a JS-side failure indistinguishable from "no element".
+            if (!element || typeof element.getBoundingClientRect !== 'function') return null;
 
             try {
-                return element.getBoundingClientRect?.();
+                return element.getBoundingClientRect();
             } catch (e) {
                 console.error("BitBlazorUI.Utils.getBoundingClientRect:", e);
-                return {};
+                return null;
             }
         }
 

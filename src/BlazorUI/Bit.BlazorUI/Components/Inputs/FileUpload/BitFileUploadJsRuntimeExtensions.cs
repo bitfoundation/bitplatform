@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 internal static class BitFileUploadJsRuntimeExtensions
 {
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileInfo))]
-    internal static ValueTask<BitFileInfo[]> BitFileUploadSetup(this IJSRuntime jsRuntime,
+    internal static async ValueTask<BitFileInfo[]> BitFileUploadSetup(this IJSRuntime jsRuntime,
                                                                      string id,
                                                                      DotNetObjectReference<BitFileUpload>? dotnetObjectReference,
                                                                      ElementReference element,
@@ -13,7 +13,11 @@ internal static class BitFileUploadJsRuntimeExtensions
                                                                      string? uploadAddress,
                                                                      Dictionary<string, string>? uploadRequestHttpHeaders)
     {
-        return jsRuntime.FastInvoke<BitFileInfo[]>("BitBlazorUI.FileUpload.setup", id, dotnetObjectReference, element, append, uploadAddress, uploadRequestHttpHeaders);
+        // FastInvoke returns default (null) when the runtime can't service interop or a JSON error is
+        // swallowed on the in-process (WASM) path, so normalize to an empty array to keep callers
+        // (e.g. _files.AddRange(...)) from crashing with ArgumentNullException.
+        return await jsRuntime.FastInvoke<BitFileInfo[]>("BitBlazorUI.FileUpload.setup", id, dotnetObjectReference, element, append, uploadAddress, uploadRequestHttpHeaders)
+               ?? [];
     }
 
     internal static ValueTask BitFileUploadUpload(this IJSRuntime jsRuntime,
