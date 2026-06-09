@@ -27,6 +27,8 @@
         <button @onclick="HandleOnDropdownClick"
                 @ref="_dropdownButtonRef"
                 @onkeydown="HandleOnKeyDown"
+                @onfocusin="HandleOnInputFocusIn"
+                @onfocusout="HandleOnInputFocusOut"
                 type="button"
                 id="@_dropdownId"
                 role="combobox"
@@ -96,7 +98,7 @@
                    id="@_searchId"
                    autocomplete="off"
                    value="@_searchText"
-                   aria-label="Search countries"
+                   aria-label="@(SearchBoxAriaLabel ?? SearchBoxPlaceholder ?? "Search countries")"
                    class="bit-phi-srch"
                    placeholder="@(SearchBoxPlaceholder ?? "Search")" />
         </div>

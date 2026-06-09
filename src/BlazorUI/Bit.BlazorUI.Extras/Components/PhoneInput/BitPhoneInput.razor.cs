@@ -14,6 +14,8 @@ public partial class BitPhoneInput : BitInputBase<string?>
     private int _lastScrolledIndex = -1;
     private string? _searchText;
     private List<BitCountry> _viewItems = [];
+    private List<BitCountry> _allItems = [];
+    private ICollection<BitCountry>? _lastCountries;
     private string _labelId = string.Empty;
     private string _inputId = string.Empty;
     private string _searchId = string.Empty;
@@ -124,6 +126,12 @@ public partial class BitPhoneInput : BitInputBase<string?>
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// The aria-label of the search box of the country dropdown. Falls back to the search box
+    /// placeholder, then to a default English value, when not provided.
+    /// </summary>
+    [Parameter] public string? SearchBoxAriaLabel { get; set; }
+
+    /// <summary>
     /// The placeholder text of the search box of the country dropdown.
     /// </summary>
     [Parameter] public string? SearchBoxPlaceholder { get; set; }
@@ -137,10 +145,11 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
     /// <summary>
     /// The full phone number including the dialing code of the selected country in the form of "+[code][number]".
+    /// The dialing code is normalized to digits only (any hyphens are removed) so the result follows the E.164 format.
     /// </summary>
     public string? FullNumber => Country is null
                                     ? CurrentValue
-                                    : $"+{Country.Code}{CurrentValue}";
+                                    : $"+{Country.Code.Replace("-", string.Empty)}{CurrentValue}";
 
 
 
@@ -209,6 +218,21 @@ public partial class BitPhoneInput : BitInputBase<string?>
         base.OnInitialized();
     }
 
+    protected override void OnParametersSet()
+    {
+        // Materialize the country list only when the Countries reference actually changes.
+        // GetFilteredCountries() runs on every render while the callout is open, so without
+        // this cache the default BitCountry[] (BitCountries.All) would allocate a new list of
+        // ~240 items each cycle because the "as List<BitCountry>" cast always fails for arrays.
+        if (ReferenceEquals(_lastCountries, Countries) is false)
+        {
+            _lastCountries = Countries;
+            _allItems = Countries as List<BitCountry> ?? [.. Countries];
+        }
+
+        base.OnParametersSet();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -249,13 +273,13 @@ public partial class BitPhoneInput : BitInputBase<string?>
     {
         if (_searchText.HasNoValue())
         {
-            _viewItems = Countries as List<BitCountry> ?? [.. Countries];
+            _viewItems = _allItems;
             return _viewItems;
         }
 
         var text = _searchText!.Trim();
 
-        _viewItems = [.. Countries.Where(c => c.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
+        _viewItems = [.. _allItems.Where(c => c.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
                                               c.Code.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
                                               c.Iso2.Contains(text, StringComparison.InvariantCultureIgnoreCase) ||
                                               c.Iso3.Contains(text, StringComparison.InvariantCultureIgnoreCase))];
