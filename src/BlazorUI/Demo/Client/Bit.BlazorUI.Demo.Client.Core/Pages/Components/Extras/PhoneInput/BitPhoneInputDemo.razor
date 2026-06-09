@@ -98,7 +98,9 @@
             <BitPhoneInput DefaultCountry="BitCountries.Netherlands"
                            Placeholder="Enter your number"
                            Style="width: 300px;"
-                           Styles="@(new() { FieldGroup = "border-color: blueviolet;" })" />
+                           Class="custom-class"
+                           Styles="@(new() { FieldGroup = "border-color: blueviolet;" })"
+                           Classes="@(new() { Input = "custom-input" })" />
         </DemoExample>
 
         <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">

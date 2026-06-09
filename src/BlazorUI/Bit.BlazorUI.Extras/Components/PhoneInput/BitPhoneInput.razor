@@ -85,7 +85,7 @@
      role="listbox"
      style="@Styles?.Callout"
      class="bit-phi-cal @Classes?.Callout"
-     aria-labelledby="@_labelId">
+     aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)">
 
     @if (NoSearchBox is false)
     {

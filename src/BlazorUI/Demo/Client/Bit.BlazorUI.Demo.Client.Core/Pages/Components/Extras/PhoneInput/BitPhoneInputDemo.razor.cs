@@ -135,6 +135,13 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
+            Name = "SearchBoxAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The aria-label for the search box of the country dropdown.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitPhoneInputClassStyles?",
             DefaultValue = "null",
@@ -278,7 +285,9 @@ private BitCountry? changedCountry;";
 <BitPhoneInput DefaultCountry=""BitCountries.Netherlands""
                Placeholder=""Enter your number""
                Style=""width: 300px;""
-               Styles=""@(new() { FieldGroup = ""border-color: blueviolet;"" })"" />";
+               Class=""custom-class""
+               Styles=""@(new() { FieldGroup = ""border-color: blueviolet;"" })""
+               Classes=""@(new() { Input = ""custom-input"" })"" />";
     private readonly string example9CsharpCode = @"";
 
     private readonly string example10RazorCode = @"
