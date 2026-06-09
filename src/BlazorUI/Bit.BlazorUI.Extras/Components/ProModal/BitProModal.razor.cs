@@ -161,6 +161,11 @@ public partial class BitProModal : BitComponentBase
     public BitPosition? Position { get; set; }
 
     /// <summary>
+    /// Set the element reference for which the Modal disables its scroll if applicable.
+    /// </summary>
+    [Parameter] public ElementReference? ScrollerElement { get; set; }
+
+    /// <summary>
     /// Set the element selector for which the Modal disables its scroll if applicable.
     /// </summary>
     [Parameter] public string? ScrollerSelector { get; set; }
@@ -241,7 +246,9 @@ public partial class BitProModal : BitComponentBase
                 }
 
                 _offsetTop = 0;
+
                 await ToggleScroll(true);
+                
                 if (AbsolutePosition)
                 {
                     StyleBuilder.Reset();
@@ -258,6 +265,7 @@ public partial class BitProModal : BitComponentBase
                 _internIsOpen = false;
 
                 _ = _js.BitProModalRemoveDragDrop(_containerSelector, _dragElementSelector);
+
                 await ToggleScroll(false);
             }
         }
@@ -312,7 +320,14 @@ public partial class BitProModal : BitComponentBase
     {
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.BitProModalToggleOverflow(ScrollerSelector ?? "body", isOpen);
+        if (ScrollerElement.HasValue)
+        {
+            _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerElement.Value, isOpen);
+        }
+        else
+        {
+            _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector ?? "body", isOpen);
+        }
     }
 
 

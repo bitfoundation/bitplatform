@@ -1,11 +1,11 @@
 namespace BitBlazorUI {
-    export class Modal {
+    export class Dialog {
         private static _dragDropListeners: any = {};
 
         public static setupDragDrop(containerId: string, dragElementSelector: string) {
-            Modal.removeDragDrop(containerId, dragElementSelector);
+            Dialog.removeDragDrop(containerId, dragElementSelector);
             const listeners: any = {};
-            Modal._dragDropListeners[containerId] = listeners;
+            Dialog._dragDropListeners[containerId] = listeners;
 
             const element = document.getElementById(containerId)! as HTMLElement;
             const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
@@ -57,7 +57,7 @@ namespace BitBlazorUI {
         }
 
         public static removeDragDrop(id: string, dragElementSelector: string) {
-            const listeners = Modal._dragDropListeners[id];
+            const listeners = Dialog._dragDropListeners[id];
             if (!listeners) return;
 
             const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
@@ -76,7 +76,7 @@ namespace BitBlazorUI {
             delete listeners['pointerdown'];
             delete listeners['pointermove'];
             delete listeners['pointerup'];
-            delete Modal._dragDropListeners[id];
+            delete Dialog._dragDropListeners[id];
         }
     }
 }

@@ -64,11 +64,6 @@ public partial class BitModal : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
 
     /// <summary>
-    /// Set the element reference for which the Modal disables its scroll if applicable.
-    /// </summary>
-    [Parameter] public ElementReference? ScrollerElement { get; set; }
-
-    /// <summary>
     /// Custom CSS styles for different parts of the BitModal component.
     /// </summary>
     [Parameter] public BitModalClassStyles? Styles { get; set; }
@@ -117,8 +112,6 @@ public partial class BitModal : BitComponentBase
         if (_internalIsOpen == IsOpen) return;
 
         _internalIsOpen = IsOpen;
-
-        await ToggleScroll(IsOpen);
     }
 
 
@@ -137,13 +130,6 @@ public partial class BitModal : BitComponentBase
         return (ModalParameters.IsAlert ?? false) ? "alertdialog" : "dialog";
     }
 
-    private async Task ToggleScroll(bool isOpen)
-    {
-        if (ModalParameters.ScrollerElement.HasValue is false) return;
-
-        await _js.BitUtilsToggleOverflow(ModalParameters.ScrollerElement!.Value, isOpen);
-    }
-
     private void OnSetIsOpen()
     {
         if (IsOpen || IsRendered is false) return;
@@ -156,12 +142,6 @@ public partial class BitModal : BitComponentBase
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
-
-        try
-        {
-            await ToggleScroll(false);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
 
         await base.DisposeAsync(disposing);
     }

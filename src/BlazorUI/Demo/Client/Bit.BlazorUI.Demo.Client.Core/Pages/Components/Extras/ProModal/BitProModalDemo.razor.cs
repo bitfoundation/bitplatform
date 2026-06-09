@@ -1,7 +1,10 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.ProModal;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.ProModal;
 
 public partial class BitProModalDemo
 {
+    [CascadingParameter(Name = BitAppShell.Container)]
+    private ElementReference? appShellContainer { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -403,9 +406,20 @@ public partial class BitProModalDemo
 
     private readonly string example1RazorCode = @"
 <BitButton OnClick=""() => isBasicProModalOpen = true"">Open ProModal</BitButton>
+
 <BitProModal @bind-IsOpen=""isBasicProModalOpen"">
-    <div style=""padding:1rem; max-width:40rem"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    <div style=""max-width:40rem"">
+        In the beginning, there is silence a blank canvas yearning to be filled, a quiet space where creativity waits
+        to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite
+        possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the
+        vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be
+        shaped into meaning, and the emotions ready to resonate with every reader.
+        <br />
+        In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
+        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
+        idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
+        begins here, in this quiet moment where everything is possible.
     </div>
 </BitProModal>";
     private readonly string example1CsharpCode = @"
@@ -413,13 +427,18 @@ private bool isBasicProModalOpen;";
 
     private readonly string example2RazorCode = @"
 <BitButton OnClick=""() => isProModalWithHeaderTextOpen = true"">Open ProModal with HeaderText</BitButton>
-<BitProModal @bind-IsOpen=""isProModalWithHeaderTextOpen"" HeaderText=""BitProModal with HeaderText"">
-    <div style=""padding:1rem; max-width:40rem"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+<BitProModal @bind-IsOpen=""isProModalWithHeaderTextOpen"" 
+             HeaderText=""BitProModal with HeaderText"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis.
     </div>
 </BitProModal>
 
+
 <BitButton OnClick=""() => isProModalWithHeaderOpen = true"">Open ProModal with Header</BitButton>
+
 <BitProModal @bind-IsOpen=""isProModalWithHeaderOpen"">
     <Header>
         <div>
@@ -428,25 +447,30 @@ private bool isBasicProModalOpen;";
         </div>
     </Header>
     <Body>
-        <div style=""padding:1rem; max-width:40rem"">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        <div style=""max-width:40rem"">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis.
         </div>
     </Body>
 </BitProModal>
 
 
 <BitButton OnClick=""() => isProModalWithFooterTextOpen = true"">Open ProModal with FooterText</BitButton>
-<BitProModal @bind-IsOpen=""isProModalWithFooterTextOpen"" FooterText=""BitProModal with FooterText"">
-    <div style=""padding:1rem; max-width:40rem"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+<BitProModal @bind-IsOpen=""isProModalWithFooterTextOpen"" 
+             FooterText=""BitProModal with FooterText"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis.
     </div>
 </BitProModal>
 
 <BitButton OnClick=""() => isProModalWithFooterOpen = true"">Open ProModal with Footer</BitButton>
 <BitProModal @bind-IsOpen=""isProModalWithFooterOpen"">
     <Body>
-        <div style=""padding:1rem; max-width:40rem"">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        <div style=""max-width:40rem"">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis.
         </div>
     </Body>
     <Footer>
@@ -463,33 +487,80 @@ private bool isProModalWithFooterOpen;";
 
     private readonly string example3RazorCode = @"
 <BitButton OnClick=""() => bitProModalRef.Open()"">Open ProModal with ShowCloseButton</BitButton>
-<BitProModal @ref=""bitProModalRef"" HeaderText=""ShowCloseButton"" ShowCloseButton>
-    <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+
+<BitProModal @ref=""bitProModalRef"" 
+             ShowCloseButton
+             HeaderText=""ShowCloseButton"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
+    </div>
 </BitProModal>
+
+
 
 <BitButton OnClick=""() => isBlockingProModalOpen = true"">Open ProModal with Blocking</BitButton>
-<BitProModal @bind-IsOpen=""isBlockingProModalOpen"" HeaderText=""Blocking"" ShowCloseButton Blocking>
-    <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+<BitProModal @bind-IsOpen=""isBlockingProModalOpen""
+             Blocking
+             ShowCloseButton
+             HeaderText=""Blocking"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
+    </div>
 </BitProModal>
+
 
 <BitButton OnClick=""() => isModelessProModalOpen = !isModelessProModalOpen"">Toggle ProModal with Modeless</BitButton>
-<BitProModal @bind-IsOpen=""isModelessProModalOpen"" HeaderText=""Modeless"" ShowCloseButton Modeless>
-    <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+
+<BitProModal @bind-IsOpen=""isModelessProModalOpen""
+             Modeless
+             ShowCloseButton
+             HeaderText=""Modeless"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
+    </div>
 </BitProModal>
+
 
 <BitButton OnClick=""() => isModeFullProModalOpen = true"">Open ProModal with ModeFull</BitButton>
-<BitProModal @bind-IsOpen=""isModeFullProModalOpen"" HeaderText=""ModeFull"" ShowCloseButton ModeFull>
-    <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+
+<BitProModal @bind-IsOpen=""isModeFullProModalOpen""
+             ModeFull
+             ShowCloseButton
+             HeaderText=""ModeFull"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
+    </div>
 </BitProModal>
+
 
 <BitButton OnClick=""() => isAutoToggleScrollProModalOpen = true"">Open ProModal with AutoToggleScroll</BitButton>
-<BitProModal @bind-IsOpen=""isAutoToggleScrollProModalOpen"" HeaderText=""AutoToggleScroll"" ShowCloseButton AutoToggleScroll>
-    <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+
+<BitProModal @bind-IsOpen=""isAutoToggleScrollProModalOpen""
+             ShowCloseButton
+             AutoToggleScroll
+             HeaderText=""AutoToggleScroll""
+             ScrollerElement=""appShellContainer"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
+    </div>
 </BitProModal>
 
+
 <BitButton OnClick=""() => isNoBorderProModalOpen = true"">Open ProModal with NoBorder</BitButton>
-<BitProModal @bind-IsOpen=""isNoBorderProModalOpen"" HeaderText=""NoBorder"" ShowCloseButton NoBorder>
-    <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+
+<BitProModal @bind-IsOpen=""isNoBorderProModalOpen""
+             NoBorder
+             ShowCloseButton
+             HeaderText=""NoBorder"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
+    </div>
 </BitProModal>";
     private readonly string example3CsharpCode = @"
 private bool isBlockingProModalOpen;
@@ -501,27 +572,44 @@ private BitProModal bitProModalRef = default!;";
 
     private readonly string example4RazorCode = @"
 <BitButton OnClick=""() => isOpenFullSize = true"">Open ProModal with FullSize</BitButton>
-<BitProModal @bind-IsOpen=""isOpenFullSize"" FullSize=""isFullSize"" HeaderText=""FullSize ProModal"" ShowCloseButton>
-    <div style=""padding:1rem; max-width:40rem"">
-        Lorem ipsum...
+
+<BitProModal @bind-IsOpen=""isOpenFullSize""
+             ShowCloseButton
+             FullSize=""isFullSize""
+             HeaderText=""FullSize ProModal"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis.
         <hr />
         <BitToggleButton @bind-IsChecked=""isFullSize"" OnText=""Restore"" OffText=""FullSize"" />
     </div>
 </BitProModal>
 
+
 <BitButton OnClick=""() => isOpenFullWidth = true"">Open ProModal with FullWidth</BitButton>
-<BitProModal @bind-IsOpen=""isOpenFullWidth"" FullWidth=""isFullWidth"" HeaderText=""FullWidth ProModal"" ShowCloseButton>
-    <div style=""padding:1rem"">
-        Lorem ipsum...
+
+<BitProModal @bind-IsOpen=""isOpenFullWidth""
+             ShowCloseButton
+             FullWidth=""isFullWidth""
+             HeaderText=""FullWidth ProModal"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis.
         <hr />
         <BitToggleButton @bind-IsChecked=""isFullWidth"" OnText=""Restore"" OffText=""FullWidth"" />
     </div>
 </BitProModal>
 
+
 <BitButton OnClick=""() => isOpenFullHeight = true"">Open ProModal with FullHeight</BitButton>
-<BitProModal @bind-IsOpen=""isOpenFullHeight"" FullHeight=""isFullHeight"" HeaderText=""FullHeight ProModal"" ShowCloseButton>
-    <div style=""padding:1rem; max-width:40rem"">
-        Lorem ipsum...
+
+<BitProModal @bind-IsOpen=""isOpenFullHeight""
+             ShowCloseButton
+             FullHeight=""isFullHeight""
+             HeaderText=""FullHeight ProModal"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis.
         <hr />
         <BitToggleButton @bind-IsChecked=""isFullHeight"" OnText=""Restore"" OffText=""FullHeight"" />
     </div>
@@ -535,33 +623,73 @@ private bool isOpenFullHeight;
 private bool isFullHeight;";
 
     private readonly string example5RazorCode = @"
-<style>
-    .relative-container {
-        width: 100%;
-        height: 400px;
-        overflow: auto;
-        margin-top: 1rem;
-        position: relative;
-        border: 2px lightgreen solid;
-    }
-</style>
-
-
 <BitButton OnClick=""() => isOpenAbsolutePosition = true"">Open ProModal</BitButton>
-
 <BitButton OnClick=""() => isOpenScrollerSelector = true"">Open ProModal (AutoToggleScroll & ScrollerSelector)</BitButton>
 
 <div class=""relative-container"" id=""modal-scroller"">
-    <BitProModal @bind-IsOpen=""isOpenAbsolutePosition"" HeaderText=""AbsolutePosition"" ShowCloseButton AbsolutePosition>
-        <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+    <BitProModal @bind-IsOpen=""isOpenAbsolutePosition""
+                 ShowCloseButton
+                 AbsolutePosition
+                 HeaderText=""AbsolutePosition"">
+        <div style=""max-width:40rem"">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo.
+        </div>
     </BitProModal>
 
     <BitProModal @bind-IsOpen=""isOpenScrollerSelector""
-                 HeaderText=""AbsolutePosition with AutoToggleScroll and ScrollerSelector""
                  ShowCloseButton
-                 AbsolutePosition AutoToggleScroll ScrollerSelector=""#modal-scroller"">
-        <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+                 AbsolutePosition
+                 AutoToggleScroll
+                 ScrollerSelector=""#modal-scroller""
+                 HeaderText=""AbsolutePosition with AutoToggleScroll and ScrollerSelector"">
+        <div style=""max-width:40rem"">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo.
+        </div>
     </BitProModal>
+
+    <div>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+    </div>
 </div>";
     private readonly string example5CsharpCode = @"
 private bool isOpenAbsolutePosition;
@@ -571,7 +699,7 @@ private bool isOpenScrollerSelector;";
 <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.TopLeft)"">Top Left</BitButton>
 <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.TopCenter)"">Top Center</BitButton>
 <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.TopRight)"">Top Right</BitButton>
-
+        
 <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.CenterLeft)"">Center Left</BitButton>
 <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.Center)"">Center</BitButton>
 <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.CenterRight)"">Center Right</BitButton>
@@ -580,10 +708,16 @@ private bool isOpenScrollerSelector;";
 <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.BottomCenter)"">Bottom Center</BitButton>
 <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.BottomRight)"">Bottom Right</BitButton>
 
+
 <BitProModal @bind-IsOpen=""isOpenPosition"" Position=""position"" ShowCloseButton>
-    <Header>Position: @position</Header>
+    <Header>
+        Position: @position
+    </Header>
     <Body>
-        <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+        <div style=""max-width:40rem"">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis.
+        </div>
     </Body>
 </BitProModal>";
     private readonly string example6CsharpCode = @"
@@ -598,18 +732,30 @@ private void OpenModalInPosition(BitPosition positionValue)
 
     private readonly string example7RazorCode = @"
 <BitButton OnClick=""() => isOpenDraggable = true"">Open ProModal</BitButton>
-<BitProModal @bind-IsOpen=""isOpenDraggable"" Draggable HeaderText=""Draggable"" ShowCloseButton>
-    <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+
+<BitProModal @bind-IsOpen=""isOpenDraggable""
+             Draggable
+             ShowCloseButton
+             HeaderText=""Draggable"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis.
+    </div>
 </BitProModal>
 
 
 <BitButton OnClick=""() => isOpenDraggableSelector = true"">Open ProModal</BitButton>
-<BitProModal @bind-IsOpen=""isOpenDraggableSelector"" Draggable DragElementSelector=""#modal-drag-element"" ShowCloseButton>
-    <div style=""padding:1rem; max-width:40rem"">
+
+<BitProModal @bind-IsOpen=""isOpenDraggableSelector""
+             Draggable
+             ShowCloseButton
+             DragElementSelector=""#modal-drag-element"">
+    <div style=""max-width:40rem"">
         <h3 id=""modal-drag-element"" style=""color:white; background:brown; padding:1rem"">
             Draggable with DragElementSelector
         </h3>
-        Lorem ipsum...
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo.
     </div>
 </BitProModal>";
     private readonly string example7CsharpCode = @"
@@ -618,8 +764,12 @@ private bool isOpenDraggableSelector;";
 
     private readonly string example8RazorCode = @"
 <BitButton OnClick=""() => isOnOpenProModalOpen = true"">Open OnOpen ProModal</BitButton>
-<BitProModal @bind-IsOpen=""isOnOpenProModalOpen"" HeaderText=""OnOpen"" ShowCloseButton OnOpen=""() => onOpenTextFieldRef.FocusAsync()"">
-    <div style=""padding:1rem; max-width:40rem"">
+
+<BitProModal @bind-IsOpen=""isOnOpenProModalOpen""
+             ShowCloseButton
+             HeaderText=""OnOpen""
+             OnOpen=""() => onOpenTextFieldRef.FocusAsync()"">
+    <div style=""max-width:40rem"">
         The following text field will be focused on open:
         <br /><br />
         <BitTextField @ref=""onOpenTextFieldRef"" />
@@ -629,8 +779,15 @@ private bool isOpenDraggableSelector;";
 
 <BitButton OnClick=""() => isOnDismissProModalOpen = true"">Open OnDismiss ProModal</BitButton>
 <BitTextField @ref=""onDismissTextFieldRef"" Placeholder=""This will be focused on dismiss..."" />
-<BitProModal @bind-IsOpen=""isOnDismissProModalOpen"" HeaderText=""OnDismiss"" ShowCloseButton OnDismiss=""() => onDismissTextFieldRef.FocusAsync()"">
-    <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+
+<BitProModal @bind-IsOpen=""isOnDismissProModalOpen""
+             ShowCloseButton
+             HeaderText=""OnDismiss""
+             OnDismiss=""() => onDismissTextFieldRef.FocusAsync()"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo.
+    </div>
 </BitProModal>";
     private readonly string example8CsharpCode = @"
 private bool isOnOpenProModalOpen;
@@ -639,58 +796,65 @@ private BitTextField onOpenTextFieldRef = default!;
 private BitTextField onDismissTextFieldRef = default!;";
 
     private readonly string example9RazorCode = @"
-<style>
-    .custom-class {
-        border: 0.5rem solid tomato;
-        background-color: darkgoldenrod;
-    }
-
-    .custom-root {
-        border: 0.25rem solid #0054C6;
-    }
-
-    .custom-overlay {
-        background-color: #ffbd5a66;
-    }
-
-    .custom-content {
-        margin: 1rem;
-        box-shadow: 0 0 10rem purple;
-    }
-</style>
-
-
 <BitButton OnClick=""() => isOpenStyle = true"">Open styled ProModal</BitButton>
-<BitProModal @bind-IsOpen=""isOpenStyle"" HeaderText=""Style"" ShowCloseButton Style=""box-shadow:inset 0 0 1.5rem 1.5rem palevioletred;"">
-    <div style=""padding:1rem; max-width:40rem"">BitProModal with custom style.</div>
+
+<BitProModal @bind-IsOpen=""isOpenStyle""
+             ShowCloseButton
+             HeaderText=""Style""
+             Style=""box-shadow:inset 0 0 1.5rem 1.5rem palevioletred;"">
+    <div style=""max-width:40rem"">
+        BitProModal with custom style.
+    </div>
 </BitProModal>
 
+
 <BitButton OnClick=""() => isOpenClass = true"">Open classed ProModal</BitButton>
-<BitProModal @bind-IsOpen=""isOpenClass"" HeaderText=""Class"" ShowCloseButton Class=""custom-class"">
-    <div style=""padding:1rem; max-width:40rem"">BitProModal with custom class.</div>
+
+<BitProModal @bind-IsOpen=""isOpenClass""
+             ShowCloseButton
+             HeaderText=""Class""
+             Class=""custom-class"">
+    <div style=""max-width:40rem"">
+        BitProModal with custom class.
+    </div>
 </BitProModal>
 
 
 <BitButton OnClick=""() => isOpenStyles = true"">Open ProModal Styles</BitButton>
+
 <BitProModal @bind-IsOpen=""isOpenStyles""
-             HeaderText=""Styles"" ShowCloseButton
-             Styles=""@(new() { Overlay = ""background-color:#4776f433;"",
-                               Content = ""box-shadow: 0 0 1rem tomato;"" })"">
-    <div style=""padding:1rem; max-width:40rem"">BitProModal with Styles.</div>
+             ShowCloseButton
+             HeaderText=""Styles""
+             Styles=""@(new()
+             {
+                 Overlay = ""background-color:#4776f433;"",
+                 Content = ""box-shadow: 0 0 1rem tomato;""
+             })"">
+    <div style=""max-width:40rem"">
+        BitProModal with <b>Styles</b> to customize its elements.
+    </div>
 </BitProModal>
 
+
 <BitButton OnClick=""() => isOpenClasses = true"">Open ProModal Classes</BitButton>
+
 <BitProModal @bind-IsOpen=""isOpenClasses""
-             HeaderText=""Classes"" ShowCloseButton
+             ShowCloseButton
+             HeaderText=""Classes""
              FooterText=""This is a footer text!""
-             Classes=""@(new() { Root = ""custom-root"",
-                                Overlay = ""custom-overlay"",
-                                Content = ""custom-content"",
-                                HeaderContainer = ""custom-header-container"",
-                                Header = ""custom-header"",
-                                Body = ""custom-body"",
-                                Footer = ""custom-footer"" })"">
-    <div style=""padding:1rem; max-width:40rem"">BitProModal with Classes.</div>
+             Classes=""@(new()
+             {
+                 Root = ""custom-root"",
+                 Overlay = ""custom-overlay"",
+                 Content = ""custom-content"",
+                 HeaderContainer = ""custom-header-container"",
+                 Header = ""custom-header"",
+                 Body = ""custom-body"",
+                 Footer = ""custom-footer""
+             })"">
+    <div style=""max-width:40rem"">
+        BitProModal with <b>Classes</b> to customize its elements.
+    </div>
 </BitProModal>";
     private readonly string example9CsharpCode = @"
 private bool isOpenStyle;
@@ -700,23 +864,35 @@ private bool isOpenClasses;";
 
     private readonly string example10RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
+
+
 <BitButton OnClick=""() => isExternalIconProModalOpen = true"">Open ProModal</BitButton>
+
 <BitProModal @bind-IsOpen=""isExternalIconProModalOpen""
              ShowCloseButton
              HeaderText=""External Close Icon""
              CloseIcon=""@BitIconInfo.Fa(""solid xmark"")"">
-    <div style=""padding:1rem; max-width:40rem"">Lorem ipsum...</div>
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo.
+    </div>
 </BitProModal>";
     private readonly string example10CsharpCode = @"
 private bool isExternalIconProModalOpen;";
 
     private readonly string example11RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" OnClick=""() => isOpenRtl = true"">باز کردن مُدال</BitButton>
-<BitProModal Dir=""BitDir.Rtl"" @bind-IsOpen=""isOpenRtl"" HeaderText=""مدال راست به چپ"" ShowCloseButton>
-    <div style=""padding:1rem; max-width:40rem"">
+
+<BitProModal @bind-IsOpen=""isOpenRtl""
+             ShowCloseButton
+             Dir=""BitDir.Rtl""
+             HeaderText=""مدال راست به چپ"">
+    <div style=""max-width:40rem"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+        چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
     </div>
 </BitProModal>";
     private readonly string example11CsharpCode = @"
 private bool isOpenRtl;";
+
 }

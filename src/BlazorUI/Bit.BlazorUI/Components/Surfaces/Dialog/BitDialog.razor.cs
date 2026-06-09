@@ -231,16 +231,16 @@ public partial class BitDialog : BitComponentBase
         {
             if (IsDraggable)
             {
-                _ = _js.BitModalSetupDragDrop(_containerId, GetDragElementSelector());
+                _ = _js.BitDialogSetupDragDrop(_containerId, GetDragElementSelector());
             }
             else
             {
-                _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+                _ = _js.BitDialogRemoveDragDrop(_containerId, GetDragElementSelector());
             }
         }
         else
         {
-            _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+            _ = _js.BitDialogRemoveDragDrop(_containerId, GetDragElementSelector());
         }
 
         _offsetTop = 0;
@@ -340,7 +340,7 @@ public partial class BitDialog : BitComponentBase
 
         try
         {
-            await _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+            await _js.BitDialogRemoveDragDrop(_containerId, GetDragElementSelector());
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

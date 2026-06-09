@@ -43,8 +43,6 @@ public class BitModalParameters
         set;
     }
 
-    public ElementReference? ScrollerElement { get { return _modal?.ScrollerElement ?? field; } set; }
-
     public BitModalClassStyles? Styles { get; set; }
 
     public string? SubtitleAriaId { get { return _modal?.SubtitleAriaId ?? field; } set; }
@@ -86,7 +84,6 @@ public class BitModalParameters
                 await params1.OnOverlayClick.InvokeAsync();
                 await params2.OnOverlayClick.InvokeAsync();
             }),
-            ScrollerElement = params1.ScrollerElement ?? params2.ScrollerElement,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
             SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,
             TitleAriaId = params1.TitleAriaId ?? params2.TitleAriaId,
