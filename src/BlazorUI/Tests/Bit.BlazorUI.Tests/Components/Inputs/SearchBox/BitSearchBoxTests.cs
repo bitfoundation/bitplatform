@@ -284,4 +284,30 @@ public class BitSearchBoxTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
     }
+
+    [TestMethod]
+    public void BitSearchBoxSuggestItemsProviderShouldRenderItems()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        string? receivedSearchTerm = null;
+
+        var component = RenderComponent<BitSearchBox>(p =>
+        {
+            p.Add(x => x.Immediate, true);
+            p.Add(x => x.SuggestItemsProvider, (BitSearchBoxSuggestItemsProviderRequest req) =>
+            {
+                receivedSearchTerm = req.SearchTerm;
+                return ValueTask.FromResult<IEnumerable<string>>(new List<string> { "apple", "application" });
+            });
+        });
+
+        var input = component.Find(".bit-srb-inp");
+        input.Input("app");
+
+        var items = component.FindAll(".bit-srb-itm");
+
+        Assert.AreEqual("app", receivedSearchTerm);
+        Assert.AreEqual(2, items.Count);
+    }
 }
