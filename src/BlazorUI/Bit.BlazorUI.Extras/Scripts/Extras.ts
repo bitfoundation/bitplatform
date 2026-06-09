@@ -39,7 +39,14 @@ namespace BitBlazorUI {
             // loading (e.g. a deferred/async CDN script the host inserted), so await its load/error event
             // instead of assuming readiness from the mere presence of the <script> tag. Waiting is gated on
             // document.readyState so we never block on a 'load' event that has already fired.
-            const existingTag = Array.from(document.scripts).find(s => s.src.includes(url));
+            // Match by normalized path (query/hash stripped, resolved against the document base) so that a
+            // substring like "lib.js" doesn't falsely match "mylib.js" or appear inside another url's query.
+            const normalize = (u: string) => {
+                try { return new URL(u, document.baseURI).pathname; }
+                catch { return u.split('?')[0].split('#')[0]; }
+            };
+            const targetPath = normalize(url);
+            const existingTag = Array.from(document.scripts).find(s => !!s.src && normalize(s.src) === targetPath);
             if (existingTag) {
                 const ready = document.readyState === 'complete'
                     ? Promise.resolve()
