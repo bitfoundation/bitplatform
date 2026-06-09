@@ -10,8 +10,8 @@ public partial class BitPhoneInput : BitInputBase<string?>
 {
     private bool _isOpen;
     private bool _hasFocus;
-    private bool _preventKeyDownDefault;
     private int _activeIndex = -1;
+    private int _lastScrolledIndex = -1;
     private string? _searchText;
     private List<BitCountry> _viewItems = [];
     private string _labelId = string.Empty;
@@ -24,6 +24,15 @@ public partial class BitPhoneInput : BitInputBase<string?>
     private string _scrollContainerId = string.Empty;
     private DotNetObjectReference<BitPhoneInput>? _dotnetObj;
     private ElementReference _searchInputRef;
+    private ElementReference _dropdownButtonRef;
+
+    // Keys whose default browser behavior must be suppressed. These are applied through a
+    // deterministic JS keydown listener (see BitExtrasSetPreventKeys) so the suppression
+    // always matches the key of the current event instead of lagging one event behind, as
+    // Blazor's stateful `@onkeydown:preventDefault` binding would.
+    private static readonly string[] _searchBoxKeys = ["ArrowDown", "ArrowUp", "Home", "End", "Enter"];
+    private static readonly string[] _dropdownClosedKeys = ["ArrowDown", "ArrowUp", "Home", "End"];
+    private static readonly string[] _dropdownOpenKeys = ["ArrowDown", "ArrowUp", "Home", "End", "Enter", " ", "Spacebar"];
 
 
 
@@ -143,7 +152,9 @@ public partial class BitPhoneInput : BitInputBase<string?>
         _isOpen = false;
         _searchText = null;
         _activeIndex = -1;
-        _preventKeyDownDefault = false;
+        _lastScrolledIndex = -1;
+
+        await _js.BitExtrasSetPreventKeys(_dropdownButtonRef, _dropdownClosedKeys);
 
         await InvokeAsync(StateHasChanged);
     }
@@ -203,6 +214,23 @@ public partial class BitPhoneInput : BitInputBase<string?>
         if (firstRender)
         {
             _dotnetObj = DotNetObjectReference.Create(this);
+
+            // Wire up deterministic key suppression once the elements exist. The callout
+            // (including the search box) is always present in the DOM, so the search input
+            // reference is available here when the search box is enabled.
+            await _js.BitExtrasSetPreventKeys(_dropdownButtonRef, _dropdownClosedKeys);
+            if (NoSearchBox is false)
+            {
+                await _js.BitExtrasSetPreventKeys(_searchInputRef, _searchBoxKeys);
+            }
+        }
+
+        // Keep the active option visible during keyboard navigation. Done after render so
+        // the option element is guaranteed to exist and the callout is laid out.
+        if (_isOpen && _activeIndex >= 0 && _activeIndex != _lastScrolledIndex)
+        {
+            _lastScrolledIndex = _activeIndex;
+            await _js.BitExtrasScrollOptionIntoView(GetOptionId(_activeIndex));
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -264,12 +292,10 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
         if (_isOpen is false)
         {
-            // While closed, nothing needs its default suppressed: Enter/Space are
-            // handled by the button's native click (which calls HandleOnDropdownClick
-            // -> OpenCallout), so they are intentionally excluded here to avoid a
-            // double toggle, and we must not block Tab or any other key.
-            _preventKeyDownDefault = false;
-
+            // While closed, Enter/Space are handled by the button's native click (which calls
+            // HandleOnDropdownClick -> OpenCallout), so they are intentionally not treated as
+            // open triggers here to avoid a double toggle. Their defaults are not suppressed
+            // (see _dropdownClosedKeys) so the native click can open the callout.
             if (key is "ArrowDown" or "ArrowUp" or "Home" or "End")
             {
                 await OpenCallout();
@@ -281,12 +307,10 @@ public partial class BitPhoneInput : BitInputBase<string?>
         switch (key)
         {
             case "Escape":
-                _preventKeyDownDefault = false;
                 await CloseCallout();
                 break;
 
             case "ArrowDown":
-                _preventKeyDownDefault = true;
                 if (_viewItems.Count > 0)
                 {
                     _activeIndex = _activeIndex < _viewItems.Count - 1 ? _activeIndex + 1 : 0;
@@ -294,7 +318,6 @@ public partial class BitPhoneInput : BitInputBase<string?>
                 break;
 
             case "ArrowUp":
-                _preventKeyDownDefault = true;
                 if (_viewItems.Count > 0)
                 {
                     _activeIndex = _activeIndex > 0 ? _activeIndex - 1 : _viewItems.Count - 1;
@@ -302,17 +325,14 @@ public partial class BitPhoneInput : BitInputBase<string?>
                 break;
 
             case "Home":
-                _preventKeyDownDefault = true;
                 if (_viewItems.Count > 0) _activeIndex = 0;
                 break;
 
             case "End":
-                _preventKeyDownDefault = true;
                 if (_viewItems.Count > 0) _activeIndex = _viewItems.Count - 1;
                 break;
 
             case "Enter":
-                _preventKeyDownDefault = true;
                 if (_activeIndex >= 0 && _activeIndex < _viewItems.Count)
                 {
                     await HandleOnCountrySelect(_viewItems[_activeIndex]);
@@ -321,26 +341,13 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
             case " ":
             case "Spacebar":
-                // When the search box is visible the space key must remain available
-                // for typing, so it is only treated as a selection key when focus is
-                // on the dropdown button (i.e. there is no search box).
-                if (NoSearchBox)
+                // When the search box is visible the space key must remain available for
+                // typing, so it is only treated as a selection key when focus is on the
+                // dropdown button (i.e. there is no search box).
+                if (NoSearchBox && _activeIndex >= 0 && _activeIndex < _viewItems.Count)
                 {
-                    _preventKeyDownDefault = true;
-                    if (_activeIndex >= 0 && _activeIndex < _viewItems.Count)
-                    {
-                        await HandleOnCountrySelect(_viewItems[_activeIndex]);
-                    }
+                    await HandleOnCountrySelect(_viewItems[_activeIndex]);
                 }
-                else
-                {
-                    _preventKeyDownDefault = false;
-                }
-                break;
-
-            default:
-                // Let every other key (Tab, typing in the search box, etc.) behave normally.
-                _preventKeyDownDefault = false;
                 break;
         }
     }
@@ -349,8 +356,17 @@ public partial class BitPhoneInput : BitInputBase<string?>
     {
         _isOpen = true;
 
+        // Populate the view items before computing the active index. GetFilteredCountries()
+        // is otherwise only called during render, so opening via the keyboard (ArrowDown)
+        // before the list has rendered would leave _viewItems empty and _activeIndex at -1,
+        // making the first Enter select nothing.
+        GetFilteredCountries();
+
         var selectedIndex = _viewItems.FindIndex(c => c.Iso2 == Country?.Iso2);
         _activeIndex = selectedIndex >= 0 ? selectedIndex : (_viewItems.Count > 0 ? 0 : -1);
+        _lastScrolledIndex = -1;
+
+        await _js.BitExtrasSetPreventKeys(_dropdownButtonRef, _dropdownOpenKeys);
 
         await ToggleCallout();
 
@@ -369,7 +385,8 @@ public partial class BitPhoneInput : BitInputBase<string?>
         _isOpen = false;
         _searchText = null;
         _activeIndex = -1;
-        _preventKeyDownDefault = false;
+        _lastScrolledIndex = -1;
+        await _js.BitExtrasSetPreventKeys(_dropdownButtonRef, _dropdownClosedKeys);
         await ToggleCallout();
     }
 
@@ -405,6 +422,7 @@ public partial class BitPhoneInput : BitInputBase<string?>
         // pressing Enter selects the first matching result instead of a stale one.
         GetFilteredCountries();
         _activeIndex = _viewItems.Count > 0 ? 0 : -1;
+        _lastScrolledIndex = -1;
     }
 
     private async Task HandleOnCountrySelect(BitCountry country)
@@ -414,11 +432,13 @@ public partial class BitPhoneInput : BitInputBase<string?>
         await CloseCallout();
 
         // AssignCountry returns false for a one-way controlled Country (set without
-        // CountryChanged). We still raise OnCountryChange so consumers relying on the
-        // explicit callback to update their own state get notified reliably.
-        await AssignCountry(country);
-
-        await OnCountryChange.InvokeAsync(country);
+        // CountryChanged). In that case the component cannot adopt the new selection, so
+        // raising OnCountryChange would report a country that the UI and FullNumber never
+        // actually switch to, desynchronizing consumer state. Only notify on a real change.
+        if (await AssignCountry(country))
+        {
+            await OnCountryChange.InvokeAsync(country);
+        }
     }
 
     private async Task HandleOnNumberChange(ChangeEventArgs e)
@@ -465,6 +485,11 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
         try
         {
+            await _js.BitExtrasDisposePreventKeys(_dropdownButtonRef);
+            if (NoSearchBox is false)
+            {
+                await _js.BitExtrasDisposePreventKeys(_searchInputRef);
+            }
             await _js.BitCalloutClearCallout(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here

@@ -25,8 +25,8 @@
     <div id="@_fieldGroupId" style="@Styles?.FieldGroup" class="bit-phi-fgp @Classes?.FieldGroup">
 
         <button @onclick="HandleOnDropdownClick"
+                @ref="_dropdownButtonRef"
                 @onkeydown="HandleOnKeyDown"
-                @onkeydown:preventDefault="_preventKeyDownDefault"
                 type="button"
                 id="@_dropdownId"
                 role="combobox"
@@ -91,7 +91,6 @@
             <input @ref="_searchInputRef"
                    @oninput="HandleOnSearchInput"
                    @onkeydown="HandleOnKeyDown"
-                   @onkeydown:preventDefault="_preventKeyDownDefault"
                    type="text"
                    role="searchbox"
                    id="@_searchId"
