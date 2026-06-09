@@ -10,6 +10,7 @@ public partial class BitPhoneInput : BitInputBase<string?>
 {
     private bool _isOpen;
     private bool _hasFocus;
+    private bool _preventKeyDownDefault;
     private int _activeIndex = -1;
     private string? _searchText;
     private List<BitCountry> _viewItems = [];
@@ -142,6 +143,7 @@ public partial class BitPhoneInput : BitInputBase<string?>
         _isOpen = false;
         _searchText = null;
         _activeIndex = -1;
+        _preventKeyDownDefault = false;
 
         await InvokeAsync(StateHasChanged);
     }
@@ -254,7 +256,7 @@ public partial class BitPhoneInput : BitInputBase<string?>
         }
     }
 
-    private async Task HandleOnDropdownKeyDown(KeyboardEventArgs e)
+    private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false || ReadOnly) return;
 
@@ -262,9 +264,12 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
         if (_isOpen is false)
         {
-            // Enter/Space are handled by the button's native click (which calls
-            // HandleOnDropdownClick -> OpenCallout), so they are intentionally
-            // excluded here to avoid a double toggle.
+            // While closed, nothing needs its default suppressed: Enter/Space are
+            // handled by the button's native click (which calls HandleOnDropdownClick
+            // -> OpenCallout), so they are intentionally excluded here to avoid a
+            // double toggle, and we must not block Tab or any other key.
+            _preventKeyDownDefault = false;
+
             if (key is "ArrowDown" or "ArrowUp" or "Home" or "End")
             {
                 await OpenCallout();
@@ -276,10 +281,12 @@ public partial class BitPhoneInput : BitInputBase<string?>
         switch (key)
         {
             case "Escape":
+                _preventKeyDownDefault = false;
                 await CloseCallout();
                 break;
 
             case "ArrowDown":
+                _preventKeyDownDefault = true;
                 if (_viewItems.Count > 0)
                 {
                     _activeIndex = _activeIndex < _viewItems.Count - 1 ? _activeIndex + 1 : 0;
@@ -287,6 +294,7 @@ public partial class BitPhoneInput : BitInputBase<string?>
                 break;
 
             case "ArrowUp":
+                _preventKeyDownDefault = true;
                 if (_viewItems.Count > 0)
                 {
                     _activeIndex = _activeIndex > 0 ? _activeIndex - 1 : _viewItems.Count - 1;
@@ -294,20 +302,45 @@ public partial class BitPhoneInput : BitInputBase<string?>
                 break;
 
             case "Home":
+                _preventKeyDownDefault = true;
                 if (_viewItems.Count > 0) _activeIndex = 0;
                 break;
 
             case "End":
+                _preventKeyDownDefault = true;
                 if (_viewItems.Count > 0) _activeIndex = _viewItems.Count - 1;
                 break;
 
             case "Enter":
-            case " ":
-            case "Spacebar":
+                _preventKeyDownDefault = true;
                 if (_activeIndex >= 0 && _activeIndex < _viewItems.Count)
                 {
                     await HandleOnCountrySelect(_viewItems[_activeIndex]);
                 }
+                break;
+
+            case " ":
+            case "Spacebar":
+                // When the search box is visible the space key must remain available
+                // for typing, so it is only treated as a selection key when focus is
+                // on the dropdown button (i.e. there is no search box).
+                if (NoSearchBox)
+                {
+                    _preventKeyDownDefault = true;
+                    if (_activeIndex >= 0 && _activeIndex < _viewItems.Count)
+                    {
+                        await HandleOnCountrySelect(_viewItems[_activeIndex]);
+                    }
+                }
+                else
+                {
+                    _preventKeyDownDefault = false;
+                }
+                break;
+
+            default:
+                // Let every other key (Tab, typing in the search box, etc.) behave normally.
+                _preventKeyDownDefault = false;
                 break;
         }
     }
@@ -336,6 +369,7 @@ public partial class BitPhoneInput : BitInputBase<string?>
         _isOpen = false;
         _searchText = null;
         _activeIndex = -1;
+        _preventKeyDownDefault = false;
         await ToggleCallout();
     }
 
@@ -366,6 +400,11 @@ public partial class BitPhoneInput : BitInputBase<string?>
     private void HandleOnSearchInput(ChangeEventArgs e)
     {
         _searchText = e.Value?.ToString();
+
+        // Re-evaluate the filtered list so the active option stays within range and
+        // pressing Enter selects the first matching result instead of a stale one.
+        GetFilteredCountries();
+        _activeIndex = _viewItems.Count > 0 ? 0 : -1;
     }
 
     private async Task HandleOnCountrySelect(BitCountry country)
@@ -374,7 +413,10 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
         await CloseCallout();
 
-        if (await AssignCountry(country) is false) return;
+        // AssignCountry returns false for a one-way controlled Country (set without
+        // CountryChanged). We still raise OnCountryChange so consumers relying on the
+        // explicit callback to update their own state get notified reliably.
+        await AssignCountry(country);
 
         await OnCountryChange.InvokeAsync(country);
     }

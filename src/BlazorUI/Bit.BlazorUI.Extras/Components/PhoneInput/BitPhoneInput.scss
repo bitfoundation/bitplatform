@@ -255,3 +255,46 @@
         border-color: $clr-err;
     }
 }
+
+@mixin phi-color($color) {
+    .bit-phi-fgp {
+        border-color: $color;
+    }
+
+    &.bit-phi-fcs .bit-phi-fgp {
+        border-color: $color;
+        box-shadow: 0 0 0 1px $color;
+    }
+}
+
+.bit-phi-pri {
+    @include phi-color($clr-pri);
+}
+
+.bit-phi-sec {
+    @include phi-color($clr-sec);
+}
+
+.bit-phi-ter {
+    @include phi-color($clr-ter);
+}
+
+.bit-phi-inf {
+    @include phi-color($clr-inf);
+}
+
+.bit-phi-suc {
+    @include phi-color($clr-suc);
+}
+
+.bit-phi-wrn {
+    @include phi-color($clr-wrn);
+}
+
+.bit-phi-swr {
+    @include phi-color($clr-swr);
+}
+
+.bit-phi-err {
+    @include phi-color($clr-err);
+}

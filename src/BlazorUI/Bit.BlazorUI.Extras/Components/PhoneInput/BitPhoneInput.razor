@@ -25,8 +25,8 @@
     <div id="@_fieldGroupId" style="@Styles?.FieldGroup" class="bit-phi-fgp @Classes?.FieldGroup">
 
         <button @onclick="HandleOnDropdownClick"
-                @onkeydown="HandleOnDropdownKeyDown"
-                @onkeydown:preventDefault="_isOpen"
+                @onkeydown="HandleOnKeyDown"
+                @onkeydown:preventDefault="_preventKeyDownDefault"
                 type="button"
                 id="@_dropdownId"
                 role="combobox"
@@ -53,6 +53,7 @@
         </button>
 
         <input @ref="InputElement"
+               @attributes="InputHtmlAttributes"
                @onchange="HandleOnNumberChange"
                @oninput="HandleOnNumberInput"
                @onfocusin="HandleOnInputFocusIn"
@@ -89,6 +90,8 @@
         <div style="@Styles?.SearchBox" class="bit-phi-sbx @Classes?.SearchBox">
             <input @ref="_searchInputRef"
                    @oninput="HandleOnSearchInput"
+                   @onkeydown="HandleOnKeyDown"
+                   @onkeydown:preventDefault="_preventKeyDownDefault"
                    type="text"
                    role="searchbox"
                    id="@_searchId"
