@@ -622,6 +622,124 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(42, component.Instance.Value);
     }
 
+    [TestMethod]
+    public void BitNumberFieldShouldDiscardPreservedDisplayTextWhenValueChangesFromParent()
+    {
+        // Repro for the stale-display bug: after the user types non-Latin digits (which are preserved
+        // in the input), a parent that resets and then reloads the same numeric value must not cause
+        // the old user-typed text to reappear.
+        var boundValue = 0;
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+            parameters.Add(p => p.Value, boundValue);
+            parameters.Add(p => p.ValueChanged, (int v) => boundValue = v);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = "۱۲۳" });
+
+        // The typed Persian digits are preserved while the bound value is the normalized Latin number.
+        Assert.AreEqual(123, component.Instance.Value);
+        Assert.AreEqual("۱۲۳", component.Find("input").GetAttribute("value"));
+
+        // The parent resets the bound value to 0.
+        component.SetParametersAndRender(parameters => parameters.Add(p => p.Value, 0));
+        Assert.AreEqual("0", component.Find("input").GetAttribute("value"));
+
+        // The parent then loads 123 again; the stale Persian text must NOT reappear.
+        component.SetParametersAndRender(parameters => parameters.Add(p => p.Value, 123));
+        Assert.AreEqual("123", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod,
+         DataRow("5", 10),    // below the normalized min (۱۰) -> clamped up to 10
+         DataRow("25", 20),   // above the normalized max (۲۰) -> clamped down to 20
+         DataRow("15", 15)    // within range -> unchanged
+    ]
+    public void BitNumberFieldShouldNormalizeNonLatinMinAndMaxWhenNormalizeDigitsEnabled(string userInput, int expectedValue)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+            parameters.Add(p => p.Min, "۱۰");
+            parameters.Add(p => p.Max, "۲۰");
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = userInput });
+
+        Assert.AreEqual(expectedValue, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNormalizeNonLatinStepWhenNormalizeDigitsEnabled()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.NormalizeDigits, true);
+            parameters.Add(p => p.Step, "۵");
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = "10" });
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        // The step "۵" is normalized to 5, so incrementing 10 yields 15.
+        Assert.AreEqual(15, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNormalizeMinMaxUsingCustomDigitsNormalizer()
+    {
+        // The custom normalizer maps any Unicode decimal digit to Latin and is applied to the
+        // Min/Max parameters too, not just user input.
+        static string? normalizer(string? value)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+
+            var sb = new System.Text.StringBuilder(value.Length);
+            foreach (var c in value)
+            {
+                var digit = System.Globalization.CharUnicodeInfo.GetDecimalDigitValue(c);
+                sb.Append(digit >= 0 ? (char)('0' + digit) : c);
+            }
+            return sb.ToString();
+        }
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DigitsNormalizer, normalizer);
+            parameters.Add(p => p.Min, "۵");
+            parameters.Add(p => p.Max, "۵۰");
+        });
+
+        var input = component.Find("input");
+
+        input.Change(new ChangeEventArgs { Value = "100" });
+        Assert.AreEqual(50, component.Instance.Value);   // clamped to the normalized max (50)
+
+        input.Change(new ChangeEventArgs { Value = "1" });
+        Assert.AreEqual(5, component.Instance.Value);    // clamped to the normalized min (5)
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNormalizeMinRegardlessOfParameterOrder()
+    {
+        // Min is provided before NormalizeDigits to ensure normalization is still applied even if the
+        // Min CallOnSet handler runs before NormalizeDigits has been assigned.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Min, "۱۰");
+            parameters.Add(p => p.NormalizeDigits, true);
+        });
+
+        var input = component.Find("input");
+        input.Change(new ChangeEventArgs { Value = "5" });
+
+        Assert.AreEqual(10, component.Instance.Value);
+    }
+
     [TestMethod,
          DataRow(null),
          DataRow("AriaDescription")

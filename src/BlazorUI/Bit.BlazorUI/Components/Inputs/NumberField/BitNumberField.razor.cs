@@ -14,6 +14,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private string? _tempValue;
     private string? _displayValue;
     private TValue? _displayValueSource;
+    private bool _keepDisplayValueOnNextChange;
     private TValue _min = default!;
     private TValue _max = default!;
     private TValue _step = default!;
@@ -405,12 +406,31 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         await base.OnInitializedAsync();
     }
 
+    protected override void OnParametersSet()
+    {
+        // The Min/Max/Step CallOnSet handlers run during SetParametersAsync and may execute before the
+        // NormalizeDigits/DigitsNormalizer parameters have been assigned (parameter assignment order is
+        // not guaranteed). Re-run them here, after all parameters are set, so non-Latin numeric
+        // parameters are normalized consistently with user input regardless of attribute order.
+        if (NormalizeDigits || DigitsNormalizer is not null)
+        {
+            // Only re-run for parameters that were actually provided. Re-running a setter for an
+            // unset parameter would reset it to its default (and is unnecessary work).
+            if (Min is not null) OnSetMin();
+            if (Max is not null) OnSetMax();
+            if (Step is not null) OnSetStep();
+        }
+
+        base.OnParametersSet();
+    }
+
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         // Reset the preserved display text. It is set again below only when the digit
         // normalization is the sole transformation applied to the user's input.
         _displayValue = null;
         _displayValueSource = default;
+        _keepDisplayValueOnNextChange = false;
 
         var originalValue = value;
         var digitsNormalized = false;
@@ -451,6 +471,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             {
                 _displayValue = originalValue;
                 _displayValueSource = result;
+                // The value assignment that immediately follows this parse (raised through
+                // OnValueChanged) is the one that produced this preserved text, so it must not clear
+                // it. Any later value change comes from elsewhere (parent/model) and should discard it.
+                _keepDisplayValueOnNextChange = true;
             }
 
             parsingErrorMessage = null;
@@ -470,7 +494,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private string? GetDisplayValueAsString()
     {
-        if (_displayValue is not null && EqualityComparer<TValue>.Default.Equals(CurrentValue, _displayValueSource))
+        if (_displayValue is not null
+            && NumberFormat is null
+            && EqualityComparer<TValue>.Default.Equals(CurrentValue, _displayValueSource))
         {
             return _displayValue;
         }
@@ -849,9 +875,30 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         return matchCollection is null ? value : string.Join("", matchCollection.Select(m => m.Value));
     }
 
+    /// <summary>
+    /// Applies the same digit normalization used for user input (<see cref="DigitsNormalizer"/> or
+    /// <see cref="NormalizeDigits"/>) to the numeric string parameters (<see cref="Min"/>,
+    /// <see cref="Max"/> and <see cref="Step"/>) so that markup like <c>Min="۱۰"</c> or
+    /// <c>Step="۰٫۵"</c> is parsed consistently instead of silently falling back to defaults.
+    /// </summary>
+    private string? NormalizeNumericParameter(string? value)
+    {
+        if (DigitsNormalizer is not null)
+        {
+            return DigitsNormalizer(value);
+        }
+
+        if (NormalizeDigits)
+        {
+            return NormalizeUnicodeDigits(value);
+        }
+
+        return value;
+    }
+
     private void OnSetMin()
     {
-        var min = CleanValue(Min);
+        var min = CleanValue(NormalizeNumericParameter(Min));
         if (BindConverter.TryConvertTo(min, CultureInfo.InvariantCulture, out TValue? result))
         {
             _min = result ?? GetTypeMinValue();
@@ -864,7 +911,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void OnSetMax()
     {
-        var max = CleanValue(Max);
+        var max = CleanValue(NormalizeNumericParameter(Max));
         if (BindConverter.TryConvertTo(max, CultureInfo.InvariantCulture, out TValue? result))
         {
             _max = result ?? GetTypeMaxValue();
@@ -877,7 +924,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void OnSetStep()
     {
-        var step = CleanValue(Step);
+        var step = CleanValue(NormalizeNumericParameter(Step));
         if (BindConverter.TryConvertTo(step, CultureInfo.InvariantCulture, out TValue? result))
         {
             _step = result ?? ((TValue)(object)1);
@@ -913,7 +960,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private int CalculatePrecision()
     {
-        var step = Step ?? _step?.ToString() ?? "1";
+        var step = NormalizeNumericParameter(Step) ?? _step?.ToString() ?? "1";
         var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
         if (regex.IsMatch(step) is false) return 0;
 
@@ -947,6 +994,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
+        if (_keepDisplayValueOnNextChange)
+        {
+            // This change is the one produced by the user input we intentionally preserved
+            // (see TryParseValueFromString), so keep the display text for this single change only.
+            _keepDisplayValueOnNextChange = false;
+        }
+        else
+        {
+            // The value changed from a source other than the preserved user input (e.g. the parent
+            // resetting or reloading the bound value), so any preserved display text is now stale and
+            // must be discarded to avoid re-showing old user-typed text for a model-driven value.
+            _displayValue = null;
+            _displayValueSource = default;
+        }
+
         NormalizeValue();
     }
 
