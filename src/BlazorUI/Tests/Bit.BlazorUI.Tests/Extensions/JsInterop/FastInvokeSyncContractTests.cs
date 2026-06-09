@@ -12,8 +12,8 @@ namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
 /// Guards the "FastInvoke targets must be synchronous JavaScript" contract.
 ///
 /// On Blazor WebAssembly, <c>FastInvoke</c>/<c>FastInvokeVoid</c> run through <c>IJSInProcessRuntime</c>
-/// synchronously. If the target JavaScript function is asynchronous (declared <c>async</c>, annotated with a
-/// <c>Promise</c> return type, or returning a Promise from its body), the call becomes fire-and-forget:
+/// synchronously. If the target JavaScript function is asynchronous (declared <c>async</c> or annotated with a
+/// <c>Promise</c> return type), the call becomes fire-and-forget:
 /// callers proceed before the work completes and any error is lost. Since the interop is keyed by string
 /// identifiers, this test statically links every <c>FastInvoke</c> call site to its TypeScript definition
 /// and fails if any target returns a Promise.
@@ -34,10 +34,6 @@ public class FastInvokeSyncContractTests
     // allowed before it) excludes static fields and arrow-function properties like "static foo = () => {}".
     private static readonly Regex TsStaticMethodHeaderRegex =
         new(@"\bstatic\s+(?<async>async\s+)?(?<method>\w+)\s*(?:<[^>]+>)?\s*\(", RegexOptions.Compiled);
-
-    // Detects a Promise-returning method body, e.g. "return new Promise(" or "return Promise.resolve(".
-    private static readonly Regex TsReturnsPromiseRegex =
-        new(@"\breturn\s+(?:new\s+Promise\b|Promise\s*\.)", RegexOptions.Compiled);
 
     [TestMethod]
     public void FastInvoke_CallSites_ShouldNotTargetAsyncJavaScriptFunctions()
@@ -119,23 +115,15 @@ public class FastInvokeSyncContractTests
                 if (closeParen < 0) continue;
 
                 // Read the return-type annotation (if any) between ')' and the method body's '{'.
-                var bodyStart = SkipReturnAnnotation(text, closeParen + 1, out var returnAnnotation);
+                SkipReturnAnnotation(text, closeParen + 1, out var returnAnnotation);
 
+                // A method is treated as async only by explicit convention: an 'async' modifier or a
+                // return type that names 'Promise'. Body-based heuristics are intentionally avoided since
+                // they miss delegated returns (e.g. "return someHelper()") and give a false sense of safety.
                 var declaredAsync = header.Groups["async"].Success;
                 var annotatedPromise = returnAnnotation.Contains("Promise", StringComparison.Ordinal);
 
-                var returnsPromiseInBody = false;
-                if (!declaredAsync && !annotatedPromise && bodyStart >= 0 && bodyStart < text.Length && text[bodyStart] == '{')
-                {
-                    var bodyEnd = FindMatching(text, bodyStart, '{', '}');
-                    if (bodyEnd > bodyStart)
-                    {
-                        var body = text.Substring(bodyStart, bodyEnd - bodyStart + 1);
-                        returnsPromiseInBody = TsReturnsPromiseRegex.IsMatch(body);
-                    }
-                }
-
-                if (!declaredAsync && !annotatedPromise && !returnsPromiseInBody) continue;
+                if (!declaredAsync && !annotatedPromise) continue;
 
                 var owningClass = classMatches.LastOrDefault(c => c.Index < header.Index);
                 if (owningClass.Name is null) continue;

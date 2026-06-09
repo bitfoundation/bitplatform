@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
 
 [TestClass]
+[DoNotParallelize] // Tests mutate the process-global IJSRuntimeFastExtensions.OnError hook; serialize them.
 public class IJSRuntimeFastExtensionsTests
 {
     [TestCleanup]
