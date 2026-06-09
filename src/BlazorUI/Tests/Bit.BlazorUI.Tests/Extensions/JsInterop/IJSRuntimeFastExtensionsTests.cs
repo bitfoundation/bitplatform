@@ -12,6 +12,13 @@ namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
 [TestClass]
 public class IJSRuntimeFastExtensionsTests
 {
+    [TestCleanup]
+    public void ResetErrorHandler()
+    {
+        // OnError is a process-global hook; reset it so tests don't leak into one another.
+        IJSRuntimeFastExtensions.OnError = null;
+    }
+
     [TestMethod]
     public void FastInvokeVoid_WhenInProcessRuntime_ShouldInvokeSynchronously()
     {
@@ -66,6 +73,54 @@ public class IJSRuntimeFastExtensionsTests
     }
 
     [TestMethod]
+    public void FastInvokeVoid_WhenJsonExceptionAndOnErrorSet_ShouldRouteToHandler()
+    {
+        var reported = new List<(string Identifier, Exception Exception)>();
+        IJSRuntimeFastExtensions.OnError = (identifier, exception) => reported.Add((identifier, exception));
+
+        var jsRuntime = new FakeInProcessJsRuntime { ExceptionFactory = _ => new JsonException("bad json") };
+
+        var task = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff");
+
+        Assert.IsTrue(task.IsCompleted);
+        Assert.IsFalse(task.IsFaulted);
+        Assert.AreEqual(1, reported.Count);
+        Assert.AreEqual("BitBlazorUI.Test.doStuff", reported[0].Identifier);
+        Assert.IsInstanceOfType(reported[0].Exception, typeof(JsonException));
+    }
+
+    [TestMethod]
+    public async Task FastInvoke_WhenJsonExceptionAndOnErrorSet_ShouldRouteToHandlerAndReturnDefault()
+    {
+        var reported = new List<(string Identifier, Exception Exception)>();
+        IJSRuntimeFastExtensions.OnError = (identifier, exception) => reported.Add((identifier, exception));
+
+        var jsRuntime = new FakeInProcessJsRuntime { ExceptionFactory = _ => new JsonException("bad json") };
+
+        var task = jsRuntime.FastInvoke<bool>("BitBlazorUI.Test.getStuff");
+
+        Assert.IsTrue(task.IsCompleted);
+        Assert.IsFalse(task.IsFaulted);
+        Assert.AreEqual(default, await task);
+        Assert.AreEqual(1, reported.Count);
+        Assert.AreEqual("BitBlazorUI.Test.getStuff", reported[0].Identifier);
+    }
+
+    [TestMethod]
+    public void FastInvokeVoid_WhenOnErrorHandlerThrows_ShouldNotPropagate()
+    {
+        IJSRuntimeFastExtensions.OnError = (_, _) => throw new InvalidOperationException("faulty handler");
+
+        var jsRuntime = new FakeInProcessJsRuntime { ExceptionFactory = _ => new JsonException("bad json") };
+
+        // A throwing error handler must never escape the interop call.
+        var task = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff");
+
+        Assert.IsTrue(task.IsCompleted);
+        Assert.IsFalse(task.IsFaulted);
+    }
+
+    [TestMethod]
     public void FastInvokeVoid_WhenNotInProcessRuntime_ShouldFallBackToAsync()
     {
         var jsRuntime = new FakeJsRuntime();
@@ -85,6 +140,35 @@ public class IJSRuntimeFastExtensionsTests
 
         Assert.AreEqual(1, jsRuntime.AsyncInvocations.Count);
         Assert.AreEqual("BitBlazorUI.Test.getStuff", jsRuntime.AsyncInvocations[0].Identifier);
+    }
+
+
+    [TestMethod]
+    public void FastInvokeVoid_WhenInProcessRuntimeIsInvalid_ShouldNotInvoke()
+    {
+        // The fake is in-process but its type name matches the prerendering runtime, so IsRuntimeInvalid
+        // is true. The synchronous path must now honor that guard and skip the call instead of invoking.
+        var jsRuntime = new UnsupportedJavaScriptRuntime();
+
+        var task = jsRuntime.FastInvokeVoid("BitBlazorUI.Test.doStuff", "arg1");
+
+        Assert.IsTrue(task.IsCompleted);
+        Assert.IsFalse(task.IsFaulted);
+        Assert.AreEqual(0, jsRuntime.SyncInvocations.Count);
+        Assert.AreEqual(0, jsRuntime.AsyncInvocations.Count);
+    }
+
+    [TestMethod]
+    public async Task FastInvoke_WhenInProcessRuntimeIsInvalid_ShouldReturnDefaultWithoutInvoking()
+    {
+        var jsRuntime = new UnsupportedJavaScriptRuntime { ResultFactory = _ => true };
+
+        var task = jsRuntime.FastInvoke<bool>("BitBlazorUI.Test.getStuff");
+
+        Assert.IsTrue(task.IsCompleted);
+        Assert.AreEqual(default, await task);
+        Assert.AreEqual(0, jsRuntime.SyncInvocations.Count);
+        Assert.AreEqual(0, jsRuntime.AsyncInvocations.Count);
     }
 
 
@@ -129,6 +213,36 @@ public class IJSRuntimeFastExtensionsTests
     private sealed class FakeJsRuntime : IJSRuntime
     {
         public List<Invocation> AsyncInvocations { get; } = [];
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+        {
+            AsyncInvocations.Add(new Invocation(identifier, args));
+            return new ValueTask<TValue>(default(TValue)!);
+        }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            AsyncInvocations.Add(new Invocation(identifier, args));
+            return new ValueTask<TValue>(default(TValue)!);
+        }
+    }
+
+    /// <summary>
+    /// A fake <see cref="IJSInProcessRuntime"/> whose type name matches the framework's prerendering
+    /// runtime, so <c>IsRuntimeInvalid</c> reports it as invalid. Used to verify the synchronous
+    /// in-process path now honors the runtime-validity guard and skips the call.
+    /// </summary>
+    private sealed class UnsupportedJavaScriptRuntime : IJSInProcessRuntime
+    {
+        public List<Invocation> SyncInvocations { get; } = [];
+        public List<Invocation> AsyncInvocations { get; } = [];
+        public Func<string, object?>? ResultFactory { get; set; }
+
+        public TResult Invoke<TResult>(string identifier, params object?[]? args)
+        {
+            SyncInvocations.Add(new Invocation(identifier, args));
+            return ResultFactory is null ? default! : (TResult)ResultFactory(identifier)!;
+        }
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {

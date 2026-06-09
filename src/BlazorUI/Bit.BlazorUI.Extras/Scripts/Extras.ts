@@ -19,42 +19,47 @@ namespace BitBlazorUI {
             element.scrollBy(x, y);
         }
 
-        private static _initScriptsPromises: { [key: string]: Promise<unknown> } = {};
         public static async initScripts(scripts: string[], isModule: boolean) {
-            const key = scripts.join('|');
-            if (Extras._initScriptsPromises[key] !== undefined) {
-                return Extras._initScriptsPromises[key];
+            // Resolve only when every script has actually executed. Loading is tracked per-url so that
+            // concurrent callers (e.g. several components, or a re-mount) await the same execution instead
+            // of a second caller seeing the <script> tag in the DOM and assuming it is already usable.
+            await Promise.all((scripts ?? []).map(s => Extras.loadScript(s, isModule)));
+        }
+
+        private static _scriptPromises: { [url: string]: Promise<void> } = {};
+        private static loadScript(url: string, isModule: boolean): Promise<void> {
+            // Track each script by url. Any script this method loads resolves only after its 'load'
+            // event (i.e. after it has executed), so concurrent/duplicate callers await the real
+            // execution rather than assuming readiness from the presence of the <script> tag.
+            const existingPromise = Extras._scriptPromises[url];
+            if (existingPromise !== undefined) return existingPromise;
+
+            // A tag we didn't add is assumed to be host-provided and already executed by the time any
+            // component runs (it is part of the initial document), so it is treated as ready.
+            const alreadyOnPage = Array.from(document.scripts).some(s => s.src.includes(url));
+            if (alreadyOnPage) {
+                const resolved = Promise.resolve();
+                Extras._scriptPromises[url] = resolved;
+                return resolved;
             }
 
-            const allScripts = Array.from(document.scripts).map(s => s.src);
-            const notAddedScripts = scripts.filter(s => !allScripts.find(as => as.includes(s)));
-
-            if (notAddedScripts.length == 0) return Promise.resolve();
-
-            const promise = new Promise(async (res: any, rej: any) => {
-                try {
-                    await Promise.all(notAddedScripts.map(addScript));
-                    res();
-                } catch (e: any) {
-                    rej(e);
+            const promise = new Promise<void>((res, rej) => {
+                const script = document.createElement('script');
+                script.src = url;
+                if (isModule) {
+                    script.type = 'module';
                 }
+                script.addEventListener('load', () => res());
+                script.addEventListener('error', rej);
+                document.body.appendChild(script);
             });
 
-            Extras._initScriptsPromises[key] = promise;
-            return promise;
+            Extras._scriptPromises[url] = promise;
 
-            async function addScript(url: string) {
-                return new Promise((res, rej) => {
-                    const script = document.createElement('script');
-                    script.src = url;
-                    if (isModule) {
-                        script.type = 'module';
-                    }
-                    script.onload = res;
-                    script.onerror = rej;
-                    document.body.appendChild(script);
-                })
-            }
+            // Don't cache a rejected load: a later retry should be able to attempt the script again.
+            promise.catch(() => { delete Extras._scriptPromises[url]; });
+
+            return promise;
         }
 
         private static _initStylesheetsPromises: { [key: string]: Promise<unknown> } = {};

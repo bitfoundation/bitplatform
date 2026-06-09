@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -73,6 +74,11 @@ public static class IJSRuntimeExtensions
 
 
 
+    // Cache the reflected framework members per runtime type. The runtime type is stable for the
+    // lifetime of the process, so this avoids repeating the reflection lookup on every interop call.
+    private static readonly ConcurrentDictionary<Type, PropertyInfo?> _remoteIsInitializedPropertyCache = new();
+    private static readonly ConcurrentDictionary<Type, FieldInfo?> _webViewIpcSenderFieldCache = new();
+
     [SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
     public static bool IsRuntimeInvalid(this IJSRuntime jsRuntime)
     {
@@ -80,12 +86,32 @@ public static class IJSRuntimeExtensions
 
         var type = jsRuntime.GetType();
 
-        return type.Name switch
+        switch (type.Name)
         {
-            "UnsupportedJavaScriptRuntime" => true, // Prerendering
-            "RemoteJSRuntime" => (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)! is false, // Blazor server
-            "WebViewJSRuntime" => type.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(jsRuntime) is null, // Blazor Hybrid
-            _ => false // Blazor WASM
-        };
+            case "UnsupportedJavaScriptRuntime": // Prerendering
+                return true;
+
+            case "RemoteJSRuntime": // Blazor Server
+                {
+                    // RemoteJSRuntime.IsInitialized is an internal framework member accessed via reflection.
+                    // If a future .NET release renames or removes it, fall back to treating the runtime as
+                    // valid so legitimate interop still runs (and any genuine failure surfaces as the
+                    // framework's own exception) instead of silently dropping every JS call.
+                    var property = _remoteIsInitializedPropertyCache.GetOrAdd(type, static t => t.GetProperty("IsInitialized"));
+                    return property?.GetValue(jsRuntime) is bool isInitialized && isInitialized is false;
+                }
+
+            case "WebViewJSRuntime": // Blazor Hybrid
+                {
+                    // WebViewJSRuntime._ipcSender is a private framework field accessed via reflection.
+                    // See the RemoteJSRuntime note above for the rationale behind the safe fallback.
+                    var field = _webViewIpcSenderFieldCache.GetOrAdd(type, static t => t.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance));
+                    if (field is null) return false;
+                    return field.GetValue(jsRuntime) is null;
+                }
+
+            default: // Blazor WASM
+                return false;
+        }
     }
 }
