@@ -1,15 +1,19 @@
 @import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 .bit-pmd {
+    .bit-mdl-ovl {
+        background-color: transparent;
+    }
+
     .bit-mdl-ctn {
         display: flex;
         flex-direction: column;
     }
-}
 
-.bit-pmd-mfl {
-    .bit-mdl-ovl {
-        background-color: $clr-bg-overlay;
+    &.bit-pmd-mfl {
+        .bit-mdl-ovl {
+            background-color: $clr-bg-overlay;
+        }
     }
 }
 

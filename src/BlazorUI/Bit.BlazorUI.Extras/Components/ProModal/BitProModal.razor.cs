@@ -119,6 +119,7 @@ public partial class BitProModal : BitComponentBase
     /// Whether the Modal is displayed.
     /// </summary>
     [Parameter, TwoWayBound]
+    [CallOnSet(nameof(OnSetIsOpen))]
     public bool IsOpen { get; set; }
 
     /// <summary>
@@ -179,6 +180,16 @@ public partial class BitProModal : BitComponentBase
     /// Custom CSS styles for different parts of the BitProModal component.
     /// </summary>
     [Parameter] public BitProModalClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// ARIA id for the subtitle of the Modal, if any.
+    /// </summary>
+    [Parameter] public string? SubtitleAriaId { get; set; }
+
+    /// <summary>
+    /// ARIA id for the title of the Modal, if any.
+    /// </summary>
+    [Parameter] public string? TitleAriaId { get; set; }
 
 
 
@@ -295,14 +306,14 @@ public partial class BitProModal : BitComponentBase
             return;
         }
 
-        if (await AssignIsOpen(false) is false) return;
-
-        _ = OnDismiss.InvokeAsync();
+        await AssignIsOpen(false);
     }
 
     private async Task HandleOverlayClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
+
+        if (Blocking) return;
 
         await OnOverlayClick.InvokeAsync(e);
     }
@@ -311,9 +322,14 @@ public partial class BitProModal : BitComponentBase
     {
         if (IsEnabled is false) return;
 
-        if (await AssignIsOpen(false) is false) return;
+        await AssignIsOpen(false);
+    }
 
-        _ = OnDismiss.InvokeAsync(e);
+    private void OnSetIsOpen()
+    {
+        if (IsOpen || IsRendered is false) return;
+
+        _ = OnDismiss.InvokeAsync().ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
     private async Task ToggleScroll(bool isOpen)

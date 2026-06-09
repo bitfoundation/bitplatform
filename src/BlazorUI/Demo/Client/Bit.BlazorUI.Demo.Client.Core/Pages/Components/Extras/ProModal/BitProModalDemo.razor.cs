@@ -26,7 +26,7 @@ public partial class BitProModalDemo
             Name = "Blocking",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the Modal can be light dismissed by clicking outside the Modal (on the overlay).",
+            Description = "When enabled, prevents the Modal from being light dismissed by clicking outside the Modal (on the overlay).",
         },
         new()
         {
@@ -196,6 +196,13 @@ public partial class BitProModalDemo
         },
         new()
         {
+            Name = "ScrollerElement",
+            Type = "ElementReference?",
+            DefaultValue = "null",
+            Description = "Set the element reference for which the Modal disables its scroll if applicable.",
+        },
+        new()
+        {
             Name = "ScrollerSelector",
             Type = "string?",
             DefaultValue = "null",
@@ -210,12 +217,26 @@ public partial class BitProModalDemo
         },
         new()
         {
+            Name = "SubtitleAriaId",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "ARIA id for the subtitle of the Modal, if any.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitProModalClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitProModal component.",
             Href = "#class-styles",
             LinkType = LinkType.Link,
+        },
+        new()
+        {
+            Name = "TitleAriaId",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "ARIA id for the title of the Modal, if any.",
         }
     ];
 

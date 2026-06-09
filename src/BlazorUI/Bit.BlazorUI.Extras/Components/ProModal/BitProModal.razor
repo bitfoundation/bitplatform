@@ -2,6 +2,7 @@
 @inherits BitComponentBase
 
 <BitModal AriaLabel="@AriaLabel"
+          AriaModal="Modeless is false"
           Class="@ClassBuilder.Value"
           Dir="Dir"
           @attributes="HtmlAttributes"
@@ -12,10 +13,13 @@
           Classes="Classes"
           FullHeight="FullHeight || FullSize"
           FullWidth="FullWidth || FullSize"
-          IsAlert="IsAlert"
+          IsAlert="@(IsAlert ?? (Blocking && Modeless is false))"
           IsOpen="IsOpen"
           IsOpenChanged="HandleInnerIsOpenChanged"
           OnOverlayClick="HandleOverlayClick"
+          ShowOverlay="Modeless is false"
+          SubtitleAriaId="@SubtitleAriaId"
+          TitleAriaId="@TitleAriaId"
           Styles="Styles">
     @if (Header is not null || HeaderText is not null || ShowCloseButton)
     {

@@ -122,6 +122,7 @@ public partial class MainLayout
                 new() { Text = "Collapse", Url = "/components/collapse" },
                 new() { Text = "Dialog", Url = "/components/dialog" },
                 new() { Text = "Modal", Url = "/components/modal" },
+                new() { Text = "ModalService", Url = "/components/modalservice" },
                 new() { Text = "Panel", Url = "/components/panel" },
                 new() { Text = "ScrollablePane", Url = "/components/scrollablepane", Description = "ScrollView" },
                 new() { Text = "Splitter", Url = "/components/splitter" },
@@ -170,14 +171,6 @@ public partial class MainLayout
                 new() { Text = "ProModal", Url = "/components/promodal" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
-                new()
-                {
-                    Text = "Services",
-                    ChildItems =
-                    [
-                        new() { Text = "ModalService", Url = "/components/modalservice" },
-                    ]
-                },
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },

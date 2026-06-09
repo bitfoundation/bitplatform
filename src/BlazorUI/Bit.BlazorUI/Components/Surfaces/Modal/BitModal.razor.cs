@@ -14,10 +14,10 @@ public partial class BitModal : BitComponentBase
 
 
 
-    [CascadingParameter]
-    private BitModalParameters ModalParameters { get => modalParameters; set { modalParameters = value; modalParameters.SetModal(this); } }
-    private BitModalParameters modalParameters = new();
-
+    /// <summary>
+    /// Whether the Modal should be announced as modal to assistive technologies.
+    /// </summary>
+    [Parameter] public bool AriaModal { get; set; } = true;
 
     /// <summary>
     /// The content of the Modal, it can be any custom tag or text.
@@ -28,6 +28,11 @@ public partial class BitModal : BitComponentBase
     /// Custom CSS classes for different parts of the BitModal component.
     /// </summary>
     [Parameter] public BitModalClassStyles? Classes { get; set; }
+
+    [CascadingParameter]
+    private BitModalParameters ModalParameters { get => modalParameters; set { modalParameters = value; modalParameters.SetModal(this); } }
+    private BitModalParameters modalParameters = new();
+
 
     /// <summary>
     /// Makes the Modal height 100% of its parent container.
@@ -64,6 +69,11 @@ public partial class BitModal : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
 
     /// <summary>
+    /// Whether the overlay should be rendered.
+    /// </summary>
+    [Parameter] public bool ShowOverlay { get; set; } = true;
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitModal component.
     /// </summary>
     [Parameter] public BitModalClassStyles? Styles { get; set; }
@@ -77,6 +87,7 @@ public partial class BitModal : BitComponentBase
     /// ARIA id for the title of the Modal, if any.
     /// </summary>
     [Parameter] public string? TitleAriaId { get; set; }
+
 
 
 
