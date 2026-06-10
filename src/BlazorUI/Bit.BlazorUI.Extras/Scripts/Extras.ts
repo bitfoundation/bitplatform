@@ -77,7 +77,19 @@ namespace BitBlazorUI {
             // Track each script by url. Any script this method loads resolves only after its 'load'
             // event (i.e. after it has executed), so concurrent/duplicate callers await the real
             // execution rather than assuming readiness from the presence of the <script> tag.
-            const existingPromise = Extras._scriptPromises[url];
+            // Match by the full absolute URL (origin + path + query + hash, resolved against the document
+            // base) so that scripts from different origins (e.g. distinct CDNs) or with different query
+            // strings (e.g. "?v=1" vs "?v=2") are treated as distinct rather than being conflated by a
+            // shared pathname. Resolving against baseURI also avoids a substring like "lib.js" matching
+            // "mylib.js". Use the same normalized form as the cache key so relative/absolute equivalents
+            // hit the same entry.
+            const normalize = (u: string) => {
+                try { return new URL(u, document.baseURI).href; }
+                catch { return u; }
+            };
+            const targetUrl = normalize(url);
+
+            const existingPromise = Extras._scriptPromises[targetUrl];
             if (existingPromise !== undefined) return existingPromise;
 
             // A tag we didn't add is host-provided. If the document has finished loading, any non-async
@@ -85,16 +97,6 @@ namespace BitBlazorUI {
             // loading (e.g. a deferred/async CDN script the host inserted), so await its load/error event
             // instead of assuming readiness from the mere presence of the <script> tag. Waiting is gated on
             // document.readyState so we never block on a 'load' event that has already fired.
-            // Match by the full absolute URL (origin + path + query + hash, resolved against the document
-            // base) so that scripts from different origins (e.g. distinct CDNs) or with different query
-            // strings (e.g. "?v=1" vs "?v=2") are treated as distinct rather than being conflated by a
-            // shared pathname. Resolving against baseURI also avoids a substring like "lib.js" matching
-            // "mylib.js".
-            const normalize = (u: string) => {
-                try { return new URL(u, document.baseURI).href; }
-                catch { return u; }
-            };
-            const targetUrl = normalize(url);
             const existingTag = Array.from(document.scripts).find(s => !!s.src && normalize(s.src) === targetUrl);
             if (existingTag) {
                 const ready = document.readyState === 'complete'
@@ -107,7 +109,7 @@ namespace BitBlazorUI {
                         // Final backstop: the window load event fires once all initial resources settle.
                         window.addEventListener('load', () => res(), { once: true });
                     });
-                Extras._scriptPromises[url] = ready;
+                Extras._scriptPromises[targetUrl] = ready;
                 return ready;
             }
 
@@ -122,10 +124,10 @@ namespace BitBlazorUI {
                 document.body.appendChild(script);
             });
 
-            Extras._scriptPromises[url] = promise;
+            Extras._scriptPromises[targetUrl] = promise;
 
             // Don't cache a rejected load: a later retry should be able to attempt the script again.
-            promise.catch(() => { delete Extras._scriptPromises[url]; });
+            promise.catch(() => { delete Extras._scriptPromises[targetUrl]; });
 
             return promise;
         }
