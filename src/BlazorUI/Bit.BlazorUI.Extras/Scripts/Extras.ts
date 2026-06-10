@@ -18,7 +18,53 @@ namespace BitBlazorUI {
 
             element.scrollBy(x, y);
         }
+        
+        // Attaches (or updates) a deterministic keydown listener that calls preventDefault
+        // for the provided keys. Unlike Blazor's `@onkeydown:preventDefault` binding -- whose
+        // value is evaluated at render time and therefore only applies to the *next* key event
+        // -- this evaluates the actual key of the *current* event, so stale state can never
+        // block typing, Space, or Tab.
+        public static setPreventKeys(element: HTMLElement, keys: string[]) {
+            if (!element) return;
 
+            const el = element as any;
+            el.bitPreventKeys = keys ?? [];
+
+            if (!el.bitPreventKeysHandler) {
+                el.bitPreventKeysHandler = (e: KeyboardEvent) => {
+                    const ks: string[] = el.bitPreventKeys ?? [];
+                    if (ks.indexOf(e.key) !== -1) {
+                        e.preventDefault();
+                    }
+                };
+                element.addEventListener('keydown', el.bitPreventKeysHandler);
+            }
+        }
+
+        public static disposePreventKeys(element: HTMLElement) {
+            if (!element) return;
+
+            const el = element as any;
+            if (el.bitPreventKeysHandler) {
+                element.removeEventListener('keydown', el.bitPreventKeysHandler);
+                delete el.bitPreventKeysHandler;
+            }
+            delete el.bitPreventKeys;
+        }
+
+        // Scrolls the option element into the visible area of its scroll container using
+        // 'nearest' so keyboard navigation keeps the active item on screen with minimal movement.
+        public static scrollOptionIntoView(optionId: string) {
+            if (!optionId) return;
+
+            const element = document.getElementById(optionId);
+            if (!element) return;
+
+            try {
+                element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            } catch (e) { console.error('BitBlazorUI.Extras.scrollOptionIntoView:', e); }
+        }
+        
         public static async initScripts(scripts: string[], isModule: boolean) {
             // Resolve only when every script has actually executed. Loading is tracked per-url so that
             // concurrent callers (e.g. several components, or a re-mount) await the same execution instead
@@ -119,7 +165,6 @@ namespace BitBlazorUI {
                 })
             }
         }
-
 
         public static invokeJs<T>(identifier: string, ...args: unknown[]): Promise<T> {
             identifier ??= '';

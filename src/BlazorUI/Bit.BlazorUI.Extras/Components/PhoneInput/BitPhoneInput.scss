@@ -1,0 +1,300 @@
+@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+.bit-phi {
+    margin: 0;
+    padding: 0;
+    width: fit-content;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+}
+
+.bit-phi-fwd {
+    width: 100%;
+
+    .bit-phi-fgp {
+        width: 100%;
+    }
+}
+
+.bit-phi-lbl {
+    display: block;
+    font-weight: 600;
+    color: $clr-fg-pri;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    padding: spacing(0.625) 0;
+}
+
+.bit-phi-fgp {
+    display: flex;
+    align-items: stretch;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    min-height: spacing(4);
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-phi-fcs .bit-phi-fgp {
+    border-color: $clr-pri;
+    box-shadow: 0 0 0 1px $clr-pri;
+}
+
+.bit-phi-drp {
+    gap: spacing(0.5);
+    margin: 0;
+    display: flex;
+    cursor: pointer;
+    appearance: none;
+    user-select: none;
+    text-align: start;
+    align-items: center;
+    white-space: nowrap;
+    color: $clr-fg-pri;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    padding: 0 spacing(1);
+    background-color: transparent;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+    border-block: none;
+    border-inline-start: none;
+    border-start-start-radius: $shp-border-radius;
+    border-end-start-radius: $shp-border-radius;
+    border-inline-end: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    &:hover {
+        background-color: $clr-bg-pri-hover;
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+}
+
+.bit-phi-tcn {
+    gap: spacing(0.5);
+    display: flex;
+    color: $clr-fg-pri;
+    align-items: center;
+    white-space: nowrap;
+    flex-flow: row nowrap;
+}
+
+.bit-phi-flg {
+    width: spacing(2);
+    height: spacing(2);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.bit-phi-cod {
+    color: $clr-fg-pri;
+}
+
+.bit-phi-pls {
+    color: $clr-fg-ter;
+}
+
+.bit-phi-car {
+    width: 0;
+    height: 0;
+    flex-shrink: 0;
+    border-style: solid;
+    border-width: spacing(0.5) spacing(0.375) 0 spacing(0.375);
+    border-color: $clr-fg-sec transparent transparent transparent;
+}
+
+.bit-phi-inp {
+    flex: 1 1 0;
+    border: none;
+    outline: none;
+    min-width: 0;
+    width: 100%;
+    color: $clr-fg-pri;
+    box-sizing: border-box;
+    background-color: transparent;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+    padding: 0 spacing(1);
+    border-start-end-radius: $shp-border-radius;
+    border-end-end-radius: $shp-border-radius;
+
+    &::placeholder {
+        color: $clr-fg-ter;
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+}
+
+.bit-phi-ovl {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    z-index: $zindex-overlay;
+    background-color: transparent;
+}
+
+.bit-phi-cal {
+    display: none;
+    font-weight: 400;
+    overflow: hidden;
+    position: fixed;
+    box-sizing: border-box;
+    z-index: $zindex-callout;
+    font-size: spacing(1.75);
+    animation-fill-mode: both;
+    animation-duration: 0.367s;
+    box-shadow: $box-shadow-callout;
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-pri;
+    font-family: $tg-font-family;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    animation-name: bit-fade-show, bit-slide-down;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.bit-phi-sbx {
+    box-sizing: border-box;
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-phi-srch {
+    width: 100%;
+    border: none;
+    outline: none;
+    display: block;
+    color: $clr-fg-pri;
+    box-sizing: border-box;
+    background-color: $clr-bg-pri;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+    padding: spacing(1) spacing(1.5);
+}
+
+.bit-phi-scn {
+    overflow: hidden auto;
+    box-sizing: border-box;
+    max-height: spacing(40);
+}
+
+.bit-phi-lst {
+    margin: 0;
+    padding: spacing(0.5) 0;
+    list-style: none;
+    box-sizing: border-box;
+}
+
+.bit-phi-itm {
+    gap: spacing(1);
+    margin: 0;
+    width: 100%;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    appearance: none;
+    text-align: start;
+    color: $clr-fg-pri;
+    align-items: center;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    background-color: transparent;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+    padding: spacing(0.75) spacing(1.5);
+
+    &:hover {
+        background-color: $clr-bg-pri-hover;
+    }
+}
+
+.bit-phi-sel {
+    background-color: $clr-bg-sec;
+}
+
+.bit-phi-act {
+    background-color: $clr-bg-pri-hover;
+}
+
+.bit-phi-inm {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-phi-icd {
+    color: $clr-fg-sec;
+    white-space: nowrap;
+    margin-inline-start: auto;
+}
+
+.bit-phi-nor {
+    color: $clr-fg-ter;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    padding: spacing(0.75) spacing(1.5);
+}
+
+.bit-phi {
+    &.bit-phi-err.bit-phi-fcs .bit-phi-fgp,
+    &.bit-inv.bit-phi-fcs .bit-phi-fgp {
+        border-color: $clr-err;
+        box-shadow: 0 0 0 1px $clr-err;
+    }
+
+    &.bit-phi-err .bit-phi-fgp,
+    &.bit-inv .bit-phi-fgp {
+        border-color: $clr-err;
+    }
+}
+
+@mixin phi-color($color) {
+    .bit-phi-fgp {
+        border-color: $color;
+    }
+
+    &.bit-phi-fcs .bit-phi-fgp {
+        border-color: $color;
+        box-shadow: 0 0 0 1px $color;
+    }
+}
+
+.bit-phi-pri {
+    @include phi-color($clr-pri);
+}
+
+.bit-phi-sec {
+    @include phi-color($clr-sec);
+}
+
+.bit-phi-ter {
+    @include phi-color($clr-ter);
+}
+
+.bit-phi-inf {
+    @include phi-color($clr-inf);
+}
+
+.bit-phi-suc {
+    @include phi-color($clr-suc);
+}
+
+.bit-phi-wrn {
+    @include phi-color($clr-wrn);
+}
+
+.bit-phi-swr {
+    @include phi-color($clr-swr);
+}
+
+.bit-phi-err {
+    @include phi-color($clr-err);
+}

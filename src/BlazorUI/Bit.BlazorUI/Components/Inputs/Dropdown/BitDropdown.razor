@@ -101,6 +101,7 @@
                 <input @ref="_comboBoxInputRef"
                        @onkeydown="@HandleOnKeyDown"
                        @oninput="@HandleOnComboInput"
+                       @onchange="@HandleOnComboChange"
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-inp @Classes?.ComboBoxInput"
                        type="text"
@@ -226,7 +227,7 @@
                    style="@Styles?.SearchBoxIcon"
                    class="@searchBoxIconCss @Classes?.SearchBoxIcon" />
             </div>
-            <input @ref="_searchInputRef" @onfocusin="HandleSearchBoxFocusIn" @onfocusout="HandleSearchBoxFocusOut" @oninput="@HandleFilterChange"
+            <input @ref="_searchInputRef" @onfocusin="HandleSearchBoxFocusIn" @onfocusout="HandleSearchBoxFocusOut" @oninput="@HandleOnSearchBoxInput" @onchange="@HandleOnSearchBoxChange"
                    type="text"
                    role="searchbox"
                    value="@_searchText"
@@ -260,7 +261,7 @@
     {
         <div style="@Styles?.ResponsiveComboInputContainer"
              class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
-            <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput"
+            <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput" @onchange="@HandleOnComboChange"
                    style="@Styles?.ComboBoxInput"
                    class="bit-drp-icb @Classes?.ComboBoxInput"
                    type="text"
