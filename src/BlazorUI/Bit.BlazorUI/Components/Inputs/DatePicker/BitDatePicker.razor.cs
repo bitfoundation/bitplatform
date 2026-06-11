@@ -751,9 +751,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             return true;
         }
 
-        var pattern = DateFormat ?? (Mode == BitDatePickerMode.MonthPicker
-            ? _culture.DateTimeFormat.YearMonthPattern
-            : _culture.DateTimeFormat.ShortDatePattern);
+        var pattern = DateFormat ?? GetDefaultDateFormat();
 
         if (DateTime.TryParseExact(value, pattern, _culture, DateTimeStyles.None, out DateTime parsedValue))
         {
@@ -771,9 +769,25 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (value.HasValue is false) return null;
 
-        return Mode == BitDatePickerMode.MonthPicker
-            ? value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.YearMonthPattern, _culture)
-            : value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture);
+        return value.Value.ToString(DateFormat ?? GetDefaultDateFormat(), _culture);
+    }
+
+    private string GetDefaultDateFormat()
+    {
+        if (Mode == BitDatePickerMode.MonthPicker)
+        {
+            return _culture.DateTimeFormat.YearMonthPattern;
+        }
+
+        var pattern = _culture.DateTimeFormat.ShortDatePattern;
+
+        if (ShowTimePicker)
+        {
+            var timePattern = TimeFormat == BitTimeFormat.TwelveHours ? "hh:mm tt" : "HH:mm";
+            pattern = $"{pattern} {timePattern}";
+        }
+
+        return pattern;
     }
 
 
