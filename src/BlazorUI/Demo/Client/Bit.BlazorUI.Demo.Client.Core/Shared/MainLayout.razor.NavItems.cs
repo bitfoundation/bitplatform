@@ -107,7 +107,7 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "Loading", Url = "/components/loading" },
-                new() { Text = "Progress", Url = "/components/progress", AdditionalUrls = ["/components/progressindicator", "/components/progress-indicator", "/components/progressbar"], Description = "ProgressIndicator, ProgressBar" },
+                new() { Text = "Progress", Url = "/components/progress", AdditionalUrls = ["/components/progressindicator", "/components/progress-indicator", "/components/progressbar", "/components/spinner"], Description = "ProgressIndicator, ProgressBar, Spinner" },
                 new() { Text = "Shimmer", Url = "/components/shimmer", Description = "Skeleton" },
             ],
         },
