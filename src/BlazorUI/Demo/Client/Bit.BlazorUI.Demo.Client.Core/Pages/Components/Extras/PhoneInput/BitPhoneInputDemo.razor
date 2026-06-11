@@ -1,0 +1,114 @@
+@page "/components/phoneinput"
+
+<PageOutlet Url="components/phoneinput"
+            Title="PhoneInput"
+            Description="phone input component of the bit BlazorUI components" />
+
+<DemoPage Name="PhoneInput"
+          Description="BitPhoneInput is an input component for entering phone numbers with a searchable country selector that shows the flag and the dialing code of each country."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          GitHubExtrasUrl="PhoneInput/BitPhoneInput.razor"
+          GitHubDemoUrl="Extras/PhoneInput/BitPhoneInputDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>The basic usage of the BitPhoneInput with a default country.</div>
+            <br />
+            <BitPhoneInput DefaultCountry="BitCountries.UnitedStates" Placeholder="Enter your number" />
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>Two-way bind both the phone number and the selected country.</div>
+            <br />
+            <BitPhoneInput @bind-Value="bindingNumber"
+                           @bind-Country="bindingCountry"
+                           DefaultCountry="BitCountries.Germany"
+                           Placeholder="Enter your number" />
+            <br />
+            <div>Number: @bindingNumber</div>
+            <div>Country: @bindingCountry?.Name</div>
+            <div>Full number: +@bindingCountry?.Code@bindingNumber</div>
+        </DemoExample>
+
+        <DemoExample Title="Label" RazorCode="@example3RazorCode" Id="example3">
+            <div>Show a label above the field using the Label parameter.</div>
+            <br />
+            <BitPhoneInput Label="Phone number"
+                           DefaultCountry="BitCountries.UnitedKingdom"
+                           Placeholder="Enter your number" />
+        </DemoExample>
+
+        <DemoExample Title="NoSearchBox" RazorCode="@example4RazorCode" Id="example4">
+            <div>Hide the search box of the country dropdown using the NoSearchBox parameter.</div>
+            <br />
+            <BitPhoneInput NoSearchBox DefaultCountry="BitCountries.France" Placeholder="Enter your number" />
+        </DemoExample>
+
+        <DemoExample Title="Custom countries" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>Limit the available countries by providing a custom list to the Countries parameter.</div>
+            <br />
+            <BitPhoneInput Countries="customCountries"
+                           DefaultCountry="BitCountries.Canada"
+                           Placeholder="Enter your number" />
+        </DemoExample>
+
+        <DemoExample Title="FullWidth" RazorCode="@example6RazorCode" Id="example6">
+            <div>Make the phone input fill 100% of its container width using the FullWidth parameter.</div>
+            <br />
+            <BitPhoneInput FullWidth DefaultCountry="BitCountries.Italy" Placeholder="Enter your number" />
+        </DemoExample>
+
+        <DemoExample Title="Disabled & ReadOnly" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>Disabled:</div>
+            <br />
+            <BitPhoneInput IsEnabled="false" DefaultCountry="BitCountries.Spain" Value="1234567" />
+            <br /><br />
+            <div>ReadOnly:</div>
+            <br />
+            <BitPhoneInput ReadOnly DefaultCountry="BitCountries.Spain" Value="1234567" />
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>Use the OnCountryChange callback to react to the selected country changes.</div>
+            <br />
+            <BitPhoneInput DefaultCountry="BitCountries.UnitedStates"
+                           OnCountryChange="c => changedCountry = c"
+                           Placeholder="Enter your number" />
+            <br />
+            <div>Selected country: @changedCountry?.Name</div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>Customize the appearance of the BitPhoneInput using Style, Class, Styles, and Classes.</div>
+            <br />
+            <BitPhoneInput DefaultCountry="BitCountries.Netherlands"
+                           Placeholder="Enter your number"
+                           Style="width: 300px;"
+                           Class="custom-class"
+                           Styles="@(new() { FieldGroup = "border-color: blueviolet;" })"
+                           Classes="@(new() { Input = "custom-input" })" />
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+            <div>Use BitPhoneInput in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <BitPhoneInput Dir="BitDir.Rtl" DefaultCountry="BitCountries.Iran" Placeholder="شماره خود را وارد کنید" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>
