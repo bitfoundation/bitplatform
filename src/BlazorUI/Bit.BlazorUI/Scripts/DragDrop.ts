@@ -16,6 +16,7 @@ namespace BitBlazorUI {
             let y = 0;
 
             listeners['pointerdown'] = handlePointerDown;
+            listeners['dragElement'] = dragElement;
             dragElement.addEventListener('pointerdown', handlePointerDown);
             dragElement.style.cursor = 'move';
             dragElement.classList.add('bit-mdl-nta');
@@ -54,7 +55,9 @@ namespace BitBlazorUI {
             const listeners = DragDrop._listeners[key];
             if (!listeners) return;
 
-            const dragElement = document.querySelector(dragElementSelector) as HTMLElement;
+            // Use the originally-bound drag element so cleanup still targets the
+            // correct element even if the selector resolves differently now.
+            const dragElement = (listeners['dragElement'] as HTMLElement) ?? (document.querySelector(dragElementSelector) as HTMLElement);
             if (dragElement) {
                 dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
                 dragElement.style.cursor = '';
@@ -67,6 +70,7 @@ namespace BitBlazorUI {
             delete listeners['pointerdown'];
             delete listeners['pointermove'];
             delete listeners['pointerup'];
+            delete listeners['dragElement'];
             delete DragDrop._listeners[key];
         }
     }

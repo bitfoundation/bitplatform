@@ -256,10 +256,16 @@ public partial class BitProModal : BitComponentBase
                     _ = _js.BitDragDropSetup(_containerSelector, _containerSelector, _dragElementSelector);
                 }
 
+                // Reset _offsetTop before ToggleScroll. When AutoToggleScroll is false,
+                // ToggleScroll returns early and won't recalculate _offsetTop, so this
+                // guards against a stale top-offset from a previous open.
                 _offsetTop = 0;
 
                 await ToggleScroll(true);
-                
+
+                // Only when AbsolutePosition is set do we reset the StyleBuilder and
+                // re-render, so the top-offset style (which ToggleScroll may have updated)
+                // gets applied on the next render.
                 if (AbsolutePosition)
                 {
                     StyleBuilder.Reset();
