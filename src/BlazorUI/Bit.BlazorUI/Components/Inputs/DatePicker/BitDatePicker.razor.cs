@@ -783,11 +783,33 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         if (ShowTimePicker)
         {
-            var timePattern = TimeFormat == BitTimeFormat.TwelveHours ? "hh:mm tt" : "HH:mm";
-            pattern = $"{pattern} {timePattern}";
+            pattern = $"{pattern} {GetTimePattern()}";
         }
 
         return pattern;
+    }
+
+    private string GetTimePattern()
+    {
+        var shortTimePattern = _culture.DateTimeFormat.ShortTimePattern;
+
+        // A lowercase 'h' indicates the culture uses a 12-hour clock, an uppercase 'H' a 24-hour clock.
+        var isCulture12Hours = shortTimePattern.Contains('h');
+
+        if (TimeFormat == BitTimeFormat.TwelveHours)
+        {
+            if (isCulture12Hours) return shortTimePattern;
+
+            // Convert the culture's 24-hour pattern to 12-hour by switching the hour specifier
+            // and appending the AM/PM designator.
+            return $"{shortTimePattern.Replace('H', 'h')} tt";
+        }
+
+        if (isCulture12Hours is false) return shortTimePattern;
+
+        // Convert the culture's 12-hour pattern to 24-hour by switching the hour specifier
+        // and removing the AM/PM designator.
+        return shortTimePattern.Replace('h', 'H').Replace("t", "").Trim();
     }
 
 
