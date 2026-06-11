@@ -22,9 +22,9 @@ public partial class ComponentDetailsController : AppControllerBase
                                                         .Where(type => typeof(BitComponentBase).IsAssignableFrom(type) && !type.IsAbstract))];
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetParameters))]
+    [McpServerTool(Name = nameof(GetComponentParameters))]
     [Description("Gets the parameters of a specified component.")]
-    public async Task<ComponentParameterDetailsDto[]> GetParameters(string componentName)
+    public async Task<ComponentParameterDetailsDto[]> GetComponentParameters(string componentName)
     {
         if (string.IsNullOrWhiteSpace(componentName))
             return [];

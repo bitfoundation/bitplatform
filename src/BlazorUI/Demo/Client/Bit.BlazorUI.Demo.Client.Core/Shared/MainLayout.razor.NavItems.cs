@@ -1,9 +1,9 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Shared;
+namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class MainLayout
 {
 
-    private readonly List<BitNavItem> _navItems =
+    public static readonly List<BitNavItem> NavItems =
     [
         new() { Text = "Overview", Url = "/overview", AdditionalUrls = ["/components"] },
         new() { Text = "Getting started", Url = "/getting-started" },
@@ -184,3 +184,4 @@ public partial class MainLayout
         new() { Text = "Theming", Url = "/theming" },
     ];
 }
+
