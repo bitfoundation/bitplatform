@@ -1,15 +1,16 @@
 namespace BitBlazorUI {
-    export class ProModal {
-        private static _dragDropListeners: any = {};
+    export class DragDrop {
+        private static _listeners: { [key: string]: any } = {};
 
-        public static setupDragDrop(containerSelector: string, dragElementSelector: string) {
-            ProModal.removeDragDrop(containerSelector, dragElementSelector);
-            const listeners: any = {};
-            ProModal._dragDropListeners[containerSelector] = listeners;
+        public static setup(key: string, containerSelector: string, dragElementSelector: string) {
+            DragDrop.remove(key, dragElementSelector);
 
             const element = document.querySelector(containerSelector) as HTMLElement;
             const dragElement = document.querySelector(dragElementSelector) as HTMLElement;
             if (!element || !dragElement) return;
+
+            const listeners: any = {};
+            DragDrop._listeners[key] = listeners;
 
             let x = 0;
             let y = 0;
@@ -49,8 +50,8 @@ namespace BitBlazorUI {
             }
         }
 
-        public static removeDragDrop(containerSelector: string, dragElementSelector: string) {
-            const listeners = ProModal._dragDropListeners[containerSelector];
+        public static remove(key: string, dragElementSelector: string) {
+            const listeners = DragDrop._listeners[key];
             if (!listeners) return;
 
             const dragElement = document.querySelector(dragElementSelector) as HTMLElement;
@@ -66,7 +67,7 @@ namespace BitBlazorUI {
             delete listeners['pointerdown'];
             delete listeners['pointermove'];
             delete listeners['pointerup'];
-            delete ProModal._dragDropListeners[containerSelector];
+            delete DragDrop._listeners[key];
         }
     }
 }

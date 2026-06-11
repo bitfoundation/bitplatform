@@ -10,6 +10,15 @@
           SubClasses="componentSubClasses"
           GitHubUrl="Surfaces/Modal/BitModal.razor"
           GitHubDemoUrl="Surfaces/Modal/BitModalDemo.razor">
+    <NotesTemplate>
+        <BitMessage Color="BitColor.Info">
+            There are two different modal components available for different purposes: <b>BitModal</b> is a basic,
+            lightweight modal for simple pop-up content, while
+            <BitLink Href="/components/promodal">BitProModal</BitLink> is an advanced modal with extra features such as
+            dragging, blocking, modeless, positioning, full-size and scroll handling. Pick the one that fits your
+            use-case.
+        </BitMessage>
+    </NotesTemplate>
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <BitButton OnClick="() => isOpenBasic = true">Open Modal</BitButton>
         <BitModal @bind-IsOpen="isOpenBasic">
@@ -29,7 +38,31 @@
         </BitModal>
     </DemoExample>
 
-    <DemoExample Title="Customizing content" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Blocking" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>
+            When <b>Blocking</b> is enabled, the Modal can no longer be light dismissed by clicking on the overlay.
+            Users have to use an explicit action (like a close button) to dismiss it.
+        </div>
+        <br />
+        <BitButton OnClick="() => isOpenBlocking = true">Open blocking Modal</BitButton>
+        <BitModal @bind-IsOpen="isOpenBlocking" Blocking>
+            <div class="modal-header">
+                <span class="modal-header-text">Blocking modal</span>
+                <BitButton Variant="BitVariant.Text" OnClick="() => isOpenBlocking = false" IconName="@BitIconName.ChromeClose" Title="Close" />
+            </div>
+            <div class="modal-body">
+                Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+                Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+                spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+                in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+                are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+            </div>
+        </BitModal>
+    </DemoExample>
+
+    <DemoExample Title="Customizing content" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <BitButton OnClick="() => isOpenCustomContent = true">Open Modal</BitButton>
         <BitModal @bind-IsOpen="isOpenCustomContent">
             <div class="modal-header">
@@ -65,7 +98,7 @@
         </BitModal>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>Discover different events available in the BitModal component.</div><br />
         <BitButton OnClick="() => isEventsOpen = true">Open Modal</BitButton>
         <br /><br />
@@ -94,7 +127,7 @@
         </BitModal>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>
             <div>Using css related parameter users can further customize the modal based on their needs.</div>
             <br /><br />
@@ -174,7 +207,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>Use BitModal in right-to-left (RTL).</div><br />
         <BitButton Dir="BitDir.Rtl" OnClick="() => isOpenRtl = true">باز کردن مُدال</BitButton>
         <BitModal Dir="BitDir.Rtl" @bind-IsOpen="isOpenRtl">

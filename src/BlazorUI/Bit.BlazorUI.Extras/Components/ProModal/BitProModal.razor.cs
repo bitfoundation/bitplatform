@@ -216,24 +216,24 @@ public partial class BitProModal : BitComponentBase
         ClassBuilder.Register(() => ModeFull ? "bit-pmd-mfl" : string.Empty);
         ClassBuilder.Register(() => NoBorder ? string.Empty : "bit-pmd-tbr");
         ClassBuilder.Register(() => Modeless ? "bit-pmd-mdl" : string.Empty);
-        ClassBuilder.Register(() => AbsolutePosition ? "bit-mdl-abs" : string.Empty);
+        ClassBuilder.Register(() => AbsolutePosition ? "bit-pmd-abs" : string.Empty);
         ClassBuilder.Register(() => Position switch
         {
-            BitPosition.TopLeft => "bit-mdl-tlf",
-            BitPosition.TopCenter => "bit-mdl-tcr",
-            BitPosition.TopRight => "bit-mdl-trg",
-            BitPosition.TopStart => "bit-mdl-tst",
-            BitPosition.TopEnd => "bit-mdl-ten",
-            BitPosition.CenterLeft => "bit-mdl-clf",
-            BitPosition.Center => "bit-mdl-ctr",
-            BitPosition.CenterRight => "bit-mdl-crg",
-            BitPosition.CenterStart => "bit-mdl-cst",
-            BitPosition.CenterEnd => "bit-mdl-cen",
-            BitPosition.BottomLeft => "bit-mdl-blf",
-            BitPosition.BottomCenter => "bit-mdl-bcr",
-            BitPosition.BottomRight => "bit-mdl-brg",
-            BitPosition.BottomStart => "bit-mdl-bst",
-            BitPosition.BottomEnd => "bit-mdl-ben",
+            BitPosition.TopLeft => "bit-pmd-tlf",
+            BitPosition.TopCenter => "bit-pmd-tcr",
+            BitPosition.TopRight => "bit-pmd-trg",
+            BitPosition.TopStart => "bit-pmd-tst",
+            BitPosition.TopEnd => "bit-pmd-ten",
+            BitPosition.CenterLeft => "bit-pmd-clf",
+            BitPosition.Center => "bit-pmd-ctr",
+            BitPosition.CenterRight => "bit-pmd-crg",
+            BitPosition.CenterStart => "bit-pmd-cst",
+            BitPosition.CenterEnd => "bit-pmd-cen",
+            BitPosition.BottomLeft => "bit-pmd-blf",
+            BitPosition.BottomCenter => "bit-pmd-bcr",
+            BitPosition.BottomRight => "bit-pmd-brg",
+            BitPosition.BottomStart => "bit-pmd-bst",
+            BitPosition.BottomEnd => "bit-pmd-ben",
             _ => string.Empty
         });
     }
@@ -253,7 +253,7 @@ public partial class BitProModal : BitComponentBase
 
                 if (Draggable)
                 {
-                    _ = _js.BitProModalSetupDragDrop(_containerSelector, _dragElementSelector);
+                    _ = _js.BitDragDropSetup(_containerSelector, _containerSelector, _dragElementSelector);
                 }
 
                 _offsetTop = 0;
@@ -275,7 +275,7 @@ public partial class BitProModal : BitComponentBase
             {
                 _internIsOpen = false;
 
-                _ = _js.BitProModalRemoveDragDrop(_containerSelector, _dragElementSelector);
+                _ = _js.BitDragDropRemove(_containerSelector, _dragElementSelector);
 
                 await ToggleScroll(false);
             }
@@ -292,21 +292,7 @@ public partial class BitProModal : BitComponentBase
 
     private async Task HandleInnerIsOpenChanged(bool open)
     {
-        if (open)
-        {
-            await AssignIsOpen(true);
-            return;
-        }
-
-        // a dismiss attempt coming from the overlay click of the underlying BitModal.
-        if (Blocking)
-        {
-            // veto the dismiss and keep the Modal open.
-            StateHasChanged();
-            return;
-        }
-
-        await AssignIsOpen(false);
+        await AssignIsOpen(open);
     }
 
     private async Task HandleOverlayClick(MouseEventArgs e)
@@ -356,7 +342,7 @@ public partial class BitProModal : BitComponentBase
         {
             if (_internIsOpen)
             {
-                _ = _js.BitProModalRemoveDragDrop(_containerSelector, _dragElementSelector);
+                _ = _js.BitDragDropRemove(_containerSelector, _dragElementSelector);
                 await ToggleScroll(false);
             }
         }

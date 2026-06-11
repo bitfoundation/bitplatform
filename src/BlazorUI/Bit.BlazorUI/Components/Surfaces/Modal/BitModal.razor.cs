@@ -3,6 +3,12 @@
 /// <summary>
 /// Modals are temporary pop-ups that take focus from the page or app and require people to interact with them.
 /// </summary>
+/// <remarks>
+/// There are two different modal components available for different purposes: BitModal is a basic, lightweight modal
+/// for simple pop-up content, while BitProModal (in the Bit.BlazorUI.Extras package) is an advanced modal with extra
+/// features such as dragging, blocking, modeless, positioning, full-size and scroll handling. Use BitProModal if you
+/// need any of those advanced behaviors.
+/// </remarks>
 public partial class BitModal : BitComponentBase
 {
     private bool _internalIsOpen;
@@ -18,6 +24,11 @@ public partial class BitModal : BitComponentBase
     /// Whether the Modal should be announced as modal to assistive technologies.
     /// </summary>
     [Parameter] public bool AriaModal { get; set; } = true;
+
+    /// <summary>
+    /// When enabled, prevents the Modal from being light dismissed by clicking outside the Modal (on the overlay).
+    /// </summary>
+    [Parameter] public bool Blocking { get; set; }
 
     /// <summary>
     /// The content of the Modal, it can be any custom tag or text.
@@ -132,6 +143,8 @@ public partial class BitModal : BitComponentBase
         if (ModalParameters.IsEnabled is false) return;
 
         await ModalParameters.OnOverlayClick.InvokeAsync(e);
+
+        if (Blocking) return;
 
         if (await AssignIsOpen(false) is false) return;
     }
