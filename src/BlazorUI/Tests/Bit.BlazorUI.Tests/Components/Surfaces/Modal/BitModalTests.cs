@@ -29,6 +29,29 @@ public class BitModalTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
+    public void BitModalIsBlockingTest(bool isBlocking)
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.Blocking, isBlocking);
+            parameters.Add(p => p.IsOpen, isModalOpen);
+            parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
+        });
+
+        var bitModal = com.FindAll(".bit-mdl");
+        Assert.AreEqual(1, bitModal.Count);
+
+        var overlayElement = com.Find(".bit-mdl-ovl");
+        overlayElement.Click();
+
+        bitModal = com.FindAll(".bit-mdl");
+        Assert.AreEqual(isBlocking ? 1 : 0, bitModal.Count);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
     public void BitModalIsOpenTest(bool isOpen)
     {
         var com = RenderComponent<BitModal>(parameters =>

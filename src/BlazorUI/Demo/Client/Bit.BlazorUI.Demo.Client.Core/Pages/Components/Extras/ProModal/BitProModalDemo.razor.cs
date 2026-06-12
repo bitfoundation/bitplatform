@@ -53,6 +53,13 @@ public partial class BitProModalDemo
         },
         new()
         {
+            Name = "CloseButtonTitle",
+            Type = "string",
+            DefaultValue = "Close",
+            Description = "The title (and aria-label) of the close button for accessibility and localization.",
+        },
+        new()
+        {
             Name = "CloseIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",

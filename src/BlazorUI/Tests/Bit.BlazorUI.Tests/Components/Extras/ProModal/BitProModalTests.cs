@@ -24,7 +24,7 @@ public class BitProModalTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitProModalBlockingShouldPreventOverlayDismissAndOverlayCallback()
+    public void BitProModalBlockingShouldPreventOverlayDismissButStillInvokeOverlayCallback()
     {
         var dismissed = 0;
         var overlayClicked = 0;
@@ -44,7 +44,7 @@ public class BitProModalTests : BunitTestContext
         {
             Assert.IsTrue(isOpen);
             Assert.AreEqual(0, dismissed);
-            Assert.AreEqual(0, overlayClicked);
+            Assert.AreEqual(1, overlayClicked);
             Assert.AreEqual("alertdialog", com.Find(".bit-mdl").Attributes["role"]?.Value);
         });
     }

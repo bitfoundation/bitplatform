@@ -5,7 +5,7 @@
 /// </summary>
 public partial class BitProModal : BitComponentBase
 {
-    private bool _internIsOpen;
+    private bool _internalIsOpen;
     private float _offsetTop;
 
 
@@ -44,6 +44,11 @@ public partial class BitProModal : BitComponentBase
     /// Custom CSS classes for different parts of the BitProModal component.
     /// </summary>
     [Parameter] public BitProModalClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The title (and aria-label) of the close button for accessibility and localization.
+    /// </summary>
+    [Parameter] public string CloseButtonTitle { get; set; } = "Close";
 
     /// <summary>
     /// Gets or sets the icon to display in the close button using custom CSS classes for external icon libraries.
@@ -215,7 +220,6 @@ public partial class BitProModal : BitComponentBase
     {
         ClassBuilder.Register(() => ModeFull ? "bit-pmd-mfl" : string.Empty);
         ClassBuilder.Register(() => NoBorder ? string.Empty : "bit-pmd-tbr");
-        ClassBuilder.Register(() => Modeless ? "bit-pmd-mdl" : string.Empty);
         ClassBuilder.Register(() => AbsolutePosition ? "bit-pmd-abs" : string.Empty);
         ClassBuilder.Register(() => Position switch
         {
@@ -247,9 +251,9 @@ public partial class BitProModal : BitComponentBase
     {
         if (IsOpen)
         {
-            if (_internIsOpen is false)
+            if (_internalIsOpen is false)
             {
-                _internIsOpen = true;
+                _internalIsOpen = true;
 
                 if (Draggable)
                 {
@@ -277,9 +281,9 @@ public partial class BitProModal : BitComponentBase
         }
         else
         {
-            if (_internIsOpen)
+            if (_internalIsOpen)
             {
-                _internIsOpen = false;
+                _internalIsOpen = false;
 
                 _ = _js.BitDragDropRemove(_containerSelector, _dragElementSelector);
 
@@ -342,9 +346,9 @@ public partial class BitProModal : BitComponentBase
 
         try
         {
-            if (_internIsOpen)
+            if (_internalIsOpen)
             {
-                _ = _js.BitDragDropRemove(_containerSelector, _dragElementSelector);
+                await _js.BitDragDropRemove(_containerSelector, _dragElementSelector);
                 await ToggleScroll(false);
             }
         }

@@ -9,6 +9,8 @@ public class BitModalParameters
     public BitDir? Dir { get { return _modal?.Dir ?? field; } set; }
 
 
+    public bool Blocking { get { return _modal?.Blocking is true ? true : field; } set; }
+
     public BitModalClassStyles? Classes { get; set; }
 
     public bool FullHeight { get { return _modal?.FullHeight is true ? true : field; } set; }
@@ -70,6 +72,7 @@ public class BitModalParameters
             IsEnabled = (params1.IsEnabled is false || params2.IsEnabled is false) is false,
             HtmlAttributes = params1.HtmlAttributes.Concat(params2.HtmlAttributes).ToDictionary(kv => kv.Key, kv => kv.Value),
             Dir = params1.Dir ?? params2.Dir,
+            Blocking = params1.Blocking || params2.Blocking,
             Classes = BitModalClassStyles.Merge(params1.Classes, params2.Classes),
             FullHeight = params1.FullHeight || params2.FullHeight,
             FullWidth = params1.FullWidth || params2.FullWidth,

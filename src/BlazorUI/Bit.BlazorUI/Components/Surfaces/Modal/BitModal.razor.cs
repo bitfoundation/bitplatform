@@ -115,6 +115,7 @@ public partial class BitModal : BitComponentBase
 
     protected override void RegisterCssStyles()
     {
+        StyleBuilder.Register(() => Styles?.Root);
         StyleBuilder.Register(() => ModalParameters.Styles?.Root);
     }
 
