@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Surfaces.Modal;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.ModalService;
 
 public partial class BitModalServiceDemo
 {

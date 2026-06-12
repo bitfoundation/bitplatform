@@ -210,51 +210,6 @@ private bool isOpenBasic;";
 </style>
 
 
-<BitButton OnClick=""() => isOpenBlocking = true"">Open blocking Modal</BitButton>
-
-<BitModal @bind-IsOpen=""isOpenBlocking"" Blocking>
-    <div class=""modal-header"">
-        <span class=""modal-header-text"">Blocking modal</span>
-        <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenBlocking = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
-    </div>
-    <div class=""modal-body"">
-        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
-        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-    </div>
-</BitModal>";
-    private readonly string example2CsharpCode = @"
-private bool isOpenBlocking;";
-
-    private readonly string example3RazorCode = @"
-<style>
-    .modal-header {
-        gap: 0.5rem;
-        display: flex;
-        font-size: 24px;
-        font-weight: 600;
-        align-items: center;
-        padding: 12px 12px 14px 24px;
-        border-top: 4px solid #0054C6;
-    }
-
-    .modal-header-text {
-        flex-grow: 1;
-    }
-
-    .modal-body {
-        max-width: 960px;
-        line-height: 20px;
-        overflow-y: hidden;
-        padding: 0 24px 24px;
-    }
-</style>
-
-
 <BitButton OnClick=""() => isOpenCustomContent = true"">Open Modal</BitButton>
 
 <BitModal @bind-IsOpen=""isOpenCustomContent"">
@@ -289,8 +244,53 @@ private bool isOpenBlocking;";
         begins here, in this quiet moment where everything is possible.
     </div>
 </BitModal>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example2CsharpCode = @"
 private bool isOpenCustomContent;";
+
+    private readonly string example3RazorCode = @"
+<style>
+    .modal-header {
+        gap: 0.5rem;
+        display: flex;
+        font-size: 24px;
+        font-weight: 600;
+        align-items: center;
+        padding: 12px 12px 14px 24px;
+        border-top: 4px solid #0054C6;
+    }
+
+    .modal-header-text {
+        flex-grow: 1;
+    }
+
+    .modal-body {
+        max-width: 960px;
+        line-height: 20px;
+        overflow-y: hidden;
+        padding: 0 24px 24px;
+    }
+</style>
+
+
+<BitButton OnClick=""() => isOpenBlocking = true"">Open blocking Modal</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenBlocking"" Blocking>
+    <div class=""modal-header"">
+        <span class=""modal-header-text"">Blocking modal</span>
+        <BitButton Variant=""BitVariant.Text"" OnClick=""() => isOpenBlocking = false"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+    </div>
+    <div class=""modal-body"">
+        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+        inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+        spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+        in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+        are boundless. This space is yours to craft, yours to shape, yours to bring to life.
+    </div>
+</BitModal>";
+    private readonly string example3CsharpCode = @"
+private bool isOpenBlocking;";
 
     private readonly string example4RazorCode = @"
 <style>

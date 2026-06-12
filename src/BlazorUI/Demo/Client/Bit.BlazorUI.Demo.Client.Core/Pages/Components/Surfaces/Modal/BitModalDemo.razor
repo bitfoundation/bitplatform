@@ -11,13 +11,13 @@
           GitHubUrl="Surfaces/Modal/BitModal.razor"
           GitHubDemoUrl="Surfaces/Modal/BitModalDemo.razor">
     <NotesTemplate>
-        <BitMessage Color="BitColor.Info">
+        <BitText>
             There are two different modal components available for different purposes: <b>BitModal</b> is a basic,
             lightweight modal for simple pop-up content, while
             <BitLink Href="/components/promodal">BitProModal</BitLink> is an advanced modal with extra features such as
             dragging, blocking, modeless, positioning, full-size and scroll handling. Pick the one that fits your
             use-case.
-        </BitMessage>
+        </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
@@ -39,31 +39,7 @@
             </BitModal>
         </DemoExample>
 
-        <DemoExample Title="Blocking" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <div>
-                When <b>Blocking</b> is enabled, the Modal can no longer be light dismissed by clicking on the overlay.
-                Users have to use an explicit action (like a close button) to dismiss it.
-            </div>
-            <br />
-            <BitButton OnClick="() => isOpenBlocking = true">Open blocking Modal</BitButton>
-            <BitModal @bind-IsOpen="isOpenBlocking" Blocking>
-                <div class="modal-header">
-                    <span class="modal-header-text">Blocking modal</span>
-                    <BitButton Variant="BitVariant.Text" OnClick="() => isOpenBlocking = false" IconName="@BitIconName.ChromeClose" Title="Close" />
-                </div>
-                <div class="modal-body">
-                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-                    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
-                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
-                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
-                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
-                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
-                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
-                </div>
-            </BitModal>
-        </DemoExample>
-
-        <DemoExample Title="Customizing content" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Customizing content" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <BitButton OnClick="() => isOpenCustomContent = true">Open Modal</BitButton>
             <BitModal @bind-IsOpen="isOpenCustomContent">
                 <div class="modal-header">
@@ -95,6 +71,30 @@
                     opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
                     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
                     begins here, in this quiet moment where everything is possible.
+                </div>
+            </BitModal>
+        </DemoExample>
+
+        <DemoExample Title="Blocking" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                When <b>Blocking</b> is enabled, the Modal can no longer be light dismissed by clicking on the overlay.
+                Users have to use an explicit action (like a close button) to dismiss it.
+            </div>
+            <br />
+            <BitButton OnClick="() => isOpenBlocking = true">Open blocking Modal</BitButton>
+            <BitModal @bind-IsOpen="isOpenBlocking" Blocking>
+                <div class="modal-header">
+                    <span class="modal-header-text">Blocking modal</span>
+                    <BitButton Variant="BitVariant.Text" OnClick="() => isOpenBlocking = false" IconName="@BitIconName.ChromeClose" Title="Close" />
+                </div>
+                <div class="modal-body">
+                    Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
+                    These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+                    Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
+                    inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
+                    spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
+                    in potential the quiet magic of beginnings, where everything is still to come, and the possibilities
+                    are boundless. This space is yours to craft, yours to shape, yours to bring to life.
                 </div>
             </BitModal>
         </DemoExample>
