@@ -18,6 +18,10 @@
     position: absolute;
 }
 
+// Position utilities map 1:1 to the BitPosition enum. The "start/end" (st/en)
+// variants are the logical/RTL-aware counterparts of the physical "left/right"
+// (lf/rg) variants, so they intentionally share the same LTR rules below while
+// remaining distinct public class names.
 .bit-pmd-tlf {
     align-items: flex-start;
     justify-content: flex-start;
@@ -33,11 +37,13 @@
     justify-content: flex-end;
 }
 
+// logical equivalent of .bit-pmd-tlf (TopStart)
 .bit-pmd-tst {
     align-items: flex-start;
     justify-content: flex-start;
 }
 
+// logical equivalent of .bit-pmd-trg (TopEnd)
 .bit-pmd-ten {
     align-items: flex-start;
     justify-content: flex-end;
@@ -58,11 +64,13 @@
     justify-content: flex-end;
 }
 
+// logical equivalent of .bit-pmd-clf (CenterStart)
 .bit-pmd-cst {
     align-items: center;
     justify-content: flex-start;
 }
 
+// logical equivalent of .bit-pmd-crg (CenterEnd)
 .bit-pmd-cen {
     align-items: center;
     justify-content: flex-end;
@@ -83,11 +91,13 @@
     justify-content: flex-end;
 }
 
+// logical equivalent of .bit-pmd-blf (BottomStart)
 .bit-pmd-bst {
     align-items: flex-end;
     justify-content: flex-start;
 }
 
+// logical equivalent of .bit-pmd-brg (BottomEnd)
 .bit-pmd-ben {
     align-items: flex-end;
     justify-content: flex-end;

@@ -8,6 +8,8 @@ public class BitModalParameters
 
     public BitDir? Dir { get { return _modal?.Dir ?? field; } set; }
 
+    public bool AriaModal { get { return _modal?.AriaModal is false ? false : field; } set; } = true;
+
 
     public bool Blocking { get { return _modal?.Blocking is true ? true : field; } set; }
 
@@ -45,6 +47,8 @@ public class BitModalParameters
         set;
     }
 
+    public bool ShowOverlay { get { return _modal?.ShowOverlay is false ? false : field; } set; } = true;
+
     public BitModalClassStyles? Styles { get; set; }
 
     public string? SubtitleAriaId { get { return _modal?.SubtitleAriaId ?? field; } set; }
@@ -72,6 +76,7 @@ public class BitModalParameters
             IsEnabled = (params1.IsEnabled is false || params2.IsEnabled is false) is false,
             HtmlAttributes = params1.HtmlAttributes.Concat(params2.HtmlAttributes).ToDictionary(kv => kv.Key, kv => kv.Value),
             Dir = params1.Dir ?? params2.Dir,
+            AriaModal = params1.AriaModal && params2.AriaModal,
             Blocking = params1.Blocking || params2.Blocking,
             Classes = BitModalClassStyles.Merge(params1.Classes, params2.Classes),
             FullHeight = params1.FullHeight || params2.FullHeight,
@@ -87,6 +92,7 @@ public class BitModalParameters
                 await params1.OnOverlayClick.InvokeAsync();
                 await params2.OnOverlayClick.InvokeAsync();
             }),
+            ShowOverlay = params1.ShowOverlay && params2.ShowOverlay,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
             SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,
             TitleAriaId = params1.TitleAriaId ?? params2.TitleAriaId,
