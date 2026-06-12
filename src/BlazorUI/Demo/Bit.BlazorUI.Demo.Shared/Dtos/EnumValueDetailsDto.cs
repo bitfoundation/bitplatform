@@ -2,7 +2,7 @@
 
 public class EnumValueDetailsDto
 {
-    public string? Name { get; set; }
+    public required string Name { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; set; }

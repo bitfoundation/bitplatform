@@ -32,7 +32,7 @@ public partial class ComponentsController : AppControllerBase
                     AddNodes(item.ChildItems);
                 }
 
-                if (!string.IsNullOrEmpty(item.Url) && item.Url.StartsWith("/components/"))
+                if (!string.IsNullOrEmpty(item.Url) && item.Url.StartsWith("/components/", StringComparison.OrdinalIgnoreCase))
                 {
                     var name = $"Bit{item.Text}";
 

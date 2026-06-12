@@ -5,9 +5,6 @@ using ModelContextProtocol.Server;
 
 namespace Bit.BlazorUI.Demo.Server.Controllers;
 
-// Subject to change:
-// This controller / mcp endpoint is designed to be used for experimental purposes.
-
 [ApiController]
 [McpServerToolType]
 [Route("api/[controller]/[action]")]
@@ -30,13 +27,10 @@ public partial class ComponentEnumsController : AppControllerBase
         SummariesXmlDocument ??= await LoadSummariesXmlDocumentAsync();
 
         var enumType = EnumTypes.FirstOrDefault(t =>
-            t.Name.Equals(enumName, StringComparison.InvariantCultureIgnoreCase));
+            t.Name.Equals(enumName, StringComparison.OrdinalIgnoreCase));
 
         if (enumType is null)
             return null;
-
-        var typeXmlMember = SummariesXmlDocument?.Descendants("member")
-                                .FirstOrDefault(m => m.Attribute("name")?.Value == $"T:{enumType.FullName}");
 
         var values = Enum.GetNames(enumType).Select(name =>
         {

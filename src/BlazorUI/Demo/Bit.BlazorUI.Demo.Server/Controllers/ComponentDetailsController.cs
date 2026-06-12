@@ -7,9 +7,6 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Server.Controllers;
 
-// Subject to change:
-// This controller / mcp endpoint is designed to be used for experimental purposes.
-
 [ApiController]
 [McpServerToolType]
 [Route("api/[controller]/[action]")]
@@ -39,7 +36,7 @@ public partial class ComponentDetailsController : AppControllerBase
         {
             var typeName = type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name;
 
-            return typeName.Equals(componentName, StringComparison.InvariantCultureIgnoreCase);
+            return typeName.Equals(componentName, StringComparison.OrdinalIgnoreCase);
         });
 
         if (componentType is null)
@@ -85,7 +82,7 @@ public partial class ComponentDetailsController : AppControllerBase
 
         var demoPageType = typeof(Client.Core.Routes).Assembly
             .GetExportedTypes()
-            .SingleOrDefault(t => t.Name == $"{componentName}Demo");
+            .SingleOrDefault(t => string.Equals(t.Name, $"{componentName}Demo", StringComparison.OrdinalIgnoreCase));
 
         if (demoPageType is null)
             return "No demo page found for the specified component.";

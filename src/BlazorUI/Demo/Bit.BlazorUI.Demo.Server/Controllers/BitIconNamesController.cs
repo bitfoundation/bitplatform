@@ -4,9 +4,6 @@ using ModelContextProtocol.Server;
 
 namespace Bit.BlazorUI.Demo.Server.Controllers;
 
-// Subject to change:
-// This controller / mcp endpoint is designed to be used for experimental purposes.
-
 [ApiController]
 [McpServerToolType]
 [Route("api/[controller]/[action]")]
