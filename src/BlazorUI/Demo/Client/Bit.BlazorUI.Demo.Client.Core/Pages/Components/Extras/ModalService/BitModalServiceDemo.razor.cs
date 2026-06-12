@@ -60,7 +60,7 @@ public partial class BitModalServiceDemo
     private readonly string example1RazorCode = @"
 <BitButton OnClick=""ShowModal"">Show</BitButton>
 
-<BitModalContainer ModalParameters=""new() { FullWidth = true }"" />";
+<BitModalContainer ModalParameters=""@(new() { FullWidth = true })"" />";
     private readonly string example1CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 

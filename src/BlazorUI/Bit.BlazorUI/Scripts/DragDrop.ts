@@ -6,7 +6,7 @@ namespace BitBlazorUI {
             DragDrop.remove(key, dragElementSelector);
 
             const element = document.querySelector(containerSelector) as HTMLElement;
-            const dragElement = document.querySelector(dragElementSelector) as HTMLElement;
+            const dragElement = element?.querySelector(dragElementSelector) as HTMLElement;
             if (!element || !dragElement) return;
 
             const listeners: any = {};

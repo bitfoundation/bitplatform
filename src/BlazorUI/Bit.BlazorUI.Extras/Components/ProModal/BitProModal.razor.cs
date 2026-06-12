@@ -303,10 +303,6 @@ public partial class BitProModal : BitComponentBase
 
     private async Task HandleOverlayClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
-
-        if (Blocking) return;
-
         await OnOverlayClick.InvokeAsync(e);
     }
 

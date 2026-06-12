@@ -589,7 +589,8 @@ private bool isModelessProModalOpen;
 private bool isModeFullProModalOpen;
 private bool isAutoToggleScrollProModalOpen;
 private bool isNoBorderProModalOpen;
-private BitProModal bitProModalRef = default!;";
+private BitProModal bitProModalRef = default!;
+private ElementReference appShellContainer = default!;";
 
     private readonly string example4RazorCode = @"
 <BitButton OnClick=""() => isOpenFullSize = true"">Open ProModal with FullSize</BitButton>
