@@ -124,7 +124,6 @@ public partial class BitProModal : BitComponentBase
     /// Whether the Modal is displayed.
     /// </summary>
     [Parameter, TwoWayBound]
-    [CallOnSet(nameof(OnSetIsOpen))]
     public bool IsOpen { get; set; }
 
     /// <summary>
@@ -305,23 +304,11 @@ public partial class BitProModal : BitComponentBase
         await AssignIsOpen(open);
     }
 
-    private async Task HandleOverlayClick(MouseEventArgs e)
-    {
-        await OnOverlayClick.InvokeAsync(e);
-    }
-
     private async Task CloseModal(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
 
         await AssignIsOpen(false);
-    }
-
-    private void OnSetIsOpen()
-    {
-        if (IsOpen || IsRendered is false) return;
-
-        _ = OnDismiss.InvokeAsync().ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
     private async Task ToggleScroll(bool isOpen)
