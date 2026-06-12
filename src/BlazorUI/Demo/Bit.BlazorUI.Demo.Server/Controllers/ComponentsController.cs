@@ -50,7 +50,6 @@ public partial class ComponentsController : AppControllerBase
                     components.Add(new ComponentListDetailsDto
                     {
                         Name = name,
-                        Url = $"https://blazorui-ai.bitplatform.dev{item.Url}",
                         AlsoKnownAs = alsoKnownAs,
                         Description = xmlProperty?.Element("summary")?.Value?.Trim()
                     });

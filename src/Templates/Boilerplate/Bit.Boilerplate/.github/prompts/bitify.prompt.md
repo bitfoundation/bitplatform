@@ -1,6 +1,6 @@
 ---
 mode: 'agent'
-description: Modernizes Blazor pages by replacing raw HTML elements and custom CSS with Bit.BlazorUI components and theme-aware styling. Uses MCP tools to discover components, inspect their exact APIs, and fetch live examples.
+description: Modernizes Blazor pages by replacing raw HTML elements and custom CSS with Bit.BlazorUI components and theme-aware styling. Uses MCP tools to discover components, inspect their exact APIs, and retrieve real code examples.
 ---
 
 # Bitify: Replace raw HTML/CSS with Bit.BlazorUI components
@@ -8,9 +8,10 @@ description: Modernizes Blazor pages by replacing raw HTML elements and custom C
 You are an expert Blazor modernization agent. Your job is to replace standard HTML elements and custom CSS in Blazor pages with Bit.BlazorUI components and theme-aware styling.
 
 You have access to the following MCP tools — use them instead of guessing APIs:
-- **`GetBitBlazorUIComponentsList`** — returns the full catalog of available components with descriptions and demo URLs.
+- **`GetBitBlazorUIComponentsList`** — returns the full catalog of available components with descriptions.
 - **`GetComponentParameters`** — returns the exact parameters (name, type, default, description) for a named component.
-- **`fetch` / `get_web_pages`** — fetch live examples from a component's demo page (URL pattern: `https://blazorui-ai.bitplatform.dev/components/{name}`).
+- **`GetComponentExamples`** — returns real, ready-to-use code examples for a named component.
+- **`GetEnumDetails`** — returns all values and descriptions for a named Bit.BlazorUI enum (e.g., `BitColor`, `BitVariant`, `BitSize`).
 - **`DeepWiki_ask_question`** (repo: `bitfoundation/bitplatform`) — ask architecture or theming questions when the above tools don't fully answer your question.
 
 ---
@@ -29,26 +30,12 @@ Read the `.razor`, `.razor.cs`, and `.razor.scss` files in parallel. Identify:
 
 Call `GetBitBlazorUIComponentsList` **once** to get the complete component catalog. Use the returned list to match HTML elements to Bit.BlazorUI components. Do **not** guess component names — always verify them from this list first.
 
-### Step 3: Inspect Exact APIs
+### Step 3: Inspect Exact APIs and Examples
 
-For **each component** you plan to use, call `GetComponentParameters("<ComponentName>")` to get its exact parameter names, types, and defaults. Never assume parameter names from memory — always look them up.
+For **each component** you plan to use, call `GetComponentExamples("<ComponentName>")` **in parallel**
 
-### Step 4: Fetch Usage Examples
-
-For each component you plan to use, fetch its demo page:
-
-```
-https://blazorui-ai.bitplatform.dev/components/{component-name-lowercase}
-```
-
-Examples:
-- `https://blazorui-ai.bitplatform.dev/components/stack`
-- `https://blazorui-ai.bitplatform.dev/components/button`
-- `https://blazorui-ai.bitplatform.dev/components/textfield`
-
-Extract **real code samples** from the fetched page to ensure correct syntax, binding patterns, and parameter usage.
-
-### Step 5: Ask DeepWiki for Theming or Architecture Questions
+Never assume parameter names or usage patterns from memory — always look them up.
+### Step 4: Ask DeepWiki for Theming or Architecture Questions
 
 If you need to understand theming, SCSS variable usage, or how a specific pattern fits the project architecture, ask:
 
@@ -102,7 +89,7 @@ Run `dotnet build` in the `Boilerplate.Server.Web` project directory to confirm 
 
 ## Rules
 
-- **Never guess** a component name, parameter name, or parameter type. Always verify with `GetBitBlazorUIComponentsList` and `GetComponentParameters`.
+- **Never guess** a component name, parameter name, enum value, or parameter type. Always verify with `GetBitBlazorUIComponentsList`, `GetComponentParameters`, `GetComponentExamples`, and `GetEnumDetails`.
 - **Never hardcode colors** in Razor or SCSS. Use `BitColor` enum, `BitCss.Class`, `BitCss.Var`, or `$bit-color-*` SCSS variables.
 - **Always use `WrapHandled`** for event handlers in Razor to prevent unhandled exceptions from crashing the page.
 - **Use `::deep`** for all Bit.BlazorUI component style overrides in SCSS.
