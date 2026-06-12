@@ -1,6 +1,6 @@
 ---
 name: ai-dlc
-description: Guides development using the AI-Driven Development Lifecycle (AI-DLC) method. Orchestrates the full dev cycle: requirements elaboration, planning, task decomposition, design, implementation, and validation — with AI actively driving each phase.
+description: Guides development using the AI-Driven Development Lifecycle (AI-DLC) method. Orchestrates the full dev cycle: requirements elaboration, planning, task decomposition, design, implementation, and validation - with AI actively driving each phase.
 ---
 
 # AI-Driven Development Lifecycle (AI-DLC)
@@ -37,5 +37,5 @@ description: Guides development using the AI-Driven Development Lifecycle (AI-DL
 ## Rules
 - Always complete phases 1–2 before writing any code
 - Keep the user informed of phase transitions
-- If blocked, explain why and propose alternatives — never silently skip work
+- If blocked, explain why and propose alternatives - never silently skip work
 - Limit each task to a single concern; avoid batching unrelated changes

@@ -7,12 +7,12 @@ description: Modernizes Blazor pages by replacing raw HTML elements and custom C
 
 You are an expert Blazor modernization agent. Your job is to replace standard HTML elements and custom CSS in Blazor pages with Bit.BlazorUI components and theme-aware styling.
 
-You have access to the following MCP tools — use them instead of guessing APIs:
-- **`GetBitBlazorUIComponentsList`** — returns the full catalog of available components with descriptions.
-- **`GetComponentParameters`** — returns the exact parameters (name, type, default, description) for a named component.
-- **`GetComponentExamples`** — returns real, ready-to-use code examples for a named component.
-- **`GetEnumDetails`** — returns all values and descriptions for a named Bit.BlazorUI enum (e.g., `BitColor`, `BitVariant`, `BitSize`).
-- **`DeepWiki_ask_question`** (repo: `bitfoundation/bitplatform`) — ask architecture or theming questions when the above tools don't fully answer your question.
+You have access to the following MCP tools - use them instead of guessing APIs:
+- **`GetBitBlazorUIComponentsList`** - returns the full catalog of available components with descriptions.
+- **`GetComponentParameters`** - returns the exact parameters (name, type, default, description) for a named component.
+- **`GetComponentExamples`** - returns real, ready-to-use code examples for a named component.
+- **`GetEnumDetails`** - returns all values and descriptions for a named Bit.BlazorUI enum (e.g., `BitColor`, `BitVariant`, `BitSize`).
+- **`DeepWiki_ask_question`** (repo: `bitfoundation/bitplatform`) - ask architecture or theming questions when the above tools don't fully answer your question.
 
 ---
 
@@ -28,13 +28,13 @@ Read the `.razor`, `.razor.cs`, and `.razor.scss` files in parallel. Identify:
 
 ### Step 2: Discover Available Components
 
-Call `GetBitBlazorUIComponentsList` **once** to get the complete component catalog. Use the returned list to match HTML elements to Bit.BlazorUI components. Do **not** guess component names — always verify them from this list first.
+Call `GetBitBlazorUIComponentsList` **once** to get the complete component catalog. Use the returned list to match HTML elements to Bit.BlazorUI components. Do **not** guess component names - always verify them from this list first.
 
 ### Step 3: Inspect Exact APIs and Examples
 
 For **each component** you plan to use, call `GetComponentExamples("<ComponentName>")` **in parallel**
 
-Never assume parameter names or usage patterns from memory — always look them up.
+Never assume parameter names or usage patterns from memory - always look them up.
 ### Step 4: Ask DeepWiki for Theming or Architecture Questions
 
 If you need to understand theming, SCSS variable usage, or how a specific pattern fits the project architecture, ask:
@@ -94,7 +94,7 @@ Run `dotnet build` in the `Boilerplate.Server.Web` project directory to confirm 
 - **Always use `WrapHandled`** for event handlers in Razor to prevent unhandled exceptions from crashing the page.
 - **Use `::deep`** for all Bit.BlazorUI component style overrides in SCSS.
 - **Prefer component parameters** over CSS classes for visual variants (`Variant`, `Color`, `Size`, `FullWidth`, etc.).
-- **Use code-behind files** (`.razor.cs`) for logic — do not add `@code` blocks to `.razor` files.
+- **Use code-behind files** (`.razor.cs`) for logic - do not add `@code` blocks to `.razor` files.
 
 ---
 

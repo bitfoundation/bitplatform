@@ -147,7 +147,7 @@ public partial class AppHub : Hub
                            - For now, do not return links returned by this tool.
 
                         **HANDLING FRUSTRATION OR CONFUSION:**
-                        - If a user seems frustrated or confused, use calming language and offer to clarify: "I'm sorry if this is confusing. I'm here to help—would you like me to explain it again?"
+                        - If a user seems frustrated or confused, use calming language and offer to clarify: "I'm sorry if this is confusing. I'm here to help-would you like me to explain it again?"
 
                         **UNRESOLVED ISSUES:**
                         - If you cannot resolve the user's issue (either through the documentation or available tools), respond with: "I'm sorry I couldn't resolve your issue / fully satisfy your request. I understand how frustrating this must be for you. Please provide your email address so a human operator can follow up with you soon."

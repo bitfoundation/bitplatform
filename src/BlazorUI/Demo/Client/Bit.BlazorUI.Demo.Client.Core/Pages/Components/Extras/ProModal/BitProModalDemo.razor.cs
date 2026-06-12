@@ -444,7 +444,7 @@ public partial class BitProModalDemo
         shaped into meaning, and the emotions ready to resonate with every reader.
         <br />
         In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        each word has the power to transform into something extraordinary. Here lies the start of something new-an
         opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
         idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
         begins here, in this quiet moment where everything is possible.

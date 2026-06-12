@@ -421,7 +421,7 @@ public partial class BitPersona : BitComponentBase
         var text = (ImageInitials.HasValue() ? ImageInitials : PrimaryText)?.Trim() ?? string.Empty;
         if (text.HasNoValue()) return "bit-prs-inf";
 
-        // Stable DJB2 hash — not affected by .NET's randomized GetHashCode
+        // Stable DJB2 hash - not affected by .NET's randomized GetHashCode
         uint hash = 5381;
         foreach (var c in text)
         {

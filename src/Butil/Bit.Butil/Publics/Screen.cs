@@ -75,7 +75,7 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
         => await js.Invoke<float>("BitButil.screen.width");
 
     /// <summary>
-    /// Fired on a specific screen when it changes in some way — width or height, 
+    /// Fired on a specific screen when it changes in some way - width or height, 
     /// available width or height, color depth, or orientation.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event">https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event</see>
@@ -92,7 +92,7 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
-    /// Fired on a specific screen when it changes in some way — width or height, 
+    /// Fired on a specific screen when it changes in some way - width or height, 
     /// available width or height, color depth, or orientation.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event">https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event</see>
@@ -107,7 +107,7 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
-    /// Fired on a specific screen when it changes in some way — width or height, 
+    /// Fired on a specific screen when it changes in some way - width or height, 
     /// available width or height, color depth, or orientation.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event">https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event</see>
