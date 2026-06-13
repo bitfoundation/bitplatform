@@ -3,12 +3,15 @@ namespace BitBlazorUI {
         private static readonly DEFAULT_CALLOUT: BitCallout = { calloutId: '' };
 
         public static current = Callouts.DEFAULT_CALLOUT;
+        // Matches the attributes that Blazor's CSS isolation generates (e.g. `b-abc1234567`).
+        private static readonly CSS_SCOPE_REGEX = /^b-[a-z0-9]+$/i;
         private static _calloutOriginalParents: Map<string, {
             parent: Element | null,
             nextSibling: Node | null,
             overlay: HTMLElement | null,
             overlayParent: Element | null,
-            overlayNextSibling: Node | null
+            overlayNextSibling: Node | null,
+            wrapper: HTMLElement | null
         }> = new Map();
 
         public static toggle(
@@ -171,24 +174,59 @@ namespace BitBlazorUI {
         }
 
         private static moveCalloutToBody(calloutId: string, callout: HTMLElement, overlayId: string) {
+            if (Callouts._calloutOriginalParents.has(calloutId)) return;
             if (callout.parentElement === document.body) return;
 
             const overlay = overlayId ? document.getElementById(overlayId) : null;
             const parent = callout.parentElement;
             const nextSibling = parent ? callout.nextSibling : null;
 
+            // Relocating the callout to the body escapes the clipping/stacking-context issues of
+            // its ancestors, but it also detaches it from the DOM subtree that the Blazor CSS
+            // isolation scopes (and `::deep` rules) of the consuming components rely on.
+            // To preserve those locally defined styles we wrap the relocated callout (and overlay)
+            // in a `display: contents` element that carries the same scope attributes the callout
+            // inherited from its original ancestors, so it keeps matching the scoped selectors.
+            const scopes = Callouts.collectCssScopes(parent);
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'contents';
+            wrapper.setAttribute('data-bit-callout-wrapper', calloutId);
+            for (const scope of scopes) {
+                wrapper.setAttribute(scope, '');
+            }
+
             Callouts._calloutOriginalParents.set(calloutId, {
                 parent: parent,
                 nextSibling: nextSibling,
                 overlay: overlay,
                 overlayParent: overlay?.parentElement ?? null,
-                overlayNextSibling: overlay?.nextSibling ?? null
+                overlayNextSibling: overlay?.nextSibling ?? null,
+                wrapper: wrapper
             });
 
-            document.body.appendChild(callout);
             if (overlay) {
-                document.body.appendChild(overlay);
+                wrapper.appendChild(overlay);
             }
+            wrapper.appendChild(callout);
+            document.body.appendChild(wrapper);
+        }
+
+        private static collectCssScopes(element: Element | null): string[] {
+            const scopes: string[] = [];
+            let current: Element | null = element;
+            while (current && current !== document.body && current !== document.documentElement) {
+                const attributes = current.attributes;
+                for (let i = 0; i < attributes.length; i++) {
+                    const attribute = attributes[i];
+                    if (attribute.value === '' &&
+                        Callouts.CSS_SCOPE_REGEX.test(attribute.name) &&
+                        scopes.indexOf(attribute.name) === -1) {
+                        scopes.push(attribute.name);
+                    }
+                }
+                current = current.parentElement;
+            }
+            return scopes;
         }
 
         private static restoreCalloutToOriginalParent(calloutId: string, callout: HTMLElement) {
@@ -211,6 +249,10 @@ namespace BitBlazorUI {
                 } else {
                     original.overlayParent.appendChild(original.overlay);
                 }
+            }
+
+            if (original.wrapper && original.wrapper.parentElement) {
+                original.wrapper.parentElement.removeChild(original.wrapper);
             }
         }
 
