@@ -256,6 +256,24 @@ internal static class TsPromiseMethodScanner
         return false;
     }
 
+    /// <summary>
+    /// Heuristically decides whether the <c>{</c> at <paramref name="braceIndex"/> opens a function body
+    /// (arrow <c>=&gt;</c>, <c>function (...)</c>, or <c>async function (...)</c>) rather than an object literal
+    /// or block. This is a secondary check used only to skip returns inside nested closures — it never drives the
+    /// primary async/Promise detection, which relies on explicit annotations.
+    /// <para>
+    /// It scans backward via <see cref="SkipNonCodeBackward"/> and <see cref="FindMatchingBackward"/>, which, as
+    /// documented on <see cref="SkipNonCodeBackward"/>, cannot reliably distinguish regex literals (e.g.
+    /// <c>/pattern/</c>) from division, template literals with embedded <c>${...}</c> expressions, or other
+    /// edge-case token boundaries. Such ambiguity can misclassify a brace here.
+    /// </para>
+    /// <para>
+    /// The tradeoff is deliberate: prefer false negatives (occasionally missing a nested function, so a few inner
+    /// returns get scanned) over false positives (wrongly treating real code as a nested body and silently
+    /// dropping a valid top-level return). Maintainers should not "fix" this with more aggressive backward parsing,
+    /// since that trades safe misses for incorrect matches.
+    /// </para>
+    /// </summary>
     private static bool IsNestedFunctionBodyOpen(string text, int braceIndex)
     {
         var i = braceIndex - 1;

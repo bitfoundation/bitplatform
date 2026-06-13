@@ -16,7 +16,7 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask<string> BitUtilsGetProperty(this IJSRuntime jsRuntime, ElementReference element, string property)
+    internal static ValueTask<string?> BitUtilsGetProperty(this IJSRuntime jsRuntime, ElementReference element, string property)
     {
         return jsRuntime.FastInvoke<string>("BitBlazorUI.Utils.getProperty", element, property);
     }

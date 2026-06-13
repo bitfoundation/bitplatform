@@ -18,7 +18,7 @@
         }
 
         public static getDimensions(root: HTMLDivElement, container: HTMLDivElement) {
-            if (!root || !container) return {};
+            if (!root || !container) return null;
 
             try {
                 const rootWidth = root.offsetWidth;
@@ -43,7 +43,7 @@
                 };
             } catch (e) {
                 console.error("BitBlazorUI.Swiper.getDimensions:", e);
-                return {};
+                return null;
             }
         }
 
