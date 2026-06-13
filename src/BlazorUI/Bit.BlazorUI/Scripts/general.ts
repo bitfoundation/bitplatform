@@ -20,21 +20,36 @@ window.addEventListener('scroll', (e: Event) => {
     if (BitBlazorUI.Utils.isTouchDevice()
         && BitBlazorUI.Utils.isEditableElementFocused()
         && document.activeElement
-        && document.getElementById(BitBlazorUI.Callouts.current?.calloutId)?.contains(document.activeElement)) return;
+        && document.getElementById(BitBlazorUI.Callouts.current.calloutId)?.contains(document.activeElement)) return;
 
     BitBlazorUI.Callouts.replaceCurrent();
 }, true);
 
-window.addEventListener('resize', (e: any) => {
-    const resizeTriggeredByOpenningKeyboard = document?.activeElement?.getAttribute('type') === 'text';
-    if (window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH && resizeTriggeredByOpenningKeyboard) return;
-
-    // A resize caused by the virtual keyboard (touch devices, notably iOS) should not
-    // dismiss an open callout that owns the focused editable element.
-    if (BitBlazorUI.Utils.isTouchDevice() && BitBlazorUI.Utils.isEditableElementFocused()) return;
+window.addEventListener('resize', () => {
+    // A resize caused by the virtual keyboard (touch devices, notably iOS) should not dismiss
+    // an open callout that owns the focused editable element; reposition it to the new visible
+    // area instead. Any other resize dismisses the callout as before.
+    if (BitBlazorUI.Utils.isTouchDevice()
+        && BitBlazorUI.Utils.isEditableElementFocused()
+        && document.activeElement
+        && document.getElementById(BitBlazorUI.Callouts.current.calloutId)?.contains(document.activeElement)) {
+        BitBlazorUI.Callouts.reposition();
+        return;
+    }
 
     BitBlazorUI.Callouts.replaceCurrent();
 }, true);
+
+// Keep an open callout aligned with the visible area when the visual viewport changes
+// (iOS keyboard show/hide, pinch-zoom). window 'resize' doesn't fire for these on iOS, so
+// listen to visualViewport directly. Reposition is a no-op when no callout is open.
+if (window.visualViewport) {
+    const onVisualViewportChange = BitBlazorUI.Utils.throttle(() => {
+        BitBlazorUI.Callouts.reposition();
+    }, 16);
+    window.visualViewport.addEventListener('resize', onVisualViewportChange);
+    window.visualViewport.addEventListener('scroll', onVisualViewportChange);
+}
 
 namespace BitBlazorUI {
     export class BitController {
