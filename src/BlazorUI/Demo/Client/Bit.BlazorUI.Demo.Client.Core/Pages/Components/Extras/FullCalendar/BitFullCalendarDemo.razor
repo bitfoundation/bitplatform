@@ -1,0 +1,118 @@
+@page "/components/fullcalendar"
+
+<PageOutlet Url="components/fullcalendar"
+            Title="FullCalendar"
+            Description="fullcalendar component of the bit BlazorUI components" />
+
+<DemoPage Name="FullCalendar"
+          Description="BitFullCalendar is a feature-rich, interactive calendar component with day, week, month, year, agenda, and resource timeline views, event CRUD, drag-and-drop, resize, and culture-aware date handling."
+          SecondaryNames="@(["Calendar", "Scheduler"])"
+          Parameters="componentParameters"
+          SubEnums="componentSubEnums"
+          GitHubExtrasUrl="FullCalendar/BitFullCalendar.razor"
+          GitHubDemoUrl="Extras/FullCalendar/BitFullCalendarDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
+    <IntroductionTemplate>
+        <BitText>
+            The BitFullCalendar brings a complete scheduling experience to Blazor: multiple view modes
+            (day, week, month, year, agenda, and a resource timeline), built-in event create/edit/delete,
+            drag-and-drop, resize, filtering, theming, dark mode, and culture-aware date rendering.
+            Explore a live calendar below — switch views, add events, and drag them around.
+        </BitText>
+        <br />
+        <BitFullCalendar Events="basicEvents" />
+    </IntroductionTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>The simplest usage of a BitFullCalendar is by passing a list of events.</div>
+            <br />
+            <BitFullCalendar Events="basicEvents" />
+        </DemoExample>
+
+        <DemoExample Title="Fluent theme" RazorCode="@example2RazorCode" Id="example2">
+            <div>Use the Theme parameter to switch to the Microsoft Fluent (WinUI-style) theme.</div>
+            <br />
+            <BitFullCalendar Events="themeEvents" Theme="BitFullCalendarTheme.Fluent" />
+        </DemoExample>
+
+        <DemoExample Title="Options" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                Drive initial preferences from code with the Options parameter — dark mode, 12/24-hour
+                time format, day start hour, badge variant, and agenda grouping.
+            </div>
+            <br />
+            <BitFullCalendar Events="optionsEvents" Options="darkOptions" />
+        </DemoExample>
+
+        <DemoExample Title="Event templates" RazorCode="@example4RazorCode" Id="example4">
+            <div>Customize the event card content for each view with the per-view templates.</div>
+            <br />
+            <BitFullCalendar Events="templateEvents"
+                             DayEventTemplate="EventCard"
+                             WeekEventTemplate="EventCard"
+                             MonthEventTemplate="MonthBadge" />
+        </DemoExample>
+
+        <DemoExample Title="Resource timeline" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                Supply Resources to enable the Timeline mode, where rows are resources (rooms, machines,
+                people) and columns are time. Drag events between rows to reassign their resource.
+            </div>
+            <br />
+            <BitFullCalendar Events="resourceEvents"
+                             Resources="resources"
+                             InitialMode="BitFullCalendarMode.Timeline" />
+        </DemoExample>
+
+        <DemoExample Title="OnChange" RazorCode="@example6RazorCode" Id="example6">
+            <div>The OnChange callback is raised whenever a user adds, edits, or deletes an event.</div>
+            <br />
+            <BitFullCalendar Events="changeEvents" OnChange="HandleChange" />
+            <br />
+            <BitText>Last change: <b>@(lastChange ?? "—")</b></BitText>
+        </DemoExample>
+
+        <DemoExample Title="Localization" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                Render the calendar with a localized culture (here Persian, <code>fa-IR</code>) and
+                override UI strings with a customized BitFullCalendarTexts instance.
+            </div>
+            <br />
+            <BitFullCalendar Events="localizationEvents" CultureName="fa-IR" Texts="persianTexts" />
+        </DemoExample>
+
+        <DemoExample Title="Hide filters & settings" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                Hide the built-in color/attendee filters and the settings gear to provide your own
+                external controls or a minimal header.
+            </div>
+            <br />
+            <BitFullCalendar Events="basicEvents" HideFilters HideSettings />
+        </DemoExample>
+    </Examples>
+</DemoPage>
+
+@code {
+    private RenderFragment<BitFullCalendarEvent> EventCard => ev =>
+        @<div style="display:flex;flex-direction:column;gap:2px">
+            <strong>@ev.Title</strong>
+            @if (!string.IsNullOrWhiteSpace(ev.Description))
+            {
+                <span style="font-size:11px;opacity:.8">@ev.Description</span>
+            }
+        </div>;
+
+    private RenderFragment<BitFullCalendarEvent> MonthBadge => ev => @<span>📌 @ev.Title</span>;
+}

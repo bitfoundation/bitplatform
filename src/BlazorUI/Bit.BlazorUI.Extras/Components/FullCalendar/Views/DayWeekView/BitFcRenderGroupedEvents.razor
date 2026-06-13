@@ -1,0 +1,55 @@
+@namespace Bit.BlazorUI
+
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+
+@foreach (var (group, groupIndex) in GroupedEvents.Select((g, i) => (g, i)))
+{
+    @foreach (var ev in group)
+    {
+        var style = BitFullCalendarHelpers.GetEventBlockStyle(ev, Day, groupIndex, GroupedEvents.Count);
+
+        // Count lanes that actually overlap this event in time, to the left and to the right of
+        // this event's lane. Lanes that don't intersect the event's time range are ignored so a
+        // non-conflicting event keeps the full column width.
+        var leftConflicts = 0;
+        var rightConflicts = 0;
+        for (var i = 0; i < GroupedEvents.Count; i++)
+        {
+            if (i == groupIndex)
+                continue;
+
+            var otherGroup = GroupedEvents[i];
+            var conflicts = otherGroup.Any(other =>
+                ev.StartDate < other.EndDate && ev.EndDate > other.StartDate);
+            if (!conflicts)
+                continue;
+
+            if (i < groupIndex) leftConflicts++; else rightConflicts++;
+        }
+
+        var depth = leftConflicts + rightConflicts + 1;
+        var rank = leftConflicts;
+
+        // Offset each successive overlapping card by a percentage of the column width and let the
+        // card extend to the right edge so users can still see most of every card. The step is
+        // capped so even with many conflicts the narrowest card stays at least ~50% wide.
+        var step = depth > 1 ? Math.Min(20.0, 50.0 / (depth - 1)) : 0.0;
+        var left = rank * step;
+        var width = 100.0 - left;
+        var zIndex = 2 + rank;
+
+        <div class="bfc-event-stack-item"
+             style="position:absolute;top:@(style.TopPx.ToString("F2", inv))px;width:@(width.ToString("F2", inv))%;left:@(left.ToString("F2", inv))%;z-index:@zIndex;pointer-events:none;">
+            <BitFcEventBlock Event="ev" OnSelected="OnEventSelected" EventTemplate="EventTemplate" />
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public List<List<BitFullCalendarEvent>> GroupedEvents { get; set; } = [];
+    [Parameter] public DateTime Day { get; set; }
+    [Parameter] public EventCallback<BitFullCalendarEvent> OnEventSelected { get; set; }
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
+}

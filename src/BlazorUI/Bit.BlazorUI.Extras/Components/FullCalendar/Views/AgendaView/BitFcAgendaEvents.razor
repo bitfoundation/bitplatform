@@ -1,0 +1,131 @@
+@namespace Bit.BlazorUI
+@implements IDisposable
+@inject IJSRuntime JS
+
+@{
+    var monthEvents = BitFullCalendarHelpers.GetEventsForMonth(State.Events.ToList(), State.SelectedDate, State.Culture);
+    if (!string.IsNullOrWhiteSpace(_search))
+    {
+        var q = _search.ToLowerInvariant();
+        monthEvents = monthEvents.Where(e =>
+            e.Title.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+            e.Description.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    List<(string? DateKey, string GroupTitle, List<BitFullCalendarEvent> Items)> agendaGroups;
+    if (monthEvents.Count == 0)
+    {
+        agendaGroups = [];
+    }
+    else if (State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)
+    {
+        agendaGroups = monthEvents
+            .GroupBy(e => e.StartDate.ToString("yyyy-MM-dd"))
+            .OrderBy(g => g.Key)
+            .Select(g =>
+            {
+                var title = DateTime.TryParse(g.Key, out var dt)
+                    ? $"{dt.ToString("dddd", State.Culture)}, {BitFullCalendarHelpers.FormatCultureDate(dt, State.Culture)}"
+                    : g.Key;
+                return (DateKey: (string?)g.Key, GroupTitle: title, Items: g.ToList());
+            })
+            .ToList();
+    }
+    else
+    {
+        agendaGroups = monthEvents
+            .GroupBy(e => e.Color)
+            .OrderBy(g => ColorScheme.GetSortOrder(g.Key))
+            .Select(g => (DateKey: (string?)null, GroupTitle: ColorScheme.GetLabel(g.Key), Items: g.ToList()))
+            .ToList();
+    }
+}
+
+<div id="bfc-agenda-scroll" class="bfc-agenda">
+    <div class="bfc-agenda-search">
+        <input type="text" placeholder="@Texts.SearchEventsPlaceholder" @bind="_search" @bind:event="oninput" />
+    </div>
+
+    @if (agendaGroups.Count == 0)
+    {
+        <div class="bfc-agenda-empty">@Texts.NoEventsFound</div>
+    }
+    else
+    {
+        @foreach (var (dateKey, groupTitle, items) in agendaGroups)
+        {
+            <div class="bfc-agenda-group" data-agenda-date="@dateKey">
+                <div class="bfc-agenda-group-title">@groupTitle</div>
+                @foreach (var ev in items)
+                {
+                    <div class="bfc-agenda-item" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd")" @onclick="() => ShowDetails(ev)">
+                        <div class="bfc-agenda-avatar bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)">
+                            @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
+                        </div>
+                        <div class="bfc-agenda-info">
+                            <div class="bfc-agenda-title">@ev.Title</div>
+                            <div class="bfc-agenda-desc">@ev.Description</div>
+                        </div>
+                        <div class="bfc-agenda-time">
+                            @if (State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)
+                            {
+                                @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat)
+                                <span> - </span>
+                                @BitFullCalendarHelpers.FormatTime(ev.EndDate, State.Use24HourFormat)
+                            }
+                            else
+                            {
+                                @BitFullCalendarHelpers.FormatCultureDate(ev.StartDate, State.Culture)
+                                <span> · </span>
+                                @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat)
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@if (_showDetails && _selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="() => _showDetails = false" />
+}
+
+@code {
+    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+    [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
+
+    private string _search = "";
+    private bool _showDetails;
+    private BitFullCalendarEvent? _selectedEvent;
+    private ulong _lastAgendaScrollNonce;
+
+    protected override void OnInitialized() => State.OnStateChanged += Refresh;
+    private void Refresh() => InvokeAsync(StateHasChanged);
+    public void Dispose() => State.OnStateChanged -= Refresh;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var nonce = State.AgendaScrollToTodayNonce;
+        if (nonce == _lastAgendaScrollNonce)
+            return;
+
+        await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, "bfc-agenda-scroll", DateTime.Today);
+        _lastAgendaScrollNonce = nonce;
+    }
+
+    private async Task ShowDetails(BitFullCalendarEvent ev)
+    {
+        if (OnEventClick.HasDelegate)
+        {
+            await OnEventClick.InvokeAsync(ev);
+            return;
+        }
+        _selectedEvent = ev;
+        _showDetails = true;
+    }
+}
+

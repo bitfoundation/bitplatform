@@ -1,0 +1,38 @@
+@namespace Bit.BlazorUI
+
+<div class="bfc-filter-row">
+    <select class="bfc-filter-select" @onchange="HandleColorChange" value="@SelectedColorValue" aria-label="@Texts.FilterByColorAriaLabel">
+        <option value="">@Texts.AllColorsOption</option>
+        @foreach (var opt in ColorScheme.Options)
+        {
+            <option value="@opt.Id">@opt.Title</option>
+        }
+    </select>
+
+    <select class="bfc-filter-select bfc-filter-select-person" @onchange="HandleAttendeeChange" value="@(State.SelectedAttendeeKey ?? "")" aria-label="@Texts.FilterByPersonAriaLabel">
+        <option value="">@Texts.AllPeopleOption</option>
+        @foreach (var (key, name) in State.GetAttendeesInCurrentView(Texts.UnnamedAttendee))
+        {
+            <option value="@key">@name</option>
+        }
+    </select>
+</div>
+
+@code {
+    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+
+    private string SelectedColorValue => State.SelectedColors.Count == 1
+        ? State.SelectedColors[0]
+        : string.Empty;
+
+    private void HandleColorChange(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        State.SetColorFilter(string.IsNullOrWhiteSpace(value) ? null : value);
+    }
+
+    private void HandleAttendeeChange(ChangeEventArgs e) =>
+        State.SetAttendeeFilter(e.Value?.ToString());
+}

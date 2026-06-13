@@ -1,0 +1,736 @@
+using System.Globalization;
+
+namespace Bit.BlazorUI;
+
+public static class BitFullCalendarHelpers
+{
+    public const int HourHeightPx = 96;
+    /// <summary>Width of a single hour column on the timeline-mode day/week views.</summary>
+    public const int TimelineHourWidthPx = 96;
+    /// <summary>Width of a single day column on the timeline-mode month view.</summary>
+    public const int TimelineDayWidthPx = 56;
+    private const string FormatString = "MMM d, yyyy";
+
+    // -- Culture-aware: Range text ------------------------------
+
+    public static string RangeText(BitFullCalendarView view, DateTime date, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        var cal = culture.Calendar;
+        var dtf = culture.DateTimeFormat;
+
+        switch (view)
+        {
+            case BitFullCalendarView.Month:
+            case BitFullCalendarView.Agenda:
+            {
+                int y = cal.GetYear(date);
+                int m = cal.GetMonth(date);
+                string monthName = dtf.GetMonthName(m);
+                return $"{monthName} {y}";
+            }
+            case BitFullCalendarView.Week:
+            {
+                var start = StartOfWeek(date, culture);
+                var end = start.AddDays(6);
+                return $"{FormatCultureDate(start, culture)} - {FormatCultureDate(end, culture)}";
+            }
+            case BitFullCalendarView.Day:
+                return FormatCultureDate(date, culture);
+            case BitFullCalendarView.Year:
+            {
+                int y = cal.GetYear(date);
+                return y.ToString(culture);
+            }
+            default:
+                return "Error";
+        }
+    }
+
+    /// <summary>Formats a date as "Mon d, Year" using the supplied culture's calendar.</summary>
+    public static string FormatCultureDate(DateTime date, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        var cal = culture.Calendar;
+        var dtf = culture.DateTimeFormat;
+        int y = cal.GetYear(date);
+        int m = cal.GetMonth(date);
+        int d = cal.GetDayOfMonth(date);
+        string abbr = dtf.GetAbbreviatedMonthName(m);
+        return $"{abbr} {d}, {y}";
+    }
+
+    // -- Culture-aware: Navigation ------------------------------
+
+    public static DateTime NavigateDate(DateTime date, BitFullCalendarView view, bool forward, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        var cal = culture.Calendar;
+        int delta = forward ? 1 : -1;
+        return view switch
+        {
+            BitFullCalendarView.Month  => cal.AddMonths(date, delta),
+            BitFullCalendarView.Week   => date.AddDays(forward ? 7 : -7),
+            BitFullCalendarView.Day    => date.AddDays(delta),
+            BitFullCalendarView.Year   => cal.AddYears(date, delta),
+            BitFullCalendarView.Agenda => cal.AddMonths(date, delta),
+            _                   => date
+        };
+    }
+
+    // -- Culture-aware: Week helpers ------------------------------
+
+    public static DateTime StartOfWeek(DateTime date, CultureInfo? culture = null)
+    {
+        var startDay = culture?.DateTimeFormat.FirstDayOfWeek ?? DayOfWeek.Sunday;
+        return StartOfWeek(date, startDay);
+    }
+
+    public static DateTime StartOfWeek(DateTime date, DayOfWeek startDay)
+    {
+        int diff = (7 + (date.DayOfWeek - startDay)) % 7;
+        return date.Date.AddDays(-diff);
+    }
+
+    public static DateTime[] GetWeekDates(DateTime date, CultureInfo? culture = null)
+    {
+        var start = StartOfWeek(date, culture);
+        return Enumerable.Range(0, 7).Select(i => start.AddDays(i)).ToArray();
+    }
+
+    // -- Culture-aware: Weekday header names ------------------------------
+
+    /// <summary>
+    /// Returns 7 shortest day-name strings (1 char) starting from
+    /// culture.DateTimeFormat.FirstDayOfWeek.
+    /// </summary>
+    public static string[] GetWeekDayHeaders(CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        var dtf = culture.DateTimeFormat;
+        var first = (int)dtf.FirstDayOfWeek;
+        return Enumerable.Range(0, 7)
+            .Select(i => dtf.GetShortestDayName((DayOfWeek)((first + i) % 7)))
+            .ToArray();
+    }
+
+    /// <summary>
+    /// Returns 7 abbreviated day-name strings (2-3 chars) starting from
+    /// culture.DateTimeFormat.FirstDayOfWeek.
+    /// </summary>
+    public static string[] GetAbbreviatedWeekDayHeaders(CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        var dtf = culture.DateTimeFormat;
+        var first = (int)dtf.FirstDayOfWeek;
+        return Enumerable.Range(0, 7)
+            .Select(i => dtf.GetAbbreviatedDayName((DayOfWeek)((first + i) % 7)))
+            .ToArray();
+    }
+
+    // -- Culture-aware: Calendar grid cells ------------------------------
+
+    public static List<BitFullCalendarCell> GetCalendarCells(DateTime selectedDate, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        var cal = culture.Calendar;
+        var dtf = culture.DateTimeFormat;
+
+        int culturalYear  = cal.GetYear(selectedDate);
+        int culturalMonth = cal.GetMonth(selectedDate);
+
+        // First day of this cultural month as a Gregorian DateTime
+        DateTime firstDay = cal.ToDateTime(culturalYear, culturalMonth, 1, 0, 0, 0, 0);
+        int daysInMonth   = cal.GetDaysInMonth(culturalYear, culturalMonth);
+
+        // Leading blank cells (days from prev cultural month)
+        int firstDow      = (int)cal.GetDayOfWeek(firstDay);
+        int culturalFirst = (int)dtf.FirstDayOfWeek;
+        int leadingDays   = (firstDow - culturalFirst + 7) % 7;
+
+        // Previous cultural month
+        int prevCulturalMonth = culturalMonth == 1
+            ? cal.GetMonthsInYear(culturalYear - 1)
+            : culturalMonth - 1;
+        int prevCulturalYear = culturalMonth == 1 ? culturalYear - 1 : culturalYear;
+        int daysInPrevMonth  = cal.GetDaysInMonth(prevCulturalYear, prevCulturalMonth);
+
+        var cells = new List<BitFullCalendarCell>();
+
+        for (int i = 0; i < leadingDays; i++)
+        {
+            int d = daysInPrevMonth - leadingDays + i + 1;
+            DateTime date = cal.ToDateTime(prevCulturalYear, prevCulturalMonth, d, 0, 0, 0, 0);
+            cells.Add(new BitFullCalendarCell { Day = d, CurrentMonth = false, Date = date });
+        }
+
+        for (int i = 1; i <= daysInMonth; i++)
+        {
+            DateTime date = cal.ToDateTime(culturalYear, culturalMonth, i, 0, 0, 0, 0);
+            cells.Add(new BitFullCalendarCell { Day = i, CurrentMonth = true, Date = date });
+        }
+
+        int totalDays  = leadingDays + daysInMonth;
+        int trailing   = (7 - (totalDays % 7)) % 7;
+        int nextCulturalMonth = culturalMonth == cal.GetMonthsInYear(culturalYear)
+            ? 1
+            : culturalMonth + 1;
+        int nextCulturalYear = culturalMonth == cal.GetMonthsInYear(culturalYear)
+            ? culturalYear + 1
+            : culturalYear;
+
+        for (int i = 1; i <= trailing; i++)
+        {
+            DateTime date = cal.ToDateTime(nextCulturalYear, nextCulturalMonth, i, 0, 0, 0, 0);
+            cells.Add(new BitFullCalendarCell { Day = i, CurrentMonth = false, Date = date });
+        }
+
+        return cells;
+    }
+
+    // -- Culture-aware: Day-of-month display ------------------------------
+
+    public static int GetCulturalDayOfMonth(DateTime date, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        return culture.Calendar.GetDayOfMonth(date);
+    }
+
+    // -- Culture-aware: Events for year ------------------------------
+
+    public static List<BitFullCalendarEvent> GetEventsForYear(List<BitFullCalendarEvent> events, DateTime date, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        var cal = culture.Calendar;
+        int culturalYear  = cal.GetYear(date);
+        DateTime yearStart = cal.ToDateTime(culturalYear, 1, 1, 0, 0, 0, 0);
+        int monthsInYear   = cal.GetMonthsInYear(culturalYear);
+        int lastDayOfYear  = cal.GetDaysInMonth(culturalYear, monthsInYear);
+        DateTime yearEnd   = cal.ToDateTime(culturalYear, monthsInYear, lastDayOfYear, 23, 59, 59, 0);
+        return events.Where(ev => ev.StartDate.Date <= yearEnd && ev.EndDate.Date >= yearStart).ToList();
+    }
+
+    public static string FormatTime(DateTime date, bool use24Hour)
+    {
+        return use24Hour
+            ? date.ToString("HH:mm", CultureInfo.InvariantCulture)
+            : date.ToString("h:mm tt", CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Builds a human-friendly tooltip string for an event. Includes the title, the time range,
+    /// and (when present and not redundant with the title) the description. Used by event cards
+    /// where layout space may hide most of the visual content.
+    /// </summary>
+    public static string BuildEventTooltip(BitFullCalendarEvent ev, bool use24Hour)
+    {
+        if (ev is null)
+            return string.Empty;
+
+        var title = string.IsNullOrWhiteSpace(ev.Title) ? string.Empty : ev.Title.Trim();
+        var time = $"{FormatTime(ev.StartDate, use24Hour)} - {FormatTime(ev.EndDate, use24Hour)}";
+
+        var lines = new List<string>(3);
+        if (!string.IsNullOrEmpty(title))
+            lines.Add(title);
+        lines.Add(time);
+
+        if (!string.IsNullOrWhiteSpace(ev.Description))
+        {
+            var description = ev.Description.Trim();
+            if (!string.Equals(description, title, StringComparison.Ordinal))
+                lines.Add(description);
+        }
+
+        return string.Join('\n', lines);
+    }
+
+    public static string FormatHourLabel(int hour, bool use24Hour)
+    {
+        var dt = DateTime.Today.AddHours(hour);
+        return use24Hour
+            ? dt.ToString("HH:00", CultureInfo.InvariantCulture)
+            : dt.ToString("h tt", CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Computes horizontal pixel position and width for an event placed on a resource timeline row.
+    /// The event range is clipped to the visible day so events that span past midnight stay
+    /// inside the row. Returns (LeftPx, WidthPx) or null when the event has no overlap with the day.
+    /// </summary>
+    public static (double LeftPx, double WidthPx)? GetTimelineBlockPosition(
+        BitFullCalendarEvent ev, DateTime day, int hourWidthPx = TimelineHourWidthPx)
+    {
+        var dayStart = day.Date;
+        var dayEnd = dayStart.AddDays(1);
+
+        var clippedStart = ev.StartDate < dayStart ? dayStart : ev.StartDate;
+        var clippedEnd = ev.EndDate > dayEnd ? dayEnd : ev.EndDate;
+        if (clippedEnd <= clippedStart)
+            return null;
+
+        var pxPerMinute = hourWidthPx / 60.0;
+        var leftMinutes = (clippedStart - dayStart).TotalMinutes;
+        var widthMinutes = (clippedEnd - clippedStart).TotalMinutes;
+
+        return (leftMinutes * pxPerMinute, widthMinutes * pxPerMinute);
+    }
+
+    /// <summary>
+    /// Groups events for a single day by their <see cref="BitFullCalendarEvent.Resource"/> id.
+    /// Within each resource, events are arranged into non-overlapping lanes so overlapping events
+    /// stack vertically inside the same row (similar to <see cref="GroupEvents"/> for day/week).
+    /// Events with no resource id (or an id not in <paramref name="resourceIds"/>) are placed
+    /// under <paramref name="unassignedKey"/>.
+    /// </summary>
+    public static Dictionary<string, List<List<BitFullCalendarEvent>>> GroupEventsByResourceForDay(
+        List<BitFullCalendarEvent> events,
+        DateTime day,
+        IEnumerable<string> resourceIds,
+        string unassignedKey)
+    {
+        var dayStart = day.Date;
+        var dayEnd = dayStart.AddDays(1);
+
+        var keyed = new Dictionary<string, List<BitFullCalendarEvent>>(StringComparer.Ordinal);
+        foreach (var id in resourceIds)
+        {
+            if (!keyed.ContainsKey(id))
+                keyed[id] = [];
+        }
+        keyed[unassignedKey] = [];
+
+        var validIds = new HashSet<string>(keyed.Keys, StringComparer.Ordinal);
+
+        foreach (var ev in events)
+        {
+            if (ev.StartDate >= dayEnd || ev.EndDate <= dayStart)
+                continue;
+
+            var key = ev.Resource is { Length: > 0 } r && validIds.Contains(r) ? r : unassignedKey;
+            keyed[key].Add(ev);
+        }
+
+        return keyed.ToDictionary(
+            kv => kv.Key,
+            kv => GroupEvents(kv.Value),
+            StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Groups events that overlap a calendar month by their <see cref="BitFullCalendarEvent.Resource"/>
+    /// id. Within each resource the events are arranged into non-overlapping lanes so multi-day events
+    /// stack vertically inside the resource row. Events with no resource id (or an id not in
+    /// <paramref name="resourceIds"/>) are placed under <paramref name="unassignedKey"/>.
+    /// </summary>
+    public static Dictionary<string, List<List<BitFullCalendarEvent>>> GroupEventsByResourceForMonth(
+        List<BitFullCalendarEvent> events,
+        DateTime monthStart,
+        int daysInMonth,
+        IEnumerable<string> resourceIds,
+        string unassignedKey)
+    {
+        var monthEnd = monthStart.AddDays(daysInMonth);
+
+        var keyed = new Dictionary<string, List<BitFullCalendarEvent>>(StringComparer.Ordinal);
+        foreach (var id in resourceIds)
+        {
+            if (!keyed.ContainsKey(id))
+                keyed[id] = [];
+        }
+        keyed[unassignedKey] = [];
+
+        var validIds = new HashSet<string>(keyed.Keys, StringComparer.Ordinal);
+
+        foreach (var ev in events)
+        {
+            if (ev.StartDate >= monthEnd || ev.EndDate <= monthStart)
+                continue;
+
+            var key = ev.Resource is { Length: > 0 } r && validIds.Contains(r) ? r : unassignedKey;
+            keyed[key].Add(ev);
+        }
+
+        return keyed.ToDictionary(
+            kv => kv.Key,
+            kv => GroupEventsByDayRange(kv.Value, monthStart, monthEnd),
+            StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Day-range variant of <see cref="GroupEvents"/>: events are sorted by start, then placed in the
+    /// first lane whose tail event ends on or before the candidate's start day. Used by the timeline
+    /// month view where the granularity is one column per day.
+    /// </summary>
+    private static List<List<BitFullCalendarEvent>> GroupEventsByDayRange(
+        List<BitFullCalendarEvent> events, DateTime rangeStart, DateTime rangeEnd)
+    {
+        var sorted = events.OrderBy(e => e.StartDate).ThenByDescending(e => e.EndDate).ToList();
+        var lanes = new List<List<BitFullCalendarEvent>>();
+
+        DateTime ClipStartDate(BitFullCalendarEvent e) => (e.StartDate < rangeStart ? rangeStart : e.StartDate).Date;
+        DateTime ClipEndDate(BitFullCalendarEvent e)
+        {
+            var end = e.EndDate > rangeEnd ? rangeEnd : e.EndDate;
+            // Treat 00:00 boundary as ending the previous day (exclusive end).
+            return end.TimeOfDay == TimeSpan.Zero ? end.Date.AddDays(-1) : end.Date;
+        }
+
+        foreach (var ev in sorted)
+        {
+            var s = ClipStartDate(ev);
+            var placed = false;
+            foreach (var lane in lanes)
+            {
+                if (s > ClipEndDate(lane[^1]))
+                {
+                    lane.Add(ev);
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed)
+                lanes.Add([ev]);
+        }
+
+        return lanes;
+    }
+
+    public static List<List<BitFullCalendarEvent>> GroupEvents(List<BitFullCalendarEvent> dayEvents)
+    {
+        var sorted = dayEvents.OrderBy(e => e.StartDate).ToList();
+        var groups = new List<List<BitFullCalendarEvent>>();
+
+        foreach (var ev in sorted)
+        {
+            bool placed = false;
+            foreach (var group in groups)
+            {
+                if (ev.StartDate >= group[^1].EndDate)
+                {
+                    group.Add(ev);
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed)
+                groups.Add([ev]);
+        }
+
+        return groups;
+    }
+
+    public static (double TopPx, double WidthPercent, double LeftPercent) GetEventBlockStyle(
+        BitFullCalendarEvent ev, DateTime day, int groupIndex, int groupSize)
+    {
+        var dayStart = day.Date;
+        var eventStart = ev.StartDate < dayStart ? dayStart : ev.StartDate;
+        double startMinutes = (eventStart - dayStart).TotalMinutes;
+        double topPx = startMinutes / 60.0 * HourHeightPx;
+        double width = 100.0 / groupSize;
+        double left = groupIndex * width;
+        return (topPx, width, left);
+    }
+
+    private static (int Year, int Month, int Day) MonthGridDayKey(DateTime d)
+    {
+        d = d.Date;
+        return (d.Year, d.Month, d.Day);
+    }
+
+    public static Dictionary<string, int> CalculateMonthEventPositions(
+        List<BitFullCalendarEvent> multiDayEvents,
+        List<BitFullCalendarEvent> singleDayEvents,
+        DateTime selectedDate,
+        CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        var cal = culture.Calendar;
+        int y = cal.GetYear(selectedDate);
+        int m = cal.GetMonth(selectedDate);
+        DateTime monthStart = cal.ToDateTime(y, m, 1, 0, 0, 0, 0);
+        DateTime monthEnd   = cal.AddMonths(monthStart, 1).AddDays(-1);
+
+        var eventPositions = new Dictionary<string, int>();
+        var occupiedPositions = new Dictionary<(int Year, int Month, int Day), bool[]>();
+
+        for (var d = monthStart; d <= monthEnd; d = d.AddDays(1))
+            occupiedPositions[MonthGridDayKey(d)] = new bool[3];
+
+        var sorted = multiDayEvents
+            .OrderByDescending(e => (e.EndDate - e.StartDate).TotalDays)
+            .ThenBy(e => e.StartDate)
+            .Concat(singleDayEvents.OrderBy(e => e.StartDate))
+            .ToList();
+
+        foreach (var ev in sorted)
+        {
+            var evStart = ev.StartDate.Date;
+            var evEnd = ev.EndDate.Date;
+            var rangeStart = evStart < monthStart ? monthStart : evStart;
+            var rangeEnd = evEnd > monthEnd ? monthEnd : evEnd;
+
+            var eventDays = new List<DateTime>();
+            for (var d = rangeStart; d <= rangeEnd; d = d.AddDays(1))
+                eventDays.Add(d);
+
+            int position = -1;
+            for (int i = 0; i < 3; i++)
+            {
+                if (eventDays.All(d =>
+                {
+                    var key = MonthGridDayKey(d);
+                    return occupiedPositions.TryGetValue(key, out var slots) && !slots[i];
+                }))
+                {
+                    position = i;
+                    break;
+                }
+            }
+
+            if (position != -1)
+            {
+                foreach (var d in eventDays)
+                {
+                    var key = MonthGridDayKey(d);
+                    if (occupiedPositions.TryGetValue(key, out var slots))
+                        slots[position] = true;
+                }
+                eventPositions[ev.Id] = position;
+            }
+        }
+
+        return eventPositions;
+    }
+
+    public static List<(BitFullCalendarEvent Event, int Position, bool IsMultiDay)> GetMonthCellEvents(
+        DateTime date, List<BitFullCalendarEvent> events, Dictionary<string, int> eventPositions)
+    {
+        var dayStart = date.Date;
+        var eventsForDate = events.Where(ev =>
+        {
+            var s = ev.StartDate.Date;
+            var e = ev.EndDate.Date;
+            return (dayStart >= s && dayStart <= e) || s == dayStart || e == dayStart;
+        }).ToList();
+
+        var raw = eventsForDate
+            .Select(ev => (
+                Event: ev,
+                Position: eventPositions.GetValueOrDefault(ev.Id, -1),
+                IsMultiDay: ev.IsMultiDay
+            ))
+            .OrderByDescending(x => x.IsMultiDay)
+            .ThenBy(x => x.Position < 0 ? 100 : x.Position)
+            .ThenBy(x => x.Event.StartDate)
+            .ToList();
+
+        return AssignMonthCellDisplayRows(raw);
+    }
+
+    private static List<(BitFullCalendarEvent Event, int Position, bool IsMultiDay)> AssignMonthCellDisplayRows(
+        List<(BitFullCalendarEvent Event, int Position, bool IsMultiDay)> raw)
+    {
+        var occupied = new bool[3];
+        var result = new List<(BitFullCalendarEvent Event, int Position, bool IsMultiDay)>();
+
+        foreach (var x in raw)
+        {
+            var p = x.Position;
+            if (p is >= 0 and < 3 && !occupied[p])
+            {
+                occupied[p] = true;
+                result.Add((x.Event, p, x.IsMultiDay));
+                continue;
+            }
+
+            var free = -1;
+            for (var i = 0; i < 3; i++)
+            {
+                if (!occupied[i])
+                {
+                    free = i;
+                    break;
+                }
+            }
+
+            if (free >= 0)
+            {
+                occupied[free] = true;
+                result.Add((x.Event, free, x.IsMultiDay));
+            }
+            else
+            {
+                result.Add((x.Event, -1, x.IsMultiDay));
+            }
+        }
+
+        return result
+            .OrderByDescending(x => x.IsMultiDay)
+            .ThenBy(x => x.Position < 0 ? 100 : x.Position)
+            .ThenBy(x => x.Event.StartDate)
+            .ToList();
+    }
+
+    public static List<BitFullCalendarEvent> GetEventsForDay(List<BitFullCalendarEvent> events, DateTime date, bool weekOnly = false)
+    {
+        var target = date.Date;
+        return events.Where(ev =>
+        {
+            var s = ev.StartDate.Date;
+            var e = ev.EndDate.Date;
+            if (weekOnly)
+                return ev.IsMultiDay && s <= target && e >= target;
+            return s <= target && e >= target;
+        }).ToList();
+    }
+
+    public static List<BitFullCalendarEvent> GetEventsForWeek(List<BitFullCalendarEvent> events, DateTime date, CultureInfo? culture = null)
+    {
+        var weekStart = StartOfWeek(date, culture);
+        var weekEnd = weekStart.AddDays(6);
+        return events.Where(ev =>
+            ev.StartDate.Date <= weekEnd && ev.EndDate.Date >= weekStart).ToList();
+    }
+
+    public static List<BitFullCalendarEvent> GetEventsForMonth(List<BitFullCalendarEvent> events, DateTime date, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        var cal = culture.Calendar;
+        int y = cal.GetYear(date);
+        int m = cal.GetMonth(date);
+        DateTime monthStart = cal.ToDateTime(y, m, 1, 0, 0, 0, 0);
+        DateTime monthEnd   = cal.AddMonths(monthStart, 1).AddDays(-1);
+        return events.Where(ev =>
+            ev.StartDate.Date <= monthEnd && ev.EndDate.Date >= monthStart).ToList();
+    }
+
+    /// <summary>
+    /// Events overlapping the date range implied by the current view and selected date
+    /// (used for attendee filters and similar â€œin this viewâ€ logic).
+    /// </summary>
+    public static List<BitFullCalendarEvent> GetEventsForView(
+        List<BitFullCalendarEvent> events,
+        BitFullCalendarView view,
+        DateTime selectedDate,
+        CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        return view switch
+        {
+            BitFullCalendarView.Day => GetEventsForDay(events, selectedDate),
+            BitFullCalendarView.Week => GetEventsForWeek(events, selectedDate, culture),
+            BitFullCalendarView.Month => GetEventsForMonth(events, selectedDate, culture),
+            BitFullCalendarView.Year => GetEventsForYear(events, selectedDate, culture),
+            BitFullCalendarView.Agenda => GetEventsForMonth(events, selectedDate, culture),
+            _ => events.ToList()
+        };
+    }
+
+    /// <summary>
+    /// Smallest time t' &gt;= <paramref name="dt"/> on the same calendar day where
+    /// (t' - t'.Date) is a whole multiple of <paramref name="intervalMinutes"/>.
+    /// If <paramref name="dt"/> is already on such a boundary, returns <paramref name="dt"/> unchanged.
+    /// </summary>
+    public static DateTime CeilToMinuteInterval(DateTime dt, int intervalMinutes)
+    {
+        if (intervalMinutes <= 0)
+            throw new ArgumentOutOfRangeException(nameof(intervalMinutes));
+
+        var dayStart = dt.Date;
+        var minutesSinceDay = (dt - dayStart).TotalMinutes;
+        var slots = Math.Ceiling(minutesSinceDay / intervalMinutes);
+        return dayStart.AddMinutes(slots * intervalMinutes);
+    }
+
+    /// <summary>
+    /// Largest time t' &lt;= <paramref name="dt"/> on the same calendar day where
+    /// (t' - t'.Date) is a whole multiple of <paramref name="intervalMinutes"/>.
+    /// </summary>
+    public static DateTime FloorToMinuteInterval(DateTime dt, int intervalMinutes)
+    {
+        if (intervalMinutes <= 0)
+            throw new ArgumentOutOfRangeException(nameof(intervalMinutes));
+
+        var dayStart = dt.Date;
+        var minutesSinceDay = (dt - dayStart).TotalMinutes;
+        var slots = Math.Floor(minutesSinceDay / intervalMinutes);
+        return dayStart.AddMinutes(slots * intervalMinutes);
+    }
+
+    /// <summary>Stable key for filtering events by attendee (Id preferred, else full name).</summary>
+    public static string AttendeeFilterKey(BitFullCalendarAttendee a)
+    {
+        if (!string.IsNullOrWhiteSpace(a.Id))
+            return "id:" + a.Id.Trim();
+        if (!string.IsNullOrWhiteSpace(a.FullName))
+            return "name:" + a.FullName.Trim().ToLowerInvariant();
+        return "";
+    }
+
+    public static double GetCurrentTimeLineTopPx()
+    {
+        double minutes = DateTime.Now.TimeOfDay.TotalMinutes;
+        return minutes / 60.0 * HourHeightPx;
+    }
+
+    /// <summary>
+    /// New event with only <see cref="BitFullCalendarEvent.StartDate"/> and <see cref="BitFullCalendarEvent.EndDate"/>
+    /// set (same default duration as the built-in add dialog: 30 minutes from the slot start).
+    /// </summary>
+    public static BitFullCalendarEvent CreateDraftEventForTimeSlot(
+        DateTime day,
+        int hour,
+        int startMinute = 0,
+        int durationMinutes = 30)
+    {
+        var start = day.Date.AddHours(hour).AddMinutes(startMinute);
+        return new BitFullCalendarEvent
+        {
+            StartDate = start,
+            EndDate = start.AddMinutes(durationMinutes)
+        };
+    }
+
+    /// <summary>
+    /// Computes the inclusive start/end dates for the visible range of the given view.
+    /// </summary>
+    public static (DateTime Start, DateTime End) GetDateRange(
+        BitFullCalendarView view, DateTime selectedDate, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        var cal = culture.Calendar;
+
+        return view switch
+        {
+            BitFullCalendarView.Day => (selectedDate.Date, selectedDate.Date),
+            BitFullCalendarView.Week =>
+            (
+                StartOfWeek(selectedDate, culture),
+                StartOfWeek(selectedDate, culture).AddDays(6)
+            ),
+            BitFullCalendarView.Month or BitFullCalendarView.Agenda =>
+            (
+                cal.ToDateTime(cal.GetYear(selectedDate), cal.GetMonth(selectedDate), 1, 0, 0, 0, 0),
+                cal.AddMonths(
+                    cal.ToDateTime(cal.GetYear(selectedDate), cal.GetMonth(selectedDate), 1, 0, 0, 0, 0), 1)
+                    .AddDays(-1)
+            ),
+            BitFullCalendarView.Year =>
+            (
+                cal.ToDateTime(cal.GetYear(selectedDate), 1, 1, 0, 0, 0, 0),
+                cal.ToDateTime(cal.GetYear(selectedDate), cal.GetMonthsInYear(cal.GetYear(selectedDate)),
+                    cal.GetDaysInMonth(cal.GetYear(selectedDate), cal.GetMonthsInYear(cal.GetYear(selectedDate))),
+                    0, 0, 0, 0)
+            ),
+            _ => (selectedDate.Date, selectedDate.Date)
+        };
+    }
+
+    public static string Capitalize(string str)
+    {
+        if (string.IsNullOrEmpty(str)) return "";
+        return char.ToUpperInvariant(str[0]) + str[1..];
+    }
+}
+

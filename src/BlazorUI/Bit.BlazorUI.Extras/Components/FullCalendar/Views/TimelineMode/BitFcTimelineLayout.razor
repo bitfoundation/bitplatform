@@ -1,0 +1,109 @@
+@namespace Bit.BlazorUI
+
+@*
+  Shared scaffolding used by every timeline view.
+
+  Layout (flex rows so the resource gutter can stay pinned across the full horizontal scroll):
+    - header row : flex row that sticks to the top; corner cell sticks to the inline-start
+    - body rows  : flex rows; each starts with the sticky resource cell, followed by the lane area
+
+  Each timeline view renders the time-axis header inside <HeaderContent /> and the lane content
+  for every resource inside <RowContent context="resource" />, while this component handles the
+  layout, sticky positioning, RTL flip, and the unassigned row.
+*@
+
+@{
+    var resources = State.Resources;
+    var hasResources = resources.Count > 0;
+    var totalContentWidth = ColumnCount * ColumnWidthPx;
+    var totalGridWidth = ResourceColumnWidthPx + totalContentWidth;
+}
+
+<div class="bfc-tl-layout">
+    @if (!hasResources)
+    {
+        <div class="bfc-tl-empty">@Texts.NoResourcesMessage</div>
+    }
+    else
+    {
+        <div id="@ScrollContainerId" class="bfc-tl-scroll">
+            <div class="bfc-tl-grid" style="width:@(totalGridWidth)px;">
+
+                <div class="bfc-tl-header-row" style="width:@(totalGridWidth)px;">
+                    <div class="bfc-tl-corner" style="width:@(ResourceColumnWidthPx)px;">@Texts.ResourceColumnHeader</div>
+                    <div class="bfc-tl-time-header" style="width:@(totalContentWidth)px;">
+                        @HeaderContent
+                    </div>
+                </div>
+
+                @foreach (var resource in resources)
+                {
+                    var res = resource;
+                    var rowHeight = RowHeightFor(res);
+
+                    <div class="bfc-tl-body-row" style="height:@(rowHeight)px;width:@(totalGridWidth)px;">
+                        <div class="bfc-tl-resource-cell" style="width:@(ResourceColumnWidthPx)px;height:@(rowHeight)px;">
+                            <div class="bfc-tl-resource-title">@res.Title</div>
+                            @if (!string.IsNullOrWhiteSpace(res.Subtitle))
+                            {
+                                <div class="bfc-tl-resource-subtitle">@res.Subtitle</div>
+                            }
+                        </div>
+                        <div class="bfc-tl-row" style="height:@(rowHeight)px;width:@(totalContentWidth)px;">
+                            @RowContent(res)
+                        </div>
+                    </div>
+                }
+
+                @if (HasUnassignedRow)
+                {
+                    var unassignedHeight = UnassignedRowHeight;
+
+                    <div class="bfc-tl-body-row" style="height:@(unassignedHeight)px;width:@(totalGridWidth)px;">
+                        <div class="bfc-tl-resource-cell bfc-tl-resource-cell-unassigned" style="width:@(ResourceColumnWidthPx)px;height:@(unassignedHeight)px;">
+                            <div class="bfc-tl-resource-title">@Texts.NoResourceLabel</div>
+                        </div>
+                        <div class="bfc-tl-row" style="height:@(unassignedHeight)px;width:@(totalContentWidth)px;">
+                            @UnassignedRowContent
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+
+    /// <summary>Width of a single time-axis column in pixels.</summary>
+    [Parameter] public int ColumnWidthPx { get; set; } = BitFullCalendarHelpers.TimelineHourWidthPx;
+
+    /// <summary>Total number of time-axis columns (e.g. 24 for day, 168 for week, days-in-month for month).</summary>
+    [Parameter] public int ColumnCount { get; set; }
+
+    /// <summary>Width of the sticky resource gutter on the left.</summary>
+    [Parameter] public int ResourceColumnWidthPx { get; set; } = 200;
+
+    /// <summary>DOM id assigned to the horizontal scroll container so views can scroll it via JS interop.</summary>
+    [Parameter] public string ScrollContainerId { get; set; } = "bfc-tl-scroll";
+
+    /// <summary>Time-axis header(s) rendered in the top-right cell. Total width must equal <c>ColumnCount * ColumnWidthPx</c>.</summary>
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+
+    /// <summary>Row content for a single resource.</summary>
+    [Parameter] public RenderFragment<BitFullCalendarResource> RowContent { get; set; } = default!;
+
+    /// <summary>Whether to render the trailing "Unassigned" row.</summary>
+    [Parameter] public bool HasUnassignedRow { get; set; }
+
+    /// <summary>Content rendered inside the unassigned row.</summary>
+    [Parameter] public RenderFragment? UnassignedRowContent { get; set; }
+
+    /// <summary>Resolves the height in pixels for a given resource row (lets each view stack overlapping events into lanes).</summary>
+    [Parameter] public Func<BitFullCalendarResource, int> RowHeightFor { get; set; } = _ => 56;
+
+    /// <summary>Height in pixels for the unassigned row.</summary>
+    [Parameter] public int UnassignedRowHeight { get; set; } = 56;
+}

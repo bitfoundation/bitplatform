@@ -1,0 +1,9 @@
+@namespace Bit.BlazorUI
+
+<button class="bfc-btn bfc-btn-sm" @onclick="State.GoToToday">@Texts.BitFcTodayButton</button>
+
+@code {
+    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+}
+

@@ -1,0 +1,120 @@
+@namespace Bit.BlazorUI
+
+@{
+    var isToday = Cell.Date.Date == DateTime.Today;
+    var cellEvents = BitFullCalendarHelpers.GetMonthCellEvents(Cell.Date, Events, EventPositions);
+}
+
+<div class="bfc-month-cell @(!Cell.CurrentMonth ? "other-month" : "") bfc-droppable"
+     @ondragover="OnDragOver"
+     @ondragover:preventDefault="true"
+     @ondrop="OnDrop"
+     @onclick="() => OnCellClick()">
+
+    <div class="bfc-month-cell-day @(isToday ? "today" : "")">@Cell.Day</div>
+    <div class="bfc-cell-add-hint bfc-cell-add-hint-month" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        @Texts.AddEventHoverHint
+    </div>
+
+    <div class="bfc-month-events">
+        @for (int i = 0; i < 3; i++)
+        {
+            var pos = i;
+            var item = cellEvents.FirstOrDefault(e => e.Position == pos);
+            @if (item.Event != null)
+            {
+                var position = GetBadgePosition(item.Event, Cell.Date);
+                <div class="bfc-month-event-slot">
+                    <BitFcMonthEventBadge Event="item.Event" CellDate="Cell.Date" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
+                </div>
+            }
+            else
+            {
+                <div class="bfc-month-event-slot"></div>
+            }
+        }
+    </div>
+
+    @{
+        var moreCount = cellEvents.Count - 3;
+    }
+    @if (Cell.CurrentMonth && moreCount > 0)
+    {
+        <div class="bfc-month-more" @onclick="() => _showEventList = true" @onclick:stopPropagation="true">
+            +@moreCount @Texts.MoreEventsSuffix
+        </div>
+    }
+</div>
+
+@if (_showEventList)
+{
+    <BitFcEventListDialog Date="Cell.Date" Events="cellEvents.Select(e => e.Event).ToList()" OnClose="() => _showEventList = false" />
+}
+
+@if (_showAddDialog)
+{
+    <BitFcAddEditEventDialog StartDate="Cell.Date" OnClose="() => _showAddDialog = false" />
+}
+
+@if (_selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
+}
+
+@code {
+    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
+    [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
+    [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
+    [Parameter] public BitFullCalendarCell Cell { get; set; } = default!;
+    [Parameter] public List<BitFullCalendarEvent> Events { get; set; } = [];
+    [Parameter] public Dictionary<string, int> EventPositions { get; set; } = new();
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
+
+    private bool _showEventList;
+    private bool _showAddDialog;
+    private BitFullCalendarEvent? _selectedEvent;
+
+    private async Task ShowEventDetails(BitFullCalendarEvent ev)
+    {
+        if (OnEventClick.HasDelegate)
+        {
+            await OnEventClick.InvokeAsync(ev);
+            return;
+        }
+        _selectedEvent = ev;
+    }
+    private void CloseEventDetails() => _selectedEvent = null;
+
+    private async Task OnCellClick()
+    {
+        State.SetSelectedDate(Cell.Date);
+        if (OnAddClick.HasDelegate)
+        {
+            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(
+                Cell.Date,
+                DateTime.Now.Hour);
+            await OnAddClick.InvokeAsync(draft);
+        }
+        else
+            _showAddDialog = true;
+    }
+
+    private string GetBadgePosition(BitFullCalendarEvent ev, DateTime cellDate)
+    {
+        if (ev.IsSingleDay) return "none";
+        if (ev.StartDate.Date == cellDate.Date) return "first";
+        if (ev.EndDate.Date == cellDate.Date) return "last";
+        return "middle";
+    }
+
+    private void OnDragOver() { }
+
+    private async Task OnDrop()
+    {
+        await Notifier.HandleDropAsync(Cell.Date);
+    }
+}
+

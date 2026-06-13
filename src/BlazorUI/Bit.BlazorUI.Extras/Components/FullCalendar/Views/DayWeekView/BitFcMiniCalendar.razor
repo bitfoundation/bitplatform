@@ -1,0 +1,77 @@
+@namespace Bit.BlazorUI
+
+@{
+    var cells = BitFullCalendarHelpers.GetCalendarCells(_displayMonth, State.Culture);
+    var miniCal = State.Culture.Calendar;
+    var miniDtf = State.Culture.DateTimeFormat;
+    int miniYear = miniCal.GetYear(_displayMonth);
+    int miniMonth = miniCal.GetMonth(_displayMonth);
+    string miniTitle = $"{miniDtf.GetMonthName(miniMonth)} {miniYear}";
+    var miniHeaders = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(State.Culture);
+}
+
+<div class="bfc-mini-calendar">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <button class="bfc-btn bfc-btn-icon bfc-btn-sm bfc-btn-nav" @onclick="PrevMonth">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span style="font-size:13px;font-weight:600;">@miniTitle</span>
+        <button class="bfc-btn bfc-btn-icon bfc-btn-sm bfc-btn-nav" @onclick="NextMonth">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                @foreach (var d in miniHeaders)
+                {
+                    <th>@(d.Length > 2 ? d[..2] : d)</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @for (int row = 0; row < cells.Count / 7; row++)
+            {
+                <tr>
+                    @for (int col = 0; col < 7; col++)
+                    {
+                        var cell = cells[row * 7 + col];
+                        var isToday = cell.Date.Date == DateTime.Today;
+                        var isSelected = cell.Date.Date == State.SelectedDate.Date;
+                        var cls = !cell.CurrentMonth ? "other-month" : isToday ? "today" : isSelected ? "selected" : "";
+                        <td>
+                            <span class="bfc-mini-calendar-day @cls" @onclick="() => SelectDate(cell.Date)">
+                                @cell.Day
+                            </span>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+
+    private DateTime _displayMonth;
+
+    protected override void OnInitialized()
+    {
+        _displayMonth = State.Culture.Calendar.ToDateTime(
+            State.Culture.Calendar.GetYear(State.SelectedDate),
+            State.Culture.Calendar.GetMonth(State.SelectedDate),
+            1, 0, 0, 0, 0);
+    }
+
+    private void PrevMonth() => _displayMonth = State.Culture.Calendar.AddMonths(_displayMonth, -1);
+    private void NextMonth() => _displayMonth = State.Culture.Calendar.AddMonths(_displayMonth, 1);
+
+    private void SelectDate(DateTime date)
+    {
+        State.SetSelectedDate(date);
+        var cal = State.Culture.Calendar;
+        _displayMonth = cal.ToDateTime(cal.GetYear(date), cal.GetMonth(date), 1, 0, 0, 0, 0);
+    }
+}
+

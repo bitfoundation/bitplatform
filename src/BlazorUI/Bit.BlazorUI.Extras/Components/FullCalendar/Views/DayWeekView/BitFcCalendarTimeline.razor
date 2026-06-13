@@ -1,0 +1,33 @@
+@namespace Bit.BlazorUI
+@implements IDisposable
+
+<div class="bfc-timeline" style="top:@(_positionPx.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))px;">
+    <span class="bfc-timeline-label">@BitFullCalendarHelpers.FormatTime(DateTime.Now, State.Use24HourFormat)</span>
+    <span class="bfc-timeline-dot"></span>
+    <span class="bfc-timeline-line"></span>
+</div>
+
+@code {
+    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+
+    private double _positionPx;
+    private Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        UpdatePosition();
+        _timer = new Timer(_ =>
+        {
+            UpdatePosition();
+            InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+    }
+
+    private void UpdatePosition()
+    {
+        _positionPx = BitFullCalendarHelpers.GetCurrentTimeLineTopPx();
+    }
+
+    public void Dispose() => _timer?.Dispose();
+}
+

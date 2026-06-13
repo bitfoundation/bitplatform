@@ -1,0 +1,86 @@
+@namespace Bit.BlazorUI
+
+@{
+    var allEvents = MultiDayEvents.Concat(SingleDayEvents).ToList();
+    var cal = State.Culture.Calendar;
+    var dtf = State.Culture.DateTimeFormat;
+    int culturalYear = cal.GetYear(State.SelectedDate);
+    var months = Enumerable.Range(1, 12)
+        .Select(m => cal.ToDateTime(culturalYear, m, 1, 0, 0, 0, 0))
+        .ToArray();
+    var yearWeekDayHeaders = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(State.Culture);
+}
+
+<div class="bfc-year">
+    @foreach (var monthDate in months)
+    {
+        var cells = BitFullCalendarHelpers.GetCalendarCells(monthDate, State.Culture);
+        var monthIndex = cal.GetMonth(monthDate);
+        var monthName = dtf.GetMonthName(monthIndex);
+        <div class="bfc-year-month">
+            <div class="bfc-year-month-title" @onclick="() => GoToMonth(monthDate)">
+                @monthName
+            </div>
+            <div class="bfc-year-weekdays">
+                @foreach (var wd in yearWeekDayHeaders)
+                {
+                    <div class="bfc-year-weekday">@(wd.Length > 2 ? wd[..2] : wd)</div>
+                }
+            </div>
+            <div class="bfc-year-days">
+                @foreach (var cell in cells)
+                {
+                    var cellCulturalMonth = cal.GetMonth(cell.Date);
+                    var isCurrentMonth = cellCulturalMonth == monthIndex
+                        && cal.GetYear(cell.Date) == culturalYear;
+                    var isToday = cell.Date.Date == DateTime.Today;
+                    var dayEvents = allEvents.Where(e => e.StartDate.Date == cell.Date.Date).ToList();
+                    var hasEvents = isCurrentMonth && dayEvents.Count > 0;
+
+                    <div class="bfc-year-day @(!isCurrentMonth ? "other-month" : "") @(hasEvents ? "has-events" : "")"
+                         @onclick="() => { if (hasEvents) ShowEventsForDay(cell.Date, dayEvents); }">
+                        <span class="bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
+                        @if (hasEvents)
+                        {
+                            <div class="bfc-year-day-bullets">
+                                @foreach (var ev in dayEvents.Take(3))
+                                {
+                                    <BitFcEventBullet Color="ev.Color" />
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@if (_showEventList)
+{
+    <BitFcEventListDialog Date="_eventListDate" Events="_eventListEvents" OnClose="() => _showEventList = false" />
+}
+
+@code {
+    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [Parameter] public List<BitFullCalendarEvent> SingleDayEvents { get; set; } = [];
+    [Parameter] public List<BitFullCalendarEvent> MultiDayEvents { get; set; } = [];
+
+    private bool _showEventList;
+    private DateTime _eventListDate;
+    private List<BitFullCalendarEvent> _eventListEvents = [];
+
+    private void GoToMonth(DateTime month)
+    {
+        State.SetSelectedDate(month);
+        State.SetView(BitFullCalendarView.Month);
+    }
+
+    private void ShowEventsForDay(DateTime date, List<BitFullCalendarEvent> events)
+    {
+        _eventListDate = date;
+        _eventListEvents = events;
+        _showEventList = true;
+    }
+}
+

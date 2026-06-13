@@ -1,0 +1,9 @@
+@namespace Bit.BlazorUI
+
+<span class="bfc-bullet" style="@ColorScheme.GetColorStyle(Color)"></span>
+
+@code {
+    [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+
+    [Parameter] public string? Color { get; set; }
+}

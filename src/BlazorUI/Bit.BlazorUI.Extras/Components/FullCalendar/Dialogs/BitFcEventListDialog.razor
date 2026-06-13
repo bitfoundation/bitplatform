@@ -1,0 +1,60 @@
+@namespace Bit.BlazorUI
+
+<div class="bfc-overlay" @onclick="OnClose">
+    <div class="bfc-dialog" @onclick:stopPropagation="true">
+        <div class="bfc-dialog-header">
+            <h3>@Texts.EventListTitlePrefix @Date.ToString("dddd, MMM d, yyyy")</h3>
+            <p>@Events.Count @Texts.EventListCountSuffix</p>
+        </div>
+        <div class="bfc-dialog-body" style="max-height:400px;overflow-y:auto;">
+            @foreach (var ev in Events)
+            {
+                <div class="bfc-agenda-item" @onclick="() => SelectEvent(ev)">
+                    <div class="bfc-agenda-avatar bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)">
+                        @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
+                    </div>
+                    <div class="bfc-agenda-info">
+                        <div class="bfc-agenda-title">@ev.Title</div>
+                        <div class="bfc-agenda-desc">@ev.Description</div>
+                    </div>
+                    <div class="bfc-agenda-time">
+                        @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat)
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="bfc-dialog-footer">
+            <button class="bfc-btn" @onclick="OnClose">@Texts.CloseButton</button>
+        </div>
+    </div>
+</div>
+
+@if (_showDetails && _selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="() => _showDetails = false" />
+}
+
+@code {
+    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+    [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
+    [Parameter] public DateTime Date { get; set; }
+    [Parameter] public List<BitFullCalendarEvent> Events { get; set; } = [];
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private bool _showDetails;
+    private BitFullCalendarEvent? _selectedEvent;
+
+    private async Task SelectEvent(BitFullCalendarEvent ev)
+    {
+        if (OnEventClick.HasDelegate)
+        {
+            await OnEventClick.InvokeAsync(ev);
+            return;
+        }
+        _selectedEvent = ev;
+        _showDetails = true;
+    }
+}
+
