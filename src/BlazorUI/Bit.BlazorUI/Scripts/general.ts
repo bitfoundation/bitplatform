@@ -16,8 +16,11 @@ window.addEventListener('scroll', (e: Event) => {
     // On touch devices (notably iOS) focusing an input shows the virtual keyboard, which
     // fires a scroll event as the browser brings the field into view. That should not
     // dismiss an open callout (e.g. a dropdown with a search box), so keep it open while
-    // an editable element is focused.
-    if (BitBlazorUI.Utils.isTouchDevice() && BitBlazorUI.Utils.isEditableElementFocused()) return;
+    // an editable element is focused, but only when that editable belongs to the active callout.
+    if (BitBlazorUI.Utils.isTouchDevice()
+        && BitBlazorUI.Utils.isEditableElementFocused()
+        && document.activeElement
+        && document.getElementById(BitBlazorUI.Callouts.current?.calloutId)?.contains(document.activeElement)) return;
 
     BitBlazorUI.Callouts.replaceCurrent();
 }, true);
