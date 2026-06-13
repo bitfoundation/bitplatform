@@ -19,10 +19,10 @@ public static class BitBmotion
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Slim browser-API interop bridge — one instance per DI scope
+        // Slim browser-API interop bridge - one instance per DI scope
         services.AddScoped<MotionInterop>();
 
-        // C# animation engine — drives all animation math in WebAssembly
+        // C# animation engine - drives all animation math in WebAssembly
         services.AddScoped<AnimationEngine>();
 
         // Higher-level services

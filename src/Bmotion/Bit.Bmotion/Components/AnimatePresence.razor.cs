@@ -53,7 +53,7 @@ public partial class AnimatePresence : ComponentBase
     {
         if (_prevIsPresent && !IsPresent)
         {
-            // Children are leaving — signal exiting state so Motion components play Exit
+            // Children are leaving - signal exiting state so Motion components play Exit
             _presenceCtx.IsExiting = true;
             _shouldRender = true; // keep rendering until exit completes
         }

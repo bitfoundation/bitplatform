@@ -1,6 +1,6 @@
 # bit Bmotion
 
-A Blazor-native animation library inspired by [Framer Motion](https://www.framer.com/motion/). Springs, gestures, layout animations, variants, and keyframes — **zero JavaScript dependencies**. All animation math runs in C# via WebAssembly.
+A Blazor-native animation library inspired by [Framer Motion](https://www.framer.com/motion/). Springs, gestures, layout animations, variants, and keyframes - **zero JavaScript dependencies**. All animation math runs in C# via WebAssembly.
 
 > Targets **.NET 8, 9, and 10**
 
@@ -61,7 +61,7 @@ required.
 </Motion>
 ```
 
-That's it — the element fades in and slides up on first render.
+That's it - the element fades in and slides up on first render.
 
 ---
 
@@ -175,7 +175,7 @@ Provides global animation defaults to an entire subtree via cascading values.
 
 ### AnimationProps
 
-Describes the animatable state — the *what* of an animation.
+Describes the animatable state - the *what* of an animation.
 
 ```csharp
 new AnimationProps

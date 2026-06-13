@@ -32,7 +32,7 @@ public class TransformComposerTests
         Assert.AreEqual(expected, TransformComposer.IsTransformProp(key));
     }
 
-    // ── Build — empty/identity ────────────────────────────────────────────────
+    // ── Build - empty/identity ────────────────────────────────────────────────
 
     [TestMethod]
     public void Build_EmptyDict_ReturnsEmpty()

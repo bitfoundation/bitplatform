@@ -6,7 +6,7 @@ namespace Bit.Bmotion.Services;
 /// <summary>
 /// Controls for an in-flight programmatic animation started by
 /// <see cref="MotionAnimateService.AnimateAsync(string,Models.AnimationProps,Models.TransitionConfig?)"/>.
-/// <para>The object is directly awaitable — <c>await controls</c> waits for the animation to complete.</para>
+/// <para>The object is directly awaitable - <c>await controls</c> waits for the animation to complete.</para>
 /// </summary>
 public sealed class AnimationControls
 {

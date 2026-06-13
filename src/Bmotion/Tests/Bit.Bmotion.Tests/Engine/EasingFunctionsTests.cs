@@ -135,7 +135,7 @@ public class EasingFunctionsTests
     [TestMethod]
     public void CubicBezier_Linear_ApproximatesT()
     {
-        // (0,0,1,1) is the identity cubic-bezier — should approximate t at all points
+        // (0,0,1,1) is the identity cubic-bezier - should approximate t at all points
         var fn = EasingFunctions.CubicBezier(0.0, 0.0, 1.0, 1.0);
         Assert.AreEqual(0.5, fn(0.5), 1e-1);
     }

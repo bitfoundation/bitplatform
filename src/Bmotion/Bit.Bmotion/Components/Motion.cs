@@ -9,7 +9,7 @@ using Microsoft.JSInterop;
 namespace Bit.Bmotion.Components;
 
 /// <summary>
-/// The primary animation component — a drop-in replacement for any HTML element.
+/// The primary animation component - a drop-in replacement for any HTML element.
 /// Animation math runs in the C# <see cref="AnimationEngine"/>; JS is used only
 /// for DOM style mutation, pointer/focus events, viewport observation and FLIP.
 /// </summary>
@@ -217,7 +217,7 @@ public class Motion : ComponentBase, IAsyncDisposable
         if (events.Count > 0)
             await Interop.AttachEventListenersAsync(_id, events, _dotnet!);
 
-        // Viewport observation — JS IntersectionObserver callbacks C#
+        // Viewport observation - JS IntersectionObserver callbacks C#
         if (WhileInView != null || OnViewportEnter.HasDelegate || OnViewportLeave.HasDelegate)
         {
             if (Viewport != null)
@@ -564,7 +564,7 @@ public class Motion : ComponentBase, IAsyncDisposable
 
     private TransitionConfig BuildEffectiveTransitionWithDelay(double extraDelay)
     {
-        // Reduced motion stays instant — stagger delays are skipped too.
+        // Reduced motion stays instant - stagger delays are skipped too.
         if (ShouldReduceMotion()) return InstantTransition();
 
         var t = BuildEffectiveTransition() ?? new TransitionConfig();
@@ -596,7 +596,7 @@ public class Motion : ComponentBase, IAsyncDisposable
     private static Dictionary<string, string> BuildCssStyleDict(AnimationProps props)
     {
         var d = new Dictionary<string, string>();
-        // This is only used for instant set() — forward the CSS string parsed from props
+        // This is only used for instant set() - forward the CSS string parsed from props
         var css = props.ToCssStyleString();
         if (!string.IsNullOrEmpty(css))
             d["cssText"] = css; // handled on JS side by parsing cssText

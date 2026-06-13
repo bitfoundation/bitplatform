@@ -3,7 +3,7 @@ using Bit.Bmotion.Models;
 namespace Bit.Bmotion.Engine;
 
 /// <summary>
-/// Per-element animation state — the C# equivalent of the JS <c>ElementState</c> class.
+/// Per-element animation state - the C# equivalent of the JS <c>ElementState</c> class.
 /// Holds current transform / numeric / color values, active animation drivers,
 /// and gesture-layer bookkeeping. Called by <see cref="AnimationEngine.ComputeFrame"/>
 /// every rAF tick.
@@ -43,7 +43,7 @@ internal sealed class ElementAnimationState
     public bool HasActiveAnimations => _activeAnims.Count > 0 || _isDragging;
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Tick — called every rAF frame
+    // Tick - called every rAF frame
     // ═══════════════════════════════════════════════════════════════════════════
 
     public Dictionary<string, string>? Tick(double timestamp)
@@ -357,7 +357,7 @@ internal sealed class ElementAnimationState
         }
         else
         {
-            // Snap and mark dirty — no interpolation possible across different units.
+            // Snap and mark dirty - no interpolation possible across different units.
             StringValues[key] = toValue;
             _dirtyProps.Add(key);
         }

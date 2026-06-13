@@ -3,7 +3,7 @@ namespace Bit.Bmotion.Services;
 /// <summary>
 /// A reactive numeric value whose changes can be observed and linked to animations.
 /// Analogous to Framer Motion's <c>MotionValue&lt;T&gt;</c>.
-/// Purely C# — no JS synchronisation required.
+/// Purely C# - no JS synchronisation required.
 /// </summary>
 public class MotionValue<T> : IDisposable where T : struct
 {

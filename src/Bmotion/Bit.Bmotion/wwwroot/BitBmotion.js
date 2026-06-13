@@ -1,5 +1,5 @@
 /**
- * BitBmotion.js — slim browser-API bridge
+ * BitBmotion.js - slim browser-API bridge
  *
  * All animation math (spring, tween, inertia, keyframes, easing, colour
  * interpolation, gesture state, transform composition) now lives in the
@@ -71,7 +71,7 @@ export function getComputedStyleValue(elementId, prop) {
 }
 
 //
-// Accessibility — prefers-reduced-motion
+// Accessibility - prefers-reduced-motion
 //
 
 /** Returns true when the user has requested reduced motion at the OS/browser level. */
@@ -92,7 +92,7 @@ export function registerElement(elementId) {
 }
 
 // 
-// Programmatic animate() API — resolve elements by CSS selector or ElementReference
+// Programmatic animate() API - resolve elements by CSS selector or ElementReference
 // Assigns a stable id + data-bmid so the engine can address them via getElementById.
 // 
 

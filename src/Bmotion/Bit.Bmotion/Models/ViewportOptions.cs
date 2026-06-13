@@ -22,8 +22,8 @@ public class ViewportOptions
     /// <summary>
     /// How much of the element must be visible to be considered "in view".
     /// <list type="bullet">
-    ///   <item><description><c>"some"</c> (default) — any part visible.</description></item>
-    ///   <item><description><c>"all"</c> — fully visible.</description></item>
+    ///   <item><description><c>"some"</c> (default) - any part visible.</description></item>
+    ///   <item><description><c>"all"</c> - fully visible.</description></item>
     ///   <item><description>A number between <c>0</c> and <c>1</c> for exact threshold.</description></item>
     /// </list>
     /// </summary>

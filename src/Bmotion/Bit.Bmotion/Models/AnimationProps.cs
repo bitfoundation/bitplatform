@@ -1,7 +1,7 @@
 namespace Bit.Bmotion.Models;
 
 /// <summary>
-/// Describes a set of animatable CSS / transform properties — the "what" of an animation.
+/// Describes a set of animatable CSS / transform properties - the "what" of an animation.
 /// Assign to Initial, Animate, Exit, WhileHover, WhileTap, etc.
 /// </summary>
 public class AnimationProps
@@ -123,7 +123,7 @@ public class AnimationProps
     }
 
     /// <summary>
-    /// Render these props as an inline CSS style string — used server-side to avoid a
+    /// Render these props as an inline CSS style string - used server-side to avoid a
     /// flash of un-styled content before the JS interop layer initialises.
     /// </summary>
     internal string ToCssStyleString()

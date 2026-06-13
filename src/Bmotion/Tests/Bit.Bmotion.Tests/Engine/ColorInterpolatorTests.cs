@@ -22,7 +22,7 @@ public class ColorInterpolatorTests
         Assert.AreEqual(expected, ColorInterpolator.LooksLikeColor(value));
     }
 
-    // ── Lerp — boundary conditions ────────────────────────────────────────────
+    // ── Lerp - boundary conditions ────────────────────────────────────────────
 
     [TestMethod]
     public void Lerp_AtT0_ReturnsFromColor()

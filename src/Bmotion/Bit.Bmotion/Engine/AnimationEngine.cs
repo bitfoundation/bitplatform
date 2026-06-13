@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 namespace Bit.Bmotion.Engine;
 
 /// <summary>
-/// Central C# animation engine — the JS equivalent of the full <c>BitBmotion.js</c>
+/// Central C# animation engine - the JS equivalent of the full <c>BitBmotion.js</c>
 /// animation loop, now running in Blazor WebAssembly.
 ///
 /// One instance is shared across the whole component tree (DI scoped).
@@ -155,7 +155,7 @@ public sealed class AnimationEngine : IAsyncDisposable
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Drag position (called synchronously from JS — Blazor WASM only)
+    // Drag position (called synchronously from JS - Blazor WASM only)
     // ═══════════════════════════════════════════════════════════════════════════
 
     /// <summary>
@@ -269,7 +269,7 @@ public sealed class AnimationEngine : IAsyncDisposable
         => _elements.GetValueOrDefault(elementId);
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // rAF loop — ComputeFrame is called synchronously from JS each tick
+    // rAF loop - ComputeFrame is called synchronously from JS each tick
     // ═══════════════════════════════════════════════════════════════════════════
 
     /// <summary>
