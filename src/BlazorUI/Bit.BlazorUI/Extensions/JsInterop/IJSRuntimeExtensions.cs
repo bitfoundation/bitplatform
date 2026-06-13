@@ -79,6 +79,23 @@ public static class IJSRuntimeExtensions
     private static readonly ConcurrentDictionary<Type, PropertyInfo?> _remoteIsInitializedPropertyCache = new();
     private static readonly ConcurrentDictionary<Type, FieldInfo?> _webViewIpcSenderFieldCache = new();
 
+    /// <summary>
+    /// Detects Blazor host runtimes where JavaScript interop must not be attempted.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Matches framework implementations by runtime <c>Type.Name</c> and probes internal state via reflection.
+    /// This is unsupported by the ASP.NET Core team and may break on .NET upgrades; when a reflected member is
+    /// missing we treat the runtime as <em>valid</em> so calls fail loudly instead of being silently dropped.
+    /// </para>
+    /// <para>Upstream types (aspnetcore <c>main</c>):</para>
+    /// <list type="bullet">
+    /// <item><description><see href="https://github.com/dotnet/aspnetcore/blob/main/src/Components/Endpoints/src/DependencyInjection/UnsupportedJavaScriptRuntime.cs">UnsupportedJavaScriptRuntime</see> — static/prerender host</description></item>
+    /// <item><description><see href="https://github.com/dotnet/aspnetcore/blob/main/src/Components/Server/src/Circuits/RemoteJSRuntime.cs">RemoteJSRuntime</see> — reflects <c>IsInitialized</c></description></item>
+    /// <item><description><see href="https://github.com/dotnet/aspnetcore/blob/main/src/Components/WebView/WebView/src/Services/WebViewJSRuntime.cs">WebViewJSRuntime</see> — reflects <c>_ipcSender</c></description></item>
+    /// </list>
+    /// <para>Guarded by <c>IsRuntimeInvalidFrameworkContractTests</c>.</para>
+    /// </remarks>
     [SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
     public static bool IsRuntimeInvalid(this IJSRuntime jsRuntime)
     {
@@ -88,9 +105,11 @@ public static class IJSRuntimeExtensions
 
         switch (type.Name)
         {
-            case "UnsupportedJavaScriptRuntime": // Prerendering
+            // https://github.com/dotnet/aspnetcore/blob/main/src/Components/Endpoints/src/DependencyInjection/UnsupportedJavaScriptRuntime.cs
+            case "UnsupportedJavaScriptRuntime": // Prerendering / static SSR
                 return true;
 
+            // https://github.com/dotnet/aspnetcore/blob/main/src/Components/Server/src/Circuits/RemoteJSRuntime.cs
             case "RemoteJSRuntime": // Blazor Server
                 {
                     // RemoteJSRuntime.IsInitialized is an internal framework member accessed via reflection.
@@ -101,6 +120,7 @@ public static class IJSRuntimeExtensions
                     return property?.GetValue(jsRuntime) is bool isInitialized && isInitialized is false;
                 }
 
+            // https://github.com/dotnet/aspnetcore/blob/main/src/Components/WebView/WebView/src/Services/WebViewJSRuntime.cs
             case "WebViewJSRuntime": // Blazor Hybrid
                 {
                     // WebViewJSRuntime._ipcSender is a private framework field accessed via reflection.
@@ -110,7 +130,7 @@ public static class IJSRuntimeExtensions
                     return field.GetValue(jsRuntime) is null;
                 }
 
-            default: // Blazor WASM
+            default: // Blazor WASM and other valid runtimes
                 return false;
         }
     }

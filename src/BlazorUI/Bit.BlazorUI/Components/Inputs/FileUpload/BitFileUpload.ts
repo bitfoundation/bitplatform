@@ -10,12 +10,14 @@
             uploadEndpointUrl: string | undefined,
             headers: Record<string, string> | undefined) {
 
+            if (!inputElement?.files?.length) return [];
+
             if (!append) {
                 FileUpload.clear(id);
             }
 
             const lastIndex = append ? FileUpload._fileUploaders.filter(u => u.id === id).length : 0;
-            const files = Array.from(inputElement.files!).map((file, index) => ({
+            const files = Array.from(inputElement.files).map((file, index) => ({
                 name: file.name,
                 size: file.size,
                 type: file.type,
@@ -41,7 +43,9 @@
             if (index === -1) {
                 uploaders.forEach(u => u.upload(from, to, uploadUrl, headers));
             } else {
-                const uploader = uploaders.filter(u => u.index === index)[0];
+                const uploader = uploaders.find(u => u.index === index);
+                if (!uploader) return;
+
                 uploader.upload(from, to, uploadUrl, headers);
             }
         }
@@ -52,7 +56,9 @@
             if (index === -1) {
                 uploaders.forEach(u => u.pause());
             } else {
-                const uploader = uploaders.filter(u => u.index === index)[0];
+                const uploader = uploaders.find(u => u.index === index);
+                if (!uploader) return;
+
                 uploader.pause();
             }
         }

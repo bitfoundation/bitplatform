@@ -246,11 +246,11 @@ public partial class BitModal : BitComponentBase
 
         if (modalParameters.ScrollerElement.HasValue)
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(ModalParameters.ScrollerElement!.Value, isOpen);
+            _offsetTop = await _js.BitUtilsToggleOverflow(ModalParameters.ScrollerElement!.Value, isOpen) ?? 0;
         }
         else
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(ModalParameters.ScrollerSelector ?? "body", isOpen);
+            _offsetTop = await _js.BitUtilsToggleOverflow(ModalParameters.ScrollerSelector ?? "body", isOpen) ?? 0;
         }
     }
 

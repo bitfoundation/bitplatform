@@ -247,7 +247,7 @@ public partial class BitDialog : BitComponentBase
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector, IsOpen);
+        _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector, IsOpen) ?? 0;
 
         if (AbsolutePosition is false) return;
 

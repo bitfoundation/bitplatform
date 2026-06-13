@@ -5,7 +5,7 @@
 /// <br />
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API"/>
 /// </summary>
-public class BitPageVisibility(IJSRuntime js)
+public class BitPageVisibility(IJSRuntime js) : IDisposable
 {
     private bool _isInitialized;
     private DotNetObjectReference<BitPageVisibility>? _dotnetObj;
@@ -45,4 +45,11 @@ public class BitPageVisibility(IJSRuntime js)
         }
     }
 
+
+
+    public void Dispose()
+    {
+        _dotnetObj?.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

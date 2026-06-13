@@ -776,6 +776,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
+        _dotnetObj?.Dispose();
+
         try
         {
             await _js.BitCalloutClearCallout(_calloutId);

@@ -142,18 +142,19 @@ public partial class BitChart : IAsyncDisposable
                 await _js.BitExtrasInitScripts(DateAdapterScripts);
             }
 
-            if (Config is not null)
+            var chartReady = Config is null || await _js.BitChartJsSetupChart(Config) is true;
+
+            if (chartReady)
             {
-                await _js.BitChartJsSetupChart(Config);
+                await SetupCompletedCallback.InvokeAsync(this);
             }
 
-            await SetupCompletedCallback.InvokeAsync(this);
             return;
         }
 
         if (Config is not null)
         {
-            await _js.BitChartJsSetupChart(Config);
+            _ = await _js.BitChartJsSetupChart(Config);
         }
     }
 

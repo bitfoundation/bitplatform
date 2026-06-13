@@ -7,6 +7,8 @@
             element: HTMLDivElement,
             dotnetObj: DotNetObject) {
 
+            if (!element) return;
+
             const ac = new AbortController();
             Swiper._abortControllers[id] = ac;
 
@@ -16,28 +18,33 @@
         }
 
         public static getDimensions(root: HTMLDivElement, container: HTMLDivElement) {
-            if (!root) return {};
+            if (!root || !container) return {};
 
-            const rootWidth = root.offsetWidth;
-            const containerWidth = [].slice.call(container.children).reduce((pre, cur: HTMLDivElement) => pre + cur.offsetWidth, 0);
-            const effectiveWidth = containerWidth - (container.parentElement?.offsetWidth ?? 0);
+            try {
+                const rootWidth = root.offsetWidth;
+                const containerWidth = [].slice.call(container.children).reduce((pre, cur: HTMLDivElement) => pre + cur.offsetWidth, 0);
+                const effectiveWidth = containerWidth - (container.parentElement?.offsetWidth ?? 0);
 
-            const computedStyle = window.getComputedStyle(container);
-            const matrix = computedStyle.getPropertyValue('transform');
-            const matched = matrix.match(/matrix\((.+)\)/);
+                const computedStyle = window.getComputedStyle(container);
+                const matrix = computedStyle.getPropertyValue('transform');
+                const matched = matrix.match(/matrix\((.+)\)/);
 
-            let translateX = 0;
-            if (matched && matched.length > 1) {
-                const splitted = matched[1].split(',');
-                translateX = +splitted[4];
+                let translateX = 0;
+                if (matched && matched.length > 1) {
+                    const splitted = matched[1].split(',');
+                    translateX = +splitted[4];
+                }
+
+                return {
+                    rootWidth,
+                    containerWidth,
+                    effectiveWidth,
+                    translateX
+                };
+            } catch (e) {
+                console.error("BitBlazorUI.Swiper.getDimensions:", e);
+                return {};
             }
-
-            return {
-                rootWidth,
-                containerWidth,
-                effectiveWidth,
-                translateX
-            };
         }
 
         public static dispose(id: string) {

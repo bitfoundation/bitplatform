@@ -889,7 +889,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         ResetPickersState();
 
-        var bodyWidth = await _js.BitUtilsGetBodyWidth();
+        var bodyWidth = await _js.BitUtilsGetBodyWidth() ?? 0;
         var notEnoughWidthAvailable = bodyWidth < MAX_WIDTH;
 
         if (_showMonthPickerAsOverlayInternal is false)
@@ -2334,6 +2334,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
+
+        _dotnetObj?.Dispose();
 
         try
         {

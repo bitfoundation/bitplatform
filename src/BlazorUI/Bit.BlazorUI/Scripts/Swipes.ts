@@ -256,7 +256,11 @@
 
         public dispose() {
             this.disposer();
-            this.dotnetObj?.dispose();
+            try {
+                this.dotnetObj?.dispose();
+            } catch (e) {
+                console.error(e);
+            }
             this.dotnetObj = undefined;
         }
     }

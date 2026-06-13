@@ -10,6 +10,7 @@ public partial class BitPullToRefresh : BitComponentBase
     private decimal _diff;
     private bool _refreshing;
     private ElementReference _loadingRef = default!;
+    private DotNetObjectReference<BitPullToRefresh>? _dotnetObj;
 
 
 
@@ -144,8 +145,8 @@ public partial class BitPullToRefresh : BitComponentBase
     {
         if (firstRender)
         {
-            var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, Trigger, Factor, Margin, Threshold, dotnetObj);
+            _dotnetObj = DotNetObjectReference.Create(this);
+            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, Trigger, Factor, Margin, Threshold, _dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -240,6 +241,8 @@ public partial class BitPullToRefresh : BitComponentBase
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        _dotnetObj?.Dispose();
 
         try
         {

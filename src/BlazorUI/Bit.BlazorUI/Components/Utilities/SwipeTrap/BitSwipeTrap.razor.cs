@@ -7,6 +7,10 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitSwipeTrap : BitComponentBase
 {
+    private DotNetObjectReference<BitSwipeTrap>? _dotnetObj;
+
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
@@ -96,7 +100,7 @@ public partial class BitSwipeTrap : BitComponentBase
     {
         if (firstRender)
         {
-            var dotnetObj = DotNetObjectReference.Create(this);
+            _dotnetObj = DotNetObjectReference.Create(this);
             await _js.BitSwipeTrapSetup(
                 UniqueId, 
                 RootElement, 
@@ -104,7 +108,7 @@ public partial class BitSwipeTrap : BitComponentBase
                 Threshold ?? 0, 
                 Throttle ?? 0, 
                 OrientationLock ?? BitSwipeOrientation.None, 
-                dotnetObj);
+                _dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -115,6 +119,8 @@ public partial class BitSwipeTrap : BitComponentBase
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        _dotnetObj?.Dispose();
 
         try
         {

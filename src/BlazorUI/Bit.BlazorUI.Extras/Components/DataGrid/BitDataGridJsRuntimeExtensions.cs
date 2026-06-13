@@ -2,11 +2,14 @@
 
 internal static class BitDataGridJsRuntimeExtensions
 {
-    // FastInvoke can return null when the in-process (WASM) path swallows a JSON error (it returns
-    // default), so the contract is nullable. Callers must null-check before using the reference.
+    // FastInvoke returns default (null) when the runtime can't service interop or a JSON/JS interop
+    // error is swallowed on the in-process (WASM) path. Callers must null-check before using the
+    // reference; a null result means DataGrid JS hooks were not initialized.
     public static async ValueTask<IJSObjectReference?> BitDataGridInit(this IJSRuntime jsRuntime, ElementReference tableElement)
     {
-        return await jsRuntime.FastInvoke<IJSObjectReference>("BitBlazorUI.DataGrid.init", tableElement);
+        const string identifier = "BitBlazorUI.DataGrid.init";
+        var result = await jsRuntime.FastInvoke<IJSObjectReference>(identifier, tableElement);
+        return jsRuntime.ReportIfUnexpectedNull(identifier, result);
     }
 
     // This is a fire-and-forget call from OnAfterRenderAsync that runs DOM-heavy positioning logic

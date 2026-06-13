@@ -137,8 +137,13 @@ public partial class BitSplitter : BitComponentBase
 
     private void OnSetVertical()
     {
-        _ = _js.BitSplitterResetPaneDimensions(_firstPanelRef);
-        _ = _js.BitSplitterResetPaneDimensions(_secondPanelRef);
+        _ = InvokeAsync(ResetPaneDimensionsOnVerticalChange);
+    }
+
+    private async Task ResetPaneDimensionsOnVerticalChange()
+    {
+        await _js.BitSplitterResetPaneDimensions(_firstPanelRef);
+        await _js.BitSplitterResetPaneDimensions(_secondPanelRef);
     }
 
     private async Task OnDraggingStart(double position)
@@ -148,11 +153,11 @@ public partial class BitSplitter : BitComponentBase
 
         _initialPosition = position;
 
-        _initialFirstPanelWidth = await _js.BitSplitterGetSplitterWidth(_firstPanelRef);
-        _initialSecondPanelWidth = await _js.BitSplitterGetSplitterWidth(_secondPanelRef);
+        _initialFirstPanelWidth = await _js.BitSplitterGetSplitterWidth(_firstPanelRef) ?? 0;
+        _initialSecondPanelWidth = await _js.BitSplitterGetSplitterWidth(_secondPanelRef) ?? 0;
 
-        _initialFirstPanelHeight = await _js.BitSplitterGetSplitterHeight(_firstPanelRef);
-        _initialSecondPanelHeight = await _js.BitSplitterGetSplitterHeight(_secondPanelRef);
+        _initialFirstPanelHeight = await _js.BitSplitterGetSplitterHeight(_firstPanelRef) ?? 0;
+        _initialSecondPanelHeight = await _js.BitSplitterGetSplitterHeight(_secondPanelRef) ?? 0;
     }
 
     private async Task OnDragging(double position)

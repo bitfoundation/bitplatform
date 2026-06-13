@@ -9,26 +9,50 @@
         };
 
         public static getSplitterWidth(element: HTMLElement) {
-            return element.getBoundingClientRect().width;
+            if (!element || typeof element.getBoundingClientRect !== 'function') return 0;
+
+            try {
+                return element.getBoundingClientRect().width;
+            } catch (e) {
+                console.error("BitBlazorUI.Splitter.getSplitterWidth:", e);
+                return 0;
+            }
         };
 
         public static setSplitterWidth(element: HTMLElement, width: number) {
-            element.style.width = width + 'px';
+            if (!element || !element.style) return;
+
+            try {
+                element.style.width = width + 'px';
+            } catch (e) { console.error("BitBlazorUI.Splitter.setSplitterWidth:", e); }
         };
 
         public static getSplitterHeight(element: HTMLElement) {
-            return element.getBoundingClientRect().height;
+            if (!element || typeof element.getBoundingClientRect !== 'function') return 0;
+
+            try {
+                return element.getBoundingClientRect().height;
+            } catch (e) {
+                console.error("BitBlazorUI.Splitter.getSplitterHeight:", e);
+                return 0;
+            }
         };
 
         public static setSplitterHeight(element: HTMLElement, height: number) {
-            element.style.height = height + 'px';
+            if (!element || !element.style) return;
+
+            try {
+                element.style.height = height + 'px';
+            } catch (e) { console.error("BitBlazorUI.Splitter.setSplitterHeight:", e); }
         };
 
         public static resetPaneDimensions(element: HTMLElement | undefined) {
-            if (!element) return;
+            if (!element || !element.style) return;
 
-            element.style.width = '';
-            element.style.height = '';
+            try {
+                element.style.width = '';
+                element.style.height = '';
+            } catch (e) { console.error("BitBlazorUI.Splitter.resetPaneDimensions:", e); }
         };
     }
 }

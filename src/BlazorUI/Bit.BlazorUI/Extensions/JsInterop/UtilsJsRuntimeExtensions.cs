@@ -2,9 +2,11 @@
 
 internal static class UtilsJsRuntimeExtensions
 {
-    internal static ValueTask<decimal> BitUtilsGetBodyWidth(this IJSRuntime jsRuntime)
+    // FastInvoke returns null when the runtime can't service interop or a JSON/JS interop error is
+    // swallowed on the in-process (WASM) path. Nullable distinguishes that from a legitimate 0 width.
+    internal static ValueTask<decimal?> BitUtilsGetBodyWidth(this IJSRuntime jsRuntime)
     {
-        return jsRuntime.FastInvoke<decimal>("BitBlazorUI.Utils.getBodyWidth");
+        return jsRuntime.FastInvoke<decimal?>("BitBlazorUI.Utils.getBodyWidth");
     }
 
 
@@ -44,13 +46,13 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string scrollerSelector, bool isHidden)
+    internal static ValueTask<float?> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, string scrollerSelector, bool isHidden)
     {
-        return jsRuntime.FastInvoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerSelector, isHidden);
+        return jsRuntime.FastInvoke<float?>("BitBlazorUI.Utils.toggleOverflow", scrollerSelector, isHidden);
     }
 
-    internal static ValueTask<float> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, ElementReference scrollerElement, bool isHidden)
+    internal static ValueTask<float?> BitUtilsToggleOverflow(this IJSRuntime jsRuntime, ElementReference scrollerElement, bool isHidden)
     {
-        return jsRuntime.FastInvoke<float>("BitBlazorUI.Utils.toggleOverflow", scrollerElement, isHidden);
+        return jsRuntime.FastInvoke<float?>("BitBlazorUI.Utils.toggleOverflow", scrollerElement, isHidden);
     }
 }

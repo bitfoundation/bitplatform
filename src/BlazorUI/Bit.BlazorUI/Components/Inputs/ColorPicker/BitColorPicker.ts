@@ -23,7 +23,11 @@
             const bitController = ColorPicker._bitControllers.find(bc => bc.id == id);
             bitController?.controller.abort();
 
-            bitController?.dotnetObj?.dispose();
+            try {
+                bitController?.dotnetObj?.dispose();
+            } catch (e) {
+                console.error(e);
+            }
 
             ColorPicker._bitControllers = ColorPicker._bitControllers.filter(bc => bc.id != id);
         }

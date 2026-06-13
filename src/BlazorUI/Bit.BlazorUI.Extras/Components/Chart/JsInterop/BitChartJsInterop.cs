@@ -30,12 +30,15 @@ internal static class BitChartJsInterop
     /// </summary>
     /// <param name="jsRuntime"></param>
     /// <param name="chartConfig">The config for the new chart.</param>
-    /// <returns></returns>
-    public static ValueTask<bool> BitChartJsSetupChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
+    /// <returns>
+    /// <see langword="true"/> when setup succeeded, <see langword="false"/> when the chart could not be updated in place,
+    /// or <see langword="null"/> when interop could not run or an error was swallowed on the in-process (WASM) path.
+    /// </returns>
+    public static ValueTask<bool?> BitChartJsSetupChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
         var dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam!);
-        return jsRuntime.FastInvoke<bool>("BitBlazorUI.BitChart.setupChart", param);
+        return jsRuntime.FastInvoke<bool?>("BitBlazorUI.BitChart.setupChart", param);
     }
 
     /// <summary>
@@ -43,12 +46,15 @@ internal static class BitChartJsInterop
     /// </summary>
     /// <param name="jsRuntime"></param>
     /// <param name="chartConfig">The updated config of the chart you want to update.</param>
-    /// <returns></returns>
-    public static ValueTask<bool> BitChartJsUpdateChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
+    /// <returns>
+    /// <see langword="true"/> when the chart was updated, <see langword="false"/> when the chart instance was missing,
+    /// or <see langword="null"/> when interop could not run or an error was swallowed on the in-process (WASM) path.
+    /// </returns>
+    public static ValueTask<bool?> BitChartJsUpdateChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
         var dynParam = StripNulls(chartConfig);
         var param = ConvertExpandoObjectToDictionary(dynParam!);
-        return jsRuntime.FastInvoke<bool>("BitBlazorUI.BitChart.updateChart", param);
+        return jsRuntime.FastInvoke<bool?>("BitBlazorUI.BitChart.updateChart", param);
     }
 
 

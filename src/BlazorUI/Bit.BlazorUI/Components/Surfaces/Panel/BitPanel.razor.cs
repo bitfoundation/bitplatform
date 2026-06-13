@@ -8,6 +8,7 @@ public partial class BitPanel : BitComponentBase
     private float _offsetTop;
     private bool _internalIsOpen;
     private string _containerId = default!;
+    private DotNetObjectReference<BitPanel>? _dotnetObj;
 
 
 
@@ -166,12 +167,12 @@ public partial class BitPanel : BitComponentBase
 
         if (firstRender)
         {
-            var dotnetObj = DotNetObjectReference.Create(this);
+            _dotnetObj = DotNetObjectReference.Create(this);
             var position = Position ?? BitPanelPosition.End;
             var orientationLock = position == BitPanelPosition.Start || position == BitPanelPosition.End
                                     ? BitSwipeOrientation.Horizontal 
                                     : BitSwipeOrientation.Vertical;
-            await _js.BitSwipesSetup(_containerId, SwipeTrigger ?? 0.25m, position, Dir == BitDir.Rtl, orientationLock, dotnetObj, false);
+            await _js.BitSwipesSetup(_containerId, SwipeTrigger ?? 0.25m, position, Dir == BitDir.Rtl, orientationLock, _dotnetObj, false);
         }
 
         if (_internalIsOpen == IsOpen) return;
@@ -182,7 +183,7 @@ public partial class BitPanel : BitComponentBase
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector ?? "body", IsOpen);
+        _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector ?? "body", IsOpen) ?? 0;
 
         StyleBuilder.Reset();
         StateHasChanged();
@@ -255,6 +256,8 @@ public partial class BitPanel : BitComponentBase
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        _dotnetObj?.Dispose();
 
         try
         {

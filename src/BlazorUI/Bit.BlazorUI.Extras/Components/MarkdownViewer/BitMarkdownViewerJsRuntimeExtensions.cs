@@ -2,9 +2,11 @@
 
 internal static class BitMarkdownViewerJsRuntimeExtensions
 {
-    public static ValueTask<bool> BitMarkdownViewerCheckScriptLoaded(this IJSRuntime jsRuntime, string script)
+    // FastInvoke returns null when the runtime can't service interop or a JSON/JS interop error is
+    // swallowed on the in-process (WASM) path. Nullable distinguishes that from a legitimate false.
+    public static ValueTask<bool?> BitMarkdownViewerCheckScriptLoaded(this IJSRuntime jsRuntime, string script)
     {
-        return jsRuntime.FastInvoke<bool>("BitBlazorUI.MarkdownViewer.checkScriptLoaded", script);
+        return jsRuntime.FastInvoke<bool?>("BitBlazorUI.MarkdownViewer.checkScriptLoaded", script);
     }
 
     public static ValueTask<string> BitMarkdownViewerParse(this IJSRuntime jsRuntime, string markdown, string? middleware)

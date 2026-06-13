@@ -75,7 +75,7 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
         }
         else // client
         {
-            if ((await js.BitMarkdownViewerCheckScriptLoaded(MARKED_FILE)) is false)
+            if (await js.BitMarkdownViewerCheckScriptLoaded(MARKED_FILE) is not true)
             {
                 await js.BitExtrasInitScripts([MARKED_FILE]);
             }
