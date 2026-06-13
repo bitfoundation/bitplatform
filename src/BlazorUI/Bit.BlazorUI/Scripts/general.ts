@@ -30,6 +30,7 @@ window.addEventListener('resize', () => {
     // an open callout that owns the focused editable element; reposition it to the new visible
     // area instead. Any other resize dismisses the callout as before.
     if (BitBlazorUI.Utils.isTouchDevice()
+        && window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH
         && BitBlazorUI.Utils.isEditableElementFocused()
         && document.activeElement
         && document.getElementById(BitBlazorUI.Callouts.current.calloutId)?.contains(document.activeElement)) {

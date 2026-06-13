@@ -45,7 +45,6 @@
                 height: vv?.height ?? window.innerHeight,
                 offsetLeft: vv?.offsetLeft ?? 0,
                 offsetTop: vv?.offsetTop ?? 0,
-                layoutWidth: window.innerWidth,
                 layoutHeight: window.innerHeight,
             };
         }
