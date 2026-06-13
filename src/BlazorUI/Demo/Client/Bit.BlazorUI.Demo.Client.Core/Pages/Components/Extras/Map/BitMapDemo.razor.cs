@@ -428,7 +428,7 @@ public partial class BitMapDemo
         {
             name = n.ValueKind == System.Text.Json.JsonValueKind.String ? n.GetString() : n.ToString();
         }
-        geoJsonLog = $"Layer {e.LayerId} — properties.name = {name}";
+        geoJsonLog = $"Layer {e.LayerId} - properties.name = {name}";
         return Task.CompletedTask;
     }
 
@@ -825,7 +825,7 @@ private Task OnGeoJsonFeatureClick(BitMapGeoJsonFeatureClickArgs e)
     {
         name = n.ValueKind == System.Text.Json.JsonValueKind.String ? n.GetString() : n.ToString();
     }
-    geoJsonLog = $""Layer {e.LayerId} — properties.name = {name}"";
+    geoJsonLog = $""Layer {e.LayerId} - properties.name = {name}"";
     return Task.CompletedTask;
 }
 
@@ -998,7 +998,7 @@ private BitLeafletMapProvider advProvider = new()
     MaxBounds = null,
 };
 
-// Mutate the stable field only when an option actually changes — not on every render.
+// Mutate the stable field only when an option actually changes - not on every render.
 private BitLeafletMapProvider BuildAdvancedProvider()
 {
     advProvider = new BitLeafletMapProvider

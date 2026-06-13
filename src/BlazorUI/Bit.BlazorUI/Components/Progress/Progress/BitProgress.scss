@@ -5,6 +5,7 @@
     position: relative;
     font-size: spacing(1.75);
     font-family: $tg-font-family;
+    --bit-prb-bar-color: #{$clr-pri};
 
     @keyframes bit-prb-animation {
         0% {
@@ -41,6 +42,11 @@
 .bit-prb-pct {
     text-align: end;
     color: $clr-fg-pri;
+}
+
+.bit-prb-pnm {
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 .bit-prb-bcn {
@@ -122,4 +128,86 @@
     stroke-dasharray: calc(3.141 * 25% * 0.8), 500%;
     animation: bit-prb-cir-animation 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+}
+
+
+.bit-prb-sm {
+    font-size: spacing(1.5);
+}
+
+.bit-prb-md {
+    font-size: spacing(1.75);
+}
+
+.bit-prb-lg {
+    font-size: spacing(2);
+}
+
+
+.bit-prb-pri {
+    --bit-prb-bar-color: #{$clr-pri};
+}
+
+.bit-prb-sec {
+    --bit-prb-bar-color: #{$clr-sec};
+}
+
+.bit-prb-ter {
+    --bit-prb-bar-color: #{$clr-ter};
+}
+
+.bit-prb-inf {
+    --bit-prb-bar-color: #{$clr-inf};
+}
+
+.bit-prb-suc {
+    --bit-prb-bar-color: #{$clr-suc};
+}
+
+.bit-prb-wrn {
+    --bit-prb-bar-color: #{$clr-wrn};
+}
+
+.bit-prb-swr {
+    --bit-prb-bar-color: #{$clr-swr};
+}
+
+.bit-prb-err {
+    --bit-prb-bar-color: #{$clr-err};
+}
+
+.bit-prb-pbg {
+    --bit-prb-bar-color: #{$clr-bg-pri};
+}
+
+.bit-prb-sbg {
+    --bit-prb-bar-color: #{$clr-bg-sec};
+}
+
+.bit-prb-tbg {
+    --bit-prb-bar-color: #{$clr-bg-ter};
+}
+
+.bit-prb-pfg {
+    --bit-prb-bar-color: #{$clr-fg-pri};
+}
+
+.bit-prb-sfg {
+    --bit-prb-bar-color: #{$clr-fg-sec};
+}
+
+.bit-prb-tfg {
+    --bit-prb-bar-color: #{$clr-fg-ter};
+}
+
+.bit-prb-pbr {
+    --bit-prb-bar-color: #{$clr-brd-pri};
+}
+
+.bit-prb-sbr {
+    --bit-prb-bar-color: #{$clr-brd-sec};
+}
+
+.bit-prb-tbr {
+    --bit-prb-bar-color: #{$clr-brd-ter};
 }

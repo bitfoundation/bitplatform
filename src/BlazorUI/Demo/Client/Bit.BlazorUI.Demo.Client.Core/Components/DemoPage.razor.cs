@@ -23,8 +23,6 @@ public partial class DemoPage
     [Parameter] public string? GitHubExtrasUrl { get; set; }
     [Parameter] public string? GitHubDemoUrl { get; set; }
 
-
-
     private readonly List<ComponentParameter> _componentBaseParameters =
     [
         new()

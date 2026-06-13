@@ -1,5 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Bunit;
+﻿using Bunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
 
@@ -46,25 +46,6 @@ public class BitModalTests : BunitTestContext
 
         bitModal = com.FindAll(".bit-mdl");
         Assert.AreEqual(isBlocking ? 1 : 0, bitModal.Count);
-    }
-
-    [TestMethod,
-        DataRow(false),
-        DataRow(true)
-    ]
-    public void BitModalIsModelessTest(bool isModeless)
-    {
-        var com = RenderComponent<BitModal>(parameters =>
-        {
-            parameters.Add(p => p.Modeless, isModeless);
-            parameters.Add(p => p.IsOpen, true);
-        });
-
-        var element = com.Find(".bit-mdl");
-        Assert.AreEqual(element?.Attributes?["aria-modal"]?.Value, (isModeless is false).ToString().ToLower());
-
-        var elementOverlay = com.FindAll(".bit-mdl-ovl");
-        Assert.AreEqual(isModeless ? 0 : 1, elementOverlay.Count);
     }
 
     [TestMethod,
@@ -190,51 +171,6 @@ public class BitModalTests : BunitTestContext
 
         Assert.IsFalse(isOpen);
         Assert.AreEqual(1, currentCount);
-    }
-
-    [TestMethod,
-        DataRow(BitPosition.Center),
-        DataRow(BitPosition.TopLeft),
-        DataRow(BitPosition.TopCenter),
-        DataRow(BitPosition.TopRight),
-        DataRow(BitPosition.CenterLeft),
-        DataRow(BitPosition.CenterRight),
-        DataRow(BitPosition.BottomLeft),
-        DataRow(BitPosition.BottomCenter),
-        DataRow(BitPosition.BottomRight),
-        DataRow(null)
-    ]
-    public void BitPositionTest(BitPosition? position)
-    {
-        var com = RenderComponent<BitModal>(parameters =>
-        {
-            parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.Position, position);
-        });
-
-        var positionClass = position switch
-        {
-            BitPosition.TopLeft => "bit-mdl-tlf",
-            BitPosition.TopCenter => "bit-mdl-tcr",
-            BitPosition.TopRight => "bit-mdl-trg",
-            BitPosition.TopStart => "bit-mdl-tst",
-            BitPosition.TopEnd => "bit-mdl-ten",
-            BitPosition.CenterLeft => "bit-mdl-clf",
-            BitPosition.Center => "bit-mdl-ctr",
-            BitPosition.CenterRight => "bit-mdl-crg",
-            BitPosition.CenterStart => "bit-mdl-cst",
-            BitPosition.CenterEnd => "bit-mdl-cen",
-            BitPosition.BottomLeft => "bit-mdl-blf",
-            BitPosition.BottomCenter => "bit-mdl-bcr",
-            BitPosition.BottomRight => "bit-mdl-brg",
-            BitPosition.BottomStart => "bit-mdl-bst",
-            BitPosition.BottomEnd => "bit-mdl-ben",
-            _ => "bit-mdl-ctr",
-        };
-
-        var element = com.Find(".bit-mdl");
-
-        Assert.IsTrue(element.ClassList.Contains(positionClass));
     }
 
     private void HandleIsOpenChanged(bool isOpen) => isModalOpen = isOpen;

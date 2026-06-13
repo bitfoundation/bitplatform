@@ -1,175 +1,183 @@
-﻿@inherits AppComponentBase
+@inherits AppComponentBase
 
-<div class="demo-page">
-    <div class="page-container example">
-        <BitText Typography="BitTypography.H3" Class="title">
-            @Name
+@if (RenderForMcpClient)
+{
+    @((MarkupString)($"**{Name}** {string.Join(',', SecondaryNames ?? [])} {Description}{Notes} {Environment.NewLine}"))
+    @(ChildContent ?? Examples)
+}
+else
+{
+    <div class="demo-page">
+        <div class="page-container example">
+            <BitText Typography="BitTypography.H3" Class="title">
+                @Name
 
-            @if (SecondaryNames?.Length > 0)
-            {
-                <br />
-                <BitStack Horizontal>
-                    @foreach (var name in SecondaryNames)
-                    {
-                        <BitText Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
-                    }
-                </BitStack>
-            }
-        </BitText>
-
-        @if (Description.HasValue() || DescriptionTemplate is not null)
-        {
-            <section id="overview-section" class="page-section">
-                @if (DescriptionTemplate is not null)
+                @if (SecondaryNames?.Length > 0)
                 {
-                    @DescriptionTemplate
-                }
-                else
-                {
-                    <BitText>@Description</BitText>
-                }
-            </section>
-        }
-
-        @if (Notes.HasValue() || NotesTemplate is not null)
-        {
-            <section id="notes-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
-                @if (NotesTemplate is not null)
-                {
-                    @NotesTemplate
-                }
-                else
-                {
-                    @Notes
-                }
-            </section>
-        }
-
-        @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
-        {
-            <section id="introduction-section" class="page-section">
-                <BitText Typography="BitTypography.H4" Class="subtitle">Introduction</BitText>
-                @if (IntroductionVideoUrl.HasValue())
-                {
-                    <div class="video-container">
-                        <video src="@IntroductionVideoUrl" controls />
-                    </div>
                     <br />
+                    <BitStack Horizontal>
+                        @foreach (var name in SecondaryNames)
+                        {
+                            <BitText Typography="BitTypography.Subtitle1" Color="BitColor.Info">@name</BitText>
+                        }
+                    </BitStack>
                 }
-                @if (Introduction.HasValue() || IntroductionTemplate is not null)
-                {
-                    @if (IntroductionTemplate is not null)
+            </BitText>
+
+            @if (Description.HasValue() || DescriptionTemplate is not null)
+            {
+                <section id="overview-section" class="page-section">
+                    @if (DescriptionTemplate is not null)
                     {
-                        @IntroductionTemplate
+                        @DescriptionTemplate
                     }
                     else
                     {
-                        <BitText Typography="BitTypography.Body2">
-                            @Introduction
-                        </BitText>
+                        <BitText>@Description</BitText>
                     }
+                </section>
+            }
+
+            @if (Notes.HasValue() || NotesTemplate is not null)
+            {
+                <section id="notes-section" class="page-section">
+                    <BitText Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
+                    @if (NotesTemplate is not null)
+                    {
+                        @NotesTemplate
+                    }
+                    else
+                    {
+                        @Notes
+                    }
+                </section>
+            }
+
+            @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
+            {
+                <section id="introduction-section" class="page-section">
+                    <BitText Typography="BitTypography.H4" Class="subtitle">Introduction</BitText>
+                    @if (IntroductionVideoUrl.HasValue())
+                    {
+                        <div class="video-container">
+                            <video src="@IntroductionVideoUrl" controls />
+                        </div>
+                        <br />
+                    }
+                    @if (Introduction.HasValue() || IntroductionTemplate is not null)
+                    {
+                        @if (IntroductionTemplate is not null)
+                        {
+                            @IntroductionTemplate
+                        }
+                        else
+                        {
+                            <BitText Typography="BitTypography.Body2">
+                                @Introduction
+                            </BitText>
+                        }
+                    }
+                </section>
+            }
+
+            <section id="usage-section" class="page-section">
+                <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
+                @(ChildContent ?? Examples)
+            </section>
+
+            <section id="api-section" class="page-section">
+                <BitText Typography="BitTypography.H4" Class="subtitle">API</BitText>
+
+                <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
+
+                @if (PublicMembers.Any())
+                {
+                    <DemoParametersTable Name="@($"Bit{Name}")" NameSuffix="public members" Parameters="PublicMembers" />
+                }
+
+                @if (_textInputComponents.Contains(Name))
+                {
+                    <DemoParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
+                }
+
+                @if (_inputComponents.Contains(Name))
+                {
+                    <DemoParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
+
+                    <DemoParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
+                }
+
+                @if (_notInheritedComponents.Contains(Name) is false)
+                {
+                    <DemoParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
+
+                    <DemoParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+                }
+
+                <DemoSubClassesTable Classes="SubClasses" />
+
+                <DemoSubEnumsTable Enums="SubEnums" />
+
+                @if (_notInheritedComponents.Contains(Name) is false)
+                {
+                    <DemoSubEnumsTable Enums="_componentBaseSubEnums" />
                 }
             </section>
-        }
 
-        <section id="usage-section" class="page-section">
-            <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
-            @(ChildContent ?? Examples)
-        </section>
-
-        <section id="api-section" class="page-section">
-            <BitText Typography="BitTypography.H4" Class="subtitle">API</BitText>
-
-            <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
-
-            @if (PublicMembers.Any())
-            {
-                <DemoParametersTable Name="@($"Bit{Name}")" NameSuffix="public members" Parameters="PublicMembers" />
-            }
-
-            @if (_textInputComponents.Contains(Name))
-            {
-                <DemoParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
-            }
-
-            @if (_inputComponents.Contains(Name))
-            {
-                <DemoParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
-
-                <DemoParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
-            }
-
-            @if (_notInheritedComponents.Contains(Name) is false)
-            {
-                <DemoParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
-
-                <DemoParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
-            }
-
-            <DemoSubClassesTable Classes="SubClasses" />
-
-            <DemoSubEnumsTable Enums="SubEnums" />
-
-            @if (_notInheritedComponents.Contains(Name) is false)
-            {
-                <DemoSubEnumsTable Enums="_componentBaseSubEnums" />
-            }
-        </section>
-
-        <section id="feedback-section" class="page-section">
-            <BitText Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
-            <BitText>
-                You can give us your feedback through our
-                <BitLink Href="@REPO_URL" Target="_blank">GitHub repo</BitLink>
-                by filing a new
-                <BitLink Href="@($"{REPO_URL}/issues/new/choose")" Target="_blank">Issue</BitLink>
-                or starting a new
-                <BitLink Href="@($"{REPO_URL}/discussions/new/choose")" Target="_blank">Discussion</BitLink>.
-            </BitText>
-
-            @if (GitHubDemoUrl.HasValue())
-            {
-                <br />
+            <section id="feedback-section" class="page-section">
+                <BitText Typography="BitTypography.H4" Class="subtitle">Feedback</BitText>
                 <BitText>
-                    Or you can
-                    <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
-                             Target="_blank">review</BitLink>
-                    /
-                    <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
-                             Target="_blank">edit</BitLink>
-                    this page on GitHub.
+                    You can give us your feedback through our
+                    <BitLink Href="@REPO_URL" Target="_blank">GitHub repo</BitLink>
+                    by filing a new
+                    <BitLink Href="@($"{REPO_URL}/issues/new/choose")" Target="_blank">Issue</BitLink>
+                    or starting a new
+                    <BitLink Href="@($"{REPO_URL}/discussions/new/choose")" Target="_blank">Discussion</BitLink>.
                 </BitText>
-            }
 
-            @if (GitHubUrl.HasValue())
-            {
-                <br />
-                <BitText>
-                    Or you can
-                    <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
-                             Target="_blank">review</BitLink>
-                    /
-                    <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
-                             Target="_blank">edit</BitLink>
-                    this component on GitHub.
-                </BitText>
-            }
+                @if (GitHubDemoUrl.HasValue())
+                {
+                    <br />
+                    <BitText>
+                        Or you can
+                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
+                                 Target="_blank">review</BitLink>
+                        /
+                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/{GitHubDemoUrl}")"
+                                 Target="_blank">edit</BitLink>
+                        this page on GitHub.
+                    </BitText>
+                }
 
-            @if (GitHubExtrasUrl.HasValue())
-            {
-                <br />
-                <BitText>
-                    Or you can
-                    <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
-                             Target="_blank">review</BitLink>
-                    /
-                    <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
-                             Target="_blank">edit</BitLink>
-                    this component on GitHub.
-                </BitText>
-            }
-        </section>
+                @if (GitHubUrl.HasValue())
+                {
+                    <br />
+                    <BitText>
+                        Or you can
+                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
+                                 Target="_blank">review</BitLink>
+                        /
+                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")"
+                                 Target="_blank">edit</BitLink>
+                        this component on GitHub.
+                    </BitText>
+                }
+
+                @if (GitHubExtrasUrl.HasValue())
+                {
+                    <br />
+                    <BitText>
+                        Or you can
+                        <BitLink Href="@($"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
+                                 Target="_blank">review</BitLink>
+                        /
+                        <BitLink Href="@($"{REPO_URL}/edit/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")"
+                                 Target="_blank">edit</BitLink>
+                        this component on GitHub.
+                    </BitText>
+                }
+            </section>
+        </div>
+        <SideRail />
     </div>
-    <SideRail />
-</div>
+}

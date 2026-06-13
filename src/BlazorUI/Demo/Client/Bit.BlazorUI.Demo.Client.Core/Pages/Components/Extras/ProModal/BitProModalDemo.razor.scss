@@ -1,0 +1,68 @@
+@import '../../../../Styles/abstracts/functions';
+
+.relative-container {
+    width: 100%;
+    height: 400px;
+    overflow: auto;
+    margin-top: 1rem;
+    position: relative;
+    border: 2px lightgreen solid;
+}
+
+.position-btn {
+    gap: 1rem;
+    display: flex;
+    flex-flow: column nowrap;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+    }
+}
+
+::deep {
+    .position-button {
+        width: 130px;
+    }
+
+    .custom-class {
+        border: 0.5rem solid tomato;
+        background-color: darkgoldenrod;
+    }
+
+    .custom-root {
+        border: 0.25rem solid #0054C6;
+    }
+
+    .custom-overlay {
+        background-color: #ffbd5a66;
+    }
+
+    .custom-content {
+        margin: 1rem;
+        box-shadow: 0 0 10rem purple;
+        border-end-end-radius: 1rem;
+        border-end-start-radius: 1rem;
+    }
+
+    .custom-header-container {
+        padding: 1.5rem;
+        background-color: tomato;
+    }
+
+    .custom-header {
+        font-size: 2rem;
+    }
+
+    .custom-body {
+        color: black;
+        background-color: lightseagreen;
+    }
+
+    .custom-footer {
+        color: brown;
+        padding: 1.5rem;
+        font-size: 1.5rem;
+        background-color: tomato;
+    }
+}
