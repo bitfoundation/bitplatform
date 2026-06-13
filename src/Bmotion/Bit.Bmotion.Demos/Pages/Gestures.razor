@@ -1,0 +1,79 @@
+@page "/gestures"
+
+<div class="demo-section">
+    <h2>Hover &amp; Tap</h2>
+    <p>
+        <strong>WhileHover</strong> and <strong>WhileTap</strong> overlay animation states
+        on top of the base <c>Animate</c> state. They automatically revert on pointer-up / leave.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card">
+            <Motion Tag="div"
+                    Class="box"
+                    Animate="@(new AnimationProps { Scale = 1 })"
+                    WhileHover="@(new AnimationProps { Scale = 1.15, Y = -6, BoxShadow = "0 20px 40px rgba(108,71,255,.5)" })"
+                    WhileTap="@(new AnimationProps { Scale = 0.92 })"
+                    Transition="@TransitionConfig.Spring(stiffness:400, damping:25)" />
+        </div>
+
+        <div class="demo-card">
+            <Motion Tag="button"
+                    Class="btn-bm"
+                    Animate="@(new AnimationProps { Scale = 1 })"
+                    WhileHover="@(new AnimationProps { Scale = 1.07, BackgroundColor = "#8a66ff" })"
+                    WhileTap="@(new AnimationProps { Scale = 0.95 })"
+                    Transition="@(new TransitionConfig { Duration = 0.15 })">
+                Animated Button
+            </Motion>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Focus</h2>
+    <p><strong>WhileFocus</strong> plays while an element or its descendants are focused.</p>
+    <div class="demo-row">
+        <div class="demo-card">
+            <Motion Tag="input"
+                    Style="background:#1e1e2e;border:2px solid #333;color:#eee;border-radius:8px;padding:.5rem 1rem;outline:none;width:240px"
+                    Animate="@(new AnimationProps { Scale = 1 })"
+                    WhileFocus="@(new AnimationProps { Scale = 1.03, BorderColor = "#6c47ff" })"
+                    Transition="@(new TransitionConfig { Duration = 0.2 })"
+                    AdditionalAttributes="@(new Dictionary<string,object>{ ["placeholder"] = "Click to focus…", ["type"] = "text" })" />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Events</h2>
+    <p>Listen to gesture callbacks: <c>OnHoverStart</c>, <c>OnTap</c>, <c>OnTapCancel</c>, etc.</p>
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column;gap:1rem;">
+            <Motion Tag="div"
+                    Class="box"
+                    WhileHover="@(new AnimationProps { Scale = 1.1 })"
+                    WhileTap="@(new AnimationProps { Scale = 0.9 })"
+                    OnHoverStart="@(() => AddEvent("HoverStart"))"
+                    OnHoverEnd="@(() => AddEvent("HoverEnd"))"
+                    OnTapStart="@(() => AddEvent("TapStart"))"
+                    OnTap="@(() => AddEvent("Tap"))"
+                    OnTapCancel="@(() => AddEvent("TapCancel"))" />
+            <div style="font-size:.8rem;color:#888;max-height:120px;overflow:auto;">
+                @foreach (var e in _events.TakeLast(8).Reverse())
+                {
+                    <div>@e</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly List<string> _events = new();
+
+    void AddEvent(string name)
+    {
+        _events.Add($"[{DateTime.Now:HH:mm:ss.ff}] {name}");
+        StateHasChanged();
+    }
+}

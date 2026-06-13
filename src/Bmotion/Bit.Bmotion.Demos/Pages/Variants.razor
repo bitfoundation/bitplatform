@@ -1,0 +1,83 @@
+@page "/variants"
+
+<div class="demo-section">
+    <h2>Variants</h2>
+    <p>
+        Define named states in a <strong>MotionVariants</strong> dictionary and reference them
+        by name in <c>Animate</c>, <c>Initial</c>, etc. Children automatically receive the
+        active variant name and can define their own matching entries.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <Motion Tag="ul"
+                    Style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.5rem;"
+                    Variants="_containerVariants"
+                    Initial="@_hidden"
+                    Animate="@(_visible ? _visible_ : _hidden)"
+                    Transition="@(new TransitionConfig { StaggerChildren = 0.08 })">
+                @for (int i = 0; i < 5; i++)
+                {
+                    var idx = i;
+                    <Motion Tag="li"
+                            Style="background:rgba(108,71,255,.15);border:1px solid rgba(108,71,255,.3);border-radius:8px;padding:.6rem 1rem;font-size:.9rem;"
+                            Variants="_itemVariants">
+                        Item @(idx + 1)
+                    </Motion>
+                }
+            </Motion>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible = !_visible)">
+        @(_visible ? "Hide" : "Show") list
+    </button>
+</div>
+
+<div class="demo-section">
+    <h2>Variant Orchestration</h2>
+    <p>
+        Use <c>StaggerChildren</c> and <c>DelayChildren</c> in the container's
+        transition to choreograph child animations.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card">
+            <Motion Tag="div"
+                    Style="display:flex;gap:.5rem;"
+                    Variants="_containerVariants"
+                    Initial="@_hidden"
+                    Animate="@(_visible2 ? _visible_ : _hidden)"
+                    Transition="@(new TransitionConfig { StaggerChildren = 0.12, DelayChildren = 0.2 })">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <Motion Tag="div"
+                            Class="box box-sm"
+                            Style="@($"background:hsl({i*60+200},70%,60%)")"
+                            Variants="_itemVariants" />
+                }
+            </Motion>
+        </div>
+    </div>
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible2 = !_visible2)">
+        @(_visible2 ? "Hide" : "Show") boxes
+    </button>
+</div>
+
+@code {
+    private bool _visible = true;
+    private bool _visible2 = true;
+
+    // Typed AnimationTarget fields so implicit conversions work cleanly in Razor attributes
+    private readonly AnimationTarget _hidden   = "hidden";
+    private readonly AnimationTarget _visible_ = "visible";
+
+    private readonly MotionVariants _containerVariants = MotionVariants.Create(
+        ("hidden",  new AnimationProps { Opacity = 0 }),
+        ("visible", new AnimationProps { Opacity = 1 })
+    );
+
+    private readonly MotionVariants _itemVariants = MotionVariants.Create(
+        ("hidden",  new AnimationProps { Opacity = 0, X = -30 }),
+        ("visible", new AnimationProps { Opacity = 1, X = 0  })
+    );
+}

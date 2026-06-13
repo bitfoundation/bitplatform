@@ -1,0 +1,65 @@
+@page "/drag"
+
+<div class="demo-section">
+    <h2>Drag</h2>
+    <p>
+        Enable drag on any axis with <strong>Drag="true"</strong>.
+        Add <strong>DragOptions</strong> to constrain movement, tune elasticity, and momentum.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
+            <Motion Tag="div"
+                    Class="box"
+                    Style="position:absolute;top:50%;left:50%;margin:-40px 0 0 -40px;cursor:grab;"
+                    Animate="@(new AnimationProps { Scale = 1 })"
+                    WhileDrag="@(new AnimationProps { Scale = 1.1, BoxShadow = "0 15px 35px rgba(0,0,0,.5)" })"
+                    WhileHover="@(new AnimationProps { Scale = 1.05 })"
+                    Drag="true"
+                    DragOptions="@(new DragOptions { Elastic = 0.5, Momentum = true })"
+                    Transition="@TransitionConfig.Spring(stiffness:200, damping:20)" />
+        </div>
+
+        <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
+            <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:#888;white-space:nowrap">
+                X-axis only + constraints
+            </p>
+            <Motion Tag="div"
+                    Class="box box-sm"
+                    Style="position:absolute;top:50%;left:50%;margin:-25px 0 0 -25px;"
+                    Drag="true"
+                    DragOptions="@(new DragOptions
+                    {
+                        Axis        = DragAxis.X,
+                        Constraints = DragConstraints.Horizontal(-120, 120),
+                        Elastic     = 0.3
+                    })"
+                    WhileDrag="@(new AnimationProps { Scale = 1.15 })" />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Drag Events</h2>
+    <p>Listen to <c>OnDragStart</c>, <c>OnDrag</c>, <c>OnDragEnd</c> for real-time position feedback.</p>
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column;gap:1rem;position:relative;overflow:hidden;height:220px;">
+            <Motion Tag="div"
+                    Class="box box-sm"
+                    Style="cursor:grab"
+                    Drag="true"
+                    OnDrag="@HandleDrag"
+                    OnDragEnd="@HandleDragEnd" />
+            <div style="position:absolute;bottom:.75rem;left:50%;transform:translateX(-50%);font-size:.78rem;color:#888;white-space:nowrap">
+                @_dragInfo
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _dragInfo = "Drag the box";
+
+    void HandleDrag()  => _dragInfo = "Dragging…";
+    void HandleDragEnd() => _dragInfo = "Released";
+}

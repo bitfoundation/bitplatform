@@ -1,0 +1,65 @@
+@page "/presence"
+
+<div class="demo-section">
+    <h2>AnimatePresence</h2>
+    <p>
+        Wrap conditional content in <strong>AnimatePresence</strong>. When
+        <c>IsPresent</c> becomes <c>false</c> the children play their <c>Exit</c>
+        animation before being removed from the DOM.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="min-height:200px; position:relative; overflow:hidden;">
+            <AnimatePresence IsPresent="@_visible">
+                <Motion Tag="div"
+                        Class="box"
+                        Initial="@(new AnimationProps { Opacity = 0, Y = 40, Scale = 0.8 })"
+                        Animate="@(new AnimationProps { Opacity = 1, Y = 0,  Scale = 1   })"
+                        Exit="@(new AnimationProps    { Opacity = 0, Y = -40, Scale = 0.8 })"
+                        Transition="@TransitionConfig.Spring(stiffness:220, damping:18)" />
+            </AnimatePresence>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible = !_visible)">
+        @(_visible ? "Remove" : "Add")
+    </button>
+</div>
+
+<div class="demo-section">
+    <h2>List Items</h2>
+    <p>Add and remove items from a list with staggered enter/exit animations.</p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column;gap:.5rem;align-items:stretch;width:100%;min-width:280px;">
+            @foreach (var item in _items)
+            {
+                <AnimatePresence IsPresent="true" @key="item.Id">
+                    <Motion Tag="div"
+                            Style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;"
+                            Initial="@(new AnimationProps { Opacity = 0, X = -30 })"
+                            Animate="@(new AnimationProps { Opacity = 1, X = 0   })"
+                            Exit="@(new AnimationProps    { Opacity = 0, X = 30  })"
+                            Transition="@TransitionConfig.Spring(stiffness:300, damping:25)">
+                        <span>@item.Label</span>
+                        <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
+                                @onclick="@(() => RemoveItem(item.Id))">✕</button>
+                    </Motion>
+                </AnimatePresence>
+            }
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="AddItem">Add item</button>
+</div>
+
+@code {
+    private bool _visible = true;
+    private int  _nextId  = 4;
+
+    private record Item(int Id, string Label);
+    private List<Item> _items = [new(1,"Item One"), new(2,"Item Two"), new(3,"Item Three")];
+
+    void AddItem() => _items.Add(new(_nextId++, $"Item {_nextId - 1}"));
+    void RemoveItem(int id) => _items.RemoveAll(i => i.Id == id);
+}

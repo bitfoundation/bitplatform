@@ -1,0 +1,54 @@
+@page "/layout"
+
+<div class="demo-section">
+    <h2>Layout Animations (FLIP)</h2>
+    <p>
+        Add <strong>Layout="true"</strong> to any Motion element. Whenever the component
+        re-renders and changes position or size, a FLIP animation plays automatically.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column;gap:1rem;align-items:stretch;">
+            <div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:@(_justifyContent);">
+                @foreach (var item in _items)
+                {
+                    <Motion Tag="div"
+                            @key="@item.Label"
+                            Style="@($"width:60px;height:60px;border-radius:8px;background:{item.Color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;")"
+                            Layout="true"
+                            Transition="@TransitionConfig.Spring(stiffness:500, damping:35)">
+                        @item.Label
+                    </Motion>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top:1rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+        <button class="btn-bm" @onclick="Shuffle">Shuffle</button>
+        <button class="btn-bm" @onclick="ToggleLayout">Toggle justify (@_justifyContent)</button>
+    </div>
+</div>
+
+@code {
+    private string _justifyContent = "flex-start";
+
+    private record ColoredItem(string Label, string Color);
+
+    private List<ColoredItem> _items = [
+        new("A", "#6c47ff"),
+        new("B", "#ff4785"),
+        new("C", "#00c3ff"),
+        new("D", "#ffd447"),
+        new("E", "#44ff90"),
+    ];
+
+    void Shuffle() => _items = [.._items.OrderBy(_ => Random.Shared.Next())];
+
+    void ToggleLayout() => _justifyContent = _justifyContent switch
+    {
+        "flex-start" => "center",
+        "center"     => "flex-end",
+        _            => "flex-start"
+    };
+}

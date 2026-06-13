@@ -1,0 +1,57 @@
+@page "/basic"
+
+<div class="demo-section">
+    <h2>Basic Animations</h2>
+    <p>
+        Use <strong>Initial</strong> to set the starting state and <strong>Animate</strong>
+        for the target. Each property transitions automatically on mount and whenever
+        <c>Animate</c> changes.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <Motion Tag="div"
+                    Class="box"
+                    Initial="@(new AnimationProps { Opacity = 0, X = -60 })"
+                    Animate="@(new AnimationProps { Opacity = 1, X = 0 })"
+                    Transition="@(new TransitionConfig { Duration = 0.6, Ease = Easing.BackOut })" />
+        </div>
+        <div class="demo-card">
+            <Motion Tag="div"
+                    Class="box"
+                    Initial="@(new AnimationProps { Scale = 0 })"
+                    Animate="@(_toggled ? new AnimationProps { Scale = 1.3, Rotate = 45, BackgroundColor = "#ff4785" }
+                                        : new AnimationProps { Scale = 1, Rotate = 0, BackgroundColor = "#6c47ff" })"
+                    Transition="@(new TransitionConfig { Duration = 0.4 })"
+                    OnTap="@(() => _toggled = !_toggled)" />
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _toggled = !_toggled)">
+        Toggle animate
+    </button>
+</div>
+
+<div class="demo-section">
+    <h2>CSS Property Animations</h2>
+    <p>Animate any CSS property — colors, border-radius, box-shadow, and more.</p>
+    <div class="demo-row">
+        <div class="demo-card">
+            <Motion Tag="div"
+                    Class="box"
+                    Animate="@(_rounded
+                        ? new AnimationProps { BorderRadius = "50%", BackgroundColor = "#ff4785", Scale = 1.1 }
+                        : new AnimationProps { BorderRadius = "10px", BackgroundColor = "#6c47ff", Scale = 1 })"
+                    Transition="@(new TransitionConfig { Duration = 0.5, Ease = Easing.EaseInOut })"
+                    OnTap="@(() => _rounded = !_rounded)" />
+        </div>
+    </div>
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _rounded = !_rounded)">
+        Toggle shape
+    </button>
+</div>
+
+@code {
+    private bool _toggled;
+    private bool _rounded;
+}
