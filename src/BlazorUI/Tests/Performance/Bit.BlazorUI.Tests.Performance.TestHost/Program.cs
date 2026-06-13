@@ -25,8 +25,8 @@ app.MapRazorComponents<Bit.BlazorUI.Tests.Performance.TestHost.Components.App>()
 // disposing components, confirming that leaks (e.g. undisposed DotNetObjectReference
 // or unsubscribed event handlers) have been resolved.
 //
-// Two collections are performed — the first queues finalizers, the second reclaims
-// them — so the reported figure converges on the steady-state heap and isn't skewed
+// Two collections are performed - the first queues finalizers, the second reclaims
+// them - so the reported figure converges on the steady-state heap and isn't skewed
 // by recently-finalized objects.
 app.MapGet("/api/gc-info", () =>
 {

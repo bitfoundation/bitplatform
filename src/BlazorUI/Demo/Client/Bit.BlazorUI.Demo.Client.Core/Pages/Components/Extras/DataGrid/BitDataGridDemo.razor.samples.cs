@@ -1105,7 +1105,7 @@ public class MedalsModel
                     <td colspan=""6"">
                         <div class=""row-template-detail"">
                             <strong>Additional data:</strong> 
-                            Code: [@args.RowItem.Code] — 
+                            Code: [@args.RowItem.Code] - 
                             Gold: [@args.RowItem.Medals.Gold], 
                             Silver: [@args.RowItem.Medals.Silver], 
                             Bronze: [@args.RowItem.Medals.Bronze] 

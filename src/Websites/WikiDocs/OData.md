@@ -2,7 +2,7 @@
 
 If you've ever tried using OData before, you know it can be a bit of a headache. Between creating EDM models, inheriting from `ODataController`, dealing with strict routing conventions, and writing verbose configuration code, it often felt more like a burden than a convenience.
 
-Well, Microsoft has completely redesigned Microsoft.AspNetCore.OData in recent versions. The new design is much more aligned with modern ASP.NET Core practices, giving developers full flexibility while still enabling rich OData querying capabilities — all without forcing you into rigid patterns.
+Well, Microsoft has completely redesigned Microsoft.AspNetCore.OData in recent versions. The new design is much more aligned with modern ASP.NET Core practices, giving developers full flexibility while still enabling rich OData querying capabilities - all without forcing you into rigid patterns.
 
 ## You Can Use OData Like Never Before
 
@@ -73,7 +73,7 @@ This gives you full flexibility while keeping the benefits of OData querying.
 
 ## What If I Don’t Want to Return IQueryable?
 
-Sometimes, you might want to process the query results before returning them — perhaps mapping to a DTO or applying additional transformations. In that case, you can take control by accepting `ODataQueryOptions<T>` as a parameter and applying it yourself:
+Sometimes, you might want to process the query results before returning them - perhaps mapping to a DTO or applying additional transformations. In that case, you can take control by accepting `ODataQueryOptions<T>` as a parameter and applying it yourself:
 
 ```csharp
 [HttpGet]
@@ -96,7 +96,7 @@ public async Task<ActionResult<List<ProductDto>>> Get(
 }
 ```
 
-This way, you get to decide when and how the query gets executed — all while allowing clients to use familiar OData query strings.
+This way, you get to decide when and how the query gets executed - all while allowing clients to use familiar OData query strings.
 
 ---
 
@@ -113,4 +113,4 @@ Here are some common OData query parameters you can use:
 | `$filter=Price gt 100`    | Filters items where Price > 100                              |
 | `$select=Id,Name`         | Only includes Id and Name fields                             |
 
-These are all supported out of the box, and they get translated into efficient SQL queries — meaning only the necessary data is fetched from the database.
+These are all supported out of the box, and they get translated into efficient SQL queries - meaning only the necessary data is fetched from the database.

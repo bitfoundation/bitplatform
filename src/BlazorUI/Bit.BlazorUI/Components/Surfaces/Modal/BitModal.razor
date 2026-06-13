@@ -10,9 +10,9 @@
          dir="@ModalParameters.Dir?.ToString().ToLower()"
          aria-labelledby="@ModalParameters.TitleAriaId"
          aria-describedby="@ModalParameters.SubtitleAriaId"
-         aria-modal="@((ModalParameters.Modeless is false).ToString().ToLower())"
+         aria-modal="@ModalParameters.AriaModal.ToString().ToLowerInvariant()"
          role="@GetRole()">
-        @if (ModalParameters.Modeless is false)
+        @if (ModalParameters.ShowOverlay)
         {
             <div @onclick="HandleOnOverlayClick"
                  aria-hidden="true"

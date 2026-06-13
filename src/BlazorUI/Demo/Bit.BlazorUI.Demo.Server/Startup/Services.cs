@@ -1,6 +1,8 @@
 ﻿using System.ClientModel.Primitives;
 using System.IO.Compression;
 using Bit.BlazorUI.Demo.Server.Services;
+using Microsoft.AspNetCore.Components.Web;
+using Bit.BlazorUI.Demo.Client.Core.Components;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -48,6 +50,14 @@ public static class Services
         services.AddMcpServer()
             .WithHttpTransport()
             .WithToolsFromAssembly();
+
+        services.AddScoped<HtmlRenderer>();
+        services.AddCascadingValue(nameof(AppComponentBase.RenderForMcpClient), sp =>
+        {
+            var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
+            return httpContext?.Items?.ContainsKey(nameof(AppComponentBase.RenderForMcpClient)) is true
+                || httpContext?.Request?.Query?.ContainsKey("showallcodes") is true;
+        });
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {

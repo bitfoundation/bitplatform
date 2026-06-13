@@ -751,11 +751,23 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             return true;
         }
 
-        var pattern = DateFormat ?? (Mode == BitDatePickerMode.MonthPicker
-            ? _culture.DateTimeFormat.YearMonthPattern
-            : _culture.DateTimeFormat.ShortDatePattern);
+        var pattern = DateFormat ?? GetDefaultDateFormat();
 
-        if (DateTime.TryParseExact(value, pattern, _culture, DateTimeStyles.None, out DateTime parsedValue))
+        var parsed = DateTime.TryParseExact(value, pattern, _culture, DateTimeStyles.None, out DateTime parsedValue);
+
+        // When a custom DateFormat is not set and the time picker is enabled, the default pattern
+        // includes the time portion. Fall back to a date-only parse so users can still type a bare
+        // date (e.g. via AllowTextInput) without being forced to include the time.
+        if (parsed is false && DateFormat is null && ShowTimePicker)
+        {
+            var dateOnlyPattern = Mode == BitDatePickerMode.MonthPicker
+                ? _culture.DateTimeFormat.YearMonthPattern
+                : _culture.DateTimeFormat.ShortDatePattern;
+
+            parsed = DateTime.TryParseExact(value, dateOnlyPattern, _culture, DateTimeStyles.None, out parsedValue);
+        }
+
+        if (parsed)
         {
             result = new DateTimeOffset(parsedValue, _timeZone.GetUtcOffset(parsedValue));
             validationErrorMessage = null;
@@ -771,9 +783,115 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (value.HasValue is false) return null;
 
-        return Mode == BitDatePickerMode.MonthPicker
-            ? value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.YearMonthPattern, _culture)
-            : value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture);
+        return value.Value.ToString(DateFormat ?? GetDefaultDateFormat(), _culture);
+    }
+
+    private string GetDefaultDateFormat()
+    {
+        if (Mode == BitDatePickerMode.MonthPicker)
+        {
+            return _culture.DateTimeFormat.YearMonthPattern;
+        }
+
+        var pattern = _culture.DateTimeFormat.ShortDatePattern;
+
+        if (ShowTimePicker)
+        {
+            pattern = $"{pattern} {GetTimePattern()}";
+        }
+
+        return pattern;
+    }
+
+    private string GetTimePattern()
+    {
+        var shortTimePattern = _culture.DateTimeFormat.ShortTimePattern;
+
+        // A lowercase 'h' hour specifier (outside any quoted literal) indicates the culture uses a
+        // 12-hour clock, an uppercase 'H' a 24-hour clock.
+        var isCulture12Hours = HasSpecifier(shortTimePattern, 'h');
+
+        if (TimeFormat == BitTimeFormat.TwelveHours)
+        {
+            if (isCulture12Hours) return shortTimePattern;
+
+            // Convert the culture's 24-hour pattern to 12-hour by switching the hour specifier
+            // and appending the AM/PM designator.
+            return $"{ReplaceSpecifier(shortTimePattern, 'H', 'h')} tt";
+        }
+
+        if (isCulture12Hours is false) return shortTimePattern;
+
+        // Convert the culture's 12-hour pattern to 24-hour by switching the hour specifier
+        // and removing the AM/PM ('t'/'tt') designator.
+        return RemoveSpecifier(ReplaceSpecifier(shortTimePattern, 'h', 'H'), 't');
+    }
+
+    // Determines whether the given format specifier appears outside of any quoted literal.
+    private static bool HasSpecifier(string pattern, char specifier)
+    {
+        var quote = '\0';
+        foreach (var ch in pattern)
+        {
+            if (quote != '\0')
+            {
+                if (ch == quote) quote = '\0';
+                continue;
+            }
+
+            if (ch is '\'' or '"') { quote = ch; continue; }
+
+            if (ch == specifier) return true;
+        }
+
+        return false;
+    }
+
+    // Replaces the given format specifier with another, leaving quoted literals untouched.
+    private static string ReplaceSpecifier(string pattern, char from, char to)
+    {
+        var builder = new StringBuilder(pattern.Length);
+        var quote = '\0';
+        foreach (var ch in pattern)
+        {
+            if (quote != '\0')
+            {
+                builder.Append(ch);
+                if (ch == quote) quote = '\0';
+                continue;
+            }
+
+            if (ch is '\'' or '"') { quote = ch; builder.Append(ch); continue; }
+
+            builder.Append(ch == from ? to : ch);
+        }
+
+        return builder.ToString();
+    }
+
+    // Removes the given format specifier (and any resulting redundant whitespace), leaving quoted literals untouched.
+    private static string RemoveSpecifier(string pattern, char specifier)
+    {
+        var builder = new StringBuilder(pattern.Length);
+        var quote = '\0';
+        foreach (var ch in pattern)
+        {
+            if (quote != '\0')
+            {
+                builder.Append(ch);
+                if (ch == quote) quote = '\0';
+                continue;
+            }
+
+            if (ch is '\'' or '"') { quote = ch; builder.Append(ch); continue; }
+
+            if (ch == specifier) continue;
+
+            builder.Append(ch);
+        }
+
+        // Collapse any double spaces left behind by the removed designator and trim the edges.
+        return builder.ToString().Replace("  ", " ").Trim();
     }
 
 

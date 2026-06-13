@@ -539,7 +539,7 @@ namespace BitBlazorUI {
                     anchor: [0.5, 1], anchorXUnits: 'fraction', anchorYUnits: 'fraction',
                 };
                 // OpenLayers' ol.Icon asserts when both explicit width/height and a scale
-                // are provided — pick one path: honor caller-supplied dimensions when
+                // are provided - pick one path: honor caller-supplied dimensions when
                 // present, otherwise fall back to the default 1:1 scale.
                 if (opts.iconWidth || opts.iconHeight) {
                     if (opts.iconWidth) iconOpts.width = opts.iconWidth;
@@ -673,7 +673,7 @@ namespace BitBlazorUI {
                 // Snapshot the .NET handle so the microtask can verify it's still
                 // associated with a live state. dispose() nulls s.dotnetObj, so we
                 // bail out if it has been replaced (or cleared) by the time the
-                // microtask runs — otherwise we'd invoke a disposed DotNetObject.
+                // microtask runs - otherwise we'd invoke a disposed DotNetObject.
                 const capturedDn = s.dotnetObj;
                 if (!capturedDn) return;
                 queueMicrotask(() => {

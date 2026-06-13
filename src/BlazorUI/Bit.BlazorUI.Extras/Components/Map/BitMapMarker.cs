@@ -15,7 +15,7 @@ public sealed class BitMapMarker
     /// Raw HTML content rendered inside the click popup.
     /// <para>
     /// <b>Security:</b> This value is injected as raw HTML into the map popup (via <c>setHTML</c> / <c>innerHTML</c>).
-    /// It is typed as <see cref="MarkupString"/> so the call site is loud about the intent — never construct one
+    /// It is typed as <see cref="MarkupString"/> so the call site is loud about the intent - never construct one
     /// from unsanitized user input. Prefer <see cref="PopupText"/> for plain-text content.
     /// </para>
     /// </summary>
@@ -39,7 +39,7 @@ public sealed class BitMapMarker
     /// </para>
     /// <para>
     /// <b>Security:</b> This value is injected as raw HTML into the map tooltip and is typed as
-    /// <see cref="MarkupString"/> so the call site is loud about the intent — never construct one
+    /// <see cref="MarkupString"/> so the call site is loud about the intent - never construct one
     /// from unsanitized user input. Prefer <see cref="TooltipText"/> for plain-text content.
     /// </para>
     /// </summary>

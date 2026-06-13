@@ -62,8 +62,8 @@ public static class BitThemeSerialization
     }
 
     /// <summary>Replaces null reference-type properties (except <see cref="string"/>) so the tree matches a <c>new BitTheme()</c> graph after sparse JSON.</summary>
-#pragma warning disable IL2072 // Activator.CreateInstance — BitTheme-related POCOs only, all have public parameterless constructors.
-#pragma warning disable IL2075 // GetType().GetProperties — only instances from BitTheme deserialization.
+#pragma warning disable IL2072 // Activator.CreateInstance - BitTheme-related POCOs only, all have public parameterless constructors.
+#pragma warning disable IL2075 // GetType().GetProperties - only instances from BitTheme deserialization.
     private static void EnsureNestedObjects(object obj, HashSet<object>? visited = null)
     {
         visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);

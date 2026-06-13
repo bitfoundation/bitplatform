@@ -14,7 +14,7 @@ public partial class DemoExample
 
     protected override async Task OnInitAsync()
     {
-        showCode = ShowAllCodes;
+        showCode = RenderForMcpClient;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

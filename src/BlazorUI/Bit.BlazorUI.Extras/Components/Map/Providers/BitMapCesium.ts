@@ -1,7 +1,7 @@
 namespace BitBlazorUI {
 
     /**
-     * CesiumJS provider — 3D globe. Loads CesiumJS from the official CDN and drives a Viewer.
+     * CesiumJS provider - 3D globe. Loads CesiumJS from the official CDN and drives a Viewer.
      * Markers and vector layers are added as Entities on the Viewer's main entity collection.
      */
     export class BitMapCesium {
@@ -665,7 +665,7 @@ namespace BitBlazorUI {
             queueMicrotask(() => {
                 // Re-check the captured handle is still the live one. dispose() runs
                 // synchronously between this scheduling point and the microtask draining,
-                // and it nulls s.dotnetObj — so if the identity no longer matches the
+                // and it nulls s.dotnetObj - so if the identity no longer matches the
                 // .NET handle has been released and invokeMethodAsync would target a
                 // disposed reference. Wrap in try/catch as a final safety net for the
                 // race where dispose() runs after the identity check but before the
@@ -673,7 +673,7 @@ namespace BitBlazorUI {
                 if (s.dotnetObj !== dotnet) return;
                 try {
                     dotnet.invokeMethodAsync('OnViewChanged', view);
-                } catch { /* ignore — handle was disposed mid-flight */ }
+                } catch { /* ignore - handle was disposed mid-flight */ }
             });
         }
 

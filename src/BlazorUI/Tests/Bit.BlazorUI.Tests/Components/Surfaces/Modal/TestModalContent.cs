@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Bit.BlazorUI.Tests.Components.Extras.ModalService;
+namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
 
 public class TestModalContent : ComponentBase
 {

@@ -1,6 +1,6 @@
 # Navigating the Blazor Maze: A Developer's Journey to Production-Ready Web Apps
 
-The growing number of ASP.NET Blazor rendering modes—**Server**, **Auto**, **WebAssembly**, **Hybrid**, and **Static SSR**—coupled with crucial aspects like Progressive Web Applications (**PWA**) and **Pre-Rendering**, has clearly made it harder to build applications that are ready for real-world use.
+The growing number of ASP.NET Blazor rendering modes-**Server**, **Auto**, **WebAssembly**, **Hybrid**, and **Static SSR**-coupled with crucial aspects like Progressive Web Applications (**PWA**) and **Pre-Rendering**, has clearly made it harder to build applications that are ready for real-world use.
 
 We are going to discuss the following headlines:
 
@@ -67,7 +67,7 @@ What is the objection to an e-commerce site using both Pre-Rendering and Push No
 When it comes to Pre-Rendering, it’s important to know that you can make your app SEO-friendly using Blazor Server, Auto, or WebAssembly.
 
 * You can limit Pre-Rendering to the "User's first visit" (see demo: [todo.bitplatform.dev](https://todo.bitplatform.dev)). This reduces server load on subsequent visits, as the site can then leverage the client's cache storage, leading to a performance gain of 50ms to 300ms in load time.
-* Alternatively, you can "Always" enable Pre-Rendering. Why would you do this? As mentioned, processing CSS/JS/WASM assets—even those already downloaded—requires CPU cycles every time the web app runs. On less powerful mobile devices, this can take, for instance, one to two seconds. If you have an e-commerce website, "Always Pre-Rendering" ensures that when a user clicks on a product link (even on return visits), they see the information immediately without waiting for the web app to become interactive. (See demo: [sales.bitplatform.dev](https://sales.bitplatform.dev/)).
+* Alternatively, you can "Always" enable Pre-Rendering. Why would you do this? As mentioned, processing CSS/JS/WASM assets-even those already downloaded-requires CPU cycles every time the web app runs. On less powerful mobile devices, this can take, for instance, one to two seconds. If you have an e-commerce website, "Always Pre-Rendering" ensures that when a user clicks on a product link (even on return visits), they see the information immediately without waiting for the web app to become interactive. (See demo: [sales.bitplatform.dev](https://sales.bitplatform.dev/)).
 
 However, if Pre-Rendering is unnecessary, for example, an admin panel where no specific information is accessible before sign-in, you can publish Blazor WebAssembly without pre-rendering (e.g., [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev)). An even better approach is to use Blazor WebAssembly Standalone and deploy it on Azure Static Web Apps (which offers a generous free tier) (e.g., [adminpanel.bitplatform.cc](https://adminpanel.bitplatform.cc)). This ensures that even if the backend server is slow or down, the application itself will still load, even on the user's first visit. Users would then receive an appropriate error message upon interaction with the server, prompting them to wait or try again.
 

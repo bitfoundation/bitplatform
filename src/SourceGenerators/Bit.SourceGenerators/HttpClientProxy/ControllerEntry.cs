@@ -5,7 +5,7 @@ namespace Bit.SourceGenerators;
 /// the incremental generator transform phase. All Roslyn symbol data is serialised to strings
 /// so that the record struct has correct value-based equality for incremental caching.
 ///
-/// Encoding separators (ASCII control characters — never appear in C# identifiers or type names):
+/// Encoding separators (ASCII control characters - never appear in C# identifiers or type names):
 ///   \x1E  RS  –  between action records
 ///   \x1F  US  –  between fields inside one action record
 ///   \x1D  GS  –  between parameters inside one action record
