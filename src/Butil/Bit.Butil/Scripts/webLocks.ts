@@ -35,7 +35,7 @@ var BitButil = BitButil || {};
             if (!lock) {
                 acquiredResolve(false);
                 delete _pending[token];
-                return;
+                return undefined;
             }
             acquiredResolve(true);
             return holder;

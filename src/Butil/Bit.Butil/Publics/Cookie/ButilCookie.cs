@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Net;
 using System.Text;
 
 namespace Bit.Butil;
@@ -24,12 +23,14 @@ public class ButilCookie
         var sb = new StringBuilder();
 
         // Per RFC 6265, name and value must be encoded so that reserved characters
-        // (=, ;, ,, whitespace, non-ASCII) don't break the cookie.
-        sb.Append(WebUtility.UrlEncode(Name));
+        // (=, ;, ,, whitespace, non-ASCII) don't break the cookie. Uri.EscapeDataString matches
+        // the browser's encodeURIComponent semantics (e.g. space -> %20, not '+'), so cookies
+        // round-trip correctly with values written/read by JS or the server.
+        sb.Append(Uri.EscapeDataString(Name));
         sb.Append('=');
         if (Value is not null)
         {
-            sb.Append(WebUtility.UrlEncode(Value));
+            sb.Append(Uri.EscapeDataString(Value));
         }
 
         if (Domain is not null)
@@ -87,8 +88,8 @@ public class ButilCookie
 
         return new ButilCookie
         {
-            Name = WebUtility.UrlDecode(name),
-            Value = WebUtility.UrlDecode(value),
+            Name = Uri.UnescapeDataString(name),
+            Value = Uri.UnescapeDataString(value),
         };
     }
 }

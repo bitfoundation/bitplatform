@@ -15,12 +15,13 @@ namespace Bit.Butil;
 public class Window(IJSRuntime js) : IAsyncDisposable
 {
     private const string ElementName = "window";
+    private const string DocumentElementName = "document";
 
     internal const string MatchMediaMethodName = nameof(InvokeMediaQueryChange);
 
     private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action<MediaQueryList>> _matchMediaHandlers = new();
 
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<(Guid Id, string Event, bool UseCapture), byte> _listenerIds = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<(Guid Id, string Element, string Event, bool UseCapture), byte> _listenerIds = new();
 
     // DOM events go through a per-instance dispatcher; matchMedia callbacks are hosted directly on
     // this instance. Both keep listeners isolated per circuit / WASM app and leak-free on disposal.
@@ -41,7 +42,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     public async Task AddEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
     {
         var id = await _events.AddEventListener(js, ElementName, domEvent, listener, useCapture);
-        _listenerIds.TryAdd((id, domEvent, useCapture), 0);
+        _listenerIds.TryAdd((id, ElementName, domEvent, useCapture), 0);
     }
 
     /// <summary>
@@ -56,22 +57,29 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     public async Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
     {
         var ids = await _events.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
-        foreach (var id in ids) _listenerIds.TryRemove((id, domEvent, useCapture), out _);
+        foreach (var id in ids) _listenerIds.TryRemove((id, ElementName, domEvent, useCapture), out _);
     }
 
     /// <summary>
     /// Subscribe variant of <see cref="AddEventListener{T}"/> returning an <see cref="IAsyncDisposable"/> handle.
     /// </summary>
-    public async Task<ButilSubscription> SubscribeEvent<T>(string domEvent, Action<T> listener, bool useCapture = false)
+    public Task<ButilSubscription> SubscribeEvent<T>(string domEvent, Action<T> listener, bool useCapture = false)
+        => SubscribeEventCore(ElementName, domEvent, listener, useCapture);
+
+    /// <summary>
+    /// Subscribes to a DOM event on the given target ("window"/"document"). Tracks the element name
+    /// per listener so disposal detaches from the correct target.
+    /// </summary>
+    private async Task<ButilSubscription> SubscribeEventCore<T>(string elementName, string domEvent, Action<T> listener, bool useCapture)
     {
-        var id = await _events.AddEventListener(js, ElementName, domEvent, listener, useCapture);
-        var key = (id, domEvent, useCapture);
+        var id = await _events.AddEventListener(js, elementName, domEvent, listener, useCapture);
+        var key = (id, elementName, domEvent, useCapture);
         _listenerIds.TryAdd(key, 0);
 
         return new ButilSubscription(id, async () =>
         {
             _listenerIds.TryRemove(key, out _);
-            await _events.RemoveEventListenerById(js, ElementName, domEvent, id, useCapture);
+            await _events.RemoveEventListenerById(js, elementName, domEvent, id, useCapture);
         });
     }
 
@@ -111,8 +119,10 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public Task<ButilSubscription> SubscribeFreeze(Action handler)
     {
+        // freeze/resume are dispatched on `document` and don't bubble, so they must be observed
+        // on document (a bubble-phase listener on window never fires for them).
         Action<object> bridge = _ => handler();
-        return SubscribeEvent("freeze", bridge);
+        return SubscribeEventCore(DocumentElementName, "freeze", bridge, useCapture: false);
     }
 
     /// <summary>
@@ -123,7 +133,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     public Task<ButilSubscription> SubscribeResume(Action handler)
     {
         Action<object> bridge = _ => handler();
-        return SubscribeEvent("resume", bridge);
+        return SubscribeEventCore(DocumentElementName, "resume", bridge, useCapture: false);
     }
 
     /// <summary>
@@ -395,12 +405,20 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Opens a new window.
     /// <br/>
+    /// Returns an opaque tracking id (a GUID) on success that can later be passed to
+    /// <see cref="Close(string?)"/> to close the opened window, or <c>null</c> when the browser
+    /// blocked the popup. Note this is a Butil tracking id, not the native window name.
+    /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/open">https://developer.mozilla.org/en-US/docs/Web/API/Window/open</see>
     /// </summary>
     public async Task<string?> Open(string? url = null, string? target = null, string? windowFeatures = null)
         => await js.Invoke<string?>("BitButil.window.open", Guid.NewGuid(), url, target, windowFeatures);
     /// <summary>
     /// Opens a new window.
+    /// <br/>
+    /// Returns an opaque tracking id (a GUID) on success that can later be passed to
+    /// <see cref="Close(string?)"/> to close the opened window, or <c>null</c> when the browser
+    /// blocked the popup. Note this is a Butil tracking id, not the native window name.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/open">https://developer.mozilla.org/en-US/docs/Web/API/Window/open</see>
     /// </summary>
@@ -416,12 +434,12 @@ public class Window(IJSRuntime js) : IAsyncDisposable
         => await js.InvokeVoid("BitButil.window.print");
 
     /// <summary>
-    /// Returns the text entered by the user in a prompt dialog.
+    /// Returns the text entered by the user in a prompt dialog, or <c>null</c> if the user cancels.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/prompt">https://developer.mozilla.org/en-US/docs/Web/API/Window/prompt</see>
     /// </summary>
-    public async Task<string> Prompt(string? message, string? defaultValue)
-        => await js.Invoke<string>("BitButil.window.prompt", message, defaultValue);
+    public async Task<string?> Prompt(string? message, string? defaultValue)
+        => await js.Invoke<string?>("BitButil.window.prompt", message, defaultValue);
 
     /// <summary>
     /// Scrolls the window to a particular place in the document.
@@ -485,9 +503,9 @@ public class Window(IJSRuntime js) : IAsyncDisposable
             {
                 var snapshot = _listenerIds.Keys.ToArray();
                 _listenerIds.Clear();
-                foreach (var (id, evt, useCapture) in snapshot)
+                foreach (var (id, element, evt, useCapture) in snapshot)
                 {
-                    await _events.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
+                    await _events.RemoveEventListenerById(js, element, evt, id, useCapture);
                 }
             }
 

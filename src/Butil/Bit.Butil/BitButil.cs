@@ -69,6 +69,10 @@ public static class BitButil
     /// use this path; everything that wraps an asynchronous (Promise-returning) browser API always runs
     /// asynchronously regardless of this setting, so enabling it can't break those calls.
     /// Only effective on Blazor WebAssembly (where an <see cref="Microsoft.JSInterop.IJSInProcessRuntime"/> is available).
+    /// <br/>
+    /// NOTE: this is a process-wide static toggle, not per-app/per-circuit. It is intended to be set
+    /// once at startup. On Blazor Server it is effectively a no-op (the fast path always falls back to
+    /// the async path because there is no in-process runtime), so sharing it across circuits is benign.
     /// </summary>
     public static void UseFastInvoke()
     {
@@ -77,6 +81,7 @@ public static class BitButil
 
     /// <summary>
     /// Disables the synchronous in-process ("fast") invoke path; all calls run asynchronously.
+    /// Process-wide static toggle — see <see cref="UseFastInvoke"/>.
     /// </summary>
     public static void UseNormalInvoke()
     {

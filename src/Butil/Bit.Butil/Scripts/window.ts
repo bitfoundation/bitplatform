@@ -79,12 +79,12 @@ var BitButil = BitButil || {};
     }
 
     function close(id: string | undefined) {
-        if (!id) return window.close();
+        if (!id) { window.close(); return; }
 
         const ref = _refs[id];
         if (!ref) return;
         delete _refs[id];
-        return ref.close();
+        ref.close();
     }
 
     function find(text?: string,
@@ -148,7 +148,7 @@ var BitButil = BitButil || {};
 
     function open(id: string, url?: string, target?: string, windowFeatures?: string) {
         const ref = window.open(url, target, windowFeatures);
-        if (!ref) return;
+        if (!ref) return undefined;
         _refs[id] = ref;
         return id;
     }
@@ -170,15 +170,9 @@ var BitButil = BitButil || {};
     }
 
     function dispose() {
+        // matchMedia handlers are unsubscribed individually by the C# side (it tracks the ids and
+        // calls unsubscribeMatchMedia before dispose), so we deliberately don't touch
+        // _mediaQueryHandlers here — wiping the shared map would clobber any other live instance.
         _refs = {};
-        for (const id of Object.keys(_mediaQueryHandlers)) {
-            const entry = _mediaQueryHandlers[id];
-            if (typeof entry.mql.removeEventListener === 'function') {
-                entry.mql.removeEventListener('change', entry.handler);
-            } else {
-                (entry.mql as any).removeListener(entry.handler);
-            }
-            delete _mediaQueryHandlers[id];
-        }
     }
 }(BitButil));

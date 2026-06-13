@@ -14,6 +14,14 @@
             BuildButilJavaScript;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
+        <!-- IL2026 is suppressed for THIS assembly's own build only; it does not affect consumers.
+             The JSON-(de)serializing public APIs (e.g. ButilStorage.GetItem<T>/SetItem<T>,
+             BroadcastChannel.Post<T>, ServiceWorker.PostMessage<T>, History.GetState<T>) are each
+             individually annotated with [RequiresUnreferencedCode]/[RequiresDynamicCode], so a
+             trimming/AOT consumer still gets the warning at their call site. The warnings produced
+             here are just the internal propagation of those (already-annotated) members through the
+             synchronous fast-invoke helpers, which only ever pass trim-safe primitives. Keeping the
+             real protection (the attributes) while quieting the redundant internal noise. -->
         <NoWarn>$(NoWarn);IL2026</NoWarn>
     </PropertyGroup>
 
@@ -33,7 +41,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <TypeScriptFiles Include="**\*.ts" />
+        <TypeScriptFiles Include="Scripts\**\*.ts" />
     </ItemGroup>
 
     <!-- Restores npm packages then compiles the TypeScript bundle. Both sub-targets are incremental
@@ -59,12 +67,5 @@
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
-
-    <ItemGroup>
-        <Content Remove="package*.json" />
-        <Content Remove="tsconfig.json" />
-        <None Include="package*json" />
-        <None Include="tsconfig.json" />
-    </ItemGroup>
 
 </Project>
