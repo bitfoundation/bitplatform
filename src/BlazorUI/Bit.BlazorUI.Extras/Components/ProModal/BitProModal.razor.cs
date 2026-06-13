@@ -6,7 +6,7 @@
 public partial class BitProModal : BitComponentBase
 {
     private bool _internalIsOpen;
-    private float _offsetTop;
+    private float? _offsetTop;
 
 
 
