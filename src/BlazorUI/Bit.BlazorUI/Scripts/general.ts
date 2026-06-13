@@ -13,12 +13,22 @@ window.addEventListener('scroll', (e: Event) => {
     const target = e.target as HTMLElement;
     if (target?.id && target.id == currentCallout.scrollContainerId) return;
 
+    // On touch devices (notably iOS) focusing an input shows the virtual keyboard, which
+    // fires a scroll event as the browser brings the field into view. That should not
+    // dismiss an open callout (e.g. a dropdown with a search box), so keep it open while
+    // an editable element is focused.
+    if (BitBlazorUI.Utils.isTouchDevice() && BitBlazorUI.Utils.isEditableElementFocused()) return;
+
     BitBlazorUI.Callouts.replaceCurrent();
 }, true);
 
 window.addEventListener('resize', (e: any) => {
     const resizeTriggeredByOpenningKeyboard = document?.activeElement?.getAttribute('type') === 'text';
     if (window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH && resizeTriggeredByOpenningKeyboard) return;
+
+    // A resize caused by the virtual keyboard (touch devices, notably iOS) should not
+    // dismiss an open callout that owns the focused editable element.
+    if (BitBlazorUI.Utils.isTouchDevice() && BitBlazorUI.Utils.isEditableElementFocused()) return;
 
     BitBlazorUI.Callouts.replaceCurrent();
 }, true);

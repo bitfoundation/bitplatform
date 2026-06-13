@@ -37,7 +37,16 @@ namespace BitBlazorUI {
             if (callout == null) return false;
 
             const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
+
+            // Use the visual viewport (when available) so positioning stays correct on iOS,
+            // where the on-screen keyboard shrinks the visible area without changing
+            // window.innerHeight. getBoundingClientRect() values are layout-viewport relative,
+            // so visibleTop/visibleBottom translate the visible region into the same space.
+            const viewport = Utils.getViewport();
+            const visualHeight = viewport.height;
+            const layoutHeight = viewport.layoutHeight;
+            const visibleTop = viewport.offsetTop;
+            const visibleBottom = viewport.offsetTop + viewport.height;
 
             if (!isCalloutOpen) {
                 if (windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode) {
@@ -90,7 +99,8 @@ namespace BitBlazorUI {
             const calloutHeight = callout.offsetHeight;
             const { x: calloutLeft } = callout.getBoundingClientRect();
 
-            const distanceToBottom = windowHeight - (componentY + componentHeight);
+            const distanceToBottom = visibleBottom - (componentY + componentHeight);
+            const distanceToTop = componentY - visibleTop;
             const distanceToRight = windowWidth - (componentX + componentWidth);
 
             const { height: headerHeight } = header.getBoundingClientRect();
@@ -117,10 +127,10 @@ namespace BitBlazorUI {
             if (windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode) {
                 callout.style.opacity = '1';
                 callout.style.transform = 'translate(0,0)';
-                callout.style.maxHeight = windowHeight + 'px';
+                callout.style.maxHeight = visualHeight + 'px';
 
                 setTimeout(() => {
-                    scrollContainer.style.maxHeight = (windowHeight - scrollContainer.getBoundingClientRect().y - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = (visibleBottom - scrollContainer.getBoundingClientRect().y - footerHeight - 10) + 'px';
                 });
 
                 return true;
@@ -138,28 +148,28 @@ namespace BitBlazorUI {
             callout.style.left = left + 'px';
 
             if (dropDirection == BitDropDirection.TopAndBottom) {
-                if (calloutHeight <= distanceToBottom || distanceToBottom >= componentY) {
+                if (calloutHeight <= distanceToBottom || distanceToBottom >= distanceToTop) {
                     callout.style.top = componentY + componentHeight + 1 + 'px';
                     scrollContainer.style.maxHeight = (distanceToBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else {
-                    callout.style.bottom = distanceToBottom + componentHeight + 1 + 'px';
-                    scrollContainer.style.maxHeight = (componentY - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    callout.style.bottom = (layoutHeight - componentY + 1) + 'px';
+                    scrollContainer.style.maxHeight = (distanceToTop - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 }
             } else {
                 if (distanceToBottom >= calloutHeight) {
                     callout.style.top = componentY + componentHeight + 1 + 'px';
                     scrollContainer.style.maxHeight = (distanceToBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
-                } else if (componentY >= calloutHeight) {
-                    callout.style.bottom = distanceToBottom + componentHeight + 1 + 'px';
-                    scrollContainer.style.maxHeight = (componentY - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                } else if (distanceToTop >= calloutHeight) {
+                    callout.style.bottom = (layoutHeight - componentY + 1) + 'px';
+                    scrollContainer.style.maxHeight = (distanceToTop - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else if ((isRtl ? componentX : distanceToRight) >= calloutWidth) {
-                    callout.style.bottom = '2px';
+                    callout.style.bottom = (layoutHeight - visibleBottom + 2) + 'px';
                     callout.style.left = (isRtl ? (componentX - calloutWidth - 1) : (componentX + componentWidth + 1)) + 'px';
-                    scrollContainer.style.maxHeight = (windowHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = (visualHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else {
-                    callout.style.bottom = '2px';
+                    callout.style.bottom = (layoutHeight - visibleBottom + 2) + 'px';
                     callout.style.left = (isRtl ? (componentX + componentWidth + 1) : (componentX - calloutWidth - 1)) + 'px';
-                    scrollContainer.style.maxHeight = (windowHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = (visualHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 }
             }
 
