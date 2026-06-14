@@ -14,10 +14,18 @@ public sealed class MotionInterop : IAsyncDisposable
 
     public MotionInterop(IJSRuntime js)
     {
+        IsInProcess = js is IJSInProcessRuntime;
         _moduleTask = new Lazy<Task<IJSObjectReference>>(
             () => js.InvokeAsync<IJSObjectReference>(
                 "import", "./_content/Bit.Bmotion/BitBmotion.js").AsTask());
     }
+
+    /// <summary>
+    /// <c>true</c> when the JS runtime supports synchronous interop (Blazor WebAssembly).
+    /// Bit.Bmotion's animation loop and drag handlers rely on synchronous JS↔.NET calls, so the
+    /// library only functions on WebAssembly. This is checked before the rAF loop starts.
+    /// </summary>
+    public bool IsInProcess { get; }
 
     private async ValueTask<IJSObjectReference> Module() => await _moduleTask.Value;
 
@@ -113,10 +121,6 @@ public sealed class MotionInterop : IAsyncDisposable
         if (!_moduleTask.IsValueCreated) return;
         await (await Module()).InvokeVoidAsync("unobserveScroll", key);
     }
-
-    public async ValueTask<string?> ObserveElementScrollAsync<T>(
-        string elementId, DotNetObjectReference<T> dotnetRef) where T : class
-        => await (await Module()).InvokeAsync<string?>("observeElementScroll", elementId, dotnetRef);
 
     // ── Programmatic animate() API ─────────────────────────────────────────────
 

@@ -57,7 +57,7 @@ internal sealed class NumericKeyframesDriver : IAnimationDriver
         {
             if (_isInfinite || _iteration < _repeat)
             {
-                _iteration++;
+                if (!_isInfinite) _iteration++;
                 _startTime = timestamp + _repeatDelayMs;
                 if (_repeatType == RepeatType.Mirror || _repeatType == RepeatType.Reverse)
                     Array.Reverse(_curFrames);
@@ -69,6 +69,8 @@ internal sealed class NumericKeyframesDriver : IAnimationDriver
     }
 
     public void Cancel() => _cancelled = true;
+
+    public void Complete() => _apply(_frames[^1]);
 
     private static double Interpolate(double[] frames, double[] times, Func<double, double>[] eases, double t)
     {
@@ -143,7 +145,7 @@ internal sealed class ColorKeyframesDriver : IAnimationDriver
         {
             if (_isInfinite || _iteration < _repeat)
             {
-                _iteration++;
+                if (!_isInfinite) _iteration++;
                 _startTime = timestamp + _repeatDelayMs;
                 if (_repeatType == RepeatType.Mirror || _repeatType == RepeatType.Reverse)
                     Array.Reverse(_curFrames);
@@ -155,4 +157,6 @@ internal sealed class ColorKeyframesDriver : IAnimationDriver
     }
 
     public void Cancel() => _cancelled = true;
+
+    public void Complete() => _apply(_frames[^1]);
 }

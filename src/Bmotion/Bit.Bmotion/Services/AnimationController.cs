@@ -16,8 +16,15 @@ public sealed class AnimationController
 
     public AnimationController(AnimationEngine engine) => _engine = engine;
 
-    /// <summary>Bind by element ID.</summary>
-    public void BindTo(string elementId) => _elementId = elementId;
+    /// <summary>
+    /// Bind by element ID. Ensures the element is registered with the engine so the controller
+    /// works even when the target isn't wrapped in a <c>&lt;Motion&gt;</c> component.
+    /// </summary>
+    public void BindTo(string elementId)
+    {
+        _elementId = elementId;
+        _engine.RegisterElement(elementId);
+    }
 
     /// <summary>Animate the bound element to the given props (fire-and-forget).</summary>
     public async ValueTask AnimateAsync(AnimationProps props, TransitionConfig? transition = null)

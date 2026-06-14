@@ -37,7 +37,7 @@ public sealed class AnimationControls
     public void Complete()
     {
         foreach (var id in _elementIds)
-            _engine.Stop(id, null);
+            _engine.Complete(id);
     }
 
     /// <summary>A <see cref="Task"/> that resolves when all animations finish naturally.</summary>

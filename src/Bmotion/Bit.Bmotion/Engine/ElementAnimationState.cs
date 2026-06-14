@@ -55,16 +55,17 @@ internal sealed class ElementAnimationState
 
         if (_isDragging) _transformDirty = true; // drag always refreshes transform
 
-        // Advance all drivers
-        var completed = new List<string>(_activeAnims.Count);
+        // Advance all drivers. Only allocate the "completed" list when something finishes.
+        List<string>? completed = null;
         foreach (var (key, driver) in _activeAnims)
         {
             if (driver.Tick(timestamp))
-                completed.Add(key);
+                (completed ??= new List<string>()).Add(key);
         }
 
-        foreach (var key in completed)
-            _activeAnims.Remove(key);
+        if (completed != null)
+            foreach (var key in completed)
+                _activeAnims.Remove(key);
 
         // Signal awaiter if all finished
         if (_completionSource != null && _activeAnims.Count == 0)
@@ -83,27 +84,32 @@ internal sealed class ElementAnimationState
 
         foreach (var prop in _dirtyProps)
         {
-            if (prop == "pathLength")
+            if (prop is "pathLength" or "pathSpacing")
             {
-                double v = NumericValues.GetValueOrDefault("pathLength", 1.0);
-                double clamped = Math.Max(0, Math.Min(1, v));
-                updates["strokeDasharray"] = "1 1";
-                updates["strokeDashoffset"] = (1 - clamped).ToString("G6");
+                // Compose strokeDasharray from the normalized pathLength + pathSpacing pair.
+                double len = Math.Clamp(NumericValues.GetValueOrDefault("pathLength", 1.0), 0, 1);
+                double spacing = NumericValues.GetValueOrDefault("pathSpacing", 1.0);
+                double offset = NumericValues.GetValueOrDefault("pathOffset", 0.0);
+                updates["strokeDasharray"] = CssFormat.Num(len) + " " + CssFormat.Num(spacing);
+                // Offset combines the "draw from end" baseline (1 - len) with any explicit pathOffset.
+                updates["strokeDashoffset"] = CssFormat.Num(1 - len - offset);
             }
             else if (prop == "pathOffset")
             {
-                updates["strokeDashoffset"] = (-NumericValues.GetValueOrDefault("pathOffset", 0)).ToString("G6");
+                double len = Math.Clamp(NumericValues.GetValueOrDefault("pathLength", 1.0), 0, 1);
+                double offset = NumericValues.GetValueOrDefault("pathOffset", 0.0);
+                updates["strokeDashoffset"] = CssFormat.Num(1 - len - offset);
             }
             else if (prop.StartsWith("--"))
             {
                 if (NumericValues.TryGetValue(prop, out double nv))
-                    updates[prop] = nv.ToString("G6");
+                    updates[prop] = CssFormat.Num(nv);
                 else if (StringValues.TryGetValue(prop, out string? sv))
                     updates[prop] = sv;
             }
             else if (NumericValues.TryGetValue(prop, out double numVal))
             {
-                updates[prop] = numVal.ToString("G6");
+                updates[prop] = CssFormat.Num(numVal);
             }
             else if (StringValues.TryGetValue(prop, out string? strVal))
             {
@@ -127,8 +133,11 @@ internal sealed class ElementAnimationState
         TransitionConfig? transition,
         TaskCompletionSource? completionSource = null)
     {
-        var entries = values.Where(kv => kv.Value != null).ToList();
-        if (entries.Count == 0) { completionSource?.TrySetResult(); return; }
+        // Cheap scan for any non-null target (no allocation).
+        bool any = false;
+        foreach (var v in values.Values)
+            if (v != null) { any = true; break; }
+        if (!any) { completionSource?.TrySetResult(); return; }
 
         // Complete any previously-pending awaiter so callers aren't stranded when a
         // new animation supersedes the old one.
@@ -136,8 +145,9 @@ internal sealed class ElementAnimationState
             _completionSource.TrySetResult();
         _completionSource = completionSource;
 
-        foreach (var (key, value) in entries)
+        foreach (var (key, value) in values)
         {
+            if (value == null) continue;
             var perKey = transition?.Properties?.GetValueOrDefault(key) ?? transition ?? new TransitionConfig();
             CancelProp(key);
 
@@ -150,7 +160,7 @@ internal sealed class ElementAnimationState
             else if (value is string dimStr)
                 CreateCssDimensionDriver(key, dimStr, perKey);
             else
-                CreateNumericDriver(key, Convert.ToDouble(value), perKey);
+                CreateNumericDriver(key, Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture), perKey);
         }
     }
 
@@ -161,7 +171,7 @@ internal sealed class ElementAnimationState
             if (value == null) continue;
             if (TransformComposer.IsTransformProp(key))
             {
-                Transforms[key] = Convert.ToDouble(value);
+                Transforms[key] = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
                 _transformDirty = true;
             }
             else if (IsColorProp(key) && value is string colorStr)
@@ -176,7 +186,7 @@ internal sealed class ElementAnimationState
             }
             else
             {
-                NumericValues[key] = Convert.ToDouble(value);
+                NumericValues[key] = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
                 _dirtyProps.Add(key);
             }
         }
@@ -195,6 +205,20 @@ internal sealed class ElementAnimationState
     {
         foreach (var driver in _activeAnims.Values)
             driver.Cancel();
+        _activeAnims.Clear();
+        _completionSource?.TrySetResult();
+        _completionSource = null;
+    }
+
+    /// <summary>
+    /// Finish all running animations immediately, snapping every property to its target
+    /// (end) value. Unlike <see cref="CancelAll"/> (which freezes in place), this applies
+    /// the final frame so the element settles on the destination state.
+    /// </summary>
+    internal void CompleteAll()
+    {
+        foreach (var driver in _activeAnims.Values)
+            driver.Complete();
         _activeAnims.Clear();
         _completionSource?.TrySetResult();
         _completionSource = null;
@@ -227,18 +251,41 @@ internal sealed class ElementAnimationState
 
     public void DeactivateGestureLayer(string gesture)
     {
-        _gestureLayers.Remove(gesture);
-        // Revert to the highest-priority remaining gesture or base
-        foreach (var priority in GesturePriority)
+        if (!_gestureLayers.Remove(gesture, out var removed))
+            return;
+
+        // Build the target the element should revert to: the base animation overlaid with
+        // every still-active gesture layer (lowest priority first so higher priority wins).
+        var target = new Dictionary<string, object?>();
+        TransitionConfig? transition = _baseTransition;
+
+        if (_baseValues != null)
+            foreach (var kv in _baseValues)
+                target[kv.Key] = kv.Value;
+
+        for (int i = GesturePriority.Length - 1; i >= 0; i--)
         {
-            if (_gestureLayers.TryGetValue(priority, out var remaining))
+            if (_gestureLayers.TryGetValue(GesturePriority[i], out var layer))
             {
-                AnimateTo(remaining.Values, remaining.Transition);
-                return;
+                foreach (var kv in layer.Values)
+                    target[kv.Key] = kv.Value;
+                transition = layer.Transition; // highest-priority remaining layer wins the transition
             }
         }
-        if (_baseValues != null)
-            AnimateTo(_baseValues, _baseTransition);
+
+        // Any property the removed layer set but no remaining layer/base defines must animate
+        // back to its identity value, otherwise it would stay stuck at the gesture value.
+        foreach (var key in removed.Values.Keys)
+        {
+            if (target.ContainsKey(key)) continue;
+            if (TransformComposer.IsTransformProp(key))
+                target[key] = DefaultTransformValue(key);
+            else if (!IsColorProp(key)) // colours have no safe identity to revert to
+                target[key] = DefaultNumericValue(key);
+        }
+
+        if (target.Count > 0)
+            AnimateTo(target, transition);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -272,6 +319,13 @@ internal sealed class ElementAnimationState
         Action<double> apply = isTransform
             ? v => ApplyTransform(key, v)
             : v => ApplyNumeric(key, v);
+
+        // Wire the optional per-frame OnUpdate callback (single-value numeric animations).
+        if (config.OnUpdate is { } onUpdate)
+        {
+            var inner = apply;
+            apply = v => { inner(v); onUpdate(v); };
+        }
 
         IAnimationDriver driver = config.Type switch
         {
@@ -332,7 +386,7 @@ internal sealed class ElementAnimationState
     };
 
     private static bool IsColorProp(string key)
-        => _colorProps.Contains(key) || key.Contains("color", StringComparison.OrdinalIgnoreCase);
+        => _colorProps.Contains(key) || key.EndsWith("color", StringComparison.OrdinalIgnoreCase);
 
     private static double DefaultTransformValue(string key) =>
         key is "scale" or "scaleX" or "scaleY" ? 1.0 : 0.0;
@@ -347,8 +401,21 @@ internal sealed class ElementAnimationState
         if (value is IEnumerable<double> de) { result = de.ToArray(); return true; }
         if (value is object[] oa && oa.Length > 0 && oa[0] is double or float or int or long)
         {
-            result = oa.Select(x => Convert.ToDouble(x)).ToArray();
+            result = oa.Select(x => Convert.ToDouble(x, System.Globalization.CultureInfo.InvariantCulture)).ToArray();
             return true;
+        }
+        // Any other numeric sequence (int[], float[], List<int>, …). Strings are excluded so
+        // colour keyframes still fall through to TryGetStringArray.
+        if (value is System.Collections.IEnumerable seq && value is not string)
+        {
+            var list = new List<double>();
+            foreach (var item in seq)
+            {
+                if (item is string || item is null) return false;
+                try { list.Add(Convert.ToDouble(item, System.Globalization.CultureInfo.InvariantCulture)); }
+                catch { return false; }
+            }
+            if (list.Count > 0) { result = list.ToArray(); return true; }
         }
         return false;
     }
@@ -363,7 +430,7 @@ internal sealed class ElementAnimationState
             string.Equals(fromUnit, toUnit, StringComparison.OrdinalIgnoreCase))
         {
             _activeAnims[key] = new TweenDriver(fromNum, toNum, config,
-                v => ApplyString(key, v.ToString("G6") + toUnit));
+                v => ApplyString(key, CssFormat.Num(v) + toUnit));
         }
         else
         {

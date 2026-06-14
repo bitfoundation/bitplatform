@@ -100,9 +100,6 @@ public class TransitionConfig
     /// <summary>Seconds to delay the first child's animation start.</summary>
     public double? DelayChildren { get; set; }
 
-    /// <summary>Order relative to parent: Default (in parallel), BeforeChildren, AfterChildren.</summary>
-    public WhenType When { get; set; } = WhenType.Default;
-
     // ── Per-property overrides ────────────────────────────────────────────────
     /// <summary>
     /// Override transition for specific properties, e.g.
@@ -117,62 +114,6 @@ public class TransitionConfig
     public Action<double>? OnUpdate { get; set; }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
-    internal object ToJsObject()
-    {
-        var d = new Dictionary<string, object?>
-        {
-            ["type"] = Type.ToString().ToLowerInvariant(),
-            ["duration"] = Duration,
-            ["delay"] = Delay,
-            ["ease"] = EaseCubicBezier != null ? (object)EaseCubicBezier : EasingToJs(Ease),
-            ["repeat"] = Repeat == int.MaxValue ? "Infinity" : (object)Repeat,
-            ["repeatType"] = RepeatType.ToString().ToLowerInvariant(),
-            ["repeatDelay"] = RepeatDelay,
-            ["stiffness"] = Stiffness,
-            ["damping"] = Damping,
-            ["mass"] = Mass,
-            ["velocity"] = Velocity,
-            ["restSpeed"] = RestSpeed,
-            ["restDelta"] = RestDelta,
-            ["inertiaVelocity"] = InertiaVelocity,
-            ["timeConstant"] = TimeConstant,
-            ["power"] = Power,
-            ["inertiaRestDelta"] = InertiaRestDelta,
-        };
-
-        if (Times != null) d["times"] = Times;
-        if (StaggerChildren.HasValue) d["staggerChildren"] = StaggerChildren.Value;
-        if (DelayChildren.HasValue) d["delayChildren"] = DelayChildren.Value;
-        if (When != WhenType.Default) d["when"] = When.ToString().ToLowerInvariant();
-        if (InertiaMin.HasValue) d["inertiaMin"] = InertiaMin.Value;
-        if (InertiaMax.HasValue) d["inertiaMax"] = InertiaMax.Value;
-
-        if (Properties != null)
-        {
-            var props = new Dictionary<string, object?>();
-            foreach (var kv in Properties)
-                props[kv.Key] = kv.Value.ToJsObject();
-            d["properties"] = props;
-        }
-
-        return d;
-    }
-
-    private static string EasingToJs(Easing e) => e switch
-    {
-        Easing.Linear => "linear",
-        Easing.EaseIn => "easeIn",
-        Easing.EaseOut => "easeOut",
-        Easing.EaseInOut => "easeInOut",
-        Easing.CircIn => "circIn",
-        Easing.CircOut => "circOut",
-        Easing.CircInOut => "circInOut",
-        Easing.BackIn => "backIn",
-        Easing.BackOut => "backOut",
-        Easing.BackInOut => "backInOut",
-        Easing.Anticipate => "anticipate",
-        _ => "easeOut"
-    };
 
     /// <summary>
     /// Creates a deep copy of this configuration. Used internally when the library
@@ -207,7 +148,6 @@ public class TransitionConfig
         InertiaMax = InertiaMax,
         StaggerChildren = StaggerChildren,
         DelayChildren = DelayChildren,
-        When = When,
         Properties = CloneProperties(Properties),
         OnUpdate = OnUpdate,
     };
@@ -280,5 +220,3 @@ public enum Easing
 }
 
 public enum RepeatType { Loop, Mirror, Reverse }
-
-public enum WhenType { Default, BeforeChildren, AfterChildren }

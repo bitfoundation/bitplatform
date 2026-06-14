@@ -19,6 +19,22 @@ public sealed class AnimationTarget
     public bool HasProps => Props != null;
     public bool IsVariant => Variant != null;
 
+    /// <summary>
+    /// Value-based equivalence between two targets, used for change detection.
+    /// Two prop targets are equivalent when their <see cref="AnimationProps"/> values match;
+    /// two variant targets when they name the same variant.
+    /// </summary>
+    internal static bool AreEquivalent(AnimationTarget? a, AnimationTarget? b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null) return false;
+        if (a.IsDisabled || b.IsDisabled) return a.IsDisabled == b.IsDisabled;
+        if (a.IsVariant || b.IsVariant)
+            return string.Equals(a.Variant, b.Variant, StringComparison.Ordinal);
+        if (a.Props is null || b.Props is null) return a.Props is null && b.Props is null;
+        return a.Props.ValueEquals(b.Props);
+    }
+
     // ── Implicit conversions ──────────────────────────────────────────────────
     public static implicit operator AnimationTarget(AnimationProps props)
         => new() { Props = props };

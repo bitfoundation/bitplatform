@@ -105,7 +105,6 @@ That's it - the element fades in and slides up on first render.
 | `Drag` | `bool` | Enable drag gesture |
 | `DragOptions` | `DragOptions?` | Drag axis, constraints, elasticity |
 | `Layout` | `bool` | Enable automatic FLIP layout animations |
-| `LayoutId` | `string?` | Shared-element transition ID |
 | `Once` | `bool` | `WhileInView` fires once and never reverses |
 | `Viewport` | `ViewportOptions?` | Advanced viewport tracking options |
 | `AdditionalAttributes` | `Dictionary<string, object>?` | Extra HTML attributes (passed through) |

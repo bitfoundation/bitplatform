@@ -41,7 +41,6 @@ public class TransitionConfigTests
         // Orchestration defaults
         Assert.IsNull(config.StaggerChildren);
         Assert.IsNull(config.DelayChildren);
-        Assert.AreEqual(WhenType.Default, config.When);
         Assert.IsNull(config.Properties);
     }
 
@@ -149,12 +148,10 @@ public class TransitionConfigTests
         {
             StaggerChildren = 0.05,
             DelayChildren = 0.1,
-            When = WhenType.BeforeChildren,
         };
 
         Assert.AreEqual(0.05, config.StaggerChildren);
         Assert.AreEqual(0.1, config.DelayChildren);
-        Assert.AreEqual(WhenType.BeforeChildren, config.When);
     }
 
     // ── Custom cubic-bezier ───────────────────────────────────────────────────
@@ -201,7 +198,6 @@ public class TransitionConfigTests
             InertiaMax = 100,
             StaggerChildren = 0.08,
             DelayChildren = 0.3,
-            When = WhenType.AfterChildren,
             Properties = new Dictionary<string, TransitionConfig>
             {
                 ["opacity"] = new TransitionConfig { Duration = 0.1 },
@@ -235,7 +231,6 @@ public class TransitionConfigTests
         Assert.AreEqual(original.InertiaMax, clone.InertiaMax);
         Assert.AreEqual(original.StaggerChildren, clone.StaggerChildren);
         Assert.AreEqual(original.DelayChildren, clone.DelayChildren);
-        Assert.AreEqual(original.When, clone.When);
         // Properties is deep-copied: equal contents but an independent dictionary instance.
         Assert.AreNotSame(original.Properties, clone.Properties);
         Assert.AreEqual(original.Properties!.Count, clone.Properties!.Count);

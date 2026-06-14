@@ -65,4 +65,6 @@ internal sealed class InertiaDriver : IAnimationDriver
     }
 
     public void Cancel() => _cancelled = true;
+
+    public void Complete() => _apply(_projected);
 }

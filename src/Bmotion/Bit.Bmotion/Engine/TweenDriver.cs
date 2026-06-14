@@ -52,7 +52,7 @@ internal sealed class TweenDriver : IAnimationDriver
         {
             if (_isInfinite || _iteration < _repeat)
             {
-                _iteration++;
+                if (!_isInfinite) _iteration++;
                 _startTime = timestamp + _repeatDelayMs;
                 if (_repeatType == RepeatType.Mirror || _repeatType == RepeatType.Reverse)
                     (_curFrom, _curTo) = (_curTo, _curFrom);
@@ -64,4 +64,6 @@ internal sealed class TweenDriver : IAnimationDriver
     }
 
     public void Cancel() => _cancelled = true;
+
+    public void Complete() => _apply(_to);
 }

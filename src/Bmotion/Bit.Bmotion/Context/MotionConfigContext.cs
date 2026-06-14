@@ -17,8 +17,8 @@ public class MotionConfigContext
     public bool? ReduceMotion { get; set; }
 
     /// <summary>
-    /// Scale factor applied to all animation durations. 0 = instant, 2 = double speed.
-    /// Default: 1.
+    /// Scale factor applied to all animation durations. 0 = instant, 2 = half speed
+    /// (durations are multiplied by this factor). Default: 1.
     /// </summary>
     public double TransitionSpeed { get; set; } = 1.0;
 }

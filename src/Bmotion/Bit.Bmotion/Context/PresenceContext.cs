@@ -12,7 +12,10 @@ public class PresenceContext
     /// <summary>True while the children are playing their exit animation.</summary>
     public bool IsExiting { get; internal set; }
 
-    internal void Register(Motion child) => _children.Add(child);
+    internal void Register(Motion child)
+    {
+        if (!_children.Contains(child)) _children.Add(child);
+    }
     internal void Unregister(Motion child) => _children.Remove(child);
 
     internal int ChildCount => _children.Count;
@@ -29,7 +32,12 @@ public class PresenceContext
             AllExitsComplete?.Invoke();
     }
 
-    internal void Reset() { _completedChildren.Clear(); _children.Clear(); }
+    /// <summary>
+    /// Clears exit-completion bookkeeping for a fresh enter cycle. Registered children are left
+    /// intact — they remove themselves via <see cref="Unregister"/> when disposed, so clearing the
+    /// list here would desynchronise the count for any children that are reused across a toggle.
+    /// </summary>
+    internal void Reset() { _completedChildren.Clear(); }
 
     /// <summary>Fired when every registered child has finished its exit animation.</summary>
     internal event Action? AllExitsComplete;

@@ -96,7 +96,7 @@ internal sealed class SpringDriver : IAnimationDriver
 
             if (_isInfinite || _iteration < _repeat)
             {
-                _iteration++;
+                if (!_isInfinite) _iteration++;
                 // Mirror/Reverse ping-pong back to the start; Loop replays from the origin.
                 if (_repeatType is RepeatType.Mirror or RepeatType.Reverse)
                     (_from, _target) = (_target, _from);
@@ -113,4 +113,6 @@ internal sealed class SpringDriver : IAnimationDriver
     }
 
     public void Cancel() => _cancelled = true;
+
+    public void Complete() => _apply(_target);
 }

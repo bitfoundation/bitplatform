@@ -43,28 +43,6 @@ public class DragOptions
     /// Default: false.
     /// </summary>
     public bool DirectionLock { get; set; }
-
-    internal object ToJsObject()
-    {
-        var d = new Dictionary<string, object?>
-        {
-            ["drag"] = true,
-            ["dragAxis"] = Axis == DragAxis.Both ? null : Axis.ToString().ToLowerInvariant(),
-            ["dragElastic"] = Elastic,
-            ["dragMomentum"] = Momentum,
-        };
-
-        if (Constraints != null)
-            d["dragConstraints"] = Constraints.ToJsObject();
-
-        if (SnapTransition != null)
-            d["dragSnapTransition"] = SnapTransition.ToJsObject();
-
-        if (SnapToOrigin) d["dragSnapToOrigin"] = true;
-        if (DirectionLock) d["dragDirectionLock"] = true;
-
-        return d;
-    }
 }
 
 public class DragConstraints

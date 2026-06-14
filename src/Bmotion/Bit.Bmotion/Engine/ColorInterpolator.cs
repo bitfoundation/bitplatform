@@ -17,7 +17,7 @@ internal static class ColorInterpolator
         int g = (int)Math.Round(f[1] + (tt[1] - f[1]) * t);
         int b = (int)Math.Round(f[2] + (tt[2] - f[2]) * t);
         double a = f[3] + (tt[3] - f[3]) * t;
-        return $"rgba({r},{g},{b},{a:G4})";
+        return $"rgba({r},{g},{b},{CssFormat.Num(a, "G4")})";
     }
 
     /// <summary>Returns true if the CSS string looks like a color value.</summary>
@@ -60,10 +60,10 @@ internal static class ColorInterpolator
         {
             return
             [
-                double.Parse(m.Groups[1].Value),
-                double.Parse(m.Groups[2].Value),
-                double.Parse(m.Groups[3].Value),
-                m.Groups[4].Success ? double.Parse(m.Groups[4].Value) : 1.0,
+                CssFormat.Parse(m.Groups[1].Value),
+                CssFormat.Parse(m.Groups[2].Value),
+                CssFormat.Parse(m.Groups[3].Value),
+                m.Groups[4].Success ? CssFormat.Parse(m.Groups[4].Value) : 1.0,
             ];
         }
 
@@ -72,10 +72,10 @@ internal static class ColorInterpolator
             c, @"hsla?\(\s*([\d.]+)\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?(?:\s*,\s*([\d.]+))?\s*\)");
         if (mh.Success)
         {
-            double h2  = double.Parse(mh.Groups[1].Value);
-            double s2  = double.Parse(mh.Groups[2].Value) / 100.0;
-            double l2  = double.Parse(mh.Groups[3].Value) / 100.0;
-            double a2  = mh.Groups[4].Success ? double.Parse(mh.Groups[4].Value) : 1.0;
+            double h2  = CssFormat.Parse(mh.Groups[1].Value);
+            double s2  = CssFormat.Parse(mh.Groups[2].Value) / 100.0;
+            double l2  = CssFormat.Parse(mh.Groups[3].Value) / 100.0;
+            double a2  = mh.Groups[4].Success ? CssFormat.Parse(mh.Groups[4].Value) : 1.0;
             var rgb2 = HslToRgb(h2, s2, l2);
             return [rgb2[0], rgb2[1], rgb2[2], a2];
         }

@@ -126,7 +126,29 @@ public sealed class AnimationEngine : IAsyncDisposable
     public void SetInstant(string elementId, Dictionary<string, object?> values)
     {
         if (_elements.TryGetValue(elementId, out var state))
+        {
             state.SetInstant(values);
+            // Kick the loop for a single frame so the change is flushed to the DOM even when
+            // the element is otherwise at rest (an instant Set has dirty values but no active
+            // animation, so without this it would never be emitted).
+            _ = EnsureLoopRunningAsync();
+        }
+    }
+
+    /// <summary>Returns <c>true</c> if an element is currently registered with the engine.</summary>
+    public bool IsRegistered(string elementId) => _elements.ContainsKey(elementId);
+
+    /// <summary>
+    /// Finish all animations on an element immediately, snapping every property to its target
+    /// (end) value, then flush the final frame to the DOM.
+    /// </summary>
+    public void Complete(string elementId)
+    {
+        if (_elements.TryGetValue(elementId, out var state))
+        {
+            state.CompleteAll();
+            _ = EnsureLoopRunningAsync();
+        }
     }
 
     /// <summary>Stop animations on specific properties (or all when <paramref name="properties"/> is null/empty).</summary>
@@ -198,9 +220,6 @@ public sealed class AnimationEngine : IAsyncDisposable
 
         if (momentum)
         {
-            var snapT = snapTransition ?? new TransitionConfig
-                { Type = TransitionType.Spring, Stiffness = 400, Damping = 35 };
-
             if (axis != "y" && Math.Abs(velX) > 0.5)
             {
                 var inertiaX = new TransitionConfig
@@ -277,7 +296,8 @@ public sealed class AnimationEngine : IAsyncDisposable
     /// <summary>
     /// Called synchronously by the JS rAF ticker every ~16 ms (Blazor WASM).
     /// Returns a dictionary: elementId → { cssPropertyName → cssValue }.
-    /// Returns <c>null</c> when there is nothing to animate (JS will stop the loop).
+    /// Returns <c>null</c> when there are no style changes this frame. (The loop keeps running
+    /// until the engine explicitly calls <c>stopRafLoop</c> once no element has active work.)
     /// </summary>
     [JSInvokable]
     public Dictionary<string, Dictionary<string, string>>? ComputeFrame(double timestamp)
@@ -309,6 +329,15 @@ public sealed class AnimationEngine : IAsyncDisposable
     public async ValueTask EnsureLoopRunningAsync()
     {
         if (_loopRunning) return;
+
+        // Bit.Bmotion's animation loop relies on synchronous JS→.NET interop (the JS rAF ticker
+        // calls ComputeFrame synchronously). That is only available on Blazor WebAssembly; on
+        // Blazor Server / SSR the call would throw an opaque error, so fail fast with a clear one.
+        if (!_interop.IsInProcess)
+            throw new PlatformNotSupportedException(
+                "Bit.Bmotion requires synchronous JS interop and is only supported on Blazor WebAssembly. " +
+                "It cannot run on Blazor Server or during server-side prerendering.");
+
         _loopRunning = true;
         _dotnet ??= DotNetObjectReference.Create(this);
         await _interop.StartRafLoopAsync(_dotnet);
@@ -328,6 +357,8 @@ public sealed class AnimationEngine : IAsyncDisposable
         _elements.Clear();
         StopLoopInternal();
         _dotnet?.Dispose();
-        await _interop.DisposeAsync();
+        // MotionInterop is owned and disposed by the DI container (it is registered scoped),
+        // so the engine must not dispose it here or it would be disposed twice.
+        await ValueTask.CompletedTask;
     }
 }

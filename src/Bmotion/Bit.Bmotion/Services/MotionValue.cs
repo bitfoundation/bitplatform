@@ -11,6 +11,9 @@ public class MotionValue<T> : IDisposable where T : struct
     private T _value;
     private readonly List<Func<T, Task>> _subscribers = new();
 
+    /// <summary>Subscription to a parent MotionValue when this instance is a derived/transformed value.</summary>
+    private IDisposable? _upstream;
+
     internal MotionValue(string id, T initial)
     {
         _id    = id;
@@ -72,7 +75,9 @@ public class MotionValue<T> : IDisposable where T : struct
     public MotionValue<TOut> Transform<TOut>(Func<T, TOut> fn) where TOut : struct
     {
         var derived = new MotionValue<TOut>($"{_id}_t", fn(_value));
-        Subscribe(async v => await derived.SetAsync(fn(v)));
+        // Keep the parent→derived link so it can be torn down when the derived value is disposed,
+        // otherwise the parent would hold the derived value alive indefinitely (a leak).
+        derived._upstream = Subscribe(async v => await derived.SetAsync(fn(v)));
         return derived;
     }
 
@@ -104,11 +109,16 @@ public class MotionValue<T> : IDisposable where T : struct
         }
 
         var derived = new MotionValue<double>($"{_id}_tr", Map(_value));
-        Subscribe(async v => await derived.SetAsync(Map(v)));
+        derived._upstream = Subscribe(async v => await derived.SetAsync(Map(v)));
         return derived;
     }
 
-    public void Dispose() => _subscribers.Clear();
+    public void Dispose()
+    {
+        _upstream?.Dispose();
+        _upstream = null;
+        _subscribers.Clear();
+    }
 
     private sealed class Subscription : IDisposable
     {

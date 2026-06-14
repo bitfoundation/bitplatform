@@ -28,32 +28,32 @@ internal static class TransformComposer
         var parts = new List<string>(8);
 
         if (t.TryGetValue("perspective", out double persp) && persp != 0)
-            parts.Add($"perspective({persp}px)");
+            parts.Add($"perspective({CssFormat.Num(persp)}px)");
 
         double x = t.GetValueOrDefault("x");
         double y = t.GetValueOrDefault("y");
         double z = t.GetValueOrDefault("z");
         if (x != 0 || y != 0 || z != 0)
             parts.Add(z != 0
-                ? $"translate3d({x}px,{y}px,{z}px)"
-                : $"translate({x}px,{y}px)");
+                ? $"translate3d({CssFormat.Num(x)}px,{CssFormat.Num(y)}px,{CssFormat.Num(z)}px)"
+                : $"translate({CssFormat.Num(x)}px,{CssFormat.Num(y)}px)");
 
         if (t.TryGetValue("scale", out double scale))
-            parts.Add($"scale({scale})");
+            parts.Add($"scale({CssFormat.Num(scale)})");
         else
         {
-            if (t.TryGetValue("scaleX", out double sx) && sx != 1) parts.Add($"scaleX({sx})");
-            if (t.TryGetValue("scaleY", out double sy) && sy != 1) parts.Add($"scaleY({sy})");
+            if (t.TryGetValue("scaleX", out double sx) && sx != 1) parts.Add($"scaleX({CssFormat.Num(sx)})");
+            if (t.TryGetValue("scaleY", out double sy) && sy != 1) parts.Add($"scaleY({CssFormat.Num(sy)})");
         }
 
         // rotateZ / rotate aliases
         double rz = t.TryGetValue("rotateZ", out double rz2) ? rz2 : t.GetValueOrDefault("rotate");
-        if (rz != 0) parts.Add($"rotate({rz}deg)");
-        if (t.TryGetValue("rotateX", out double rx) && rx != 0) parts.Add($"rotateX({rx}deg)");
-        if (t.TryGetValue("rotateY", out double ry) && ry != 0) parts.Add($"rotateY({ry}deg)");
+        if (rz != 0) parts.Add($"rotate({CssFormat.Num(rz)}deg)");
+        if (t.TryGetValue("rotateX", out double rx) && rx != 0) parts.Add($"rotateX({CssFormat.Num(rx)}deg)");
+        if (t.TryGetValue("rotateY", out double ry) && ry != 0) parts.Add($"rotateY({CssFormat.Num(ry)}deg)");
 
-        if (t.TryGetValue("skewX", out double skx) && skx != 0) parts.Add($"skewX({skx}deg)");
-        if (t.TryGetValue("skewY", out double sky) && sky != 0) parts.Add($"skewY({sky}deg)");
+        if (t.TryGetValue("skewX", out double skx) && skx != 0) parts.Add($"skewX({CssFormat.Num(skx)}deg)");
+        if (t.TryGetValue("skewY", out double sky) && sky != 0) parts.Add($"skewY({CssFormat.Num(sky)}deg)");
 
         return string.Join(" ", parts);
     }

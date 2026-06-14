@@ -15,6 +15,9 @@ internal interface IAnimationDriver
     /// </summary>
     bool Tick(double timestamp);
 
-    /// <summary>Cancel the animation, snapping to its target value.</summary>
+    /// <summary>Cancel the animation, freezing the value at its current (intermediate) position.</summary>
     void Cancel();
+
+    /// <summary>Finish immediately by applying the animation's final target value.</summary>
+    void Complete();
 }

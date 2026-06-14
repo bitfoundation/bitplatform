@@ -64,12 +64,6 @@ export function applyStyles(elementId, styles) {
     if (el) _applyStyles(el, styles);
 }
 
-/** Read a single computed style value. */
-export function getComputedStyleValue(elementId, prop) {
-    const el = document.getElementById(elementId);
-    return el ? (getComputedStyle(el)[prop] ?? '') : '';
-}
-
 //
 // Accessibility - prefers-reduced-motion
 //
@@ -255,6 +249,9 @@ function _attachPan(el, dotnetRef, cleanups) {
 }
 
 function _attachDrag(elementId, el, opts, dotnetRef, cleanups) {
+    // Velocity is sampled per pointer-move as px/ms and scaled to "px per frame" (~16ms) so the
+    // C# inertia driver receives a frame-relative figure consistent with its release-velocity math.
+    const FRAME_MS = 16;
     const axis        = opts.dragAxis        ?? null;
     const constraints = opts.dragConstraints ?? null;
     const elastic     = typeof opts.dragElastic === 'number' ? opts.dragElastic : 0.35;
@@ -287,7 +284,7 @@ function _attachDrag(elementId, el, opts, dotnetRef, cleanups) {
     const onMove = (e) => {
         if (!dragging) return;
         const now = Date.now(), dt = now - lastT;
-        if (dt > 0) { velX = (e.clientX - lastPX) / dt * 16; velY = (e.clientY - lastPY) / dt * 16; }
+        if (dt > 0) { velX = (e.clientX - lastPX) / dt * FRAME_MS; velY = (e.clientY - lastPY) / dt * FRAME_MS; }
         lastPX = e.clientX; lastPY = e.clientY; lastT = now;
 
         // Direction lock detection
@@ -462,21 +459,4 @@ export function observeScroll(containerId, dotnetRef) {
 export function unobserveScroll(key) {
     _scrollSubs.get(key)?.();
     _scrollSubs.delete(key);
-}
-
-export function observeElementScroll(elementId, dotnetRef) {
-    const el = document.getElementById(elementId);
-    if (!el) return null;
-    const key = `elscroll_${++_scrollKeySeq}`;
-    const io = new IntersectionObserver((entries) => {
-        for (const entry of entries) {
-            dotnetRef.invokeMethodAsync('OnElementScroll', {
-                progress: entry.intersectionRatio,
-                isIntersecting: entry.isIntersecting,
-            });
-        }
-    }, { threshold: Array.from({ length: 101 }, (_, i) => i / 100) });
-    io.observe(el);
-    _scrollSubs.set(key, () => io.unobserve(el));
-    return key;
 }

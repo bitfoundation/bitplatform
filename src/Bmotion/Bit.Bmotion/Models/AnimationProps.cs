@@ -1,5 +1,7 @@
 namespace Bit.Bmotion.Models;
 
+using Bit.Bmotion.Engine;
+
 /// <summary>
 /// Describes a set of animatable CSS / transform properties - the "what" of an animation.
 /// Assign to Initial, Animate, Exit, WhileHover, WhileTap, etc.
@@ -135,24 +137,24 @@ public class AnimationProps
         {
             double x = X ?? 0, y = Y ?? 0, z = Z ?? 0;
             if (z != 0)
-                transforms.Add($"translate3d({x}px,{y}px,{z}px)");
+                transforms.Add($"translate3d({CssFormat.Num(x)}px,{CssFormat.Num(y)}px,{CssFormat.Num(z)}px)");
             else
-                transforms.Add($"translate({x}px,{y}px)");
+                transforms.Add($"translate({CssFormat.Num(x)}px,{CssFormat.Num(y)}px)");
         }
-        if (Scale.HasValue) transforms.Add($"scale({Scale.Value})");
-        if (ScaleX.HasValue) transforms.Add($"scaleX({ScaleX.Value})");
-        if (ScaleY.HasValue) transforms.Add($"scaleY({ScaleY.Value})");
+        if (Scale.HasValue) transforms.Add($"scale({CssFormat.Num(Scale.Value)})");
+        if (ScaleX.HasValue) transforms.Add($"scaleX({CssFormat.Num(ScaleX.Value)})");
+        if (ScaleY.HasValue) transforms.Add($"scaleY({CssFormat.Num(ScaleY.Value)})");
         if (Rotate.HasValue || RotateZ.HasValue)
-            transforms.Add($"rotate({RotateZ ?? Rotate}deg)");
-        if (RotateX.HasValue) transforms.Add($"rotateX({RotateX.Value}deg)");
-        if (RotateY.HasValue) transforms.Add($"rotateY({RotateY.Value}deg)");
-        if (SkewX.HasValue) transforms.Add($"skewX({SkewX.Value}deg)");
-        if (SkewY.HasValue) transforms.Add($"skewY({SkewY.Value}deg)");
-        if (Perspective.HasValue) transforms.Insert(0, $"perspective({Perspective.Value}px)");
+            transforms.Add($"rotate({CssFormat.Num(RotateZ ?? Rotate ?? 0)}deg)");
+        if (RotateX.HasValue) transforms.Add($"rotateX({CssFormat.Num(RotateX.Value)}deg)");
+        if (RotateY.HasValue) transforms.Add($"rotateY({CssFormat.Num(RotateY.Value)}deg)");
+        if (SkewX.HasValue) transforms.Add($"skewX({CssFormat.Num(SkewX.Value)}deg)");
+        if (SkewY.HasValue) transforms.Add($"skewY({CssFormat.Num(SkewY.Value)}deg)");
+        if (Perspective.HasValue) transforms.Insert(0, $"perspective({CssFormat.Num(Perspective.Value)}px)");
 
         if (transforms.Count > 0) sb.Append($"transform:{string.Join(" ", transforms)};");
 
-        if (Opacity.HasValue) sb.Append($"opacity:{Opacity.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)};");
+        if (Opacity.HasValue) sb.Append($"opacity:{CssFormat.Num(Opacity.Value)};");
         if (BackgroundColor != null) sb.Append($"background-color:{BackgroundColor};");
         if (Color != null) sb.Append($"color:{Color};");
         if (BorderColor != null) sb.Append($"border-color:{BorderColor};");
@@ -166,7 +168,10 @@ public class AnimationProps
         if (PathLength.HasValue)
         {
             double clamped = Math.Max(0, Math.Min(1, PathLength.Value));
-            sb.Append($"stroke-dasharray:1 1;stroke-dashoffset:{(1 - clamped).ToString("G6", System.Globalization.CultureInfo.InvariantCulture)};");
+            double spacing = PathSpacing ?? 1.0;
+            double offset = PathOffset ?? 0.0;
+            sb.Append($"stroke-dasharray:{CssFormat.Num(clamped)} {CssFormat.Num(spacing)};");
+            sb.Append($"stroke-dashoffset:{CssFormat.Num(1 - clamped - offset)};");
         }
 
         if (CssVars != null)
@@ -174,5 +179,127 @@ public class AnimationProps
                 sb.Append($"{kv.Key}:{kv.Value};");
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Render these props as a dictionary of individual CSS declarations
+    /// (camelCase keys suitable for <c>element.style[prop] = value</c>).
+    /// Used by instant <c>set()</c> calls so we update only the specified
+    /// declarations instead of replacing the element's entire inline style
+    /// (which assigning <c>cssText</c> would do).
+    /// </summary>
+    internal Dictionary<string, string> ToCssStyleDictionary()
+    {
+        var d = new Dictionary<string, string>();
+
+        var transforms = new List<string>();
+        if (Perspective.HasValue) transforms.Add($"perspective({CssFormat.Num(Perspective.Value)}px)");
+        if (X.HasValue || Y.HasValue || Z.HasValue)
+        {
+            double x = X ?? 0, y = Y ?? 0, z = Z ?? 0;
+            transforms.Add(z != 0
+                ? $"translate3d({CssFormat.Num(x)}px,{CssFormat.Num(y)}px,{CssFormat.Num(z)}px)"
+                : $"translate({CssFormat.Num(x)}px,{CssFormat.Num(y)}px)");
+        }
+        if (Scale.HasValue) transforms.Add($"scale({CssFormat.Num(Scale.Value)})");
+        if (ScaleX.HasValue) transforms.Add($"scaleX({CssFormat.Num(ScaleX.Value)})");
+        if (ScaleY.HasValue) transforms.Add($"scaleY({CssFormat.Num(ScaleY.Value)})");
+        if (Rotate.HasValue || RotateZ.HasValue) transforms.Add($"rotate({CssFormat.Num(RotateZ ?? Rotate ?? 0)}deg)");
+        if (RotateX.HasValue) transforms.Add($"rotateX({CssFormat.Num(RotateX.Value)}deg)");
+        if (RotateY.HasValue) transforms.Add($"rotateY({CssFormat.Num(RotateY.Value)}deg)");
+        if (SkewX.HasValue) transforms.Add($"skewX({CssFormat.Num(SkewX.Value)}deg)");
+        if (SkewY.HasValue) transforms.Add($"skewY({CssFormat.Num(SkewY.Value)}deg)");
+        if (transforms.Count > 0) d["transform"] = string.Join(" ", transforms);
+
+        if (Opacity.HasValue) d["opacity"] = CssFormat.Num(Opacity.Value);
+        if (BackgroundColor != null) d["backgroundColor"] = BackgroundColor;
+        if (Color != null) d["color"] = Color;
+        if (BorderColor != null) d["borderColor"] = BorderColor;
+        if (OutlineColor != null) d["outlineColor"] = OutlineColor;
+        if (Fill != null) d["fill"] = Fill;
+        if (Stroke != null) d["stroke"] = Stroke;
+        if (Width != null) d["width"] = Width;
+        if (Height != null) d["height"] = Height;
+        if (BorderRadius != null) d["borderRadius"] = BorderRadius;
+        if (BoxShadow != null) d["boxShadow"] = BoxShadow;
+        if (PathLength.HasValue)
+        {
+            double clamped = Math.Max(0, Math.Min(1, PathLength.Value));
+            double spacing = PathSpacing ?? 1.0;
+            double offset = PathOffset ?? 0.0;
+            d["strokeDasharray"] = $"{CssFormat.Num(clamped)} {CssFormat.Num(spacing)}";
+            d["strokeDashoffset"] = CssFormat.Num(1 - clamped - offset);
+        }
+
+        if (CssVars != null)
+            foreach (var kv in CssVars)
+                d[kv.Key] = kv.Value;
+
+        return d;
+    }
+
+    /// <summary>
+    /// Structural value comparison used by <see cref="Components.Motion"/> to decide whether an
+    /// <c>Animate</c> target actually changed between renders. This avoids re-triggering an
+    /// animation (and <c>OnAnimationStart</c>) on every unrelated re-render when a consumer writes
+    /// the idiomatic <c>Animate="@(new AnimationProps { ... })"</c> (a fresh reference each render).
+    /// </summary>
+    internal bool ValueEquals(AnimationProps? o)
+    {
+        if (o is null) return false;
+        if (ReferenceEquals(this, o)) return true;
+
+        bool scalars =
+            X == o.X && Y == o.Y && Z == o.Z &&
+            Scale == o.Scale && ScaleX == o.ScaleX && ScaleY == o.ScaleY &&
+            Rotate == o.Rotate && RotateX == o.RotateX && RotateY == o.RotateY && RotateZ == o.RotateZ &&
+            SkewX == o.SkewX && SkewY == o.SkewY && Perspective == o.Perspective &&
+            Opacity == o.Opacity &&
+            BackgroundColor == o.BackgroundColor && Color == o.Color && BorderColor == o.BorderColor &&
+            OutlineColor == o.OutlineColor && Fill == o.Fill && Stroke == o.Stroke &&
+            Width == o.Width && Height == o.Height && BorderRadius == o.BorderRadius && BoxShadow == o.BoxShadow &&
+            PathLength == o.PathLength && PathOffset == o.PathOffset && PathSpacing == o.PathSpacing;
+
+        return scalars && DictEquals(CssVars, o.CssVars) && KeyframeDictEquals(Keyframes, o.Keyframes);
+    }
+
+    private static bool DictEquals(Dictionary<string, string>? a, Dictionary<string, string>? b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null || a.Count != b.Count) return false;
+        foreach (var kv in a)
+            if (!b.TryGetValue(kv.Key, out var v) || v != kv.Value) return false;
+        return true;
+    }
+
+    private static bool KeyframeDictEquals(Dictionary<string, object>? a, Dictionary<string, object>? b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null || a.Count != b.Count) return false;
+        foreach (var kv in a)
+        {
+            if (!b.TryGetValue(kv.Key, out var v)) return false;
+            if (!SequenceEquals(kv.Value, v)) return false;
+        }
+        return true;
+    }
+
+    private static bool SequenceEquals(object? a, object? b)
+    {
+        if (Equals(a, b)) return true;
+        if (a is System.Collections.IEnumerable ea && a is not string &&
+            b is System.Collections.IEnumerable eb && b is not string)
+        {
+            var ia = ea.GetEnumerator();
+            var ib = eb.GetEnumerator();
+            while (true)
+            {
+                bool na = ia.MoveNext(), nb = ib.MoveNext();
+                if (na != nb) return false;
+                if (!na) return true;
+                if (!Equals(ia.Current, ib.Current)) return false;
+            }
+        }
+        return false;
     }
 }

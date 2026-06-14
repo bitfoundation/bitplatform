@@ -68,7 +68,6 @@ public class Motion : ComponentBase, IAsyncDisposable
 
     // ── Layout ─────────────────────────────────────────────────────────────────
     [Parameter] public bool Layout { get; set; }
-    [Parameter] public string? LayoutId { get; set; }
 
     // ── Events ─────────────────────────────────────────────────────────────────
     [Parameter] public EventCallback OnHoverStart { get; set; }
@@ -107,27 +106,29 @@ public class Motion : ComponentBase, IAsyncDisposable
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        int seq = 0;
-        builder.OpenElement(seq++, Tag);
-        builder.AddAttribute(seq++, "id", _id);
+        // Sequence numbers are fixed literals (one per logical slot) rather than a running counter.
+        // Blazor's diffing assumes stable sequence numbers; computing them dynamically alongside
+        // conditional attributes shifts the numbers between renders and degrades diffing.
+        builder.OpenElement(0, Tag);
+        builder.AddAttribute(1, "id", _id);
 
         if (AdditionalAttributes != null)
-            builder.AddMultipleAttributes(seq++,
+            builder.AddMultipleAttributes(2,
                 AdditionalAttributes.Where(kvp => !string.Equals(kvp.Key, "id", StringComparison.OrdinalIgnoreCase)));
 
         // Auto-inject pathLength="1" so normalized [0,1] dasharray coordinates work correctly
-        if (Tag == "path" && NeedsPathLengthAttr())
-            builder.AddAttribute(seq++, "pathLength", "1");
+        if (NeedsPathLengthAttr())
+            builder.AddAttribute(3, "pathLength", "1");
 
         if (!string.IsNullOrEmpty(Class))
-            builder.AddAttribute(seq++, "class", Class);
+            builder.AddAttribute(4, "class", Class);
 
         var motionStyle = BuildInitialStyle();
         var combinedStyle = string.IsNullOrEmpty(Style) ? motionStyle : motionStyle + Style;
         if (!string.IsNullOrEmpty(combinedStyle))
-            builder.AddAttribute(seq++, "style", combinedStyle);
+            builder.AddAttribute(5, "style", combinedStyle);
 
-        builder.AddElementReferenceCapture(seq++, r => _ref = r);
+        builder.AddElementReferenceCapture(6, r => _ref = r);
 
         if (Variants != null)
         {
@@ -138,14 +139,14 @@ public class Motion : ComponentBase, IAsyncDisposable
             _ownVariantCtx.StaggerChildren = Transition?.StaggerChildren ?? 0;
             _ownVariantCtx.DelayChildren = Transition?.DelayChildren ?? 0;
 
-            builder.OpenComponent<CascadingValue<VariantContext>>(seq++);
-            builder.AddComponentParameter(seq++, "Value", _ownVariantCtx);
-            builder.AddComponentParameter(seq++, "ChildContent", ChildContent);
+            builder.OpenComponent<CascadingValue<VariantContext>>(7);
+            builder.AddComponentParameter(8, "Value", _ownVariantCtx);
+            builder.AddComponentParameter(9, "ChildContent", ChildContent);
             builder.CloseComponent();
         }
         else
         {
-            builder.AddContent(seq++, ChildContent);
+            builder.AddContent(10, ChildContent);
         }
         builder.CloseElement();
     }
@@ -190,6 +191,15 @@ public class Motion : ComponentBase, IAsyncDisposable
         {
             _isExiting = true;
             if (_initialized) await PlayExitAsync();
+        }
+        else if (_isExiting && PresenceCtx is not { IsExiting: true })
+        {
+            // The presence re-entered before/after this element finished exiting. Clear the
+            // exiting flag (otherwise the component stays frozen forever) and force the enter
+            // animation to replay by invalidating the cached previous target.
+            _isExiting = false;
+            _prevAnimate = null;
+            PresenceCtx?.Register(this); // re-register in case the context was reset
         }
 
         // FLIP: snapshot BEFORE re-render
@@ -255,7 +265,7 @@ public class Motion : ComponentBase, IAsyncDisposable
     {
         if (_isExiting) return;
 
-        if (!ReferenceEquals(_prevAnimate, Animate))
+        if (!AnimationTarget.AreEquivalent(_prevAnimate, Animate))
         {
             var animateProps = ResolveProps(Animate);
             if (animateProps != null)
@@ -336,8 +346,9 @@ public class Motion : ComponentBase, IAsyncDisposable
     public async ValueTask SetAsync(AnimationProps props)
     {
         Engine.SetInstant(_id, props.ToJsDictionary());
-        // Flush synchronous style update to DOM
-        var styles = BuildCssStyleDict(props);
+        // Flush synchronous style update to DOM as individual declarations (never via cssText,
+        // which would replace the element's entire inline style).
+        var styles = props.ToCssStyleDictionary();
         if (styles.Count > 0)
             await Interop.ApplyStylesAsync(_id, styles);
     }
@@ -506,7 +517,13 @@ public class Motion : ComponentBase, IAsyncDisposable
     // Helpers
     // ════════════════════════════════════════════════════════════════════════════
 
+    private static readonly HashSet<string> _pathDrawableTags = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "path", "circle", "ellipse", "line", "polyline", "polygon", "rect",
+    };
+
     private bool NeedsPathLengthAttr() =>
+        _pathDrawableTags.Contains(Tag) &&
         (AdditionalAttributes == null || !AdditionalAttributes.ContainsKey("pathLength")) &&
         (HasPathLength(Initial) || HasPathLength(Animate) || HasPathLength(Exit) ||
          HasPathLength(WhileHover) || HasPathLength(WhileTap) || HasPathLength(WhileFocus) ||
@@ -591,16 +608,6 @@ public class Motion : ComponentBase, IAsyncDisposable
             if (dragOpt.Constraints != null) d["dragConstraints"] = dragOpt.Constraints.ToJsObject();
             if (dragOpt.DirectionLock) d["dragDirectionLock"] = true;
         }
-        return d;
-    }
-
-    private static Dictionary<string, string> BuildCssStyleDict(AnimationProps props)
-    {
-        var d = new Dictionary<string, string>();
-        // This is only used for instant set() - forward the CSS string parsed from props
-        var css = props.ToCssStyleString();
-        if (!string.IsNullOrEmpty(css))
-            d["cssText"] = css; // handled on JS side by parsing cssText
         return d;
     }
 

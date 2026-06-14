@@ -91,14 +91,35 @@ public sealed class MotionAnimateService
     {
         var values = keyframes.ToJsDictionary();
 
+        // Only the elements we register here (i.e. not already owned by a <Motion>) are ours to
+        // clean up afterwards, so the engine's element table doesn't grow unbounded over time.
+        var ours = new List<string>();
         foreach (var id in elementIds)
-            _engine.RegisterElement(id);
+        {
+            if (!_engine.IsRegistered(id))
+            {
+                _engine.RegisterElement(id);
+                ours.Add(id);
+            }
+        }
 
         // Start all animations concurrently; collect their completion tasks.
         var completionTasks = elementIds
             .Select(id => _engine.AnimateToAwaitAsync(id, values, transition).AsTask())
             .ToArray();
 
-        return new AnimationControls(elementIds, _engine, Task.WhenAll(completionTasks));
+        var completion = Task.WhenAll(completionTasks);
+
+        if (ours.Count > 0)
+        {
+            // Release engine state for the elements we created once their animations settle.
+            _ = completion.ContinueWith(_ =>
+            {
+                foreach (var id in ours)
+                    _engine.UnregisterElement(id);
+            }, TaskScheduler.Default);
+        }
+
+        return new AnimationControls(elementIds, _engine, completion);
     }
 }

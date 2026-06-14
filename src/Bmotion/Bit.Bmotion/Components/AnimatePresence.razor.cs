@@ -8,6 +8,13 @@ namespace Bit.Bmotion.Components;
 /// When <see cref="IsPresent"/> switches from <c>true</c> to <c>false</c>, children
 /// are kept in the DOM until their <c>Exit</c> animations finish.
 ///
+/// <para>
+/// <b>Limitation:</b> presence is controlled by a single <see cref="IsPresent"/> flag for the
+/// whole subtree (all-or-nothing). This does not provide per-item enter/exit tracking for keyed
+/// lists the way Framer Motion's keyed <c>AnimatePresence</c> does; wrap individual items in their
+/// own <see cref="AnimatePresence"/> if you need independent exit animations per item.
+/// </para>
+///
 /// <example>
 /// <code>
 /// &lt;AnimatePresence IsPresent="@_visible"&gt;
