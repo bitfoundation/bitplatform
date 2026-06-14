@@ -1,4 +1,17 @@
 ﻿::deep {
+    .example-box {
+        gap: 1rem;
+        display: flex;
+        flex-flow: column nowrap;
+    }
+
+    .circular-box {
+        gap: 1rem;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+    }
+
     .custom-class {
         padding: 0.2rem;
         margin-bottom: 1rem;

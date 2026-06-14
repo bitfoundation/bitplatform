@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading.Channels;
 using Boilerplate.Shared.Features.Chatbot;
+using Boilerplate.Server.Api.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 
 namespace Boilerplate.Server.Api.Infrastructure.SignalR;
@@ -27,6 +28,7 @@ public partial class AppChatbot
     [AutoInject] private ILogger<AppChatbot> logger = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
+    [AutoInject] private ApiServerExceptionHandler exceptionHandler = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
     private string? variablesDefault;
@@ -155,7 +157,7 @@ public partial class AppChatbot
         }
         catch (Exception exp)
         {
-            logger.LogError(exp, "Error processing message in chatbot service");
+            exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } });
             await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_PROCESS_ERROR, cancellationToken);
         }
         finally

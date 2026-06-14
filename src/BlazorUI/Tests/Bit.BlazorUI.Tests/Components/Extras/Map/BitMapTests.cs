@@ -152,7 +152,7 @@ public class BitMapTests : BunitTestContext
     public void BitMapShouldNotSyncWhenProviderResetToNull()
     {
         // Setting Provider back to null on a live component should be a no-op (the alternative
-        // — silently swapping to a default-constructed provider — would surprise consumers).
+        // - silently swapping to a default-constructed provider - would surprise consumers).
         Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
         Context.JSInterop.SetupVoid(INIT_SCRIPTS);
         Context.JSInterop.SetupVoid(INIT);
@@ -295,7 +295,7 @@ public class BitMapTests : BunitTestContext
 
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == A_ADD_MARKER));
 
-        // Swap to provider B — the marker should be re-applied via B's JS object.
+        // Swap to provider B - the marker should be re-applied via B's JS object.
         component.SetParametersAndRender(parameters =>
         {
             parameters.Add(p => p.Provider, new TestMapProviderB());
@@ -375,7 +375,7 @@ public class BitMapTests : BunitTestContext
 
         var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
 
-        // Must not throw — the JSException is caught inside SafeInvokeAsync.
+        // Must not throw - the JSException is caught inside SafeInvokeAsync.
         await component.Instance.InvalidateSize();
     }
 

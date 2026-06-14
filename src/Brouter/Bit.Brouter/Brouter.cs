@@ -118,18 +118,45 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         CurrentLocation = ComputeLocation();
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        // Yield once so ComponentBase performs the initial synchronous render of our
+        // ChildContent. That first render is what causes the declared <BrouterRoute> children to
+        // register themselves with us (each one calls RegisterRoute from its own OnInitialized).
+        // Until they've registered there is nothing to match against, which is why the initial
+        // match cannot run any earlier than this.
+        //
+        // Doing the initial match here - rather than in OnAfterRenderAsync - is what enables
+        // static server prerendering. OnAfterRenderAsync never runs during prerender, so the old
+        // placement left the prerendered HTML empty (no route was ever matched server-side).
+        // OnInitializedAsync, by contrast, runs during prerender and the renderer awaits it - and
+        // the StateHasChanged it triggers - before serializing the HTML, so the matched route is
+        // included in the prerendered output. When the component later becomes interactive its
+        // lifecycle runs again and the match re-runs naturally.
+        await Task.Yield();
+
+        // Initial render: the From is Empty (we just mounted), the To is the URL we're at now.
+        await ProcessNavigationAsync(BrouterLocation.Empty, CurrentLocation);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
 
-        // Enabling navigation interception is best-effort: under prerender, on a disconnected
-        // circuit, or on an interop failure it can throw, but the navigation pipeline itself
-        // (and any subsequent reconnects / interactivity handoff) does not depend on it
-        // succeeding right now. Mirror the defensive style used in BrouterLink and
-        // BrouterService.BackAsync so a transient failure here can't kill the whole first
-        // navigation. Once the circuit/runtime is fully ready, Blazor will retry interception
+        // Enabling navigation interception genuinely requires an interactive runtime, so it stays
+        // in OnAfterRenderAsync, which only runs once interactivity is established. Under prerender
+        // this method doesn't run at all - that's fine: the initial match already happened in
+        // OnInitializedAsync, and interception is enabled here once the component goes interactive.
+        //
+        // Enabling navigation interception is best-effort: on a disconnected circuit or an interop
+        // failure it can throw, but the navigation pipeline itself (and any subsequent reconnects /
+        // interactivity handoff) does not depend on it succeeding right now. Mirror the defensive
+        // style used in BrouterLink and BrouterService.BackAsync so a transient failure here can't
+        // kill navigation. Once the circuit/runtime is fully ready, Blazor will retry interception
         // attachment naturally on the next user click via NavigationManager fallback paths.
         try
         {
@@ -139,9 +166,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         catch (JSException) { /* JS interop failure; non-fatal */ }
         catch (InvalidOperationException) { /* interop unavailable during prerender */ }
         catch (TaskCanceledException) { /* component disposed mid-call */ }
-
-        // Initial render: the From is Empty (we just mounted), the To is the URL we're at now.
-        await ProcessNavigationAsync(BrouterLocation.Empty, CurrentLocation);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -551,6 +575,16 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 {
                     return;
                 }
+                catch (NavigationException)
+                {
+                    // During static server rendering / prerender, NavigationManager.NavigateTo
+                    // throws NavigationException as the framework's redirect signal (a loader may
+                    // redirect, e.g. an auth gate). It must unwind out of OnInitializedAsync so the
+                    // endpoint can issue the HTTP redirect; swallowing it into OnError would drop
+                    // the redirect entirely. Interactive NavigateTo never throws, so this is inert
+                    // outside SSR.
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     await service.InvokeOnError(ctx, ex);
@@ -582,6 +616,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
             // navigation was superseded; nothing to do
+        }
+        catch (NavigationException)
+        {
+            // SSR/prerender redirect signal (see the loader catch above). Let it propagate out of
+            // OnInitializedAsync so the framework can turn it into an HTTP redirect. A guard or
+            // OnNavigating handler that redirects via NavigationManager during prerender lands here.
+            throw;
         }
         catch (Exception ex)
         {

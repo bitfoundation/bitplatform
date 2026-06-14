@@ -16,12 +16,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     // Process-wide cache of script/stylesheet URLs that have already been requested by any
     // BitMap instance. The browser will dedupe by URL anyway, but skipping the JS interop
     // round-trip when nothing new is needed makes mount/unmount of map-heavy UIs noticeably
-    // cheaper. Keyed by URL (case-sensitive — URLs are case-sensitive on most servers).
+    // cheaper. Keyed by URL (case-sensitive - URLs are case-sensitive on most servers).
     private static readonly ConcurrentDictionary<string, byte> _loadedScripts = new(StringComparer.Ordinal);
     private static readonly ConcurrentDictionary<string, byte> _loadedStylesheets = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Clears the process-wide script/stylesheet load cache. Intended for unit tests only —
+    /// Clears the process-wide script/stylesheet load cache. Intended for unit tests only -
     /// production code should not need to invalidate the cache because the browser already
     /// dedupes the underlying network requests.
     /// </summary>
@@ -43,7 +43,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
 
     // Snapshot of imperatively-added state. We replay it after a destructive provider swap when
-    // ReplayStateOnProviderSwap is true. Plain dictionaries — all access is serialised by
+    // ReplayStateOnProviderSwap is true. Plain dictionaries - all access is serialised by
     // _lifecycleGate or by the calling thread (the Blazor renderer is single-threaded per circuit).
     private readonly Dictionary<string, BitMapMarker> _markerState = new(StringComparer.Ordinal);
     private readonly Dictionary<string, VectorLayerSnapshot> _vectorState = new(StringComparer.Ordinal);
@@ -136,7 +136,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     /// <summary>
     /// Fired when an interop call into the underlying provider fails. Consumers can subscribe to
-    /// surface errors to telemetry/log channels — by default the component swallows interop
+    /// surface errors to telemetry/log channels - by default the component swallows interop
     /// failures so a misbehaving provider can't tear down the host page.
     /// </summary>
     [Parameter] public EventCallback<BitMapInteropErrorArgs> OnInteropError { get; set; }
@@ -574,7 +574,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         await _lifecycleGate.WaitAsync();
         try
         {
-            // First render hasn't run yet, or a previous init failed — nothing to sync.
+            // First render hasn't run yet, or a previous init failed - nothing to sync.
             if (_initialized is false || _activeProvider is null) return;
 
             // When Provider is reset to null on a live component, treat it as "no change". The
@@ -596,7 +596,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
                 return;
             }
 
-            // Same JS object — just sync the updated options. Build the payload outside the
+            // Same JS object - just sync the updated options. Build the payload outside the
             // try/catch so configuration errors surface instead of being swallowed.
             var syncOptions = effective.BuildOptionsPayload();
 
@@ -714,7 +714,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             }
             catch (Exception ex)
             {
-                // A failed CDN stylesheet load shouldn't prevent the map from initializing —
+                // A failed CDN stylesheet load shouldn't prevent the map from initializing -
                 // the providers degrade gracefully (e.g., OpenLayers will still work, just
                 // with unstyled controls if its CSS failed to load).
                 await RaiseInteropError(BitMapInteropErrorSource.StylesheetLoad, ex);

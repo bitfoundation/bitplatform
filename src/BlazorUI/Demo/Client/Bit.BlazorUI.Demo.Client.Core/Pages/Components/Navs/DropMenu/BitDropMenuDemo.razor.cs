@@ -6,10 +6,28 @@ public partial class BitDropMenuDemo
     [
         new()
         {
+            Name = "Background",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the background of the callout of the drop menu.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum"
+        },
+        new()
+        {
             Name = "Body",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Alias of the ChildContent."
+        },
+        new()
+        {
+            Name = "Border",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the border of the callout of the drop menu.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum"
         },
         new()
         {
@@ -83,6 +101,13 @@ public partial class BitDropMenuDemo
             Type = "EventCallback",
             DefaultValue = "",
             Description = "The callback is called when the drop menu is dismissed."
+        },
+        new()
+        {
+            Name = "NoShadow",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the box-shadow from the callout of the drop menu."
         },
         new()
         {
@@ -227,5 +252,44 @@ public partial class BitDropMenuDemo
         }
     ];
 
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "color-kind-enum",
+            Name = "BitColorKind",
+            Description = "Defines the color kinds available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Primary",
+                    Description = "The primary color kind.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Secondary",
+                    Description = "The secondary color kind.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Tertiary",
+                    Description = "The tertiary color kind.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Transparent",
+                    Description = "The transparent color kind.",
+                    Value = "3",
+                },
+            ]
+        }
+    ];
+
     private int clickCounter;
+    private BitColorKind backgroundColorKind = BitColorKind.Primary;
+    private BitColorKind borderColorKind = BitColorKind.Primary;
 }

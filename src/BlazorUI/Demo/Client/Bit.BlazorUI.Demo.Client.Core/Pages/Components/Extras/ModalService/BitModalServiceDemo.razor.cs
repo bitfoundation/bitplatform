@@ -53,19 +53,19 @@ public partial class BitModalServiceDemo
 
     private async Task ShowModal()
     {
-        await modalService.Show<ModalContent>(new BitModalParameters() { Draggable = true });
+        await modalService.Show<ModalContent>(new BitModalParameters() { FullWidth = true });
     }
 
 
     private readonly string example1RazorCode = @"
 <BitButton OnClick=""ShowModal"">Show</BitButton>
 
-<BitModalContainer ModalParameters=""new() { AutoToggleScroll = true }"" />";
+<BitModalContainer ModalParameters=""@(new() { FullWidth = true })"" />";
     private readonly string example1CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 private async Task ShowModal()
 {
-    await modalService.Show<ModalContent>(new BitModalParameters() { Draggable = true });
+    await modalService.Show<ModalContent>(new BitModalParameters() { FullWidth = true });
 }";
 }

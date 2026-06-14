@@ -61,7 +61,7 @@ public abstract class PerformanceTestBase : PageTest
         }
 
         // Wait for page to be ready.
-        // NOTE: Do NOT use WaitForLoadStateAsync(NetworkIdle) here — Blazor Server keeps a
+        // NOTE: Do NOT use WaitForLoadStateAsync(NetworkIdle) here - Blazor Server keeps a
         // persistent SignalR WebSocket open, which Playwright counts as an active connection
         // and therefore NetworkIdle never fires. GotoAsync already waits for the Load event.
         await Page.GotoAsync(BaseUrl);

@@ -6,7 +6,7 @@
 
 **Why choose bit BlazorUI Extra components?**
 - **Free and Open Source**: Bit BlazorUI components come at no cost and are open to the community for contributions and improvements.
-- **Universal Support**: Compatible with all interactive Blazor modes — **Server**, **WASM**, and **Hybrid**.
+- **Universal Support**: Compatible with all interactive Blazor modes - **Server**, **WASM**, and **Hybrid**.
 
 ### Getting Started
 

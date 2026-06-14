@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// DropMenu component is a versatile dropdown menu used in Blazor applications. It allows you to create a button that, when clicked, opens a callout or dropdown menu.
@@ -16,9 +16,19 @@ public partial class BitDropMenu : BitComponentBase
 
 
     /// <summary>
+    /// The color kind of the background of the callout of the drop menu.
+    /// </summary>
+    [Parameter] public BitColorKind? Background { get; set; }
+
+    /// <summary>
     /// Alias of the ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
+    /// The color kind of the border of the callout of the drop menu.
+    /// </summary>
+    [Parameter] public BitColorKind? Border { get; set; }
 
     /// <summary>
     /// Gets or sets the icon for the chevron down part of the drop menu using custom CSS classes for external icon libraries.
@@ -105,6 +115,11 @@ public partial class BitDropMenu : BitComponentBase
     [Parameter] public BitPanelPosition? PanelPosition { get; set; }
 
     /// <summary>
+    /// Removes the box-shadow from the callout of the drop menu.
+    /// </summary>
+    [Parameter] public bool NoShadow { get; set; }
+
+    /// <summary>
     /// The id of the element which needs to be scrollable in the content of the callout of the drop menu.
     /// </summary>
     [Parameter] public string? ScrollContainerId { get; set; }
@@ -134,6 +149,7 @@ public partial class BitDropMenu : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Transparent { get; set; }
+
 
 
     [JSInvokable("CloseCallout")]
@@ -291,6 +307,39 @@ public partial class BitDropMenu : BitComponentBase
         if (Responsive)
         {
             classes.Add("bit-drm-res");
+        }
+
+        if (NoShadow)
+        {
+            classes.Add("bit-drm-nsh");
+        }
+
+        var backgroundClass = Background switch
+        {
+            BitColorKind.Primary => "bit-drm-pbg",
+            BitColorKind.Secondary => "bit-drm-sbg",
+            BitColorKind.Tertiary => "bit-drm-tbg",
+            BitColorKind.Transparent => "bit-drm-rbg",
+            _ => ""
+        };
+        
+        if (backgroundClass.HasValue())
+        {
+            classes.Add(backgroundClass);
+        }
+
+        var borderClass = Border switch
+        {
+            BitColorKind.Primary => "bit-drm-brd bit-drm-pbr",
+            BitColorKind.Secondary => "bit-drm-brd bit-drm-sbr",
+            BitColorKind.Tertiary => "bit-drm-brd bit-drm-tbr",
+            BitColorKind.Transparent => "bit-drm-brd bit-drm-rbr",
+            _ => ""
+        };
+
+        if (borderClass.HasValue())
+        {
+            classes.Add(borderClass);
         }
 
         classes.Add(PanelPosition switch

@@ -9,6 +9,8 @@ public static partial class PageUrls
 
     public const string Terms = "/terms";
 
+    public const string PrivacyPolicy = "/privacy-policy";
+
     public const string Settings = "/settings";
 
     public const string About = "/about";

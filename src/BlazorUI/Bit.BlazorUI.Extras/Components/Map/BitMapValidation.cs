@@ -33,7 +33,7 @@ internal static class BitMapValidation
             || tileUrl.Contains("{x}", StringComparison.Ordinal) is false
             || tileUrl.Contains("{y}", StringComparison.Ordinal) is false)
         {
-            // Intentionally do not echo the raw tileUrl back in the message — it can carry
+            // Intentionally do not echo the raw tileUrl back in the message - it can carry
             // API keys or other sensitive query parameters and would land in logs/stack traces.
             throw new ArgumentException(
                 $"{propertyName} must contain the {{z}}, {{x}} and {{y}} placeholders. The optional {{s}} placeholder is also supported.",

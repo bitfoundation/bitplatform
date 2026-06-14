@@ -23,9 +23,11 @@ public partial class BitProgressDemo
         new()
         {
             Name = "Color",
-            Type = "string?",
+            Type = "BitColor?",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
             DefaultValue = "null",
-            Description = "Color of the BitProgress.",
+            Description = "The general color of the BitProgress.",
         },
         new()
         {
@@ -80,8 +82,8 @@ public partial class BitProgressDemo
         {
             Name = "PercentNumberFormat",
             Type = "string",
-            DefaultValue = "{0:F0}",
-            Description = "The format of the percent in percentage display.",
+            DefaultValue = "{0:F0} %",
+            Description = "The format of the percent number in percentage display.",
         },
         new()
         {
@@ -99,6 +101,15 @@ public partial class BitProgressDemo
         },
         new()
         {
+            Name = "Size",
+            Type = "BitSize?",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
+            DefaultValue = "null",
+            Description = "The size of the BitProgress.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitProgressClassStyles?",
             LinkType = LinkType.Link,
@@ -109,9 +120,9 @@ public partial class BitProgressDemo
         new()
         {
             Name = "Thickness",
-            Type = "int",
-            DefaultValue = "2",
-            Description = "Thickness of the BitProgress.",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Thickness of the BitProgress. When not set, the value is determined by the Size parameter.",
         }
     ];
 
@@ -176,6 +187,48 @@ public partial class BitProgressDemo
         }
     ];
 
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
+                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
+                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
+                new() { Name = "Info", Description = "Info general color.", Value = "3" },
+                new() { Name = "Success", Description = "Success general color.", Value = "4" },
+                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
+                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
+                new() { Name = "Error", Description = "Error general color.", Value = "7" },
+                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
+                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
+                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
+                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
+                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
+                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
+                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
+                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
+                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "Defines the sizes available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Small", Description = "The small size.", Value = "0" },
+                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
+                new() { Name = "Large", Description = "The large size.", Value = "2" }
+            ]
+        }
+    ];
+
 
 
     private double barThickness = 10;
@@ -227,11 +280,23 @@ private double barThickness = 10;";
 <BitProgress Circular Indeterminate />";
 
     private readonly string example6RazorCode = @"
-<BitProgress Color=""#c10606"" Percent=""69"" />
-<BitProgress Color=""#ffba17"" Indeterminate />
+<BitProgress Color=""BitColor.Primary"" Percent=""69"" />
+<BitProgress Color=""BitColor.Secondary"" Percent=""69"" />
+<BitProgress Color=""BitColor.Tertiary"" Percent=""69"" />
+<BitProgress Color=""BitColor.Info"" Percent=""69"" />
+<BitProgress Color=""BitColor.Success"" Percent=""69"" />
+<BitProgress Color=""BitColor.Warning"" Percent=""69"" />
+<BitProgress Color=""BitColor.SevereWarning"" Percent=""69"" />
+<BitProgress Color=""BitColor.Error"" Percent=""69"" />
 
-<BitProgress Color=""#c10606"" Circular Percent=""69"" />
-<BitProgress Color=""#ffba17"" Circular Indeterminate />";
+<BitProgress Color=""BitColor.Primary"" Circular Percent=""69"" />
+<BitProgress Color=""BitColor.Secondary"" Circular Percent=""69"" />
+<BitProgress Color=""BitColor.Tertiary"" Circular Percent=""69"" />
+<BitProgress Color=""BitColor.Info"" Circular Percent=""69"" />
+<BitProgress Color=""BitColor.Success"" Circular Percent=""69"" />
+<BitProgress Color=""BitColor.Warning"" Circular Percent=""69"" />
+<BitProgress Color=""BitColor.SevereWarning"" Circular Percent=""69"" />
+<BitProgress Color=""BitColor.Error"" Circular Percent=""69"" />";
 
     private readonly string example7RazorCode = @"
 <style>
@@ -260,51 +325,83 @@ private double barThickness = 10;";
 </style>
 
 
-<BitProgress Indeterminate Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" />
+<BitProgress Indeterminate Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Thickness=""10"" />
 
 <BitProgress Class=""custom-class""
              Percent=""69""
-             Height=""10"" />
+             Thickness=""10"" />
 
 
-<BitProgress Circular Indeterminate Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" />
+<BitProgress Circular Indeterminate Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Thickness=""10"" />
 
 <BitProgress Circular
              Class=""custom-class""
              Percent=""69""
-             Height=""10"" 
+             Thickness=""10"" />
+
 
 <BitProgress Indeterminate
-             Height=""10""
+             Thickness=""10""
              Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"",
                                 Track = ""background-color: green;"" })"" />
 
 <BitProgress Classes=""@(new() { Bar = ""custom-bar"",
                                  Track = ""custom-tracker""})""
              Percent=""69""
-             Height=""10"" />
+             Thickness=""10"" />
 
 
 <BitProgress Circular Indeterminate
-             Height=""10""
+             Thickness=""10""
              Styles=""@(new() { Bar = ""stroke: greenyellow;"",
                                Track = ""stroke: green;"" })"" />
 
 <BitProgress Circular
              Percent=""69""
-             Height=""10""
+             Thickness=""10""
              Classes=""@(new() { Bar = ""custom-circle-bar"",
                                 Track = ""custom-circle-tracker""})"" />";
 
     private readonly string example8RazorCode = @"
 <BitProgress Dir=""BitDir.Rtl""
-             Height=""10""
+             Thickness=""10""
              Indeterminate />
 
 <BitProgress Label=""لیبل تست""
              Description=""توضیحات تست""
              Dir=""BitDir.Rtl""
              Percent=""69""
-             Height=""10""
-             ShowPercent />";
+             Thickness=""10""
+             ShowPercentNumber />
+
+<BitProgress Circular
+             Dir=""BitDir.Rtl""
+             Thickness=""10""
+             Indeterminate />
+
+<BitProgress Circular
+             Label=""لیبل تست""
+             Description=""توضیحات تست""
+             Dir=""BitDir.Rtl""
+             Percent=""69""
+             Thickness=""10""
+             ShowPercentNumber />";
+
+    private readonly string example9RazorCode = @"
+<BitProgress Size=""BitSize.Small"" Label=""Small"" Percent=""69"" ShowPercentNumber />
+<BitProgress Size=""BitSize.Medium"" Label=""Medium"" Percent=""69"" ShowPercentNumber />
+<BitProgress Size=""BitSize.Large"" Label=""Large"" Percent=""69"" ShowPercentNumber />
+
+<BitProgress Size=""BitSize.Small"" Circular Percent=""69"" ShowPercentNumber />
+<BitProgress Size=""BitSize.Medium"" Circular Percent=""69"" ShowPercentNumber />
+<BitProgress Size=""BitSize.Large"" Circular Percent=""69"" ShowPercentNumber />";
+
+    private readonly string example10RazorCode = @"
+<BitProgress Circular Indeterminate Size=""BitSize.Small"" />
+<BitProgress Circular Indeterminate Size=""BitSize.Medium"" />
+<BitProgress Circular Indeterminate Size=""BitSize.Large"" />
+
+<BitProgress Circular Indeterminate Color=""BitColor.Success"" />
+<BitProgress Circular Indeterminate Color=""BitColor.Warning"" />
+<BitProgress Circular Indeterminate Color=""BitColor.Error"" />";
 }
