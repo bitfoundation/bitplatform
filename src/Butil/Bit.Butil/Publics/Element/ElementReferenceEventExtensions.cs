@@ -12,8 +12,8 @@ namespace Bit.Butil;
 /// </summary>
 /// <remarks>
 /// Each subscription owns a per-subscription <see cref="DotNetObjectReference{T}"/> (there is no
-/// long-lived service instance to host it, since these are extension methods). The reference — and
-/// therefore all captured component state — is released when the returned subscription is disposed,
+/// long-lived service instance to host it, since these are extension methods). The reference - and
+/// therefore all captured component state - is released when the returned subscription is disposed,
 /// so there is no static state and no cross-circuit bleed.
 /// </remarks>
 public static class ElementReferenceEventExtensions

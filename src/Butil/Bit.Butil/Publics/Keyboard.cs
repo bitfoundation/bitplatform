@@ -14,7 +14,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
 
     // One DotNetObjectReference per service instance. Because the listeners live on this (scoped)
     // instance instead of in static state, they are isolated per Blazor circuit / WASM app and are
-    // released when the instance is disposed — no cross-circuit bleed and no leak when a circuit
+    // released when the instance is disposed - no cross-circuit bleed and no leak when a circuit
     // drops without an explicit Remove. Created lazily so prerender/SSR (which never adds listeners)
     // doesn't allocate one.
     private DotNetObjectReference<Keyboard>? _dotNetRef;
@@ -161,7 +161,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         {
             await RemoveAll();
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

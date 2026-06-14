@@ -3,7 +3,7 @@ using System;
 namespace Bit.Butil;
 
 /// <summary>
-/// IME composition event — see <see href="https://developer.mozilla.org/en-US/docs/Web/API/CompositionEvent">CompositionEvent</see>.
+/// IME composition event - see <see href="https://developer.mozilla.org/en-US/docs/Web/API/CompositionEvent">CompositionEvent</see>.
 /// </summary>
 public class ButilCompositionEventArgs : EventArgs
 {

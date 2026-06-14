@@ -7,7 +7,7 @@ public class SpeechVoice
 {
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>BCP-47 language tag — e.g. <c>"en-US"</c>.</summary>
+    /// <summary>BCP-47 language tag - e.g. <c>"en-US"</c>.</summary>
     public string Lang { get; set; } = string.Empty;
 
     /// <summary>Voice URI (often the same as <see cref="Name"/> for local voices).</summary>

@@ -16,7 +16,7 @@ public class EyeDropper(IJSRuntime js)
     /// Returns null when the user cancels or the runtime can't show the picker.
     /// </summary>
     /// <remarks>
-    /// Must be called from a user-gesture handler — the browser will reject the request otherwise.
+    /// Must be called from a user-gesture handler - the browser will reject the request otherwise.
     /// </remarks>
     public ValueTask<string?> Open() => js.Invoke<string?>("BitButil.eyeDropper.open");
 }

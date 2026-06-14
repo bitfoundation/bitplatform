@@ -18,7 +18,7 @@ var BitButil = BitButil || {};
                     name: entry.name ?? [],
                     email: entry.email ?? [],
                     tel: entry.tel ?? [],
-                    // Addresses come back as ContactAddress objects — flatten to single-line strings.
+                    // Addresses come back as ContactAddress objects - flatten to single-line strings.
                     address: (entry.address ?? []).map(stringifyAddress),
                     icon: (entry.icon ?? []).map((blob: any) => {
                         try { return URL.createObjectURL(blob); } catch { return ''; }

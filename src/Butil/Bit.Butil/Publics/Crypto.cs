@@ -91,7 +91,7 @@ public class Crypto(IJSRuntime js)
     /// <summary>
     /// Generates a fresh AES key as raw bytes.
     /// </summary>
-    /// <param name="bits">Key length in bits — 128, 192, or 256.</param>
+    /// <param name="bits">Key length in bits - 128, 192, or 256.</param>
     public ValueTask<byte[]> GenerateAesKey(int bits = 256)
         => js.Invoke<byte[]>("BitButil.crypto.generateAesKey", bits);
 

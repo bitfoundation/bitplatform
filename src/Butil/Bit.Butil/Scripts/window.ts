@@ -172,7 +172,7 @@ var BitButil = BitButil || {};
     function dispose() {
         // matchMedia handlers are unsubscribed individually by the C# side (it tracks the ids and
         // calls unsubscribeMatchMedia before dispose), so we deliberately don't touch
-        // _mediaQueryHandlers here — wiping the shared map would clobber any other live instance.
+        // _mediaQueryHandlers here - wiping the shared map would clobber any other live instance.
         _refs = {};
     }
 }(BitButil));

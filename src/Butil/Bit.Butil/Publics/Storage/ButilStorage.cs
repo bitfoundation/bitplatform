@@ -22,7 +22,7 @@ public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Action<StorageEvent>> _handlers = new();
 
     // Per-instance callback reference (see Keyboard): subscriptions are isolated per circuit / WASM
-    // app and released on disposal — no static state, no cross-circuit leak.
+    // app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<ButilStorage>? _dotNetRef;
     private DotNetObjectReference<ButilStorage> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
@@ -154,7 +154,7 @@ public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
                 await js.InvokeVoid("BitButil.storage.unsubscribe", id);
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

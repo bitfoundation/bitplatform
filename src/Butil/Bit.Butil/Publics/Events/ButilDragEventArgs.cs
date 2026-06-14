@@ -3,7 +3,7 @@ using System;
 namespace Bit.Butil;
 
 /// <summary>
-/// Drag event payload — see <see href="https://developer.mozilla.org/en-US/docs/Web/API/DragEvent">DragEvent</see>.
+/// Drag event payload - see <see href="https://developer.mozilla.org/en-US/docs/Web/API/DragEvent">DragEvent</see>.
 /// </summary>
 /// <remarks>
 /// The DataTransfer object can't be passed straight across JS interop because it holds

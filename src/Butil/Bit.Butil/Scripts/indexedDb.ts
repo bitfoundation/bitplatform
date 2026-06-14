@@ -46,7 +46,21 @@ var BitButil = BitButil || {};
                     }
                 }
             };
-            req.onsuccess = () => { _dbs[id] = req.result; resolve(); };
+            req.onsuccess = () => {
+                const prev = _dbs[id];
+                if (prev && prev !== req.result) {
+                    try { prev.close(); } catch { /* already closed */ }
+                }
+                const db = req.result;
+                // Close this connection if another tab requests a version change,
+                // otherwise that tab's upgrade would be blocked by this open handle.
+                db.onversionchange = () => {
+                    try { db.close(); } catch { /* already closed */ }
+                    if (_dbs[id] === db) delete _dbs[id];
+                };
+                _dbs[id] = db;
+                resolve();
+            };
             req.onerror = () => reject(req.error);
             req.onblocked = () => reject(new Error('IndexedDB open is blocked by another tab.'));
         });

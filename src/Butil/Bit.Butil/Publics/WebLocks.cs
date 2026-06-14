@@ -19,7 +19,7 @@ namespace Bit.Butil;
 ///   This matches typical .NET <c>using</c> patterns.
 /// </item>
 /// <item>
-///   <see cref="Run"/> runs your callback while holding the lock — closer to the JS API.
+///   <see cref="Run"/> runs your callback while holding the lock - closer to the JS API.
 /// </item>
 /// </list>
 /// </remarks>
@@ -81,7 +81,7 @@ public class WebLocks(IJSRuntime js)
             if (_disposed) return;
             _disposed = true;
             try { await js.InvokeVoid("BitButil.webLocks.release", token); }
-            catch (JSDisconnectedException) { }
+            catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         }
     }
 }

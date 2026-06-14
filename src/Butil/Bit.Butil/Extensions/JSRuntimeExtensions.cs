@@ -93,7 +93,7 @@ public static class JSRuntimeExtensions
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public static async ValueTask FastInvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
-        // Async on purpose — the CTS timer must outlive the call for the timeout to fire.
+        // Async on purpose - the CTS timer must outlive the call for the timeout to fire.
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
@@ -114,7 +114,7 @@ public static class JSRuntimeExtensions
     {
         if (jsRuntime is IJSInProcessRuntime jsInProcessRuntime)
         {
-            // Don't swallow JsonException — see FastInvokeAsync<TResult> for rationale.
+            // Don't swallow JsonException - see FastInvokeAsync<TResult> for rationale.
             jsInProcessRuntime.Invoke<IJSVoidResult>(identifier, args);
             return ValueTask.CompletedTask;
         }

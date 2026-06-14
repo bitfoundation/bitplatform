@@ -5,7 +5,7 @@
 
 <PageHeader Category="Browser & Device"
             Title="Navigator"
-            Lead="Query the user agent environment: hardware, languages, connectivity and capabilities — plus actions like sharing, vibrating and app badges."
+            Lead="Query the user agent environment: hardware, languages, connectivity and capabilities - plus actions like sharing, vibrating and app badges."
             MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Navigator" />
 
 <pre>
@@ -159,8 +159,10 @@ await navigator.Share(new ShareData { title = "Bit.Butil", url = "https://bitpla
 
     private async Task SendBeacon()
     {
-        await navigator.SendBeacon("/_butil-demo-beacon");
-        await output.Log("Beacon sent");
+        // sendBeacon issues an HTTP POST. The target must accept POST requests,
+        // so we use a public echo endpoint here (the static demo host has no backend).
+        var queued = await navigator.SendBeacon("https://postman-echo.com/post", "butil-demo-beacon");
+        await output.Success("Beacon queued →", queued);
     }
 
     private async Task Vibrate()

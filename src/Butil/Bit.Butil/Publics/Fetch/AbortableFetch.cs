@@ -31,6 +31,6 @@ public sealed class AbortableFetch : IAsyncDisposable
         if (_completed) return;
         _completed = true;
         try { await _js.InvokeVoid("BitButil.fetch.abort", _id); }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 }

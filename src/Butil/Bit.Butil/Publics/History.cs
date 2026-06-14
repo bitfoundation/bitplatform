@@ -19,7 +19,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Action<object>> _handlers = new();
 
     // Per-instance callback reference (see Keyboard/Geolocation): listeners are isolated per
-    // circuit / WASM app and released on disposal — no static state, no cross-circuit leak.
+    // circuit / WASM app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<History>? _dotNetRef;
     private DotNetObjectReference<History> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
@@ -232,7 +232,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
         {
             await RemoveAllPopStates();
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

@@ -14,7 +14,7 @@ namespace Bit.Butil;
 /// API for cross-tab pub/sub on the same origin.
 /// </summary>
 /// <remarks>
-/// Each <see cref="BroadcastChannel"/> instance can host any number of named channels — a
+/// Each <see cref="BroadcastChannel"/> instance can host any number of named channels - a
 /// new JS-side channel object is created on first <see cref="Subscribe"/> per name and torn
 /// down only when every subscription on that name has been disposed.
 /// </remarks>
@@ -26,7 +26,7 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Listener> _subscriptions = new();
 
     // Per-instance callback reference (see Keyboard): subscriptions are isolated per circuit / WASM
-    // app and released on disposal — no static state, no cross-circuit leak.
+    // app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<BroadcastChannel>? _dotNetRef;
     private DotNetObjectReference<BroadcastChannel> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
@@ -52,7 +52,7 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// Sends <paramref name="message"/> to every other listener on <paramref name="channelName"/>
-    /// in the same origin (the sender does not receive its own message — that's the spec).
+    /// in the same origin (the sender does not receive its own message - that's the spec).
     /// </summary>
     [RequiresUnreferencedCode("JSON serialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
@@ -99,7 +99,7 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
                 }
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

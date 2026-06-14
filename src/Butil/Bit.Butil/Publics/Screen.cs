@@ -20,7 +20,7 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
 
     // Per-instance callback reference (see Keyboard): listeners are isolated per circuit / WASM app
-    // and released on disposal — no static state, no cross-circuit leak.
+    // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Screen>? _dotNetRef;
     private DotNetObjectReference<Screen> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
@@ -118,7 +118,7 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
-    /// Fired on a specific screen when it changes in some way — width or height, 
+    /// Fired on a specific screen when it changes in some way - width or height, 
     /// available width or height, color depth, or orientation.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event">https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event</see>
@@ -193,7 +193,7 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
         {
             await RemoveAllChanges();
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

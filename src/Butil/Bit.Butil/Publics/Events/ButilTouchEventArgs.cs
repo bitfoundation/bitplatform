@@ -3,7 +3,7 @@ using System;
 namespace Bit.Butil;
 
 /// <summary>
-/// Touch event payload — see <see href="https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent">TouchEvent</see>.
+/// Touch event payload - see <see href="https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent">TouchEvent</see>.
 /// Note: many platforms have moved to <see cref="ButilPointerEventArgs"/>; expose touch when you need
 /// access to multi-touch lists explicitly.
 /// </summary>

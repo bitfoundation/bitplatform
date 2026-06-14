@@ -20,7 +20,7 @@ public class Reporting(IJSRuntime js) : IAsyncDisposable
     private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action<BrowserReport[]>> _handlers = new();
 
     // Per-instance callback reference (see Keyboard): observers are isolated per circuit / WASM app
-    // and released on disposal — no static state, no cross-circuit leak.
+    // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Reporting>? _dotNetRef;
     private DotNetObjectReference<Reporting> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
@@ -71,7 +71,7 @@ public class Reporting(IJSRuntime js) : IAsyncDisposable
                 await js.InvokeVoid("BitButil.reporting.disconnect", id);
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

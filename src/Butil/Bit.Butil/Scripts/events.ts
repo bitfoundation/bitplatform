@@ -45,7 +45,7 @@ var BitButil = BitButil || {};
                     break;
                 case 'relatedTarget':
                     // A DOM node can't be marshaled to .NET, so we surface only its id.
-                    // Empty string when there's no related target or it has no id — this matches
+                    // Empty string when there's no related target or it has no id - this matches
                     // the string contract of ButilMouseEventArgs.RelatedTarget.
                     out[m] = e.relatedTarget?.id ?? '';
                     break;

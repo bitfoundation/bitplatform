@@ -19,7 +19,7 @@ public class Nfc(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Listener> _listeners = new();
 
     // Per-instance callback reference (see Keyboard): scans are isolated per circuit / WASM app
-    // and released on disposal — no static state, no cross-circuit leak.
+    // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Nfc>? _dotNetRef;
     private DotNetObjectReference<Nfc> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
@@ -86,7 +86,7 @@ public class Nfc(IJSRuntime js) : IAsyncDisposable
                 await js.InvokeVoid("BitButil.nfc.stop", id);
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();
@@ -111,7 +111,7 @@ public class Nfc(IJSRuntime js) : IAsyncDisposable
             _disposed = true;
             owner._listeners.TryRemove(id, out _);
             try { await js.InvokeVoid("BitButil.nfc.stop", id); }
-            catch (JSDisconnectedException) { }
+            catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         }
     }
 }

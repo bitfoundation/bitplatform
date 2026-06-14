@@ -3,7 +3,7 @@ using System;
 namespace Bit.Butil;
 
 /// <summary>
-/// Wheel event payload — see <see href="https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent">WheelEvent</see>.
+/// Wheel event payload - see <see href="https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent">WheelEvent</see>.
 /// </summary>
 public class ButilWheelEventArgs : EventArgs
 {

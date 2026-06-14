@@ -12,7 +12,7 @@ namespace Bit.Butil;
 /// </summary>
 /// <remarks>
 /// Service workers are origin-scoped and outlive the page, so this service intentionally
-/// does not auto-unregister anything on disposal — the consuming app decides when to call
+/// does not auto-unregister anything on disposal - the consuming app decides when to call
 /// <see cref="Unregister"/>. Subscriptions returned by <see cref="SubscribeMessage"/> /
 /// <see cref="SubscribeControllerChange"/> are detached on dispose.
 /// </remarks>
@@ -25,7 +25,7 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
     private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action> _controllerChangeHandlers = new();
 
     // Per-instance callback reference (see Keyboard): subscriptions are isolated per circuit / WASM
-    // app and released on disposal — no static state, no cross-circuit leak.
+    // app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<ServiceWorker>? _dotNetRef;
     private DotNetObjectReference<ServiceWorker> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
@@ -131,7 +131,7 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
             foreach (var id in controllerIds)
                 await js.InvokeVoid("BitButil.serviceWorker.unsubscribeControllerChange", id);
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

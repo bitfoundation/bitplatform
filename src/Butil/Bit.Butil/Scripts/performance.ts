@@ -44,9 +44,9 @@ var BitButil = BitButil || {};
                 // loop so we register each one separately and merge their reports.
                 for (const t of entryTypes) {
                     try { observer.observe({ type: t, buffered }); }
-                    catch { /* type isn't supported on this UA — skip silently */ }
+                    catch { /* type isn't supported on this UA - skip silently */ }
                 }
-            } catch { /* observe() rejected the whole batch — fall through with no records */ }
+            } catch { /* observe() rejected the whole batch - fall through with no records */ }
             _perfObservers[listenerId] = observer;
         },
         disconnect(listenerId: string) {

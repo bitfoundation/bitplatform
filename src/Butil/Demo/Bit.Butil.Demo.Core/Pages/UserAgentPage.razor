@@ -5,7 +5,7 @@
 
 <PageHeader Category="Browser & Device"
             Title="UserAgent"
-            Lead="Parse a user-agent string into structured details — browser, engine, OS and device — without writing a single regex."
+            Lead="Parse a user-agent string into structured details - browser, engine, OS and device - without writing a single regex."
             MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent" />
 
 <pre>
@@ -57,7 +57,7 @@ var props2 = await userAgent.Extract(uaString);  // a specific string
     private async Task GetBrands()
     {
         var brands = await userAgent.GetBrands();
-        await output.Success("GetBrands →", brands.Length == 0 ? "(empty — UA-CH unsupported)" : brands);
+        await output.Success("GetBrands →", brands.Length == 0 ? "(empty - UA-CH unsupported)" : brands);
     }
 
     private async Task IsMobile()

@@ -81,7 +81,7 @@ public static class BitButil
 
     /// <summary>
     /// Disables the synchronous in-process ("fast") invoke path; all calls run asynchronously.
-    /// Process-wide static toggle — see <see cref="UseFastInvoke"/>.
+    /// Process-wide static toggle - see <see cref="UseFastInvoke"/>.
     /// </summary>
     public static void UseNormalInvoke()
     {

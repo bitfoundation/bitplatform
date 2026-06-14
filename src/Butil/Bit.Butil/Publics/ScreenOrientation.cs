@@ -19,7 +19,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Action<OrientationState>> _handlers = new();
 
     // Per-instance callback reference (see Keyboard): listeners are isolated per circuit / WASM app
-    // and released on disposal — no static state, no cross-circuit leak.
+    // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<ScreenOrientation>? _dotNetRef;
     private DotNetObjectReference<ScreenOrientation> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
@@ -195,7 +195,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
         {
             await RemoveAllChanges();
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

@@ -19,7 +19,7 @@ var BitButil = BitButil || {};
                 dotNetRef.invokeMethodAsync('InvokeBrowserReport', listenerId, payload);
             }, options);
             try { observer.observe(); _observers[listenerId] = observer; }
-            catch { /* invalid options — silently ignore */ }
+            catch { /* invalid options - silently ignore */ }
         },
         disconnect(listenerId: string) {
             const o = _observers[listenerId];

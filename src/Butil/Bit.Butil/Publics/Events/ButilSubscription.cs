@@ -9,8 +9,9 @@ namespace Bit.Butil;
 /// for the lifetime of a component without juggling Guids.
 /// </summary>
 /// <remarks>
-/// Disposal is idempotent and safe to call after a JS disconnect — the underlying remover
-/// is wrapped to swallow <see cref="Microsoft.JSInterop.JSDisconnectedException"/>.
+/// Disposal is idempotent and safe to call during teardown - the underlying remover is wrapped to
+/// swallow a <see cref="Microsoft.JSInterop.JSDisconnectedException"/>, a cancelled interop call, or
+/// an <see cref="ObjectDisposedException"/> from an already-disposed runtime.
 /// The exposed <see cref="Id"/> is still useful when callers want to compose multiple
 /// subscriptions and remove them in bulk.
 /// </remarks>
@@ -36,9 +37,9 @@ public sealed class ButilSubscription : IAsyncDisposable
         {
             await remover();
         }
-        catch (Microsoft.JSInterop.JSDisconnectedException)
+        catch (Exception ex) when (ex.IsIgnorableDisposalException())
         {
-            // Circuit gone — nothing to detach.
+            // Teardown - circuit gone, the call was cancelled, or the runtime was already disposed.
         }
     }
 }

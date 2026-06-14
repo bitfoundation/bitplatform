@@ -6,7 +6,7 @@ namespace Bit.Butil;
 
 /// <summary>
 /// Handle to an in-flight Web Animation. Always dispose (or cancel) so the animation
-/// is removed from the engine — long-running animations otherwise sit on the element
+/// is removed from the engine - long-running animations otherwise sit on the element
 /// indefinitely with <see cref="AnimationOptions.Fill"/> set.
 /// </summary>
 public sealed class AnimationHandle : IAsyncDisposable
@@ -47,6 +47,6 @@ public sealed class AnimationHandle : IAsyncDisposable
         if (_disposed) return;
         _disposed = true;
         try { await _js.InvokeVoid("BitButil.animation.cancel", _id); }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 }

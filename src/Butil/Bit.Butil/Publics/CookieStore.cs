@@ -25,7 +25,7 @@ public class CookieStore(IJSRuntime js)
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CookieStoreItem))]
     public ValueTask<CookieStoreItem?> Get(string name) => js.Invoke<CookieStoreItem?>("BitButil.cookieStore.get", name);
 
-    /// <summary>Sets a cookie. Use <see cref="Delete"/> to remove one (don't pass MaxAge=0 — that's the legacy trick).</summary>
+    /// <summary>Sets a cookie. Use <see cref="Delete"/> to remove one (don't pass MaxAge=0 - that's the legacy trick).</summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CookieStoreItem))]
     public ValueTask Set(CookieStoreItem cookie) => js.InvokeVoid("BitButil.cookieStore.set", cookie);
 

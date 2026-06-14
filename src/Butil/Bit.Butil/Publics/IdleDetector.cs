@@ -19,7 +19,7 @@ public class IdleDetector(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Action<IdleState>> _handlers = new();
 
     // Per-instance callback reference (see Keyboard): watches are isolated per circuit / WASM app
-    // and released on disposal — no static state, no cross-circuit leak.
+    // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<IdleDetector>? _dotNetRef;
     private DotNetObjectReference<IdleDetector> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
@@ -88,7 +88,7 @@ public class IdleDetector(IJSRuntime js) : IAsyncDisposable
                 await js.InvokeVoid("BitButil.idleDetector.stop", id);
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

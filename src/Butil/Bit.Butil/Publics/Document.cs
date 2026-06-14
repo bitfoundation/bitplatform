@@ -14,7 +14,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<(Guid Id, string Event, bool UseCapture), byte> _listenerIds = new();
 
     // Per-instance DOM event dispatcher: listeners are isolated per circuit / WASM app and released
-    // on disposal — no static state, no cross-circuit leak.
+    // on disposal - no static state, no cross-circuit leak.
     private readonly DomEventsInterop _events = new();
 
     public async Task AddEventListener<T>(
@@ -241,7 +241,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     {
         Action<object> bridge = _ =>
         {
-            // We don't get the state on the event itself — fetch it on the fly.
+            // We don't get the state on the event itself - fetch it on the fly.
             // It's cheap (sync property) so the extra interop is acceptable.
             _ = ReportVisibilityAsync(handler);
         };
@@ -277,7 +277,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
-    /// Fires when entering fullscreen fails. The handler receives no payload — the spec
+    /// Fires when entering fullscreen fails. The handler receives no payload - the spec
     /// doesn't expose a structured reason.
     /// </summary>
     public Task<ButilSubscription> SubscribeFullscreenError(Action handler)
@@ -344,7 +344,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
                 await _events.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
             }
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _events.Dispose();

@@ -12,7 +12,7 @@ namespace Bit.Butil;
 /// The wrapper deliberately surfaces the most commonly needed CRUD shape rather than the
 /// full IDB transaction/cursor API; complex graph queries should drop down to interop.
 /// Each <see cref="Open"/> call returns an <see cref="IndexedDbHandle"/> that owns the JS
-/// <c>IDBDatabase</c> reference — dispose it when you're done so the connection closes.
+/// <c>IDBDatabase</c> reference - dispose it when you're done so the connection closes.
 /// </remarks>
 public class IndexedDb(IJSRuntime js)
 {

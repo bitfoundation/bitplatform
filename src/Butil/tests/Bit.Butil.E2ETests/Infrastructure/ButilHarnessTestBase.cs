@@ -9,9 +9,9 @@ namespace Bit.Butil.E2ETests.Infrastructure;
 /// environment variables so the same binary runs against bundled Chromium, a system Chrome
 /// channel, or an explicit executable path:
 /// <list type="bullet">
-///   <item><c>BUTIL_E2E_CHANNEL</c> — e.g. <c>chrome</c> / <c>msedge</c> (uses an installed browser).</item>
-///   <item><c>BUTIL_E2E_EXECUTABLE</c> — full path to a chromium-family executable.</item>
-///   <item><c>BUTIL_E2E_HEADED</c> — set to <c>1</c> to watch the run.</item>
+///   <item><c>BUTIL_E2E_CHANNEL</c> - e.g. <c>chrome</c> / <c>msedge</c> (uses an installed browser).</item>
+///   <item><c>BUTIL_E2E_EXECUTABLE</c> - full path to a chromium-family executable.</item>
+///   <item><c>BUTIL_E2E_HEADED</c> - set to <c>1</c> to watch the run.</item>
 /// </list>
 /// </summary>
 public abstract class ButilHarnessTestBase

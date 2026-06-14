@@ -10,7 +10,7 @@ namespace Bit.Butil;
 /// </summary>
 /// <remarks>
 /// Available on Chromium-based mobile browsers only. Users always see a native picker
-/// — there's no programmatic access to a user's contacts.
+/// - there's no programmatic access to a user's contacts.
 /// </remarks>
 public class ContactPicker(IJSRuntime js)
 {

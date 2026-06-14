@@ -36,13 +36,13 @@ public class UserAgent(IJSRuntime js)
     public ValueTask<bool> IsMobile()
         => js.Invoke<bool>("BitButil.userAgent.isMobile");
 
-    /// <summary>The OS family the UA-CH layer reports — empty string when unsupported.</summary>
+    /// <summary>The OS family the UA-CH layer reports - empty string when unsupported.</summary>
     public ValueTask<string> GetPlatform()
         => js.Invoke<string>("BitButil.userAgent.getPlatform");
 
     /// <summary>
     /// Requests high-entropy UA values. Callers must explicitly opt in to each hint
-    /// they need (e.g. <c>"architecture", "platformVersion", "model"</c>) — see
+    /// they need (e.g. <c>"architecture", "platformVersion", "model"</c>) - see
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/NavigatorUAData/getHighEntropyValues">getHighEntropyValues()</see>.
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HighEntropyUserAgent))]

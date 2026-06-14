@@ -36,7 +36,7 @@ var BitButil = BitButil || {};
         });
 
         try { observer.observe(element, init); }
-        catch { /* invalid options combo — silently ignore so dotnet sees no records */ }
+        catch { /* invalid options combo - silently ignore so dotnet sees no records */ }
         _observers[listenerId] = observer;
     }
 

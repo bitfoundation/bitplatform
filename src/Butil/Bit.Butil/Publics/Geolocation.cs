@@ -19,7 +19,7 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Listener> _watches = new();
 
     // Per-instance callback reference: watches live on this (scoped) instance, so they're isolated
-    // per circuit / WASM app and released on disposal — no static state, no cross-circuit leak.
+    // per circuit / WASM app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Geolocation>? _dotNetRef;
     private DotNetObjectReference<Geolocation> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
@@ -129,7 +129,7 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         try { await ClearAllWatches(); }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();
@@ -156,7 +156,7 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
         public Action<GeolocationException>? OnError { get; set; }
     }
 
-    /// <summary>Internal — shape used to bridge a once-off call's success/error path.</summary>
+    /// <summary>Internal - shape used to bridge a once-off call's success/error path.</summary>
     public class GeolocationCallResult
     {
         public GeolocationPosition? Position { get; set; }

@@ -52,7 +52,7 @@ var BitButil = BitButil || {};
     async function update(scope: string | null) {
         const reg = await window.navigator.serviceWorker?.getRegistration(scope ?? undefined);
         if (!reg) return;
-        try { await reg.update(); } catch { /* network failure / 404 — surface via subsequent getRegistration */ }
+        try { await reg.update(); } catch { /* network failure / 404 - surface via subsequent getRegistration */ }
     }
 
     async function unregister(scope: string | null) {

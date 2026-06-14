@@ -3,7 +3,7 @@ using System;
 namespace Bit.Butil;
 
 /// <summary>
-/// Pointer event payload — see <see href="https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent">PointerEvent</see>.
+/// Pointer event payload - see <see href="https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent">PointerEvent</see>.
 /// Pointer events unify mouse, pen and touch interaction.
 /// </summary>
 public class ButilPointerEventArgs : EventArgs

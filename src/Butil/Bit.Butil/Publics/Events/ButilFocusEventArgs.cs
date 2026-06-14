@@ -3,7 +3,7 @@ using System;
 namespace Bit.Butil;
 
 /// <summary>
-/// Focus event payload — see <see href="https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent">FocusEvent</see>.
+/// Focus event payload - see <see href="https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent">FocusEvent</see>.
 /// </summary>
 public class ButilFocusEventArgs : EventArgs
 {
