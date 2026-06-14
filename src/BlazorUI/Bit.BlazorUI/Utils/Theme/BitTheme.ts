@@ -6,15 +6,26 @@ namespace BitBlazorUI {
     const ATTR_THEME_DEFAULT = 'bit-theme-default';
     const ATTR_THEME_SYSTEM = 'bit-theme-system';
     const ATTR_THEME_PERSIST = 'bit-theme-persist';
+    const ATTR_THEME_PERSIST_COOKIE = 'bit-theme-persist-cookie';
     const ATTR_THEME_DARK = 'bit-theme-dark';
     const ATTR_THEME_LIGHT = 'bit-theme-light';
     const STORAGE_KEY = 'bit-current-theme';
+    // Kept aligned with BitThemeCookie.PreferenceCookieName in C#. When cookie persistence is
+    // enabled, the client mirrors the persisted preference into this cookie so the server can read
+    // the user's current choice (via BitThemeSsr.BuildRootThemeAttributes) and paint the matching
+    // theme on first server render — keeping the client (localStorage) and server (cookie) stores
+    // in sync instead of drifting apart.
+    const COOKIE_NAME = 'bit-theme-preference';
+    // ~400 days, the upper bound modern browsers clamp persistent cookies to.
+    const COOKIE_MAX_AGE_SECONDS = 34560000;
 
     type onThemeChangeType = (newThemeName: string, oldThemeName: string) => void;
 
     export interface ThemeOptions {
         system?: boolean;
         persist?: boolean;
+        /** Mirror the persisted preference into the COOKIE_NAME cookie so SSR stays in sync with client choices. */
+        persistCookie?: boolean;
         theme?: string | null;
         default?: string | null;
         darkTheme?: string | null;
@@ -35,6 +46,7 @@ namespace BitBlazorUI {
         private static THEME_STORAGE_KEY = STORAGE_KEY;
 
         private static _persist = false;
+        private static _persistCookie = false;
         private static _darkTheme: string = 'dark';
         private static _lightTheme: string = 'light';
         private static _initOptions: ThemeOptions = {};
@@ -75,17 +87,31 @@ namespace BitBlazorUI {
                 Theme._lightTheme = Theme._initOptions.lightTheme;
             }
 
+            // Cookie mirroring is independent of localStorage persistence: an SSR app may want the
+            // server to read the preference cookie without necessarily enabling localStorage.
+            if (Theme._initOptions.persistCookie) {
+                Theme._persistCookie = true;
+            }
+
             let theme = Theme._initOptions.theme || Theme._initOptions.default || Theme._lightTheme;
 
-            if (Theme._initOptions.theme === Theme.SYSTEM_THEME ||
-                (!Theme._initOptions.theme && !Theme._initOptions.default && Theme._initOptions.system)) {
+            // Resolve the first-paint theme with the SAME precedence as the SSR inline script in
+            // BitThemeSsr.cs (BuildInlineScriptBody): a `system` opt-in — the bit-theme-system
+            // attribute, the JS `system: true` option, or an explicit bit-theme="system" — follows
+            // the OS and takes precedence over an explicit bit-theme / bit-theme-default at first
+            // paint. A persisted preference (handled below) still wins over this.
+            //
+            // Previously this only resolved the OS theme when there was NO explicit theme/default,
+            // so a document with both bit-theme="..." and bit-theme-system painted the explicit
+            // theme on hydration while the SSR script painted the OS-resolved one — a flash of the
+            // wrong theme. Keeping the two code paths in lockstep avoids that.
+            if (Theme._initOptions.system || Theme._initOptions.theme === Theme.SYSTEM_THEME) {
                 theme = Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme;
             }
 
             if (Theme._initOptions.persist) {
                 Theme._persist = true;
-                const persisted = Theme.getPersisted();
-                if (persisted) {
+                const persisted = Theme.getPersisted();                if (persisted) {
                     theme = persisted;
                     // An explicit persisted preset (anything other than "system") means the user pinned a theme;
                     // stop following the OS even when <html bit-theme-system> is present.
@@ -122,12 +148,12 @@ namespace BitBlazorUI {
         }
 
         public static get() {
+            // Report the theme that is actually applied: the bit-theme attribute is the source of
+            // truth (it is what is painted, and set()/OS-follow keep _currentTheme in sync with it).
+            // The persisted *preference* is a separate concept exposed via getPersisted(); the two
+            // can legitimately diverge — e.g. runtime OS-follow updates the attribute without
+            // rewriting storage — so get() must not substitute the persisted value here.
             Theme._currentTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
-
-            if (Theme._persist) {
-                var theme = Theme.getActualTheme(Theme.getPersisted());
-                Theme._currentTheme = theme || Theme._currentTheme;
-            }
 
             return Theme._currentTheme;
         }
@@ -164,6 +190,13 @@ namespace BitBlazorUI {
                 } catch { /* persistence unavailable; continue without storing */ }
             }
 
+            // Mirror the preference into the cookie so the server (BitThemeSsr.BuildRootThemeAttributes)
+            // can paint the matching theme on first render. Stored verbatim (the abstract key, e.g.
+            // "system" / "dark" / "fluent-light"), matching what localStorage holds.
+            if (Theme._persistCookie) {
+                Theme.writePreferenceCookie(themeName);
+            }
+
             const oldTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
 
             document.documentElement.setAttribute(Theme.THEME_ATTRIBUTE, Theme._currentTheme);
@@ -176,9 +209,15 @@ namespace BitBlazorUI {
         }
 
         public static toggleDarkLight() {
-            Theme._currentTheme = Theme._currentTheme === Theme._lightTheme
-                ? Theme._darkTheme
-                : Theme._lightTheme;
+            // Toggle relative to the configured dark theme: when the dark theme is active switch to
+            // light, otherwise switch to dark. Anchoring on the dark theme (rather than the light
+            // one) means a configured pair such as bit-theme-light="fluent-light" /
+            // bit-theme-dark="fluent-dark" toggles correctly in BOTH directions, and any other
+            // current value (a custom or unrecognized theme) resolves to the dark theme instead of
+            // silently collapsing to light.
+            Theme._currentTheme = Theme._currentTheme === Theme._darkTheme
+                ? Theme._lightTheme
+                : Theme._darkTheme;
 
             Theme.set(Theme._currentTheme);
 
@@ -213,16 +252,23 @@ namespace BitBlazorUI {
         }
 
         public static getPersisted() {
-            if (!Theme._persist) return null;
-
-            // Mirror the write side: localStorage.getItem can throw under the same conditions as
-            // setItem (Safari private mode, blocked storage, etc.). Treat failure as "no persisted
-            // value" so the rest of the resolution chain (system / default / lightTheme) takes over.
-            try {
-                return localStorage.getItem(Theme.THEME_STORAGE_KEY);
-            } catch {
-                return null;
+            if (Theme._persist) {
+                // Mirror the write side: localStorage.getItem can throw under the same conditions as
+                // setItem (Safari private mode, blocked storage, etc.). Treat failure as "no persisted
+                // value" so the rest of the resolution chain (system / default / lightTheme) takes over.
+                try {
+                    const stored = localStorage.getItem(Theme.THEME_STORAGE_KEY);
+                    if (stored) return stored;
+                } catch { /* fall through to cookie / null */ }
             }
+
+            // Cookie-only persistence (or localStorage unavailable): read the same preference the
+            // server uses so the client and server agree on the stored choice.
+            if (Theme._persistCookie) {
+                return Theme.readPreferenceCookie();
+            }
+
+            return null;
         }
 
         public static registerDotNetNotifier(dotNetRef: DotNetObject) {
@@ -231,6 +277,29 @@ namespace BitBlazorUI {
 
         public static unregisterDotNetNotifier() {
             Theme._dotnetNotifier = null;
+        }
+
+        private static writePreferenceCookie(value: string) {
+            try {
+                if (typeof document === 'undefined' || !value) return;
+                const secure = location.protocol === 'https:' ? '; Secure' : '';
+                document.cookie =
+                    `${COOKIE_NAME}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax${secure}`;
+            } catch { /* cookies unavailable / blocked; best-effort like localStorage */ }
+        }
+
+        private static readPreferenceCookie(): string | null {
+            try {
+                if (typeof document === 'undefined' || !document.cookie) return null;
+                const prefix = `${COOKIE_NAME}=`;
+                const match = document.cookie
+                    .split(';')
+                    .map(c => c.trim())
+                    .find(c => c.startsWith(prefix));
+                return match ? decodeURIComponent(match.substring(prefix.length)) : null;
+            } catch {
+                return null;
+            }
         }
 
         private static shouldFollowSystem(): boolean {
@@ -370,6 +439,7 @@ namespace BitBlazorUI {
     Theme.init({
         system: document.documentElement.hasAttribute(ATTR_THEME_SYSTEM),
         persist: document.documentElement.hasAttribute(ATTR_THEME_PERSIST),
+        persistCookie: document.documentElement.hasAttribute(ATTR_THEME_PERSIST_COOKIE),
         theme: document.documentElement.getAttribute(ATTR_THEME),
         default: document.documentElement.getAttribute(ATTR_THEME_DEFAULT),
         darkTheme: document.documentElement.getAttribute(ATTR_THEME_DARK),

@@ -61,17 +61,26 @@ public static class BitThemeSerialization
 
     /// <summary>
     /// Replaces <see langword="null"/> branch objects on a deserialized <see cref="BitTheme"/> so the
-    /// graph matches a freshly-constructed <c>new BitTheme()</c>. Sparse JSON (the format produced
-    /// by <see cref="Serialize"/>) omits empty nested objects, and <see cref="JsonSerializer"/>
-    /// then leaves those branches null on the result; callers that walk the graph (the mapper,
-    /// merge, derivation helpers) rely on every branch being non-null.
+    /// graph matches a freshly-constructed <c>new BitTheme()</c>. Callers that walk the graph (the
+    /// mapper, merge, derivation helpers) rely on every branch being non-null.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// This is a safety net for <em>externally-authored</em> JSON. The sparse format produced by
+    /// <see cref="Serialize"/> never emits a branch as explicit <c>null</c> (null leaves are omitted
+    /// and empty objects are pruned), and <see cref="JsonSerializer"/> leaves <em>absent</em>
+    /// properties at their constructor-initialized <c>new()</c> values — so a framework round-trip
+    /// already yields a fully-populated graph. The case this guards is hand-written or third-party
+    /// JSON that contains an explicit <c>"color": null</c> (or similar), which the serializer would
+    /// otherwise honor by setting the branch to <see langword="null"/>.
+    /// </para>
+    /// <para>
     /// Previously this method walked the type via reflection. Reflection breaks under trimming /
     /// AOT (IL2070/IL2075/IL3050) unless the entire <see cref="BitTheme"/> graph is preserved by
     /// <c>[DynamicallyAccessedMembers]</c>, which is hard to keep correct as the model evolves.
     /// Walking the graph explicitly is verbose but trim-safe and removes the reflection
     /// suppression pragmas that previously hid genuine warnings.
+    /// </para>
     /// </remarks>
     private static void EnsureNestedObjects(BitTheme theme)
     {
@@ -112,11 +121,11 @@ public static class BitThemeSerialization
         typography.Subtitle2 ??= new BitThemeTypographyVariants();
         typography.Body1 ??= new BitThemeTypographyVariants();
         typography.Body2 ??= new BitThemeTypographyVariants();
-        typography.Button ??= new BitThemeTypographyVariants();
+        typography.Button ??= new BitThemeLabelTypographyVariants();
         typography.Caption1 ??= new BitThemeTypographyVariants();
         typography.Caption2 ??= new BitThemeTypographyVariants();
-        typography.Overline ??= new BitThemeTypographyVariants();
-        typography.Inherit ??= new BitThemeTypographyVariants();
+        typography.Overline ??= new BitThemeLabelTypographyVariants();
+        typography.Inherit ??= new BitThemeInheritTypographyVariants();
 
         // Layout branch.
         theme.Layout.Breakpoints ??= new BitThemeBreakpoints();

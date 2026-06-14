@@ -63,6 +63,51 @@ public sealed class BitThemeProviderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void WrapperIsLayoutNeutralByDefault()
+    {
+        var theme = new BitTheme();
+        theme.Color.Primary.Main = "#ABCDEF";
+
+        var component = RenderComponent<BitThemeProvider>(parameters =>
+        {
+            parameters.Add(p => p.Theme, theme);
+            parameters.Add(p => p.RootElement, "section");
+            parameters.AddChildContent<ThemeProbeConsumer>();
+        });
+
+        var style = component.Find("section").GetAttribute("style") ?? string.Empty;
+
+        // The wrapper must not introduce a layout box of its own; display:contents keeps it
+        // transparent to the surrounding layout while the CSS vars still cascade to descendants.
+        StringAssert.StartsWith(style, "display:contents", StringComparison.Ordinal);
+        Assert.IsTrue(style.Contains("--bit-clr-pri:#ABCDEF", StringComparison.Ordinal),
+            $"CSS vars must still be emitted after the layout-neutral display. Actual: {style}");
+    }
+
+    [TestMethod]
+    public void UserSuppliedDisplayOverridesLayoutNeutralDefault()
+    {
+        var theme = new BitTheme();
+        theme.Color.Primary.Main = "#ABCDEF";
+
+        var component = RenderComponent<BitThemeProvider>(parameters =>
+        {
+            parameters.Add(p => p.Theme, theme);
+            parameters.Add(p => p.RootElement, "section");
+            parameters.AddUnmatched("style", "display:flex;gap:8px");
+            parameters.AddChildContent<ThemeProbeConsumer>();
+        });
+
+        var style = component.Find("section").GetAttribute("style") ?? string.Empty;
+
+        // The user's style is appended last, so on the conflicting `display` property it wins
+        // (last declaration in an inline style block takes effect).
+        StringAssert.StartsWith(style, "display:contents", StringComparison.Ordinal);
+        StringAssert.EndsWith(style, "display:flex;gap:8px", StringComparison.Ordinal);
+        Assert.IsTrue(style.Contains("--bit-clr-pri:#ABCDEF", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void ReCascadesParentThemeWhenLocalThemeIsNull()
     {
         // Render <Outer Theme=parent> -> <Inner Theme=null> -> probe.
@@ -81,6 +126,79 @@ public sealed class BitThemeProviderTests : BunitTestContext
 
         var probe = component.Find("span");
         Assert.AreEqual(ParentPrimary, probe.GetAttribute("data-primary"));
+    }
+
+    [TestMethod]
+    public void InnerProviderWithoutThemeOrThemeNameAddsNoWrapperElement()
+    {
+        const string ParentPrimary = "#AABBCC";
+
+        var parent = new BitTheme();
+        parent.Color.Primary.Main = ParentPrimary;
+
+        var component = RenderComponent<BitThemeProviderTestHost>(parameters =>
+        {
+            parameters.Add(p => p.OuterTheme, parent);
+            parameters.Add(p => p.InnerTheme, null);
+        });
+
+        // The outer provider applies a Theme so it renders exactly one wrapper element. The inner
+        // provider (Theme null, no ThemeName) must NOT add a second wrapper — it relies on the
+        // ancestor's existing unnamed cascade — while the probe still resolves the parent theme.
+        Assert.AreEqual(1, component.FindAll("div").Count);
+        Assert.AreEqual(ParentPrimary, component.Find("span").GetAttribute("data-primary"));
+    }
+
+    [TestMethod]
+    public void UpdatesCascadeWhenThemeReferenceChanges()
+    {
+        var first = new BitTheme();
+        first.Color.Primary.Main = "#111111";
+
+        var component = RenderComponent<BitThemeProvider>(parameters =>
+        {
+            parameters.Add(p => p.Theme, first);
+            parameters.AddChildContent<ThemeProbeConsumer>();
+        });
+
+        Assert.AreEqual("#111111", component.Find("span").GetAttribute("data-primary"));
+
+        // Assigning a new BitTheme reference recomputes the cascade and propagates the new value
+        // to consumers (CascadingValue<BitTheme> change detection is reference-based).
+        var second = new BitTheme();
+        second.Color.Primary.Main = "#222222";
+        component.SetParametersAndRender(parameters => parameters.Add(p => p.Theme, second));
+
+        Assert.AreEqual("#222222", component.Find("span").GetAttribute("data-primary"));
+    }
+
+    [TestMethod]
+    public void InPlaceThemeMutationUpdatesInlineCssVariablesOnReRender()
+    {
+        var theme = new BitTheme();
+        theme.Color.Primary.Main = "#111111";
+
+        var component = RenderComponent<BitThemeProvider>(parameters =>
+        {
+            parameters.Add(p => p.Theme, theme);
+            parameters.Add(p => p.RootElement, "section");
+            parameters.AddChildContent<ThemeProbeConsumer>();
+        });
+
+        StringAssert.Contains(component.Find("section").GetAttribute("style"), "--bit-clr-pri:#111111");
+
+        // Mutating the held BitTheme instance in place is reflected in the emitted CSS variables on
+        // the next render: the provider rebuilds its inline style from the current token values
+        // every parameters update (it does not rely on the Theme reference changing).
+        theme.Color.Primary.Main = "#222222";
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Theme, theme);
+            parameters.Add(p => p.RootElement, "section");
+            parameters.AddChildContent<ThemeProbeConsumer>();
+        });
+
+        StringAssert.Contains(component.Find("section").GetAttribute("style"), "--bit-clr-pri:#222222");
     }
 
     [TestMethod]

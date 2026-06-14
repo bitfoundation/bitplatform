@@ -435,8 +435,53 @@ internal static class BitThemeMapper
         void addCssVar(string key, string? value)
         {
             if (string.IsNullOrWhiteSpace(value)) return;
-            result!.Add(key, value);
+            // Drop values that could break out of a single CSS declaration. Token values can come
+            // from untrusted sources (BitThemeSerialization is documented for storage / admin UIs /
+            // sharing brand tokens) and are emitted both into an inline `style` attribute
+            // (BitThemeProvider) and via element.style.setProperty (BitTheme.ts). Skipping mirrors
+            // the whitespace guard above: the element falls back to the stylesheet default.
+            if (IsUnsafeCssTokenValue(value!)) return;
+            result!.Add(key, value!);
         }
+    }
+
+    /// <summary>
+    /// Returns <see langword="true"/> when a CSS custom-property value contains characters that
+    /// could escape a single declaration and inject additional CSS.
+    /// </summary>
+    /// <remarks>
+    /// The primary sink is the inline <c>style</c> attribute produced by <see cref="BitThemeProvider"/>,
+    /// where the declarations are concatenated as <c>--name:value;--name:value</c>. A value
+    /// containing <c>;</c> would start a new declaration, <c>/*</c> would comment out the rest of the
+    /// inline style, and <c>{</c>/<c>}</c>/<c>&lt;</c>/<c>&gt;</c> are never valid inside a single
+    /// property value. These characters are not needed by any legitimate theme token (colors,
+    /// shadows, sizes, durations, easings, font-family lists — none of which use them), so rejecting
+    /// the whole value is safe and avoids partially-stripped, malformed output.
+    /// </remarks>
+    private static bool IsUnsafeCssTokenValue(string value)
+    {
+        foreach (var ch in value)
+        {
+            switch (ch)
+            {
+                case ';':   // ends the declaration in the inline-style concatenation
+                case '{':
+                case '}':   // CSS block delimiters
+                case '<':
+                case '>':   // HTML metacharacters / </style> breakout defense-in-depth
+                case '\\':  // CSS escape sequences
+                case '\0':
+                case '\n':
+                case '\r':
+                case '\f':  // null / newlines / form feed
+                    return true;
+            }
+        }
+
+        // Comment markers could swallow trailing declarations in the inline-style concatenation
+        // (e.g. "red/*" eating the following ";--next:..." up to a later "*/").
+        return value.Contains("/*", StringComparison.Ordinal)
+            || value.Contains("*/", StringComparison.Ordinal);
     }
 
     internal static BitTheme Merge(BitTheme bitTheme, BitTheme other)

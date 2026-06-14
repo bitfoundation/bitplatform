@@ -19,6 +19,14 @@ public static class BitThemeAttributeNames
     /// <summary>Marker attribute that opts the document into persisting the user's theme choice via <see cref="ThemeStorageKey"/>.</summary>
     public const string ThemePersist = "bit-theme-persist";
 
+    /// <summary>
+    /// Marker attribute that opts the client into mirroring the persisted preference into the
+    /// <see cref="BitThemeCookie.PreferenceCookieName"/> cookie, keeping server-side SSR
+    /// (<see cref="BitThemeSsr.BuildRootThemeAttributes(string?, string?)"/>) in sync with
+    /// client-side theme changes.
+    /// </summary>
+    public const string ThemePersistCookie = "bit-theme-persist-cookie";
+
     /// <summary>Resolved name to use when <see cref="ThemeSystem"/> is active and <c>prefers-color-scheme</c> is dark.</summary>
     public const string ThemeDark = "bit-theme-dark";
 

@@ -16,11 +16,11 @@ namespace Bit.BlazorUI.Tests.Utils.Theme;
 /// <remarks>
 /// <para>
 /// We pin the contract via the mapper's emitted CSS-variable surface rather than the underlying
-/// property graph. The model exposes a few properties the mapper deliberately doesn't emit
-/// (e.g. <c>Typography.H1.FontFamily</c> — typography font-family is a single root-level token);
-/// asserting on every model property would fail on those by design. Asserting on emitted vars
-/// gives us the contract that actually matters: every CSS variable that survives serialization
-/// of one theme must also survive serialization of the merge of that theme over an empty one.
+/// property graph. Asserting on emitted vars gives us the contract that actually matters: every
+/// CSS variable that survives serialization of one theme must also survive serialization of the
+/// merge of that theme over an empty one. (The model is now shaped so that every leaf property
+/// maps to a CSS variable — per-variant typography tokens that aren't wired to CSS, such as a
+/// per-heading <c>font-family</c>, are no longer exposed; see <see cref="BitThemeTypographyVariants"/>.)
 /// </para>
 /// <para>
 /// If this test fails, find the entry in <c>BitThemeMapper.MapToCssVariables</c> that emits the

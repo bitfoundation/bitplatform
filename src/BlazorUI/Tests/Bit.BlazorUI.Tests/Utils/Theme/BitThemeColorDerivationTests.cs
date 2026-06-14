@@ -32,23 +32,39 @@ public sealed class BitThemeColorDerivationTests
     }
 
     [TestMethod]
-    public void FillColorRoleFromMainInvalidHexDoesNotThrow()
+    public void FillColorRoleFromMainInvalidHexIsNoOp()
     {
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "not-a-color");
-        // BitInternalColor silently falls back to white when the format is unrecognised
-        // (its own catch resets R/G/B to 255 without rethrowing), so FillColorRoleFromMain's
-        // outer catch never fires and all variants are populated with white-derived values.
-        Assert.IsNotNull(v.Main,        "Main");
-        Assert.IsNotNull(v.Dark,        "Dark");
-        Assert.IsNotNull(v.Light,       "Light");
-        Assert.IsNotNull(v.Text,        "Text");
-        Assert.IsNotNull(v.MainHover,   "MainHover");
-        Assert.IsNotNull(v.MainActive,  "MainActive");
-        Assert.IsNotNull(v.DarkHover,   "DarkHover");
-        Assert.IsNotNull(v.DarkActive,  "DarkActive");
-        Assert.IsNotNull(v.LightHover,  "LightHover");
-        Assert.IsNotNull(v.LightActive, "LightActive");
+
+        // An unrecognized hex is now treated as "nothing to derive from" (a no-op), consistent
+        // with the null/empty guards and with BitThemeColorContrast's validation. The previous
+        // behavior fabricated an all-white palette, which masked the mistake and overrode
+        // stylesheet defaults; the variants must stay untouched instead.
+        Assert.IsNull(v.Main,        "Main");
+        Assert.IsNull(v.Dark,        "Dark");
+        Assert.IsNull(v.Light,       "Light");
+        Assert.IsNull(v.Text,        "Text");
+        Assert.IsNull(v.MainHover,   "MainHover");
+        Assert.IsNull(v.MainActive,  "MainActive");
+        Assert.IsNull(v.DarkHover,   "DarkHover");
+        Assert.IsNull(v.DarkActive,  "DarkActive");
+        Assert.IsNull(v.LightHover,  "LightHover");
+        Assert.IsNull(v.LightActive, "LightActive");
+    }
+
+    [TestMethod]
+    public void FillColorRoleFromMainShorthandHexExpandsLikeSixDigit()
+    {
+        // '#FFF' must be expanded to '#FFFFFF' (matching BitThemeColorContrast), not misparsed by
+        // the underlying 24-bit parser. The derived Main should equal the six-digit equivalent.
+        var shorthand = new BitThemeColorVariants();
+        var full = new BitThemeColorVariants();
+        BitThemeColorDerivation.FillColorRoleFromMain(shorthand, "#FFF");
+        BitThemeColorDerivation.FillColorRoleFromMain(full, "#FFFFFF");
+
+        Assert.IsNotNull(shorthand.Main);
+        Assert.AreEqual(full.Main, shorthand.Main);
     }
 
     // ── All slots populated ────────────────────────────────────────────────────

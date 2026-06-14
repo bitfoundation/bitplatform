@@ -16,7 +16,7 @@ public class BitThemeManager : IAsyncDisposable
     private readonly SemaphoreSlim _jsNotifierRegistrationLock = new(1, 1);
 
     private DotNetObjectReference<BitThemeJsNotifierReceiver>? _jsNotifierReference;
-    private bool _jsNotifierRegistered;
+    private volatile bool _jsNotifierRegistered;
     private bool _disposed;
 
     /// <summary>
@@ -50,12 +50,38 @@ public class BitThemeManager : IAsyncDisposable
 
     /// <summary>
     /// Sets the <c>bit-theme</c> attribute (use values from <see cref="BitThemePresets"/> or custom names matching your CSS).
+    /// The name is normalized to the canonical form (trimmed and lower-cased invariantly) before it
+    /// is written, so it matches the lowercase <c>:root[bit-theme=…]</c> selectors in the packaged
+    /// CSS and stays consistent with <see cref="BitThemeName"/>. A blank name is a no-op.
     /// Returns <see langword="null"/> when JS interop is unavailable (e.g. prerendering / disconnected circuit).
     /// </summary>
     public async ValueTask<string?> SetThemeAsync(string themeName)
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
-        return await _js.BitThemeSetTheme(themeName);
+        return await _js.BitThemeSetTheme(NormalizeThemeName(themeName));
+    }
+
+    /// <summary>
+    /// Sets the <c>bit-theme</c> attribute from a strongly-typed <see cref="BitThemeName"/>
+    /// (already normalized). Equivalent to passing <see cref="BitThemeName.Value"/> to
+    /// <see cref="SetThemeAsync(string)"/>.
+    /// </summary>
+    public ValueTask<string?> SetThemeAsync(BitThemeName themeName)
+    {
+        return SetThemeAsync(themeName.Value);
+    }
+
+    /// <summary>
+    /// Normalizes a theme name to the canonical form written onto the <c>bit-theme</c> attribute:
+    /// trimmed and lower-cased with the invariant culture, matching <see cref="BitThemeName"/> and
+    /// the lowercase CSS selectors. Blank input becomes <see cref="string.Empty"/>, which the client
+    /// script treats as a no-op (the current theme is kept).
+    /// </summary>
+    private static string NormalizeThemeName(string? themeName)
+    {
+        return string.IsNullOrWhiteSpace(themeName)
+            ? string.Empty
+            : themeName.Trim().ToLowerInvariant();
     }
 
     /// <summary>
@@ -95,6 +121,16 @@ public class BitThemeManager : IAsyncDisposable
         return await _js.BitThemeIsSystemDark();
     }
 
+    /// <summary>
+    /// Returns the persisted theme <em>preference</em> (the abstract stored key such as
+    /// <c>system</c>, <c>dark</c>, or <c>fluent-light</c>) read by the client script from
+    /// <c>localStorage</c> (or the preference cookie when cookie persistence is enabled). This can
+    /// legitimately differ from <see cref="GetCurrentThemeAsync"/>: while following the OS, the
+    /// stored preference stays <c>system</c> even though the applied <c>bit-theme</c> attribute
+    /// resolves to a concrete light/dark name. Returns <see langword="null"/> when persistence is
+    /// off, nothing has been stored yet, or JS interop is unavailable (e.g. prerendering /
+    /// disconnected circuit).
+    /// </summary>
     public async ValueTask<string?> GetCurrentPersistedThemeAsync()
     {
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);

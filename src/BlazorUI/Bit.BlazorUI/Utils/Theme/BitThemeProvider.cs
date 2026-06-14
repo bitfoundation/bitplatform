@@ -11,6 +11,12 @@ public sealed class BitThemeProvider : ComponentBase
     /// The element used for the root node. Ignored when no wrapping element is needed
     /// (i.e. when both <see cref="Theme"/> and <see cref="ParentTheme"/> are <see langword="null"/>).
     /// </summary>
+    /// <remarks>
+    /// When a wrapping element is rendered it defaults to <c>display:contents</c> so it produces no
+    /// layout box and stays transparent to the surrounding flex/grid layout, while still letting the
+    /// applied CSS custom properties inherit to descendants. Supply <c>style="display:…"</c> via the
+    /// splatted attributes to opt back into a real box (e.g. when you also set box-model styles on it).
+    /// </remarks>
     [Parameter] public string? RootElement { get; set; }
 
     /// <summary>
@@ -26,9 +32,12 @@ public sealed class BitThemeProvider : ComponentBase
 
     /// <summary>
     /// Catch-all for HTML attributes splatted onto the wrapping element (e.g. <c>class</c>, <c>id</c>,
-    /// <c>data-*</c>, ARIA roles). Only emitted when this provider renders a wrapping element —
-    /// when both <see cref="Theme"/> and <see cref="ParentTheme"/> are <see langword="null"/> the
-    /// provider renders just <see cref="ChildContent"/> and these attributes are ignored.
+    /// <c>data-*</c>, ARIA roles). Only emitted when this provider renders a wrapping element — that
+    /// is, when a local <see cref="Theme"/> is applied (its CSS variables need a host element), or
+    /// when a cascading <see cref="ParentTheme"/> is re-exposed under a custom <see cref="ThemeName"/>.
+    /// When there is nothing to apply at this layer (no local <see cref="Theme"/> and no
+    /// <see cref="ThemeName"/>) the provider renders just <see cref="ChildContent"/> and these
+    /// attributes are ignored.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
@@ -62,18 +71,27 @@ public sealed class BitThemeProvider : ComponentBase
 
         if (Theme is null)
         {
-            // Local theme not set but a ParentTheme is cascading from above. Re-cascade the
-            // parent so consumers below us still see it (the previous implementation broke
-            // the cascade when Theme was null and rendered ChildContent without the wrapper).
-            // No inline style to emit at this layer; the ancestor provider owns those CSS vars.
+            // Local theme not set, but a ParentTheme is cascading from above. Keep it as the value
+            // we would re-expose, and emit no inline style at this layer (the ancestor provider owns
+            // those CSS vars). BuildRenderTree only renders a wrapper + CascadingValue when a custom
+            // ThemeName needs the value re-exposed under that name; otherwise it renders ChildContent
+            // directly and relies on the ancestor's existing unnamed cascade, avoiding a redundant
+            // wrapper element and duplicate CascadingValue.
             _cachedMergedTheme = ParentTheme;
             _cachedCssVarStyle = null;
             return;
         }
 
-        var mergedTheme = ParentTheme is null
-            ? Theme
-            : BitThemeMapper.Merge(Theme, ParentTheme);
+        // Always produce a FRESH merged BitTheme (BitThemeMapper.Merge allocates a new instance),
+        // even when there is no ParentTheme. This keeps the CascadingValue<BitTheme?> change-detection
+        // behavior consistent: previously the no-parent path cascaded the caller's own Theme instance,
+        // so an in-place mutation of that instance produced the same reference and CascadingValue
+        // (which compares reference types with ReferenceEquals) never notified [CascadingParameter]
+        // consumers — whereas the with-parent path always allocated a new reference and did notify.
+        // Going through Merge in both cases means a token change yields a new reference (consumers are
+        // notified), while the CSS-string equality suppression below preserves the cached reference
+        // when nothing actually changed (consumers are not woken up needlessly).
+        var mergedTheme = BitThemeMapper.Merge(Theme, ParentTheme ?? new BitTheme());
 
         var cssVarStyle = BuildCssVarStyle(mergedTheme);
 
@@ -94,6 +112,17 @@ public sealed class BitThemeProvider : ComponentBase
         if (_cachedMergedTheme is null)
         {
             // No local Theme override and no parent theme to re-cascade: render ChildContent as-is.
+            builder.AddContent(0, ChildContent);
+            return;
+        }
+
+        if (_cachedCssVarStyle is null && ThemeName is null)
+        {
+            // Nothing to apply at this layer: no CSS variables to emit (Theme is null — only a
+            // ParentTheme is cascading from above) and no custom ThemeName to re-expose the value
+            // under. The ancestor's unnamed CascadingValue<BitTheme> already reaches our
+            // descendants, so rendering ChildContent directly preserves the cascade while avoiding
+            // a redundant wrapper element and a duplicate CascadingValue.
             builder.AddContent(0, ChildContent);
             return;
         }
@@ -119,20 +148,24 @@ public sealed class BitThemeProvider : ComponentBase
             }
         }
 
-        // Compose the inline style. CSS-variable declarations come first so the user-supplied
-        // style wins on conflicting properties (typical "splat overrides component defaults").
-        // When Theme is null but ParentTheme is non-null we have no CSS vars to emit, but a user
-        // style still needs to make it onto the element.
-        var style = _cachedCssVarStyle is null
-            ? userStyle
-            : userStyle is null
-                ? _cachedCssVarStyle
-                : $"{_cachedCssVarStyle};{userStyle}";
-
-        if (style is not null)
+        // Compose the inline style. The wrapper defaults to `display:contents` so it produces no
+        // layout box of its own: the element must exist for CSS custom properties to inherit to
+        // descendants (inheritance follows the DOM tree, not the box tree), but it should not
+        // perturb the surrounding flex/grid layout or child selectors the way a default `div`
+        // block box would. The CSS-variable declarations come next, and the user-supplied style
+        // comes last so a caller can override both the layout mode (e.g. `style="display:flex"`)
+        // and any individual token on conflict.
+        var style = "display:contents";
+        if (_cachedCssVarStyle is not null)
         {
-            builder.AddAttribute(3, "style", style);
+            style = $"{style};{_cachedCssVarStyle}";
         }
+        if (userStyle is not null)
+        {
+            style = $"{style};{userStyle}";
+        }
+
+        builder.AddAttribute(3, "style", style);
 
         builder.OpenComponent<CascadingValue<BitTheme?>>(4);
         if (ThemeName is not null)

@@ -22,32 +22,48 @@ public static partial class BitThemeColorContrast
         ArgumentException.ThrowIfNullOrWhiteSpace(foregroundHex);
         ArgumentException.ThrowIfNullOrWhiteSpace(backgroundHex);
 
-        var fgTrimmed = foregroundHex.Trim();
-        var bgTrimmed = backgroundHex.Trim();
-
-        if (HexColorRegex().IsMatch(fgTrimmed) is false)
+        if (TryNormalizeHex(foregroundHex, out var fgHex) is false)
         {
             throw new ArgumentException(
                 $"'{foregroundHex}' is not a valid hex color. Expected '#RGB' or '#RRGGBB'.",
                 nameof(foregroundHex));
         }
 
-        if (HexColorRegex().IsMatch(bgTrimmed) is false)
+        if (TryNormalizeHex(backgroundHex, out var bgHex) is false)
         {
             throw new ArgumentException(
                 $"'{backgroundHex}' is not a valid hex color. Expected '#RGB' or '#RRGGBB'.",
                 nameof(backgroundHex));
         }
 
-        // BitInternalColor parses hex strings as 24-bit '#RRGGBB', so a shorthand like '#FFF'
-        // would be read as '#000FFF' instead of white. Expand 3-digit values to 6 digits first.
-        var fg = new BitInternalColor(ExpandShorthandHex(fgTrimmed));
-        var bg = new BitInternalColor(ExpandShorthandHex(bgTrimmed));
+        var fg = new BitInternalColor(fgHex);
+        var bg = new BitInternalColor(bgHex);
         var l1 = RelativeLuminance(fg.R, fg.G, fg.B);
         var l2 = RelativeLuminance(bg.R, bg.G, bg.B);
         var lighter = Math.Max(l1, l2);
         var darker = Math.Min(l1, l2);
         return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    /// <summary>
+    /// Trims, validates (<c>#RGB</c> or <c>#RRGGBB</c>), and expands the input to its canonical
+    /// 6-digit <c>#RRGGBB</c> form. Returns <see langword="false"/> for null, blank, or invalid
+    /// input. Shared with <see cref="BitThemeColorDerivation"/> so both helpers agree on what a
+    /// valid color is (and both expand shorthand the same way before handing it to the parser).
+    /// </summary>
+    internal static bool TryNormalizeHex(string? value, out string sixDigitHex)
+    {
+        sixDigitHex = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(value)) return false;
+
+        var trimmed = value.Trim();
+        if (HexColorRegex().IsMatch(trimmed) is false) return false;
+
+        // BitInternalColor parses hex as 24-bit '#RRGGBB', so '#FFF' would otherwise be read as
+        // '#000FFF'. Expand to 6 digits first.
+        sixDigitHex = ExpandShorthandHex(trimmed);
+        return true;
     }
 
     /// <summary>Returns true when <paramref name="contrastRatio"/> meets WCAG AA for normal text (≥ 4.5:1).</summary>
