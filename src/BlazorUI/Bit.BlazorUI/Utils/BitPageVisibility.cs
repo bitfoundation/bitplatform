@@ -49,7 +49,15 @@ public class BitPageVisibility(IJSRuntime js) : IDisposable
 
     public void Dispose()
     {
+        if (_isInitialized)
+        {
+            _isInitialized = false;
+
+            // Tears down the global visibilitychange listener and resets the JS-side init guard,
+            // so the now-disposed _dotnetObj is no longer referenced and a future instance can re-init.
+            _ = js.InvokeVoid("BitBlazorUI.PageVisibility.dispose");
+        }
+
         _dotnetObj?.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

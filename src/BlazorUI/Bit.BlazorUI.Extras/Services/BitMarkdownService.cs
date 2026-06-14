@@ -80,7 +80,7 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
                 await js.BitExtrasInitScripts([MARKED_FILE]);
             }
 
-            html = await js.BitMarkdownViewerParse(markdown!, jsMiddleware);
+            html = await js.BitMarkdownViewerParse(markdown!, jsMiddleware) ?? string.Empty;
         }
 
         if (csMiddleware is not null)

@@ -452,7 +452,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             }
             else
             {
-                CurrentValue = await _js.BitUtilsGetProperty(InputElement, "value");
+                CurrentValue = await _js.BitUtilsGetProperty(InputElement, "value") ?? string.Empty;
 
                 await CloseCallout();
 

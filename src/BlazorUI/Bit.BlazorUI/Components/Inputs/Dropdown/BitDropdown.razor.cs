@@ -1494,7 +1494,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
         else if (eventArgs.Key == "Enter")
         {
-            _searchText = await _js.BitUtilsGetProperty(_isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef, "value");
+            _searchText = await _js.BitUtilsGetProperty(_isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef, "value") ?? string.Empty;
 
             await AddDynamicItem();
 

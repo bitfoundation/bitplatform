@@ -1,13 +1,12 @@
 ﻿using System.Reflection;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using static Bit.BlazorUI.JsInteropConstants;
 
 namespace Bit.BlazorUI;
 
 public static class IJSRuntimeExtensions
 {
-    public const DynamicallyAccessedMemberTypes JsonSerialized = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties;
-
 
 
     /// <summary>
@@ -99,7 +98,10 @@ public static class IJSRuntimeExtensions
     [SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "Reflection here only reads a well-known bool property (RemoteJSRuntime.IsInitialized) and a private field (WebViewJSRuntime._ipcSender) by name for host-runtime detection; no members are dynamically invoked or instantiated, and a missing member is handled by treating the runtime as valid, so trimming cannot break this probe.")]
     public static bool IsRuntimeInvalid(this IJSRuntime jsRuntime)
     {
-        if (jsRuntime is null) return false;
+        // A null runtime can't service interop, so report it as invalid. This lets the no-op paths in
+        // InvokeVoid/Invoke/FastInvoke skip the call instead of dereferencing null (the async fallback
+        // would otherwise throw ArgumentNullException from the framework's JSRuntimeExtensions).
+        if (jsRuntime is null) return true;
 
         var type = jsRuntime.GetType();
 
