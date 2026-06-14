@@ -2,9 +2,6 @@
 
 public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
-    [Parameter, CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
-
-
     [AutoInject] protected IJSRuntime JSRuntime = default!;
 
     [AutoInject] protected HttpClient HttpClient = default!;

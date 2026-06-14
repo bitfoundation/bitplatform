@@ -52,10 +52,10 @@ public static class Services
             .WithToolsFromAssembly();
 
         services.AddScoped<HtmlRenderer>();
-        services.AddCascadingValue(nameof(AppComponentBase.RenderForMcpClient), sp =>
+        services.AddCascadingValue("RenderForMcpClient", sp =>
         {
             var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-            return httpContext?.Items?.ContainsKey(nameof(AppComponentBase.RenderForMcpClient)) is true
+            return httpContext?.Items?.ContainsKey("RenderForMcpClient") is true
                 || httpContext?.Request?.Query?.ContainsKey("showallcodes") is true;
         });
 
