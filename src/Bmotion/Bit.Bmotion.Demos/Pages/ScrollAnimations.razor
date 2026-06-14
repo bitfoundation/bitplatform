@@ -19,6 +19,8 @@
         progress. Use the progress value to drive animations via <c>MotionValue</c>.
         The progress bar above stays pinned to the top while you scroll.
     </p>
+
+    <CodeSnippet Code="@_scrollTrackCode" />
 </div>
 
 <div class="demo-section">
@@ -41,6 +43,8 @@
             Section @(idx + 1)
         </Motion>
     }
+
+    <CodeSnippet Code="@_inViewCode" />
 </div>
 
 @code {
@@ -61,4 +65,34 @@
     }
 
     public async ValueTask DisposeAsync() => await Scroll.DisposeAsync();
+
+    private const string _scrollTrackCode = """
+        @inject ScrollTracker Scroll
+        @implements IAsyncDisposable
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                await Scroll.ObserveAsync(null, info =>
+                {
+                    _progressX = info.ProgressX;
+                    _progressY = info.ProgressY;
+                    InvokeAsync(StateHasChanged);
+                });
+            }
+        }
+
+        public async ValueTask DisposeAsync() => await Scroll.DisposeAsync();
+        """;
+
+    private const string _inViewCode = """
+        <Motion Tag="div"
+                Initial="@(new AnimationProps { Opacity = 0, X = idx % 2 == 0 ? -60 : 60 })"
+                WhileInView="@(new AnimationProps { Opacity = 1, X = 0 })"
+                Transition="@(new TransitionConfig { Duration = 0.5, Ease = Easing.BackOut })"
+                Once="true">
+            Section @(idx + 1)
+        </Motion>
+        """;
 }

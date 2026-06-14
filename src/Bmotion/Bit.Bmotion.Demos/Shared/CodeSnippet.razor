@@ -1,0 +1,22 @@
+@* CodeSnippet renders a toggle button that shows / hides the source code of a sample. *@
+
+<div class="code-snippet">
+    <button type="button" class="code-toggle" @onclick="Toggle" aria-expanded="@_show.ToString().ToLowerInvariant()">
+        <span class="code-toggle-icon">@(_show ? "▾" : "▸")</span>
+        @(_show ? "Hide code" : "Show code")
+    </button>
+
+    @if (_show)
+    {
+        <pre class="code-block"><code>@Code.Trim('\n')</code></pre>
+    }
+</div>
+
+@code {
+    /// <summary>The source snippet to display for the sample.</summary>
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    private bool _show;
+
+    private void Toggle() => _show = !_show;
+}

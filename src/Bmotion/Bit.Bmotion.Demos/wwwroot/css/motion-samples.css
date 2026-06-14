@@ -132,6 +132,44 @@ body {
     white-space: pre;
 }
 
+/* ── Code snippet toggle ───────────────────────────────────────────────────── */
+
+.code-snippet {
+    margin-top: 1rem;
+}
+.code-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 6px;
+    color: var(--bm-muted);
+    font-size: .8rem;
+    font-weight: 600;
+    padding: .4rem .8rem;
+    cursor: pointer;
+    transition: color .2s, border-color .2s, background .2s;
+}
+.code-toggle:hover {
+    color: #fff;
+    border-color: var(--bm-primary);
+    background: rgba(108,71,255,.12);
+}
+.code-toggle-icon {
+    font-size: .7rem;
+    line-height: 1;
+}
+.code-snippet .code-block {
+    margin-top: .75rem;
+}
+.code-snippet .code-block code {
+    color: inherit;
+    background: none;
+    font-family: inherit;
+    font-size: inherit;
+}
+
 /* ── Page hero ─────────────────────────────────────────────────────────────── */
 
 .page-hero {

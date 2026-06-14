@@ -32,6 +32,8 @@
     <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible = !_visible)">
         @(_visible ? "Hide" : "Show") list
     </button>
+
+    <CodeSnippet Code="@_variantsCode" />
 </div>
 
 <div class="demo-section">
@@ -61,6 +63,8 @@
     <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible2 = !_visible2)">
         @(_visible2 ? "Hide" : "Show") boxes
     </button>
+
+    <CodeSnippet Code="@_orchestrationCode" />
 </div>
 
 @code {
@@ -80,4 +84,39 @@
         ("hidden",  new AnimationProps { Opacity = 0, X = -30 }),
         ("visible", new AnimationProps { Opacity = 1, X = 0  })
     );
+
+    private const string _variantsCode = """
+        <Motion Tag="ul"
+                Variants="_containerVariants"
+                Initial="@_hidden"
+                Animate="@(_visible ? _visible_ : _hidden)"
+                Transition="@(new TransitionConfig { StaggerChildren = 0.08 })">
+            @for (int i = 0; i < 5; i++)
+            {
+                <Motion Tag="li" Variants="_itemVariants">Item @(i + 1)</Motion>
+            }
+        </Motion>
+
+        // Variants:
+        var _containerVariants = MotionVariants.Create(
+            ("hidden",  new AnimationProps { Opacity = 0 }),
+            ("visible", new AnimationProps { Opacity = 1 }));
+
+        var _itemVariants = MotionVariants.Create(
+            ("hidden",  new AnimationProps { Opacity = 0, X = -30 }),
+            ("visible", new AnimationProps { Opacity = 1, X = 0  }));
+        """;
+
+    private const string _orchestrationCode = """
+        <Motion Tag="div"
+                Variants="_containerVariants"
+                Initial="@_hidden"
+                Animate="@(_visible2 ? _visible_ : _hidden)"
+                Transition="@(new TransitionConfig { StaggerChildren = 0.12, DelayChildren = 0.2 })">
+            @for (int i = 0; i < 4; i++)
+            {
+                <Motion Tag="div" Class="box box-sm" Variants="_itemVariants" />
+            }
+        </Motion>
+        """;
 }

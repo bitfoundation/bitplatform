@@ -37,6 +37,8 @@
                     WhileDrag="@(new AnimationProps { Scale = 1.15 })" />
         </div>
     </div>
+
+    <CodeSnippet Code="@_dragCode" />
 </div>
 
 <div class="demo-section">
@@ -55,6 +57,8 @@
             </div>
         </div>
     </div>
+
+    <CodeSnippet Code="@_dragEventsCode" />
 </div>
 
 @code {
@@ -62,4 +66,39 @@
 
     void HandleDrag()  => _dragInfo = "Dragging…";
     void HandleDragEnd() => _dragInfo = "Released";
+
+    private const string _dragCode = """
+        <Motion Tag="div"
+                Class="box"
+                Style="cursor:grab;"
+                Animate="@(new AnimationProps { Scale = 1 })"
+                WhileDrag="@(new AnimationProps { Scale = 1.1, BoxShadow = "0 15px 35px rgba(0,0,0,.5)" })"
+                WhileHover="@(new AnimationProps { Scale = 1.05 })"
+                Drag="true"
+                DragOptions="@(new DragOptions { Elastic = 0.5, Momentum = true })"
+                Transition="@TransitionConfig.Spring(stiffness:200, damping:20)" />
+
+        <Motion Tag="div"
+                Class="box box-sm"
+                Drag="true"
+                DragOptions="@(new DragOptions
+                {
+                    Axis        = DragAxis.X,
+                    Constraints = DragConstraints.Horizontal(-120, 120),
+                    Elastic     = 0.3
+                })"
+                WhileDrag="@(new AnimationProps { Scale = 1.15 })" />
+        """;
+
+    private const string _dragEventsCode = """
+        <Motion Tag="div"
+                Class="box box-sm"
+                Style="cursor:grab"
+                Drag="true"
+                OnDrag="@HandleDrag"
+                OnDragEnd="@HandleDragEnd" />
+
+        void HandleDrag()    => _dragInfo = "Dragging…";
+        void HandleDragEnd() => _dragInfo = "Released";
+        """;
 }

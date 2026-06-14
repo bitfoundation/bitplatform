@@ -23,6 +23,8 @@
     <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _on = !_on)">
         Animate
     </button>
+
+    <CodeSnippet Code="@_springCode" />
 </div>
 
 <div class="demo-section">
@@ -39,6 +41,8 @@
         </div>
     </div>
     <button class="btn-bm" style="margin-top:1rem" @onclick="Remount">Re-mount</button>
+
+    <CodeSnippet Code="@_bouncyCode" />
 </div>
 
 <div class="demo-section">
@@ -84,6 +88,8 @@
     <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _repeat = !_repeat)">
         @(_repeat ? "Reset" : "Start repeating")
     </button>
+
+    <CodeSnippet Code="@_repeatCode" />
 </div>
 
 @code {
@@ -102,4 +108,56 @@
     ];
 
     void Remount() => _mountKey++;
+
+    private const string _springCode = """
+        @foreach (var cfg in _springs)
+        {
+            <Motion Tag="div"
+                    Class="box box-sm"
+                    Animate="@(_on ? new AnimationProps { X = 80 } : new AnimationProps { X = 0 })"
+                    Transition="@cfg.Config" />
+        }
+
+        // _springs:
+        TransitionConfig.Spring(400, 40)  // Stiff 400 / Damp 40
+        TransitionConfig.Spring(100, 10)  // Stiff 100 / Damp 10
+        TransitionConfig.Spring(50,  5)   // Stiff 50  / Damp 5
+        TransitionConfig.Spring(300, 70)  // Stiff 300 / Damp 70
+        """;
+
+    private const string _bouncyCode = """
+        <Motion Tag="div"
+                Class="box"
+                Initial="@(new AnimationProps { Scale = 0, Rotate = -180 })"
+                Animate="@(new AnimationProps { Scale = 1, Rotate = 0 })"
+                Transition="@TransitionConfig.Spring(stiffness:260, damping:12)"
+                @key="@_mountKey" />
+        """;
+
+    private const string _repeatCode = """
+        <Motion Tag="div"
+                Class="box box-sm"
+                Animate="@(_repeat ? new AnimationProps { X = 90 } : new AnimationProps { X = 0 })"
+                Transition="@(new TransitionConfig
+                {
+                    Type = TransitionType.Spring,
+                    Stiffness = 200,
+                    Damping = 12,
+                    Repeat = int.MaxValue,
+                    RepeatType = RepeatType.Mirror,
+                })" />
+
+        <Motion Tag="div"
+                Class="box box-sm"
+                Animate="@(_repeat ? new AnimationProps { Y = 60 } : new AnimationProps { Y = 0 })"
+                Transition="@(new TransitionConfig
+                {
+                    Type = TransitionType.Spring,
+                    Stiffness = 300,
+                    Damping = 18,
+                    Repeat = 3,
+                    RepeatType = RepeatType.Loop,
+                    RepeatDelay = 0.3,
+                })" />
+        """;
 }

@@ -46,6 +46,8 @@
                     })" />
         </div>
     </div>
+
+    <CodeSnippet Code="@_keyframesCode" />
 </div>
 
 <div class="demo-section">
@@ -70,5 +72,62 @@
                     })" />
         </div>
     </div>
+
+    <CodeSnippet Code="@_colorKeyframesCode" />
 </div>
+
+@code {
+    private const string _keyframesCode = """
+        <Motion Tag="div"
+                Class="box"
+                Animate="@(new AnimationProps
+                {
+                    Keyframes = new() {
+                        ["scale"]  = new double[] { 1, 1.3, 0.8, 1.1, 1 },
+                        ["rotate"] = new double[] { 0, 15, -10, 5, 0 }
+                    }
+                })"
+                Transition="@(new TransitionConfig
+                {
+                    Duration   = 1.2,
+                    Ease       = Easing.EaseInOut,
+                    Repeat     = int.MaxValue,
+                    RepeatType = RepeatType.Mirror
+                })" />
+
+        <Motion Tag="div"
+                Class="box"
+                Animate="@(new AnimationProps
+                {
+                    Keyframes = new() {
+                        ["x"] = new double[] { 0, 100, 60, 120, 0 }
+                    }
+                })"
+                Transition="@(new TransitionConfig
+                {
+                    Duration   = 2,
+                    Times      = new[] { 0.0, 0.2, 0.5, 0.8, 1.0 },
+                    Ease       = Easing.EaseInOut,
+                    Repeat     = int.MaxValue
+                })" />
+        """;
+
+    private const string _colorKeyframesCode = """
+        <Motion Tag="div"
+                Class="box"
+                Style="width:120px;height:120px;border-radius:50%;background-image:none;"
+                Animate="@(new AnimationProps
+                {
+                    Keyframes = new() {
+                        ["backgroundColor"] = new string[] { "#6c47ff", "#ff4785", "#00c3ff", "#6c47ff" }
+                    }
+                })"
+                Transition="@(new TransitionConfig
+                {
+                    Duration  = 3,
+                    Repeat    = int.MaxValue,
+                    Ease      = Easing.Linear
+                })" />
+        """;
+}
 

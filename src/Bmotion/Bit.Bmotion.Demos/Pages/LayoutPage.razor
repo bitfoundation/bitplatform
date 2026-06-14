@@ -28,6 +28,8 @@
         <button class="btn-bm" @onclick="Shuffle">Shuffle</button>
         <button class="btn-bm" @onclick="ToggleLayout">Toggle justify (@_justifyContent)</button>
     </div>
+
+    <CodeSnippet Code="@_layoutCode" />
 </div>
 
 @code {
@@ -51,4 +53,19 @@
         "center"     => "flex-end",
         _            => "flex-start"
     };
+
+    private const string _layoutCode = """
+        <div style="@($"display:flex;gap:.75rem;flex-wrap:wrap;justify-content:{_justifyContent};")">
+            @foreach (var item in _items)
+            {
+                <Motion Tag="div"
+                        @key="@item.Label"
+                        Style="@($"width:60px;height:60px;border-radius:8px;background:{item.Color};")"
+                        Layout="true"
+                        Transition="@TransitionConfig.Spring(stiffness:500, damping:35)">
+                    @item.Label
+                </Motion>
+            }
+        </div>
+        """;
 }

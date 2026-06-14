@@ -24,6 +24,8 @@
     <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible = !_visible)">
         @(_visible ? "Remove" : "Add")
     </button>
+
+    <CodeSnippet Code="@_presenceCode" />
 </div>
 
 <div class="demo-section">
@@ -51,6 +53,8 @@
     </div>
 
     <button class="btn-bm" style="margin-top:1rem" @onclick="AddItem">Add item</button>
+
+    <CodeSnippet Code="@_listCode" />
 </div>
 
 @code {
@@ -62,4 +66,31 @@
 
     void AddItem() => _items.Add(new(_nextId++, $"Item {_nextId - 1}"));
     void RemoveItem(int id) => _items.RemoveAll(i => i.Id == id);
+
+    private const string _presenceCode = """
+        <AnimatePresence IsPresent="@_visible">
+            <Motion Tag="div"
+                    Class="box"
+                    Initial="@(new AnimationProps { Opacity = 0, Y = 40, Scale = 0.8 })"
+                    Animate="@(new AnimationProps { Opacity = 1, Y = 0,  Scale = 1   })"
+                    Exit="@(new AnimationProps    { Opacity = 0, Y = -40, Scale = 0.8 })"
+                    Transition="@TransitionConfig.Spring(stiffness:220, damping:18)" />
+        </AnimatePresence>
+        """;
+
+    private const string _listCode = """
+        @foreach (var item in _items)
+        {
+            <AnimatePresence IsPresent="true" @key="item.Id">
+                <Motion Tag="div"
+                        Initial="@(new AnimationProps { Opacity = 0, X = -30 })"
+                        Animate="@(new AnimationProps { Opacity = 1, X = 0   })"
+                        Exit="@(new AnimationProps    { Opacity = 0, X = 30  })"
+                        Transition="@TransitionConfig.Spring(stiffness:300, damping:25)">
+                    <span>@item.Label</span>
+                    <button @onclick="@(() => RemoveItem(item.Id))">✕</button>
+                </Motion>
+            </AnimatePresence>
+        }
+        """;
 }
