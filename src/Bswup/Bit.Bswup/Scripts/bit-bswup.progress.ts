@@ -1,6 +1,13 @@
 ﻿window['bit-bswup.progress version'] = '10.4.5';
 
+// Default progress/splash UI for Bswup. This script registers the global
+// `bitBswupHandler` that bit-bswup.ts calls with every BswupMessage, and drives the
+// built-in splash markup (progress bar, percentage, asset log, reload/retry buttons,
+// error panel) rendered by BswupProgress.razor. Apps can layer their own behavior by
+// passing a custom `handler` name, which is invoked after the built-in handling.
 (function () {
+    // Live config overrides applied via BitBswupProgress.config(); each value, when set,
+    // takes precedence over the corresponding argument passed to start().
     const _config: IBswupProgressConfigs = {};
 
     (window as any).BitBswupProgress = {
@@ -8,6 +15,16 @@
         config
     };
 
+    // Initializes the splash UI and installs the message handler. Called once from the
+    // generated startup markup with the app's display preferences:
+    //   autoReload            - reload automatically when an update finishes, instead of
+    //                           showing a manual reload button
+    //   showLogs              - console.log lifecycle messages
+    //   showAssets            - list each downloaded asset in the UI
+    //   appContainerSelector  - element whose visibility is toggled while installing
+    //   hideApp               - hide the app element during download
+    //   autoHide              - hide the splash automatically when the download finishes
+    //   handler               - optional name of a user handler invoked after the built-in one
     function start(autoReload: boolean,
         showLogs: boolean,
         showAssets: boolean,
@@ -32,6 +49,9 @@
         (window as any).bitBswupHandler = bitBswupHandler;
         const handlerFn = (handler ? window[handler] : undefined) as (message: any, data: any) => void;
 
+        // The global handler bit-bswup.ts invokes for every lifecycle message. It runs the
+        // built-in UI handling first, then forwards to the optional user handler (errors in
+        // the user handler are caught so they can't break the splash).
         function bitBswupHandler(message: string, data: any) {
             handleInternal(message, data);
 
@@ -112,6 +132,15 @@
                         // (manifest validation failures fire before any progress message).
                         hideApp_ && appEl && (appEl.style.display = 'none');
                         bswupEl && (bswupEl.style.display = 'block');
+
+                        // A failed install supersedes any earlier "update ready" prompt. Leaving
+                        // the reload button visible would invite the user to activate an update
+                        // that has already failed, promoting a broken worker / caches. Hide and
+                        // unwire it so the only actionable control is the (conditional) Retry.
+                        if (reloadButton) {
+                            reloadButton.style.display = 'none';
+                            reloadButton.onclick = null;
+                        }
 
                         // The error supersedes any in-flight progress. Hide the bar and the
                         // percentage so a stale partial value (e.g. "47%") isn't left sitting

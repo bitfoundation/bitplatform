@@ -115,7 +115,12 @@ private List<BitCalendarEvent> calendarEvents =
                OnClick=""() => { validationModel = new(); SuccessMessage=string.Empty; }"">
         Reset
     </BitButton>
-</EditForm>";
+</EditForm>
+
+@if (string.IsNullOrEmpty(SuccessMessage) is false)
+{
+    <BitMessage Color=""BitColor.Success"">@SuccessMessage</BitMessage>
+}";
     private readonly string example11CsharpCode = @"
 public class BitCalendarValidationModel
 {
@@ -126,8 +131,18 @@ public class BitCalendarValidationModel
 private string SuccessMessage = string.Empty;
 private BitCalendarValidationModel validationModel = new();
 
-private void HandleValidSubmit() { }
-private void HandleInvalidSubmit() { }";
+private async Task HandleValidSubmit()
+{
+    SuccessMessage = ""Form was submitted successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}";
 
     private readonly string example12RazorCode = @"
 <style>

@@ -12,32 +12,40 @@
 interface WorkerGlobalScope {
     clients: Clients
     skipWaiting(): Promise<void>
+    importScripts: any
+    assetsManifest: any           // injected by service-worker-assets.js (version + asset list)
 
-    assetsManifest: any
-    assetsInclude: any
-    assetsExclude: any
-    externalAssets: any
-    defaultUrl: any
-    assetsUrl: any
-    prohibitedUrls: any
-    caseInsensitiveUrl: any
-    serverHandledUrls: any
-    serverRenderedUrls: any
-    noPrerenderQuery: any
-    ignoreDefaultInclude: any
-    ignoreDefaultExclude: any
-    isPassive: any
-    enableIntegrityCheck: any
-    errorTolerance: any
-    maxRetries: any
-    retryDelay: any
-    enableDiagnostics: any
-    enableFetchDiagnostics: any
-    disableHashlessAssetsUpdate: any
-    forcePrerender: any
-    enableCacheControl: any
-    cacheVersion: any
-    mode: any
+    assetsInclude: any            // extra RegExp(s) of asset URLs to precache
+    assetsExclude: any            // RegExp(s) of asset URLs to skip
+    externalAssets: any           // additional (often cross-origin) assets to cache
+    defaultUrl: any               // document served for navigation requests (SPA fallback)
+    assetsUrl: any                // path to service-worker-assets.js (default '/service-worker-assets.js')
+    prohibitedUrls: any           // RegExp(s) that must always be answered with 403
+    caseInsensitiveUrl: any       // match asset URLs case-insensitively
+    serverHandledUrls: any        // RegExp(s) bypassed straight to the network (server owns them)
+    serverRenderedUrls: any       // RegExp(s) of navigations that must NOT get the SPA fallback
+    noPrerenderQuery: any         // query appended to defaultUrl to request the non-prerendered doc
+    ignoreDefaultInclude: any     // drop the built-in DEFAULT_ASSETS_INCLUDE list
+    ignoreDefaultExclude: any     // drop the built-in DEFAULT_ASSETS_EXCLUDE list
+    isPassive: any                // passive: don't precache on install, fill cache lazily on fetch
+    enableIntegrityCheck: any     // attach SRI `integrity` to asset requests from the manifest hash
+    errorTolerance: any           // 'strict' (fail install on any error) | 'lax' (best-effort)
+    maxRetries: any               // extra download attempts after the first on transient failure
+    retryDelay: any               // base backoff (ms) between retries
+    enableDiagnostics: any        // verbose console grouping/logging of install/activate
+    enableFetchDiagnostics: any   // verbose console logging on every fetch (noisy)
+    disableHashlessAssetsUpdate: any // don't re-download cached assets that have no hash
+    forcePrerender: any           // always hit the network for the default doc (server prerender)
+    enableCacheControl: any       // add no-store/no-cache to asset requests (bypass HTTP cache)
+    cacheVersion: any             // override the version used in the cache bucket name
+    mode: any                     // preset bundle of the above (see the switch below)
+}
+
+// Minimal shape of the ExtendableEvent / FetchEvent surface we use. Declared locally so the
+// install/activate/fetch handlers can call waitUntil()/respondWith() without DOM lib types.
+interface Event {
+    waitUntil: any
+    respondWith: any
 }
 
 diagGroup('bit-bswup');
@@ -95,6 +103,12 @@ const CACHE_NAME_PREFIX = 'bit-bswup';
 const CACHE_VERSION = (typeof self.cacheVersion === 'string' && self.cacheVersion) || VERSION;
 const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${CACHE_VERSION}`;
 
+let integrityFailureCount = 0;
+
+// Named presets that expand into a coherent bundle of the individual self.* settings, so an
+// app can pick a caching strategy with a single `mode` value instead of wiring each flag.
+// The comment beside each case names a representative app using that strategy. Every preset
+// uses ||= so any value the app set explicitly still wins over the preset default.
 switch (self.mode) {
     // NoPrerender (e.g. adminpanel) and InitialPrerender (e.g. todo) share the same
     // service-worker preset: passive caching, no forced prerender, lax tolerance, and the
@@ -152,6 +166,10 @@ const RETRY_DELAY = normalizeNonNegativeInt(self.retryDelay, 300);
 
 diag('MAX_RETRIES:', MAX_RETRIES, 'RETRY_DELAY:', RETRY_DELAY);
 
+// Wire up the four service-worker lifecycle/runtime events. install/activate extend the
+// event with waitUntil() so the browser keeps the worker alive until our async work
+// settles; fetch uses respondWith() to take over the response; message handles the
+// page<->worker commands (SKIP_WAITING, CLAIM_CLIENTS, BLAZOR_STARTED, CLEAN_UP).
 self.addEventListener('install', (e: ExtendableEvent) => e.waitUntil(handleInstall(e)));
 self.addEventListener('activate', (e: ExtendableEvent) => e.waitUntil(handleActivate(e)));
 self.addEventListener('fetch', (e: FetchEvent) => e.respondWith(handleFetch(e)));
@@ -161,11 +179,14 @@ async function handleInstall(e: any) {
     diag('installing version:', VERSION);
 
     if (!MANIFEST_VALID) {
-        // The manifest is missing/malformed - sendError already notified the page. Don't
-        // build a cache from an empty/partial asset list (it would replace the previous good
-        // cache with a broken one). Let the lifecycle settle without caching anything.
-        diag('*** skipping install - invalid assetsManifest.');
-        return;
+        // The manifest is missing/malformed - sendError already notified the page. Reject the
+        // install so the SW lifecycle aborts: a worker that never built a valid cache must not
+        // reach the waiting/active state, otherwise a later SKIP_WAITING could activate it and
+        // run deleteOldCaches(), discarding the last-known-good cache and promoting a broken
+        // update. Throwing keeps the previous service worker in control until the manifest is
+        // fixed.
+        diag('*** aborting install - invalid assetsManifest.');
+        throw new Error('Install aborted: service-worker-assets.js is missing or malformed.');
     }
 
     sendMessage({ type: 'install', data: { version: VERSION, isPassive: self.isPassive } });
@@ -259,6 +280,16 @@ diag('UNIQUE_ASSETS:', UNIQUE_ASSETS);
 
 diagGroupEnd();
 
+// Runtime request router. For every GET this decides whether to serve the request from the
+// Bswup cache, fall back to the SPA default document, or pass the request straight to the
+// network. High-level flow:
+//   1. Block prohibited URLs (403) and pass through non-GET / server-handled requests.
+//   2. For navigations, substitute the default document unless the URL is server-rendered or
+//      forcePrerender is on (then the server owns the HTML).
+//   3. Resolve the request URL to a known asset (with a fallback that strips ?asp-append-version
+//      style query versioning), and serve it from cache when present.
+//   4. In passive mode a cache miss is fetched from the network and lazily written to the
+//      cache in the background; in active mode a miss simply goes to the network.
 async function handleFetch(e: any) {
     const req = e.request as Request;
 
@@ -352,6 +383,8 @@ async function handleFetch(e: any) {
     return response;
 }
 
+// Handles commands posted from the page (bit-bswup.ts). Each branch corresponds to a string
+// command in the page<->worker protocol; non-matching JSON messages are ignored.
 function handleMessage(e: MessageEvent<string>) {
     diag('handleMessage:', e);
 
@@ -395,6 +428,16 @@ function handleMessage(e: MessageEvent<string>) {
 
 // ============================================================================
 
+// Builds (or updates) the version-suffixed cache for the current VERSION. This is the heart
+// of the install/update flow:
+//   - Warm-starts from the previous cache by copying over still-valid entries so an update
+//     only re-downloads what actually changed (skipped when ignoreProgressReport is set).
+//   - Diffs the existing cache against UNIQUE_ASSETS: removes assets no longer in the
+//     manifest, re-downloads ones whose hash changed (and always refreshes the default doc).
+//   - Downloads the remaining assets with retry/backoff, reporting progress to the page and
+//     surfacing integrity/network failures via sendError.
+// `ignoreProgressReport` is true for the post-BLAZOR_STARTED top-up pass: that run must not
+// report progress to the UI and must never reject (the install has already activated).
 async function createAssetsCache(ignoreProgressReport = false) {
     diagGroup('bit-bswup:createAssetsCache:' + ignoreProgressReport);
 
@@ -667,6 +710,9 @@ async function createAssetsCache(ignoreProgressReport = false) {
     }
 }
 
+// Cache key for an asset: the URL suffixed with `.<hash>` when a hash exists, so a changed
+// hash produces a distinct cache entry (the old one is detected and evicted during the
+// update diff in createAssetsCache). Hashless assets are keyed by URL alone.
 function createCacheUrl(asset: any) {
     return asset.hash ? `${asset.url}.${asset.hash}` : asset.url;
 }
@@ -706,6 +752,13 @@ function urlEndsWith(value: string, suffix: string) {
     return value.endsWith(suffix);
 }
 
+// Builds the network Request used to download an asset. The asset version (its own hash, or
+// the manifest version as a fallback) is base64url-normalized and appended as a `?v=` cache
+// buster so each published version is fetched distinctly. For the default document the
+// optional noPrerenderQuery params are added to request the non-prerendered variant. When
+// the hash is an SRI digest (sha*) and integrity checks are enabled, the request carries the
+// `integrity` attribute so the browser rejects tampered/mismatched bytes; enableCacheControl
+// adds no-store/no-cache headers to bypass the HTTP cache and force a fresh fetch.
 function createNewAssetRequest(asset: any) {
     const version = ((asset.hash || self.assetsManifest.version) as string).replaceAll('+', '-').replaceAll('/', '_');
     const trimmedVersion = encodeURIComponent(trimEnd(version, '='));
@@ -738,12 +791,18 @@ function createNewAssetRequest(asset: any) {
     return new Request(assetUrl, requestInit);
 }
 
+// Removes every Bswup cache except the current CACHE_NAME. Called after a new worker claims
+// clients (SKIP_WAITING / CLAIM_CLIENTS) and on the CLEAN_UP command, so stale
+// version-suffixed caches from previous installs are reclaimed once they're no longer needed.
 async function deleteOldCaches() {
     const cacheKeys = await caches.keys();
     const promises = cacheKeys.filter(key => (key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME)).map(key => caches.delete(key));
     return Promise.all(promises);
 }
 
+// De-duplicates the asset list by URL (the first occurrence wins) and, as a side effect,
+// precomputes `reqUrl` - the fully-resolved absolute URL the browser will actually request -
+// so handleFetch can match incoming requests without re-resolving on every fetch.
 function uniqueAssets(assets: any) {
     const unique = {} as any;
     const distinct = [];
@@ -761,12 +820,18 @@ function uniqueAssets(assets: any) {
     return distinct;
 }
 
+// Broadcasts a message to every client (controlled or not), so all open tabs - not just the
+// one that triggered the work - receive install/progress/activate/error updates. Objects are
+// JSON-stringified; plain string commands (e.g. 'WAITING_SKIPPED') are sent as-is.
 function sendMessage(message: any) {
     self.clients
         .matchAll({ includeUncontrolled: true })
         .then((clients: any) => (clients || []).forEach((client: any) => client.postMessage(typeof message === 'string' ? message : JSON.stringify(message))));
 }
 
+// Reports a structured install/runtime failure: logs it for diagnostics, also writes to the
+// console as a best-effort signal in case no client is connected yet, then forwards it to the
+// page as an 'error' message so the progress UI can show it (see bit-bswup.progress.ts).
 function sendError(data: { reason: string; message: string;[key: string]: any }) {
     diag('*** error:', data);
     try {
@@ -792,6 +857,10 @@ function normalizeAssetsManifest(manifest: any) {
     return safe;
 }
 
+// Validates the manifest injected by service-worker-assets.js and returns a list of human
+// readable problems (empty array == valid). Checks it's an object, has a non-empty version
+// string, has an assets array, and that every asset entry carries a url. The result gates
+// MANIFEST_VALID, which in turn decides whether the worker is allowed to cache/activate.
 function validateAssetsManifest(manifest: any): string[] {
     const errors: string[] = [];
     if (!manifest || typeof manifest !== 'object') {
@@ -816,6 +885,10 @@ function validateAssetsManifest(manifest: any): string[] {
     return errors;
 }
 
+// Normalizes self.externalAssets into a consistent array of `{ url, ... }` objects. Accepts a
+// single value or an array, passes through entries that already have a url, wraps bare
+// strings into `{ url }`, and drops anything else (null/invalid) so the precache list only
+// contains well-formed asset descriptors.
 function prepareExternalAssetsArray(value: any) {
     const array = value ? (value instanceof Array ? value : [value]) : [];
 
@@ -833,6 +906,15 @@ function prepareExternalAssetsArray(value: any) {
 }
 
 function prepareRegExpArray(value: any) {
+    // Threat model: the patterns here come from developer-configured sources
+    // (self.prohibitedUrls, self.serverHandledUrls, etc.), not end-user input.
+    // They are compiled into RegExp objects and run against URLs on every request,
+    // so a pathological pattern can cause catastrophic backtracking (ReDoS) and
+    // stall the service worker. When authoring patterns:
+    //   - avoid nested/overlapping quantifiers such as (a+)+, (a*)*, (.*)*
+    //   - prefer anchored, specific patterns over broad .* wildcards
+    //   - keep pattern length bounded; very long patterns are a smell
+    // Invalid patterns are caught below and skipped rather than throwing.
     const array = value ? (value instanceof Array ? value : [value]) : [];
 
     return array.map(p => {
@@ -872,11 +954,30 @@ function applyUrlCaseSensitivity(re: RegExp): RegExp {
     return new RegExp(re.source, re.flags + 'i');
 }
 
+// When caseInsensitiveUrl is enabled, every URL-matching pattern (prohibited / server-handled
+// / server-rendered URLs and the user include/exclude lists) should fold case too, so routing
+// and asset matching behave consistently with the explicit toLowerCase comparisons in
+// handleFetch. Without this a pattern like /admin/ would not match /ADMIN/ even with
+// caseInsensitiveUrl set - a surprising gap for the security-relevant prohibitedUrls list.
+// Patterns that already carry the `i` flag (including RegExp instances the app built with it)
+// are returned unchanged.
+function applyUrlCaseSensitivity(re: RegExp): RegExp {
+    if (!self.caseInsensitiveUrl || re.flags.indexOf('i') !== -1) return re;
+    return new RegExp(re.source, re.flags + 'i');
+}
+
+// Strips trailing occurrences of `char` from the end of `str`. Used to drop base64 `=`
+// padding from version/hash values before they go into the `?v=` query. `char` is regex
+// escaped first so callers can pass literal characters safely.
 function trimEnd(str: string, char: string) {
     const escaped = char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // escape regex special chars
     return str.replace(new RegExp(`${escaped}+$`), "");
 }
 
+// Diagnostics helpers - all no-ops unless the matching flag is enabled, so verbose logging
+// can be turned on per app without code changes. diag*/diagGroup* gate on enableDiagnostics;
+// diagFetch gates on the separate (noisier) enableFetchDiagnostics. diag/diagFetch append an
+// ISO timestamp to every line to make install/fetch timing legible in the console.
 function diagGroup(label: string) {
     if (!self.enableDiagnostics) return;
 
