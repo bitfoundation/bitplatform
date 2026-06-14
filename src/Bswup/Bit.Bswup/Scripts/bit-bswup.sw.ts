@@ -1,11 +1,19 @@
 (self as any)['bit-bswup.sw version'] = '10.4.5';
 
-interface Window {
-    clients: any
-    skipWaiting: any
-    importScripts: any
-    assetsManifest: any
+// This file (and bit-bswup.sw-cleanup.ts) is a classic service-worker script loaded via
+// importScripts - not an ES module - and is compiled against the "WebWorker" lib (see
+// tsconfig.sw.json), which properly types caches, fetch, Request/Response, the Cache API,
+// importScripts, location, etc. The lib types the bare `self` as WorkerGlobalScope, so we
+// augment that interface with the two service-worker globals this code uses (clients,
+// skipWaiting) plus the configuration knobs an app assigns on `self` before importing this
+// script. We avoid re-declaring `self` as ServiceWorkerGlobalScope because that conflicts
+// with the lib's own declaration in a non-module script. These declarations are ambient, so
+// bit-bswup.sw-cleanup.ts in the same compilation sees them too.
+interface WorkerGlobalScope {
+    clients: Clients
+    skipWaiting(): Promise<void>
 
+    assetsManifest: any
     assetsInclude: any
     assetsExclude: any
     externalAssets: any
@@ -29,13 +37,7 @@ interface Window {
     forcePrerender: any
     enableCacheControl: any
     cacheVersion: any
-
     mode: any
-}
-
-interface Event {
-    waitUntil: any
-    respondWith: any
 }
 
 diagGroup('bit-bswup');
@@ -93,18 +95,15 @@ const CACHE_NAME_PREFIX = 'bit-bswup';
 const CACHE_VERSION = (typeof self.cacheVersion === 'string' && self.cacheVersion) || VERSION;
 const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${CACHE_VERSION}`;
 
-let integrityFailureCount = 0;
-
 switch (self.mode) {
-    case 'NoPrerender': // like adminpanel
-        self.isPassive = true;
-        self.defaultUrl ||= "/";
-        self.forcePrerender ||= false;
-        self.errorTolerance ||= 'lax';
-        self.caseInsensitiveUrl ||= true;
-        self.noPrerenderQuery ||= 'no-prerender=true';
-        break;
-    case 'InitialPrerender': // like todo
+    // NoPrerender (e.g. adminpanel) and InitialPrerender (e.g. todo) share the same
+    // service-worker preset: passive caching, no forced prerender, lax tolerance, and the
+    // no-prerender query appended to the default document. They differ only in how the
+    // server renders the first response, which is outside the SW's control - so they
+    // intentionally fall through to one block instead of duplicating it (the previous
+    // byte-identical copies were a copy-paste drift hazard).
+    case 'NoPrerender':
+    case 'InitialPrerender':
         self.isPassive = true;
         self.defaultUrl ||= "/";
         self.forcePrerender ||= false;
@@ -153,9 +152,9 @@ const RETRY_DELAY = normalizeNonNegativeInt(self.retryDelay, 300);
 
 diag('MAX_RETRIES:', MAX_RETRIES, 'RETRY_DELAY:', RETRY_DELAY);
 
-self.addEventListener('install', e => e.waitUntil(handleInstall(e)));
-self.addEventListener('activate', e => e.waitUntil(handleActivate(e)));
-self.addEventListener('fetch', e => e.respondWith(handleFetch(e)));
+self.addEventListener('install', (e: ExtendableEvent) => e.waitUntil(handleInstall(e)));
+self.addEventListener('activate', (e: ExtendableEvent) => e.waitUntil(handleActivate(e)));
+self.addEventListener('fetch', (e: FetchEvent) => e.respondWith(handleFetch(e)));
 self.addEventListener('message', handleMessage);
 
 async function handleInstall(e: any) {
@@ -179,17 +178,41 @@ async function handleInstall(e: any) {
     } else {
         // Lax: lifecycle proceeds immediately; missing assets are filled lazily by
         // handleFetch. This preserves best-effort behavior for callers that explicitly
-        // opt in via errorTolerance: 'lax'.
-        createAssetsCache();
+        // opt in via errorTolerance: 'lax'. We intentionally don't await the cache build so
+        // install completes right away, but we still attach a catch: createAssetsCache won't
+        // reject for asset failures under lax, yet infrastructure calls (caches.open, etc.)
+        // can still throw, and an unhandled rejection here would surface as a console error
+        // and a (cosmetic) failed-install signal. Swallow it - lazy-fill will recover.
+        createAssetsCache().catch(err => {
+            diag('*** lax install - background createAssetsCache failed (assets will lazy-fill):', err);
+        });
     }
 }
 
 async function handleActivate(e: any) {
     diag('activate version:', VERSION);
 
-    //await deleteOldCaches();
-
     sendMessage({ type: 'activate', data: { version: VERSION, isPassive: self.isPassive } });
+
+    // Prune stale caches, but only when it is safe to do so. A previous version's cache may
+    // still be serving tabs that the old worker controls (a client keeps its controller until
+    // it reloads), and deleting it out from under them would make their old app code fetch
+    // new-version bytes -> SRI/boot-hash mismatch. So we clean up here only when there are no
+    // open window clients at all - the case when a waiting worker activates naturally after
+    // every tab has been closed, where nothing can be relying on an old cache. When tabs are
+    // open and the user accepts an update, the SKIP_WAITING flow deletes old caches *after*
+    // claiming clients (so they reload onto the new version first) instead.
+    try {
+        const windowClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        if (windowClients.length === 0) {
+            diag('activate - no open window clients; pruning old caches.');
+            await deleteOldCaches();
+        } else {
+            diag('activate - open window clients present; deferring cache cleanup:', windowClients.length);
+        }
+    } catch (err) {
+        diag('*** activate - cache cleanup check failed:', err);
+    }
 }
 
 // ============================================================================
@@ -292,7 +315,9 @@ async function handleFetch(e: any) {
     const cacheUrl = createCacheUrl(asset);
 
     const bitBswupCache = await caches.open(CACHE_NAME);
-    const cachedResponse = await bitBswupCache.match(cacheUrl || requestUrl);
+    // createCacheUrl always returns a non-empty string here (we already returned above when
+    // asset?.url was falsy), so the previous `cacheUrl || requestUrl` fallback was dead code.
+    const cachedResponse = await bitBswupCache.match(cacheUrl);
 
     if (cachedResponse || !self.isPassive) {
         diagFetch('+++ handleFetch ended - ', cachedResponse ? '' : 'NOT', 'using cache.', start, asset);
@@ -329,6 +354,12 @@ async function handleFetch(e: any) {
 
 function handleMessage(e: MessageEvent<string>) {
     diag('handleMessage:', e);
+
+    // Trust model: a service worker can only receive postMessage from clients on its own
+    // origin (the browser enforces this), so every sender here is same-origin app code -
+    // no cross-origin command injection is possible. We therefore don't filter on
+    // e.origin / e.source. The commands below (SKIP_WAITING, CLAIM_CLIENTS, CLEAN_UP,
+    // BLAZOR_STARTED) only drive this app's own SW lifecycle and caches.
 
     if (e.data === 'SKIP_WAITING') {
         // Activate the waiting worker, then take control of every open client so each tab
@@ -371,17 +402,26 @@ async function createAssetsCache(ignoreProgressReport = false) {
     const cacheKeys = await caches.keys();
 
     if (!ignoreProgressReport) {
-        const oldCacheKey = cacheKeys.find(key => key.startsWith(CACHE_NAME_PREFIX));
-        if (oldCacheKey) {
+        // Migrate previously-cached assets into the new cache so unchanged files (matched by
+        // their hash-suffixed key) survive an update without being re-downloaded; the diff
+        // loop below then prunes anything stale. Copy from every *other* bit-bswup bucket -
+        // not just the first one found - and explicitly exclude CACHE_NAME so we never copy
+        // the new cache onto itself (cacheKeys already contains it, since we opened it above).
+        // Skip any key already present so an entry migrated from one bucket isn't overwritten
+        // by a copy in another.
+        const oldCacheKeys = cacheKeys.filter(key => key.startsWith(CACHE_NAME_PREFIX) && key !== CACHE_NAME);
+        for (const oldCacheKey of oldCacheKeys) {
             diag('copying old cache:', oldCacheKey);
             const oldCache = await caches.open(oldCacheKey);
             const oldKeys = await oldCache.keys();
-            for (var i = 0; i < oldKeys.length; i++) {
+            for (let i = 0; i < oldKeys.length; i++) {
                 const oldKey = oldKeys[i];
                 if (!oldKey || !oldKey.url) continue;
 
+                if (await newCache.match(oldKey.url)) continue;
+
                 const oldRes = await oldCache.match(oldKey.url);
-                if(!oldRes) continue;
+                if (!oldRes) continue;
                 await newCache.put(oldKey.url, oldRes);
             }
         }
@@ -404,6 +444,12 @@ async function createAssetsCache(ignoreProgressReport = false) {
 
     const oldUrls = [] as any[];
     const updatedAssets = [] as any[];
+    // Collect stale entries to delete and await them as a batch below, rather than firing
+    // newCache.delete(...) unawaited. The unawaited form let deletes race the subsequent
+    // addCache puts (and the concurrent post-BLAZOR_STARTED top-up run), so a freshly
+    // written asset could be removed by a still-in-flight delete. Gathering keys first and
+    // awaiting them keeps the cache state deterministic before we repopulate.
+    const keysToDelete = [] as string[];
     for (let i = 0; i < newCacheKeys.length; i++) {
         const key = newCacheKeys[i];
         if (!key || !key.url) continue;
@@ -416,13 +462,15 @@ async function createAssetsCache(ignoreProgressReport = false) {
         const foundAsset = UNIQUE_ASSETS.find(a => urlEndsWith(url, a.url));
         if (!foundAsset) {
             diag('*** removed oldUrl:', key.url);
-            newCache.delete(key.url);
+            keysToDelete.push(key.url);
         } else if ((hash && hash !== foundAsset.hash) || (!hash && !self.disableHashlessAssetsUpdate)) {
             diag('*** updated oldUrl:', key.url);
-            newCache.delete(key.url);
+            keysToDelete.push(key.url);
             updatedAssets.push(foundAsset);
         }
     }
+
+    await Promise.all(keysToDelete.map(url => newCache.delete(url)));
 
     const defaultAsset = UNIQUE_ASSETS.find(a => a.url === DEFAULT_URL);
     if (defaultAsset && !updatedAssets.includes(defaultAsset)) {
@@ -437,7 +485,27 @@ async function createAssetsCache(ignoreProgressReport = false) {
     diag('assetsToCache:', assetsToCache);
 
     total = assetsToCache.length;
-    integrityFailureCount = 0;
+
+    // Nothing to download: every asset is already cached and up to date (e.g. an update
+    // whose only change lives outside the asset set, or a misconfigured defaultUrl that
+    // matches no manifest asset). Without an asset to drive a 'progress' message to 100%,
+    // the page would never receive downloadFinished and the splash would hang. Emit an
+    // explicit completion so the UI can settle. The post-BLAZOR_STARTED top-up
+    // (ignoreProgressReport) stays silent because the page UI is already gone by then.
+    if (total === 0) {
+        diag('createAssetsCache - nothing to cache; reporting completion.');
+        if (!ignoreProgressReport) {
+            sendMessage({ type: 'progress', data: { asset: null, percent: 100, index: 0 } });
+        }
+        diagGroupEnd();
+        return;
+    }
+
+    // Local to this invocation: createAssetsCache can run concurrently (the install run and
+    // the post-BLAZOR_STARTED top-up via createAssetsCache(true)). A module-level counter
+    // would let those runs clobber each other's tally and misreport integrity failures, so
+    // each run gets its own counter, closed over by the nested addCache below.
+    let integrityFailureCount = 0;
     const promises = assetsToCache.map(addCache.bind(null, !ignoreProgressReport));
 
     // Await install batch so SRI/network failures surface as install rejections instead of
@@ -651,6 +719,14 @@ function createNewAssetRequest(asset: any) {
     const assetUrl = url.toString();
 
     const requestInit: RequestInit = {};
+    // SECURITY NOTE: Subresource Integrity is OPT-IN. Even though Blazor ships a SHA hash
+    // for every asset, we only attach `integrity` (so the browser rejects tampered/mismatched
+    // bytes) when the app sets self.enableIntegrityCheck. It defaults to off because an
+    // intermediary that rewrites bytes after publish - CDN gzip/brotli, HTML/JS minifying
+    // proxy, etc. - would otherwise make every asset fail SRI and brick the install. Apps that
+    // serve assets byte-identical (the recommended setup) should enable it for tamper
+    // protection; see the 'integrity' error path that reports the classic Blazor
+    // "Failed to find a valid digest" failure.
     if (asset.hash?.startsWith('sha') && self.enableIntegrityCheck) {
         requestInit.integrity = asset.hash;
     }
@@ -675,8 +751,11 @@ function uniqueAssets(assets: any) {
         const a = assets[i];
         if (unique[a.url]) continue;
 
-        a.reqUrl = new Request(a.url).url;
-        distinct.push(a);
+        // Shallow-copy the manifest entry before adding the derived reqUrl, instead of
+        // mutating the object in place. The input comes from self.assetsManifest.assets
+        // (and externalAssets), which other code may read; tacking reqUrl onto the shared
+        // object was an unnecessary side effect on caller-owned data.
+        distinct.push({ ...a, reqUrl: new Request(a.url).url });
         unique[a.url] = 1;
     }
     return distinct;
@@ -758,12 +837,18 @@ function prepareRegExpArray(value: any) {
 
     return array.map(p => {
         if (p instanceof RegExp) {
-            return p;
+            return applyUrlCaseSensitivity(p);
         }
 
+        // NOTE: string entries are compiled as *regular-expression source*, not matched
+        // literally. So '/admin/v1.0/' is an unanchored pattern where '.' matches any
+        // character and there are no ^/$ boundaries - it can both over-match (e.g. '1X0')
+        // and match as a substring anywhere in the URL. This matters most for the
+        // security-relevant prohibitedUrls list. To match a literal path, escape regex
+        // metacharacters and anchor it (e.g. '^/admin/v1\\.0/$'), or pass a RegExp directly.
         if (typeof p === 'string') {
             try {
-                return new RegExp(p);
+                return applyUrlCaseSensitivity(new RegExp(p));
             } catch (err) {
                 console.warn('BitBswup SW: ignoring invalid RegExp pattern:', p, err);
                 return null;
@@ -773,6 +858,18 @@ function prepareRegExpArray(value: any) {
         console.warn('BitBswup SW: ignoring non-RegExp entry (expected RegExp or string):', p);
         return null;
     }).filter((p): p is RegExp => p !== null);
+}
+
+// When caseInsensitiveUrl is enabled, every URL-matching pattern (prohibited / server-handled
+// / server-rendered URLs and the user include/exclude lists) should fold case too, so routing
+// and asset matching behave consistently with the explicit toLowerCase comparisons in
+// handleFetch. Without this a pattern like /admin/ would not match /ADMIN/ even with
+// caseInsensitiveUrl set - a surprising gap for the security-relevant prohibitedUrls list.
+// Patterns that already carry the `i` flag (including RegExp instances the app built with it)
+// are returned unchanged.
+function applyUrlCaseSensitivity(re: RegExp): RegExp {
+    if (!self.caseInsensitiveUrl || re.flags.indexOf('i') !== -1) return re;
+    return new RegExp(re.source, re.flags + 'i');
 }
 
 function trimEnd(str: string, char: string) {

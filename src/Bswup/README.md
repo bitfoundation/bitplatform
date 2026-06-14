@@ -190,7 +190,7 @@ The other settings are:
 - `defaultUrl`: The default page URL. Use `/` when using `_Host.cshtml`.
 - `assetsUrl`: The file path of the service-worker assets file generated at compile time (the default file name is `service-worker-assets.js`).
 - `prohibitedUrls`: The list of file names that should not be accessed (regex supported).
-- `caseInsensitiveUrl`: Enables the case insensitivity in the URL checking of the cache process.
+- `caseInsensitiveUrl`: Enables case-insensitive URL checking. This applies both to the asset cache matching and to every URL-matching regex list (`prohibitedUrls`, `serverHandledUrls`, `serverRenderedUrls`, `assetsInclude`, `assetsExclude`): when enabled, those patterns are compiled with the `i` flag so e.g. `prohibitedUrls: [/\/admin\//]` also blocks `/ADMIN/`. Patterns that already specify the `i` flag are left unchanged.
 - `serverHandledUrls`: The list of URLs that do not enter the service-worker offline process and will be handled only by server (regex supported). such as `/api`, `/swagger`, ...
 - `serverRenderedUrls`: The list of URLs that should be rendered by the server and not client while navigating (regex supported). such as `/about.html`, `/privacy`, ...
 - `noPrerenderQuery`: The query string attached to the default document request to disable the prerendering from the server so an unwanted prerendered result not be cached.

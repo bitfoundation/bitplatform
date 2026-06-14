@@ -66,28 +66,30 @@
                         hideApp_ && appEl && (appEl.style.display = 'none');
                         bswupEl && (bswupEl.style.display = 'block');
 
-                        if (showAssets_ && assetsEl) {
+                        if (showAssets_ && assetsEl && data.asset) {
                             const li = document.createElement('li');
                             li.innerHTML = `${data.index}: <b>${data.asset.url}</b>: ${data.asset.hash}`
                             assetsEl.prepend(li);
-                        }
-                        const percent = Math.round(data.percent);
+                        }                        const percent = Math.round(data.percent);
                         const perStr = `${percent}%`;
                         bswupEl && bswupEl.style.setProperty('--bit-bswup-percent', perStr)
                         bswupEl && bswupEl.style.setProperty('--bit-bswup-percent-text', `"${perStr}"`)
                         progressEl && (progressEl.style.width = `${percent}%`);
+                        // Keep the ARIA value in sync with the visual bar so assistive
+                        // technology announces progress, not just a static 0%.
+                        progressEl && progressEl.setAttribute('aria-valuenow', String(percent));
                         percentEl && (percentEl.innerHTML = `${percent}%`);
                         return showLogs_ ? console.log('asset downloaded:', data) : undefined;
 
                     case BswupMessage.downloadFinished:
                         if (autoHide_) {
-                            hideApp && appEl && (appEl.style.display = appElOriginalDisplay);
+                            hideApp_ && appEl && (appEl.style.display = appElOriginalDisplay);
                             bswupEl && (bswupEl.style.display = 'none');
                         }
 
                         if (autoReload_ || data.firstInstall) {
                             data.reload().then(() => {
-                                hideApp && appEl && (appEl.style.display = appElOriginalDisplay);
+                                hideApp_ && appEl && (appEl.style.display = appElOriginalDisplay);
                                 bswupEl && (bswupEl.style.display = 'none');
                             });
                         } else {
@@ -169,6 +171,44 @@
             const assetsEl = document.getElementById('bit-bswup-assets');
             if (assetsEl) assetsEl.style.display = newConfig.showAssets ? 'block' : 'none';
         }
+    }
+
+    // Self-initialize from the data-* attributes rendered by the BswupProgress Razor
+    // component. This replaces the inline <script> the component used to emit: an external
+    // script reading the DOM is allowed under a strict Content-Security-Policy (script-src
+    // 'self') and runs regardless of how the host page is rendered. Calling start() manually
+    // is still supported - the data-bit-bswup-initialized guard keeps the two from clashing.
+    function autoStart() {
+        const el = document.getElementById('bit-bswup');
+        if (!el || el.getAttribute('data-bit-bswup-config') !== 'true') return;
+        if (el.getAttribute('data-bit-bswup-initialized') === 'true') return;
+        el.setAttribute('data-bit-bswup-initialized', 'true');
+
+        const bool = (name: string, fallback: boolean) => {
+            const value = el.getAttribute(name);
+            return value == null ? fallback : value === 'true';
+        };
+
+        const handlerAttr = el.getAttribute('data-bit-bswup-handler');
+
+        start(
+            bool('data-bit-bswup-auto-reload', true),
+            bool('data-bit-bswup-show-logs', false),
+            bool('data-bit-bswup-show-assets', false),
+            el.getAttribute('data-bit-bswup-app-container') || '#app',
+            bool('data-bit-bswup-hide-app', false),
+            bool('data-bit-bswup-auto-hide', false),
+            handlerAttr || undefined
+        );
+    }
+
+    // The component element may be parsed after this script (it is rendered later in the
+    // body), so defer to DOMContentLoaded when the document is still loading; otherwise the
+    // element already exists and we can initialize immediately.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', autoStart);
+    } else {
+        autoStart();
     }
 }());
 

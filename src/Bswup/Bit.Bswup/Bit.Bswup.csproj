@@ -5,7 +5,13 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
-        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net10.0'">
+        <!-- The single TFM whose build (re)generates the wwwroot JS/CSS from Scripts/Styles via
+             the node toolchain. Pinned to one TFM so tsc/esbuild run once and parallel inner
+             builds of the other TFMs don't race writing wwwroot. Computed as the first entry of
+             TargetFrameworks (rather than a hardcoded literal) so it stays valid if the TFM list
+             is reordered or net10.0 is dropped. -->
+        <BswupAssetsBuildTfm>$(TargetFrameworks.Split(';')[0])</BswupAssetsBuildTfm>
+        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == '$(BswupAssetsBuildTfm)'">
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -21,16 +27,14 @@
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
     </ItemGroup>
 
+    <!-- Keep the build inputs (tsconfig + package manifests) out of the published static web
+         assets while still showing them in the project. -->
     <ItemGroup>
-        <Content Remove="tsconfig.json" />
-        <None Include="tsconfig.json" />
+        <Content Remove="package*.json;tsconfig*.json" />
+        <None Include="package*.json;tsconfig*.json" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="wwwroot\" />
-    </ItemGroup>
-
-        <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net10.0'">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == '$(BswupAssetsBuildTfm)'">
         <CallTarget Targets="InstallNodejsDependencies"/>
         <CallTarget Targets="BuildJavaScript"/>
         <CallTarget Targets="BuildCss"/>
@@ -40,8 +44,12 @@
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildJavaScript" Inputs="Scripts/bit-bswup.ts;Scripts/bit-bswup.progress.ts;Scripts/bit-bswup.sw.ts" Outputs="wwwroot/bit-bswup.js;wwwroot/bit-bswup.progress.js;wwwroot/bit-bswup.sw.js">
+    <Target Name="BuildJavaScript" Inputs="Scripts/bit-bswup.ts;Scripts/bit-bswup.progress.ts;Scripts/bit-bswup.sw.ts;Scripts/bit-bswup.sw-cleanup.ts" Outputs="wwwroot/bit-bswup.js;wwwroot/bit-bswup.progress.js;wwwroot/bit-bswup.sw.js;wwwroot/bit-bswup.sw-cleanup.js">
+        <!-- Page scripts (DOM lib) and service-worker scripts (WebWorker lib) are compiled by
+             separate tsconfigs because the DOM and WebWorker type libraries cannot coexist in
+             one compilation. Both emit into wwwroot. -->
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="node_modules/.bin/tsc -p tsconfig.sw.json" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bswup.js --minify --outfile=wwwroot/bit-bswup.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bswup.progress.js --minify --outfile=wwwroot/bit-bswup.progress.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bswup.sw.js --minify --outfile=wwwroot/bit-bswup.sw.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
@@ -51,11 +59,4 @@
         <Exec Command="node_modules/.bin/esbuild Styles/bit-bswup.progress.css --minify --outfile=wwwroot/bit-bswup.progress.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <ItemGroup>
-        <Content Remove="package*.json" />
-        <Content Remove="tsconfig.json" />
-        <None Include="package*json" />
-        <None Include="tsconfig.json" />
-    </ItemGroup>
-    
 </Project>

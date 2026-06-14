@@ -3,8 +3,8 @@
     "compilerOptions": {
         "allowJs": true,
         "target": "ES2021",
-        "lib": [ "DOM", "ESNext" ],
+        "lib": [ "WebWorker", "ESNext" ],
         "outDir": "wwwroot"
     },
-    "include": [ "./Scripts/bit-bswup.ts", "./Scripts/bit-bswup.progress.ts" ]
+    "include": [ "./Scripts/bit-bswup.sw.ts", "./Scripts/bit-bswup.sw-cleanup.ts" ]
 }

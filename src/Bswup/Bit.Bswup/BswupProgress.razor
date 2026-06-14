@@ -10,18 +10,44 @@
     [Parameter] public string? Handler { get; set; }
 }
 
-<div id="bit-bswup">
-    @if (ChildContent is not null) 
+@* Configuration is published as data-* attributes and read by bit-bswup.progress.js when it
+   loads (it self-initializes from these attributes). This deliberately avoids emitting an
+   inline <script>:
+     - a strict Content-Security-Policy (e.g. script-src 'self') would block an inline
+       script - the same CSP the README recommends for hardening the service worker; and
+     - inline <script> tags added by an interactive Blazor renderer are not executed by the
+       browser, so the old approach only worked when this component was part of the
+       statically-rendered host document.
+   Razor attribute-encodes these values and the script reads them back via getAttribute, so
+   no value can break out of the attribute into markup or script. Make sure
+   _content/Bit.Bswup/bit-bswup.progress.js is referenced on the page. *@
+<div id="bit-bswup"
+     style="display: none;"
+     data-bit-bswup-config="true"
+     data-bit-bswup-auto-reload="@(AutoReload ? "true" : "false")"
+     data-bit-bswup-show-logs="@(ShowLogs ? "true" : "false")"
+     data-bit-bswup-show-assets="@(ShowAssets ? "true" : "false")"
+     data-bit-bswup-app-container="@AppContainer"
+     data-bit-bswup-hide-app="@(HideApp ? "true" : "false")"
+     data-bit-bswup-auto-hide="@(AutoHide ? "true" : "false")"
+     data-bit-bswup-handler="@Handler">
+    @if (ChildContent is not null)
     {
         @ChildContent
     }
-    else 
+    else
     {
         <div class="bit-bswup-container">
             <p class="bit-bswup-title">New version is available</p>
             <p class="bit-bswup-description">Downloading updates, please wait...</p>
             <div class="bit-bswup-progress">
-                <div id="bit-bswup-progress-bar" style="width: 0%"></div>
+                <div id="bit-bswup-progress-bar"
+                     role="progressbar"
+                     aria-label="Update download progress"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     aria-valuenow="0"
+                     style="width: 0%"></div>
             </div>
             <p id="bit-bswup-percent">0 %</p>
             <ul id="bit-bswup-assets" style="display: @(ShowAssets ? "block" : "none");"></ul>
@@ -34,18 +60,4 @@
         </div>
         <button id="bit-bswup-reload">Update ready to install!</button>
     }
-    <script>
-        if (window.BitBswupProgress !== undefined) {
-            window.BitBswupProgress.start(
-                @(AutoReload ? "true" : "false"), 
-                @(ShowLogs ? "true" : "false"), 
-                @(ShowAssets ? "true" : "false"), 
-                '@(AppContainer)', 
-                @(HideApp ? "true" : "false"), 
-                @(AutoHide ? "true" : "false"), 
-                '@(Handler)');
-        } else {
-            console.error('BitBswupProgress not found');
-        }
-    </script>
 </div>

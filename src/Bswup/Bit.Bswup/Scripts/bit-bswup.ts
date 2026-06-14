@@ -30,7 +30,17 @@ if (!BitBswup.initialized) {
         // (blazor.webassembly.js), so the same setup works without extra config.
         const defaultBlazorScripts = ['_framework/blazor.web.js', '_framework/blazor.webassembly.js'];
 
-        const bitBswupScript = document.currentScript;
+        // document.currentScript is only set while a *classic* script is executing
+        // synchronously during initial parse. It is null for module scripts, async/deferred
+        // execution, or when bit-bswup.js is injected dynamically after load - in which case
+        // reading bitBswupScript.attributes later would throw. Fall back to locating the
+        // script tag by src so attribute-based configuration still works, and tolerate its
+        // absence (extract() guards every attribute read against a null element).
+        const bitBswupScript = document.currentScript
+            || (function () {
+                const scripts = [].slice.call(document.scripts) as HTMLScriptElement[];
+                return scripts.find(s => s.src && s.src.indexOf('bit-bswup.js') !== -1) || null;
+            }());
 
         if (document.readyState === 'loading') {
             window.addEventListener('DOMContentLoaded', runBswup); // important event!
@@ -130,6 +140,13 @@ if (!BitBswup.initialized) {
                 };
 
                 cleanup = () => {
+                    // Stop the opt-in update-poll timer so it doesn't keep calling
+                    // reg.update() after teardown (it was previously left running for the
+                    // life of the page with no way to clear it).
+                    if (updateTimer) {
+                        clearInterval(updateTimer);
+                        updateTimer = undefined as any;
+                    }
                     reg.waiting?.postMessage('CLEAN_UP');
                     reg.active?.postMessage('CLEAN_UP');
                 };
@@ -235,10 +252,27 @@ if (!BitBswup.initialized) {
                 }
 
                 if (e.data === 'CLIENTS_CLAIMED') {
-                    Blazor.start().then(() => {
+                    // First-install claim succeeded. Start Blazor through the guarded path
+                    // (script-tag/autostart checks, single-start, missing-global protection)
+                    // instead of calling Blazor.start() directly. Capture e.source up front
+                    // because it can be nulled out by the time the start promise settles.
+                    const source = e.source;
+                    const startPromise = startBlazor(true);
+
+                    const onStarted = () => {
                         blazorStartResolver?.(undefined);
-                        e.source.postMessage('BLAZOR_STARTED');
-                    });
+                        source?.postMessage('BLAZOR_STARTED');
+                    };
+
+                    if (startPromise) {
+                        startPromise.then(onStarted);
+                    } else {
+                        // Blazor couldn't be started (missing/misconfigured script, or the
+                        // global isn't available). Still resolve the reload() promise so the
+                        // page UI (e.g. the splash) doesn't hang waiting forever, and notify the
+                        // worker so its post-start cache top-up can proceed.
+                        onStarted();
+                    }
                     return;
                 }
 
@@ -250,7 +284,25 @@ if (!BitBswup.initialized) {
                     return;
                 }
 
-                const message = JSON.parse(e.data);
+                // Everything past the known string commands above is expected to be a
+                // JSON-encoded status message from the service worker (sendMessage stringifies
+                // objects). Other senders - browser extensions, unrelated workers, or future
+                // protocol additions - can post arbitrary payloads, and JSON.parse would throw
+                // on a non-JSON string (or a non-string value), aborting this handler. Parse
+                // defensively and ignore anything we don't recognize instead of throwing.
+                let message: any;
+                try {
+                    message = JSON.parse(e.data);
+                } catch {
+                    verbose('ignoring non-JSON service worker message:', e.data);
+                    return;
+                }
+
+                if (!message || typeof message !== 'object') {
+                    verbose('ignoring unexpected service worker message shape:', message);
+                    return;
+                }
+
                 const { type, data } = message;
 
                 if (type === 'install') {
@@ -362,7 +414,42 @@ if (!BitBswup.initialized) {
 
             // ============================================================
 
-            function startBlazor(forceStart = false) {
+            // Tracks the single Blazor.start() invocation. A first install (CLIENTS_CLAIMED),
+            // a controlled/hard-reload load, and the explicit force paths can all reach the
+            // start logic; Blazor.start() may only be called once (a second call rejects), so
+            // funnel every path through startBlazorCore() and remember the in-flight/settled
+            // promise to hand back to later callers.
+            let blazorStarted = false;
+            let blazorStartPromise: Promise<unknown> | undefined;
+
+            // Actually start Blazor, exactly once. Returns the start promise (or the existing
+            // one on repeat calls), or undefined when Blazor is unavailable so callers can
+            // decide how to proceed instead of crashing on a missing global.
+            function startBlazorCore(): Promise<unknown> | undefined {
+                if (blazorStarted) return blazorStartPromise;
+
+                // `Blazor` is a declared global, but it only exists once the Blazor script has
+                // loaded. typeof guards against a ReferenceError if we're invoked too early or
+                // the script is missing/misconfigured.
+                if (typeof Blazor === 'undefined' || typeof Blazor.start !== 'function') {
+                    error('Blazor.start is not available - cannot start Blazor (is the Blazor script loaded?).');
+                    return undefined;
+                }
+
+                blazorStarted = true;
+                try {
+                    // Normalize to a real Promise so callers can always .then() the result even
+                    // if a future Blazor returns something non-thenable.
+                    blazorStartPromise = Promise.resolve(Blazor.start());
+                } catch (err) {
+                    blazorStarted = false;
+                    error('Blazor.start() threw', err);
+                    return undefined;
+                }
+                return blazorStartPromise;
+            }
+
+            function startBlazor(forceStart = false): Promise<unknown> | undefined {
                 const scriptTags = [].slice.call(document.scripts);
 
                 // `blazorScript` may be a single path (explicitly configured) or a list
@@ -372,17 +459,21 @@ if (!BitBswup.initialized) {
 
                 const blazorWasmScriptTag = scriptTags.find(s => s.src && candidates.some(c => s.src.indexOf(c) !== -1));
                 if (!blazorWasmScriptTag) {
-                    return warn(`blazor script (${candidates.join(' or ')}) not found!`);
+                    warn(`blazor script (${candidates.join(' or ')}) not found!`);
+                    return undefined;
                 }
 
                 const autostart = blazorWasmScriptTag.attributes['autostart'];
                 if (!autostart || autostart.value !== 'false') {
-                    return warn('no "autostart=false" found on the blazor script tag!');
+                    warn('no "autostart=false" found on the blazor script tag!');
+                    return undefined;
                 }
 
                 if (forceStart || navigator?.serviceWorker?.controller) {
-                    Blazor.start();
+                    return startBlazorCore();
                 }
+
+                return undefined;
             }
 
             function extract(): BswupOptions {
@@ -394,47 +485,60 @@ if (!BitBswup.initialized) {
                     blazorScript: defaultBlazorScripts,
                 }
 
-                const optionsAttribute = (bitBswupScript.attributes)['options'];
+                // bitBswupScript may be null (see the currentScript fallback above) when the
+                // script can't be located - e.g. dynamic injection. Use an empty attribute bag
+                // in that case so every read below safely yields undefined and the defaults /
+                // window[optionsName] config still apply.
+                const attrs: any = (bitBswupScript && bitBswupScript.attributes) || {};
+
+                const optionsAttribute = attrs['options'];
                 const optionsName = (optionsAttribute || {}).value || 'bitBswup';
                 const options = Object.assign({}, defaultoptions, window[optionsName]) as BswupOptions;
 
-                const logAttribute = bitBswupScript.attributes['log'];
+                const logAttribute = attrs['log'];
                 options.log = (logAttribute && logAttribute.value) || options.log;
 
-                const swAttribute = bitBswupScript.attributes['sw'];
+                const swAttribute = attrs['sw'];
                 options.sw = (swAttribute && swAttribute.value) || options.sw;
 
-                const scopeAttribute = bitBswupScript.attributes['scope'];
+                const scopeAttribute = attrs['scope'];
                 options.scope = (scopeAttribute && scopeAttribute.value) || options.scope;
 
-                const handlerAttribute = bitBswupScript.attributes['handler'];
+                const handlerAttribute = attrs['handler'];
                 options.handlerName = (handlerAttribute && handlerAttribute.value) || options.handlerName;
 
-                const blazorScriptAttribute = bitBswupScript.attributes['blazorScript'];
+                const blazorScriptAttribute = attrs['blazorScript'];
                 options.blazorScript = (blazorScriptAttribute && blazorScriptAttribute.value) || options.blazorScript || defaultBlazorScripts;
 
                 // Polling is opt-in: absent attributes leave the options untouched so the
                 // default (no timer, no visibility check) is preserved.
-                const updateIntervalAttribute = bitBswupScript.attributes['updateInterval'];
+                const updateIntervalAttribute = attrs['updateInterval'];
                 if (updateIntervalAttribute) options.updateInterval = Number(updateIntervalAttribute.value);
 
-                const updateOnVisibilityAttribute = bitBswupScript.attributes['updateOnVisibility'];
+                const updateOnVisibilityAttribute = attrs['updateOnVisibility'];
                 if (updateOnVisibilityAttribute) options.updateOnVisibility = updateOnVisibilityAttribute.value === 'true';
 
                 return options;
             }
 
             function handle(...args: any[]) {
-                if (!options.handler) {
-                    options.handler = window[options.handlerName];
-
-                    if (!options.handler || typeof options.handler !== 'function') {
+                // Resolve the handler from window[handlerName] on every call until a real
+                // function is found, then cache it. Caching a no-op fallback (the old
+                // behavior) permanently disabled the handler whenever the very first Bswup
+                // event fired before bit-bswup.progress.js had assigned window.bitBswupHandler
+                // - a load-order race between the two scripts. Re-resolving each time the
+                // handler is still missing lets a late-registered handler take effect.
+                if (!options.handler || typeof options.handler !== 'function') {
+                    const resolved = window[options.handlerName];
+                    if (typeof resolved === 'function') {
+                        options.handler = resolved;
+                    } else {
                         warn('progress handler not found or is not a function!');
-                        options.handler = () => { };
+                        return;
                     }
                 }
 
-                options.handler && options.handler(...args);
+                options.handler(...args);
             }
 
             function shouldLog(level: 'error' | 'warn' | 'info' | 'verbose' | 'debug'): boolean {
