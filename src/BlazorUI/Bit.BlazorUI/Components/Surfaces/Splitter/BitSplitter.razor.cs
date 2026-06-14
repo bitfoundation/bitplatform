@@ -137,7 +137,16 @@ public partial class BitSplitter : BitComponentBase
 
     private void OnSetVertical()
     {
-        _ = InvokeAsync(ResetPaneDimensionsOnVerticalChange);
+        // Fire-and-forget: the reset runs on the renderer's sync context via InvokeAsync, but its task is
+        // not awaited. On the async interop path (Server/Hybrid) the BitSplitterResetPaneDimensions calls
+        // can fault (e.g. a JSException), which would otherwise become an unobserved task exception. Attach
+        // a fault-only continuation that observes and reports the failure instead of silently dropping it.
+        _ = InvokeAsync(ResetPaneDimensionsOnVerticalChange)
+            .ContinueWith(static task => Console.Error.WriteLine(
+                    $"Error resetting BitSplitter pane dimensions on orientation change: {task.Exception}"),
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
     }
 
     private async Task ResetPaneDimensionsOnVerticalChange()
