@@ -58,7 +58,7 @@ public partial class AppChatbot
         }
         catch (Exception exp)
         {
-            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
             return "Failed to save user email and conversation history.";
         }
     }
@@ -85,7 +85,7 @@ public partial class AppChatbot
         }
         catch (Exception exp)
         {
-            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
             return "Navigation failed";
         }
     }
@@ -115,7 +115,7 @@ public partial class AppChatbot
         }
         catch (Exception exp)
         {
-            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
             return null;
         }
     }
@@ -147,7 +147,7 @@ public partial class AppChatbot
         }
         catch (Exception exp)
         {
-            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
             return "Failed to change culture/language";
         }
     }
@@ -177,7 +177,7 @@ public partial class AppChatbot
         }
         catch (Exception exp)
         {
-            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
             return "Failed to change theme";
         }
     }
@@ -206,7 +206,7 @@ public partial class AppChatbot
         }
         catch (Exception exp)
         {
-            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
             return "Failed to retrieve error information from the device.";
         }
     }
@@ -232,7 +232,7 @@ public partial class AppChatbot
         }
         catch (Exception exp)
         {
-            serviceProvider.GetRequiredService<ServerExceptionHandler>().Handle(exp);
+            serviceProvider.GetRequiredService<ApiServerExceptionHandler>().Handle(exp);
             return "Failed to clear app files on the device.";
         }
     }
