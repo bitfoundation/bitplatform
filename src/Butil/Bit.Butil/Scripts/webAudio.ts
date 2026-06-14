@@ -13,7 +13,8 @@ var BitButil = BitButil || {};
         playBuffer,
         playTone,
         stop,
-        setGain
+        setGain,
+        dispose
     };
 
     function ensureCtx(): AudioContext | null {
@@ -80,5 +81,16 @@ var BitButil = BitButil || {};
     function setGain(id: string, value: number) {
         const entry = _nodes[id];
         if (entry) entry.gain.gain.value = value;
+    }
+
+    async function dispose() {
+        for (const id of Object.keys(_nodes)) stop(id);
+        try { _master?.disconnect(); } catch { /* already disconnected */ }
+        const ctx = _ctx;
+        _ctx = null;
+        _master = null;
+        if (ctx && ctx.state !== 'closed') {
+            try { await ctx.close(); } catch { /* invalid state */ }
+        }
     }
 }(BitButil));

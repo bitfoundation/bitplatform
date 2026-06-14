@@ -131,7 +131,7 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
             foreach (var id in controllerIds)
                 await js.InvokeVoid("BitButil.serviceWorker.unsubscribeControllerChange", id);
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

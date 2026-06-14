@@ -129,7 +129,7 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         try { await ClearAllWatches(); }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

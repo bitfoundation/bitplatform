@@ -58,7 +58,7 @@ public class WakeLock(IJSRuntime js) : IAsyncDisposable
         {
             await Release();
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         GC.SuppressFinalize(this);
     }
 
@@ -71,7 +71,7 @@ public class WakeLock(IJSRuntime js) : IAsyncDisposable
             if (_disposed) return;
             _disposed = true;
             try { await js.InvokeVoid("BitButil.wakeLock.unpersist", token); }
-            catch (JSDisconnectedException) { }
+            catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         }
     }
 }

@@ -154,7 +154,7 @@ public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
                 await js.InvokeVoid("BitButil.storage.unsubscribe", id);
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

@@ -511,7 +511,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
 
             await js.InvokeVoid("BitButil.window.dispose");
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _events.Dispose();

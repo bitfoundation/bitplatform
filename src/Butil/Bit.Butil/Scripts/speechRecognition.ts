@@ -13,6 +13,10 @@ var BitButil = BitButil || {};
     };
 
     function start(id: string, options: any, dotNetRef: any) {
+        // Defensive: if a recognizer is already registered under this id, stop it
+        // before replacing it so we don't orphan a running recognizer.
+        stop(id);
+
         const W = window as any;
         const Ctor = W.SpeechRecognition || W.webkitSpeechRecognition;
         if (!Ctor) {
@@ -41,6 +45,9 @@ var BitButil = BitButil || {};
         };
         r.onerror = (event: any) => {
             dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionError', id, event?.error ?? 'unknown');
+            // A terminal error may not be followed by an onend, so clean up here
+            // too. delete is idempotent, so a later onend remains harmless.
+            delete _sessions[id];
         };
         r.onend = () => {
             dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionEnd', id);

@@ -17,7 +17,7 @@ public sealed class MediaStreamHandle : IAsyncDisposable
 
     internal MediaStreamHandle(IJSRuntime js, Guid id) { _js = js; _id = id; }
 
-    /// <summary>The internal stream id (also accepted by <see cref="MediaDevices.AttachToVideo"/>).</summary>
+    /// <summary>The internal stream id used to track this stream (see <see cref="AttachTo"/>).</summary>
     public Guid Id => _id;
 
     /// <summary>Attaches this stream to a <c>&lt;video&gt;</c> or <c>&lt;audio&gt;</c> element's <c>srcObject</c>.</summary>
@@ -33,6 +33,6 @@ public sealed class MediaStreamHandle : IAsyncDisposable
         if (_disposed) return;
         _disposed = true;
         try { await _js.InvokeVoid("BitButil.mediaDevices.stop", _id); }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 }

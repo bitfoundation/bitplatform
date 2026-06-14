@@ -35,9 +35,10 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     [JSInvokable(ShowMethodName)]
     public void InvokeNotificationShow(Guid id) { if (_listeners.TryGetValue(id, out var l)) l.OnShow?.Invoke(); }
 
-    /// <summary>Invoked from JS when the notification is closed.</summary>
+    /// <summary>Invoked from JS when the notification is closed. Also drops the listener so the
+    /// map doesn't accumulate entries on natural dismiss or programmatic close.</summary>
     [JSInvokable(CloseMethodName)]
-    public void InvokeNotificationClose(Guid id) { if (_listeners.TryGetValue(id, out var l)) l.OnClose?.Invoke(); }
+    public void InvokeNotificationClose(Guid id) { if (_listeners.TryRemove(id, out var l)) l.OnClose?.Invoke(); }
 
     /// <summary>Invoked from JS on a notification error.</summary>
     [JSInvokable(ErrorMethodName)]

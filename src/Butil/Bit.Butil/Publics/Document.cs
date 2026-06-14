@@ -344,7 +344,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
                 await _events.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
             }
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _events.Dispose();

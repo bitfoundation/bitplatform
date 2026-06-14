@@ -14,6 +14,15 @@ var BitButil = BitButil || {};
         async start(dotNetRef: any, listenerId: string, threshold: number) {
             const ID: any = (window as any).IdleDetector;
             if (!ID) return;
+
+            // Defensive: abort/replace any existing detector registered under this id
+            // so we don't leak the previous detector's AbortController.
+            const existing = _detectors[listenerId];
+            if (existing) {
+                delete _detectors[listenerId];
+                try { existing.controller.abort(); } catch { /* already aborted */ }
+            }
+
             const controller = new AbortController();
             const detector = new ID();
 

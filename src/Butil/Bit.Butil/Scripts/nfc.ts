@@ -33,6 +33,10 @@ var BitButil = BitButil || {};
     }
 
     async function scan(id: string, dotNetRef: any) {
+        // Defensive: abort/replace any existing reader registered under this id so
+        // we don't leak the previous reader's AbortController.
+        stop(id);
+
         const W = window as any;
         if (typeof W.NDEFReader !== 'function') {
             dotNetRef.invokeMethodAsync('InvokeNdefError', id, 'NFC is not supported.');
@@ -47,6 +51,9 @@ var BitButil = BitButil || {};
             });
         };
         reader.onreadingerror = () => {
+            // A reading error is non-terminal: the scan stays active and may read
+            // subsequent tags, so we intentionally keep _readers[id]. Teardown
+            // happens via stop() (AbortController) on the .NET side.
             dotNetRef.invokeMethodAsync('InvokeNdefError', id, 'reading-error');
         };
         try { await reader.scan({ signal: controller.signal }); _readers[id] = { reader, controller }; }

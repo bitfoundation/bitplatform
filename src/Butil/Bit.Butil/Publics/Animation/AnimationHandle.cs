@@ -47,6 +47,6 @@ public sealed class AnimationHandle : IAsyncDisposable
         if (_disposed) return;
         _disposed = true;
         try { await _js.InvokeVoid("BitButil.animation.cancel", _id); }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 }

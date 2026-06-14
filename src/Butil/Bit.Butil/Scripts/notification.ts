@@ -54,7 +54,13 @@ var BitButil = BitButil || {};
             _tracked[id] = n;
             n.onclick = () => dotNetRef.invokeMethodAsync('InvokeNotificationClick', id);
             n.onshow = () => dotNetRef.invokeMethodAsync('InvokeNotificationShow', id);
-            n.onclose = () => dotNetRef.invokeMethodAsync('InvokeNotificationClose', id);
+            n.onclose = () => {
+                // `close` fires for both natural dismiss and programmatic close(id), so this is the
+                // single cleanup point: notify .NET (which also drops the C# listener) then purge the
+                // JS-side entry so neither side accumulates references for the service lifetime.
+                dotNetRef.invokeMethodAsync('InvokeNotificationClose', id);
+                untrack(id);
+            };
             n.onerror = () => dotNetRef.invokeMethodAsync('InvokeNotificationError', id);
         } catch {
             // Service-worker fallback can't be tracked the same way (the toast is owned by the SW)
@@ -69,15 +75,23 @@ var BitButil = BitButil || {};
     function close(id: string) {
         const n = _tracked[id];
         if (!n) return;
+        // Triggers the `close` event, whose handler removes the entry from _tracked and drops the
+        // C# listener — keeping Close() and natural dismiss on the same cleanup path.
         try { n.close(); } catch { /* already closed */ }
+    }
+
+    function untrack(id: string) {
+        const n = _tracked[id];
+        if (!n) return;
+        delete _tracked[id];
+        n.onclick = null; n.onshow = null; n.onclose = null; n.onerror = null;
     }
 
     function dispose(id: string) {
         const n = _tracked[id];
         if (!n) return;
-        delete _tracked[id];
-        n.onclick = null; n.onshow = null; n.onclose = null; n.onerror = null;
         try { n.close(); } catch { /* already closed */ }
+        untrack(id);
     }
 
 }(BitButil));

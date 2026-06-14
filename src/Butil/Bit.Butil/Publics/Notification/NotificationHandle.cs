@@ -28,6 +28,6 @@ public sealed class NotificationHandle : IAsyncDisposable
         _disposed = true;
         _owner.RemoveListener(_id);
         try { await _js.InvokeVoid("BitButil.notification.dispose", _id); }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 }

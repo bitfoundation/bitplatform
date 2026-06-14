@@ -126,7 +126,7 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
                 await js.InvokeVoid("BitButil.performance.disconnect", id);
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

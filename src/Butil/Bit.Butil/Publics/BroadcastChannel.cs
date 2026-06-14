@@ -99,7 +99,7 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
                 }
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

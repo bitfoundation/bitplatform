@@ -81,7 +81,7 @@ public class WebLocks(IJSRuntime js)
             if (_disposed) return;
             _disposed = true;
             try { await js.InvokeVoid("BitButil.webLocks.release", token); }
-            catch (JSDisconnectedException) { }
+            catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         }
     }
 }

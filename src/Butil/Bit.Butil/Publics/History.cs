@@ -232,7 +232,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
         {
             await RemoveAllPopStates();
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

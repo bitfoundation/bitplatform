@@ -96,7 +96,7 @@ public class SpeechRecognition(IJSRuntime js) : IAsyncDisposable
                 await js.InvokeVoid("BitButil.speechRecognition.stop", id);
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();
@@ -122,7 +122,7 @@ public class SpeechRecognition(IJSRuntime js) : IAsyncDisposable
             _disposed = true;
             owner._listeners.TryRemove(id, out _);
             try { await js.InvokeVoid("BitButil.speechRecognition.stop", id); }
-            catch (JSDisconnectedException) { }
+            catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         }
     }
 }
