@@ -2,8 +2,7 @@
 
 public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
-    protected bool ShowAllCodes { get; private set; }
-
+    [Parameter, CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
 
 
     [AutoInject] protected IJSRuntime JSRuntime = default!;
@@ -49,8 +48,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     {
         try
         {
-            ShowAllCodes = NavigationManager.Uri.Contains("showallcodes");
-
             await OnInitAsync();
             await base.OnInitializedAsync();
         }

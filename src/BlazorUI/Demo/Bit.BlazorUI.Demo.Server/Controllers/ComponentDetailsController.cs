@@ -3,17 +3,18 @@ using System.Reflection;
 using System.Collections;
 using System.ComponentModel;
 using ModelContextProtocol.Server;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Server.Controllers;
-
-// Subject to change:
-// This controller / mcp endpoint is designed to be used for experimental purposes.
 
 [ApiController]
 [McpServerToolType]
 [Route("api/[controller]/[action]")]
 public partial class ComponentDetailsController : AppControllerBase
 {
+    [AutoInject] private HtmlRenderer htmlRenderer = default!;
+    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
+
     private static XDocument? SummariesXmlDocument = null;
 
     private static readonly Assembly[] ComponentsAssemblies = [typeof(_Imports).Assembly, typeof(Extras._Imports).Assembly];
@@ -22,9 +23,9 @@ public partial class ComponentDetailsController : AppControllerBase
                                                         .Where(type => typeof(BitComponentBase).IsAssignableFrom(type) && !type.IsAbstract))];
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetParameters))]
+    [McpServerTool(Name = nameof(GetComponentParameters))]
     [Description("Gets the parameters of a specified component.")]
-    public async Task<ComponentParameterDetailsDto[]> GetParameters(string componentName)
+    public async Task<ComponentParameterDetailsDto[]> GetComponentParameters(string componentName)
     {
         if (string.IsNullOrWhiteSpace(componentName))
             return [];
@@ -35,7 +36,7 @@ public partial class ComponentDetailsController : AppControllerBase
         {
             var typeName = type.IsGenericType ? type.Name[..type.Name.IndexOf('`')] : type.Name;
 
-            return typeName.Equals(componentName, StringComparison.InvariantCultureIgnoreCase);
+            return typeName.Equals(componentName, StringComparison.OrdinalIgnoreCase);
         });
 
         if (componentType is null)
@@ -69,6 +70,33 @@ public partial class ComponentDetailsController : AppControllerBase
                                       Description = xmlProperty?.Parent?.Element("summary")?.Value?.Trim(),
                                   };
                               })];
+    }
+
+    [HttpGet]
+    [McpServerTool(Name = nameof(GetComponentExamples))]
+    [Description("Gets the examples of a specified component.")]
+    public async Task<string> GetComponentExamples(string componentName)
+    {
+        if (string.IsNullOrWhiteSpace(componentName))
+            return "Component name is required.";
+
+        var demoPageType = typeof(Client.Core.Routes).Assembly
+            .GetExportedTypes()
+            .SingleOrDefault(t => string.Equals(t.Name, $"{componentName}Demo", StringComparison.OrdinalIgnoreCase));
+
+        if (demoPageType is null)
+            return "No demo page found for the specified component.";
+
+        httpContextAccessor.HttpContext!.Items[nameof(Client.Core.Components.AppComponentBase.RenderForMcpClient)] = true;
+
+        var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var renderedComponent = await htmlRenderer.RenderComponentAsync(demoPageType);
+
+            return renderedComponent.ToHtmlString();
+        });
+
+        return body;
     }
 
     private static async Task<XDocument?> LoadSummariesXmlDocumentAsync()

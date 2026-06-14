@@ -29,7 +29,7 @@ public static class IDistributedApplicationBuilderExtensions
                      "--save", "",                        // Backend API has its own L1 in-memory cache, no need to have RDB snapshots for the L2 redis cache in case of failures.
                      "--appendonly", "no",                // Disables AOF persistence as well for the same reason.
                      "--maxmemory-policy", "allkeys-lru"  // Evict least recently used keys when memory limit is reached
-                 );
+                 ).WithOtlpExporter();
             }).ConfigureInfrastructure(infra =>
             {
                 var db = infra.GetProvisionableResources()
@@ -63,7 +63,7 @@ public static class IDistributedApplicationBuilderExtensions
                         "--appendfsync", "always",         // Sync to disk on every write for maximum durability. Temporarily disable it programmatically using C# code during bulk operations if needed.
                         "--save", "",                      // Disables RDB snapshots
                         "--maxmemory-policy", "noeviction" // Raise error when memory limit is reached instead of evicting keys
-                    );
+                    ).WithOtlpExporter();
             })
             .ConfigureInfrastructure(infra =>
             {
@@ -97,7 +97,8 @@ public static class IDistributedApplicationBuilderExtensions
             {
                 sqlServer.WithDbGate(config => config.WithDataVolume())
                     .WithDataVolume()
-                    .WithImage("mssql/server", "2025-latest"); // Sql server 2025 supports embedded vector search.
+                    .WithImage("mssql/server", "2025-latest") // Sql server 2025 supports embedded vector search.
+                    .WithOtlpExporter();
             })
             .AddDatabase("mssqldb");
     }
@@ -116,7 +117,8 @@ public static class IDistributedApplicationBuilderExtensions
                 postgresDatabase.WithPgAdmin()
                     .WithV18DataVolume()
                     .WithOptimizedSetup()
-                    .WithImage("pgvector/pgvector", "pg18"); // pgvector supports embedded vector search.
+                    .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
+                    .WithOtlpExporter();
             })
             .AddDatabase("postgresdb");
     }
@@ -131,6 +133,7 @@ public static class IDistributedApplicationBuilderExtensions
         return builder.AddMySql("mysqlserver")
             .WithPhpMyAdmin()
             .WithDataVolume()
+            .WithOtlpExporter()
             .AddDatabase("mysqldb");
     }
     //#endif
@@ -153,6 +156,7 @@ public static class IDistributedApplicationBuilderExtensions
             .RunAsEmulator(azurite => // Remove this RunAsEmulator and related configuration to use actual Azure Blob Storage instance
             {
                 azurite
+                    .WithOtlpExporter()
                     .WithDataVolume();
             })
             .AddBlobs("azureblobstorage");

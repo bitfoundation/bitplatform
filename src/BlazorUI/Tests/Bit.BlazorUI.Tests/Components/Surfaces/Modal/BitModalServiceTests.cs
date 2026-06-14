@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.BlazorUI.Tests.Components.Extras.ModalService;
+namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
 
 [TestClass]
 public class BitModalServiceTests : BunitTestContext
@@ -53,6 +53,22 @@ public class BitModalServiceTests : BunitTestContext
         container.WaitForAssertion(() =>
         {
             Assert.AreEqual(0, container.FindAll(".bit-mdl").Count);
+        });
+    }
+
+    [TestMethod]
+    public async Task BitModalContainerShouldApplyBasicModalParameters()
+    {
+        var container = RenderComponent<BitModalContainer>(parameters =>
+        {
+            parameters.Add(p => p.ModalParameters, new BitModalParameters { FullWidth = true });
+        });
+
+        await ModalService.Show<TestModalContent>();
+
+        container.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(container.Find(".bit-mdl").ClassList.Contains("bit-mdl-fwi"));
         });
     }
 

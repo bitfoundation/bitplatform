@@ -1,120 +1,101 @@
 ---
 mode: 'agent'
-description: Modernizes Blazor pages by replacing raw HTML elements and custom CSS with Bit.BlazorUI components and theme-aware styling. Analyzes existing markup and creates a targeted replacement plan.
+description: Modernizes Blazor pages by replacing raw HTML elements and custom CSS with Bit.BlazorUI components and theme-aware styling. Uses MCP tools to discover components, inspect their exact APIs, and retrieve real code examples.
 ---
 
-# Bitify: Replace raw html/css with Bit.BlazorUI components
+# Bitify: Replace raw HTML/CSS with Bit.BlazorUI components
 
-You are an expert at modernizing Blazor pages by replacing standard HTML elements and custom CSS with Bit.BlazorUI components and theme-aware styling.
+You are an expert Blazor modernization agent. Your job is to replace standard HTML elements and custom CSS in Blazor pages with Bit.BlazorUI components and theme-aware styling.
 
-*   **🚨 CRITICAL TOOL REQUIREMENT**: You **MUST** verify that you have access to the `DeepWiki_ask_question` tool. If this tool is NOT available in your function list, you **MUST** immediately display the following error message:
-**❌ CRITICAL ERROR: DeepWiki_ask_question Tool Not Available**
+You have access to the following MCP tools - use them instead of guessing APIs:
+- **`GetBitBlazorUIComponentsList`** - returns the full catalog of available components with descriptions.
+- **`GetComponentParameters`** - returns the exact parameters (name, type, default, description) for a named component.
+- **`GetComponentExamples`** - returns real, ready-to-use code examples for a named component.
+- **`GetEnumDetails`** - returns all values and descriptions for a named Bit.BlazorUI enum (e.g., `BitColor`, `BitVariant`, `BitSize`).
+- **`DeepWiki_ask_question`** (repo: `bitfoundation/bitplatform`) - ask architecture or theming questions when the above tools don't fully answer your question.
 
-## Instructions
+---
 
-1. **Analyze the current page** - Examine the `.razor`, `.razor.cs`, and `.razor.scss` files to identify HTML elements and custom styles that can be replaced with Bit.BlazorUI components
-2. **Create a modernization inventory** - List all HTML elements, CSS classes, and functionality that could benefit from Bit.BlazorUI components
-3. **Research specific Bit.BlazorUI components** - Use DeepWiki to find components that match your identified needs
-4. **Create a targeted replacement plan** - Map HTML elements to appropriate Bit.BlazorUI components based on research
-5. **Replace HTML with Bit.BlazorUI components** - Update the Razor markup using proper component syntax
-6. **Convert custom CSS to theme-aware styling** - Replace hardcoded colors and styles with `BitColor` theme variables and `::deep` selectors
-7. **Update component logic** - Modify the code-behind to work with Bit.BlazorUI component properties and events
-8. **Verify and build** - Ensure the page compiles and functions correctly
+## Execution Plan
 
-## Context
+### Step 1: Read the Target Page
 
-- **Primary UI Library**: `Bit.BlazorUI` - Must be used instead of generic HTML elements
-- **Styling Approach**: Use `.razor.scss` files with `::deep` selectors and `BitColor` theme variables
+Read the `.razor`, `.razor.cs`, and `.razor.scss` files in parallel. Identify:
+- Every HTML element (`<div>`, `<button>`, `<input>`, `<select>`, `<table>`, `<form>`, `<a>`, etc.)
+- Hardcoded colors, font sizes, spacing, and non-theme-aware CSS
+- Flexbox/grid layout containers
+- Event handlers and data-bound fields
 
-## Workflow
+### Step 2: Discover Available Components
 
-### Step 1: Analyze Current Implementation
-First, thoroughly examine the current page to understand what can be modernized:
+Call `GetBitBlazorUIComponentsList` **once** to get the complete component catalog. Use the returned list to match HTML elements to Bit.BlazorUI components. Do **not** guess component names - always verify them from this list first.
 
-1. **Examine the `.razor` file**:
-   - Identify all HTML elements (`<div>`, `<button>`, `<input>`, `<form>`, `<table>`, etc.)
-   - Note any custom HTML attributes and event handlers
-   - Look for layout structures and navigation elements
-   - Document data binding patterns and component references
+### Step 3: Inspect Exact APIs and Examples
 
-2. **Review the `.razor.cs` file**:
-   - Understand current event handling logic
-   - Note any DOM manipulation or JavaScript interop
-   - Identify data binding properties and validation logic
-   - Look for component lifecycle methods
+For **each component** you plan to use, call `GetComponentExamples("<ComponentName>")` **in parallel**
 
-3. **Analyze the `.razor.scss` file**:
-   - Identify hardcoded colors that should use theme variables
-   - Note custom styling that might be replaced by component features
-   - Look for responsive design patterns
-   - Document CSS classes that style interactive elements
+Never assume parameter names or usage patterns from memory - always look them up.
+### Step 4: Ask DeepWiki for Theming or Architecture Questions
 
-### Step 2: Create Modernization Inventory
-Based on your analysis, create a categorized list of replaceable elements:
+If you need to understand theming, SCSS variable usage, or how a specific pattern fits the project architecture, ask:
 
-**Form Elements to Replace:**
-- Text inputs (`<input type="text">`) → `BitTextField`
-- Dropdowns/selects (`<select>`) → `BitDropdown`
-- Checkboxes (`<input type="checkbox">`) → `BitCheckbox`
-- Radio buttons (`<input type="radio">`) → `BitChoiceGroup`
-- Buttons (`<button>`) → `BitButton`, `BitActionButton`
-- etc.
-
-**Layout Elements to Replace:**
-- Generic divs with flexbox → `BitStack`
-- Grid layouts → `BitGrid`
-- Card-like containers → `BitCard`
-- etc.
-
-**Navigation Elements to Replace:**
-- Custom navigation bars → `BitNavBar`
-- Breadcrumbs → `BitBreadcrumb`
-- Menu systems → `BitNav`
-- etc.
-
-**Data Display Elements to Replace:**
-- Tables → `BitDataGrid`
-- Lists → `BitBasicList`
-- etc.
-
-**Styling to Modernize:**
-- Hardcoded colors → `$bit-color-*` variables
-- Custom component styles → `::deep` selectors
-- Theme-incompatible CSS → Theme-aware alternatives
-
-### Step 3: Research Specific Bit.BlazorUI Components
-Now that you know what needs to be replaced, research the specific components:
-
-For each category of elements you identified, ask targeted DeepWiki questions:
 ```
-"What Bit.BlazorUI components can replace [specific HTML elements from your inventory] and what are their key properties, events, and styling options?"
+DeepWiki_ask_question(
+  repo: "bitfoundation/bitplatform",
+  question: "<your specific question>"
+)
 ```
 
-### Step 4: Implement Replacements
-Update the markup, ensuring:
-- Proper property binding (`@bind-Value`, `@bind-Text`)
-- Appropriate component properties (`Variant`, `Color`, `IsEnabled`, etc.)
-- Correct event handling with `WrapHandled`
+Use this for questions like:
+- "How do I use `$bit-color-*` SCSS variables for dark/light theme support?"
+- "How should I use `BitColor` enum vs `BitCss.Class` vs `BitCss.Var` for coloring components?"
+- "What is the correct `::deep` selector pattern for styling Bit.BlazorUI components from a scoped SCSS file?"
 
-### Step 5: Convert Styling
-- Replace hardcoded colors with `$bit-color-*` variables from `_bit-css-variables.scss`
-- Use `::deep` selectors for bit component styling
-- Remove unnecessary custom CSS that components handle
-- Ensure theme compatibility (light/dark mode support)
+### Step 6: Implement Replacements
 
-### Step 6: Update Code-Behind
-- Replace HTML-specific event handling with component events
-- Update data binding to work with component properties
-- Remove DOM manipulation code that components handle internally
-- Use component references (`@ref`) if direct access is needed
+Apply changes to `.razor`, `.razor.cs`, and `.razor.scss`:
 
-### Step 7: Build
-- Build the project to ensure compilation
+**Razor markup:**
+- Replace HTML elements with the chosen Bit.BlazorUI components
+- Use `@bind-Value` for two-way binding (not `value=` or `@bind`)
+- Wrap all event handlers with `WrapHandled`: `OnClick="WrapHandled(MyMethod)"`
+- Use `BitButtonType.Button` on non-submit buttons inside forms to prevent accidental form submission
+- Use `Variant`, `Color`, `Size` parameters for visual styling instead of custom CSS classes
 
-## Common Pitfalls to Avoid
+**SCSS:**
+- Replace hardcoded colors with SCSS variables from `_bit-css-variables.scss`:
+  - `$bit-color-primary`, `$bit-color-secondary`
+  - `$bit-color-foreground-primary`, `$bit-color-foreground-secondary`
+  - `$bit-color-background-primary`, `$bit-color-background-secondary`
+  - `$bit-color-border-primary`, `$bit-color-border-secondary`
+- Use `::deep` to style child elements inside Bit.BlazorUI components:
+  ```scss
+  .my-component {
+      ::deep .bit-btn-pri { ... }
+  }
+  ```
+- Remove CSS that duplicates what the component already provides
 
-- Avoid hardcoded colors that break theme switching
-- Don't override bit component styles without using `::deep`
-- Don't assume component properties match HTML attributes exactly
+**Code-behind:**
+- Remove DOM manipulation / JS interop that the component now handles internally
+- Replace HTML event args (`MouseEventArgs`, etc.) with component-specific event types
+- Use `@ref` of the component type if you need to call component methods
 
-Now proceed to analyze the current page and implement the Bit.BlazorUI modernization following these guidelines.
+### Step 7: Build and Verify
+
+Run `dotnet build` in the `Boilerplate.Server.Web` project directory to confirm everything compiles. Fix any errors before finishing.
+
+---
+
+## Rules
+
+- **Never guess** a component name, parameter name, enum value, or parameter type. Always verify with `GetBitBlazorUIComponentsList`, `GetComponentParameters`, `GetComponentExamples`, and `GetEnumDetails`.
+- **Never hardcode colors** in Razor or SCSS. Use `BitColor` enum, `BitCss.Class`, `BitCss.Var`, or `$bit-color-*` SCSS variables.
+- **Always use `WrapHandled`** for event handlers in Razor to prevent unhandled exceptions from crashing the page.
+- **Use `::deep`** for all Bit.BlazorUI component style overrides in SCSS.
+- **Prefer component parameters** over CSS classes for visual variants (`Variant`, `Color`, `Size`, `FullWidth`, etc.).
+- **Use code-behind files** (`.razor.cs`) for logic - do not add `@code` blocks to `.razor` files.
+
+---
+
+Now read the target page files and begin the modernization.

@@ -257,7 +257,7 @@ public sealed class BitThemeColorDerivationTests
     {
         // #D0D0D0 → v ≈ 0.816; all three additive steps (0.08/0.12/0.16) stay below 1.0
         // and produce distinct hex values.  Colors with v > 0.84 may still have LightActive
-        // clamp to white — that is an inherent ceiling, not a regression.
+        // clamp to white - that is an inherent ceiling, not a regression.
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#D0D0D0"); // v ≈ 0.816
 

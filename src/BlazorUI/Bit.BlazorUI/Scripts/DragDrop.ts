@@ -1,27 +1,28 @@
-﻿namespace BitBlazorUI {
-    export class Modal {
-        private static _dragDropListeners: any = {};
+namespace BitBlazorUI {
+    export class DragDrop {
+        private static _listeners: { [key: string]: any } = {};
 
-        public static setupDragDrop(containerId: string, dragElementSelector: string) {
-            Modal.removeDragDrop(containerId, dragElementSelector);
-            const listeners: any = {};
-            Modal._dragDropListeners[containerId] = listeners;
+        public static setup(key: string, containerSelector: string, dragElementSelector: string) {
+            DragDrop.remove(key, dragElementSelector);
 
-            const element = document.getElementById(containerId)! as HTMLElement;
-            const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
+            const element = document.querySelector(containerSelector) as HTMLElement;
+            // The drag selector may point to the container itself (the default) or to a descendant.
+            const dragElement = (element?.matches(dragElementSelector) ? element : element?.querySelector(dragElementSelector)) as HTMLElement;
             if (!element || !dragElement) return;
+
+            const listeners: any = {};
+            DragDrop._listeners[key] = listeners;
 
             let x = 0;
             let y = 0;
 
             listeners['pointerdown'] = handlePointerDown;
+            listeners['dragElement'] = dragElement;
             dragElement.addEventListener('pointerdown', handlePointerDown);
             dragElement.style.cursor = 'move';
             dragElement.classList.add('bit-mdl-nta');
 
             function handlePointerDown(e: PointerEvent) {
-                //e.preventDefault();
-
                 x = e.clientX;
                 y = e.clientY;
 
@@ -32,8 +33,6 @@
                 listeners['pointermove'] = handlePointerMove;
 
                 document.addEventListener('pointerup', handlePointerUp);
-                //document.addEventListener('pointerout', handlePointerUp);
-                //document.addEventListener('pointerleave', handlePointerUp);
                 listeners['pointerup'] = handlePointerUp;
             }
 
@@ -49,34 +48,31 @@
 
             function handlePointerUp() {
                 document.removeEventListener('pointermove', handlePointerMove);
-
                 document.removeEventListener('pointerup', handlePointerUp);
-                //document.removeEventListener('pointerout', handlePointerUp);
-                //document.removeEventListener('pointerleave', handlePointerUp);
             }
         }
 
-        public static removeDragDrop(id: string, dragElementSelector: string) {
-            const listeners = Modal._dragDropListeners[id];
+        public static remove(key: string, dragElementSelector: string) {
+            const listeners = DragDrop._listeners[key];
             if (!listeners) return;
 
-            const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
-            if (!dragElement) return;
-
-            dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
-            dragElement.style.cursor = '';
-            dragElement.classList.remove('bit-mdl-nta');
+            // Use the originally-bound drag element so cleanup still targets the
+            // correct element even if the selector resolves differently now.
+            const dragElement = (listeners['dragElement'] as HTMLElement) ?? (document.querySelector(dragElementSelector) as HTMLElement);
+            if (dragElement) {
+                dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
+                dragElement.style.cursor = '';
+                dragElement.classList.remove('bit-mdl-nta');
+            }
 
             document.removeEventListener('pointermove', listeners['pointermove']);
-
             document.removeEventListener('pointerup', listeners['pointerup']);
-            //document.removeEventListener('pointerout', listeners['pointerup']);
-            //document.removeEventListener('pointerleave', listeners['pointerup']);
 
             delete listeners['pointerdown'];
             delete listeners['pointermove'];
             delete listeners['pointerup'];
-            delete Modal._dragDropListeners[id];
+            delete listeners['dragElement'];
+            delete DragDrop._listeners[key];
         }
     }
 }

@@ -284,4 +284,46 @@ public class BitSearchBoxTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
     }
+
+    [TestMethod]
+    public void BitSearchBoxSuggestItemsProviderShouldRenderItems()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        string? receivedSearchTerm = null;
+        int receivedTake = 0;
+
+        var component = RenderComponent<BitSearchBox>(p =>
+        {
+            p.Add(x => x.Immediate, true);
+            p.Add(x => x.MinSuggestTriggerChars, 3);
+            p.Add(x => x.SuggestItemsProvider, (BitSearchBoxSuggestItemsProviderRequest req) =>
+            {
+                receivedSearchTerm = req.SearchTerm;
+                receivedTake = req.Take;
+                return req.SearchTerm == "app"
+                    ? ValueTask.FromResult<IEnumerable<string>>(new List<string> { "apple", "application" })
+                    : ValueTask.FromResult<IEnumerable<string>>(new List<string> { "banana" });
+            });
+        });
+
+        var input = component.Find(".bit-srb-inp");
+        input.Input("app");
+
+        var items = component.FindAll(".bit-srb-itm");
+
+        Assert.AreEqual("app", receivedSearchTerm);
+        Assert.AreEqual(5, receivedTake);
+        Assert.AreEqual(2, items.Count);
+        Assert.AreEqual("apple", items[0].TextContent.Trim());
+        Assert.AreEqual("application", items[1].TextContent.Trim());
+
+        input.Input("ban");
+
+        items = component.FindAll(".bit-srb-itm");
+
+        Assert.AreEqual("ban", receivedSearchTerm);
+        Assert.AreEqual(1, items.Count);
+        Assert.AreEqual("banana", items[0].TextContent.Trim());
+    }
 }

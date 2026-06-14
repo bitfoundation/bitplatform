@@ -21,6 +21,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private string _dropdownTextContainerId = string.Empty;
     private DotNetObjectReference<BitDropdown<TItem, TValue>> _dotnetObj = default!;
 
+    private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
+
     private string _labelId = string.Empty;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
@@ -147,6 +149,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public string? ComboBoxAddButtonIconName { get; set; }
 
     /// <summary>
+    /// The debounce time in milliseconds for the search and combo box inputs (applied when Immediate is enabled).
+    /// </summary>
+    [Parameter] public int DebounceTime { get; set; }
+
+    /// <summary>
     /// The default value that will be initially used to set selected item if the Value parameter is not set.
     /// </summary>
     [Parameter] public TValue? DefaultValue { get; set; }
@@ -196,6 +203,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// The initial items that will be used to set selected items when using an ItemProvider.
     /// </summary>
     [Parameter] public IEnumerable<TItem>? InitialSelectedItems { get; set; }
+
+    /// <summary>
+    /// Searches the items immediately as the user types in the search box or combo box input (based on the 'oninput' HTML event).
+    /// </summary>
+    [Parameter] public bool Immediate { get; set; }
 
     /// <summary>
     /// Determines the opening state of the callout. (two-way bound)
@@ -422,6 +434,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// The custom template for the text of the dropdown.
     /// </summary>
     [Parameter] public RenderFragment<BitDropdown<TItem, TValue>>? TextTemplate { get; set; }
+
+    /// <summary>
+    /// The throttle time in milliseconds for the search and combo box inputs (applied when Immediate is enabled).
+    /// </summary>
+    [Parameter] public int ThrottleTime { get; set; }
 
     /// <summary>
     /// The title to show when the mouse hovers over the dropdown.
@@ -1173,6 +1190,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsEnabled is false) return;
         if (IsOpen is false) return;
 
+        _rateLimiter.Reset();
+
         if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
@@ -1211,11 +1230,29 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return ClearSearchBox();
     }
 
-    private async Task HandleFilterChange(ChangeEventArgs e)
+    private async Task HandleOnSearchBoxInput(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ShowSearchBox is false) return;
 
+        if (Immediate is false) return;
+
+        await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
+            await InvokeAsync(async () => await SearchItems(args)));
+    }
+
+    private async Task HandleOnSearchBoxChange(ChangeEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        if (ShowSearchBox is false) return;
+
+        if (Immediate) return;
+
+        await SearchItems(e);
+    }
+
+    private async Task SearchItems(ChangeEventArgs e)
+    {
         _searchText = e.Value?.ToString();
 
         await OnSearch.InvokeAsync(_searchText);
@@ -1227,6 +1264,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsEnabled is false) return;
         if (ShowSearchBox is false) return;
         if (_searchText.HasNoValue()) return;
+
+        _rateLimiter.Reset();
 
         _searchText = null;
 
@@ -1255,6 +1294,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (Combo is false) return;
         if (IsEnabled is false) return;
         if (_searchText.HasNoValue()) return;
+
+        _rateLimiter.Reset();
 
         _searchText = null;
     }
@@ -1479,6 +1520,26 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
 
+        _searchText = e.Value?.ToString();
+
+        if (Immediate is false) return;
+
+        await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
+            await InvokeAsync(async () => await SearchComboItems(args)));
+    }
+
+    private async Task HandleOnComboChange(ChangeEventArgs e)
+    {
+        if (ReadOnly) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
+
+        if (Immediate) return;
+
+        await SearchComboItems(e);
+    }
+
+    private async Task SearchComboItems(ChangeEventArgs e)
+    {
         _searchText = e.Value?.ToString();
         await SearchVirtualized();
 
@@ -1708,6 +1769,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsDisposed || disposing is false) return;
 
         OnValueChanged -= HandleOnValueChanged;
+
+        _rateLimiter.Reset();
 
         await base.DisposeAsync(disposing);
 
