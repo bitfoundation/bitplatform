@@ -37,8 +37,8 @@ internal static class ExtrasJsRuntimeExtensions
         return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.disposePreventKeys", element);
     }
 
-    internal static ValueTask BitExtrasScrollOptionIntoView(this IJSRuntime jsRuntime, string optionId)
+    internal static ValueTask BitExtrasScrollElementIntoView(this IJSRuntime jsRuntime, string elementId)
     {
-        return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.scrollOptionIntoView", optionId);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.scrollElementIntoView", elementId);
     }
 }

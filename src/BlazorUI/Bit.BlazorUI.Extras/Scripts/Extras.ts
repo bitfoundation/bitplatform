@@ -52,17 +52,17 @@ namespace BitBlazorUI {
             delete el.bitPreventKeys;
         }
 
-        // Scrolls the option element into the visible area of its scroll container using
+        // Scrolls the element into the visible area of its scroll container using
         // 'nearest' so keyboard navigation keeps the active item on screen with minimal movement.
-        public static scrollOptionIntoView(optionId: string) {
-            if (!optionId) return;
+        public static scrollElementIntoView(elementId: string) {
+            if (!elementId) return;
 
-            const element = document.getElementById(optionId);
+            const element = document.getElementById(elementId);
             if (!element) return;
 
             try {
                 element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-            } catch (e) { console.error('BitBlazorUI.Extras.scrollOptionIntoView:', e); }
+            } catch (e) { console.error('BitBlazorUI.Extras.scrollElementIntoView:', e); }
         }
         
         public static async initScripts(scripts: string[], isModule: boolean) {
