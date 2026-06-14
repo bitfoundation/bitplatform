@@ -146,6 +146,16 @@ namespace BitBlazorUI {
                 return Promise.resolve();
             }
 
+            // An already-applied stylesheet has a non-null .sheet at any readyState, so short-circuit
+            // instead of waiting on a 'load' event that may have already fired. We intentionally do NOT
+            // apply the equivalent isHostScriptLoaded check here: it relies on Resource Timing, which has
+            // no entry for an in-flight script before the document is 'complete', so it would resolve
+            // prematurely for a host script that is still loading. Such scripts fall through to the
+            // load/error/window listeners below, which await real readiness.
+            if (kind === 'stylesheet' && Extras.isHostStylesheetApplied(element as HTMLLinkElement)) {
+                return Promise.resolve();
+            }
+
             return new Promise<void>((res, rej) => {
                 const settle = () => {
                     if (kind === 'stylesheet' && !Extras.isHostStylesheetApplied(element as HTMLLinkElement)) {

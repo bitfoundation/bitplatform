@@ -349,6 +349,6 @@ public partial class BitSlider : BitComponentBase
         var height = await _js.BitUtilsGetProperty(element, "clientHeight");
         return height.HasNoValue()
             ? 0
-            : int.Parse(height);
+            : int.Parse(height!);
     }
 }

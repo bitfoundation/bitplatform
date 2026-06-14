@@ -154,6 +154,9 @@ public partial class BitChart : IAsyncDisposable
 
         if (Config is not null)
         {
+            // Re-runs setup after a Config change. The readiness result is intentionally discarded here:
+            // SetupCompletedCallback is raised only once, on first render, so subsequent re-setups don't
+            // re-signal readiness.
             _ = await _js.BitChartJsSetupChart(Config);
         }
     }

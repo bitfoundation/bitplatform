@@ -256,6 +256,14 @@ internal static class TsPromiseMethodScanner
         return false;
     }
 
+    // Backward scanning here (SkipNonCodeBackward + FindMatchingBackward) is intentionally best-effort and
+    // affects only secondary nested-function-body detection — never the primary async/Promise detection that
+    // relies on explicit `async` / `: Promise<...>` annotations (see the SkipNonCodeBackward doc comment).
+    // Reverse scanning can misclassify tokens at edge boundaries: regex literals (e.g. /pattern/) read as
+    // division, template literals with embedded ${...} expressions, and similar ambiguous token sequences.
+    // The deliberate tradeoff is to prefer false negatives (occasionally missing a nested function) over false
+    // positives, so maintainers should not "fix" this with more aggressive matching that would produce
+    // incorrect classifications.
     private static bool IsNestedFunctionBodyOpen(string text, int braceIndex)
     {
         var i = braceIndex - 1;

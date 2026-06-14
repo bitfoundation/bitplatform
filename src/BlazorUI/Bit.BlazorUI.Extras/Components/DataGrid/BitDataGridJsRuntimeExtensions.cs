@@ -14,10 +14,10 @@ internal static class BitDataGridJsRuntimeExtensions
 
     // This is a fire-and-forget call from OnAfterRenderAsync that runs DOM-heavy positioning logic
     // (getBoundingClientRect, scrollIntoViewIfNeeded, focus). It deliberately uses the regular async
-    // invocation rather than FastInvokeVoid: on WebAssembly FastInvokeVoid runs synchronously and only
-    // swallows JsonException, so a JS-side failure (e.g. scrollIntoViewIfNeeded being unsupported) would
-    // throw synchronously and escape the discarded task into the render loop. The async path keeps any
-    // such failure contained within the returned task instead.
+    // invocation rather than FastInvokeVoid: on WebAssembly FastInvokeVoid runs synchronously and can
+    // alter Promise/ordering and error-propagation semantics, so we use the async Invoke pattern to keep
+    // any JS-side failure (e.g. scrollIntoViewIfNeeded being unsupported) contained within the returned
+    // task instead of letting it escape synchronously into the render loop.
     public static async ValueTask BitDataGridCheckColumnOptionsPosition(this IJSRuntime jsRuntime, ElementReference tableElement)
     {
         await jsRuntime.InvokeVoid("BitBlazorUI.DataGrid.checkColumnOptionsPosition", tableElement);

@@ -8,14 +8,14 @@
             document.body.style.overscrollBehavior = '';
         };
 
-        public static getSplitterWidth(element: HTMLElement) {
-            if (!element || typeof element.getBoundingClientRect !== 'function') return 0;
+        public static getSplitterWidth(element: HTMLElement): number | null {
+            if (!element || typeof element.getBoundingClientRect !== 'function') return null;
 
             try {
                 return element.getBoundingClientRect().width;
             } catch (e) {
                 console.error("BitBlazorUI.Splitter.getSplitterWidth:", e);
-                return 0;
+                return null;
             }
         };
 
@@ -27,14 +27,14 @@
             } catch (e) { console.error("BitBlazorUI.Splitter.setSplitterWidth:", e); }
         };
 
-        public static getSplitterHeight(element: HTMLElement) {
-            if (!element || typeof element.getBoundingClientRect !== 'function') return 0;
+        public static getSplitterHeight(element: HTMLElement): number | null {
+            if (!element || typeof element.getBoundingClientRect !== 'function') return null;
 
             try {
                 return element.getBoundingClientRect().height;
             } catch (e) {
                 console.error("BitBlazorUI.Splitter.getSplitterHeight:", e);
-                return 0;
+                return null;
             }
         };
 
