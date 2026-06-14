@@ -304,7 +304,58 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<DemoExample Title="Immediate search" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <div>
+        By default, the search and combo box inputs raise their search as you commit the input (on the change event).
+        Enabling <b>Immediate</b> makes the search happen as you type (on the input event). You can also rate-limit the
+        immediate search using <b>DebounceTime</b> or <b>ThrottleTime</b> (in milliseconds).
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <BitDropdown Label="Immediate"
+                     ShowSearchBox
+                     Immediate
+                     Placeholder="Select an item"
+                     SearchBoxPlaceholder="Search item"
+                     OnSearch="v => immediateSearchValue = v"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <div>Search value: <b>@immediateSearchValue</b></div>
+        <br /><br />
+        <BitDropdown Label="Immediate + DebounceTime (500ms)"
+                     ShowSearchBox
+                     Immediate
+                     DebounceTime="500"
+                     Placeholder="Select an item"
+                     SearchBoxPlaceholder="Search item"
+                     OnSearch="v => debouncedSearchValue = v"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <div>Search value: <b>@debouncedSearchValue</b></div>
+        <br /><br />
+        <BitDropdown Label="Immediate ComboBox + ThrottleTime (500ms)"
+                     Combo
+                     Immediate
+                     ThrottleTime="500"
+                     Placeholder="Select an item"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in comboBoxItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div>Demonstrates how validation can be applied to BitDropdown, including required fields, numeric input, character constraints, email validation, and range validation.</div>
     <br />
     <div class="example-content">
@@ -352,7 +403,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Customization" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Customization" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <div>Shows how to customize dropdowns using templates for header, text, item, placeholder, label, and callout sections.</div>
     <br /><br />
     <div class="example-content">
@@ -459,7 +510,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Binding" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>Demonstrates two-way binding and change event handling for dropdowns, showcasing single and multi-select scenarios.</div>
     <br /><br />
     <div class="example-content">
@@ -551,7 +602,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="ComboBox" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="ComboBox" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>When the <b>Combo</b> parameter is true, you can type in BitDropdown input and search between items.</div>
     <br />
     <div class="example-content">
@@ -584,7 +635,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Chips" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="Chips" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>When the <b>Chips</b> parameter is true, shows the selected items like chips in the ComboBox.</div>
     <br />
     <div class="example-content">
@@ -617,7 +668,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Dynamic ComboBox" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+<DemoExample Title="Dynamic ComboBox" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>When the <b>Dynamic</b> parameter is true, you can add a new item in the ComboBox.</div>
     <br />
     <div class="example-content">
@@ -676,7 +727,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+<DemoExample Title="External Icons" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
     <div>
         Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>CaretDownIcon</b>, 
         <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>, <b>SearchBoxClearIcon</b>, and 
@@ -795,7 +846,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+<DemoExample Title="Color" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
     <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
     <br />
     <div class="example-content">
@@ -889,7 +940,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+<DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
     <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
     <br /><br />
     <div class="example-content">
@@ -951,7 +1002,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+<DemoExample Title="RTL" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
     <div>Use BitDropdown in right-to-left (RTL).</div>
     <br />
     <dir dir="rtl" style="padding:0">
@@ -991,6 +1042,6 @@
     </dir>
 </DemoExample>
 
-<DemoExample Title="Virtualization" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+<DemoExample Title="Virtualization" RazorCode="@example20RazorCode" Id="example20">
     <div>Not applicable to option demo!</div>
 </DemoExample>

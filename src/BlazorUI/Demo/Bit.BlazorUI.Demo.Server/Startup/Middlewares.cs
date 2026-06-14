@@ -114,13 +114,31 @@ public class Middlewares
         {
             if (context.Request.Path.HasValue)
             {
+                // The status code is intentionally applied through Response.OnStarting (right before the headers
+                // are sent) instead of being set up-front. Setting a 404/401/403 before Blazor renders the page
+                // makes the framework treat the (successfully matched) not-found/not-authorized page as an unhandled
+                // error: it skips flushing the rendered body and lets the UseStatusCodePages middleware re-execute
+                // the pipeline on the same HttpContext. That re-execution invokes Blazor's
+                // MarkAsAllowingEnhancedNavigation a second time, which calls Response.Headers.Add("blazor-enhanced-nav", ...)
+                // again and throws "An item with the same key has already been added. Key: blazor-enhanced-nav".
+                // Deferring the status code keeps the response at 200 during rendering, so the page is rendered and
+                // flushed normally and the desired status code is still emitted to the client.
                 if (context.Request.Path.Value.Contains("not-found", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    context.Response.OnStarting(() =>
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        return Task.CompletedTask;
+                    });
                 }
                 if (context.Request.Path.Value.Contains("not-authorized", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    context.Response.StatusCode = context.Request.Query["isForbidden"].FirstOrDefault() is "true" ? (int)HttpStatusCode.Forbidden : (int)HttpStatusCode.Unauthorized;
+                    var statusCode = context.Request.Query["isForbidden"].FirstOrDefault() is "true" ? (int)HttpStatusCode.Forbidden : (int)HttpStatusCode.Unauthorized;
+                    context.Response.OnStarting(() =>
+                    {
+                        context.Response.StatusCode = statusCode;
+                        return Task.CompletedTask;
+                    });
                 }
             }
 

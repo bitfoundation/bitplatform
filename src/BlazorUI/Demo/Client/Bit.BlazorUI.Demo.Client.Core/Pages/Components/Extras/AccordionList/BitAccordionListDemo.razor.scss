@@ -1,0 +1,17 @@
+::deep {
+    .example-content {
+        gap: 0.5rem;
+        display: flex;
+        flex-flow: column;
+    }
+
+    .custom-item {
+        color: peachpuff;
+        background-color: tomato;
+    }
+
+    .custom-title {
+        color: tomato;
+        font-style: italic;
+    }
+}

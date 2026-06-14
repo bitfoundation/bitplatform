@@ -19,14 +19,14 @@
         </label>
     }
 
-    <div style="min-height: @(Thickness)px; @Styles?.BarContainer" class="@(Circular ? "bit-prb-crp" : "bit-prb-bcn") @Classes?.BarContainer">
+    <div style="min-height: @(GetThickness())px; @Styles?.BarContainer" class="@(Circular ? "bit-prb-crp" : "bit-prb-bcn") @Classes?.BarContainer">
         @if (Circular)
         {
             <svg style="@Styles?.BarContainer"
                  class="bit-prb-cir @Classes?.BarContainer"
-                 height="@(Thickness * Radius)px"
-                 width="@(Thickness * Radius)px">
-                <circle style="stroke-width: @(Thickness)px; @Styles?.Track"
+                 height="@(GetThickness() * Radius)px"
+                 width="@(GetThickness() * Radius)px">
+                <circle style="stroke-width: @(GetThickness())px; @Styles?.Track"
                         class="bit-prb-crt @Classes?.Track"
                         r="40%"
                         cx="50%"
@@ -42,7 +42,7 @@
         }
         else
         {
-            <div style="height: @(Thickness)px; @Styles?.Track" class="bit-prb-trc @Classes?.Track"></div>
+            <div style="height: @(GetThickness())px; @Styles?.Track" class="bit-prb-trc @Classes?.Track"></div>
             <div class="bit-prb-bar @(Indeterminate ? "bit-prb-ind" : null) @Classes?.Bar"
                  role="progressbar"
                  aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
@@ -57,8 +57,8 @@
 
         @if (ShowPercentNumber && Indeterminate is false)
         {
-            <div style="@(Circular ? null : $"margin-top: {Thickness}px;") @Styles?.PercentNumber" class="@(Circular ? "bit-prb-ctx" : "bit-prb-pct") @Classes?.PercentNumber">
-                @string.Format(PercentNumberFormat, Normalize(Percent))
+            <div style="@(Circular ? null : $"margin-top: {GetThickness()}px;") @Styles?.PercentNumber" class="@(Circular ? "bit-prb-ctx" : "bit-prb-pct") @Classes?.PercentNumber">
+                <bdi class="bit-prb-pnm">@string.Format(PercentNumberFormat, Normalize(Percent))</bdi>
             </div>
         }
     </div>

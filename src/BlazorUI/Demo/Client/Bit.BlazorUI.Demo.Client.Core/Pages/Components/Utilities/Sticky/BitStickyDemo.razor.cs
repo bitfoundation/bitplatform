@@ -125,7 +125,7 @@ public partial class BitStickyDemo
         for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
         <br />
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -139,7 +139,7 @@ public partial class BitStickyDemo
         shaped into meaning, and the emotions ready to resonate with every reader.
         <br />
         In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        each word has the power to transform into something extraordinary. Here lies the start of something new-an
         opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
         idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
         begins here, in this quiet moment where everything is possible.
@@ -168,7 +168,7 @@ public partial class BitStickyDemo
 <div class=""vertical-container"">
     <p>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -185,7 +185,7 @@ public partial class BitStickyDemo
         for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
         <br />
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -199,7 +199,7 @@ public partial class BitStickyDemo
         shaped into meaning, and the emotions ready to resonate with every reader.
         <br />
         In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        each word has the power to transform into something extraordinary. Here lies the start of something new-an
         opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
         idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
         begins here, in this quiet moment where everything is possible.
@@ -215,7 +215,7 @@ public partial class BitStickyDemo
         for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
         <br />
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -229,7 +229,7 @@ public partial class BitStickyDemo
         shaped into meaning, and the emotions ready to resonate with every reader.
         <br />
         In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        each word has the power to transform into something extraordinary. Here lies the start of something new-an
         opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
         idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
         begins here, in this quiet moment where everything is possible.
@@ -239,7 +239,7 @@ public partial class BitStickyDemo
 
     <div>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -257,7 +257,7 @@ public partial class BitStickyDemo
         for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
         <br />
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -275,7 +275,7 @@ public partial class BitStickyDemo
 
     <div>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -289,7 +289,7 @@ public partial class BitStickyDemo
         shaped into meaning, and the emotions ready to resonate with every reader.
         <br />
         In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        each word has the power to transform into something extraordinary. Here lies the start of something new-an
         opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
         idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
         begins here, in this quiet moment where everything is possible.
@@ -378,7 +378,7 @@ public partial class BitStickyDemo
 <div class=""vertical-container"">
     <p>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -390,7 +390,7 @@ public partial class BitStickyDemo
 
     <p>
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -398,7 +398,7 @@ public partial class BitStickyDemo
         are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         <br />
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -406,7 +406,7 @@ public partial class BitStickyDemo
         are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         <br />
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -424,7 +424,7 @@ public partial class BitStickyDemo
         for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
         <br />
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -438,7 +438,7 @@ public partial class BitStickyDemo
         shaped into meaning, and the emotions ready to resonate with every reader.
         <br />
         In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        each word has the power to transform into something extraordinary. Here lies the start of something new-an
         opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
         idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
         begins here, in this quiet moment where everything is possible.
@@ -471,7 +471,7 @@ public partial class BitStickyDemo
         for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
         <br />
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape.
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape.
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought,
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty
@@ -489,7 +489,7 @@ public partial class BitStickyDemo
 
     <p>
         In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and
-        each word has the power to transform into something extraordinary. Here lies the start of something new—an
+        each word has the power to transform into something extraordinary. Here lies the start of something new-an
         opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an
         idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey
         begins here, in this quiet moment where everything is possible.

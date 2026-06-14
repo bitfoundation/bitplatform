@@ -142,7 +142,7 @@ namespace BitBlazorUI {
                 nextTileAttribution = o.tileAttribution as string;
             } else if (callerAttrProvided || urlChanged) {
                 // Caller explicitly cleared attribution, or the tile URL changed without a
-                // matching attribution update — recompute strictly from the URL.
+                // matching attribution update - recompute strictly from the URL.
                 nextTileAttribution = nextTileUrl === defaultOsmTileUrl
                     ? defaultOsmAttribution
                     : (callerAttrProvided ? (o.tileAttribution as string) : '');

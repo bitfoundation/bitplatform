@@ -151,6 +151,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "DebounceTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The debounce time in milliseconds for the search and combo box inputs (applied when Immediate is enabled).",
+        },
+        new()
+        {
             Name = "DropDirection",
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
@@ -202,6 +209,13 @@ public partial class BitDropdownDemo
             Type = "IEnumerable<TItem>?",
             DefaultValue = "null",
             Description = "The initial items that will be used to set selected items when using an ItemProvider.",
+        },
+        new()
+        {
+            Name = "Immediate",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Searches the items immediately as the user types in the search box or combo box input (based on the 'oninput' HTML event).",
         },
         new()
         {
@@ -498,6 +512,13 @@ public partial class BitDropdownDemo
             Type = "RenderFragment<<TItem, TValue>>?",
             DefaultValue = "null",
             Description = "The custom template for the text of the dropdown.",
+        },
+        new()
+        {
+            Name = "ThrottleTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The throttle time in milliseconds for the search and combo box inputs (applied when Immediate is enabled).",
         },
         new()
         {
