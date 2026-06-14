@@ -39,6 +39,7 @@ public partial class AnimatePresence : ComponentBase
     private readonly PresenceContext _presenceCtx = new();
     private bool _shouldRender = true;
     private bool _prevIsPresent = true;
+    private bool _deferEnter;
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Lifecycle
@@ -59,10 +60,18 @@ public partial class AnimatePresence : ComponentBase
         }
         else if (!_prevIsPresent && IsPresent)
         {
-            // Children are re-entering
-            _presenceCtx.IsExiting = false;
-            _presenceCtx.Reset();
-            _shouldRender = true;
+            if (ExitBeforeEnter && _presenceCtx.IsExiting)
+            {
+                // Wait for the exiting children to finish before rendering the new ones.
+                _deferEnter = true;
+            }
+            else
+            {
+                // Children are re-entering
+                _presenceCtx.IsExiting = false;
+                _presenceCtx.Reset();
+                _shouldRender = true;
+            }
         }
 
         _prevIsPresent = IsPresent;
@@ -70,8 +79,23 @@ public partial class AnimatePresence : ComponentBase
 
     private void OnAllExitsComplete()
     {
-        _shouldRender = false;
+        // Ignore stale callbacks that arrive after a re-entry / reset.
+        if (!_presenceCtx.IsExiting) return;
+
         _presenceCtx.IsExiting = false;
+
+        if (_deferEnter)
+        {
+            // Deferred re-entry: now that exits are done, render the new children.
+            _deferEnter = false;
+            _presenceCtx.Reset();
+            _shouldRender = true;
+        }
+        else
+        {
+            _shouldRender = false;
+        }
+
         InvokeAsync(StateHasChanged);
     }
 }

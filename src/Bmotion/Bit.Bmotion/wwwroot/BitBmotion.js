@@ -125,7 +125,8 @@ export function unregisterElement(elementId) {
     const el = document.getElementById(elementId);
     if (el) el.removeAttribute('data-bmid');
     _runCleanup(elementId);
-    if (_vpObserver && el) _vpObserver.unobserve(el);
+    // _vpObservers is keyed by option signature, so unobserve from every observer.
+    if (el) _vpObservers.forEach(obs => obs.unobserve(el));
     _vpRefs.delete(elementId);
 }
 
@@ -218,11 +219,11 @@ function _attachPan(el, dotnetRef, cleanups) {
     const onMove = (e) => {
         const dx = e.clientX - startX, dy = e.clientY - startY;
         const now = Date.now(), dt = now - lastT;
+        const deltaX = e.clientX - lastX, deltaY = e.clientY - lastY;
         if (dt > 0) {
-            velX = (e.clientX - lastX) / dt * 1000;
-            velY = (e.clientY - lastY) / dt * 1000;
+            velX = deltaX / dt * 1000;
+            velY = deltaY / dt * 1000;
         }
-        lastX = e.clientX; lastY = e.clientY; lastT = now;
 
         if (!panning && Math.sqrt(dx * dx + dy * dy) >= PAN_THRESHOLD) {
             panning = true;
@@ -231,10 +232,12 @@ function _attachPan(el, dotnetRef, cleanups) {
         if (panning) {
             dotnetRef.invokeMethodAsync('OnPanMove',
                 e.clientX, e.clientY,
-                e.clientX - lastX, e.clientY - lastY,
-                e.clientX - startX, e.clientY - startY,
+                deltaX, deltaY,
+                dx, dy,
                 velX, velY);
         }
+
+        lastX = e.clientX; lastY = e.clientY; lastT = now;
     };
 
     const onUp = () => { if (panning) { panning = false; dotnetRef.invokeMethodAsync('OnPanEnd_'); } };

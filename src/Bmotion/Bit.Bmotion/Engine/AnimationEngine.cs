@@ -97,7 +97,9 @@ public sealed class AnimationEngine : IAsyncDisposable
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             state.AnimateTo(values, transition, tcs);
             await EnsureLoopRunningAsync();
-            _ = tcs.Task.ContinueWith(_ => onComplete(), TaskScheduler.Default);
+            // .Unwrap() so the nested onComplete() Task is observed rather than dropped
+            // (keeps the documented fire-and-forget behaviour of this method).
+            _ = tcs.Task.ContinueWith(_ => onComplete(), TaskScheduler.Default).Unwrap();
         }
         else
         {

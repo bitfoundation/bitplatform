@@ -39,14 +39,18 @@ internal static class ColorInterpolator
             // Expand shorthand #rgb → #rrggbb, #rgba → #rrggbbaa
             if (h.Length == 3 || h.Length == 4)
                 h = string.Concat(h.Select(ch => $"{ch}{ch}"));
-            if (h.Length < 6) return null;
-            return
-            [
-                Convert.ToInt32(h[..2], 16),
-                Convert.ToInt32(h[2..4], 16),
-                Convert.ToInt32(h[4..6], 16),
-                h.Length >= 8 ? Convert.ToInt32(h[6..8], 16) / 255.0 : 1.0,
-            ];
+            if (h.Length is not (6 or 8)) return null;
+            if (!TryHex(h[..2], out int r) ||
+                !TryHex(h[2..4], out int g) ||
+                !TryHex(h[4..6], out int b))
+                return null;
+            double alpha = 1.0;
+            if (h.Length == 8)
+            {
+                if (!TryHex(h[6..8], out int a)) return null;
+                alpha = a / 255.0;
+            }
+            return [r, g, b, alpha];
         }
 
         // rgb() / rgba()
@@ -78,6 +82,10 @@ internal static class ColorInterpolator
 
         return null;
     }
+
+    private static bool TryHex(string s, out int value)
+        => int.TryParse(s, System.Globalization.NumberStyles.HexNumber,
+            System.Globalization.CultureInfo.InvariantCulture, out value);
 
     private static double[] HslToRgb(double h, double s, double l)
     {

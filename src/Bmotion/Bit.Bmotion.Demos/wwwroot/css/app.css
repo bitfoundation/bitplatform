@@ -6,6 +6,11 @@ h1:focus {
     outline: none;
 }
 
+h1:focus-visible {
+    outline: 2px solid #0071c1;
+    outline-offset: 2px;
+}
+
 a, .btn-link {
     color: #0071c1;
 }

@@ -156,11 +156,13 @@ public class AnimationProps
         if (BackgroundColor != null) sb.Append($"background-color:{BackgroundColor};");
         if (Color != null) sb.Append($"color:{Color};");
         if (BorderColor != null) sb.Append($"border-color:{BorderColor};");
+        if (OutlineColor != null) sb.Append($"outline-color:{OutlineColor};");
         if (Fill != null) sb.Append($"fill:{Fill};");
         if (Stroke != null) sb.Append($"stroke:{Stroke};");
         if (Width != null) sb.Append($"width:{Width};");
         if (Height != null) sb.Append($"height:{Height};");
         if (BorderRadius != null) sb.Append($"border-radius:{BorderRadius};");
+        if (BoxShadow != null) sb.Append($"box-shadow:{BoxShadow};");
         if (PathLength.HasValue)
         {
             double clamped = Math.Max(0, Math.Min(1, PathLength.Value));

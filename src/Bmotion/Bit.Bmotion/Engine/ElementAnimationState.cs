@@ -48,10 +48,12 @@ internal sealed class ElementAnimationState
 
     public Dictionary<string, string>? Tick(double timestamp)
     {
-        if (_activeAnims.Count == 0 && !_isDragging) return null;
+        // Nothing to do only when there are no drivers, no drag, and no pending
+        // instant (SetInstant) changes still waiting to be emitted.
+        if (_activeAnims.Count == 0 && !_isDragging && !_transformDirty && _dirtyProps.Count == 0)
+            return null;
 
-        _transformDirty = _isDragging; // drag always refreshes transform
-        _dirtyProps.Clear();
+        if (_isDragging) _transformDirty = true; // drag always refreshes transform
 
         // Advance all drivers
         var completed = new List<string>(_activeAnims.Count);
@@ -109,6 +111,10 @@ internal sealed class ElementAnimationState
             }
         }
 
+        // Reset dirty flags now that this frame's changes have been emitted.
+        _transformDirty = false;
+        _dirtyProps.Clear();
+
         return updates.Count > 0 ? updates : null;
     }
 
@@ -124,6 +130,10 @@ internal sealed class ElementAnimationState
         var entries = values.Where(kv => kv.Value != null).ToList();
         if (entries.Count == 0) { completionSource?.TrySetResult(); return; }
 
+        // Complete any previously-pending awaiter so callers aren't stranded when a
+        // new animation supersedes the old one.
+        if (_completionSource != null && !ReferenceEquals(_completionSource, completionSource))
+            _completionSource.TrySetResult();
         _completionSource = completionSource;
 
         foreach (var (key, value) in entries)

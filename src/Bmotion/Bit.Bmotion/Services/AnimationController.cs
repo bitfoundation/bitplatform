@@ -44,6 +44,7 @@ public sealed class AnimationController
     public void Stop(params string[] properties)
     {
         if (_elementId == null) return;
-        _engine.Stop(_elementId, properties.Length > 0 ? properties : null);
+        var props = properties == null || properties.Length == 0 ? null : properties;
+        _engine.Stop(_elementId, props);
     }
 }

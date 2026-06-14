@@ -7,16 +7,16 @@ namespace Bit.Bmotion.Models;
 public class PanInfo
 {
     /// <summary>Current pointer position relative to the document.</summary>
-    public PointInfo Point { get; set; } = new();
+    public required PointInfo Point { get; init; }
 
     /// <summary>Distance moved since the last event.</summary>
-    public PointInfo Delta { get; set; } = new();
+    public required PointInfo Delta { get; init; }
 
     /// <summary>Total distance moved since the pan gesture started.</summary>
-    public PointInfo Offset { get; set; } = new();
+    public required PointInfo Offset { get; init; }
 
     /// <summary>Current velocity of the pointer (pixels per second).</summary>
-    public PointInfo Velocity { get; set; } = new();
+    public required PointInfo Velocity { get; init; }
 }
 
 /// <summary>A 2-D point with <see cref="X"/> and <see cref="Y"/> components.</summary>

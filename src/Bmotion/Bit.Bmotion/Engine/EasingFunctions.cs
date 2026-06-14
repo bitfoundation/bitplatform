@@ -70,7 +70,11 @@ internal static class EasingFunctions
             for (int i = 0; i < 10; i++)
             {
                 double bx = 3 * u * (1 - u) * (1 - u) * x1 + 3 * u * u * (1 - u) * x2 + u * u * u - t;
-                double dbx = 3 * (1 - u) * (1 - u) * x1 + 6 * u * (1 - u) * x2 - 6 * u * (1 - u) * x1 + 3 * u * u;
+                // True derivative dx/du of the cubic-bezier x(u):
+                //   3(1-u)²·x1 + 6(1-u)u·(x2-x1) + 3u²·(1-x2)
+                double dbx = 3 * (1 - u) * (1 - u) * x1
+                           + 6 * (1 - u) * u * (x2 - x1)
+                           + 3 * u * u * (1 - x2);
                 if (Math.Abs(dbx) < 1e-8) break;
                 u -= bx / dbx;
                 u = Math.Max(0, Math.Min(1, u));

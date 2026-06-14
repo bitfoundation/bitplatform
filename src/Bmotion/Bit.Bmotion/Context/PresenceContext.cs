@@ -17,16 +17,19 @@ public class PresenceContext
 
     internal int ChildCount => _children.Count;
 
-    private int _completedExits;
+    private readonly HashSet<Motion> _completedChildren = new();
 
     internal void NotifyExitComplete(Motion child)
     {
-        _completedExits++;
-        if (_completedExits >= _children.Count)
+        // Ignore unregistered children and guard against double-counting.
+        if (!_children.Contains(child)) return;
+        if (!_completedChildren.Add(child)) return;
+
+        if (_completedChildren.Count >= _children.Count)
             AllExitsComplete?.Invoke();
     }
 
-    internal void Reset() { _completedExits = 0; _children.Clear(); }
+    internal void Reset() { _completedChildren.Clear(); _children.Clear(); }
 
     /// <summary>Fired when every registered child has finished its exit animation.</summary>
     internal event Action? AllExitsComplete;

@@ -33,6 +33,6 @@
     {
         _ctx.DefaultTransition  = Transition;
         _ctx.ReduceMotion       = ReduceMotion;
-        _ctx.TransitionSpeed    = TransitionSpeed;
+        _ctx.TransitionSpeed    = TransitionSpeed < 0 ? 0 : TransitionSpeed;
     }
 }

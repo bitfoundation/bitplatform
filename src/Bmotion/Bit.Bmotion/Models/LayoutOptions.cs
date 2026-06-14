@@ -7,7 +7,7 @@ namespace Bit.Bmotion.Models;
 /// </summary>
 public class LayoutOptions
 {
-    /// <summary>Enable automatic layout animations. Default: false.</summary>
+    /// <summary>Enable automatic layout animations. Default: true.</summary>
     public bool Enabled { get; set; } = true;
 
     /// <summary>

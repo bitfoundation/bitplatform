@@ -236,7 +236,11 @@ public class TransitionConfigTests
         Assert.AreEqual(original.StaggerChildren, clone.StaggerChildren);
         Assert.AreEqual(original.DelayChildren, clone.DelayChildren);
         Assert.AreEqual(original.When, clone.When);
-        Assert.AreSame(original.Properties, clone.Properties);
+        // Properties is deep-copied: equal contents but an independent dictionary instance.
+        Assert.AreNotSame(original.Properties, clone.Properties);
+        Assert.AreEqual(original.Properties!.Count, clone.Properties!.Count);
+        Assert.AreEqual(original.Properties["opacity"].Duration, clone.Properties["opacity"].Duration);
+        Assert.AreNotSame(original.Properties["opacity"], clone.Properties["opacity"]);
     }
 
     [TestMethod]

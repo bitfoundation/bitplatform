@@ -208,9 +208,19 @@ public class TransitionConfig
         StaggerChildren = StaggerChildren,
         DelayChildren = DelayChildren,
         When = When,
-        Properties = Properties,
+        Properties = CloneProperties(Properties),
         OnUpdate = OnUpdate,
     };
+
+    private static Dictionary<string, TransitionConfig>? CloneProperties(
+        Dictionary<string, TransitionConfig>? source)
+    {
+        if (source is null) return null;
+        var copy = new Dictionary<string, TransitionConfig>(source.Count);
+        foreach (var kv in source)
+            copy[kv.Key] = kv.Value.Clone();
+        return copy;
+    }
 
     // ── Factory helpers ───────────────────────────────────────────────────────
     public static TransitionConfig Spring(double stiffness = 100, double damping = 10, double mass = 1)

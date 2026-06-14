@@ -50,6 +50,11 @@ public sealed class ScrollTracker : IAsyncDisposable
     public async Task ObserveAsync(string? containerId, Func<ScrollInfo, Task> onChange)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        // Remove any existing subscription so only one stays active.
+        foreach (var existing in _subscriptionKeys)
+            await _interop.UnobserveScrollAsync(existing);
+        _subscriptionKeys.Clear();
+
         _onScroll = onChange;
         var key = await _interop.ObserveScrollAsync(containerId, _dotnet!);
         if (key != null) _subscriptionKeys.Add(key);

@@ -24,7 +24,7 @@ internal sealed class InertiaDriver : IAnimationDriver
     public InertiaDriver(double from, TransitionConfig config, Action<double> apply)
     {
         _start = from;
-        _timeConstantSec = config.TimeConstant / 1000.0;
+        _timeConstantSec = config.TimeConstant > 0 ? config.TimeConstant / 1000.0 : 1e-6;
         _restDelta = config.InertiaRestDelta;
         _delayMs = config.Delay * 1000;
         _apply = apply;
@@ -52,7 +52,8 @@ internal sealed class InertiaDriver : IAnimationDriver
         _elapsed += Math.Min((timestamp - _lastTs) / 1000.0, 0.064);
         _lastTs = timestamp;
 
-        double pos = _start + _delta * (1 - Math.Exp(-_elapsed / _timeConstantSec));
+        double tau = _timeConstantSec > 0 ? _timeConstantSec : 1e-6;
+        double pos = _start + _delta * (1 - Math.Exp(-_elapsed / tau));
         _apply(pos);
 
         if (Math.Abs(_projected - pos) < _restDelta)

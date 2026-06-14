@@ -22,14 +22,31 @@ public class MotionValue<T> : IDisposable where T : struct
     public T Value
     {
         get => _value;
-        set => _ = SetAsync(value);
+        set => SetSync(value);
+    }
+
+    /// <summary>
+    /// Synchronously updates the value and notifies subscribers. Subscriber tasks are
+    /// observed (rather than dropped) so their exceptions don't go unobserved.
+    /// </summary>
+    public void SetSync(T value)
+    {
+        _value = value;
+        foreach (var sub in _subscribers.ToArray())
+            _ = ObserveAsync(sub(value));
+    }
+
+    private static async Task ObserveAsync(Task task)
+    {
+        try { await task; }
+        catch { /* subscriber failures are swallowed to avoid faulting the host */ }
     }
 
     /// <summary>Update the value and notify all subscribers.</summary>
     public async Task SetAsync(T value)
     {
         _value = value;
-        foreach (var sub in _subscribers)
+        foreach (var sub in _subscribers.ToArray())
             await sub(value);
     }
 
@@ -66,6 +83,11 @@ public class MotionValue<T> : IDisposable where T : struct
     {
         if (inputRange.Length != outputRange.Length)
             throw new ArgumentException("inputRange and outputRange must have the same length.");
+        if (inputRange.Length < 2)
+            throw new ArgumentException("inputRange and outputRange must contain at least 2 points.");
+        for (int i = 0; i < inputRange.Length - 1; i++)
+            if (inputRange[i + 1] <= inputRange[i])
+                throw new ArgumentException("inputRange must be strictly increasing (no repeated or decreasing points).");
 
         double Map(T v)
         {

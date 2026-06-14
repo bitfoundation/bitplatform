@@ -9,6 +9,10 @@ public class MotionVariants
 {
     private readonly Dictionary<string, AnimationProps> _variants = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Adds a variant by name. If a variant with the same name already exists
+    /// (case-insensitive) it is <b>replaced</b>.
+    /// </summary>
     public MotionVariants Add(string name, AnimationProps props)
     {
         _variants[name] = props;

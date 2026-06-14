@@ -112,7 +112,8 @@ public class Motion : ComponentBase, IAsyncDisposable
         builder.AddAttribute(seq++, "id", _id);
 
         if (AdditionalAttributes != null)
-            builder.AddMultipleAttributes(seq++, AdditionalAttributes);
+            builder.AddMultipleAttributes(seq++,
+                AdditionalAttributes.Where(kvp => !string.Equals(kvp.Key, "id", StringComparison.OrdinalIgnoreCase)));
 
         // Auto-inject pathLength="1" so normalized [0,1] dasharray coordinates work correctly
         if (Tag == "path" && NeedsPathLengthAttr())
@@ -495,7 +496,7 @@ public class Motion : ComponentBase, IAsyncDisposable
         }
         else
         {
-            if (WhileInView != null && !Once)
+            if (WhileInView != null && !(Viewport?.Once ?? Once))
                 await Engine.DeactivateGestureLayerAsync(_id, "inview");
             await OnViewportLeave.InvokeAsync();
         }
@@ -578,7 +579,7 @@ public class Motion : ComponentBase, IAsyncDisposable
     {
         var d = new Dictionary<string, object?>();
         if (WhileHover != null || OnHoverStart.HasDelegate || OnHoverEnd.HasDelegate) d["hover"] = true;
-        if (WhileTap != null || OnTapStart.HasDelegate || OnTap.HasDelegate) d["tap"] = true;
+        if (WhileTap != null || OnTapStart.HasDelegate || OnTap.HasDelegate || OnTapCancel.HasDelegate) d["tap"] = true;
         if (WhileFocus != null || OnFocusStart.HasDelegate || OnFocusEnd.HasDelegate) d["focus"] = true;
         if (OnPanStart.HasDelegate || OnPan.HasDelegate || OnPanEnd.HasDelegate) d["pan"] = true;
         if (Drag)

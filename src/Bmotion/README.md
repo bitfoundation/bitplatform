@@ -112,7 +112,7 @@ That's it - the element fades in and slides up on first render.
 
 #### Event Callbacks
 
-```
+```text
 OnHoverStart / OnHoverEnd
 OnTapStart / OnTap / OnTapCancel
 OnFocusStart / OnFocusEnd
