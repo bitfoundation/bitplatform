@@ -6,7 +6,7 @@
 public partial class BitProModal : BitComponentBase
 {
     private bool _internalIsOpen;
-    private float? _offsetTop;
+    private float _offsetTop;
 
 
 
@@ -317,11 +317,11 @@ public partial class BitProModal : BitComponentBase
 
         if (ScrollerElement.HasValue)
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerElement.Value, isOpen);
+            _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerElement.Value, isOpen) ?? 0;
         }
         else
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector ?? "body", isOpen);
+            _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector ?? "body", isOpen) ?? 0;
         }
     }
 

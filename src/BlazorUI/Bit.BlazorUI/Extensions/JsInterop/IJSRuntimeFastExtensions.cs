@@ -22,13 +22,14 @@ namespace Bit.BlazorUI;
 /// thread-pool case during development; it is compiled out of shipping builds so the fast path stays
 /// branch-free, and the framework still throws its own exception in that configuration at runtime.
 /// </remarks>
-[SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>", Scope = "member", Target = "~M:Bit.BlazorUI.IJSRuntimeFastExtensions.FastInvokeVoid(Microsoft.JSInterop.IJSRuntime,System.String,System.Threading.CancellationToken,System.Object[])~System.Threading.Tasks.ValueTask")]
+[SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Interop arguments are JSON-serializable types owned by the framework/components; the JSON metadata they require is preserved by the [DynamicallyAccessedMembers(JsonSerialized)] annotations on the generic overloads and by the component models themselves, so the void path is safe to invoke under trimming.", Scope = "member", Target = "~M:Bit.BlazorUI.IJSRuntimeFastExtensions.FastInvokeVoid(Microsoft.JSInterop.IJSRuntime,System.String,System.Threading.CancellationToken,System.Object[])~System.Threading.Tasks.ValueTask")]
 public static class IJSRuntimeFastExtensions
 {
     public const DynamicallyAccessedMemberTypes JsonSerialized = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties;
 
     /// <summary>
-    /// Optional handler for errors swallowed by the fast (in-process) invocation path on Blazor WebAssembly.
+    /// Optional handler for errors swallowed by the fast (in-process) invocation path on Blazor WebAssembly,
+    /// and for unexpected-null results reported via <see cref="ReportIfUnexpectedNull{T}"/> on any runtime.
     /// </summary>
     /// <remarks>
     /// When a <see cref="JsonException"/> or <see cref="JSException"/> occurs while invoking JavaScript
@@ -39,23 +40,47 @@ public static class IJSRuntimeFastExtensions
     /// synchronous JavaScript function whose own body throws (a real logic bug in the script) surfaces as the
     /// same <see cref="JSException"/> and is therefore swallowed too - the call returns its default result and
     /// the only signal is this report. Such errors previously propagated and tore down the call loudly; on the
-    /// fast path they no longer do. Because of this, wiring <see cref="OnError"/> to a real logger should be
-    /// treated as required in production, not optional - it is the single channel through which both missing
-    /// functions and in-body logic errors remain visible.
+    /// fast path they no longer do. The default reporter (see <c>ReportError</c>) classifies the cause - a
+    /// missing/unwired function, an error thrown inside the function (a script bug), a serialization issue, or
+    /// an unexpected null - so the distinction is preserved in the message even without a custom handler.
+    /// Because of this, wiring <see cref="OnError"/> to a real logger should be treated as required in
+    /// production, not optional - it is the single channel through which both missing functions and in-body
+    /// logic errors remain visible.
     /// </para>
-    /// Assign this once during application startup to route the report to a real logger (e.g. an
-    /// <c>ILogger</c>); when left <see langword="null"/> the error is written to
-    /// <see cref="System.Console.Error"/> to preserve the previous behavior.
-    /// The handler receives the invoked identifier and the caught exception, and must not throw.
+    /// <para>
+    /// This is a <em>process-global</em> hook. Assign it exactly once during application startup (before any
+    /// component renders) to route the report to a real logger (e.g. an <c>ILogger</c>); when left
+    /// <see langword="null"/> the error is written to <see cref="System.Console.Error"/> and a one-time warning
+    /// is emitted recommending that a handler be wired. The setter is not synchronized and the handler is shared
+    /// by every consumer in the process, so on Blazor Server it cannot carry per-circuit/per-user context -
+    /// capture any ambient state inside the handler accordingly. The handler receives the invoked identifier and
+    /// the caught exception, and must not throw (a throwing handler is caught and ignored).
+    /// </para>
     /// </remarks>
     public static Action<string, Exception>? OnError { get; set; }
+
+    // Tracks whether the "no OnError handler wired" warning has already been emitted, so the default reporter
+    // nags about observability exactly once instead of flooding the console on every swallowed error.
+    private static int _missingHandlerWarned;
 
     private static void ReportError(string identifier, Exception exception)
     {
         var handler = OnError;
         if (handler is null)
         {
-            System.Console.Error.WriteLine($"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}: {exception.Message}.");
+            System.Console.Error.WriteLine(
+                $"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}: {DescribeCause(exception)} {exception.Message}");
+
+            // Emit the "wire up OnError" guidance once. Without a handler these errors (including genuine
+            // in-body script bugs) are only visible on the console, so surface the recommendation a single time.
+            if (Interlocked.Exchange(ref _missingHandlerWarned, 1) == 0)
+            {
+                System.Console.Error.WriteLine(
+                    $"{nameof(IJSRuntimeFastExtensions)}.{nameof(OnError)} is not set. Swallowed fast-invoke interop " +
+                    "errors - including JavaScript functions that throw in their own body - are only reported to the " +
+                    "console. Assign a handler during startup to route them to a real logger.");
+            }
+
             return;
         }
 
@@ -67,6 +92,30 @@ public static class IJSRuntimeFastExtensions
         {
             // A faulty error handler must never escape the interop call and break the caller.
         }
+    }
+
+    // Classifies a swallowed interop failure so the default console report distinguishes a missing/unwired
+    // function from a real script bug (a present function that threw), a serialization problem, or an
+    // unexpected null. This keeps the most actionable case - an in-body logic error - from hiding behind the
+    // same generic text as a simple typo'd identifier.
+    private static string DescribeCause(Exception exception) => exception switch
+    {
+        JsonException => "a JSON serialization issue occurred:",
+        JSException jsException when IsMissingFunctionError(jsException) => "the JavaScript function is missing or unwired:",
+        JSException => "the JavaScript function threw while executing (a script bug):",
+        InvalidOperationException => "the interop call produced an unexpected result:",
+        _ => "an unexpected error occurred:",
+    };
+
+    // Heuristic that recognizes the framework's "function not found" JSException by the phrasing the
+    // in-process runtime uses. It is intentionally conservative: when it can't tell, the cause is reported as
+    // an in-body script error (the louder, more actionable classification) rather than as a missing function.
+    private static bool IsMissingFunctionError(JSException jsException)
+    {
+        var message = jsException.Message;
+        return message.Contains("is not a function", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("was undefined", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("Could not find", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -115,6 +164,14 @@ public static class IJSRuntimeFastExtensions
     /// because a nullable value-type return is already distinguishable from a legitimate <c>false</c>/zero at the
     /// call site (see the <c>FastInvoke</c> return remarks).
     /// </remarks>
+    /// <remarks>
+    /// Only call this for identifiers whose JavaScript function is expected to <em>always</em> return a non-null
+    /// reference on a healthy runtime (e.g. <c>setup</c>/<c>init</c> helpers that hand back an id or a JS object
+    /// reference). A function that can legitimately return <see langword="null"/> on a valid runtime would be
+    /// reported here as a false positive; route those through a plain <c>FastInvoke</c> without this helper.
+    /// The report is raised as an <see cref="InvalidOperationException"/> so a wired <see cref="OnError"/> handler
+    /// can filter unexpected-null reports apart from <see cref="JSException"/>/<see cref="JsonException"/> ones.
+    /// </remarks>
     public static T? ReportIfUnexpectedNull<T>(this IJSRuntime jsRuntime, string identifier, T? result)
         where T : class
     {
@@ -160,6 +217,9 @@ public static class IJSRuntimeFastExtensions
         // Awaiting here (instead of returning the ValueTask) keeps the `using` scope open for the
         // full duration of the async path, so the timeout can actually fire and the source isn't
         // disposed while a callback is still registered on its token.
+        // Note: the timeout only has an effect on the asynchronous fallback path (Server/Hybrid). On
+        // WebAssembly the call runs synchronously through IJSInProcessRuntime, which ignores the token, so
+        // the CancellationTokenSource is created but never observed there.
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
@@ -210,7 +270,9 @@ public static class IJSRuntimeFastExtensions
         }
         else
         {
-            return jsRuntime.InvokeVoid(identifier, cancellationToken, args);
+            // The runtime-validity guard already ran above, so skip the re-checking bit InvokeVoid
+            // extension and call the framework's asynchronous interop directly.
+            return jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
         }
     }
 
@@ -259,6 +321,9 @@ public static class IJSRuntimeFastExtensions
         // Awaiting here (instead of returning the ValueTask) keeps the `using` scope open for the
         // full duration of the async path, so the timeout can actually fire and the source isn't
         // disposed while a callback is still registered on its token.
+        // Note: the timeout only has an effect on the asynchronous fallback path (Server/Hybrid). On
+        // WebAssembly the call runs synchronously through IJSInProcessRuntime, which ignores the token, so
+        // the CancellationTokenSource is created but never observed there.
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
@@ -305,7 +370,9 @@ public static class IJSRuntimeFastExtensions
         }
         else
         {
-            return jsRuntime.Invoke<TValue>(identifier, cancellationToken, args);
+            // The runtime-validity guard already ran above, so skip the re-checking bit Invoke
+            // extension and call the framework's asynchronous interop directly.
+            return jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
         }
     }
 }

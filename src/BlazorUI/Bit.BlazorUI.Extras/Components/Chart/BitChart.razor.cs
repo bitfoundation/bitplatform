@@ -142,12 +142,16 @@ public partial class BitChart : IAsyncDisposable
                 await _js.BitExtrasInitScripts(DateAdapterScripts);
             }
 
-            var chartReady = Config is null || await _js.BitChartJsSetupChart(Config) is true;
-
-            if (chartReady)
+            if (Config is not null)
             {
-                await SetupCompletedCallback.InvokeAsync(this);
+                await _js.BitChartJsSetupChart(Config);
             }
+
+            // Always signal completion on first render, matching the long-standing behavior: consumers may
+            // rely on SetupCompletedCallback firing once the component has rendered regardless of whether the
+            // chart setup itself succeeded (e.g. when Config is still null, or when interop was unavailable
+            // and the result was swallowed on the WebAssembly fast path).
+            await SetupCompletedCallback.InvokeAsync(this);
 
             return;
         }

@@ -32,7 +32,17 @@ public class FastInvokeSyncContractTests
     [TestMethod]
     public void FastInvoke_CallSites_ShouldNotTargetAsyncJavaScriptFunctions()
     {
-        var blazorUiRoot = FindBlazorUiRoot();
+        var blazorUiRoot = TryFindBlazorUiRoot();
+        if (blazorUiRoot is null)
+        {
+            // This test reads the .cs/.ts sources from disk. When the tests run from packaged binaries
+            // without the source tree present, there is nothing to scan, so report inconclusive rather
+            // than failing. In the repo/CI the sources are present and the contract is fully enforced.
+            Assert.Inconclusive(
+                "Skipped: could not locate the BlazorUI source root (the folder containing 'Bit.BlazorUI' " +
+                "and 'Bit.BlazorUI.Extras'). The source tree is required to scan FastInvoke call sites.");
+            return;
+        }
 
         var csharpDirs = new[]
         {
@@ -124,11 +134,16 @@ public class FastInvokeSyncContractTests
         return $"{segments[^2]}.{segments[^1]}";
     }
 
-    private static string FindBlazorUiRoot([CallerFilePath] string callerFilePath = "")
+    private static string? TryFindBlazorUiRoot([CallerFilePath] string callerFilePath = "")
     {
         // callerFilePath points at this test file; walk up to the BlazorUI source root, which is the
-        // directory that contains both the Bit.BlazorUI and Bit.BlazorUI.Extras projects.
-        var dir = new DirectoryInfo(Path.GetDirectoryName(callerFilePath)!);
+        // directory that contains both the Bit.BlazorUI and Bit.BlazorUI.Extras projects. Returns null
+        // when the source tree isn't present (e.g. running from packaged binaries) so the caller can
+        // report the test as inconclusive instead of throwing.
+        var directoryName = Path.GetDirectoryName(callerFilePath);
+        if (string.IsNullOrEmpty(directoryName) || !Directory.Exists(directoryName)) return null;
+
+        var dir = new DirectoryInfo(directoryName);
 
         while (dir is not null)
         {
@@ -141,8 +156,6 @@ public class FastInvokeSyncContractTests
             dir = dir.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the BlazorUI source root (the folder containing 'Bit.BlazorUI' and " +
-            $"'Bit.BlazorUI.Extras') starting from '{callerFilePath}'.");
+        return null;
     }
 }
