@@ -91,17 +91,12 @@ public sealed class BmotionAnimateService
     {
         var values = keyframes.ToJsDictionary();
 
-        // Only the elements we register here (i.e. not already owned by a <Bmotion>) are ours to
-        // clean up afterwards, so the engine's element table doesn't grow unbounded over time.
-        var ours = new List<string>();
+        // Reference-count every target for the lifetime of this call. Overlapping AnimateAsync
+        // invocations (and any wrapping <Bmotion>) each hold a count, so an element is only torn
+        // down once the last animation settles - a single completing call can't unregister an
+        // element out from under another still-running animation.
         foreach (var id in elementIds)
-        {
-            if (!_engine.IsRegistered(id))
-            {
-                _engine.RegisterElement(id);
-                ours.Add(id);
-            }
-        }
+            _engine.RegisterElement(id);
 
         // Start all animations concurrently; collect their completion tasks.
         var completionTasks = elementIds
@@ -110,15 +105,12 @@ public sealed class BmotionAnimateService
 
         var completion = Task.WhenAll(completionTasks);
 
-        if (ours.Count > 0)
+        // Release our refcount on every target once the animations settle.
+        _ = completion.ContinueWith(_ =>
         {
-            // Release engine state for the elements we created once their animations settle.
-            _ = completion.ContinueWith(_ =>
-            {
-                foreach (var id in ours)
-                    _engine.UnregisterElement(id);
-            }, TaskScheduler.Default);
-        }
+            foreach (var id in elementIds)
+                _engine.UnregisterElement(id);
+        }, TaskScheduler.Default);
 
         return new BmotionAnimationControls(elementIds, _engine, completion);
     }

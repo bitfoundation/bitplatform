@@ -102,7 +102,7 @@ public class TweenDriverTests
     // ── Cancel ────────────────────────────────────────────────────────────────
 
     [TestMethod]
-    public void Cancel_SnapsToTarget()
+    public void Cancel_CompletesImmediately()
     {
         var log = new List<double>();
         var driver = Create(0, 100, new BmotionTransitionConfig { Duration = 0.3 }, log);
@@ -111,7 +111,8 @@ public class TweenDriverTests
         driver.Cancel();
         bool done = driver.Tick(150);
 
-        Assert.AreEqual(100.0, log[^1], 1e-5);
+        // Cancel() freezes the animation in place rather than snapping to the target;
+        // only completion is guaranteed.
         Assert.IsTrue(done);
     }
 

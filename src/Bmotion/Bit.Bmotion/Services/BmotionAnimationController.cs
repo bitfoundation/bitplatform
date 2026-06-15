@@ -21,6 +21,8 @@ public sealed class BmotionAnimationController : IDisposable
     {
         if (string.IsNullOrWhiteSpace(elementId))
             throw new ArgumentException("Element ID must not be null or whitespace.", nameof(elementId));
+        // Already bound to this element: avoid re-registering (which would unbalance the engine refcount).
+        if (_elementId == elementId) return;
         // Release the previously bound element so repeated BindTo calls don't leak engine state.
         if (!string.IsNullOrEmpty(_elementId) && _elementId != elementId)
             _engine.UnregisterElement(_elementId);
@@ -31,21 +33,21 @@ public sealed class BmotionAnimationController : IDisposable
     /// <summary>Animate the bound element to the given props (fire-and-forget).</summary>
     public async ValueTask AnimateAsync(BmotionAnimationProps props, BmotionTransitionConfig? transition = null)
     {
-        if (_elementId == null) return;
+        if (_elementId == null || props == null) return;
         await _engine.AnimateToAsync(_elementId, props.ToJsDictionary(), transition);
     }
 
     /// <summary>Animate and await completion.</summary>
     public async ValueTask AnimateAwaitAsync(BmotionAnimationProps props, BmotionTransitionConfig? transition = null)
     {
-        if (_elementId == null) return;
+        if (_elementId == null || props == null) return;
         await _engine.AnimateToAwaitAsync(_elementId, props.ToJsDictionary(), transition);
     }
 
     /// <summary>Instantly set props without animation.</summary>
     public void Set(BmotionAnimationProps props)
     {
-        if (_elementId == null) return;
+        if (_elementId == null || props == null) return;
         _engine.SetInstant(_elementId, props.ToJsDictionary());
     }
 

@@ -18,11 +18,16 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
     private int _iteration;
     private string _curFrom;
     private string _curTo;
+    private double[]? _curFromCh;
+    private double[]? _curToCh;
 
     public BmotionColorTweenDriver(string from, string to, BmotionTransitionConfig config, Action<string> apply)
     {
         _curFrom = from;
         _curTo = _to = to;
+        // Parse once up-front so Tick() doesn't run the color regex ~60 times per second.
+        _curFromCh = BmotionColorInterpolator.Parse(from);
+        _curToCh = BmotionColorInterpolator.Parse(to);
         _durationMs = config.Duration * 1000;
         _delayMs = config.Delay * 1000;
         _easeFn = BmotionEasingFunctions.Get(config);
@@ -43,7 +48,11 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
         double elapsed = timestamp - _startTime;
         double t = _durationMs > 0 ? Math.Min(elapsed / _durationMs, 1.0) : 1.0;
         double p = _easeFn(t);
-        _apply(BmotionColorInterpolator.Lerp(_curFrom, _curTo, p));
+        // Fall back to the raw target string when a color couldn't be parsed (matches the
+        // string Lerp's behaviour of returning 'to' for unparseable input).
+        _apply(_curFromCh != null && _curToCh != null
+            ? BmotionColorInterpolator.Lerp(_curFromCh, _curToCh, p)
+            : _curTo);
 
         if (t >= 1.0)
         {
@@ -52,7 +61,10 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
                 if (!_isInfinite) _iteration++;
                 _startTime = timestamp + _repeatDelayMs;
                 if (_repeatType == BmotionRepeatType.Mirror || _repeatType == BmotionRepeatType.Reverse)
+                {
                     (_curFrom, _curTo) = (_curTo, _curFrom);
+                    (_curFromCh, _curToCh) = (_curToCh, _curFromCh);
+                }
                 return false;
             }
             return true;

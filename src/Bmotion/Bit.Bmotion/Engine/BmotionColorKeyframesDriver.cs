@@ -17,6 +17,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
     private bool _cancelled;
     private int _iteration;
     private string[] _curFrames;
+    private readonly double[]?[] _curChannels;
 
     public BmotionColorKeyframesDriver(string[] frames, BmotionTransitionConfig config, Action<string> apply)
     {
@@ -25,7 +26,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         if (config.Times != null && config.Times.Length != frames.Length)
             throw new ArgumentException("Times array length must match the number of frames.", nameof(config));
 
-        _frames = frames;
+        _frames = (string[])frames.Clone();
         _curFrames = (string[])frames.Clone();
         _durationMs = config.Duration * 1000;
         _delayMs = config.Delay * 1000;
@@ -42,11 +43,19 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
             : Enumerable.Range(0, n).Select(i => (double)i / (n - 1)).ToArray();
         var globalEase = BmotionEasingFunctions.Get(config);
         _eases = Enumerable.Repeat(globalEase, n - 1).ToArray();
+
+        // Parse each frame's color once up-front; Tick() then only interpolates pre-parsed
+        // channels instead of running the color regex on every frame (~60 fps).
+        _curChannels = new double[]?[n];
+        for (int i = 0; i < n; i++)
+            _curChannels[i] = BmotionColorInterpolator.Parse(_curFrames[i]);
     }
 
     public bool Tick(double timestamp)
     {
-        if (_cancelled) { _apply(_frames[^1]); return true; }
+        // Freeze at the current value on cancel (consistent with the other drivers); callers
+        // remove the driver immediately after Cancel(), so this branch is defensive only.
+        if (_cancelled) return true;
 
         if (_startTime < 0) _startTime = timestamp + _delayMs;
         if (timestamp < _startTime) { _apply(_curFrames[0]); return false; }
@@ -59,7 +68,13 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         double segLen = _times[seg + 1] - _times[seg];
         double segT = segLen > 0 ? (t - _times[seg]) / segLen : 1.0;
         double easedT = _eases[seg](Math.Min(segT, 1.0));
-        _apply(BmotionColorInterpolator.Lerp(_curFrames[seg], _curFrames[seg + 1], easedT));
+        var ca = _curChannels[seg];
+        var cb = _curChannels[seg + 1];
+        // Fall back to the raw target frame string when a color couldn't be parsed
+        // (matches the string Lerp returning 'to' for unparseable input).
+        _apply(ca != null && cb != null
+            ? BmotionColorInterpolator.Lerp(ca, cb, easedT)
+            : _curFrames[seg + 1]);
 
         if (t >= 1.0)
         {
@@ -70,6 +85,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
                 if (_repeatType == BmotionRepeatType.Mirror || _repeatType == BmotionRepeatType.Reverse)
                 {
                     Array.Reverse(_curFrames);
+                    Array.Reverse(_curChannels);
                     MirrorTimes(_times);
                 }
                 return false;

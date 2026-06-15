@@ -5,12 +5,24 @@ namespace Bit.Bmotion;
 /// <summary>
 /// Extension methods to register Bit.Bmotion services in the DI container.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <b>Platform support:</b> Bit.Bmotion runs its animation loop over <b>synchronous</b> JS interop
+/// and is therefore supported on <b>Blazor WebAssembly only</b>. It does <b>not</b> work on Blazor
+/// Server, and it is inert during server-side prerendering (animations start once the WASM runtime
+/// is interactive). Attempting to start the animation loop on a non-WebAssembly host throws
+/// <see cref="PlatformNotSupportedException"/>.
+/// </para>
+/// </remarks>
 public static class BitBmotion
 {
     /// <summary>
     /// Registers all Bit.Bmotion services.
     /// Call this in <c>Program.cs</c> before <c>builder.Build()</c>:
     /// <code>builder.Services.AddBitBmotionServices();</code>
+    /// <para>
+    /// <b>Blazor WebAssembly only</b> - see the remarks on <see cref="BitBmotion"/> for details.
+    /// </para>
     /// </summary>
     public static IServiceCollection AddBitBmotionServices(this IServiceCollection services)
     {

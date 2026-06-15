@@ -18,6 +18,10 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     private bool _loopRunning;
     private bool _reducedMotionDetected;
 
+    // Reused across frames so the rAF tick doesn't allocate a fresh outer dictionary every ~16 ms.
+    // Marshaled synchronously to JS before the next ComputeFrame runs (single-threaded Blazor WASM).
+    private readonly Dictionary<string, Dictionary<string, string>> _frameResult = new();
+
     public BmotionAnimationEngine(BmotionInterop interop) => _interop = interop;
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -62,15 +66,22 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             state = new BmotionElementAnimationState();
             _elements[elementId] = state;
         }
+        // Reference-counted: the same element may be owned by a <Bmotion> and one or more
+        // concurrent AnimateAsync calls at once.
+        state.RefCount++;
         if (initialValues != null)
             state.SetInstant(initialValues);
     }
 
-    /// <summary>Remove an element and cancel all its animations.</summary>
+    /// <summary>Release one owner; cancels animations and removes the element only when the last owner releases it.</summary>
     public void UnregisterElement(string elementId)
     {
         if (_elements.TryGetValue(elementId, out var state))
         {
+            if (state.RefCount > 0) state.RefCount--;
+            // Other owners (e.g. an overlapping animation) still hold the element - keep it alive
+            // so their in-flight animations aren't stranded by a premature teardown.
+            if (state.RefCount > 0) return;
             state.CancelAll();
             _elements.Remove(elementId);
         }
@@ -91,12 +102,17 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         state.SetBaseAnimation(values, transition);
         if (onComplete != null)
         {
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             state.AnimateTo(values, transition, tcs);
             await EnsureLoopRunningAsync();
             // .Unwrap() so the nested onComplete() Task is observed rather than dropped
             // (keeps the documented fire-and-forget behaviour of this method).
-            _ = tcs.Task.ContinueWith(_ => onComplete(), TaskScheduler.Default).Unwrap();
+            // The result flag is true only on natural completion; a superseded/cancelled
+            // animation resolves with false so OnAnimationComplete is NOT raised for it.
+            _ = tcs.Task.ContinueWith(
+                    t => t.Result ? onComplete() : Task.CompletedTask,
+                    TaskScheduler.Default)
+                .Unwrap();
         }
         else
         {
@@ -112,7 +128,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         BmotionTransitionConfig? transition)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         state.SetBaseAnimation(values, transition);
         state.AnimateTo(values, transition, tcs);
         await EnsureLoopRunningAsync();
@@ -306,18 +322,44 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     [JSInvokable]
     public Dictionary<string, Dictionary<string, string>>? ComputeFrame(double timestamp)
     {
+        // Clear the reused outer buffer so entries from the previous frame don't leak through.
+        _frameResult.Clear();
         Dictionary<string, Dictionary<string, string>>? result = null;
         bool anyActive = false;
+        List<string>? faulted = null;
 
         foreach (var (id, state) in _elements)
         {
-            var updates = state.Tick(timestamp);
-            if (updates is { Count: > 0 })
+            try
             {
-                result ??= new Dictionary<string, Dictionary<string, string>>();
-                result[id] = updates;
+                var updates = state.Tick(timestamp);
+                if (updates is { Count: > 0 })
+                {
+                    result ??= _frameResult;
+                    result[id] = updates;
+                }
+                if (state.HasActiveAnimations) anyActive = true;
             }
-            if (state.HasActiveAnimations) anyActive = true;
+            catch
+            {
+                // A single malformed value or driver fault must not take down the whole loop
+                // (a thrown exception would propagate into the synchronous JS rAF tick and
+                // permanently stop animation for every element). Isolate and evict the bad
+                // element instead, then keep ticking the rest.
+                (faulted ??= new List<string>()).Add(id);
+            }
+        }
+
+        if (faulted != null)
+        {
+            foreach (var id in faulted)
+            {
+                if (_elements.TryGetValue(id, out var badState))
+                {
+                    try { badState.CancelAll(); } catch { /* best-effort cleanup */ }
+                    _elements.Remove(id);
+                }
+            }
         }
 
         if (!anyActive)
@@ -353,7 +395,9 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     {
         if (!_loopRunning) return;
         _loopRunning = false;
-        _ = _interop.StopRafLoopAsync();
+        // Pass our own engine ref so only this engine is removed from the shared JS loop,
+        // leaving any other Blazor-root engines ticking.
+        _ = _interop.StopRafLoopAsync(_dotnet);
     }
 
     public async ValueTask DisposeAsync()
@@ -361,10 +405,18 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         foreach (var (_, state) in _elements)
             state.CancelAll();
         _elements.Clear();
-        StopLoopInternal();
-        _dotnet?.Dispose();
+
+        // Await the loop stop before disposing _dotnet so the JS call doesn't marshal a
+        // disposed DotNetObjectReference. StopLoopInternal's fire-and-forget path is fine for
+        // mid-session stops, but during teardown we must order it explicitly.
+        _loopRunning = false;
+        if (_dotnet != null)
+        {
+            try { await _interop.StopRafLoopAsync(_dotnet); } catch { /* ignore during teardown */ }
+            _dotnet.Dispose();
+            _dotnet = null;
+        }
         // BmotionInterop is owned and disposed by the DI container (it is registered scoped),
         // so the engine must not dispose it here or it would be disposed twice.
-        await ValueTask.CompletedTask;
     }
 }

@@ -1,4 +1,4 @@
-# bit Bmotion
+# Bit.Bmotion
 
 A Blazor-native animation library inspired by [Framer Motion](https://www.framer.com/motion/). Springs, gestures, layout animations, variants, and keyframes - **no manual JavaScript wiring required**. All animation math runs in C# via WebAssembly; the slim browser bridge is auto-loaded for you.
 

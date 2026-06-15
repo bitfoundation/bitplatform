@@ -23,9 +23,9 @@ public class BmotionConfigContext
         get => _transitionSpeed;
         set
         {
-            if (value < 0)
+            if (!double.IsFinite(value) || value < 0)
                 throw new ArgumentOutOfRangeException(nameof(value), value,
-                    "TransitionSpeed must be non-negative.");
+                    "TransitionSpeed must be a finite, non-negative number.");
             _transitionSpeed = value;
         }
     }

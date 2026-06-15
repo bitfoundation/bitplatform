@@ -50,7 +50,9 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
 
     public bool Tick(double timestamp)
     {
-        if (_cancelled) { _apply(_frames[^1]); return true; }
+        // Freeze at the current value on cancel (consistent with the other drivers); callers
+        // remove the driver immediately after Cancel(), so this branch is defensive only.
+        if (_cancelled) return true;
 
         if (_startTime < 0) _startTime = timestamp + _delayMs;
         if (timestamp < _startTime) { _apply(_curFrames[0]); return false; }

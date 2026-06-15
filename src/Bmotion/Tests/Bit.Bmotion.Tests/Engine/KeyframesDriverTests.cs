@@ -85,7 +85,7 @@ public class NumericKeyframesDriverTests
     // ── Cancel ────────────────────────────────────────────────────────────────
 
     [TestMethod]
-    public void Cancel_SnapsToLastFrame()
+    public void Cancel_CompletesImmediately()
     {
         var log = new List<double>();
         var driver = new BmotionNumericKeyframesDriver(
@@ -97,7 +97,8 @@ public class NumericKeyframesDriverTests
         driver.Cancel();
         bool done = driver.Tick(100);
 
-        Assert.AreEqual(100.0, log[^1], 1e-5);
+        // Cancel() freezes in place rather than snapping to the last frame;
+        // only completion is guaranteed.
         Assert.IsTrue(done);
     }
 
@@ -197,7 +198,7 @@ public class ColorKeyframesDriverTests
     // ── Cancel ────────────────────────────────────────────────────────────────
 
     [TestMethod]
-    public void Cancel_SnapsToOriginalLastFrame()
+    public void Cancel_CompletesImmediately()
     {
         string? lastValue = null;
         var driver = new BmotionColorKeyframesDriver(
@@ -207,9 +208,11 @@ public class ColorKeyframesDriverTests
 
         driver.Tick(0);
         driver.Cancel();
-        driver.Tick(50);
+        bool done = driver.Tick(50);
 
-        Assert.AreEqual("#ff0000", lastValue);
+        // Cancel() freezes in place rather than snapping to the last frame;
+        // only completion is guaranteed.
+        Assert.IsTrue(done);
     }
 
     // ── Mirror repeat ─────────────────────────────────────────────────────────

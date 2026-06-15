@@ -36,11 +36,11 @@ public sealed class BmotionInterop : IAsyncDisposable
     public async ValueTask StartRafLoopAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class
         => await (await Module()).InvokeVoidAsync("startRafLoop", dotnetRef);
 
-    /// <summary>Stop the JS rAF loop.</summary>
-    public async ValueTask StopRafLoopAsync()
+    /// <summary>Stop the JS rAF loop for the given engine reference (or all engines when null).</summary>
+    public async ValueTask StopRafLoopAsync<T>(DotNetObjectReference<T>? dotnetRef = null) where T : class
     {
         if (!_moduleTask.IsValueCreated) return;
-        await (await Module()).InvokeVoidAsync("stopRafLoop");
+        await (await Module()).InvokeVoidAsync("stopRafLoop", dotnetRef);
     }
 
     // ── Reduced motion (accessibility) ────────────────────────────────────────

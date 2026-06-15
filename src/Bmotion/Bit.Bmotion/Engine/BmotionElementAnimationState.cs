@@ -19,6 +19,12 @@ internal sealed class BmotionElementAnimationState
     /// <summary>Current values of color / string properties (backgroundColor, color, …).</summary>
     internal readonly Dictionary<string, string> StringValues = new();
 
+    /// <summary>
+    /// Number of live owners holding this element (a wrapping &lt;Bmotion&gt;, controllers, and
+    /// in-flight AnimateAsync calls). The engine only tears the element down when this hits zero.
+    /// </summary>
+    internal int RefCount;
+
     // ── Active animations ─────────────────────────────────────────────────────
     private readonly Dictionary<string, IBmotionAnimationDriver> _activeAnims = new();
 
@@ -29,7 +35,10 @@ internal sealed class BmotionElementAnimationState
     private BmotionTransitionConfig? _baseTransition;
 
     // ── Animation completion tracking ─────────────────────────────────────────
-    private TaskCompletionSource? _completionSource;
+    // Result flag: true = animation finished naturally (or was snapped to its end via
+    // CompleteAll); false = it was superseded by a new animation or cancelled. Callers use the
+    // flag to avoid raising "complete" callbacks for interrupted animations.
+    private TaskCompletionSource<bool>? _completionSource;
 
     // ── Drag state ────────────────────────────────────────────────────────────
     private bool _isDragging;
@@ -37,6 +46,11 @@ internal sealed class BmotionElementAnimationState
     // ── Dirty flags for CSS build ─────────────────────────────────────────────
     private bool _transformDirty;
     private readonly HashSet<string> _dirtyProps = new();
+
+    // Reused across frames to avoid allocating a fresh CSS-update dictionary every rAF tick.
+    // Safe because the synchronous JS interop marshals the returned dictionary before the next
+    // Tick runs (single-threaded Blazor WASM), so the buffer is never read after it is cleared.
+    private readonly Dictionary<string, string> _updateBuffer = new();
 
     public bool HasActiveAnimations => _activeAnims.Count > 0 || _isDragging;
 
@@ -68,14 +82,15 @@ internal sealed class BmotionElementAnimationState
         // Signal awaiter if all finished
         if (_completionSource != null && _activeAnims.Count == 0)
         {
-            _completionSource.TrySetResult();
+            _completionSource.TrySetResult(true); // natural completion
             _completionSource = null;
         }
 
         if (!_transformDirty && _dirtyProps.Count == 0) return null;
 
-        // ── Build CSS style update dict ────────────────────────────────────────
-        var updates = new Dictionary<string, string>(_dirtyProps.Count + 1);
+        // ── Build CSS style update dict (reused buffer) ────────────────────────
+        var updates = _updateBuffer;
+        updates.Clear();
 
         if (_transformDirty)
             updates["transform"] = BmotionTransformComposer.Build(Transforms);
@@ -129,18 +144,19 @@ internal sealed class BmotionElementAnimationState
     public void AnimateTo(
         Dictionary<string, object?> values,
         BmotionTransitionConfig? transition,
-        TaskCompletionSource? completionSource = null)
+        TaskCompletionSource<bool>? completionSource = null)
     {
         // Cheap scan for any non-null target (no allocation).
         bool any = false;
         foreach (var v in values.Values)
             if (v != null) { any = true; break; }
-        if (!any) { completionSource?.TrySetResult(); return; }
+        if (!any) { completionSource?.TrySetResult(true); return; }
 
         // Complete any previously-pending awaiter so callers aren't stranded when a
-        // new animation supersedes the old one.
+        // new animation supersedes the old one. The old one resolves with false so its
+        // completion callback (OnAnimationComplete) is suppressed - it was interrupted.
         if (_completionSource != null && !ReferenceEquals(_completionSource, completionSource))
-            _completionSource.TrySetResult();
+            _completionSource.TrySetResult(false);
         _completionSource = completionSource;
 
         foreach (var (key, value) in values)
@@ -150,9 +166,23 @@ internal sealed class BmotionElementAnimationState
             CancelProp(key);
 
             if (TryGetDoubleArray(value, out double[]? doubleFrames))
-                CreateNumericKeyframesDriver(key, doubleFrames!, perKey);
+            {
+                // Keyframe drivers require at least two frames (they build n-1 segments and
+                // divide by n-1 when distributing times). Degenerate arrays would otherwise
+                // throw and (via ComputeFrame) stall the whole loop, so handle them here:
+                //   0 frames -> nothing to do; 1 frame -> snap to that single value.
+                if (doubleFrames!.Length >= 2)
+                    CreateNumericKeyframesDriver(key, doubleFrames, perKey);
+                else if (doubleFrames.Length == 1)
+                    CreateNumericDriver(key, doubleFrames[0], perKey);
+            }
             else if (IsColorProp(key) && TryGetStringArray(value, out string[]? strFrames))
-                CreateColorKeyframesDriver(key, strFrames!, perKey);
+            {
+                if (strFrames!.Length >= 2)
+                    CreateColorKeyframesDriver(key, strFrames, perKey);
+                else if (strFrames.Length == 1)
+                    CreateColorDriver(key, strFrames[0], perKey);
+            }
             else if (IsColorProp(key) && value is string colorStr)
                 CreateColorDriver(key, colorStr, perKey);
             else if (value is string dimStr)
@@ -212,7 +242,7 @@ internal sealed class BmotionElementAnimationState
             // of AnimateToAwaitAsync don't hang forever (matches CancelAll's behaviour).
             if (_activeAnims.Count == 0 && _completionSource != null)
             {
-                _completionSource.TrySetResult();
+                _completionSource.TrySetResult(false); // cancelled, not completed
                 _completionSource = null;
             }
         }
@@ -223,7 +253,7 @@ internal sealed class BmotionElementAnimationState
         foreach (var driver in _activeAnims.Values)
             driver.Cancel();
         _activeAnims.Clear();
-        _completionSource?.TrySetResult();
+        _completionSource?.TrySetResult(false); // cancelled, not completed
         _completionSource = null;
     }
 
@@ -237,7 +267,7 @@ internal sealed class BmotionElementAnimationState
         foreach (var driver in _activeAnims.Values)
             driver.Complete();
         _activeAnims.Clear();
-        _completionSource?.TrySetResult();
+        _completionSource?.TrySetResult(true); // snapped to end values = completed
         _completionSource = null;
     }
 

@@ -8,7 +8,7 @@ namespace Bit.Bmotion;
 /// Animation math runs in the C# <see cref="BmotionAnimationEngine"/>; JS is used only
 /// for DOM style mutation, pointer/focus events, viewport observation and FLIP.
 /// </summary>
-public class Bmotion : ComponentBase, IAsyncDisposable
+public sealed class Bmotion : ComponentBase, IAsyncDisposable
 {
     // ── Injected services ──────────────────────────────────────────────────────
     [Inject] private BmotionAnimationEngine Engine { get; set; } = null!;
@@ -247,14 +247,20 @@ public class Bmotion : ComponentBase, IAsyncDisposable
                     () => OnAnimationComplete.InvokeAsync());
             }
         }
-        else if (VariantCtx?.ActiveVariant is string inheritedVariant && Variants != null)
+        else if (VariantCtx != null && (Variants != null || VariantCtx.Variants != null))
         {
+            // Claim a stable stagger position on first render even when no variant is active yet,
+            // so a parent that switches its variant later (the common hidden→visible toggle) still
+            // staggers its children in render order instead of collapsing every delay to zero.
             _variantChildIndex = VariantCtx.RegisterChild();
-            _prevInheritedVariant = inheritedVariant;
-            var props = Variants.Get(inheritedVariant) ?? VariantCtx.Variants?.Get(inheritedVariant);
-            if (props != null)
-                await Engine.AnimateToAsync(_id, props.ToJsDictionary(),
-                    BuildEffectiveTransitionWithDelay(VariantCtx.GetChildDelay(_variantChildIndex)));
+            if (VariantCtx.ActiveVariant is string inheritedVariant)
+            {
+                _prevInheritedVariant = inheritedVariant;
+                var props = Variants?.Get(inheritedVariant) ?? VariantCtx.Variants?.Get(inheritedVariant);
+                if (props != null)
+                    await Engine.AnimateToAsync(_id, props.ToJsDictionary(),
+                        BuildEffectiveTransitionWithDelay(VariantCtx.GetChildDelay(_variantChildIndex)));
+            }
         }
 
         _prevAnimate = Animate;
@@ -275,7 +281,7 @@ public class Bmotion : ComponentBase, IAsyncDisposable
             }
             _prevAnimate = Animate;
         }
-        else if (Animate == null && Variants != null)
+        else if (Animate == null && (Variants != null || VariantCtx?.Variants != null))
         {
             var newVariant = VariantCtx?.ActiveVariant;
             if (newVariant != _prevInheritedVariant)
@@ -283,7 +289,7 @@ public class Bmotion : ComponentBase, IAsyncDisposable
                 _prevInheritedVariant = newVariant;
                 if (newVariant != null)
                 {
-                    var props = Variants.Get(newVariant) ?? VariantCtx?.Variants?.Get(newVariant);
+                    var props = Variants?.Get(newVariant) ?? VariantCtx?.Variants?.Get(newVariant);
                     if (props != null)
                     {
                         double delay = _variantChildIndex >= 0 ? VariantCtx!.GetChildDelay(_variantChildIndex) : 0;
@@ -524,7 +530,8 @@ public class Bmotion : ComponentBase, IAsyncDisposable
 
     private bool NeedsPathLengthAttr() =>
         _pathDrawableTags.Contains(Tag) &&
-        (AdditionalAttributes == null || !AdditionalAttributes.ContainsKey("pathLength")) &&
+        (AdditionalAttributes == null ||
+         !AdditionalAttributes.Keys.Any(k => string.Equals(k, "pathLength", StringComparison.OrdinalIgnoreCase))) &&
         (HasPathLength(Initial) || HasPathLength(Animate) || HasPathLength(Exit) ||
          HasPathLength(WhileHover) || HasPathLength(WhileTap) || HasPathLength(WhileFocus) ||
          HasPathLength(WhileInView) || HasPathLength(WhileDrag));
@@ -575,7 +582,13 @@ public class Bmotion : ComponentBase, IAsyncDisposable
         if (ConfigCtx?.TransitionSpeed is double speed && speed != 1.0)
         {
             t = t.Clone();
+            // Scale every time-based field so the whole animation is consistently sped up /
+            // slowed down - not just the tween duration (which left delays and duration-based
+            // springs out of sync with the requested speed).
             t.Duration *= speed;
+            t.Delay *= speed;
+            t.RepeatDelay *= speed;
+            if (t.VisualDuration.HasValue) t.VisualDuration *= speed;
         }
         return t;
     }

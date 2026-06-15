@@ -11,7 +11,13 @@
              concrete component/service type the runtime can see, so the trimmer's IL2091 advice
              about propagating DynamicallyAccessedMembers annotations isn't actionable here. -->
         <NoWarn>$(NoWarn);IL2091</NoWarn>
+        <!-- Surface the WebAssembly-only platform requirement on the package's NuGet page. -->
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />

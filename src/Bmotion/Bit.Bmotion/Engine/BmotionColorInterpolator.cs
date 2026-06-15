@@ -3,19 +3,47 @@ namespace Bit.Bmotion;
 /// Pure-C# RGBA color parsing and linear interpolation.
 /// Handles #hex, rgb(), rgba(), hsl(), and hsla() formats.
 /// </summary>
-internal static class BmotionColorInterpolator
+internal static partial class BmotionColorInterpolator
 {
-    /// <summary>Linearly interpolates between two CSS color strings at progress <paramref name="t"/> (0–1).</summary>
+    // Source-generated regexes: faster than the static Regex cache and trim-safe (no runtime
+    // IL emit), which matters because this assembly is built with IsTrimmable=true.
+    [System.Text.RegularExpressions.GeneratedRegex(
+        @"rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
+    private static partial System.Text.RegularExpressions.Regex RgbRegex();
+
+    [System.Text.RegularExpressions.GeneratedRegex(
+        @"hsla?\(\s*([\d.]+)\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?(?:\s*,\s*([\d.]+))?\s*\)",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
+    private static partial System.Text.RegularExpressions.Regex HslRegex();
+    /// <summary>
+    /// Linearly interpolates between two CSS color strings at progress <paramref name="t"/> (0–1).
+    /// <para>
+    /// Interpolation is performed per-channel in the sRGB color space (matching Framer Motion's
+    /// default). This is fast and predictable, but mixing complementary colors can pass through a
+    /// desaturated mid-point (e.g. blue→yellow briefly looks grey). A perceptual space such as
+    /// OKLab would avoid that at extra cost; sRGB is intentional here for parity and performance.
+    /// </para>
+    /// </summary>
     public static string Lerp(string from, string to, double t)
     {
         var f = Parse(from);
         var tt = Parse(to);
         if (f == null || tt == null) return to;
+        return Lerp(f, tt, t);
+    }
 
-        int r = (int)Math.Round(f[0] + (tt[0] - f[0]) * t);
-        int g = (int)Math.Round(f[1] + (tt[1] - f[1]) * t);
-        int b = (int)Math.Round(f[2] + (tt[2] - f[2]) * t);
-        double a = f[3] + (tt[3] - f[3]) * t;
+    /// <summary>
+    /// Interpolates between two pre-parsed RGBA channel arrays (as produced by <see cref="Parse"/>).
+    /// Drivers parse their colors once up-front and call this each tick, avoiding the per-frame
+    /// regex/parse cost of the string overload.
+    /// </summary>
+    public static string Lerp(double[] from, double[] to, double t)
+    {
+        int r = (int)Math.Round(from[0] + (to[0] - from[0]) * t);
+        int g = (int)Math.Round(from[1] + (to[1] - from[1]) * t);
+        int b = (int)Math.Round(from[2] + (to[2] - from[2]) * t);
+        double a = from[3] + (to[3] - from[3]) * t;
         return $"rgba({r},{g},{b},{BmotionCssFormat.Num(a, "G4")})";
     }
 
@@ -28,7 +56,12 @@ internal static class BmotionColorInterpolator
 
     // ── Internal ──────────────────────────────────────────────────────────────
 
-    private static double[]? Parse(string c)
+    /// <summary>
+    /// Parses a CSS color into its <c>[r, g, b, a]</c> channels (0–255 for RGB, 0–1 for alpha),
+    /// or returns <c>null</c> when the string is not a recognised color. Exposed to drivers so
+    /// they can parse keyframes once instead of on every tick.
+    /// </summary>
+    internal static double[]? Parse(string c)
     {
         if (string.IsNullOrEmpty(c)) return null;
 
@@ -53,8 +86,7 @@ internal static class BmotionColorInterpolator
         }
 
         // rgb() / rgba()
-        var m = System.Text.RegularExpressions.Regex.Match(
-            c, @"rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)");
+        var m = RgbRegex().Match(c);
         if (m.Success)
         {
             return
@@ -67,8 +99,7 @@ internal static class BmotionColorInterpolator
         }
 
         // hsl() / hsla()
-        var mh = System.Text.RegularExpressions.Regex.Match(
-            c, @"hsla?\(\s*([\d.]+)\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?(?:\s*,\s*([\d.]+))?\s*\)");
+        var mh = HslRegex().Match(c);
         if (mh.Success)
         {
             double h2  = BmotionCssFormat.Parse(mh.Groups[1].Value);

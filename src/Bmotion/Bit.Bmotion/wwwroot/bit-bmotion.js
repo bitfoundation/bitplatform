@@ -20,35 +20,43 @@
 // 
 
 let _rafId = null;
-let _animEngine = null;
+// Set of engine DotNetObjectReferences. Using a set (rather than a single global) means
+// multiple Blazor roots / engine instances sharing this module each get ticked, instead of a
+// second startRafLoop silently hijacking the loop from the first.
+const _engines = new Set();
 
 export function startRafLoop(dotnetRef) {
-    _animEngine = dotnetRef;
-    if (_rafId !== null) cancelAnimationFrame(_rafId);
-    _rafId = requestAnimationFrame(_tick);
+    _engines.add(dotnetRef);
+    if (_rafId === null) _rafId = requestAnimationFrame(_tick);
 }
 
-export function stopRafLoop() {
-    if (_rafId !== null) { cancelAnimationFrame(_rafId); _rafId = null; }
-    _animEngine = null;
+export function stopRafLoop(dotnetRef) {
+    // With an argument, stop only that engine; without one, stop everything (back-compat).
+    if (dotnetRef) _engines.delete(dotnetRef);
+    else _engines.clear();
+    if (_engines.size === 0 && _rafId !== null) {
+        cancelAnimationFrame(_rafId);
+        _rafId = null;
+    }
 }
 
 function _tick(timestamp) {
-    if (!_animEngine) return;
-    try {
-        // invokeMethod is synchronous in Blazor WASM  C# does all animation math here
-        const updates = _animEngine.invokeMethod('ComputeFrame', timestamp);
-        if (updates) {
-            for (const elementId in updates) {
-                const el = document.getElementById(elementId);
-                if (!el) continue;
-                _applyStyles(el, updates[elementId]);
+    if (_engines.size === 0) { _rafId = null; return; }
+    for (const ref of _engines) {
+        try {
+            // invokeMethod is synchronous in Blazor WASM  C# does all animation math here
+            const updates = ref.invokeMethod('ComputeFrame', timestamp);
+            if (updates) {
+                for (const elementId in updates) {
+                    const el = document.getElementById(elementId);
+                    if (!el) continue;
+                    _applyStyles(el, updates[elementId]);
+                }
             }
+        } catch (e) {
+            // Never let a fault from one engine's synchronous tick stop the shared rAF loop.
+            console.error('bmotion: ComputeFrame tick failed', e);
         }
-    } catch (e) {
-        // Swallow transient frame failures so the rAF loop always reschedules below and
-        // animations don't stall permanently after a single bad frame.
-        console.error('bmotion: ComputeFrame tick failed', e);
     }
     _rafId = requestAnimationFrame(_tick);
 }
@@ -194,7 +202,9 @@ export function attachEventListeners(elementId, events, dotnetRef) {
 
     //  Pan (detects movement ≥ 3px without moving the element) 
     if (events.pan) {
-        _attachPan(el, dotnetRef, cleanups);
+        // When drag is also active it already calls setPointerCapture; let pan reuse that capture
+        // instead of grabbing the pointer a second time for the same element.
+        _attachPan(el, dotnetRef, cleanups, !!events.drag);
     }
 
     //  Drag 
@@ -203,7 +213,7 @@ export function attachEventListeners(elementId, events, dotnetRef) {
     }
 }
 
-function _attachPan(el, dotnetRef, cleanups) {
+function _attachPan(el, dotnetRef, cleanups, skipCapture) {
     const PAN_THRESHOLD = 3; // pixels before pan is detected
     let down = false;        // whether a pointer is currently pressed on this element
     let panning = false;
@@ -215,7 +225,8 @@ function _attachPan(el, dotnetRef, cleanups) {
         down = true;
         startX = lastX = e.clientX; startY = lastY = e.clientY;
         lastT = Date.now(); velX = velY = 0; panning = false;
-        el.setPointerCapture(e.pointerId);
+        // Skip when drag already owns the pointer capture for this element.
+        if (!skipCapture) el.setPointerCapture(e.pointerId);
     };
 
     const onMove = (e) => {

@@ -63,9 +63,23 @@ public partial class BmotionAnimatePresence : ComponentBase
     {
         if (_prevIsPresent && !IsPresent)
         {
-            // Children are leaving - signal exiting state so Bmotion components play Exit
-            _presenceCtx.IsExiting = true;
-            _shouldRender = true; // keep rendering until exit completes
+            // A fresh leave invalidates any pending deferred enter; clear it so stale
+            // deferred-enter state can't remount the children after this exit completes.
+            _deferEnter = false;
+
+            if (_presenceCtx.ChildCount > 0)
+            {
+                // Children are leaving - signal exiting state so Bmotion components play Exit
+                _presenceCtx.IsExiting = true;
+                _shouldRender = true; // keep rendering until exit completes
+            }
+            else
+            {
+                // No animatable children registered: AllExitsComplete would never fire, so
+                // flagging IsExiting/keeping _shouldRender true would strand the content. Drop it now.
+                _presenceCtx.IsExiting = false;
+                _shouldRender = false;
+            }
         }
         else if (!_prevIsPresent && IsPresent)
         {

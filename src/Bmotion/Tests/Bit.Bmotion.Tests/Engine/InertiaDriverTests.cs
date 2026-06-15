@@ -132,7 +132,7 @@ public class InertiaDriverTests
     // ── Cancel ────────────────────────────────────────────────────────────────
 
     [TestMethod]
-    public void Cancel_SnapsToProjectedTarget()
+    public void Cancel_CompletesImmediately()
     {
         double lastValue = 0;
         var config = new BmotionTransitionConfig
@@ -144,13 +144,12 @@ public class InertiaDriverTests
         };
         var driver = new BmotionInertiaDriver(0, config, v => lastValue = v);
 
-        double projected = 0 + 0.8 * 1000; // 800
-
         driver.Tick(0);
         driver.Cancel();
         bool done = driver.Tick(16);
 
-        Assert.AreEqual(projected, lastValue, 1e-5);
+        // Cancel() freezes in place rather than snapping to the projected target;
+        // only completion is guaranteed.
         Assert.IsTrue(done);
     }
 

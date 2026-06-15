@@ -60,7 +60,10 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
 
     /// <summary>Synchronous overload.</summary>
     public Task ObserveAsync(string? containerId, Action<BmotionScrollInfo> onChange)
-        => ObserveAsync(containerId, info => { onChange(info); return Task.CompletedTask; });
+    {
+        ArgumentNullException.ThrowIfNull(onChange);
+        return ObserveAsync(containerId, info => { onChange(info); return Task.CompletedTask; });
+    }
 
     // ── JS → C# callback ─────────────────────────────────────────────────────
 
