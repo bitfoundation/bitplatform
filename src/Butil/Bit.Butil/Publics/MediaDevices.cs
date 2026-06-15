@@ -11,6 +11,11 @@ namespace Bit.Butil;
 public class MediaDevices(IJSRuntime js) : IAsyncDisposable
 {
     /// <summary>True when the runtime exposes <c>navigator.mediaDevices</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.mediaDevices.isSupported");
 
     /// <summary>

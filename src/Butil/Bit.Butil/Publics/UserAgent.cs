@@ -21,6 +21,11 @@ public class UserAgent(IJSRuntime js)
     /// <summary>
     /// True when the runtime exposes <c>navigator.userAgentData</c> (modern UA Client Hints).
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsClientHintsSupported()
         => js.Invoke<bool>("BitButil.userAgent.isClientHintsSupported");
 
@@ -33,6 +38,11 @@ public class UserAgent(IJSRuntime js)
         => js.Invoke<UserAgentBrand[]>("BitButil.userAgent.getBrands");
 
     /// <summary>True when the user-agent identifies itself as a mobile device.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsMobile()
         => js.Invoke<bool>("BitButil.userAgent.isMobile");
 

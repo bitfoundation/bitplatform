@@ -45,6 +45,11 @@ public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/length">https://developer.mozilla.org/en-US/docs/Web/API/Storage/length</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<int> GetLength()
         => await js.InvokeFast<int>("BitButil.storage.length", storageName);
 
@@ -59,6 +64,11 @@ public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
     /// <summary>
     /// True when the storage contains an item with the given key.
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> ContainsKey(string key)
         => await js.InvokeFast<bool>("BitButil.storage.containsKey", storageName, key);
 

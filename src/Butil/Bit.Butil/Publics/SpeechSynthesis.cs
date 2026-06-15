@@ -11,6 +11,11 @@ namespace Bit.Butil;
 public class SpeechSynthesis(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>window.speechSynthesis</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.speech.isSupported");
 
     /// <summary>Returns the list of voices the platform makes available.</summary>
@@ -34,8 +39,18 @@ public class SpeechSynthesis(IJSRuntime js)
     public ValueTask Resume() => js.InvokeVoid("BitButil.speech.resume");
 
     /// <summary>True when the engine is currently speaking (or paused).</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSpeaking() => js.Invoke<bool>("BitButil.speech.isSpeaking");
 
     /// <summary>True when an utterance is queued.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsPending() => js.Invoke<bool>("BitButil.speech.isPending");
 }

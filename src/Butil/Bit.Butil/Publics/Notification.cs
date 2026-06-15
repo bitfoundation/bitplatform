@@ -47,6 +47,11 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Checks if the runtime (browser or web-view) is supporting the Web Notification API.
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async ValueTask<bool> IsSupported()
     {
         return await js.Invoke<bool>("BitButil.notification.isSupported");
@@ -57,6 +62,11 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/permission_static">https://developer.mozilla.org/en-US/docs/Web/API/Notification/permission_static</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async ValueTask<NotificationPermission> GetPermission()
     {
         var permission = await js.Invoke<string>("BitButil.notification.getPermission");
@@ -75,6 +85,11 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/requestPermission_static">https://developer.mozilla.org/en-US/docs/Web/API/Notification/requestPermission_static</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async ValueTask<NotificationPermission> RequestPermission()
     {
         var permission = await js.Invoke<string>("BitButil.notification.requestPermission");

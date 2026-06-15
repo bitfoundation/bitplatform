@@ -44,6 +44,11 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/offsetLeft">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/offsetLeft</see>
     /// </summary>
     /// <returns></returns>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<double> GetOffsetLeft()
         => await js.Invoke<double>("BitButil.visualViewport.offsetLeft");
 
@@ -54,6 +59,11 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/offsetTop">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/offsetTop</see>
     /// </summary>
     /// <returns></returns>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<double> GetOffsetTop()
         => await js.Invoke<double>("BitButil.visualViewport.offsetTop");
 
@@ -64,6 +74,11 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/pageLeft">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/pageLeft</see>
     /// </summary>
     /// <returns></returns>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<double> GetPageLeft()
         => await js.Invoke<double>("BitButil.visualViewport.pageLeft");
 
@@ -74,6 +89,11 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/pageTop">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/pageTop</see>
     /// </summary>
     /// <returns></returns>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<double> GetPageTop()
         => await js.Invoke<double>("BitButil.visualViewport.pageTop");
 
@@ -83,6 +103,11 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/pageTop">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/pageTop</see>
     /// </summary>
     /// <returns></returns>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<double> GetWidth()
         => await js.Invoke<double>("BitButil.visualViewport.width");
 
@@ -92,6 +117,11 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/height">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/height</see>
     /// </summary>
     /// <returns></returns>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<double> GetHeight()
         => await js.Invoke<double>("BitButil.visualViewport.height");
 
@@ -102,6 +132,11 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scale">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scale</see>
     /// </summary>
     /// <returns></returns>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<double> GetScale()
         => await js.Invoke<double>("BitButil.visualViewport.scale");
 

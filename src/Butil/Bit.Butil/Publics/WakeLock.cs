@@ -16,6 +16,11 @@ public class WakeLock(IJSRuntime js) : IAsyncDisposable
     private bool _heldByUs;
 
     /// <summary>True when the runtime exposes <c>navigator.wakeLock</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.wakeLock.isSupported");
 
     /// <summary>
@@ -24,6 +29,11 @@ public class WakeLock(IJSRuntime js) : IAsyncDisposable
     /// (typically when the page is hidden).
     /// </summary>
     /// <returns>True when the lock was acquired.</returns>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async ValueTask<bool> Request()
     {
         var ok = await js.Invoke<bool>("BitButil.wakeLock.request");

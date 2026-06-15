@@ -15,6 +15,11 @@ namespace Bit.Butil;
 public class Push(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>ServiceWorkerRegistration.pushManager</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.push.isSupported");
 
     /// <summary>
@@ -36,5 +41,10 @@ public class Push(IJSRuntime js)
         => js.Invoke<PushSubscriptionInfo>("BitButil.push.subscribe", applicationServerKey, userVisibleOnly);
 
     /// <summary>Unsubscribes the active subscription. Returns true if a subscription was removed.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> Unsubscribe() => js.Invoke<bool>("BitButil.push.unsubscribe");
 }

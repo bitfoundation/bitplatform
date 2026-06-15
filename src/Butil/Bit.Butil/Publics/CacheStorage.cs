@@ -15,15 +15,30 @@ namespace Bit.Butil;
 public class CacheStorage(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>caches</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.cacheStorage.isSupported");
 
     /// <summary>Lists every cache name visible to the current origin.</summary>
     public ValueTask<string[]> Keys() => js.Invoke<string[]>("BitButil.cacheStorage.keys");
 
     /// <summary>Returns true when a cache with the given name exists.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> Has(string cacheName) => js.Invoke<bool>("BitButil.cacheStorage.has", cacheName);
 
     /// <summary>Deletes the named cache. Returns true when something was removed.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> Delete(string cacheName) => js.Invoke<bool>("BitButil.cacheStorage.delete", cacheName);
 
     /// <summary>
@@ -60,6 +75,11 @@ public class CacheStorage(IJSRuntime js)
         => js.Invoke<CachedResponse>("BitButil.cacheStorage.match", cacheName, url);
 
     /// <summary>Removes a single entry. Returns true when something was removed.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> DeleteEntry(string cacheName, string url)
         => js.Invoke<bool>("BitButil.cacheStorage.deleteEntry", cacheName, url);
 

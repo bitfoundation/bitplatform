@@ -38,6 +38,11 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/type">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/type</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<ScreenOrientationType> GetOrientationType()
     {
         var type = await js.Invoke<string>("BitButil.screenOrientation.type");
@@ -57,6 +62,11 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<ushort> GetAngle()
         => await js.Invoke<ushort>("BitButil.screenOrientation.angle");
 

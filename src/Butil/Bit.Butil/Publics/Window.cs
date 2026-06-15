@@ -168,6 +168,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/innerHeight">https://developer.mozilla.org/en-US/docs/Web/API/Window/innerHeight</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetInnerHeight()
         => await js.Invoke<float>("BitButil.window.innerHeight");
 
@@ -176,6 +181,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth">https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetInnerWidth()
         => await js.Invoke<float>("BitButil.window.innerWidth");
 
@@ -184,6 +194,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/isSecureContext">https://developer.mozilla.org/en-US/docs/Web/API/isSecureContext</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> IsSecureContext()
         => await js.Invoke<bool>("BitButil.window.isSecureContext");
 
@@ -224,6 +239,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/outerHeight">https://developer.mozilla.org/en-US/docs/Web/API/Window/outerHeight</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetOuterHeight()
         => await js.Invoke<float>("BitButil.window.outerHeight");
 
@@ -232,6 +252,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/outerWidth">https://developer.mozilla.org/en-US/docs/Web/API/Window/outerWidth</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetOuterWidth()
         => await js.Invoke<float>("BitButil.window.outerWidth");
 
@@ -240,6 +265,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/screenX">https://developer.mozilla.org/en-US/docs/Web/API/Window/screenX</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetScreenX()
         => await js.Invoke<float>("BitButil.window.screenX");
 
@@ -248,6 +278,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/screenY">https://developer.mozilla.org/en-US/docs/Web/API/Window/screenY</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetScreenY()
         => await js.Invoke<float>("BitButil.window.screenY");
 
@@ -256,6 +291,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollX">https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollX</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetScrollX()
         => await js.Invoke<float>("BitButil.window.scrollX");
 
@@ -264,6 +304,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollY">https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollY</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetScrollY()
         => await js.Invoke<float>("BitButil.window.scrollY");
 
@@ -321,6 +366,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/confirm">https://developer.mozilla.org/en-US/docs/Web/API/Window/confirm</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> Confirm(string? message = null)
         => await js.Invoke<bool>("BitButil.window.confirm", message);
 
@@ -329,6 +379,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/find">https://developer.mozilla.org/en-US/docs/Web/API/Window/find</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> Find(string? text = null,
         bool? caseSensitive = null,
         bool? backward = null,
@@ -373,6 +428,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
         => js.InvokeVoid("BitButil.window.selectElement", element).AsTask();
 
     /// <summary>Copies the current selection to the clipboard, returning true on success.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public Task<bool> CopySelection() => js.Invoke<bool>("BitButil.window.copySelection").AsTask();
 
     /// <summary>

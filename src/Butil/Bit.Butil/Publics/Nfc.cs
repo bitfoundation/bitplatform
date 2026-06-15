@@ -24,6 +24,11 @@ public class Nfc(IJSRuntime js) : IAsyncDisposable
     private DotNetObjectReference<Nfc> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
     /// <summary>True when the runtime exposes <c>NDEFReader</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.nfc.isSupported");
 
     /// <summary>
@@ -66,12 +71,22 @@ public class Nfc(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Writes a single NDEF text record to the next tag tapped against the device.
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> WriteText(string text, string? lang = null, string? id = null)
         => js.Invoke<bool>("BitButil.nfc.writeText", text, lang, id);
 
     /// <summary>
     /// Writes a single NDEF URL record to the next tag tapped against the device.
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> WriteUrl(string url, string? id = null)
         => js.Invoke<bool>("BitButil.nfc.writeUrl", url, id);
 

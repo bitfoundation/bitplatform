@@ -18,6 +18,11 @@ public class Crypto(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID">https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async ValueTask<Guid> RandomUuid()
     {
         var raw = await js.Invoke<string>("BitButil.crypto.randomUUID");
@@ -73,6 +78,11 @@ public class Crypto(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/verify">SubtleCrypto.verify()</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> VerifyHmac(CryptoKeyHash algorithm, byte[] key, byte[] signature, byte[] data)
     {
         var algo = HashAlgorithmName(algorithm);
@@ -136,6 +146,11 @@ public class Crypto(IJSRuntime js)
     /// <summary>
     /// Verifies an RSA-PSS signature using an SPKI public key.
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> VerifyRsaPss(byte[] publicKey, byte[] signature, byte[] data, int saltLength = 32,
                                         CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
         => js.Invoke<bool>("BitButil.crypto.verifyRsaPss", publicKey, signature, data, saltLength, HashAlgorithmName(algorithm));
@@ -152,6 +167,11 @@ public class Crypto(IJSRuntime js)
     /// <summary>
     /// Verifies an ECDSA signature using an SPKI public key.
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> VerifyEcdsa(byte[] publicKey, byte[] signature, byte[] data, string curve = "P-256",
                                        CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
         => js.Invoke<bool>("BitButil.crypto.verifyEcdsa", publicKey, signature, data, curve, HashAlgorithmName(algorithm));

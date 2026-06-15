@@ -27,6 +27,11 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/now">Performance.now()</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<double> Now()
         => js.Invoke<double>("BitButil.performance.now");
 
@@ -35,6 +40,11 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin">Performance.timeOrigin</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<double> TimeOrigin()
         => js.Invoke<double>("BitButil.performance.timeOrigin");
 

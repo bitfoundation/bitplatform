@@ -25,6 +25,11 @@ public class Reporting(IJSRuntime js) : IAsyncDisposable
     private DotNetObjectReference<Reporting> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
     /// <summary>True when the runtime exposes <c>ReportingObserver</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.reporting.isSupported");
 
     /// <summary>

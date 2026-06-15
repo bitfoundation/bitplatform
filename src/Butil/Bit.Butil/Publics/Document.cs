@@ -78,6 +78,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/compatMode">https://developer.mozilla.org/en-US/docs/Web/API/Document/compatMode</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<CompatMode> GetCompatMode()
     {
         var mode = await js.Invoke<string>("BitButil.document.compatMode");
@@ -109,6 +114,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode">https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<DesignMode> GetDesignMode()
     {
         var mode = await js.Invoke<string>("BitButil.document.getDesignMode");
@@ -131,6 +141,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/dir">https://developer.mozilla.org/en-US/docs/Web/API/Document/dir</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<DocumentDir> GetDir()
     {
         var mode = await js.Invoke<string>("BitButil.document.getDir");
@@ -200,6 +215,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState">https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<VisibilityState> GetVisibilityState()
     {
         var raw = await js.Invoke<string>("BitButil.document.visibilityState");
@@ -211,6 +231,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/hidden">https://developer.mozilla.org/en-US/docs/Web/API/Document/hidden</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> IsHidden()
         => await js.Invoke<bool>("BitButil.document.hidden");
 
@@ -219,6 +244,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/hasFocus">https://developer.mozilla.org/en-US/docs/Web/API/Document/hasFocus</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> HasFocus()
         => await js.Invoke<bool>("BitButil.document.hasFocus");
 
@@ -228,6 +258,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/wasDiscarded">Document.wasDiscarded</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> WasDiscarded() => js.Invoke<bool>("BitButil.document.wasDiscarded");
 
     // ─── Convenience subscription helpers built on SubscribeEvent ───────────────

@@ -30,6 +30,11 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
     private DotNetObjectReference<ServiceWorker> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
 
     /// <summary>True when the runtime exposes <c>navigator.serviceWorker</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.serviceWorker.isSupported");
 
     /// <summary>
@@ -76,12 +81,22 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
     public ValueTask Update(string? scope = null) => js.InvokeVoid("BitButil.serviceWorker.update", scope);
 
     /// <summary>Unregisters the worker matching <paramref name="scope"/>. Returns true when something was removed.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> Unregister(string? scope = null) => js.Invoke<bool>("BitButil.serviceWorker.unregister", scope);
 
     /// <summary>
     /// Sends <paramref name="message"/> to the active worker controlling this page.
     /// Returns false when no controller exists.
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     [RequiresUnreferencedCode("JSON serialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
     public ValueTask<bool> PostMessage<[DynamicallyAccessedMembers(JsonSerialized)] T>(T message)

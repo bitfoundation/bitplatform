@@ -41,6 +41,11 @@ public sealed class IndexedDbHandle : IAsyncDisposable
         => _js.Invoke<T?>("BitButil.indexedDb.get", _id, store, key);
 
     /// <summary>Reads a value by key as a <see cref="JsonElement"/> (no static type required).</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<JsonElement> GetRaw(string store, object key)
         => _js.Invoke<JsonElement>("BitButil.indexedDb.get", _id, store, key);
 
@@ -62,6 +67,11 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     public ValueTask Clear(string store) => _js.InvokeVoid("BitButil.indexedDb.clear", _id, store);
 
     /// <summary>Counts records in a store.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<int> Count(string store) => _js.Invoke<int>("BitButil.indexedDb.count", _id, store);
 
     /// <summary>
