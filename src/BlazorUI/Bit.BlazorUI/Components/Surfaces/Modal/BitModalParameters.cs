@@ -109,6 +109,9 @@ public class BitModalParameters
             FullHeight = params1.FullHeight ?? params2.FullHeight,
             FullWidth = params1.FullWidth ?? params2.FullWidth,
             IsAlert = params1.IsAlert ?? params2.IsAlert,
+            // These callbacks are invoked manually (never bound to a child component), so the
+            // EventCallback receiver only needs to be non-null to be considered "has delegate".
+            // A throwaway object() is sufficient here; there's no component to associate for re-render.
             OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(new object(), async () =>
             {
                 await params1.OnDismiss.InvokeAsync();

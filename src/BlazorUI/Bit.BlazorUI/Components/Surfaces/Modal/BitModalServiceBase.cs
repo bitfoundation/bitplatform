@@ -32,6 +32,13 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     /// <summary>
     /// Initializes the current modal container that is responsible for rendering the modals.
     /// </summary>
+    /// <remarks>
+    /// This may be called more than once over the application lifetime: when a container is disposed it
+    /// calls <see cref="RemoveContainer"/> (clearing the reference), and a newly mounted container then
+    /// re-initializes the service. The most recently initialized container becomes the active one and any
+    /// queued persistent modals are injected into it. Mounting multiple containers simultaneously is not
+    /// supported; the last one to initialize wins.
+    /// </remarks>
     public void InitContainer(BitModalContainerBase<TReference, TParameters> container)
     {
         _container = container;

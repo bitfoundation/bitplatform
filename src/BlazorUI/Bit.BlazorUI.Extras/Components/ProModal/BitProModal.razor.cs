@@ -296,20 +296,20 @@ public partial class BitProModal : BitComponentBase
         // Create the event callbacks once. They read the current OnXxx properties and the
         // cascaded ProModalParameters at invoke time, so they stay correct without being
         // rebuilt every render.
-        _onDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+        _onDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, async (MouseEventArgs e) =>
         {
-            await OnDismiss.InvokeAsync();
-            await ProModalParameters!.OnDismiss.InvokeAsync();
+            await OnDismiss.InvokeAsync(e);
+            await ProModalParameters!.OnDismiss.InvokeAsync(e);
         });
         _onOpen = EventCallback.Factory.Create(this, async () =>
         {
             await OnOpen.InvokeAsync();
             await ProModalParameters!.OnOpen.InvokeAsync();
         });
-        _onOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+        _onOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, async (MouseEventArgs e) =>
         {
-            await OnOverlayClick.InvokeAsync();
-            await ProModalParameters!.OnOverlayClick.InvokeAsync();
+            await OnOverlayClick.InvokeAsync(e);
+            await ProModalParameters!.OnOverlayClick.InvokeAsync(e);
         });
 
         base.OnInitialized();

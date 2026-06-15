@@ -49,8 +49,8 @@ public abstract class BitModalReferenceBase<TReference, TParameters>
         Parameters = parameters;
     }
 
-    public void Close()
+    public Task Close()
     {
-        _ = _modalService.Close((TReference)this);
+        return _modalService.Close((TReference)this);
     }
 }
