@@ -5,15 +5,6 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
-        <!-- IL2026 is suppressed for THIS assembly's own build only; it does not affect consumers.
-             The JSON-(de)serializing public APIs (e.g. ButilStorage.GetItem<T>/SetItem<T>,
-             BroadcastChannel.Post<T>, ServiceWorker.PostMessage<T>, History.GetState<T>) are each
-             individually annotated with [RequiresUnreferencedCode]/[RequiresDynamicCode], so a
-             trimming/AOT consumer still gets the warning at their call site. The warnings produced
-             here are just the internal propagation of those (already-annotated) members through the
-             synchronous fast-invoke helpers, which only ever pass trim-safe primitives. Keeping the
-             real protection (the attributes) while quieting the redundant internal noise. -->
-        <NoWarn>$(NoWarn);IL2026</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

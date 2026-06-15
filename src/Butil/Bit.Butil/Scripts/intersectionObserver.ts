@@ -30,7 +30,7 @@ var BitButil = BitButil || {};
                 intersectionRect: toRect(e.intersectionRect),
                 rootBounds: toRect(e.rootBounds)
             }));
-            dotNetRef.invokeMethodAsync('InvokeIntersection', listenerId, payload);
+            butil.utils.dispatch(dotNetRef, 'InvokeIntersection', listenerId, payload);
         }, init);
 
         observer.observe(element);

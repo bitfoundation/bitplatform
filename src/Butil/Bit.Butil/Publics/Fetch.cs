@@ -20,7 +20,7 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): progress callbacks are isolated per circuit /
     // WASM app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Fetch>? _dotNetRef;
-    private DotNetObjectReference<Fetch> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Fetch> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// Invoked from JS as bytes arrive. Public + <see cref="JSInvokableAttribute"/> so it can be

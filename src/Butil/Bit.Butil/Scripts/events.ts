@@ -73,7 +73,7 @@ var BitButil = BitButil || {};
         const handler: EventListener = e => {
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
-            dotNetRef.invokeMethodAsync(methodName, listenerId, mapEvent(e, argsMembers));
+            butil.utils.dispatch(dotNetRef, methodName, listenerId, mapEvent(e, argsMembers));
         };
 
         _handlers[listenerId] = handler;

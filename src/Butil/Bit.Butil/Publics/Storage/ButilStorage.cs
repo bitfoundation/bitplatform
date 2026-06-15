@@ -15,6 +15,12 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage">https://developer.mozilla.org/en-US/docs/Web/API/Storage</see>
 /// </summary>
+// DotNetObjectReference.Create demands every public method of this type be preserved for trimming, and
+// this type's public surface includes [RequiresUnreferencedCode] JSON APIs (GetItem<T>/SetItem<T>), so
+// holding a DotNetObjectReference<ButilStorage> field/property raises IL2026. The interop ref only ever
+// dispatches the [JSInvokable] callback, never the JSON generics, and those generics keep their own
+// RUC/RDC attributes so a trimming/AOT consumer is still warned at the real call site. Scoped to this type.
+[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DotNetObjectReference.Create preserves all public methods; the RUC JSON APIs it pulls in are never invoked through this ref and stay annotated for consumers.")]
 public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeStorageEvent);
@@ -24,7 +30,7 @@ public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): subscriptions are isolated per circuit / WASM
     // app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<ButilStorage>? _dotNetRef;
-    private DotNetObjectReference<ButilStorage> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<ButilStorage> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// Invoked from JS on a cross-tab <c>storage</c> event. Public + <see cref="JSInvokableAttribute"/>

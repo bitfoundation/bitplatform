@@ -37,7 +37,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     // this instance. Both keep listeners isolated per circuit / WASM app and leak-free on disposal.
     private readonly DomEventsInterop _events = new();
     private DotNetObjectReference<Window>? _dotNetRef;
-    private DotNetObjectReference<Window> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Window> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// Invoked from JS when a watched media query changes. Public + <see cref="JSInvokableAttribute"/>
@@ -616,9 +616,13 @@ public class Window(IJSRuntime js) : IAsyncDisposable
             // JS wipe its shared _refs map) keeps popups from other live circuits/apps tracked, so
             // their Close(id) keeps working. new object?[] { ids } wraps the array as a single JS
             // argument; passing the string[] directly would spread each id as a separate arg.
-            var popupIds = _popupIds.Keys.ToArray();
-            _popupIds.Clear();
-            await js.InvokeVoid("BitButil.window.dispose", new object?[] { popupIds });
+            // Skip the interop round-trip entirely when this instance opened no popups (the common case).
+            if (_popupIds.IsEmpty is false)
+            {
+                var popupIds = _popupIds.Keys.ToArray();
+                _popupIds.Clear();
+                await js.InvokeVoid("BitButil.window.dispose", new object?[] { popupIds });
+            }
 
             // Detach this instance's beforeunload handlers so they don't outlive the component.
             if (_beforeUnloadIds.IsEmpty is false)

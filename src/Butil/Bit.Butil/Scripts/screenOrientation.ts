@@ -14,7 +14,7 @@ var BitButil = BitButil || {};
     function addChange(dotNetRef: DotNet.DotNetObject, listenerId: string) {
         const handler: EventListener = e => {
             const orientation = e.target as ScreenOrientation;
-            dotNetRef.invokeMethodAsync('InvokeScreenOrientationChange', listenerId, { angle: orientation.angle, type: orientation.type });
+            butil.utils.dispatch(dotNetRef, 'InvokeScreenOrientationChange', listenerId, { angle: orientation.angle, type: orientation.type });
         };
 
         _handlers[listenerId] = handler;

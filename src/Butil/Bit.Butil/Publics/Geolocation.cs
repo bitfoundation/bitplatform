@@ -21,7 +21,7 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference: watches live on this (scoped) instance, so they're isolated
     // per circuit / WASM app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Geolocation>? _dotNetRef;
-    private DotNetObjectReference<Geolocation> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Geolocation> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>True when the runtime exposes <c>navigator.geolocation</c>.</summary>
     /// <remarks>

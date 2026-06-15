@@ -16,7 +16,7 @@ var BitButil = BitButil || {};
                 const area = e.storageArea === window.localStorage ? 'localStorage'
                     : e.storageArea === window.sessionStorage ? 'sessionStorage'
                         : '';
-                dotNetRef.invokeMethodAsync('InvokeStorageEvent', listenerId, {
+                butil.utils.dispatch(dotNetRef, 'InvokeStorageEvent', listenerId, {
                     key: e.key,
                     oldValue: e.oldValue,
                     newValue: e.newValue,

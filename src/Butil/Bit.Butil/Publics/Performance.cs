@@ -20,7 +20,7 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): observers are isolated per circuit / WASM app
     // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Performance>? _dotNetRef;
-    private DotNetObjectReference<Performance> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Performance> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// High-resolution timestamp (<c>DOMHighResTimeStamp</c>) since the time origin, in milliseconds.

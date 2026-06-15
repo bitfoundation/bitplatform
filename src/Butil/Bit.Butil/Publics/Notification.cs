@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -22,7 +23,7 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): tracked notifications are isolated per circuit
     // / WASM app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Notification>? _dotNetRef;
-    private DotNetObjectReference<Notification> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Notification> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>Removes a tracked notification's callbacks. Called by <see cref="NotificationHandle"/>.</summary>
     internal void RemoveListener(Guid id) => _listeners.TryRemove(id, out _);
@@ -155,13 +156,30 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
         return new NotificationHandle(this, js, id);
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        _listeners.Clear();
-        _dotNetRef?.Dispose();
-        _dotNetRef = null;
+        // Detach any still-tracked notifications on the JS side before releasing the ref. Without
+        // this, a notification left on screen would, on click/close, invoke a disposed
+        // DotNetObjectReference and surface an error in the browser (see Window/History/Geolocation
+        // which already clean up their JS-side listeners on disposal).
+        try
+        {
+            if (_listeners.IsEmpty is false)
+            {
+                var ids = _listeners.Keys.ToArray();
+                _listeners.Clear();
+                await js.InvokeVoid("BitButil.notification.disposeAll", new object?[] { ids });
+            }
+        }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        finally
+        {
+            _listeners.Clear();
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
+
         GC.SuppressFinalize(this);
-        return ValueTask.CompletedTask;
     }
 
     private class Listener

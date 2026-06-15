@@ -6,6 +6,15 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// Registers global or element-scoped keyboard shortcuts.
+/// </summary>
+/// <remarks>
+/// All shortcuts are matched against the <c>keydown</c> event only. Key-up (<c>keyup</c>) and
+/// key-press (<c>keypress</c>) are not observed, so a handler fires when the key combination goes
+/// down, not when it is released. Matching is by the physical key (<c>KeyboardEvent.code</c>),
+/// not the produced character.
+/// </remarks>
 public class Keyboard(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeKeyboard);
@@ -18,7 +27,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
     // drops without an explicit Remove. Created lazily so prerender/SSR (which never adds listeners)
     // doesn't allocate one.
     private DotNetObjectReference<Keyboard>? _dotNetRef;
-    private DotNetObjectReference<Keyboard> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Keyboard> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// Invoked from JS when a registered shortcut fires. Public + <see cref="JSInvokableAttribute"/>

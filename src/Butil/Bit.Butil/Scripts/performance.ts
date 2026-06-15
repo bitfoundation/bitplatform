@@ -37,7 +37,7 @@ var BitButil = BitButil || {};
             if (!('PerformanceObserver' in window) || !entryTypes?.length) return;
             const observer = new PerformanceObserver(list => {
                 const payload = list.getEntries().map(e => (e as any).toJSON ? (e as any).toJSON() : e);
-                dotNetRef.invokeMethodAsync('InvokePerformanceObserver', listenerId, payload);
+                butil.utils.dispatch(dotNetRef, 'InvokePerformanceObserver', listenerId, payload);
             });
             try {
                 // observe() with a "type" + "buffered" can only handle one entry type at a time;

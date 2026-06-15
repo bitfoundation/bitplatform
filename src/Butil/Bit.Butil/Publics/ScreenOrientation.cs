@@ -21,7 +21,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): listeners are isolated per circuit / WASM app
     // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<ScreenOrientation>? _dotNetRef;
-    private DotNetObjectReference<ScreenOrientation> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<ScreenOrientation> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// Invoked from JS on the orientation <c>change</c> event. Public + <see cref="JSInvokableAttribute"/>

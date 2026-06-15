@@ -21,7 +21,7 @@ public class Nfc(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): scans are isolated per circuit / WASM app
     // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Nfc>? _dotNetRef;
-    private DotNetObjectReference<Nfc> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Nfc> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>True when the runtime exposes <c>NDEFReader</c>.</summary>
     /// <remarks>

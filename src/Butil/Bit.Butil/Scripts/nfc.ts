@@ -39,13 +39,13 @@ var BitButil = BitButil || {};
 
         const W = window as any;
         if (typeof W.NDEFReader !== 'function') {
-            dotNetRef.invokeMethodAsync('InvokeNdefError', id, 'NFC is not supported.');
+            butil.utils.dispatch(dotNetRef, 'InvokeNdefError', id, 'NFC is not supported.');
             return;
         }
         const reader = new W.NDEFReader();
         const controller = new AbortController();
         reader.onreading = (event: any) => {
-            dotNetRef.invokeMethodAsync('InvokeNdefReading', id, {
+            butil.utils.dispatch(dotNetRef, 'InvokeNdefReading', id, {
                 serialNumber: event.serialNumber ?? '',
                 records: (event.message?.records ?? []).map(decodeRecord)
             });
@@ -54,11 +54,11 @@ var BitButil = BitButil || {};
             // A reading error is non-terminal: the scan stays active and may read
             // subsequent tags, so we intentionally keep _readers[id]. Teardown
             // happens via stop() (AbortController) on the .NET side.
-            dotNetRef.invokeMethodAsync('InvokeNdefError', id, 'reading-error');
+            butil.utils.dispatch(dotNetRef, 'InvokeNdefError', id, 'reading-error');
         };
         try { await reader.scan({ signal: controller.signal }); _readers[id] = { reader, controller }; }
         catch (e: any) {
-            dotNetRef.invokeMethodAsync('InvokeNdefError', id, e?.message ?? String(e));
+            butil.utils.dispatch(dotNetRef, 'InvokeNdefError', id, e?.message ?? String(e));
         }
     }
 

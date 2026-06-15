@@ -21,7 +21,7 @@ public class IdleDetector(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): watches are isolated per circuit / WASM app
     // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<IdleDetector>? _dotNetRef;
-    private DotNetObjectReference<IdleDetector> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<IdleDetector> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>True when the runtime exposes <c>IdleDetector</c>.</summary>
     /// <remarks>

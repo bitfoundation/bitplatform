@@ -60,6 +60,8 @@ internal static class InternalJSRuntimeExtensions
         return InvokeVoidFast(jsRuntime, identifier, CancellationToken.None, args);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "The fast path forwards to FastInvokeVoidAsync (annotated [RequiresUnreferencedCode]) but only ever passes trim-safe primitives from the opted-in synchronous APIs. The real protection - the attribute - stays on the public FastInvoke* surface so a trimming/AOT consumer still gets the warning at their call site; this suppresses only the redundant internal propagation.")]
     internal static ValueTask InvokeVoidFast(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         if (jsRuntime.IsJsRuntimeInvalid()) return default;
@@ -148,6 +150,8 @@ internal static class InternalJSRuntimeExtensions
         return InvokeFast<TValue>(jsRuntime, identifier, CancellationToken.None, args);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "The fast path forwards to FastInvokeAsync (annotated [RequiresUnreferencedCode]) but only ever passes trim-safe primitives from the opted-in synchronous APIs. The real protection - the attribute - stays on the public FastInvoke* surface so a trimming/AOT consumer still gets the warning at their call site; this suppresses only the redundant internal propagation.")]
     internal static ValueTask<TValue> InvokeFast<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         if (jsRuntime.IsJsRuntimeInvalid()) return SafeDefault<TValue>();

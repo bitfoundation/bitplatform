@@ -25,7 +25,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): resize/scroll listeners are isolated per
     // circuit / WASM app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<VisualViewport>? _dotNetRef;
-    private DotNetObjectReference<VisualViewport> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<VisualViewport> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// Invoked from JS on a resize/scroll event. Public + <see cref="JSInvokableAttribute"/> so it can

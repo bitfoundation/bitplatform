@@ -135,7 +135,7 @@ var BitButil = BitButil || {};
     function subscribeMatchMedia(dotNetRef: any, listenerId: string, query: string) {
         const mql = window.matchMedia(query);
         const handler = (e: MediaQueryListEvent) => {
-            dotNetRef.invokeMethodAsync('InvokeMediaQueryChange', listenerId, { matches: e.matches, media: e.media });
+            butil.utils.dispatch(dotNetRef, 'InvokeMediaQueryChange', listenerId, { matches: e.matches, media: e.media });
         };
 
         // addEventListener is supported on MediaQueryList in all evergreen browsers; older

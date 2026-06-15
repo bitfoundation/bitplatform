@@ -11,6 +11,16 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Crypto">https://developer.mozilla.org/en-US/docs/Web/API/Crypto</see>
 /// </summary>
+/// <remarks>
+/// <b>Security note:</b> the key-handling methods on this type marshal raw key material across the
+/// JavaScript&#8596;.NET interop boundary. Generated keys are created as <i>extractable</i> and their
+/// bytes (symmetric <c>raw</c> keys, private <c>pkcs8</c> keys, and PBKDF2-derived bits) are exported
+/// back to .NET, where they are transferred as base64 over the interop channel and may therefore
+/// appear in interop logs, traces, or memory dumps. They are <b>not</b> retained inside the browser's
+/// non-extractable key store. Treat returned key bytes as sensitive: avoid logging them, zero/clear
+/// buffers when done where practical, and prefer server-side key custody when the threat model
+/// requires keys never to leave a hardware/secure boundary.
+/// </remarks>
 public class Crypto(IJSRuntime js)
 {
     /// <summary>
@@ -105,18 +115,21 @@ public class Crypto(IJSRuntime js)
     /// Generates a fresh AES key as raw bytes.
     /// </summary>
     /// <param name="bits">Key length in bits - 128, 192, or 256.</param>
+    /// <remarks>The key is returned as extractable raw bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<byte[]> GenerateAesKey(int bits = 256)
         => js.Invoke<byte[]>("BitButil.crypto.generateAesKey", bits);
 
     /// <summary>
     /// Generates an HMAC key of the requested length and hash.
     /// </summary>
+    /// <remarks>The key is returned as extractable raw bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<byte[]> GenerateHmacKey(CryptoKeyHash algorithm = CryptoKeyHash.Sha256, int? lengthBits = null)
         => js.Invoke<byte[]>("BitButil.crypto.generateHmacKey", HashAlgorithmName(algorithm), lengthBits);
 
     /// <summary>
     /// Generates an RSA key pair (RSA-OAEP). Returns spki/pkcs8 DER bytes for public/private.
     /// </summary>
+    /// <remarks>The private key is returned as extractable pkcs8 bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<RsaKeyPair> GenerateRsaKeyPair(int modulusLengthBits = 2048,
                                                     CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
         => js.Invoke<RsaKeyPair>("BitButil.crypto.generateRsaKeyPair", modulusLengthBits, HashAlgorithmName(algorithm));
@@ -125,6 +138,7 @@ public class Crypto(IJSRuntime js)
     /// Generates an ECDSA key pair on the named curve.
     /// </summary>
     /// <param name="curve">One of <c>"P-256"</c>, <c>"P-384"</c>, <c>"P-521"</c>.</param>
+    /// <remarks>The private key is returned as extractable pkcs8 bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<EcKeyPair> GenerateEcdsaKeyPair(string curve = "P-256")
         => js.Invoke<EcKeyPair>("BitButil.crypto.generateEcdsaKeyPair", curve);
 
@@ -133,6 +147,7 @@ public class Crypto(IJSRuntime js)
     /// <summary>
     /// Derives raw bytes from a password using PBKDF2.
     /// </summary>
+    /// <remarks>The derived bits are returned as raw bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<byte[]> DerivePbkdf2(byte[] password, byte[] salt, int iterations,
                                           int outputLengthBits, CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
         => js.Invoke<byte[]>("BitButil.crypto.derivePbkdf2", password, salt, iterations, outputLengthBits, HashAlgorithmName(algorithm));

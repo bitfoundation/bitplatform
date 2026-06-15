@@ -56,7 +56,7 @@ var BitButil = BitButil || {};
                     if (done) break;
                     chunks.push(value);
                     loaded += value.byteLength;
-                    dotNetRef?.invokeMethodAsync('InvokeFetchProgress', id, { loaded, total });
+                    butil.utils.dispatch(dotNetRef, 'InvokeFetchProgress', id, { loaded, total });
                 }
                 bytes = new Uint8Array(loaded);
                 let offset = 0;
@@ -65,7 +65,7 @@ var BitButil = BitButil || {};
                 const buf = await resp.arrayBuffer();
                 bytes = new Uint8Array(buf);
                 if (withProgress) {
-                    dotNetRef?.invokeMethodAsync('InvokeFetchProgress', id, { loaded: bytes.byteLength, total });
+                    butil.utils.dispatch(dotNetRef, 'InvokeFetchProgress', id, { loaded: bytes.byteLength, total });
                 }
             }
 

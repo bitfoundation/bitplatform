@@ -22,7 +22,7 @@ public class SpeechRecognition(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): sessions are isolated per circuit / WASM app
     // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<SpeechRecognition>? _dotNetRef;
-    private DotNetObjectReference<SpeechRecognition> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<SpeechRecognition> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>True when the runtime exposes a SpeechRecognition implementation.</summary>
     /// <remarks>

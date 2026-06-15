@@ -13,7 +13,7 @@ internal sealed class MutationObserverInterop(Action<MutationRecord[]> handler) 
     internal const string InvokeMethodName = nameof(InvokeMutation);
 
     private DotNetObjectReference<MutationObserverInterop>? _dotNetRef;
-    internal DotNetObjectReference<MutationObserverInterop> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    internal DotNetObjectReference<MutationObserverInterop> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     [JSInvokable(InvokeMethodName)]
     public void InvokeMutation(Guid id, MutationRecord[] records) => handler(records);

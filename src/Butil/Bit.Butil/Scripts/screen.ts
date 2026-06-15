@@ -17,7 +17,7 @@ var BitButil = BitButil || {};
 
     function addChange(dotNetRef: DotNet.DotNetObject, listenerId: string) {
         const handler: EventListener = () => {
-            dotNetRef.invokeMethodAsync('InvokeScreenChange', listenerId);
+            butil.utils.dispatch(dotNetRef, 'InvokeScreenChange', listenerId);
         };
 
         _handlers[listenerId] = handler;

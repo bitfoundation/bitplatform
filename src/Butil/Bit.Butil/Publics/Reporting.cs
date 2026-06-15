@@ -22,7 +22,7 @@ public class Reporting(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): observers are isolated per circuit / WASM app
     // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Reporting>? _dotNetRef;
-    private DotNetObjectReference<Reporting> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Reporting> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>True when the runtime exposes <c>ReportingObserver</c>.</summary>
     /// <remarks>

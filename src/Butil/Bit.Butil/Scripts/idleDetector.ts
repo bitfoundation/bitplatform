@@ -27,7 +27,7 @@ var BitButil = BitButil || {};
             const detector = new ID();
 
             const fire = () => {
-                dotNetRef.invokeMethodAsync('InvokeIdleDetector', listenerId, {
+                butil.utils.dispatch(dotNetRef, 'InvokeIdleDetector', listenerId, {
                     userState: detector.userState ?? 'active',
                     screenState: detector.screenState ?? 'unlocked'
                 });

@@ -22,7 +22,7 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     // Per-instance callback reference (see Keyboard): listeners are isolated per circuit / WASM app
     // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Screen>? _dotNetRef;
-    private DotNetObjectReference<Screen> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Screen> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// Invoked from JS on the screen <c>change</c> event. Public + <see cref="JSInvokableAttribute"/>

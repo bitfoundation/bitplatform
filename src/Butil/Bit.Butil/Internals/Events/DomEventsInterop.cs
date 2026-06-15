@@ -18,7 +18,7 @@ internal sealed class DomEventsInterop : IDisposable
     private readonly ConcurrentDictionary<Guid, Entry> _listeners = new();
 
     private DotNetObjectReference<DomEventsInterop>? _dotNetRef;
-    private DotNetObjectReference<DomEventsInterop> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<DomEventsInterop> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilMouseEventArgs))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilKeyboardEventArgs))]

@@ -95,7 +95,7 @@ var BitButil = BitButil || {};
         const handler = (e: any) => {
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
-            dotNetRef.invokeMethodAsync(methodName, listenerId, butil.events.mapEvent(e, argsMembers));
+            butil.utils.dispatch(dotNetRef, methodName, listenerId, butil.events.mapEvent(e, argsMembers));
         };
         _elementHandlers[listenerId] = { element, eventName, handler, options: useCapture };
         element.addEventListener(eventName, handler, useCapture);
