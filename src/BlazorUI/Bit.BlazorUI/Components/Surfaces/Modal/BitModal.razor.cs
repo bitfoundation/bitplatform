@@ -22,6 +22,13 @@ public partial class BitModal : BitComponentBase
     private EventCallback<MouseEventArgs> _onDismiss;
     private EventCallback<MouseEventArgs> _onOverlayClick;
 
+    // Memoizes the merged HtmlAttributes dictionary so BuildParameters doesn't re-run the
+    // Concat/GroupBy/ToDictionary allocation on every OnParametersSet when neither the own nor the
+    // cascaded HtmlAttributes reference changed.
+    private Dictionary<string, object>? _mergedHtmlAttributes;
+    private Dictionary<string, object>? _lastOwnHtmlAttributes;
+    private Dictionary<string, object>? _lastCascadedHtmlAttributes;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -236,6 +243,8 @@ public partial class BitModal : BitComponentBase
     /// the component param can only force the behavior <b>off</b> (<c>X is false ? false : p.X</c>); it
     /// can never force it on. These default to <c>true</c>, so opting out is the meaningful override.</item>
     /// </list>
+    /// To express the opposite (non-overridable) intent, set the value through the cascaded
+    /// <see cref="BitModalParameters"/> (e.g. via the <see cref="BitModalService"/>) rather than the component parameter.
     /// </remarks>
     private BitModalParameters BuildParameters()
     {
@@ -245,7 +254,7 @@ public partial class BitModal : BitComponentBase
         {
             // Can only force off (default is enabled): see remarks on asymmetric merge.
             IsEnabled = IsEnabled is false ? false : p.IsEnabled,
-            HtmlAttributes = p.HtmlAttributes.Concat(HtmlAttributes).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
+            HtmlAttributes = MergeHtmlAttributes(p.HtmlAttributes, HtmlAttributes),
             Dir = Dir ?? p.Dir,
             // Can only force off (default is enabled): see remarks on asymmetric merge.
             AriaModal = AriaModal is false ? false : p.AriaModal,
@@ -265,6 +274,26 @@ public partial class BitModal : BitComponentBase
             SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
             TitleAriaId = TitleAriaId ?? p.TitleAriaId,
         };
+    }
+
+    /// <summary>
+    /// Merges the cascaded and own HtmlAttributes (own values win), reusing the previous result when
+    /// neither source dictionary reference changed to avoid a per-render allocation.
+    /// </summary>
+    private Dictionary<string, object> MergeHtmlAttributes(Dictionary<string, object> cascaded, Dictionary<string, object> own)
+    {
+        if (_mergedHtmlAttributes is not null &&
+            ReferenceEquals(_lastCascadedHtmlAttributes, cascaded) &&
+            ReferenceEquals(_lastOwnHtmlAttributes, own))
+        {
+            return _mergedHtmlAttributes;
+        }
+
+        _lastCascadedHtmlAttributes = cascaded;
+        _lastOwnHtmlAttributes = own;
+        _mergedHtmlAttributes = cascaded.Concat(own).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value);
+
+        return _mergedHtmlAttributes;
     }
 
 

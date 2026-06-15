@@ -33,8 +33,10 @@ public class BitProModalClassStyles : BitModalClassStyles
     public string? Footer { get; set; }
 
 
-    public static BitProModalClassStyles Merge(BitProModalClassStyles? classStyles1, BitProModalClassStyles? classStyles2)
+    public static BitProModalClassStyles? Merge(BitProModalClassStyles? classStyles1, BitProModalClassStyles? classStyles2)
     {
+        if (classStyles1 is null && classStyles2 is null) return null;
+
         return new BitProModalClassStyles
         {
             Root = classStyles1?.Root ?? classStyles2?.Root,

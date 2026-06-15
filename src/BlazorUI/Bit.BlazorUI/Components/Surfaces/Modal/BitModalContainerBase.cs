@@ -132,17 +132,13 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed || disposing is false) return;
+        if (_disposed) return;
 
         ModalService.OnAddModal -= OnModalAdd;
         ModalService.OnCloseModal -= OnCloseModal;
+        ModalService.RemoveContainer(this);
 
         _disposed = true;
+        GC.SuppressFinalize(this);
     }
 }

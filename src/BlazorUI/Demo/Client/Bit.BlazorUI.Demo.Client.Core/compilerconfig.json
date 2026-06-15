@@ -108,6 +108,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/ProModalService/BitProModalServiceDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/ProModalService/BitProModalServiceDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/PdfReader/BitPdfReaderDemo.razor.css",
         "inputFile": "Pages/Components/Extras/PdfReader/BitPdfReaderDemo.razor.scss",
         "minify": { "enabled": false },

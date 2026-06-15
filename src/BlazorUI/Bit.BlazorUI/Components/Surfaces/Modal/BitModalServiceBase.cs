@@ -39,6 +39,18 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     }
 
     /// <summary>
+    /// Detaches the given container if it is the one currently in use. Called when the container is disposed
+    /// so the service doesn't keep a reference to (and try to render through) a torn-down container.
+    /// </summary>
+    public void RemoveContainer(BitModalContainerBase<TReference, TParameters> container)
+    {
+        if (ReferenceEquals(_container, container))
+        {
+            _container = null;
+        }
+    }
+
+    /// <summary>
     /// Closes an already opened modal using its reference.
     /// </summary>
     public async Task Close(TReference modalRef)

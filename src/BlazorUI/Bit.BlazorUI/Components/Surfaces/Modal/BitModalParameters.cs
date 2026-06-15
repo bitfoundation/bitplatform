@@ -1,39 +1,95 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// The set of parameters used to customize a <see cref="BitModal"/> that is shown using the <see cref="BitModalService"/>.
+/// </summary>
+/// <remarks>
+/// BREAKING CHANGE: the boolean members (<see cref="IsEnabled"/>, <see cref="AriaModal"/>, <see cref="Blocking"/>,
+/// <see cref="FullHeight"/>, <see cref="FullWidth"/>, <see cref="ShowOverlay"/>) are now nullable (<c>bool?</c>)
+/// instead of <c>bool</c>. A <c>null</c> value means "not set" and the corresponding <see cref="BitModal"/> default
+/// is used (or the cascaded value, when merged). Code that read these members as non-nullable <c>bool</c> must be updated.
+/// </remarks>
 public class BitModalParameters
 {
+    /// <summary>
+    /// Whether or not the Modal is enabled. <c>null</c> means not set (defaults to enabled).
+    /// </summary>
     public bool? IsEnabled { get; set; }
 
+    /// <summary>
+    /// Capture and render additional attributes in addition to the Modal's parameters.
+    /// </summary>
     public Dictionary<string, object> HtmlAttributes { get; set; } = [];
 
+    /// <summary>
+    /// The general directionality of the Modal.
+    /// </summary>
     public BitDir? Dir { get; set; }
 
+    /// <summary>
+    /// Whether the Modal should be announced as modal to assistive technologies. <c>null</c> means not set (defaults to <c>true</c>).
+    /// </summary>
     public bool? AriaModal { get; set; }
 
-
+    /// <summary>
+    /// When enabled, prevents the Modal from being light dismissed by clicking outside the Modal (on the overlay). <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
     public bool? Blocking { get; set; }
 
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitModal component.
+    /// </summary>
     public BitModalClassStyles? Classes { get; set; }
 
+    /// <summary>
+    /// Makes the Modal height 100% of its parent container. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
     public bool? FullHeight { get; set; }
 
+    /// <summary>
+    /// Makes the Modal width 100% of its parent container. <c>null</c> means not set (defaults to <c>false</c>).
+    /// </summary>
     public bool? FullWidth { get; set; }
 
+    /// <summary>
+    /// Determines the ARIA role of the Modal (alertdialog/dialog).
+    /// </summary>
     public bool? IsAlert { get; set; }
 
+    /// <summary>
+    /// A callback function for when the Modal is dismissed.
+    /// </summary>
     public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
+    /// <summary>
+    /// A callback function for when somewhere on the overlay element of the Modal is clicked.
+    /// </summary>
     public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
 
+    /// <summary>
+    /// Whether the overlay should be rendered. <c>null</c> means not set (defaults to <c>true</c>).
+    /// </summary>
     public bool? ShowOverlay { get; set; }
 
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitModal component.
+    /// </summary>
     public BitModalClassStyles? Styles { get; set; }
 
+    /// <summary>
+    /// ARIA id for the subtitle of the Modal, if any.
+    /// </summary>
     public string? SubtitleAriaId { get; set; }
 
+    /// <summary>
+    /// ARIA id for the title of the Modal, if any.
+    /// </summary>
     public string? TitleAriaId { get; set; }
 
 
+    /// <summary>
+    /// Merges two sets of <see cref="BitModalParameters"/> giving precedence to the values of the first one.
+    /// </summary>
     public static BitModalParameters? Merge(BitModalParameters? params1, BitModalParameters? params2)
     {
         if (params1 is null && params2 is null) return null;
