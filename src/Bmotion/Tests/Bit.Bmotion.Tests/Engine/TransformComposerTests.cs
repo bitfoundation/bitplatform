@@ -1,4 +1,3 @@
-using Bit.Bmotion.Engine;
 
 namespace Bit.Bmotion.Tests.Engine;
 
@@ -29,7 +28,7 @@ public class TransformComposerTests
     [DataRow("backgroundColor", false)]
     public void IsTransformProp_ReturnsExpected(string key, bool expected)
     {
-        Assert.AreEqual(expected, TransformComposer.IsTransformProp(key));
+        Assert.AreEqual(expected, BmotionTransformComposer.IsTransformProp(key));
     }
 
     // ── Build - empty/identity ────────────────────────────────────────────────
@@ -37,14 +36,14 @@ public class TransformComposerTests
     [TestMethod]
     public void Build_EmptyDict_ReturnsEmpty()
     {
-        Assert.AreEqual(string.Empty, TransformComposer.Build([]));
+        Assert.AreEqual(string.Empty, BmotionTransformComposer.Build([]));
     }
 
     [TestMethod]
     public void Build_AllIdentityValues_ReturnsEmpty()
     {
         var t = new Dictionary<string, double> { ["x"] = 0, ["y"] = 0, ["rotate"] = 0 };
-        Assert.AreEqual(string.Empty, TransformComposer.Build(t));
+        Assert.AreEqual(string.Empty, BmotionTransformComposer.Build(t));
     }
 
     // ── Translate ─────────────────────────────────────────────────────────────
@@ -53,21 +52,21 @@ public class TransformComposerTests
     public void Build_Translation2D_ReturnsTranslate()
     {
         var t = new Dictionary<string, double> { ["x"] = 10, ["y"] = 20 };
-        Assert.AreEqual("translate(10px,20px)", TransformComposer.Build(t));
+        Assert.AreEqual("translate(10px,20px)", BmotionTransformComposer.Build(t));
     }
 
     [TestMethod]
     public void Build_Translation3D_ReturnsTranslate3d()
     {
         var t = new Dictionary<string, double> { ["x"] = 10, ["y"] = 20, ["z"] = 30 };
-        Assert.AreEqual("translate3d(10px,20px,30px)", TransformComposer.Build(t));
+        Assert.AreEqual("translate3d(10px,20px,30px)", BmotionTransformComposer.Build(t));
     }
 
     [TestMethod]
     public void Build_OnlyX_ReturnsTranslateWithZeroY()
     {
         var t = new Dictionary<string, double> { ["x"] = 50 };
-        Assert.AreEqual("translate(50px,0px)", TransformComposer.Build(t));
+        Assert.AreEqual("translate(50px,0px)", BmotionTransformComposer.Build(t));
     }
 
     // ── Scale ─────────────────────────────────────────────────────────────────
@@ -76,21 +75,21 @@ public class TransformComposerTests
     public void Build_UniformScale_ReturnsScale()
     {
         var t = new Dictionary<string, double> { ["scale"] = 2.0 };
-        Assert.AreEqual("scale(2)", TransformComposer.Build(t));
+        Assert.AreEqual("scale(2)", BmotionTransformComposer.Build(t));
     }
 
     [TestMethod]
     public void Build_ScaleXOnly_ReturnsScaleX()
     {
         var t = new Dictionary<string, double> { ["scaleX"] = 1.5 };
-        Assert.AreEqual("scaleX(1.5)", TransformComposer.Build(t));
+        Assert.AreEqual("scaleX(1.5)", BmotionTransformComposer.Build(t));
     }
 
     [TestMethod]
     public void Build_ScaleYOnly_ReturnsScaleY()
     {
         var t = new Dictionary<string, double> { ["scaleY"] = 0.5 };
-        Assert.AreEqual("scaleY(0.5)", TransformComposer.Build(t));
+        Assert.AreEqual("scaleY(0.5)", BmotionTransformComposer.Build(t));
     }
 
     [TestMethod]
@@ -98,7 +97,7 @@ public class TransformComposerTests
     {
         // scaleX=1 is identity → omitted; y=10 is non-zero → translate present
         var t = new Dictionary<string, double> { ["scaleX"] = 1.0, ["y"] = 10 };
-        Assert.AreEqual("translate(0px,10px)", TransformComposer.Build(t));
+        Assert.AreEqual("translate(0px,10px)", BmotionTransformComposer.Build(t));
     }
 
     // ── Rotate ────────────────────────────────────────────────────────────────
@@ -107,28 +106,28 @@ public class TransformComposerTests
     public void Build_Rotate_ReturnsRotateDeg()
     {
         var t = new Dictionary<string, double> { ["rotate"] = 45 };
-        Assert.AreEqual("rotate(45deg)", TransformComposer.Build(t));
+        Assert.AreEqual("rotate(45deg)", BmotionTransformComposer.Build(t));
     }
 
     [TestMethod]
     public void Build_RotateZAlias_ReturnsRotateDeg()
     {
         var t = new Dictionary<string, double> { ["rotateZ"] = 90 };
-        Assert.AreEqual("rotate(90deg)", TransformComposer.Build(t));
+        Assert.AreEqual("rotate(90deg)", BmotionTransformComposer.Build(t));
     }
 
     [TestMethod]
     public void Build_RotateX_ReturnsRotateXDeg()
     {
         var t = new Dictionary<string, double> { ["rotateX"] = 30 };
-        Assert.AreEqual("rotateX(30deg)", TransformComposer.Build(t));
+        Assert.AreEqual("rotateX(30deg)", BmotionTransformComposer.Build(t));
     }
 
     [TestMethod]
     public void Build_RotateY_ReturnsRotateYDeg()
     {
         var t = new Dictionary<string, double> { ["rotateY"] = 60 };
-        Assert.AreEqual("rotateY(60deg)", TransformComposer.Build(t));
+        Assert.AreEqual("rotateY(60deg)", BmotionTransformComposer.Build(t));
     }
 
     // ── Skew ──────────────────────────────────────────────────────────────────
@@ -137,14 +136,14 @@ public class TransformComposerTests
     public void Build_SkewX_ReturnsSkewXDeg()
     {
         var t = new Dictionary<string, double> { ["skewX"] = 15 };
-        Assert.AreEqual("skewX(15deg)", TransformComposer.Build(t));
+        Assert.AreEqual("skewX(15deg)", BmotionTransformComposer.Build(t));
     }
 
     [TestMethod]
     public void Build_SkewY_ReturnsSkewYDeg()
     {
         var t = new Dictionary<string, double> { ["skewY"] = 10 };
-        Assert.AreEqual("skewY(10deg)", TransformComposer.Build(t));
+        Assert.AreEqual("skewY(10deg)", BmotionTransformComposer.Build(t));
     }
 
     // ── Perspective ───────────────────────────────────────────────────────────
@@ -153,7 +152,7 @@ public class TransformComposerTests
     public void Build_Perspective_AppearsFirst()
     {
         var t = new Dictionary<string, double> { ["perspective"] = 500, ["x"] = 10 };
-        var result = TransformComposer.Build(t);
+        var result = BmotionTransformComposer.Build(t);
         StringAssert.StartsWith(result, "perspective(500px)");
         StringAssert.Contains(result, "translate(10px,0px)");
     }
@@ -170,7 +169,7 @@ public class TransformComposerTests
             ["scale"] = 1.5,
             ["rotate"] = 45,
         };
-        var result = TransformComposer.Build(t);
+        var result = BmotionTransformComposer.Build(t);
 
         StringAssert.Contains(result, "translate(100px,50px)");
         StringAssert.Contains(result, "scale(1.5)");

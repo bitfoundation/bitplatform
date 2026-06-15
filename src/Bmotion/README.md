@@ -17,13 +17,13 @@ A Blazor-native animation library inspired by [Framer Motion](https://www.framer
 - [Animation Models](#animation-models)
   - [AnimationProps](#animationprops)
   - [TransitionConfig](#transitionconfig)
-  - [MotionVariants](#motionvariants)
-  - [DragOptions](#dragoptions)
+  - [BmotionMotionVariants](#bmotionmotionvariants)
+  - [BmotionDragOptions](#bmotiondragoptions)
   - [ViewportOptions](#viewportoptions)
 - [Services](#services)
-  - [AnimationController](#animationcontroller)
-  - [MotionAnimateService](#motionanimateservice)
-  - [MotionValue](#motionvalue)
+  - [BmotionAnimationController](#bmotionanimationcontroller)
+  - [BmotionAnimateService](#bmotionanimateservice)
+  - [BmotionValue](#bmotionvalue)
 - [Examples](#examples)
 - [Accessibility](#accessibility)
 
@@ -43,7 +43,7 @@ using Bit.Bmotion;
 builder.Services.AddBitBmotionServices();
 ```
 
-The browser bridge (`BitBmotion.js`) ships as a static web asset of the package and is
+The browser bridge (`bit-bmotion.js`) ships as a static web asset of the package and is
 imported automatically the first time an animation runs, so no manual `<script>` tag is
 required.
 
@@ -92,18 +92,18 @@ That's it - the element fades in and slides up on first render.
 | `Class` | `string?` | CSS class attribute |
 | `Style` | `string?` | Inline style attribute |
 | `ChildContent` | `RenderFragment?` | Child content |
-| `Initial` | `AnimationTarget?` | Starting state (props, variant name, or `false`) |
-| `Animate` | `AnimationTarget?` | Target state |
-| `Exit` | `AnimationTarget?` | State to animate to before unmounting (requires `<AnimatePresence>`) |
-| `WhileHover` | `AnimationTarget?` | Overlay applied while hovered |
-| `WhileTap` | `AnimationTarget?` | Overlay applied while tapped/pressed |
-| `WhileFocus` | `AnimationTarget?` | Overlay applied while focused |
-| `WhileDrag` | `AnimationTarget?` | Overlay applied while dragging |
-| `WhileInView` | `AnimationTarget?` | Overlay applied while in viewport |
+| `Initial` | `BmotionAnimationTarget?` | Starting state (props, variant name, or `false`) |
+| `Animate` | `BmotionAnimationTarget?` | Target state |
+| `Exit` | `BmotionAnimationTarget?` | State to animate to before unmounting (requires `<AnimatePresence>`) |
+| `WhileHover` | `BmotionAnimationTarget?` | Overlay applied while hovered |
+| `WhileTap` | `BmotionAnimationTarget?` | Overlay applied while tapped/pressed |
+| `WhileFocus` | `BmotionAnimationTarget?` | Overlay applied while focused |
+| `WhileDrag` | `BmotionAnimationTarget?` | Overlay applied while dragging |
+| `WhileInView` | `BmotionAnimationTarget?` | Overlay applied while in viewport |
 | `Transition` | `TransitionConfig?` | Controls timing/physics of all transitions |
-| `Variants` | `MotionVariants?` | Named animation states |
+| `Variants` | `BmotionMotionVariants?` | Named animation states |
 | `Drag` | `bool` | Enable drag gesture |
-| `DragOptions` | `DragOptions?` | Drag axis, constraints, elasticity |
+| `DragOptions` | `BmotionDragOptions?` | Drag axis, constraints, elasticity |
 | `Layout` | `bool` | Enable automatic FLIP layout animations |
 | `Once` | `bool` | `WhileInView` fires once and never reverses |
 | `Viewport` | `ViewportOptions?` | Advanced viewport tracking options |
@@ -115,7 +115,7 @@ That's it - the element fades in and slides up on first render.
 OnHoverStart / OnHoverEnd
 OnTapStart / OnTap / OnTapCancel
 OnFocusStart / OnFocusEnd
-OnPanStart / OnPan / OnPanEnd         (PanInfo)
+OnPanStart / OnPan / OnPanEnd         (BmotionPanInfo)
 OnDragStart / OnDrag / OnDragEnd
 OnAnimationStart / OnAnimationComplete
 OnViewportEnter / OnViewportLeave
@@ -248,10 +248,10 @@ Shorthand: `TransitionConfig.Spring(stiffness: 150, damping: 12)`
 
 Repeat: `new TransitionConfig { Repeat = int.MaxValue, RepeatType = RepeatType.Mirror }`
 
-### MotionVariants
+### BmotionMotionVariants
 
 ```csharp
-var variants = MotionVariants.Create(
+var variants = BmotionMotionVariants.Create(
     ("hidden",  new AnimationProps { Opacity = 0, Y = 20 }),
     ("visible", new AnimationProps { Opacity = 1, Y = 0  })
 );
@@ -268,13 +268,13 @@ var variants = MotionVariants.Create(
 </Motion>
 ```
 
-### DragOptions
+### BmotionDragOptions
 
 ```csharp
-new DragOptions
+new BmotionDragOptions
 {
-    Axis = DragAxis.X,
-    Constraints = DragConstraints.Horizontal(-200, 200),
+    Axis = BmotionDragAxis.X,
+    Constraints = BmotionDragConstraints.Horizontal(-200, 200),
     Elastic = 0.2,
     Momentum = true,
     SnapToOrigin = false,
@@ -297,12 +297,12 @@ new ViewportOptions
 
 ## Services
 
-### AnimationController
+### BmotionAnimationController
 
 Programmatic control bound to a specific element by ID.
 
 ```razor
-@inject AnimationController Controller
+@inject BmotionAnimationController Controller
 
 <Motion id="my-box" ... />
 
@@ -318,12 +318,12 @@ Programmatic control bound to a specific element by ID.
 }
 ```
 
-### MotionAnimateService
+### BmotionAnimateService
 
 Animate elements by CSS selector or `ElementReference` without wrapping them in `<Motion>`.
 
 ```razor
-@inject MotionAnimateService Motion
+@inject BmotionAnimateService Motion
 
 <div id="target">Animate me</div>
 
@@ -340,16 +340,16 @@ Animate elements by CSS selector or `ElementReference` without wrapping them in 
 }
 ```
 
-### MotionValue
+### BmotionValue
 
 A reactive numeric value you can subscribe to and transform.
 
 ```csharp
-var mv = MotionValueFactory.Create(0.0);
+var mv = BmotionValueFactory.Create(0.0);
 mv.Subscribe(v => Console.WriteLine($"value: {v}"));
 await mv.SetAsync(100);
 
-MotionValue<double> mapped = mv.Transform(
+BmotionValue<double> mapped = mv.Transform(
     inputRange:  new[] { 0.0, 1.0 },
     outputRange: new[] { 0.0, 360.0 });
 ```

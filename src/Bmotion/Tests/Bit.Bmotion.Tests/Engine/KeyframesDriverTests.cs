@@ -1,5 +1,3 @@
-using Bit.Bmotion.Engine;
-using Bit.Bmotion.Models;
 
 namespace Bit.Bmotion.Tests.Engine;
 
@@ -12,9 +10,9 @@ public class NumericKeyframesDriverTests
     public void Tick_TwoFrames_LinearEase_InterpolatesCorrectly()
     {
         var log = new List<double>();
-        var driver = new NumericKeyframesDriver(
+        var driver = new BmotionNumericKeyframesDriver(
             [0, 100],
-            new TransitionConfig { Duration = 0.3, Ease = Easing.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear },
             v => log.Add(v));
 
         driver.Tick(0);   // t=0   → 0
@@ -30,9 +28,9 @@ public class NumericKeyframesDriverTests
     public void Tick_TwoFrames_AtEnd_ReturnsTrue()
     {
         var log = new List<double>();
-        var driver = new NumericKeyframesDriver(
+        var driver = new BmotionNumericKeyframesDriver(
             [0, 100],
-            new TransitionConfig { Duration = 0.3, Ease = Easing.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear },
             v => log.Add(v));
 
         driver.Tick(0);
@@ -49,9 +47,9 @@ public class NumericKeyframesDriverTests
     {
         var log = new List<double>();
         // times automatically: [0, 0.5, 1.0]
-        var driver = new NumericKeyframesDriver(
+        var driver = new BmotionNumericKeyframesDriver(
             [0, 50, 100],
-            new TransitionConfig { Duration = 0.4, Ease = Easing.Linear },
+            new BmotionTransitionConfig { Duration = 0.4, Ease = BmotionEasing.Linear },
             v => log.Add(v));
 
         driver.Tick(0);   // t=0   → frame[0] = 0
@@ -70,9 +68,9 @@ public class NumericKeyframesDriverTests
     {
         var log = new List<double>();
         // First segment covers t=0..0.8, second 0.8..1.0
-        var driver = new NumericKeyframesDriver(
+        var driver = new BmotionNumericKeyframesDriver(
             [0, 80, 100],
-            new TransitionConfig { Duration = 0.4, Ease = Easing.Linear, Times = [0.0, 0.8, 1.0] },
+            new BmotionTransitionConfig { Duration = 0.4, Ease = BmotionEasing.Linear, Times = [0.0, 0.8, 1.0] },
             v => log.Add(v));
 
         driver.Tick(0);   // t=0   → 0
@@ -90,9 +88,9 @@ public class NumericKeyframesDriverTests
     public void Cancel_SnapsToLastFrame()
     {
         var log = new List<double>();
-        var driver = new NumericKeyframesDriver(
+        var driver = new BmotionNumericKeyframesDriver(
             [0, 50, 100],
-            new TransitionConfig { Duration = 0.3 },
+            new BmotionTransitionConfig { Duration = 0.3 },
             v => log.Add(v));
 
         driver.Tick(0);
@@ -109,9 +107,9 @@ public class NumericKeyframesDriverTests
     public void Tick_RepeatOnce_PlaysAnimationTwice()
     {
         var log = new List<double>();
-        var driver = new NumericKeyframesDriver(
+        var driver = new BmotionNumericKeyframesDriver(
             [0, 100],
-            new TransitionConfig { Duration = 0.3, Ease = Easing.Linear, Repeat = 1 },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear, Repeat = 1 },
             v => log.Add(v));
 
         driver.Tick(0);
@@ -126,14 +124,14 @@ public class NumericKeyframesDriverTests
     public void Tick_MirrorRepeat_SecondPassIsReversed()
     {
         var log = new List<double>();
-        var driver = new NumericKeyframesDriver(
+        var driver = new BmotionNumericKeyframesDriver(
             [0, 100],
-            new TransitionConfig
+            new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = Easing.Linear,
+                Ease = BmotionEasing.Linear,
                 Repeat = 1,
-                RepeatType = RepeatType.Mirror,
+                RepeatType = BmotionRepeatType.Mirror,
             },
             v => log.Add(v));
 
@@ -155,9 +153,9 @@ public class ColorKeyframesDriverTests
     public void Tick_TwoColorFrames_AtMidpoint_InterpolatesCorrectly()
     {
         string? lastValue = null;
-        var driver = new ColorKeyframesDriver(
+        var driver = new BmotionColorKeyframesDriver(
             ["#000000", "#ffffff"],
-            new TransitionConfig { Duration = 0.3, Ease = Easing.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear },
             v => lastValue = v);
 
         driver.Tick(0);
@@ -170,9 +168,9 @@ public class ColorKeyframesDriverTests
     public void Tick_ThreeColorFrames_AtEnd_ReturnsLastFrame()
     {
         string? lastValue = null;
-        var driver = new ColorKeyframesDriver(
+        var driver = new BmotionColorKeyframesDriver(
             ["#000000", "#ff0000", "#0000ff"],
-            new TransitionConfig { Duration = 0.4, Ease = Easing.Linear },
+            new BmotionTransitionConfig { Duration = 0.4, Ease = BmotionEasing.Linear },
             v => lastValue = v);
 
         driver.Tick(0);
@@ -185,9 +183,9 @@ public class ColorKeyframesDriverTests
     public void Tick_AtEnd_ReturnsTrue()
     {
         bool done = false;
-        var driver = new ColorKeyframesDriver(
+        var driver = new BmotionColorKeyframesDriver(
             ["#000000", "#ffffff"],
-            new TransitionConfig { Duration = 0.3 },
+            new BmotionTransitionConfig { Duration = 0.3 },
             _ => { });
 
         driver.Tick(0);
@@ -202,9 +200,9 @@ public class ColorKeyframesDriverTests
     public void Cancel_SnapsToOriginalLastFrame()
     {
         string? lastValue = null;
-        var driver = new ColorKeyframesDriver(
+        var driver = new BmotionColorKeyframesDriver(
             ["#000000", "#ff0000"],
-            new TransitionConfig { Duration = 0.3 },
+            new BmotionTransitionConfig { Duration = 0.3 },
             v => lastValue = v);
 
         driver.Tick(0);
@@ -220,14 +218,14 @@ public class ColorKeyframesDriverTests
     public void Tick_MirrorRepeat_SecondPassGoesBackToFirstFrame()
     {
         string? lastValue = null;
-        var driver = new ColorKeyframesDriver(
+        var driver = new BmotionColorKeyframesDriver(
             ["#000000", "#ffffff"],
-            new TransitionConfig
+            new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = Easing.Linear,
+                Ease = BmotionEasing.Linear,
                 Repeat = 1,
-                RepeatType = RepeatType.Mirror,
+                RepeatType = BmotionRepeatType.Mirror,
             },
             v => lastValue = v);
 

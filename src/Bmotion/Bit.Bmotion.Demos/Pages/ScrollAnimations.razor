@@ -1,5 +1,5 @@
 @page "/scroll"
-@inject ScrollTracker Scroll
+@inject BmotionScrollTracker Scroll
 @implements IAsyncDisposable
 
 <div style="position:sticky;top:3.25rem;z-index:50;background:var(--bm-card);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.35)">
@@ -15,7 +15,7 @@
 <div class="demo-section">
     <h2>Scroll Tracking</h2>
     <p>
-        Inject <strong>ScrollTracker</strong> and call <c>ObserveAsync</c> to get live scroll
+        Inject <strong>BmotionScrollTracker</strong> and call <c>ObserveAsync</c> to get live scroll
         progress. Use the progress value to drive animations via <c>MotionValue</c>.
         The progress bar above stays pinned to the top while you scroll.
     </p>
@@ -34,14 +34,14 @@
     {
         var color = i % 2 == 0 ? "#6c47ff" : "#ff4785";
         var idx   = i;
-        <Motion Tag="div"
+        <Bmotion Tag="div"
                 Style="@($"background:{color};border-radius:12px;height:80px;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:center;font-weight:700;")"
-                Initial="@(new AnimationProps { Opacity = 0, X = idx % 2 == 0 ? -60 : 60 })"
-                WhileInView="@(new AnimationProps { Opacity = 1, X = 0 })"
-                Transition="@(new TransitionConfig { Duration = 0.5, Ease = Easing.BackOut })"
+                Initial="@(new BmotionAnimationProps { Opacity = 0, X = idx % 2 == 0 ? -60 : 60 })"
+                WhileInView="@(new BmotionAnimationProps { Opacity = 1, X = 0 })"
+                Transition="@(new BmotionTransitionConfig { Duration = 0.5, Ease = BmotionEasing.BackOut })"
                 Once="true">
             Section @(idx + 1)
-        </Motion>
+        </Bmotion>
     }
 
     <CodeSnippet Code="@_inViewCode" />
@@ -67,32 +67,74 @@
     public async ValueTask DisposeAsync() => await Scroll.DisposeAsync();
 
     private const string _scrollTrackCode = """
-        @inject ScrollTracker Scroll
+        @using Bit.Bmotion
+        @inject BmotionScrollTracker Scroll
         @implements IAsyncDisposable
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                await Scroll.ObserveAsync(null, info =>
-                {
-                    _progressX = info.ProgressX;
-                    _progressY = info.ProgressY;
-                    InvokeAsync(StateHasChanged);
-                });
+        <style>
+            .scroll-progress {
+                position: sticky; top: 0; z-index: 50; background: #1e1e2e;
+                border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+                box-shadow: 0 4px 20px rgba(0,0,0,.35);
             }
-        }
+            .scroll-track { background: #111; border-radius: 6px; height: 8px; overflow: hidden; width: 100%; }
+        </style>
 
-        public async ValueTask DisposeAsync() => await Scroll.DisposeAsync();
+        <div class="scroll-progress">
+            <div style="font-size:.9rem;color:#888;margin-bottom:.5rem">Window scroll progress</div>
+            <div class="scroll-track">
+                <div style="@($"height:100%;border-radius:6px;background:linear-gradient(90deg,#6c47ff,#ff4785);width:{(_progressY * 100).ToString("F1")}%;transition:width .05s")" />
+            </div>
+            <div style="font-size:.85rem;color:#aaa;margin-top:.4rem">
+                Y: @((_progressY * 100).ToString("F1"))%  |  X: @((_progressX * 100).ToString("F1"))%
+            </div>
+        </div>
+
+        @code {
+            private double _progressX;
+            private double _progressY;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender)
+                {
+                    await Scroll.ObserveAsync(null, info =>
+                    {
+                        _progressX = info.ProgressX;
+                        _progressY = info.ProgressY;
+                        InvokeAsync(StateHasChanged);
+                    });
+                }
+            }
+
+            public async ValueTask DisposeAsync() => await Scroll.DisposeAsync();
+        }
         """;
 
     private const string _inViewCode = """
-        <Motion Tag="div"
-                Initial="@(new AnimationProps { Opacity = 0, X = idx % 2 == 0 ? -60 : 60 })"
-                WhileInView="@(new AnimationProps { Opacity = 1, X = 0 })"
-                Transition="@(new TransitionConfig { Duration = 0.5, Ease = Easing.BackOut })"
-                Once="true">
-            Section @(idx + 1)
-        </Motion>
+        @using Bit.Bmotion
+
+        <style>
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+        </style>
+
+        <div class="demo-section">
+            <h2>whileInView</h2>
+
+            @for (int i = 0; i < 16; i++)
+            {
+                var color = i % 2 == 0 ? "#6c47ff" : "#ff4785";
+                var idx   = i;
+                <Bmotion Tag="div"
+                        Style="@($"background:{color};border-radius:12px;height:80px;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:center;font-weight:700;")"
+                        Initial="@(new BmotionAnimationProps { Opacity = 0, X = idx % 2 == 0 ? -60 : 60 })"
+                        WhileInView="@(new BmotionAnimationProps { Opacity = 1, X = 0 })"
+                        Transition="@(new BmotionTransitionConfig { Duration = 0.5, Ease = BmotionEasing.BackOut })"
+                        Once="true">
+                    Section @(idx + 1)
+                </Bmotion>
+            }
+        </div>
         """;
 }

@@ -1,5 +1,3 @@
-using Bit.Bmotion.Engine;
-using Bit.Bmotion.Models;
 
 namespace Bit.Bmotion.Tests.Engine;
 
@@ -9,7 +7,7 @@ public class EasingFunctionsTests
     [TestMethod]
     public void Get_Linear_ReturnsLinearFunction()
     {
-        var fn = EasingFunctions.Get(new TransitionConfig { Ease = Easing.Linear });
+        var fn = BmotionEasingFunctions.Get(new BmotionTransitionConfig { Ease = BmotionEasing.Linear });
 
         Assert.AreEqual(0.0, fn(0.0), 1e-5);
         Assert.AreEqual(0.5, fn(0.5), 1e-5);
@@ -17,19 +15,19 @@ public class EasingFunctionsTests
     }
 
     [TestMethod]
-    [DataRow((int)Easing.EaseIn)]
-    [DataRow((int)Easing.EaseOut)]
-    [DataRow((int)Easing.EaseInOut)]
-    [DataRow((int)Easing.CircIn)]
-    [DataRow((int)Easing.CircOut)]
-    [DataRow((int)Easing.CircInOut)]
-    [DataRow((int)Easing.BackIn)]
-    [DataRow((int)Easing.BackOut)]
-    [DataRow((int)Easing.BackInOut)]
-    [DataRow((int)Easing.Anticipate)]
+    [DataRow((int)BmotionEasing.EaseIn)]
+    [DataRow((int)BmotionEasing.EaseOut)]
+    [DataRow((int)BmotionEasing.EaseInOut)]
+    [DataRow((int)BmotionEasing.CircIn)]
+    [DataRow((int)BmotionEasing.CircOut)]
+    [DataRow((int)BmotionEasing.CircInOut)]
+    [DataRow((int)BmotionEasing.BackIn)]
+    [DataRow((int)BmotionEasing.BackOut)]
+    [DataRow((int)BmotionEasing.BackInOut)]
+    [DataRow((int)BmotionEasing.Anticipate)]
     public void Get_AllEasings_BoundaryConditions(int easing)
     {
-        var fn = EasingFunctions.Get(new TransitionConfig { Ease = (Easing)easing });
+        var fn = BmotionEasingFunctions.Get(new BmotionTransitionConfig { Ease = (BmotionEasing)easing });
 
         Assert.AreEqual(0.0, fn(0.0), 1e-3);
         Assert.AreEqual(1.0, fn(1.0), 1e-3);
@@ -39,7 +37,7 @@ public class EasingFunctionsTests
     public void Get_EaseOut_FasterAtStart()
     {
         // ease-out is faster early: at 25% of time, more than 25% of progress
-        var fn = EasingFunctions.Get(new TransitionConfig { Ease = Easing.EaseOut });
+        var fn = BmotionEasingFunctions.Get(new BmotionTransitionConfig { Ease = BmotionEasing.EaseOut });
         Assert.IsTrue(fn(0.25) > 0.25);
     }
 
@@ -47,21 +45,21 @@ public class EasingFunctionsTests
     public void Get_EaseIn_SlowerAtStart()
     {
         // ease-in is slower early: at 25% of time, less than 25% of progress
-        var fn = EasingFunctions.Get(new TransitionConfig { Ease = Easing.EaseIn });
+        var fn = BmotionEasingFunctions.Get(new BmotionTransitionConfig { Ease = BmotionEasing.EaseIn });
         Assert.IsTrue(fn(0.25) < 0.25);
     }
 
     [TestMethod]
     public void Get_EaseInOut_SymmetricAtMidpoint()
     {
-        var fn = EasingFunctions.Get(new TransitionConfig { Ease = Easing.EaseInOut });
+        var fn = BmotionEasingFunctions.Get(new BmotionTransitionConfig { Ease = BmotionEasing.EaseInOut });
         Assert.AreEqual(0.5, fn(0.5), 1e-2);
     }
 
     [TestMethod]
     public void Get_CircIn_CorrectValueAtMidpoint()
     {
-        var fn = EasingFunctions.Get(new TransitionConfig { Ease = Easing.CircIn });
+        var fn = BmotionEasingFunctions.Get(new BmotionTransitionConfig { Ease = BmotionEasing.CircIn });
         double expected = 1 - Math.Sqrt(1 - 0.5 * 0.5);
         Assert.AreEqual(expected, fn(0.5), 1e-5);
     }
@@ -69,7 +67,7 @@ public class EasingFunctionsTests
     [TestMethod]
     public void Get_CircOut_CorrectValueAtMidpoint()
     {
-        var fn = EasingFunctions.Get(new TransitionConfig { Ease = Easing.CircOut });
+        var fn = BmotionEasingFunctions.Get(new BmotionTransitionConfig { Ease = BmotionEasing.CircOut });
         double expected = Math.Sqrt(1 - (0.5 - 1) * (0.5 - 1));
         Assert.AreEqual(expected, fn(0.5), 1e-5);
     }
@@ -78,8 +76,8 @@ public class EasingFunctionsTests
     public void Get_CustomCubicBezier_OverridesNamedEase()
     {
         // A (0,0,1,1) cubic-bezier approximates linear
-        var config = new TransitionConfig { EaseCubicBezier = [0, 0, 1, 1] };
-        var fn = EasingFunctions.Get(config);
+        var config = new BmotionTransitionConfig { EaseCubicBezier = [0, 0, 1, 1] };
+        var fn = BmotionEasingFunctions.Get(config);
 
         Assert.AreEqual(0.0, fn(0.0), 1e-5);
         Assert.AreEqual(1.0, fn(1.0), 1e-5);
@@ -92,28 +90,28 @@ public class EasingFunctionsTests
     [TestMethod]
     public void ToCssString_Null_ReturnsEase()
     {
-        Assert.AreEqual("ease", EasingFunctions.ToCssString(null));
+        Assert.AreEqual("ease", BmotionEasingFunctions.ToCssString(null));
     }
 
     [TestMethod]
-    [DataRow((int)Easing.Linear, "linear")]
-    [DataRow((int)Easing.EaseIn, "ease-in")]
-    [DataRow((int)Easing.EaseOut, "ease-out")]
-    [DataRow((int)Easing.EaseInOut, "ease-in-out")]
-    [DataRow((int)Easing.CircIn, "ease")]
-    [DataRow((int)Easing.BackOut, "ease")]
-    [DataRow((int)Easing.Anticipate, "ease")]
+    [DataRow((int)BmotionEasing.Linear, "linear")]
+    [DataRow((int)BmotionEasing.EaseIn, "ease-in")]
+    [DataRow((int)BmotionEasing.EaseOut, "ease-out")]
+    [DataRow((int)BmotionEasing.EaseInOut, "ease-in-out")]
+    [DataRow((int)BmotionEasing.CircIn, "ease")]
+    [DataRow((int)BmotionEasing.BackOut, "ease")]
+    [DataRow((int)BmotionEasing.Anticipate, "ease")]
     public void ToCssString_NamedEasing_ReturnsCorrectString(int easing, string expected)
     {
-        var config = new TransitionConfig { Ease = (Easing)easing };
-        Assert.AreEqual(expected, EasingFunctions.ToCssString(config));
+        var config = new BmotionTransitionConfig { Ease = (BmotionEasing)easing };
+        Assert.AreEqual(expected, BmotionEasingFunctions.ToCssString(config));
     }
 
     [TestMethod]
     public void ToCssString_CubicBezier_ReturnsCubicBezierString()
     {
-        var config = new TransitionConfig { EaseCubicBezier = [0.1, 0.2, 0.3, 0.4] };
-        Assert.AreEqual("cubic-bezier(0.1,0.2,0.3,0.4)", EasingFunctions.ToCssString(config));
+        var config = new BmotionTransitionConfig { EaseCubicBezier = [0.1, 0.2, 0.3, 0.4] };
+        Assert.AreEqual("cubic-bezier(0.1,0.2,0.3,0.4)", BmotionEasingFunctions.ToCssString(config));
     }
 
     // ── CubicBezier factory ───────────────────────────────────────────────────
@@ -121,14 +119,14 @@ public class EasingFunctionsTests
     [TestMethod]
     public void CubicBezier_AtZero_ReturnsZero()
     {
-        var fn = EasingFunctions.CubicBezier(0.42, 0, 0.58, 1);
+        var fn = BmotionEasingFunctions.CubicBezier(0.42, 0, 0.58, 1);
         Assert.AreEqual(0.0, fn(0.0), 1e-5);
     }
 
     [TestMethod]
     public void CubicBezier_AtOne_ReturnsOne()
     {
-        var fn = EasingFunctions.CubicBezier(0.42, 0, 0.58, 1);
+        var fn = BmotionEasingFunctions.CubicBezier(0.42, 0, 0.58, 1);
         Assert.AreEqual(1.0, fn(1.0), 1e-5);
     }
 
@@ -136,7 +134,7 @@ public class EasingFunctionsTests
     public void CubicBezier_Linear_ApproximatesT()
     {
         // (0,0,1,1) is the identity cubic-bezier - should approximate t at all points
-        var fn = EasingFunctions.CubicBezier(0.0, 0.0, 1.0, 1.0);
+        var fn = BmotionEasingFunctions.CubicBezier(0.0, 0.0, 1.0, 1.0);
         Assert.AreEqual(0.5, fn(0.5), 1e-1);
     }
 }

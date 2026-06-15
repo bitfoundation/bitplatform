@@ -137,6 +137,11 @@ body {
 .code-snippet {
     margin-top: 1rem;
 }
+.code-snippet-bar {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
 .code-toggle {
     display: inline-flex;
     align-items: center;
@@ -160,14 +165,59 @@ body {
     font-size: .7rem;
     line-height: 1;
 }
+.code-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 6px;
+    color: var(--bm-muted);
+    font-size: .8rem;
+    font-weight: 600;
+    padding: .4rem .8rem;
+    cursor: pointer;
+    transition: color .2s, border-color .2s, background .2s;
+}
+.code-copy:hover {
+    color: #fff;
+    border-color: var(--bm-primary);
+    background: rgba(108,71,255,.12);
+}
 .code-snippet .code-block {
     margin-top: .75rem;
 }
 .code-snippet .code-block code {
+    display: block;
     color: inherit;
     background: none;
     font-family: inherit;
     font-size: inherit;
+}
+
+/* ── Syntax highlighting tokens ────────────────────────────────────────────── */
+
+.code-block .tok-com  { color: #6a9955; font-style: italic; }
+.code-block .tok-tag  { color: #569cd6; }
+.code-block .tok-attr { color: #9cdcfe; }
+.code-block .tok-str  { color: #ce9178; }
+.code-block .tok-key  { color: #569cd6; }
+.code-block .tok-type { color: #4ec9b0; }
+.code-block .tok-num  { color: #b5cea8; }
+.code-block .tok-raz  { color: #c586c0; }
+
+/* Each source line is its own block so highlighted and plain lines share uniform spacing. */
+.code-block .code-line {
+    display: block;
+}
+
+/* Lines where a Bmotion component is used, so they stand out from the markup. */
+.code-block .hl-line {
+    display: block;
+    background: rgba(108,71,255,.16);
+    box-shadow: inset 3px 0 0 var(--bm-primary);
+    margin: 0 -1.25rem;
+    padding: 0 1.25rem;
 }
 
 /* ── Page hero ─────────────────────────────────────────────────────────────── */

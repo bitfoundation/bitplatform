@@ -1,5 +1,3 @@
-using Bit.Bmotion.Engine;
-using Bit.Bmotion.Models;
 
 namespace Bit.Bmotion.Tests.Engine;
 
@@ -12,7 +10,7 @@ public class SpringDriverTests
     public void Tick_EventuallySettlesAtTarget()
     {
         double lastValue = double.NaN;
-        var config = new TransitionConfig
+        var config = new BmotionTransitionConfig
         {
             Stiffness = 100,
             Damping = 20,
@@ -20,7 +18,7 @@ public class SpringDriverTests
             RestSpeed = 0.01,
             RestDelta = 0.01,
         };
-        var driver = new SpringDriver(0, 100, config, v => lastValue = v);
+        var driver = new BmotionSpringDriver(0, 100, config, v => lastValue = v);
 
         bool done = false;
         double ts = 0;
@@ -39,13 +37,13 @@ public class SpringDriverTests
     {
         // With damping >> critical damping the position should be monotonically increasing
         double prevValue = -1;
-        var config = new TransitionConfig
+        var config = new BmotionTransitionConfig
         {
             Stiffness = 100,
             Damping = 100,
             Mass = 1,
         };
-        var driver = new SpringDriver(0, 100, config, v =>
+        var driver = new BmotionSpringDriver(0, 100, config, v =>
         {
             // Allow a tiny floating-point tolerance
             Assert.IsTrue(v >= prevValue - 1e-6, $"Overshoot detected: {v} < {prevValue}");
@@ -66,7 +64,7 @@ public class SpringDriverTests
     public void Tick_UnderdampedSpring_OscillatesAndSettles()
     {
         double lastValue = 0;
-        var config = new TransitionConfig
+        var config = new BmotionTransitionConfig
         {
             Stiffness = 200,
             Damping = 5, // very low damping → will oscillate
@@ -74,7 +72,7 @@ public class SpringDriverTests
             RestSpeed = 0.01,
             RestDelta = 0.01,
         };
-        var driver = new SpringDriver(0, 100, config, v => lastValue = v);
+        var driver = new BmotionSpringDriver(0, 100, config, v => lastValue = v);
 
         bool done = false;
         double ts = 0;
@@ -94,14 +92,14 @@ public class SpringDriverTests
     public void Tick_DuringDelay_HoldsAtFromValue()
     {
         var values = new List<double>();
-        var config = new TransitionConfig
+        var config = new BmotionTransitionConfig
         {
             Delay = 0.2,  // 200 ms
             Stiffness = 100,
             Damping = 20,
             Mass = 1,
         };
-        var driver = new SpringDriver(0, 100, config, v => values.Add(v));
+        var driver = new BmotionSpringDriver(0, 100, config, v => values.Add(v));
 
         driver.Tick(0);   // startTs = 0; elapsed=0 < 200 ms delay
         driver.Tick(100); // still in delay
@@ -116,7 +114,7 @@ public class SpringDriverTests
     public void Cancel_SnapsToTarget()
     {
         double lastValue = 0;
-        var driver = new SpringDriver(0, 100, new TransitionConfig
+        var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig
         {
             Stiffness = 100,
             Damping = 10,
@@ -138,14 +136,14 @@ public class SpringDriverTests
     public void Tick_PositiveInitialVelocity_MovesImmediatelyTowardTarget()
     {
         var values = new List<double>();
-        var config = new TransitionConfig
+        var config = new BmotionTransitionConfig
         {
             Stiffness = 100,
             Damping = 10,
             Mass = 1,
             Velocity = 500, // toward target (0 → 100)
         };
-        var driver = new SpringDriver(0, 100, config, v => values.Add(v));
+        var driver = new BmotionSpringDriver(0, 100, config, v => values.Add(v));
 
         driver.Tick(0);
         driver.Tick(16);
@@ -159,8 +157,8 @@ public class SpringDriverTests
     public void Tick_NoRepeat_CompletesAfterSingleSettle()
     {
         // Regression guard: Repeat = 0 must still finish on the first settle.
-        var config = new TransitionConfig { Stiffness = 100, Damping = 20, Mass = 1 };
-        var driver = new SpringDriver(0, 100, config, _ => { });
+        var config = new BmotionTransitionConfig { Stiffness = 100, Damping = 20, Mass = 1 };
+        var driver = new BmotionSpringDriver(0, 100, config, _ => { });
 
         int settleTicks = RunUntilComplete(driver);
 
@@ -171,15 +169,15 @@ public class SpringDriverTests
     public void Tick_RepeatLoop_ReplaysFromOriginBeforeCompleting()
     {
         var values = new List<double>();
-        var config = new TransitionConfig
+        var config = new BmotionTransitionConfig
         {
             Stiffness = 100,
             Damping = 20,
             Mass = 1,
             Repeat = 1,
-            RepeatType = RepeatType.Loop,
+            RepeatType = BmotionRepeatType.Loop,
         };
-        var driver = new SpringDriver(0, 100, config, v => values.Add(v));
+        var driver = new BmotionSpringDriver(0, 100, config, v => values.Add(v));
 
         bool done = false;
         bool reachedTarget = false;
@@ -202,16 +200,16 @@ public class SpringDriverTests
     [TestMethod]
     public void Tick_RepeatMirror_PingPongsBackToStart()
     {
-        var config = new TransitionConfig
+        var config = new BmotionTransitionConfig
         {
             Stiffness = 100,
             Damping = 20,
             Mass = 1,
             Repeat = 1,
-            RepeatType = RepeatType.Mirror,
+            RepeatType = BmotionRepeatType.Mirror,
         };
         double lastValue = double.NaN;
-        var driver = new SpringDriver(0, 100, config, v => lastValue = v);
+        var driver = new BmotionSpringDriver(0, 100, config, v => lastValue = v);
 
         bool done = false;
         double ts = 0;
@@ -229,15 +227,15 @@ public class SpringDriverTests
     [TestMethod]
     public void Tick_InfiniteRepeat_NeverCompletes()
     {
-        var config = new TransitionConfig
+        var config = new BmotionTransitionConfig
         {
             Stiffness = 100,
             Damping = 20,
             Mass = 1,
             Repeat = int.MaxValue,
-            RepeatType = RepeatType.Loop,
+            RepeatType = BmotionRepeatType.Loop,
         };
-        var driver = new SpringDriver(0, 100, config, _ => { });
+        var driver = new BmotionSpringDriver(0, 100, config, _ => { });
 
         bool done = false;
         double ts = 0;
@@ -250,7 +248,7 @@ public class SpringDriverTests
         Assert.IsFalse(done, "Infinite-repeat spring should never report completion");
     }
 
-    private static int RunUntilComplete(SpringDriver driver, double maxMs = 30_000)
+    private static int RunUntilComplete(BmotionSpringDriver driver, double maxMs = 30_000)
     {
         int ticks = 0;
         double ts = 0;

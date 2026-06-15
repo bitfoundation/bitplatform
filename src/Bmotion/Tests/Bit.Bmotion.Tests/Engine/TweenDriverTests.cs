@@ -1,12 +1,10 @@
-using Bit.Bmotion.Engine;
-using Bit.Bmotion.Models;
 
 namespace Bit.Bmotion.Tests.Engine;
 
 [TestClass]
 public class TweenDriverTests
 {
-    private static TweenDriver Create(double from, double to, TransitionConfig config, List<double> log)
+    private static BmotionTweenDriver Create(double from, double to, BmotionTransitionConfig config, List<double> log)
         => new(from, to, config, v => log.Add(v));
 
     // ── Basic interpolation ───────────────────────────────────────────────────
@@ -15,7 +13,7 @@ public class TweenDriverTests
     public void Tick_FirstTick_AppliesFromValue()
     {
         var log = new List<double>();
-        var driver = Create(0, 100, new TransitionConfig { Duration = 0.3, Ease = Easing.Linear }, log);
+        var driver = Create(0, 100, new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear }, log);
 
         driver.Tick(0);
 
@@ -26,7 +24,7 @@ public class TweenDriverTests
     public void Tick_MidAnimation_AppliesInterpolatedValue()
     {
         var log = new List<double>();
-        var driver = Create(0, 100, new TransitionConfig { Duration = 0.3, Ease = Easing.Linear }, log);
+        var driver = Create(0, 100, new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear }, log);
 
         driver.Tick(0);   // seeds startTime = 0
         driver.Tick(150); // elapsed = 150ms, t = 0.5 → value = 50
@@ -38,7 +36,7 @@ public class TweenDriverTests
     public void Tick_AtDurationEnd_AppliesTargetAndReturnsTrue()
     {
         var log = new List<double>();
-        var driver = Create(0, 100, new TransitionConfig { Duration = 0.3, Ease = Easing.Linear }, log);
+        var driver = Create(0, 100, new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear }, log);
 
         driver.Tick(0);
         bool done = driver.Tick(300); // t = 1.0
@@ -51,7 +49,7 @@ public class TweenDriverTests
     public void Tick_ZeroDuration_CompletesImmediately()
     {
         var log = new List<double>();
-        var driver = Create(0, 100, new TransitionConfig { Duration = 0 }, log);
+        var driver = Create(0, 100, new BmotionTransitionConfig { Duration = 0 }, log);
 
         bool done = driver.Tick(0);
 
@@ -63,7 +61,7 @@ public class TweenDriverTests
     public void Tick_BeyondDuration_StillReturnsDone()
     {
         var log = new List<double>();
-        var driver = Create(0, 100, new TransitionConfig { Duration = 0.3 }, log);
+        var driver = Create(0, 100, new BmotionTransitionConfig { Duration = 0.3 }, log);
 
         driver.Tick(0);
         bool done = driver.Tick(1000); // well past end
@@ -78,7 +76,7 @@ public class TweenDriverTests
     public void Tick_DuringDelay_AppliesFromValue()
     {
         var log = new List<double>();
-        var driver = Create(0, 100, new TransitionConfig { Duration = 0.3, Delay = 0.2 }, log);
+        var driver = Create(0, 100, new BmotionTransitionConfig { Duration = 0.3, Delay = 0.2 }, log);
 
         driver.Tick(0);   // seeds startTime = 200
         driver.Tick(100); // timestamp 100 < startTime 200 → still in delay
@@ -91,7 +89,7 @@ public class TweenDriverTests
     public void Tick_AfterDelay_CompletesAtExpectedTime()
     {
         var log = new List<double>();
-        var driver = Create(0, 100, new TransitionConfig { Duration = 0.3, Delay = 0.2, Ease = Easing.Linear }, log);
+        var driver = Create(0, 100, new BmotionTransitionConfig { Duration = 0.3, Delay = 0.2, Ease = BmotionEasing.Linear }, log);
 
         driver.Tick(0);   // startTime = 200
         driver.Tick(200); // elapsed = 0 → value ≈ 0
@@ -107,7 +105,7 @@ public class TweenDriverTests
     public void Cancel_SnapsToTarget()
     {
         var log = new List<double>();
-        var driver = Create(0, 100, new TransitionConfig { Duration = 0.3 }, log);
+        var driver = Create(0, 100, new BmotionTransitionConfig { Duration = 0.3 }, log);
 
         driver.Tick(0);
         driver.Cancel();
@@ -123,7 +121,7 @@ public class TweenDriverTests
     public void Tick_RepeatOnce_PlaysAnimationTwiceBeforeFinishing()
     {
         var log = new List<double>();
-        var driver = Create(0, 100, new TransitionConfig { Duration = 0.3, Ease = Easing.Linear, Repeat = 1 }, log);
+        var driver = Create(0, 100, new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear, Repeat = 1 }, log);
 
         driver.Tick(0);
         bool done1 = driver.Tick(300); // end of first pass → repeat, returns false
@@ -137,12 +135,12 @@ public class TweenDriverTests
     public void Tick_MirrorRepeat_SecondPassIsReversed()
     {
         var log = new List<double>();
-        var driver = Create(0, 100, new TransitionConfig
+        var driver = Create(0, 100, new BmotionTransitionConfig
         {
             Duration = 0.3,
-            Ease = Easing.Linear,
+            Ease = BmotionEasing.Linear,
             Repeat = 1,
-            RepeatType = RepeatType.Mirror,
+            RepeatType = BmotionRepeatType.Mirror,
         }, log);
 
         driver.Tick(0);   // value = 0
@@ -157,7 +155,7 @@ public class TweenDriverTests
     public void Tick_InfiniteRepeat_NeverReturnsDone()
     {
         var log = new List<double>();
-        var driver = Create(0, 100, new TransitionConfig
+        var driver = Create(0, 100, new BmotionTransitionConfig
         {
             Duration = 0.3,
             Repeat = int.MaxValue,

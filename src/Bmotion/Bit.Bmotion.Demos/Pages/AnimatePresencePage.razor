@@ -10,14 +10,14 @@
 
     <div class="demo-row">
         <div class="demo-card" style="min-height:200px; position:relative; overflow:hidden;">
-            <AnimatePresence IsPresent="@_visible">
-                <Motion Tag="div"
+            <BmotionAnimatePresence IsPresent="@_visible">
+                <Bmotion Tag="div"
                         Class="box"
-                        Initial="@(new AnimationProps { Opacity = 0, Y = 40, Scale = 0.8 })"
-                        Animate="@(new AnimationProps { Opacity = 1, Y = 0,  Scale = 1   })"
-                        Exit="@(new AnimationProps    { Opacity = 0, Y = -40, Scale = 0.8 })"
-                        Transition="@TransitionConfig.Spring(stiffness:220, damping:18)" />
-            </AnimatePresence>
+                        Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 40, Scale = 0.8 })"
+                        Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0,  Scale = 1   })"
+                        Exit="@(new BmotionAnimationProps    { Opacity = 0, Y = -40, Scale = 0.8 })"
+                        Transition="@BmotionTransitionConfig.Spring(stiffness:220, damping:18)" />
+            </BmotionAnimatePresence>
         </div>
     </div>
 
@@ -36,18 +36,18 @@
         <div class="demo-card" style="flex-direction:column;gap:.5rem;align-items:stretch;width:100%;min-width:280px;">
             @foreach (var item in _items)
             {
-                <AnimatePresence IsPresent="true" @key="item.Id">
-                    <Motion Tag="div"
+                <BmotionAnimatePresence IsPresent="true" @key="item.Id">
+                    <Bmotion Tag="div"
                             Style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;"
-                            Initial="@(new AnimationProps { Opacity = 0, X = -30 })"
-                            Animate="@(new AnimationProps { Opacity = 1, X = 0   })"
-                            Exit="@(new AnimationProps    { Opacity = 0, X = 30  })"
-                            Transition="@TransitionConfig.Spring(stiffness:300, damping:25)">
+                            Initial="@(new BmotionAnimationProps { Opacity = 0, X = -30 })"
+                            Animate="@(new BmotionAnimationProps { Opacity = 1, X = 0   })"
+                            Exit="@(new BmotionAnimationProps    { Opacity = 0, X = 30  })"
+                            Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:25)">
                         <span>@item.Label</span>
                         <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
                                 @onclick="@(() => RemoveItem(item.Id))">✕</button>
-                    </Motion>
-                </AnimatePresence>
+                    </Bmotion>
+                </BmotionAnimatePresence>
             }
         </div>
     </div>
@@ -68,29 +68,108 @@
     void RemoveItem(int id) => _items.RemoveAll(i => i.Id == id);
 
     private const string _presenceCode = """
-        <AnimatePresence IsPresent="@_visible">
-            <Motion Tag="div"
-                    Class="box"
-                    Initial="@(new AnimationProps { Opacity = 0, Y = 40, Scale = 0.8 })"
-                    Animate="@(new AnimationProps { Opacity = 1, Y = 0,  Scale = 1   })"
-                    Exit="@(new AnimationProps    { Opacity = 0, Y = -40, Scale = 0.8 })"
-                    Transition="@TransitionConfig.Spring(stiffness:220, damping:18)" />
-        </AnimatePresence>
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box {
+                width: 80px; height: 80px; border-radius: 10px;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+            }
+            .btn-bm {
+                background: var(--bm-primary); color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>AnimatePresence</h2>
+
+            <div class="demo-row">
+                <div class="demo-card" style="min-height:200px; position:relative; overflow:hidden;">
+                    <BmotionAnimatePresence IsPresent="@_visible">
+                        <Bmotion Tag="div"
+                                Class="box"
+                                Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 40, Scale = 0.8 })"
+                                Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0,  Scale = 1   })"
+                                Exit="@(new BmotionAnimationProps    { Opacity = 0, Y = -40, Scale = 0.8 })"
+                                Transition="@BmotionTransitionConfig.Spring(stiffness:220, damping:18)" />
+                    </BmotionAnimatePresence>
+                </div>
+            </div>
+
+            <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible = !_visible)">
+                @(_visible ? "Remove" : "Add")
+            </button>
+        </div>
+
+        @code {
+            private bool _visible = true;
+        }
         """;
 
     private const string _listCode = """
-        @foreach (var item in _items)
-        {
-            <AnimatePresence IsPresent="true" @key="item.Id">
-                <Motion Tag="div"
-                        Initial="@(new AnimationProps { Opacity = 0, X = -30 })"
-                        Animate="@(new AnimationProps { Opacity = 1, X = 0   })"
-                        Exit="@(new AnimationProps    { Opacity = 0, X = 30  })"
-                        Transition="@TransitionConfig.Spring(stiffness:300, damping:25)">
-                    <span>@item.Label</span>
-                    <button @onclick="@(() => RemoveItem(item.Id))">✕</button>
-                </Motion>
-            </AnimatePresence>
+        @using Bit.Bmotion
+
+        <style>
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-section p { color: #888; margin-bottom: 1.5rem; line-height: 1.6; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: #1e1e2e; border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .btn-bm {
+                background: #6c47ff; color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>List Items</h2>
+            <p>Add and remove items from a list with staggered enter/exit animations.</p>
+
+            <div class="demo-row">
+                <div class="demo-card" style="flex-direction:column;gap:.5rem;align-items:stretch;width:100%;min-width:280px;">
+                    @foreach (var item in _items)
+                    {
+                        <BmotionAnimatePresence IsPresent="true" @key="item.Id">
+                            <Bmotion Tag="div"
+                                    Style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;"
+                                    Initial="@(new BmotionAnimationProps { Opacity = 0, X = -30 })"
+                                    Animate="@(new BmotionAnimationProps { Opacity = 1, X = 0   })"
+                                    Exit="@(new BmotionAnimationProps    { Opacity = 0, X = 30  })"
+                                    Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:25)">
+                                <span>@item.Label</span>
+                                <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
+                                        @onclick="@(() => RemoveItem(item.Id))">✕</button>
+                            </Bmotion>
+                        </BmotionAnimatePresence>
+                    }
+                </div>
+            </div>
+
+            <button class="btn-bm" style="margin-top:1rem" @onclick="AddItem">Add item</button>
+        </div>
+
+        @code {
+            private int _nextId = 4;
+
+            private record Item(int Id, string Label);
+            private List<Item> _items = [new(1,"Item One"), new(2,"Item Two"), new(3,"Item Three")];
+
+            void AddItem() => _items.Add(new(_nextId++, $"Item {_nextId - 1}"));
+            void RemoveItem(int id) => _items.RemoveAll(i => i.Id == id);
         }
         """;
 }

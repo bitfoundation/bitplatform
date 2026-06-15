@@ -1,5 +1,3 @@
-using Bit.Bmotion.Engine;
-using Bit.Bmotion.Models;
 
 namespace Bit.Bmotion.Tests.Engine;
 
@@ -12,9 +10,9 @@ public class ColorTweenDriverTests
     public void Tick_FirstTick_AppliesFromColor()
     {
         string? lastValue = null;
-        var driver = new ColorTweenDriver(
+        var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new TransitionConfig { Duration = 0.3, Ease = Easing.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear },
             v => lastValue = v);
 
         driver.Tick(0); // t=0 → from color
@@ -26,9 +24,9 @@ public class ColorTweenDriverTests
     public void Tick_AtMidpoint_InterpolatesColor()
     {
         string? lastValue = null;
-        var driver = new ColorTweenDriver(
+        var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new TransitionConfig { Duration = 0.3, Ease = Easing.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear },
             v => lastValue = v);
 
         driver.Tick(0);
@@ -41,9 +39,9 @@ public class ColorTweenDriverTests
     public void Tick_AtEnd_AppliesTargetColorAndReturnsTrue()
     {
         string? lastValue = null;
-        var driver = new ColorTweenDriver(
+        var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new TransitionConfig { Duration = 0.3, Ease = Easing.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear },
             v => lastValue = v);
 
         driver.Tick(0);
@@ -57,9 +55,9 @@ public class ColorTweenDriverTests
     public void Tick_ZeroDuration_CompletesImmediately()
     {
         string? lastValue = null;
-        var driver = new ColorTweenDriver(
+        var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new TransitionConfig { Duration = 0 },
+            new BmotionTransitionConfig { Duration = 0 },
             v => lastValue = v);
 
         bool done = driver.Tick(0);
@@ -74,9 +72,9 @@ public class ColorTweenDriverTests
     public void Tick_DuringDelay_AppliesFromColor()
     {
         string? lastValue = null;
-        var driver = new ColorTweenDriver(
+        var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new TransitionConfig { Duration = 0.3, Delay = 0.2, Ease = Easing.Linear },
+            new BmotionTransitionConfig { Duration = 0.3, Delay = 0.2, Ease = BmotionEasing.Linear },
             v => lastValue = v);
 
         driver.Tick(0);   // seeds startTime = 200
@@ -92,9 +90,9 @@ public class ColorTweenDriverTests
     public void Cancel_SnapsToRawTargetString()
     {
         string? lastValue = null;
-        var driver = new ColorTweenDriver(
+        var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new TransitionConfig { Duration = 0.3 },
+            new BmotionTransitionConfig { Duration = 0.3 },
             v => lastValue = v);
 
         driver.Tick(0);
@@ -112,9 +110,9 @@ public class ColorTweenDriverTests
     public void Tick_RepeatOnce_PlaysAnimationTwice()
     {
         var log = new List<string>();
-        var driver = new ColorTweenDriver(
+        var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new TransitionConfig { Duration = 0.3, Ease = Easing.Linear, Repeat = 1 },
+            new BmotionTransitionConfig { Duration = 0.3, Ease = BmotionEasing.Linear, Repeat = 1 },
             v => log.Add(v));
 
         driver.Tick(0);
@@ -129,14 +127,14 @@ public class ColorTweenDriverTests
     public void Tick_MirrorRepeat_SecondPassReturnsToFirstColor()
     {
         string? lastValue = null;
-        var driver = new ColorTweenDriver(
+        var driver = new BmotionColorTweenDriver(
             "#000000", "#ffffff",
-            new TransitionConfig
+            new BmotionTransitionConfig
             {
                 Duration = 0.3,
-                Ease = Easing.Linear,
+                Ease = BmotionEasing.Linear,
                 Repeat = 1,
-                RepeatType = RepeatType.Mirror,
+                RepeatType = BmotionRepeatType.Mirror,
             },
             v => lastValue = v);
 

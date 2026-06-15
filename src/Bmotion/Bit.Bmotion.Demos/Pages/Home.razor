@@ -1,48 +1,48 @@
 @page "/"
 
 <div class="page-hero">
-    <Motion Tag="h1"
-            Initial="@(new AnimationProps { Opacity = 0, Y = 30 })"
-            Animate="@(new AnimationProps { Opacity = 1, Y = 0 })"
-            Transition="@TransitionConfig.Spring(stiffness:80, damping:15)">
+    <Bmotion Tag="h1"
+            Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 30 })"
+            Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0 })"
+            Transition="@BmotionTransitionConfig.Spring(stiffness:80, damping:15)">
         Bmotion
-    </Motion>
+    </Bmotion>
 
-    <Motion Tag="p"
-            Initial="@(new AnimationProps { Opacity = 0, Y = 20 })"
-            Animate="@(new AnimationProps { Opacity = 1, Y = 0 })"
-            Transition="@(new TransitionConfig { Type = TransitionType.Tween, Duration = 0.6, Delay = 0.2 })">
+    <Bmotion Tag="p"
+            Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 20 })"
+            Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0 })"
+            Transition="@(new BmotionTransitionConfig { Type = BmotionTransitionType.Tween, Duration = 0.6, Delay = 0.2 })">
         A Blazor-native animation library inspired by Framer Motion.
         Springs, gestures, layout animations, variants &mdash; zero external dependencies.
-    </Motion>
+    </Bmotion>
 
-    <Motion Tag="div"
+    <Bmotion Tag="div"
             Class="badge-list"
-            Initial="@(new AnimationProps { Opacity = 0, Y = 15 })"
-            Animate="@(new AnimationProps { Opacity = 1, Y = 0 })"
-            Transition="@(new TransitionConfig { Duration = 0.5, Delay = 0.4 })">
+            Initial="@(new BmotionAnimationProps { Opacity = 0, Y = 15 })"
+            Animate="@(new BmotionAnimationProps { Opacity = 1, Y = 0 })"
+            Transition="@(new BmotionTransitionConfig { Duration = 0.5, Delay = 0.4 })">
         @foreach (var f in _features)
         {
             <span class="badge">@f</span>
         }
-    </Motion>
+    </Bmotion>
 </div>
 
 <div class="demo-section">
     <h2>Quick start</h2>
     <div class="demo-row">
         <div class="demo-card">
-            <Motion Tag="div"
+            <Bmotion Tag="div"
                     Class="box"
-                    Initial="@(new AnimationProps { Scale = 0, Opacity = 0 })"
-                    Animate="@(new AnimationProps { Scale = 1, Opacity = 1 })"
-                    WhileHover="@(new AnimationProps { Scale = 1.15, Rotate = 5 })"
-                    WhileTap="@(new AnimationProps { Scale = 0.9 })"
-                    Transition="@TransitionConfig.Spring(stiffness:300, damping:20)" />
+                    Initial="@(new BmotionAnimationProps { Scale = 0, Opacity = 0 })"
+                    Animate="@(new BmotionAnimationProps { Scale = 1, Opacity = 1 })"
+                    WhileHover="@(new BmotionAnimationProps { Scale = 1.15, Rotate = 5 })"
+                    WhileTap="@(new BmotionAnimationProps { Scale = 0.9 })"
+                    Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:20)" />
         </div>
-
-        <div class="code-block">@_quickStart</div>
     </div>
+
+    <CodeSnippet Code="@_quickStart" />
 </div>
 
 @code {
@@ -54,11 +54,30 @@
         ".NET 8+", "Zero JS deps"
     ];
 
-    private const string _quickStart =
-        "<Motion Tag=div\n" +
-        "        Initial=(new AnimationProps { Scale=0, Opacity=0 })\n" +
-        "        Animate=(new AnimationProps { Scale=1, Opacity=1 })\n" +
-        "        WhileHover=(new AnimationProps { Scale=1.15, Rotate=5 })\n" +
-        "        WhileTap=(new AnimationProps { Scale=0.9 })\n" +
-        "        Transition=TransitionConfig.Spring(300, 20) />";
+    private const string _quickStart = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box {
+                width: 80px; height: 80px; border-radius: 10px; cursor: pointer;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+            }
+        </style>
+
+        <div class="demo-card">
+            <Bmotion Tag="div"
+                    Class="box"
+                    Initial="@(new BmotionAnimationProps { Scale = 0, Opacity = 0 })"
+                    Animate="@(new BmotionAnimationProps { Scale = 1, Opacity = 1 })"
+                    WhileHover="@(new BmotionAnimationProps { Scale = 1.15, Rotate = 5 })"
+                    WhileTap="@(new BmotionAnimationProps { Scale = 0.9 })"
+                    Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:20)" />
+        </div>
+        """;
 }

@@ -1,4 +1,3 @@
-using Bit.Bmotion.Models;
 
 namespace Bit.Bmotion.Tests.Models;
 
@@ -10,15 +9,15 @@ public class TransitionConfigTests
     [TestMethod]
     public void DefaultValues_MatchExpected()
     {
-        var config = new TransitionConfig();
+        var config = new BmotionTransitionConfig();
 
-        Assert.AreEqual(TransitionType.Tween, config.Type);
+        Assert.AreEqual(BmotionTransitionType.Tween, config.Type);
         Assert.AreEqual(0.3, config.Duration);
         Assert.AreEqual(0.0, config.Delay);
-        Assert.AreEqual(Easing.EaseOut, config.Ease);
+        Assert.AreEqual(BmotionEasing.EaseOut, config.Ease);
         Assert.IsNull(config.EaseCubicBezier);
         Assert.AreEqual(0, config.Repeat);
-        Assert.AreEqual(RepeatType.Loop, config.RepeatType);
+        Assert.AreEqual(BmotionRepeatType.Loop, config.RepeatType);
         Assert.AreEqual(0.0, config.RepeatDelay);
         Assert.IsNull(config.Times);
 
@@ -49,29 +48,29 @@ public class TransitionConfigTests
     [TestMethod]
     public void Tween_DefaultFactory_UsesDefaults()
     {
-        var config = TransitionConfig.Tween();
+        var config = BmotionTransitionConfig.Tween();
 
-        Assert.AreEqual(TransitionType.Tween, config.Type);
+        Assert.AreEqual(BmotionTransitionType.Tween, config.Type);
         Assert.AreEqual(0.3, config.Duration);
-        Assert.AreEqual(Easing.EaseOut, config.Ease);
+        Assert.AreEqual(BmotionEasing.EaseOut, config.Ease);
     }
 
     [TestMethod]
     public void Tween_CustomFactory_SetsValues()
     {
-        var config = TransitionConfig.Tween(0.5, Easing.EaseIn);
+        var config = BmotionTransitionConfig.Tween(0.5, BmotionEasing.EaseIn);
 
-        Assert.AreEqual(TransitionType.Tween, config.Type);
+        Assert.AreEqual(BmotionTransitionType.Tween, config.Type);
         Assert.AreEqual(0.5, config.Duration);
-        Assert.AreEqual(Easing.EaseIn, config.Ease);
+        Assert.AreEqual(BmotionEasing.EaseIn, config.Ease);
     }
 
     [TestMethod]
     public void Spring_DefaultFactory_UsesDefaults()
     {
-        var config = TransitionConfig.Spring();
+        var config = BmotionTransitionConfig.Spring();
 
-        Assert.AreEqual(TransitionType.Spring, config.Type);
+        Assert.AreEqual(BmotionTransitionType.Spring, config.Type);
         Assert.AreEqual(100, config.Stiffness);
         Assert.AreEqual(10, config.Damping);
         Assert.AreEqual(1, config.Mass);
@@ -80,9 +79,9 @@ public class TransitionConfigTests
     [TestMethod]
     public void Spring_CustomFactory_SetsValues()
     {
-        var config = TransitionConfig.Spring(stiffness: 200, damping: 25, mass: 2);
+        var config = BmotionTransitionConfig.Spring(stiffness: 200, damping: 25, mass: 2);
 
-        Assert.AreEqual(TransitionType.Spring, config.Type);
+        Assert.AreEqual(BmotionTransitionType.Spring, config.Type);
         Assert.AreEqual(200, config.Stiffness);
         Assert.AreEqual(25, config.Damping);
         Assert.AreEqual(2, config.Mass);
@@ -91,9 +90,9 @@ public class TransitionConfigTests
     [TestMethod]
     public void Inertia_DefaultFactory_UsesDefaults()
     {
-        var config = TransitionConfig.Inertia();
+        var config = BmotionTransitionConfig.Inertia();
 
-        Assert.AreEqual(TransitionType.Inertia, config.Type);
+        Assert.AreEqual(BmotionTransitionType.Inertia, config.Type);
         Assert.AreEqual(0.0, config.InertiaVelocity);
         Assert.AreEqual(700, config.TimeConstant);
     }
@@ -101,9 +100,9 @@ public class TransitionConfigTests
     [TestMethod]
     public void Inertia_CustomFactory_SetsValues()
     {
-        var config = TransitionConfig.Inertia(velocity: 500, timeConstant: 1000);
+        var config = BmotionTransitionConfig.Inertia(velocity: 500, timeConstant: 1000);
 
-        Assert.AreEqual(TransitionType.Inertia, config.Type);
+        Assert.AreEqual(BmotionTransitionType.Inertia, config.Type);
         Assert.AreEqual(500, config.InertiaVelocity);
         Assert.AreEqual(1000, config.TimeConstant);
     }
@@ -113,7 +112,7 @@ public class TransitionConfigTests
     [TestMethod]
     public void InfiniteRepeat_UsesIntMaxValue()
     {
-        var config = new TransitionConfig { Repeat = int.MaxValue };
+        var config = new BmotionTransitionConfig { Repeat = int.MaxValue };
         Assert.AreEqual(int.MaxValue, config.Repeat);
     }
 
@@ -122,20 +121,20 @@ public class TransitionConfigTests
     [TestMethod]
     public void PerPropertyOverrides_CanBeSetAndRetrieved()
     {
-        var config = new TransitionConfig
+        var config = new BmotionTransitionConfig
         {
             Duration = 0.5,
-            Properties = new Dictionary<string, TransitionConfig>
+            Properties = new Dictionary<string, BmotionTransitionConfig>
             {
-                ["opacity"] = new TransitionConfig { Duration = 0.1 },
-                ["transform"] = TransitionConfig.Spring(stiffness: 300),
+                ["opacity"] = new BmotionTransitionConfig { Duration = 0.1 },
+                ["transform"] = BmotionTransitionConfig.Spring(stiffness: 300),
             },
         };
 
         Assert.IsNotNull(config.Properties);
         Assert.AreEqual(2, config.Properties.Count);
         Assert.AreEqual(0.1, config.Properties["opacity"].Duration);
-        Assert.AreEqual(TransitionType.Spring, config.Properties["transform"].Type);
+        Assert.AreEqual(BmotionTransitionType.Spring, config.Properties["transform"].Type);
         Assert.AreEqual(300, config.Properties["transform"].Stiffness);
     }
 
@@ -144,7 +143,7 @@ public class TransitionConfigTests
     [TestMethod]
     public void Orchestration_Properties_CanBeSet()
     {
-        var config = new TransitionConfig
+        var config = new BmotionTransitionConfig
         {
             StaggerChildren = 0.05,
             DelayChildren = 0.1,
@@ -159,7 +158,7 @@ public class TransitionConfigTests
     [TestMethod]
     public void EaseCubicBezier_CanBeSet()
     {
-        var config = new TransitionConfig { EaseCubicBezier = [0.25, 0.1, 0.25, 1.0] };
+        var config = new BmotionTransitionConfig { EaseCubicBezier = [0.25, 0.1, 0.25, 1.0] };
 
         Assert.IsNotNull(config.EaseCubicBezier);
         Assert.AreEqual(4, config.EaseCubicBezier.Length);
@@ -171,15 +170,15 @@ public class TransitionConfigTests
     [TestMethod]
     public void Clone_CopiesAllFields()
     {
-        var original = new TransitionConfig
+        var original = new BmotionTransitionConfig
         {
-            Type = TransitionType.Spring,
+            Type = BmotionTransitionType.Spring,
             Duration = 0.7,
             Delay = 0.2,
-            Ease = Easing.BackInOut,
+            Ease = BmotionEasing.BackInOut,
             EaseCubicBezier = [0.1, 0.2, 0.3, 0.4],
             Repeat = int.MaxValue,
-            RepeatType = RepeatType.Mirror,
+            RepeatType = BmotionRepeatType.Mirror,
             RepeatDelay = 0.15,
             Times = [0, 0.5, 1],
             Stiffness = 321,
@@ -198,9 +197,9 @@ public class TransitionConfigTests
             InertiaMax = 100,
             StaggerChildren = 0.08,
             DelayChildren = 0.3,
-            Properties = new Dictionary<string, TransitionConfig>
+            Properties = new Dictionary<string, BmotionTransitionConfig>
             {
-                ["opacity"] = new TransitionConfig { Duration = 0.1 },
+                ["opacity"] = new BmotionTransitionConfig { Duration = 0.1 },
             },
         };
 
@@ -241,7 +240,7 @@ public class TransitionConfigTests
     [TestMethod]
     public void Clone_IsIndependent_ForScalarsAndArrays()
     {
-        var original = new TransitionConfig
+        var original = new BmotionTransitionConfig
         {
             Duration = 0.3,
             EaseCubicBezier = [0.1, 0.2, 0.3, 0.4],
