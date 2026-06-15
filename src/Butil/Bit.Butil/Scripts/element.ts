@@ -85,6 +85,13 @@ var BitButil = BitButil || {};
     }
 
     function scrollIntoView(element: HTMLElement, alignToTop?: boolean, options?: ScrollIntoViewOptions) {
+        // No args from .NET means the no-argument C# overload: call the native no-arg form so the
+        // browser applies its default (align-to-top) behavior. Passing null would instead be read
+        // as an empty options object and change the alignment.
+        if (alignToTop == null && options == null) {
+            element.scrollIntoView();
+            return;
+        }
         element.scrollIntoView(alignToTop ?? options);
     }
 

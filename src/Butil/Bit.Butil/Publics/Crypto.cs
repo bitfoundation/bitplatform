@@ -66,13 +66,7 @@ public class Crypto(IJSRuntime js)
     /// </summary>
     public ValueTask<byte[]> Digest(CryptoKeyHash algorithm, byte[] data)
     {
-        var algo = algorithm switch
-        {
-            CryptoKeyHash.Sha384 => "SHA-384",
-            CryptoKeyHash.Sha512 => "SHA-512",
-            _ => "SHA-256",
-        };
-        return js.Invoke<byte[]>("BitButil.crypto.digest", algo, data);
+        return js.Invoke<byte[]>("BitButil.crypto.digest", HashAlgorithmName(algorithm), data);
     }
 
     /// <summary>
@@ -104,9 +98,12 @@ public class Crypto(IJSRuntime js)
 
     private static string HashAlgorithmName(CryptoKeyHash algorithm) => algorithm switch
     {
+        CryptoKeyHash.Sha256 => "SHA-256",
         CryptoKeyHash.Sha384 => "SHA-384",
         CryptoKeyHash.Sha512 => "SHA-512",
-        _ => "SHA-256",
+        // An out-of-range value (only reachable by casting an invalid int to the enum) is a caller
+        // bug. For crypto, fail loudly rather than silently substituting SHA-256.
+        _ => throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, "Unsupported hash algorithm."),
     };
 
     // ─── Key generation / import / export ──────────────────────────────────────

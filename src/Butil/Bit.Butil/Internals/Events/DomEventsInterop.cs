@@ -72,6 +72,8 @@ internal sealed class DomEventsInterop : IDisposable
             .Select(l => l.Key)
             .ToArray();
 
+        if (ids.Length == 0) return ids; // nothing matched - skip the interop round-trip
+
         foreach (var id in ids) _listeners.TryRemove(id, out _);
 
         await js.RemoveEventListener(elementName, domEvent, ids, (object)useCapture);

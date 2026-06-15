@@ -86,9 +86,13 @@ var BitButil = BitButil || {};
 
         dotnetListenerIds.forEach(id => {
             const handler = _handlers[id];
-            delete _handlers[id];
-            if (target && handler) {
+            if (!handler) return;
+            // Only forget the handler once it's actually been detached. If the target isn't
+            // available yet, keep the entry so a later removal (when it is) can still detach it,
+            // instead of orphaning a live listener.
+            if (target) {
                 target.removeEventListener(eventName, handler, options);
+                delete _handlers[id];
             }
         });
     }

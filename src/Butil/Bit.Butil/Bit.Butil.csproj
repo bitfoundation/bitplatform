@@ -67,7 +67,12 @@
 
     <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/bit-butil.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <!-- Minify to a temp file and move it into place, rather than overwriting the input in-place.
+             An interrupted in-place minify could leave a half-written bundle that the Outputs check
+             above then treats as up-to-date, requiring a clean to recover. The Move is atomic enough
+             to avoid that. -->
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-butil.min.js" DestinationFiles="wwwroot/bit-butil.js" OverwriteReadOnlyFiles="true" />
     </Target>
 
 </Project>

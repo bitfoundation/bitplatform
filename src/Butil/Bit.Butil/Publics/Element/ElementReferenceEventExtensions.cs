@@ -21,6 +21,15 @@ public static class ElementReferenceEventExtensions
     /// <summary>
     /// Subscribes to a DOM event on the given element. The returned handle detaches the listener on dispose.
     /// </summary>
+    /// <remarks>
+    /// <b>You must dispose the returned <see cref="ButilSubscription"/>.</b> Unlike the
+    /// <see cref="Window"/>/<see cref="Document"/> services, this extension has no owning scoped
+    /// instance to drain on circuit teardown, so each call allocates its own
+    /// <see cref="DotNetObjectReference{T}"/> and a JS-side handler entry that live until the handle
+    /// is disposed. Failing to dispose leaks both (plus any state your <paramref name="listener"/>
+    /// captures) for the lifetime of the circuit. Prefer <c>await using</c>, or store the handle and
+    /// dispose it in the component's <c>DisposeAsync</c>.
+    /// </remarks>
     public static async Task<ButilSubscription> SubscribeEvent<T>(
         this ElementReference element,
         IJSRuntime js,

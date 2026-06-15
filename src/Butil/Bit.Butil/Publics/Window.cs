@@ -506,6 +506,12 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/open">https://developer.mozilla.org/en-US/docs/Web/API/Window/open</see>
     /// </summary>
+    /// <remarks>
+    /// <b>Security note:</b> when opening a cross-origin or untrusted <paramref name="url"/>, include
+    /// <c>noopener</c> (and typically <c>noreferrer</c>) in <paramref name="windowFeatures"/>. Without
+    /// it the opened page can reach back through <c>window.opener</c> and navigate this window
+    /// (reverse tab-nabbing).
+    /// </remarks>
     public async Task<string?> Open(string? url = null, string? target = null, string? windowFeatures = null)
     {
         var id = await js.Invoke<string?>("BitButil.window.open", Guid.NewGuid(), url, target, windowFeatures);
@@ -521,6 +527,12 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/open">https://developer.mozilla.org/en-US/docs/Web/API/Window/open</see>
     /// </summary>
+    /// <remarks>
+    /// <b>Security note:</b> when opening a cross-origin or untrusted <paramref name="url"/>, set
+    /// <see cref="WindowFeatures.NoOpener"/> (and typically <see cref="WindowFeatures.NoReferrer"/>)
+    /// on <paramref name="windowFeatures"/>. Without it the opened page can reach back through
+    /// <c>window.opener</c> and navigate this window (reverse tab-nabbing).
+    /// </remarks>
     public async Task<string?> Open(string? url = null, string? target = null, WindowFeatures? windowFeatures = null)
     {
         var id = await js.Invoke<string?>("BitButil.window.open", Guid.NewGuid(), url, target, windowFeatures?.ToString());

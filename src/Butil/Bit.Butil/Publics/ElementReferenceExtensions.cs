@@ -349,6 +349,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML">https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML</see>
     /// </summary>
+    /// <remarks>
+    /// <b>Security note:</b> this assigns directly to <c>element.innerHTML</c> and therefore bypasses
+    /// Blazor's automatic HTML encoding. Never pass untrusted or user-supplied input - doing so is an
+    /// XSS vector. Sanitize first, or render the content through normal Razor markup instead.
+    /// </remarks>
     public static async ValueTask SetInnerHtml(this ElementReference element, string innerHtml)
         => await GetJSRuntime(element).InvokeVoid("BitButil.element.setInnerHTML", element, innerHtml);
 
@@ -365,6 +370,11 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML">https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML</see>
     /// </summary>
+    /// <remarks>
+    /// <b>Security note:</b> this assigns directly to <c>element.outerHTML</c> and therefore bypasses
+    /// Blazor's automatic HTML encoding. Never pass untrusted or user-supplied input - doing so is an
+    /// XSS vector. Sanitize first, or render the content through normal Razor markup instead.
+    /// </remarks>
     public static async ValueTask SetOuterHtml(this ElementReference element, string outerHtml)
         => await GetJSRuntime(element).InvokeVoid("BitButil.element.setOuterHTML", element, outerHtml);
 
