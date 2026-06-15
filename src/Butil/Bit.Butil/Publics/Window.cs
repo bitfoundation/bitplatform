@@ -487,7 +487,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask<Guid[]> UnsubscribeMatchMedia(Action<MediaQueryList> handler)
     {
-        var ids = _matchMediaHandlers.Where(h => h.Value == handler).Select(h => h.Key).ToArray();
+        var ids = _matchMediaHandlers.Where(h => Equals(h.Value, handler)).Select(h => h.Key).ToArray();
         if (ids.Length == 0) return ids;
 
         foreach (var id in ids) _matchMediaHandlers.TryRemove(id, out _);

@@ -182,7 +182,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// </remarks>
     public async ValueTask<Guid[]> RemovePopState(Action<object> handler)
     {
-        var ids = _handlers.Where(h => h.Value == handler).Select(h => h.Key).ToArray();
+        var ids = _handlers.Where(h => Equals(h.Value, handler)).Select(h => h.Key).ToArray();
 
         await RemovePopState(ids);
 

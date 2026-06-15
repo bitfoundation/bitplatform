@@ -26,7 +26,10 @@ public class Crypto(IJSRuntime js)
     public async ValueTask<Guid> RandomUuid()
     {
         var raw = await js.Invoke<string>("BitButil.crypto.randomUUID");
-        return Guid.Parse(raw);
+        // During prerender/SSR the invoke returns a safe default (empty string), and a genuine
+        // call always yields a parseable UUID. Guid.Parse(null/"") would throw, contradicting the
+        // documented "returns default rather than throwing" prerender contract - so guard it.
+        return Guid.TryParse(raw, out var uuid) ? uuid : default;
     }
 
     /// <summary>

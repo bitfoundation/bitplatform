@@ -18,11 +18,12 @@ namespace Bit.Butil;
 /// </summary>
 public static class ElementReferenceExtensions
 {
-    //[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_JSRuntime")]
-    //extern static IJSRuntime JSRuntimeGetter(WebElementReferenceContext context);
-
-    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "<JSRuntime>k__BackingField")]
-    extern static ref IJSRuntime JSRuntimeGetter(WebElementReferenceContext context);
+    // Bind to the public-surface property getter rather than the compiler-generated
+    // "<JSRuntime>k__BackingField" field. The getter method name (get_JSRuntime) is part of the
+    // type's stable shape and far less likely to change across framework releases than the
+    // synthesized backing-field name, which is an implementation detail.
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_JSRuntime")]
+    extern static IJSRuntime JSRuntimeGetter(WebElementReferenceContext context);
 
     private static IJSRuntime GetJSRuntime(ElementReference elementReference)
     {

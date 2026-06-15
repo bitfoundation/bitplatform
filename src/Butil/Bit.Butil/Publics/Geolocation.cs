@@ -162,7 +162,7 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>Internal - shape used to bridge a once-off call's success/error path.</summary>
-    public class GeolocationCallResult
+    internal class GeolocationCallResult
     {
         public GeolocationPosition? Position { get; set; }
         public int ErrorCode { get; set; }

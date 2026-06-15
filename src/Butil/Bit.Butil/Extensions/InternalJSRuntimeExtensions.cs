@@ -75,13 +75,14 @@ internal static class InternalJSRuntimeExtensions
     /// Invokes a value-returning JavaScript function through the safe async path.
     /// </summary>
     /// <returns>
-    /// The deserialized result, or <c>default(<typeparamref name="TValue"/>)</c> during static SSR /
-    /// pre-render when no JS runtime is available.
+    /// The deserialized result, or a safe default during static SSR / pre-render when no JS runtime
+    /// is available. The safe default is an empty string for <see cref="string"/>, an empty array for
+    /// array types, and <c>default(<typeparamref name="TValue"/>)</c> for everything else.
     /// </returns>
     /// <remarks>
-    /// IMPORTANT: because prerender returns <c>default</c> (e.g. <c>null</c>, <c>false</c>, <c>0</c>)
-    /// instead of throwing, a caller can't distinguish a genuine value from "the runtime wasn't
-    /// available". Code that branches on the result should treat the prerender pass accordingly
+    /// IMPORTANT: because prerender returns a safe default (e.g. <c>""</c>, <c>[]</c>, <c>false</c>,
+    /// <c>0</c>) instead of throwing, a caller can't distinguish a genuine value from "the runtime
+    /// wasn't available". Code that branches on the result should treat the prerender pass accordingly
     /// (for example, by deferring the read to <c>OnAfterRender</c>). See <see cref="IsJsRuntimeInvalid"/>.
     /// </remarks>
     internal static ValueTask<TValue> Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
@@ -101,13 +102,36 @@ internal static class InternalJSRuntimeExtensions
 
     internal static ValueTask<TValue> Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
-        // Prerender/SSR: no runtime, so hand back default(TValue) rather than throwing. Callers
-        // can't tell this apart from a real default - documented on the params-based overload.
-        if (jsRuntime.IsJsRuntimeInvalid()) return default;
+        // Prerender/SSR: no runtime, so hand back a safe default rather than throwing. For string
+        // and array return types that means an empty string / empty array (never null) so callers
+        // that read in OnInitializedAsync don't hit a NullReferenceException; everything else gets
+        // default(TValue). Callers still can't tell this apart from a real empty/default value -
+        // documented on the params-based overload.
+        if (jsRuntime.IsJsRuntimeInvalid()) return SafeDefault<TValue>();
 
         // Always the safe async path - see the note on InvokeVoid. Callers whose JS function is
         // synchronous opt in via InvokeFast.
         return jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
+    }
+
+    /// <summary>
+    /// The value handed back when the runtime is invalid (prerender/SSR). Reference types that are
+    /// routinely dereferenced - <see cref="string"/> and arrays - become empty instead of
+    /// <c>null</c> to avoid surprise <see cref="NullReferenceException"/>s; all other types fall
+    /// back to <c>default(TValue)</c>.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Array.CreateInstance with a concrete element type is AOT-safe; no members are reflected over.")]
+    private static ValueTask<TValue> SafeDefault<TValue>()
+    {
+        var type = typeof(TValue);
+
+        if (type == typeof(string))
+            return new ValueTask<TValue>((TValue)(object)string.Empty);
+
+        if (type.IsArray)
+            return new ValueTask<TValue>((TValue)(object)Array.CreateInstance(type.GetElementType()!, 0));
+
+        return default;
     }
 
     /// <summary>
@@ -126,7 +150,7 @@ internal static class InternalJSRuntimeExtensions
 
     internal static ValueTask<TValue> InvokeFast<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
-        if (jsRuntime.IsJsRuntimeInvalid()) return default;
+        if (jsRuntime.IsJsRuntimeInvalid()) return SafeDefault<TValue>();
 
         return BitButil.FastInvokeEnabled
             ? jsRuntime.FastInvokeAsync<TValue>(identifier, cancellationToken, args)

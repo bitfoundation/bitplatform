@@ -35,7 +35,7 @@ public class ButilCookie
 
         if (Domain is not null)
         {
-            sb.Append(";domain=").Append(Domain);
+            sb.Append(";domain=").Append(ValidateAttribute(Domain, nameof(Domain)));
         }
 
         if (Expires is not null)
@@ -57,7 +57,7 @@ public class ButilCookie
 
         if (Path is not null)
         {
-            sb.Append(";path=").Append(Path);
+            sb.Append(";path=").Append(ValidateAttribute(Path, nameof(Path)));
         }
 
         if (SameSite is not null)
@@ -71,6 +71,18 @@ public class ButilCookie
         }
 
         return sb.ToString();
+    }
+
+    private static string ValidateAttribute(string value, string attributeName)
+    {
+        // Name and value are percent-encoded, but attributes like domain/path are appended
+        // verbatim. Reject the separators (';' splits attributes, CR/LF could inject headers)
+        // so a caller-supplied value can't smuggle extra cookie attributes.
+        if (value.IndexOfAny([';', '\r', '\n']) >= 0)
+            throw new FormatException(
+                $"Cookie '{attributeName}' contains an invalid character (';', CR or LF): '{value}'.");
+
+        return value;
     }
 
     public static ButilCookie? Parse(string rawCookie)
