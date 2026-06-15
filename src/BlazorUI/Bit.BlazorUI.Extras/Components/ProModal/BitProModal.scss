@@ -13,6 +13,12 @@
     }
 }
 
+.bit-pmd-mfl {
+    .bit-mdl-ovl {
+        background-color: $clr-bg-overlay;
+    }
+}
+
 .bit-pmd-abs {
     z-index: unset;
     position: absolute;

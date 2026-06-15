@@ -2,74 +2,74 @@
 @inherits BitComponentBase
 
 <BitModal AriaLabel="@AriaLabel"
-          AriaModal="Modeless is false"
+          AriaModal="ProModalParameters.Modeless is false"
           Class="@ClassBuilder.Value"
-          Dir="Dir"
-          @attributes="HtmlAttributes"
+          Dir="ProModalParameters.Dir"
+          @attributes="ProModalParameters.HtmlAttributes"
           Id="@_modalId"
-          IsEnabled="IsEnabled"
+          IsEnabled="ProModalParameters.IsEnabled"
           Style="@StyleBuilder.Value"
           Visibility="Visibility"
-          Blocking="Blocking"
-          Classes="Classes"
-          FullHeight="FullHeight || FullSize"
-          FullWidth="FullWidth || FullSize"
-          IsAlert="@(IsAlert ?? (Blocking && Modeless is false))"
+          Blocking="ProModalParameters.Blocking"
+          Classes="_classes"
+          FullHeight="ProModalParameters.FullHeight || ProModalParameters.FullSize"
+          FullWidth="ProModalParameters.FullWidth || ProModalParameters.FullSize"
+          IsAlert="@(ProModalParameters.IsAlert ?? (ProModalParameters.Blocking && ProModalParameters.Modeless is false))"
           IsOpen="IsOpen"
           IsOpenChanged="HandleInnerIsOpenChanged"
-          OnDismiss="OnDismiss"
-          OnOverlayClick="OnOverlayClick"
-          ShowOverlay="Modeless is false"
-          SubtitleAriaId="@SubtitleAriaId"
-          TitleAriaId="@TitleAriaId"
-          Styles="Styles">
-    @if (Header is not null || HeaderText is not null || ShowCloseButton)
+          OnDismiss="ProModalParameters.OnDismiss"
+          OnOverlayClick="ProModalParameters.OnOverlayClick"
+          ShowOverlay="ProModalParameters.Modeless is false"
+          SubtitleAriaId="@ProModalParameters.SubtitleAriaId"
+          TitleAriaId="@ProModalParameters.TitleAriaId"
+          Styles="_styles">
+    @if (ProModalParameters.Header is not null || ProModalParameters.HeaderText is not null || ProModalParameters.ShowCloseButton)
     {
-        <div style="@Styles?.HeaderContainer" class="bit-pmd-hcn @Classes?.HeaderContainer">
-            @if (Header is not null)
+        <div style="@_styles?.HeaderContainer" class="bit-pmd-hcn @_classes?.HeaderContainer">
+            @if (ProModalParameters.Header is not null)
             {
-                <div style="@Styles?.Header" class="bit-pmd-hdr @Classes?.Header">
-                    @Header
+                <div style="@_styles?.Header" class="bit-pmd-hdr @_classes?.Header">
+                    @ProModalParameters.Header
                 </div>
             }
-            else if (HeaderText is not null)
+            else if (ProModalParameters.HeaderText is not null)
             {
-                <div style="@Styles?.Header" class="bit-pmd-hdr @Classes?.Header">
-                    @HeaderText
+                <div style="@_styles?.Header" class="bit-pmd-hdr @_classes?.Header">
+                    @ProModalParameters.HeaderText
                 </div>
             }
 
-            @if (ShowCloseButton)
+            @if (ProModalParameters.ShowCloseButton)
             {
-                var closeIcon = BitIconInfo.From(CloseIcon, CloseIconName ?? "Cancel");
+                var closeIcon = BitIconInfo.From(ProModalParameters.CloseIcon, ProModalParameters.CloseIconName ?? "Cancel");
 
                 <button @onclick="CloseModal"
                         type="button"
-                        title="@CloseButtonTitle"
-                        aria-label="@CloseButtonTitle"
-                        style="@Styles?.CloseButton"
-                        class="bit-pmd-cls @Classes?.CloseButton">
-                    <i style="@Styles?.CloseIcon"
-                       class="@closeIcon?.GetCssClasses() @Classes?.CloseIcon" />
+                        title="@ProModalParameters.CloseButtonTitle"
+                        aria-label="@ProModalParameters.CloseButtonTitle"
+                        style="@_styles?.CloseButton"
+                        class="bit-pmd-cls @_classes?.CloseButton">
+                    <i style="@_styles?.CloseIcon"
+                       class="@closeIcon?.GetCssClasses() @_classes?.CloseIcon" />
                 </button>
             }
         </div>
     }
 
-    <div style="@Styles?.Body" class="bit-pmd-bdy @Classes?.Body">
+    <div style="@_styles?.Body" class="bit-pmd-bdy @_classes?.Body">
         @(Body ?? ChildContent)
     </div>
 
-    @if (Footer is not null)
+    @if (ProModalParameters.Footer is not null)
     {
-        <div style="@Styles?.Footer" class="bit-pmd-fcn @Classes?.Footer">
-            @Footer
+        <div style="@_styles?.Footer" class="bit-pmd-fcn @_classes?.Footer">
+            @ProModalParameters.Footer
         </div>
     }
-    else if (FooterText is not null)
+    else if (ProModalParameters.FooterText is not null)
     {
-        <div style="@Styles?.Footer" class="bit-pmd-fcn @Classes?.Footer">
-            @FooterText
+        <div style="@_styles?.Footer" class="bit-pmd-fcn @_classes?.Footer">
+            @ProModalParameters.FooterText
         </div>
     }
 </BitModal>

@@ -13,16 +13,16 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
     /// <returns></returns>
     public static IServiceCollection AddBitBlazorUIExtrasServices(this IServiceCollection services, bool trySingleton = false)
     {
-        services.AddBitBlazorUIServices();
+        services.AddBitBlazorUIServices(trySingleton);
 
         if (trySingleton)
         {
-            services.TryAddSingleton<BitModalService>();
+            services.TryAddSingleton<BitProModalService>();
             services.TryAddSingleton<BitMessageBoxService>();
         }
         else
         {
-            services.TryAddScoped<BitModalService>();
+            services.TryAddScoped<BitProModalService>();
             services.TryAddScoped<BitMessageBoxService>();
         }
 

@@ -14,6 +14,12 @@ public partial class BitProModal : BitComponentBase
 
 
 
+    [CascadingParameter]
+    private BitProModalParameters ProModalParameters { get => proModalParameters; set { proModalParameters = value; proModalParameters.SetProModal(this); } }
+    private BitProModalParameters proModalParameters = new();
+
+
+
     /// <summary>
     /// When true, the Modal will be positioned absolute instead of fixed.
     /// </summary>
@@ -217,10 +223,10 @@ public partial class BitProModal : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => ModeFull ? "bit-pmd-mfl" : string.Empty);
-        ClassBuilder.Register(() => NoBorder ? string.Empty : "bit-pmd-tbr");
-        ClassBuilder.Register(() => AbsolutePosition ? "bit-pmd-abs" : string.Empty);
-        ClassBuilder.Register(() => Position switch
+        ClassBuilder.Register(() => ProModalParameters.ModeFull ? "bit-pmd-mfl" : string.Empty);
+        ClassBuilder.Register(() => ProModalParameters.NoBorder ? string.Empty : "bit-pmd-tbr");
+        ClassBuilder.Register(() => ProModalParameters.AbsolutePosition ? "bit-pmd-abs" : string.Empty);
+        ClassBuilder.Register(() => ProModalParameters.Position switch
         {
             BitPosition.TopLeft => "bit-pmd-tlf",
             BitPosition.TopCenter => "bit-pmd-tcr",
@@ -246,6 +252,13 @@ public partial class BitProModal : BitComponentBase
         StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
     }
 
+    protected override void OnInitialized()
+    {
+        ProModalParameters.SetProModal(this);
+
+        base.OnInitialized();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (IsOpen)
@@ -254,7 +267,7 @@ public partial class BitProModal : BitComponentBase
             {
                 _internalIsOpen = true;
 
-                if (Draggable)
+                if (ProModalParameters.Draggable)
                 {
                     _ = _js.BitDragDropSetup(_containerSelector, _containerSelector, _dragElementSelector);
                 }
@@ -269,13 +282,13 @@ public partial class BitProModal : BitComponentBase
                 // Only when AbsolutePosition is set do we reset the StyleBuilder and
                 // re-render, so the top-offset style (which ToggleScroll may have updated)
                 // gets applied on the next render.
-                if (AbsolutePosition)
+                if (ProModalParameters.AbsolutePosition)
                 {
                     StyleBuilder.Reset();
                     StateHasChanged();
                 }
 
-                await OnOpen.InvokeAsync();
+                await ProModalParameters.OnOpen.InvokeAsync();
             }
         }
         else
@@ -297,7 +310,10 @@ public partial class BitProModal : BitComponentBase
 
     private string _modalId => Id ?? UniqueId;
     private string _containerSelector => $"#{_modalId} .bit-mdl-ctn";
-    private string _dragElementSelector => DragElementSelector ?? _containerSelector;
+    private string _dragElementSelector => ProModalParameters.DragElementSelector ?? _containerSelector;
+
+    private BitProModalClassStyles? _classes => BitProModalClassStyles.Merge(Classes, ProModalParameters.Classes);
+    private BitProModalClassStyles? _styles => BitProModalClassStyles.Merge(Styles, ProModalParameters.Styles);
 
     private async Task HandleInnerIsOpenChanged(bool open)
     {
@@ -306,22 +322,22 @@ public partial class BitProModal : BitComponentBase
 
     private async Task CloseModal(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (ProModalParameters.IsEnabled is false) return;
 
         await AssignIsOpen(false);
     }
 
     private async Task ToggleScroll(bool isOpen)
     {
-        if (AutoToggleScroll is false) return;
+        if (ProModalParameters.AutoToggleScroll is false) return;
 
-        if (ScrollerElement.HasValue)
+        if (ProModalParameters.ScrollerElement.HasValue)
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerElement.Value, isOpen);
+            _offsetTop = await _js.BitUtilsToggleOverflow(ProModalParameters.ScrollerElement.Value, isOpen);
         }
         else
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector ?? "body", isOpen);
+            _offsetTop = await _js.BitUtilsToggleOverflow(ProModalParameters.ScrollerSelector ?? "body", isOpen);
         }
     }
 

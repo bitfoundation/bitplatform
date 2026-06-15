@@ -22,7 +22,7 @@ public static class IServiceCollectionExtensions
 
         services.TryAddTransient<LazyAssemblyLoader>();
 
-        services.AddBitBlazorUIServices();
+        services.AddBitBlazorUIServices(trySingleton: AppRenderMode.IsBlazorHybrid);
         services.AddBitBlazorUIExtrasServices(trySingleton: AppRenderMode.IsBlazorHybrid);
         services.AddSharedServices();
 
