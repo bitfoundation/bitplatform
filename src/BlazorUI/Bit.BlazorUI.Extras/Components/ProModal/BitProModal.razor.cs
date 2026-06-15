@@ -5,6 +5,11 @@
 /// </summary>
 public partial class BitProModal : BitComponentBase
 {
+    /// <summary>
+    /// The default title (and aria-label) used for the close button when none is provided.
+    /// </summary>
+    internal const string DefaultCloseButtonTitle = "Close";
+
     private bool _internalIsOpen;
     private float _offsetTop;
 
@@ -14,9 +19,20 @@ public partial class BitProModal : BitComponentBase
 
 
 
+    private BitProModalParameters _proModalParameters = new();
     [CascadingParameter]
-    private BitProModalParameters ProModalParameters { get => proModalParameters; set { proModalParameters = value; proModalParameters.SetProModal(this); } }
-    private BitProModalParameters proModalParameters = new();
+    private BitProModalParameters? ProModalParameters
+    {
+        // Tolerate a null cascading value (e.g. ModalParameters="null"): fall back to a fresh
+        // instance so downstream consumers (_classes, _styles, BuildParameters) never NRE.
+        get => _proModalParameters;
+        set => _proModalParameters = value ?? new();
+    }
+
+    // The effective parameters: the component's own parameters merged with the cascaded
+    // BitProModalParameters (the latter supplied by the BitProModalService). The component's
+    // own parameters take precedence. This is rebuilt in OnParametersSet whenever either source changes.
+    private BitProModalParameters _params = new();
 
 
 
@@ -53,8 +69,9 @@ public partial class BitProModal : BitComponentBase
 
     /// <summary>
     /// The title (and aria-label) of the close button for accessibility and localization.
+    /// Defaults to "Close" when not set.
     /// </summary>
-    [Parameter] public string CloseButtonTitle { get; set; } = "Close";
+    [Parameter] public string? CloseButtonTitle { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display in the close button using custom CSS classes for external icon libraries.
@@ -223,10 +240,10 @@ public partial class BitProModal : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => ProModalParameters.ModeFull ? "bit-pmd-mfl" : string.Empty);
-        ClassBuilder.Register(() => ProModalParameters.NoBorder ? string.Empty : "bit-pmd-tbr");
-        ClassBuilder.Register(() => ProModalParameters.AbsolutePosition ? "bit-pmd-abs" : string.Empty);
-        ClassBuilder.Register(() => ProModalParameters.Position switch
+        ClassBuilder.Register(() => (_params.ModeFull ?? false) ? "bit-pmd-mfl" : string.Empty);
+        ClassBuilder.Register(() => (_params.NoBorder ?? false) ? string.Empty : "bit-pmd-tbr");
+        ClassBuilder.Register(() => (_params.AbsolutePosition ?? false) ? "bit-pmd-abs" : string.Empty);
+        ClassBuilder.Register(() => _params.Position switch
         {
             BitPosition.TopLeft => "bit-pmd-tlf",
             BitPosition.TopCenter => "bit-pmd-tcr",
@@ -254,9 +271,14 @@ public partial class BitProModal : BitComponentBase
 
     protected override void OnInitialized()
     {
-        ProModalParameters.SetProModal(this);
-
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _params = BuildParameters();
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -267,7 +289,7 @@ public partial class BitProModal : BitComponentBase
             {
                 _internalIsOpen = true;
 
-                if (ProModalParameters.Draggable)
+                if (_params.Draggable ?? false)
                 {
                     _ = _js.BitDragDropSetup(_containerSelector, _containerSelector, _dragElementSelector);
                 }
@@ -282,13 +304,13 @@ public partial class BitProModal : BitComponentBase
                 // Only when AbsolutePosition is set do we reset the StyleBuilder and
                 // re-render, so the top-offset style (which ToggleScroll may have updated)
                 // gets applied on the next render.
-                if (ProModalParameters.AbsolutePosition)
+                if (_params.AbsolutePosition ?? false)
                 {
                     StyleBuilder.Reset();
                     StateHasChanged();
                 }
 
-                await ProModalParameters.OnOpen.InvokeAsync();
+                await _params.OnOpen.InvokeAsync();
             }
         }
         else
@@ -310,7 +332,7 @@ public partial class BitProModal : BitComponentBase
 
     private string _modalId => Id ?? UniqueId;
     private string _containerSelector => $"#{_modalId} .bit-mdl-ctn";
-    private string _dragElementSelector => ProModalParameters.DragElementSelector ?? _containerSelector;
+    private string _dragElementSelector => _params.DragElementSelector ?? _containerSelector;
 
     private BitProModalClassStyles? _classes => BitProModalClassStyles.Merge(Classes, ProModalParameters.Classes);
     private BitProModalClassStyles? _styles => BitProModalClassStyles.Merge(Styles, ProModalParameters.Styles);
@@ -322,23 +344,82 @@ public partial class BitProModal : BitComponentBase
 
     private async Task CloseModal(MouseEventArgs e)
     {
-        if (ProModalParameters.IsEnabled is false) return;
+        if (_params.IsEnabled is false) return;
 
         await AssignIsOpen(false);
     }
 
     private async Task ToggleScroll(bool isOpen)
     {
-        if (ProModalParameters.AutoToggleScroll is false) return;
+        if ((_params.AutoToggleScroll ?? false) is false) return;
 
-        if (ProModalParameters.ScrollerElement.HasValue)
+        if (_params.ScrollerElement.HasValue)
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(ProModalParameters.ScrollerElement.Value, isOpen);
+            _offsetTop = await _js.BitUtilsToggleOverflow(_params.ScrollerElement.Value, isOpen);
         }
         else
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(ProModalParameters.ScrollerSelector ?? "body", isOpen);
+            _offsetTop = await _js.BitUtilsToggleOverflow(_params.ScrollerSelector ?? "body", isOpen);
         }
+    }
+
+    /// <summary>
+    /// Builds the effective parameters by merging this component's own parameters with the cascaded
+    /// <see cref="BitProModalParameters"/>. The component's own values take precedence, preserving the
+    /// behavior previously provided by the parameters object reading back from the component.
+    /// </summary>
+    private BitProModalParameters BuildParameters()
+    {
+        var p = ProModalParameters;
+
+        return new BitProModalParameters
+        {
+            AbsolutePosition = AbsolutePosition ? true : p.AbsolutePosition,
+            AutoToggleScroll = AutoToggleScroll ? true : p.AutoToggleScroll,
+            Blocking = Blocking ? true : p.Blocking,
+            Classes = Classes ?? p.Classes,
+            CloseButtonTitle = CloseButtonTitle ?? p.CloseButtonTitle,
+            CloseIcon = CloseIcon ?? p.CloseIcon,
+            CloseIconName = CloseIconName ?? p.CloseIconName,
+            Dir = Dir ?? p.Dir,
+            DragElementSelector = DragElementSelector ?? p.DragElementSelector,
+            Draggable = Draggable ? true : p.Draggable,
+            Footer = Footer ?? p.Footer,
+            FooterText = FooterText ?? p.FooterText,
+            FullHeight = FullHeight ? true : p.FullHeight,
+            FullSize = FullSize ? true : p.FullSize,
+            FullWidth = FullWidth ? true : p.FullWidth,
+            Header = Header ?? p.Header,
+            HeaderText = HeaderText ?? p.HeaderText,
+            HtmlAttributes = HtmlAttributes,
+            IsAlert = IsAlert ?? p.IsAlert,
+            IsEnabled = IsEnabled is false ? false : p.IsEnabled,
+            ModeFull = ModeFull ? true : p.ModeFull,
+            Modeless = Modeless ? true : p.Modeless,
+            NoBorder = NoBorder ? true : p.NoBorder,
+            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+            {
+                await OnDismiss.InvokeAsync();
+                await p.OnDismiss.InvokeAsync();
+            }),
+            OnOpen = EventCallback.Factory.Create(this, async () =>
+            {
+                await OnOpen.InvokeAsync();
+                await p.OnOpen.InvokeAsync();
+            }),
+            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+            {
+                await OnOverlayClick.InvokeAsync();
+                await p.OnOverlayClick.InvokeAsync();
+            }),
+            Position = Position ?? p.Position,
+            ScrollerElement = ScrollerElement ?? p.ScrollerElement,
+            ScrollerSelector = ScrollerSelector ?? p.ScrollerSelector,
+            ShowCloseButton = ShowCloseButton ? true : p.ShowCloseButton,
+            Styles = Styles ?? p.Styles,
+            SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
+            TitleAriaId = TitleAriaId ?? p.TitleAriaId,
+        };
     }
 
 

@@ -2,51 +2,51 @@
 @inherits BitComponentBase
 
 <BitModal AriaLabel="@AriaLabel"
-          AriaModal="ProModalParameters.Modeless is false"
+          AriaModal="(_params.Modeless ?? false) is false"
           Class="@ClassBuilder.Value"
-          Dir="ProModalParameters.Dir"
-          @attributes="ProModalParameters.HtmlAttributes"
+          Dir="_params.Dir"
+          @attributes="_params.HtmlAttributes"
           Id="@_modalId"
-          IsEnabled="ProModalParameters.IsEnabled"
+          IsEnabled="_params.IsEnabled ?? true"
           Style="@StyleBuilder.Value"
           Visibility="Visibility"
-          Blocking="ProModalParameters.Blocking"
+          Blocking="_params.Blocking ?? false"
           Classes="_classes"
-          FullHeight="ProModalParameters.FullHeight || ProModalParameters.FullSize"
-          FullWidth="ProModalParameters.FullWidth || ProModalParameters.FullSize"
-          IsAlert="@(ProModalParameters.IsAlert ?? (ProModalParameters.Blocking && ProModalParameters.Modeless is false))"
+          FullHeight="(_params.FullHeight ?? false) || (_params.FullSize ?? false)"
+          FullWidth="(_params.FullWidth ?? false) || (_params.FullSize ?? false)"
+          IsAlert="@(_params.IsAlert ?? ((_params.Blocking ?? false) && (_params.Modeless ?? false) is false))"
           IsOpen="IsOpen"
           IsOpenChanged="HandleInnerIsOpenChanged"
-          OnDismiss="ProModalParameters.OnDismiss"
-          OnOverlayClick="ProModalParameters.OnOverlayClick"
-          ShowOverlay="ProModalParameters.Modeless is false"
-          SubtitleAriaId="@ProModalParameters.SubtitleAriaId"
-          TitleAriaId="@ProModalParameters.TitleAriaId"
+          OnDismiss="_params.OnDismiss"
+          OnOverlayClick="_params.OnOverlayClick"
+          ShowOverlay="(_params.Modeless ?? false) is false"
+          SubtitleAriaId="@_params.SubtitleAriaId"
+          TitleAriaId="@_params.TitleAriaId"
           Styles="_styles">
-    @if (ProModalParameters.Header is not null || ProModalParameters.HeaderText is not null || ProModalParameters.ShowCloseButton)
+    @if (_params.Header is not null || _params.HeaderText is not null || (_params.ShowCloseButton ?? false))
     {
         <div style="@_styles?.HeaderContainer" class="bit-pmd-hcn @_classes?.HeaderContainer">
-            @if (ProModalParameters.Header is not null)
+            @if (_params.Header is not null)
             {
                 <div style="@_styles?.Header" class="bit-pmd-hdr @_classes?.Header">
-                    @ProModalParameters.Header
+                    @_params.Header
                 </div>
             }
-            else if (ProModalParameters.HeaderText is not null)
+            else if (_params.HeaderText is not null)
             {
                 <div style="@_styles?.Header" class="bit-pmd-hdr @_classes?.Header">
-                    @ProModalParameters.HeaderText
+                    @_params.HeaderText
                 </div>
             }
 
-            @if (ProModalParameters.ShowCloseButton)
+            @if (_params.ShowCloseButton ?? false)
             {
-                var closeIcon = BitIconInfo.From(ProModalParameters.CloseIcon, ProModalParameters.CloseIconName ?? "Cancel");
+                var closeIcon = BitIconInfo.From(_params.CloseIcon, _params.CloseIconName ?? "Cancel");
 
                 <button @onclick="CloseModal"
                         type="button"
-                        title="@ProModalParameters.CloseButtonTitle"
-                        aria-label="@ProModalParameters.CloseButtonTitle"
+                        title="@(_params.CloseButtonTitle ?? DefaultCloseButtonTitle)"
+                        aria-label="@(_params.CloseButtonTitle ?? DefaultCloseButtonTitle)"
                         style="@_styles?.CloseButton"
                         class="bit-pmd-cls @_classes?.CloseButton">
                     <i style="@_styles?.CloseIcon"
@@ -60,16 +60,16 @@
         @(Body ?? ChildContent)
     </div>
 
-    @if (ProModalParameters.Footer is not null)
+    @if (_params.Footer is not null)
     {
         <div style="@_styles?.Footer" class="bit-pmd-fcn @_classes?.Footer">
-            @ProModalParameters.Footer
+            @_params.Footer
         </div>
     }
-    else if (ProModalParameters.FooterText is not null)
+    else if (_params.FooterText is not null)
     {
         <div style="@_styles?.Footer" class="bit-pmd-fcn @_classes?.Footer">
-            @ProModalParameters.FooterText
+            @_params.FooterText
         </div>
     }
 </BitModal>

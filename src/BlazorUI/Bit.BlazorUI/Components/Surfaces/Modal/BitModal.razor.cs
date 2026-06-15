@@ -40,9 +40,20 @@ public partial class BitModal : BitComponentBase
     /// </summary>
     [Parameter] public BitModalClassStyles? Classes { get; set; }
 
+    private BitModalParameters _modalParameters = new();
     [CascadingParameter]
-    private BitModalParameters ModalParameters { get => modalParameters; set { modalParameters = value; modalParameters.SetModal(this); } }
-    private BitModalParameters modalParameters = new();
+    private BitModalParameters? ModalParameters
+    {
+        // Tolerate a null cascading value (e.g. ModalParameters="null"): fall back to a fresh
+        // instance so downstream consumers never NRE.
+        get => _modalParameters;
+        set => _modalParameters = value ?? new();
+    }
+
+    // The effective parameters: this component's own parameters merged with the cascaded
+    // BitModalParameters (the latter supplied by the BitModalService). The component's own
+    // parameters take precedence. Rebuilt in OnParametersSet whenever either source changes.
+    private BitModalParameters _params = new();
 
 
     /// <summary>
@@ -107,25 +118,30 @@ public partial class BitModal : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
-        ClassBuilder.Register(() => ModalParameters.Classes?.Root);
+        ClassBuilder.Register(() => _params.Classes?.Root);
 
-        ClassBuilder.Register(() => ModalParameters.FullHeight ? "bit-mdl-fhe" : string.Empty);
-        ClassBuilder.Register(() => ModalParameters.FullWidth ? "bit-mdl-fwi" : string.Empty);
+        ClassBuilder.Register(() => (_params.FullHeight ?? false) ? "bit-mdl-fhe" : string.Empty);
+        ClassBuilder.Register(() => (_params.FullWidth ?? false) ? "bit-mdl-fwi" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
-        StyleBuilder.Register(() => ModalParameters.Styles?.Root);
+        StyleBuilder.Register(() => _params.Styles?.Root);
     }
 
     protected override void OnInitialized()
     {
         _containerId = $"BitModal-{UniqueId}-container";
 
-        ModalParameters.SetModal(this);
-
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _params = BuildParameters();
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -141,9 +157,9 @@ public partial class BitModal : BitComponentBase
 
     private async Task HandleOnOverlayClick(MouseEventArgs e)
     {
-        if (ModalParameters.IsEnabled is false) return;
+        if (_params.IsEnabled is false) return;
 
-        await ModalParameters.OnOverlayClick.InvokeAsync(e);
+        await _params.OnOverlayClick.InvokeAsync(e);
 
         if (Blocking) return;
 
@@ -152,14 +168,51 @@ public partial class BitModal : BitComponentBase
 
     private string GetRole()
     {
-        return (ModalParameters.IsAlert ?? false) ? "alertdialog" : "dialog";
+        return (_params.IsAlert ?? false) ? "alertdialog" : "dialog";
     }
 
     private void OnSetIsOpen()
     {
         if (IsOpen || IsRendered is false) return;
 
-        _ = ModalParameters.OnDismiss.InvokeAsync().ContinueWith(_ => InvokeAsync(StateHasChanged));
+        _ = _params.OnDismiss.InvokeAsync().ContinueWith(_ => InvokeAsync(StateHasChanged));
+    }
+
+    /// <summary>
+    /// Builds the effective parameters by merging this component's own parameters with the cascaded
+    /// <see cref="BitModalParameters"/>. The component's own values take precedence, preserving the
+    /// behavior previously provided by the parameters object reading back from the component.
+    /// </summary>
+    private BitModalParameters BuildParameters()
+    {
+        var p = ModalParameters;
+
+        return new BitModalParameters
+        {
+            IsEnabled = IsEnabled is false ? false : p.IsEnabled,
+            HtmlAttributes = HtmlAttributes,
+            Dir = Dir ?? p.Dir,
+            AriaModal = AriaModal is false ? false : p.AriaModal,
+            Blocking = Blocking ? true : p.Blocking,
+            Classes = p.Classes,
+            FullHeight = FullHeight ? true : p.FullHeight,
+            FullWidth = FullWidth ? true : p.FullWidth,
+            IsAlert = IsAlert ?? p.IsAlert,
+            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+            {
+                await OnDismiss.InvokeAsync();
+                await p.OnDismiss.InvokeAsync();
+            }),
+            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+            {
+                await OnOverlayClick.InvokeAsync();
+                await p.OnOverlayClick.InvokeAsync();
+            }),
+            ShowOverlay = ShowOverlay is false ? false : p.ShowOverlay,
+            Styles = p.Styles,
+            SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
+            TitleAriaId = TitleAriaId ?? p.TitleAriaId,
+        };
     }
 
 

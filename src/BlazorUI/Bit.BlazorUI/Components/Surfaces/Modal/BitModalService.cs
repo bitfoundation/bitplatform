@@ -47,10 +47,28 @@ public class BitModalService
     }
 
     /// <summary>
-    /// Shows a new persistent BitModal that will persist through the lifecycle of the application until it gets shown.
+    /// Refreshes all open modals, invalidating their memoized merged parameters and re-rendering them.
+    /// Call this after mutating modal parameters in place (which doesn't change object references).
+    /// </summary>
+    public Task Refresh()
+    {
+        return _container?.Refresh() ?? Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Refreshes a specific open modal, invalidating its memoized merged parameters and re-rendering it.
+    /// Call this after mutating the parameters of a single modal in place.
+    /// </summary>
+    public Task Refresh(BitModalReference modalRef)
+    {
+        return _container?.Refresh(modalRef) ?? Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Shows a new BitModal. When <paramref name="persistent"/> is true, the modal persists through the lifecycle of the application until it gets shown.
     /// </summary>
     public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        bool persistent = false)
+        bool persistent = false) where T : IComponent
     {
         return Show<T>(null, null, persistent);
     }
@@ -59,7 +77,7 @@ public class BitModalService
     /// Shows a new BitModal with a custom component with parameters as its content.
     /// </summary>
     public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        Dictionary<string, object>? parameters, bool persistent = false)
+        Dictionary<string, object>? parameters, bool persistent = false) where T : IComponent
     {
         return Show<T>(parameters, null, persistent);
     }
@@ -68,7 +86,7 @@ public class BitModalService
     /// Shows a new BitModal with a custom component with parameters as its content.
     /// </summary>
     public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        Dictionary<string, object> parameters)
+        Dictionary<string, object> parameters) where T : IComponent
     {
         return Show<T>(parameters, null, false);
     }
@@ -77,7 +95,7 @@ public class BitModalService
     /// Shows a new BitModal with a custom component as its content with custom parameters for the modal.
     /// </summary>
     public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        BitModalParameters modalParameters)
+        BitModalParameters modalParameters) where T : IComponent
     {
         return Show<T>(null, modalParameters, false);
     }
@@ -86,7 +104,7 @@ public class BitModalService
     /// Shows a new BitModal with a custom component as its content with custom parameters for the modal.
     /// </summary>
     public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        BitModalParameters? modalParameters, bool persistent = false)
+        BitModalParameters? modalParameters, bool persistent = false) where T : IComponent
     {
         return Show<T>(null, modalParameters, persistent);
     }
@@ -97,14 +115,9 @@ public class BitModalService
     public async Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         Dictionary<string, object>? parameters,
         BitModalParameters? modalParameters,
-        bool persistent = false)
+        bool persistent = false) where T : IComponent
     {
         var componentType = typeof(T);
-
-        if (typeof(IComponent).IsAssignableFrom(componentType) is false)
-        {
-            throw new ArgumentException($"Type {componentType.Name} must be a Blazor component");
-        }
 
         var modalReference = new BitModalReference(this, persistent);
         modalReference.SetParameters(modalParameters);

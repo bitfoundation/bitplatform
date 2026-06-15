@@ -3,7 +3,7 @@
 @foreach (var modalReference in _modalRefs)
 {
     <CascadingValue Value="modalReference">
-        <CascadingValue Value="BitModalParameters.Merge(modalReference.Parameters, ModalParameters)">
+        <CascadingValue Value="GetMergedParameters(modalReference)">
             @modalReference.Modal
         </CascadingValue>
     </CascadingValue>

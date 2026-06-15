@@ -30,17 +30,17 @@ public class BitModalReference
 
 
 
-    public void SetContent(object content)
+    internal void SetContent(object content)
     {
         Content = content;
     }
 
-    public void SetModal(RenderFragment modal)
+    internal void SetModal(RenderFragment modal)
     {
         Modal = modal;
     }
 
-    public void SetParameters(BitModalParameters? parameters)
+    internal void SetParameters(BitModalParameters? parameters)
     {
         Parameters = parameters;
     }
