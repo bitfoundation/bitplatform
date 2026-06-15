@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Surfaces.Modal;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Surfaces.Modal;
 
 public partial class BitModalServiceDemo
 {
@@ -60,7 +60,7 @@ public partial class BitModalServiceDemo
     private readonly string example1RazorCode = @"
 <BitButton OnClick=""ShowModal"">Show</BitButton>
 
-<BitModalContainer ModalParameters=""@(new() { FullWidth = true })"" />";
+<BitModalContainer />";
     private readonly string example1CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
@@ -69,3 +69,4 @@ private async Task ShowModal()
     await modalService.Show<ModalContent>(new BitModalParameters() { FullWidth = true });
 }";
 }
+

@@ -310,9 +310,25 @@ public partial class BitProModal : BitComponentBase
 
     protected override void OnParametersSet()
     {
+        var previous = _params;
+
         _params = BuildParameters();
         _classes = BitProModalClassStyles.Merge(Classes, ProModalParameters.Classes);
         _styles = BitProModalClassStyles.Merge(Styles, ProModalParameters.Styles);
+
+        // The [ResetClassBuilder] attribute only resets ClassBuilder when this component's own
+        // parameters change. However, the registered class lambdas read the merged _params values,
+        // which also incorporate the cascaded BitProModalParameters. When those cascaded values are
+        // mutated in place (e.g. via BitProModalService.Refresh), no own-parameter change occurs, so
+        // the ClassBuilder would otherwise keep its cached (stale) value. Reset it here when any
+        // class-affecting merged value actually changed.
+        if (previous.ModeFull != _params.ModeFull ||
+            previous.NoBorder != _params.NoBorder ||
+            previous.AbsolutePosition != _params.AbsolutePosition ||
+            previous.Position != _params.Position)
+        {
+            ClassBuilder.Reset();
+        }
 
         base.OnParametersSet();
     }
@@ -401,16 +417,30 @@ public partial class BitProModal : BitComponentBase
     /// <see cref="BitProModalParameters"/>. The component's own values take precedence, preserving the
     /// behavior previously provided by the parameters object reading back from the component.
     /// </summary>
+    /// <remarks>
+    /// Nullable values use a simple "own value, else cascaded" precedence (<c>Own ?? p.Own</c>).
+    /// Non-nullable bools cannot distinguish "not set" from "explicitly false", so they merge
+    /// asymmetrically and the component param only expresses the "stronger" intent for that flag:
+    /// <list type="bullet">
+    /// <item>The feature flags below (<see cref="Blocking"/>, <see cref="FullHeight"/>, etc.) can only
+    /// force the behavior <b>on</b> (<c>X ? true : p.X</c>); they can never force it off, since they
+    /// default to <c>false</c> and enabling is the meaningful override.</item>
+    /// <item><see cref="BitComponentBase.IsEnabled"/> can only force the behavior <b>off</b>
+    /// (<c>X is false ? false : p.X</c>); it can never force it on, since it defaults to <c>true</c>
+    /// and disabling is the meaningful override.</item>
+    /// </list>
+    /// </remarks>
     private BitProModalParameters BuildParameters()
     {
         var p = ProModalParameters;
 
+        // Non-nullable bools below follow the "can only force on" rule (see remarks);
+        // IsEnabled is the lone "can only force off" exception.
         return new BitProModalParameters
         {
             AbsolutePosition = AbsolutePosition ? true : p.AbsolutePosition,
             AutoToggleScroll = AutoToggleScroll ? true : p.AutoToggleScroll,
             Blocking = Blocking ? true : p.Blocking,
-            Classes = Classes ?? p.Classes,
             CloseButtonTitle = CloseButtonTitle ?? p.CloseButtonTitle,
             CloseIcon = CloseIcon ?? p.CloseIcon,
             CloseIconName = CloseIconName ?? p.CloseIconName,
@@ -426,6 +456,7 @@ public partial class BitProModal : BitComponentBase
             HeaderText = HeaderText ?? p.HeaderText,
             HtmlAttributes = p.HtmlAttributes.Concat(HtmlAttributes).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
             IsAlert = IsAlert ?? p.IsAlert,
+            // Can only force off (default is enabled): the lone exception to the "force on" rule above.
             IsEnabled = IsEnabled is false ? false : p.IsEnabled,
             ModeFull = ModeFull ? true : p.ModeFull,
             Modeless = Modeless ? true : p.Modeless,
@@ -437,7 +468,6 @@ public partial class BitProModal : BitComponentBase
             ScrollerElement = ScrollerElement ?? p.ScrollerElement,
             ScrollerSelector = ScrollerSelector ?? p.ScrollerSelector,
             ShowCloseButton = ShowCloseButton ? true : p.ShowCloseButton,
-            Styles = Styles ?? p.Styles,
             SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
             TitleAriaId = TitleAriaId ?? p.TitleAriaId,
         };

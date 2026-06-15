@@ -63,8 +63,11 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     /// </summary>
     public Task Refresh()
     {
-        _mergedParametersCache.Clear();
-        return InvokeAsync(StateHasChanged);
+        return InvokeAsync(() =>
+        {
+            _mergedParametersCache.Clear();
+            StateHasChanged();
+        });
     }
 
     /// <summary>
@@ -73,8 +76,11 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
     /// </summary>
     public Task Refresh(TReference modalRef)
     {
-        _mergedParametersCache.Remove(modalRef);
-        return InvokeAsync(StateHasChanged);
+        return InvokeAsync(() =>
+        {
+            _mergedParametersCache.Remove(modalRef);
+            StateHasChanged();
+        });
     }
 
 

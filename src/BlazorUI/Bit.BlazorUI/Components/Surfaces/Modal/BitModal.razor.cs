@@ -161,7 +161,27 @@ public partial class BitModal : BitComponentBase
 
     protected override void OnParametersSet()
     {
+        var previous = _params;
+
         _params = BuildParameters();
+
+        // The [ResetClassBuilder] attribute only resets ClassBuilder when this component's own
+        // parameters change. However, the registered class/style lambdas read the merged _params
+        // values, which also incorporate the cascaded BitModalParameters. When those cascaded values
+        // are mutated in place (e.g. via BitModalService.Refresh), no own-parameter change occurs, so
+        // the builders would otherwise keep their cached (stale) values. Reset them here when any
+        // class/style-affecting merged value actually changed.
+        if (previous.FullHeight != _params.FullHeight ||
+            previous.FullWidth != _params.FullWidth ||
+            ReferenceEquals(previous.Classes, _params.Classes) is false)
+        {
+            ClassBuilder.Reset();
+        }
+
+        if (ReferenceEquals(previous.Styles, _params.Styles) is false)
+        {
+            StyleBuilder.Reset();
+        }
 
         base.OnParametersSet();
     }
@@ -205,23 +225,41 @@ public partial class BitModal : BitComponentBase
     /// <see cref="BitModalParameters"/>. The component's own values take precedence, preserving the
     /// behavior previously provided by the parameters object reading back from the component.
     /// </summary>
+    /// <remarks>
+    /// Nullable values use a simple "own value, else cascaded" precedence (<c>Own ?? p.Own</c>).
+    /// Non-nullable bools cannot distinguish "not set" from "explicitly false", so they merge
+    /// asymmetrically and the component param only expresses the "stronger" intent for that flag:
+    /// <list type="bullet">
+    /// <item><see cref="Blocking"/>, <see cref="FullHeight"/>, <see cref="FullWidth"/>: the component
+    /// param can only force the behavior <b>on</b> (<c>X ? true : p.X</c>); it can never force it off.</item>
+    /// <item><see cref="AriaModal"/>, <see cref="ShowOverlay"/>, <see cref="BitComponentBase.IsEnabled"/>:
+    /// the component param can only force the behavior <b>off</b> (<c>X is false ? false : p.X</c>); it
+    /// can never force it on. These default to <c>true</c>, so opting out is the meaningful override.</item>
+    /// </list>
+    /// </remarks>
     private BitModalParameters BuildParameters()
     {
         var p = ModalParameters;
 
         return new BitModalParameters
         {
+            // Can only force off (default is enabled): see remarks on asymmetric merge.
             IsEnabled = IsEnabled is false ? false : p.IsEnabled,
             HtmlAttributes = p.HtmlAttributes.Concat(HtmlAttributes).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
             Dir = Dir ?? p.Dir,
+            // Can only force off (default is enabled): see remarks on asymmetric merge.
             AriaModal = AriaModal is false ? false : p.AriaModal,
+            // Can only force on (default is off): see remarks on asymmetric merge.
             Blocking = Blocking ? true : p.Blocking,
             Classes = p.Classes,
+            // Can only force on (default is off): see remarks on asymmetric merge.
             FullHeight = FullHeight ? true : p.FullHeight,
+            // Can only force on (default is off): see remarks on asymmetric merge.
             FullWidth = FullWidth ? true : p.FullWidth,
             IsAlert = IsAlert ?? p.IsAlert,
             OnDismiss = _onDismiss,
             OnOverlayClick = _onOverlayClick,
+            // Can only force off (default is enabled): see remarks on asymmetric merge.
             ShowOverlay = ShowOverlay is false ? false : p.ShowOverlay,
             Styles = p.Styles,
             SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
