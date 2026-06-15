@@ -43,8 +43,8 @@ You can use the following PowerShell script to quickly provision the required Az
 # ----------------------------------------------------
 $currentContext = Get-AzContext
 if (-not $currentContext) {
-    Write-Error "No Azure login detected! Please run 'Connect-AzAccount' first, then rerun this script."
-    break
+    Write-Error "No Azure login detected! Please run 'Connect-AzAccount' first, then rerun this script."
+    break
 }
 
 # ----------------------------------------------------
@@ -78,23 +78,24 @@ $passwordObj.EndDateTime = $now.AddYears($durationInYears)
 
 # Pass it into the cmdlet as an array argument to -PasswordCredentials
 $secretCredential = New-AzADAppCredential `
-    -ApplicationId $azureAdApp.AppId `
-    -PasswordCredentials @($passwordObj)
+    -ApplicationId $azureAdApp.AppId `
+    -PasswordCredentials @($passwordObj)
 
 $clientSecretText = $secretCredential.SecretText
 
 # ----------------------------------------------------
-# 4. ASSIGN RBAC PERMISSIONS (READER ROLE)
+# 4. ASSIGN RBAC PERMISSIONS (LOG ANALYTICS READER ROLE)
 # ----------------------------------------------------
 $subscriptionId = $currentContext.Subscription.Id
 $tenantId = $currentContext.Tenant.Id
 
-Write-Host "Assigning 'Reader' role to the Service Principal on Subscription: $subscriptionId..." -ForegroundColor Cyan
+# FIX: Changed "Reader" to "Log Analytics Reader" to restrict access strictly to monitoring data
+Write-Host "Assigning 'Log Analytics Reader' role to the Service Principal on Subscription: $subscriptionId..." -ForegroundColor Cyan
 
 New-AzRoleAssignment `
-    -ObjectId $servicePrincipal.Id `
-    -RoleDefinitionName "Reader" `
-    -Scope "/subscriptions/$subscriptionId"
+    -ObjectId $servicePrincipal.Id `
+    -RoleDefinitionName "Log Analytics Reader" `
+    -Scope "/subscriptions/$subscriptionId"
 
 # ----------------------------------------------------
 # 5. OUTPUT CONFIGURATION FOR GRAFANA
@@ -105,26 +106,26 @@ Write-Host "====================================================" -ForegroundCol
 Write-Host "Authentication Method : App Registration (client secret)"
 Write-Host "Directory (tenant) ID : $tenantId"
 Write-Host "Application (client) ID: $($azureAdApp.AppId)"
-Write-Host "Client Secret         : $clientSecretText"
-Write-Host "Default Subscription  : $subscriptionId"
+Write-Host "Client Secret         : $clientSecretText"
+Write-Host "Default Subscription  : $subscriptionId"
 Write-Host "====================================================`n"
 
 $yamlOutput = @"
 apiVersion: 1
 
 datasources:
-  - name: Azure Monitor
-    type: grafana-azure-monitor-datasource
-    access: proxy
-    jsonData:
-      azureAuthType: clientsecret
-      cloudName: azuremonitor
-      tenantId: $tenantId
-      clientId: $($azureAdApp.AppId)
-      subscriptionId: $subscriptionId
-    secureJsonData:
-      clientSecret: $clientSecretText
-    version: 1
+  - name: Azure Monitor
+    type: grafana-azure-monitor-datasource
+    access: proxy
+    jsonData:
+      azureAuthType: clientsecret
+      cloudName: azuremonitor
+      tenantId: $tenantId
+      clientId: $($azureAdApp.AppId)
+      subscriptionId: $subscriptionId
+    secureJsonData:
+      clientSecret: $clientSecretText
+    version: 1
 "@
 
 Write-Host "Or if you use Grafana Provisioning, save this snippet as a YAML file:" -ForegroundColor Cyan
