@@ -3,7 +3,7 @@
 
 @if (IsOpen)
 {
-    <div @ref="RootElement" @attributes="HtmlAttributes.Concat(_params.HtmlAttributes)"
+    <div @ref="RootElement" @attributes="_params.HtmlAttributes"
          id="@_Id"
          style="@StyleBuilder.Value"
          class="@ClassBuilder.Value"

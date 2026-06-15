@@ -208,20 +208,20 @@ public class BitProModalParameters
             ModeFull = params1.ModeFull ?? params2.ModeFull,
             Modeless = params1.Modeless ?? params2.Modeless,
             NoBorder = params1.NoBorder ?? params2.NoBorder,
-            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(new object(), async () =>
+            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
             {
-                await params1.OnDismiss.InvokeAsync();
-                await params2.OnDismiss.InvokeAsync();
+                await params1.OnDismiss.InvokeAsync(e);
+                await params2.OnDismiss.InvokeAsync(e);
             }),
             OnOpen = EventCallback.Factory.Create(new object(), async () =>
             {
                 await params1.OnOpen.InvokeAsync();
                 await params2.OnOpen.InvokeAsync();
             }),
-            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(new object(), async () =>
+            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
             {
-                await params1.OnOverlayClick.InvokeAsync();
-                await params2.OnOverlayClick.InvokeAsync();
+                await params1.OnOverlayClick.InvokeAsync(e);
+                await params2.OnOverlayClick.InvokeAsync(e);
             }),
             Position = params1.Position ?? params2.Position,
             ScrollerElement = params1.ScrollerElement ?? params2.ScrollerElement,

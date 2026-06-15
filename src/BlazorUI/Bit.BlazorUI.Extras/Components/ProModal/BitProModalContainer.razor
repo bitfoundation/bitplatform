@@ -1,8 +1,9 @@
 @namespace Bit.BlazorUI
+@inherits BitModalContainerBase<BitProModalReference, BitProModalParameters>
 
 @foreach (var modalReference in _modalRefs)
 {
-    <CascadingValue Value="modalReference">
+    <CascadingValue @key="modalReference.Id" Value="modalReference">
         <CascadingValue Value="GetMergedParameters(modalReference)">
             @modalReference.Modal
         </CascadingValue>

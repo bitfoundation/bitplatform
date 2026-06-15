@@ -13,6 +13,15 @@ public partial class BitProModal : BitComponentBase
     private bool _internalIsOpen;
     private float _offsetTop;
 
+    // Stable EventCallback wrappers created once (in OnInitialized) instead of on every
+    // BuildParameters call. Re-creating them per render produced new delegate instances each
+    // time, which Blazor's change detection treats as changed parameters, defeating change
+    // detection on the inner BitModal. Their bodies read the current property / cascaded
+    // parameter values at invoke time, so they remain correct while staying reference-stable.
+    private EventCallback _onOpen;
+    private EventCallback<MouseEventArgs> _onDismiss;
+    private EventCallback<MouseEventArgs> _onOverlayClick;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -23,7 +32,7 @@ public partial class BitProModal : BitComponentBase
     [CascadingParameter]
     private BitProModalParameters? ProModalParameters
     {
-        // Tolerate a null cascading value (e.g. ModalParameters="null"): fall back to a fresh
+        // Tolerate a null cascading value (e.g. ProModalParameters="null"): fall back to a fresh
         // instance so downstream consumers (_classes, _styles, BuildParameters) never NRE.
         get => _proModalParameters;
         set => _proModalParameters = value ?? new();
@@ -33,6 +42,12 @@ public partial class BitProModal : BitComponentBase
     // BitProModalParameters (the latter supplied by the BitProModalService). The component's
     // own parameters take precedence. This is rebuilt in OnParametersSet whenever either source changes.
     private BitProModalParameters _params = new();
+
+    // The merged class/style maps used by the razor. These are computed once per
+    // OnParametersSet (like _params) instead of on every property access, since the
+    // razor reads them many times per render and Merge allocates a new object each call.
+    private BitProModalClassStyles? _classes;
+    private BitProModalClassStyles? _styles;
 
 
 
@@ -271,12 +286,33 @@ public partial class BitProModal : BitComponentBase
 
     protected override void OnInitialized()
     {
+        // Create the event callbacks once. They read the current OnXxx properties and the
+        // cascaded ProModalParameters at invoke time, so they stay correct without being
+        // rebuilt every render.
+        _onDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+        {
+            await OnDismiss.InvokeAsync();
+            await ProModalParameters!.OnDismiss.InvokeAsync();
+        });
+        _onOpen = EventCallback.Factory.Create(this, async () =>
+        {
+            await OnOpen.InvokeAsync();
+            await ProModalParameters!.OnOpen.InvokeAsync();
+        });
+        _onOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+        {
+            await OnOverlayClick.InvokeAsync();
+            await ProModalParameters!.OnOverlayClick.InvokeAsync();
+        });
+
         base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
         _params = BuildParameters();
+        _classes = BitProModalClassStyles.Merge(Classes, ProModalParameters.Classes);
+        _styles = BitProModalClassStyles.Merge(Styles, ProModalParameters.Styles);
 
         base.OnParametersSet();
     }
@@ -334,9 +370,6 @@ public partial class BitProModal : BitComponentBase
     private string _containerSelector => $"#{_modalId} .bit-mdl-ctn";
     private string _dragElementSelector => _params.DragElementSelector ?? _containerSelector;
 
-    private BitProModalClassStyles? _classes => BitProModalClassStyles.Merge(Classes, ProModalParameters.Classes);
-    private BitProModalClassStyles? _styles => BitProModalClassStyles.Merge(Styles, ProModalParameters.Styles);
-
     private async Task HandleInnerIsOpenChanged(bool open)
     {
         await AssignIsOpen(open);
@@ -391,27 +424,15 @@ public partial class BitProModal : BitComponentBase
             FullWidth = FullWidth ? true : p.FullWidth,
             Header = Header ?? p.Header,
             HeaderText = HeaderText ?? p.HeaderText,
-            HtmlAttributes = HtmlAttributes,
+            HtmlAttributes = p.HtmlAttributes.Concat(HtmlAttributes).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
             IsAlert = IsAlert ?? p.IsAlert,
             IsEnabled = IsEnabled is false ? false : p.IsEnabled,
             ModeFull = ModeFull ? true : p.ModeFull,
             Modeless = Modeless ? true : p.Modeless,
             NoBorder = NoBorder ? true : p.NoBorder,
-            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
-            {
-                await OnDismiss.InvokeAsync();
-                await p.OnDismiss.InvokeAsync();
-            }),
-            OnOpen = EventCallback.Factory.Create(this, async () =>
-            {
-                await OnOpen.InvokeAsync();
-                await p.OnOpen.InvokeAsync();
-            }),
-            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
-            {
-                await OnOverlayClick.InvokeAsync();
-                await p.OnOverlayClick.InvokeAsync();
-            }),
+            OnDismiss = _onDismiss,
+            OnOpen = _onOpen,
+            OnOverlayClick = _onOverlayClick,
             Position = Position ?? p.Position,
             ScrollerElement = ScrollerElement ?? p.ScrollerElement,
             ScrollerSelector = ScrollerSelector ?? p.ScrollerSelector,

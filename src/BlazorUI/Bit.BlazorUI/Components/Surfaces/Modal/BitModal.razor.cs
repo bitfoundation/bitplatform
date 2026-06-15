@@ -14,6 +14,14 @@ public partial class BitModal : BitComponentBase
     private bool _internalIsOpen;
     private string _containerId = default!;
 
+    // Stable EventCallback wrappers created once (in OnInitialized) instead of on every
+    // BuildParameters call. These are only invoked internally (not passed to a child), so
+    // re-creating them per render did not defeat change detection, but it did allocate two
+    // closures each OnParametersSet. Their bodies read the current property / cascaded
+    // parameter values at invoke time, so they remain correct while avoiding the allocations.
+    private EventCallback<MouseEventArgs> _onDismiss;
+    private EventCallback<MouseEventArgs> _onOverlayClick;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -134,6 +142,20 @@ public partial class BitModal : BitComponentBase
     {
         _containerId = $"BitModal-{UniqueId}-container";
 
+        // Create the event callbacks once. They read the current OnXxx properties and the
+        // cascaded ModalParameters at invoke time, so they stay correct without being rebuilt
+        // every render.
+        _onDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+        {
+            await OnDismiss.InvokeAsync();
+            await ModalParameters!.OnDismiss.InvokeAsync();
+        });
+        _onOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+        {
+            await OnOverlayClick.InvokeAsync();
+            await ModalParameters!.OnOverlayClick.InvokeAsync();
+        });
+
         base.OnInitialized();
     }
 
@@ -161,7 +183,7 @@ public partial class BitModal : BitComponentBase
 
         await _params.OnOverlayClick.InvokeAsync(e);
 
-        if (Blocking) return;
+        if (_params.Blocking ?? false) return;
 
         if (await AssignIsOpen(false) is false) return;
     }
@@ -190,7 +212,7 @@ public partial class BitModal : BitComponentBase
         return new BitModalParameters
         {
             IsEnabled = IsEnabled is false ? false : p.IsEnabled,
-            HtmlAttributes = HtmlAttributes,
+            HtmlAttributes = p.HtmlAttributes.Concat(HtmlAttributes).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
             Dir = Dir ?? p.Dir,
             AriaModal = AriaModal is false ? false : p.AriaModal,
             Blocking = Blocking ? true : p.Blocking,
@@ -198,16 +220,8 @@ public partial class BitModal : BitComponentBase
             FullHeight = FullHeight ? true : p.FullHeight,
             FullWidth = FullWidth ? true : p.FullWidth,
             IsAlert = IsAlert ?? p.IsAlert,
-            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
-            {
-                await OnDismiss.InvokeAsync();
-                await p.OnDismiss.InvokeAsync();
-            }),
-            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
-            {
-                await OnOverlayClick.InvokeAsync();
-                await p.OnOverlayClick.InvokeAsync();
-            }),
+            OnDismiss = _onDismiss,
+            OnOverlayClick = _onOverlayClick,
             ShowOverlay = ShowOverlay is false ? false : p.ShowOverlay,
             Styles = p.Styles,
             SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
