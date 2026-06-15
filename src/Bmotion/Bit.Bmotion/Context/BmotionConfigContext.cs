@@ -16,18 +16,16 @@ public class BmotionConfigContext
 
     /// <summary>
     /// Scale factor applied to all animation durations. 0 = instant, 2 = half speed
-    /// (durations are multiplied by this factor). Default: 1. Negative values are rejected.
+    /// (durations are multiplied by this factor). Default: 1.
+    /// <para>
+    /// Negative and non-finite (NaN/Infinity) values are coerced to <c>0</c> rather than throwing,
+    /// so a bad binding can never crash a render. This matches <see cref="BmotionConfig"/>'s behaviour.
+    /// </para>
     /// </summary>
     public double TransitionSpeed
     {
         get => _transitionSpeed;
-        set
-        {
-            if (!double.IsFinite(value) || value < 0)
-                throw new ArgumentOutOfRangeException(nameof(value), value,
-                    "TransitionSpeed must be a finite, non-negative number.");
-            _transitionSpeed = value;
-        }
+        set => _transitionSpeed = double.IsFinite(value) && value >= 0 ? value : 0;
     }
     private double _transitionSpeed = 1.0;
 }

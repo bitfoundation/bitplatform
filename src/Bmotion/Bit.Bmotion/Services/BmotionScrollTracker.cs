@@ -5,21 +5,34 @@ namespace Bit.Bmotion;
 /// Tracks scroll progress (0–1) for a container element or the window.
 /// Analogous to Framer Motion's <c>useScroll</c>.
 ///
+/// <para>
+/// <b>Lifetime / disposal:</b> this service is registered <c>Transient</c> and is meant to be
+/// owned by a single component. When injected with <c>@inject</c>, Blazor resolves it from the
+/// root scope and only disposes it at app shutdown - so the <b>consuming component must dispose it
+/// explicitly</b> (implement <see cref="IAsyncDisposable"/> and call <see cref="DisposeAsync"/> in
+/// the component's <c>DisposeAsync</c>), otherwise its JS scroll subscription and
+/// <c>DotNetObjectReference</c> leak until the app ends. The reference is created lazily, so an
+/// injected-but-unused tracker holds no JS resources.
+/// </para>
+///
 /// Usage:
 /// <code>
+/// @implements IAsyncDisposable
 /// @inject BmotionScrollTracker Scroll
 ///
 /// protected override async Task OnAfterRenderAsync(bool firstRender)
 /// {
 ///     if (firstRender) await Scroll.ObserveAsync(null, info => scrollY = info.ProgressY);
 /// }
+///
+/// public ValueTask DisposeAsync() => Scroll.DisposeAsync();
 /// </code>
 /// </summary>
 public sealed class BmotionScrollTracker : IAsyncDisposable
 {
     private readonly BmotionInterop _interop;
     private readonly List<string> _subscriptionKeys = new();
-    private readonly DotNetObjectReference<BmotionScrollTracker> _dotnet;
+    private DotNetObjectReference<BmotionScrollTracker>? _dotnet;
 
     private Func<BmotionScrollInfo, Task>? _onScroll;
     private bool _disposed;
@@ -27,8 +40,11 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
     public BmotionScrollTracker(BmotionInterop interop)
     {
         _interop = interop;
-        _dotnet  = DotNetObjectReference.Create(this);
     }
+
+    // Created on first use so an injected-but-unused tracker doesn't allocate a JS-object reference.
+    private DotNetObjectReference<BmotionScrollTracker> Dotnet
+        => _dotnet ??= DotNetObjectReference.Create(this);
     /// <summary>Horizontal scroll progress 0–1.</summary>
     public double ProgressX { get; private set; }
 
@@ -54,7 +70,7 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
         _subscriptionKeys.Clear();
 
         _onScroll = onChange;
-        var key = await _interop.ObserveScrollAsync(containerId, _dotnet!);
+        var key = await _interop.ObserveScrollAsync(containerId, Dotnet);
         if (key != null) _subscriptionKeys.Add(key);
     }
 

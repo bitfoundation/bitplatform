@@ -32,7 +32,8 @@
     {
         _ctx.DefaultTransition  = Transition;
         _ctx.ReduceMotion       = ReduceMotion;
-        // Reject negative and non-finite (NaN/Infinity) speeds, which would corrupt duration math.
-        _ctx.TransitionSpeed    = double.IsFinite(TransitionSpeed) && TransitionSpeed >= 0 ? TransitionSpeed : 0;
+        // The context setter coerces negative / non-finite (NaN/Infinity) speeds to 0, so a bad
+        // binding can't corrupt duration math or crash the render.
+        _ctx.TransitionSpeed    = TransitionSpeed;
     }
 }

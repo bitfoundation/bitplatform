@@ -35,10 +35,18 @@ internal sealed class BmotionElementAnimationState
     private BmotionTransitionConfig? _baseTransition;
 
     // ── Animation completion tracking ─────────────────────────────────────────
-    // Result flag: true = animation finished naturally (or was snapped to its end via
-    // CompleteAll); false = it was superseded by a new animation or cancelled. Callers use the
-    // flag to avoid raising "complete" callbacks for interrupted animations.
-    private TaskCompletionSource<bool>? _completionSource;
+    // Each AnimateTo call that carries a TaskCompletionSource registers a "batch": the set of
+    // property keys that call is animating. The batch resolves true only when every one of its
+    // keys finishes naturally; it resolves false if any of its keys is superseded or cancelled.
+    // Tracking per-batch (rather than a single per-element source) means overlapping animations on
+    // different properties of the same element no longer resolve each other prematurely.
+    private sealed class CompletionBatch
+    {
+        public required TaskCompletionSource<bool> Source { get; init; }
+        public required HashSet<string> Keys { get; init; }
+        public bool Interrupted { get; set; }
+    }
+    private readonly List<CompletionBatch> _batches = new();
 
     // ── Drag state ────────────────────────────────────────────────────────────
     private bool _isDragging;
@@ -46,6 +54,12 @@ internal sealed class BmotionElementAnimationState
     // ── Dirty flags for CSS build ─────────────────────────────────────────────
     private bool _transformDirty;
     private readonly HashSet<string> _dirtyProps = new();
+
+    // Transform writes are paused while a WAAPI FLIP layout animation owns the element's
+    // transform, so the rAF engine doesn't fight (and visually tear) the layout animation.
+    // The window is measured against Tick timestamps so no extra timer/interop is needed.
+    private double _transformSuspendMs;
+    private double _transformSuspendStart = -1;
 
     // Reused across frames to avoid allocating a fresh CSS-update dictionary every rAF tick.
     // Safe because the synchronous JS interop marshals the returned dictionary before the next
@@ -77,14 +91,10 @@ internal sealed class BmotionElementAnimationState
 
         if (completed != null)
             foreach (var key in completed)
+            {
                 _activeAnims.Remove(key);
-
-        // Signal awaiter if all finished
-        if (_completionSource != null && _activeAnims.Count == 0)
-        {
-            _completionSource.TrySetResult(true); // natural completion
-            _completionSource = null;
-        }
+                NotePropFinished(key, interrupted: false); // natural completion
+            }
 
         if (!_transformDirty && _dirtyProps.Count == 0) return null;
 
@@ -92,7 +102,11 @@ internal sealed class BmotionElementAnimationState
         var updates = _updateBuffer;
         updates.Clear();
 
-        if (_transformDirty)
+        // While a FLIP layout animation owns the transform, hold transform writes back so the two
+        // animators don't fight; the dirty flag is preserved so the latest transform is flushed
+        // the moment the suspension window ends.
+        bool transformSuspended = IsTransformSuspended(timestamp);
+        if (_transformDirty && !transformSuspended)
             updates["transform"] = BmotionTransformComposer.Build(Transforms);
 
         foreach (var prop in _dirtyProps)
@@ -130,11 +144,71 @@ internal sealed class BmotionElementAnimationState
             }
         }
 
-        // Reset dirty flags now that this frame's changes have been emitted.
-        _transformDirty = false;
+        // Reset dirty flags now that this frame's changes have been emitted. The transform flag is
+        // kept set while suspended so the pending transform flushes once the FLIP window ends.
+        if (!transformSuspended) _transformDirty = false;
         _dirtyProps.Clear();
 
         return updates.Count > 0 ? updates : null;
+    }
+
+    // ── Transform suspension (used by FLIP layout animations) ─────────────────
+
+    /// <summary>Pause rAF transform writes for <paramref name="durationMs"/> (measured from the next tick).</summary>
+    internal void SuspendTransformWrites(double durationMs)
+    {
+        if (durationMs <= 0) return;
+        _transformSuspendMs = durationMs;
+        _transformSuspendStart = -1; // armed on the next tick
+    }
+
+    private bool IsTransformSuspended(double timestamp)
+    {
+        if (_transformSuspendMs <= 0) return false;
+        if (_transformSuspendStart < 0) _transformSuspendStart = timestamp;
+        if (timestamp - _transformSuspendStart < _transformSuspendMs) return true;
+        // Window elapsed - clear so transforms resume.
+        _transformSuspendMs = 0;
+        _transformSuspendStart = -1;
+        return false;
+    }
+
+    /// <summary>
+    /// Builds a full snapshot of the element's current CSS (transform + numeric + string + path
+    /// values), regardless of dirty flags. Used to re-flush live styles to the DOM after a Blazor
+    /// re-render rewrites the element's <c>style</c> attribute.
+    /// </summary>
+    internal Dictionary<string, string>? BuildSnapshotStyles()
+    {
+        var d = new Dictionary<string, string>();
+
+        if (Transforms.Count > 0)
+        {
+            var tr = BmotionTransformComposer.Build(Transforms);
+            if (!string.IsNullOrEmpty(tr)) d["transform"] = tr;
+        }
+
+        bool hasPath = NumericValues.ContainsKey("pathLength")
+                    || NumericValues.ContainsKey("pathSpacing")
+                    || NumericValues.ContainsKey("pathOffset");
+        if (hasPath)
+        {
+            double len = Math.Clamp(NumericValues.GetValueOrDefault("pathLength", 1.0), 0, 1);
+            double spacing = NumericValues.GetValueOrDefault("pathSpacing", 1.0);
+            double offset = NumericValues.GetValueOrDefault("pathOffset", 0.0);
+            d["strokeDasharray"] = BmotionCssFormat.Num(len) + " " + BmotionCssFormat.Num(spacing);
+            d["strokeDashoffset"] = BmotionCssFormat.Num(1 - len - offset);
+        }
+
+        foreach (var (prop, value) in NumericValues)
+        {
+            if (prop is "pathLength" or "pathSpacing" or "pathOffset") continue;
+            d[prop] = BmotionCssFormat.Num(value);
+        }
+        foreach (var (prop, value) in StringValues)
+            d[prop] = value;
+
+        return d.Count > 0 ? d : null;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -152,18 +226,19 @@ internal sealed class BmotionElementAnimationState
             if (v != null) { any = true; break; }
         if (!any) { completionSource?.TrySetResult(true); return; }
 
-        // Complete any previously-pending awaiter so callers aren't stranded when a
-        // new animation supersedes the old one. The old one resolves with false so its
-        // completion callback (OnAnimationComplete) is suppressed - it was interrupted.
-        if (_completionSource != null && !ReferenceEquals(_completionSource, completionSource))
-            _completionSource.TrySetResult(false);
-        _completionSource = completionSource;
+        // Track which keys actually get an active driver so the completion batch only waits on
+        // animations that can finish (keys that snap instantly resolve immediately).
+        HashSet<string>? driverKeys = completionSource != null ? new HashSet<string>() : null;
+        int activeBefore;
 
         foreach (var (key, value) in values)
         {
             if (value == null) continue;
             var perKey = transition?.Properties?.GetValueOrDefault(key) ?? transition ?? new BmotionTransitionConfig();
+            // Superseding an in-flight driver for this key interrupts any completion batch that
+            // owned it (resolves that batch with false once its remaining keys settle).
             CancelProp(key);
+            activeBefore = _activeAnims.Count;
 
             if (TryGetDoubleArray(value, out double[]? doubleFrames))
             {
@@ -194,8 +269,24 @@ internal sealed class BmotionElementAnimationState
                 StringValues[key] = otherFrames[^1];
                 _dirtyProps.Add(key);
             }
+            else if (TryConvertToDouble(value, out double numeric))
+                CreateNumericDriver(key, numeric, perKey);
+            // else: an unconvertible value (e.g. an arbitrary object in a user Keyframes dict) is
+            // skipped rather than throwing - a bad value can't take down the init / event path.
+
+            // Record the key if this iteration created a live driver for the completion batch.
+            if (driverKeys != null && _activeAnims.Count > activeBefore && _activeAnims.ContainsKey(key))
+                driverKeys.Add(key);
+        }
+
+        // Register the completion batch (if any): it resolves once every key that got a driver
+        // finishes. If nothing animates (all snapped instantly), resolve immediately.
+        if (completionSource != null)
+        {
+            if (driverKeys is { Count: > 0 })
+                _batches.Add(new CompletionBatch { Source = completionSource, Keys = driverKeys });
             else
-                CreateNumericDriver(key, Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture), perKey);
+                completionSource.TrySetResult(true);
         }
     }
 
@@ -209,8 +300,11 @@ internal sealed class BmotionElementAnimationState
             CancelProp(key);
             if (BmotionTransformComposer.IsTransformProp(key))
             {
-                Transforms[key] = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
-                _transformDirty = true;
+                if (TryConvertToDouble(value, out double tv))
+                {
+                    Transforms[key] = tv;
+                    _transformDirty = true;
+                }
             }
             else if (IsColorProp(key) && value is string colorStr)
             {
@@ -222,9 +316,9 @@ internal sealed class BmotionElementAnimationState
                 StringValues[key] = dimStr;
                 _dirtyProps.Add(key);
             }
-            else
+            else if (TryConvertToDouble(value, out double nv))
             {
-                NumericValues[key] = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
+                NumericValues[key] = nv;
                 _dirtyProps.Add(key);
             }
         }
@@ -236,15 +330,10 @@ internal sealed class BmotionElementAnimationState
             CancelAll();
         else
         {
+            // CancelProp interrupts any completion batch that owns the property, so callers of
+            // AnimateToAwaitAsync resolve (with false) instead of hanging forever.
             foreach (var p in properties)
                 CancelProp(p);
-            // If those were the only running animations, resolve any pending awaiter so callers
-            // of AnimateToAwaitAsync don't hang forever (matches CancelAll's behaviour).
-            if (_activeAnims.Count == 0 && _completionSource != null)
-            {
-                _completionSource.TrySetResult(false); // cancelled, not completed
-                _completionSource = null;
-            }
         }
     }
 
@@ -253,8 +342,7 @@ internal sealed class BmotionElementAnimationState
         foreach (var driver in _activeAnims.Values)
             driver.Cancel();
         _activeAnims.Clear();
-        _completionSource?.TrySetResult(false); // cancelled, not completed
-        _completionSource = null;
+        ResolveAllBatches(false); // cancelled, not completed
     }
 
     /// <summary>
@@ -267,8 +355,7 @@ internal sealed class BmotionElementAnimationState
         foreach (var driver in _activeAnims.Values)
             driver.Complete();
         _activeAnims.Clear();
-        _completionSource?.TrySetResult(true); // snapped to end values = completed
-        _completionSource = null;
+        ResolveAllBatches(true); // snapped to end values = completed
     }
 
     internal void CancelProp(string key)
@@ -277,6 +364,50 @@ internal sealed class BmotionElementAnimationState
         {
             driver.Cancel();
             _activeAnims.Remove(key);
+            NotePropFinished(key, interrupted: true); // cancelled / superseded
+        }
+    }
+
+    // ── Completion-batch bookkeeping ──────────────────────────────────────────
+
+    /// <summary>
+    /// Records that <paramref name="key"/> is no longer animating. Removes it from any pending
+    /// completion batch; a batch resolves once all its keys are gone (true only if none of them
+    /// were interrupted - i.e. every key finished naturally).
+    /// </summary>
+    private void NotePropFinished(string key, bool interrupted)
+    {
+        for (int i = _batches.Count - 1; i >= 0; i--)
+        {
+            var b = _batches[i];
+            if (!b.Keys.Remove(key)) continue;
+            if (interrupted) b.Interrupted = true;
+            if (b.Keys.Count == 0)
+            {
+                b.Source.TrySetResult(!b.Interrupted);
+                _batches.RemoveAt(i);
+            }
+        }
+    }
+
+    private void ResolveAllBatches(bool result)
+    {
+        foreach (var b in _batches)
+            b.Source.TrySetResult(result);
+        _batches.Clear();
+    }
+
+    private static bool TryConvertToDouble(object value, out double result)
+    {
+        try
+        {
+            result = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
+            return true;
+        }
+        catch (Exception e) when (e is FormatException or InvalidCastException or OverflowException)
+        {
+            result = 0;
+            return false;
         }
     }
 

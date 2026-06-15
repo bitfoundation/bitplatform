@@ -45,6 +45,10 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         try
         {
             OsPrefersReducedMotion = await _interop.PrefersReducedMotionAsync();
+            // Subscribe to live OS changes so toggling prefers-reduced-motion at runtime is honoured
+            // (the value was previously cached for the engine's whole lifetime).
+            _dotnet ??= DotNetObjectReference.Create(this);
+            await _interop.WatchReducedMotionAsync(_dotnet);
         }
         catch
         {
@@ -53,6 +57,10 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             OsPrefersReducedMotion = false;
         }
     }
+
+    /// <summary>JS → C# callback fired when the OS <c>prefers-reduced-motion</c> setting changes.</summary>
+    [JSInvokable]
+    public void OnReducedMotionChanged(bool prefersReduced) => OsPrefersReducedMotion = prefersReduced;
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Element lifecycle
@@ -144,9 +152,27 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             // Kick the loop for a single frame so the change is flushed to the DOM even when
             // the element is otherwise at rest (an instant Set has dirty values but no active
             // animation, so without this it would never be emitted).
-            _ = EnsureLoopRunningAsync();
+            KickLoop();
         }
     }
+
+    /// <summary>
+    /// Pauses rAF transform writes for an element for <paramref name="durationMs"/> so a WAAPI FLIP
+    /// layout animation can own the transform without the engine fighting it each frame.
+    /// </summary>
+    public void SuspendTransformWrites(string elementId, double durationMs)
+    {
+        if (_elements.TryGetValue(elementId, out var state))
+            state.SuspendTransformWrites(durationMs);
+    }
+
+    /// <summary>
+    /// Returns a snapshot of the element's current CSS declarations (transform + numeric + string +
+    /// path values), or <c>null</c> when the element is unknown. Used to re-flush live styles after
+    /// a Blazor re-render rewrites the element's <c>style</c> attribute.
+    /// </summary>
+    public Dictionary<string, string>? GetCurrentStyles(string elementId)
+        => _elements.TryGetValue(elementId, out var state) ? state.BuildSnapshotStyles() : null;
 
     /// <summary>Returns <c>true</c> if an element is currently registered with the engine.</summary>
     public bool IsRegistered(string elementId) => _elements.ContainsKey(elementId);
@@ -160,7 +186,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         if (_elements.TryGetValue(elementId, out var state))
         {
             state.CompleteAll();
-            _ = EnsureLoopRunningAsync();
+            KickLoop();
         }
     }
 
@@ -400,6 +426,22 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         _ = _interop.StopRafLoopAsync(_dotnet);
     }
 
+    /// <summary>
+    /// Fire-and-forget loop start that observes (and swallows) any fault. Used by synchronous entry
+    /// points (Set / SetInstant / Complete) so an unsupported-platform throw can't surface as an
+    /// unobserved task exception.
+    /// </summary>
+    private void KickLoop()
+    {
+        _ = KickLoopAsync();
+
+        async Task KickLoopAsync()
+        {
+            try { await EnsureLoopRunningAsync(); }
+            catch { /* loop start is best-effort here; awaited entry points surface real errors */ }
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
         foreach (var (_, state) in _elements)
@@ -413,6 +455,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         if (_dotnet != null)
         {
             try { await _interop.StopRafLoopAsync(_dotnet); } catch { /* ignore during teardown */ }
+            try { await _interop.UnwatchReducedMotionAsync(_dotnet); } catch { /* ignore during teardown */ }
             _dotnet.Dispose();
             _dotnet = null;
         }

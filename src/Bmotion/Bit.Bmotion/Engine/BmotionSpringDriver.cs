@@ -54,7 +54,7 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
         _currentDelayMs = config.Delay * 1000;
         _repeatDelayMs = config.RepeatDelay * 1000;
         _repeat = config.Repeat;
-        _isInfinite = config.Repeat == int.MaxValue;
+        _isInfinite = config.IsInfiniteRepeat;
         _repeatType = config.RepeatType;
         _apply = apply;
 

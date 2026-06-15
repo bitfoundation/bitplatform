@@ -88,6 +88,41 @@ export function prefersReducedMotion() {
         matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+// Live prefers-reduced-motion change notifications. Keyed by engine DotNetObjectReference so
+// each engine can subscribe/unsubscribe independently and we only keep one media-query listener.
+const _reducedMotionRefs = new Set();
+let _reducedMotionMql = null;
+let _reducedMotionListener = null;
+
+function _ensureReducedMotionListener() {
+    if (_reducedMotionMql || typeof matchMedia !== 'function') return;
+    _reducedMotionMql = matchMedia('(prefers-reduced-motion: reduce)');
+    _reducedMotionListener = (e) => {
+        for (const ref of _reducedMotionRefs) {
+            try { ref.invokeMethodAsync('OnReducedMotionChanged', e.matches); }
+            catch { /* a disposed/faulted engine ref must not break the others */ }
+        }
+    };
+    // addEventListener is the modern API; addListener is the deprecated Safari fallback.
+    if (_reducedMotionMql.addEventListener) _reducedMotionMql.addEventListener('change', _reducedMotionListener);
+    else if (_reducedMotionMql.addListener) _reducedMotionMql.addListener(_reducedMotionListener);
+}
+
+export function watchReducedMotion(dotnetRef) {
+    _reducedMotionRefs.add(dotnetRef);
+    _ensureReducedMotionListener();
+}
+
+export function unwatchReducedMotion(dotnetRef) {
+    _reducedMotionRefs.delete(dotnetRef);
+    if (_reducedMotionRefs.size === 0 && _reducedMotionMql && _reducedMotionListener) {
+        if (_reducedMotionMql.removeEventListener) _reducedMotionMql.removeEventListener('change', _reducedMotionListener);
+        else if (_reducedMotionMql.removeListener) _reducedMotionMql.removeListener(_reducedMotionListener);
+        _reducedMotionMql = null;
+        _reducedMotionListener = null;
+    }
+}
+
 // 
 // Element registration
 // 
@@ -133,8 +168,8 @@ export function unregisterElement(elementId) {
     const el = document.getElementById(elementId);
     if (el) el.removeAttribute('data-bmid');
     _runCleanup(elementId);
-    // _vpObservers is keyed by option signature, so unobserve from every observer.
-    if (el) _vpObservers.forEach(obs => obs.unobserve(el));
+    // Detach from every viewport observer (drops membership and evicts empty observers).
+    _detachFromObservers(el, elementId);
     _vpRefs.delete(elementId);
 }
 
@@ -359,29 +394,46 @@ function _attachDrag(elementId, el, opts, dotnetRef, cleanups) {
 // Viewport observation (whileInView)
 // 
 
-// Cache observers keyed by their options signature so we can re-use them.
-const _vpObservers = new Map(); // sig → IntersectionObserver
+// Cache observers keyed by their options signature so we can re-use them. Each entry tracks the
+// element IDs it currently observes so the observer can be disconnected once it falls empty
+// (otherwise distinct margin/threshold combinations would accumulate observers forever).
+const _vpObservers = new Map(); // sig → { observer, members: Set<elementId> }
 const _vpRefs      = new Map(); // elementId → { dotnetRef, once }
 
 function _vpSig(margin, threshold) { return `${margin}|${threshold}`; }
 
-function _getVpObserver(margin, threshold) {
+function _getVpEntry(margin, threshold) {
     const sig = _vpSig(margin, threshold);
-    if (_vpObservers.has(sig)) return _vpObservers.get(sig);
-    const obs = new IntersectionObserver((entries) => {
+    let entry = _vpObservers.get(sig);
+    if (entry) return entry;
+    const observer = new IntersectionObserver((entries) => {
         for (const entry of entries) {
             const id  = entry.target.getAttribute('data-bmid');
             const ref = _vpRefs.get(id);
             if (!ref) continue;
             ref.dotnetRef.invokeMethodAsync('OnIntersect', entry.isIntersecting);
             if (ref.once && entry.isIntersecting) {
-                obs.unobserve(entry.target);
+                _detachFromObservers(entry.target, id);
                 _vpRefs.delete(id);
             }
         }
     }, { rootMargin: margin || '0px', threshold: threshold ?? 0 });
-    _vpObservers.set(sig, obs);
-    return obs;
+    entry = { observer, members: new Set() };
+    _vpObservers.set(sig, entry);
+    return entry;
+}
+
+// Unobserve an element from every observer that might track it, dropping membership and
+// disconnecting (and evicting) any observer left with no members.
+function _detachFromObservers(el, elementId) {
+    for (const [sig, entry] of _vpObservers) {
+        if (el) entry.observer.unobserve(el);
+        entry.members.delete(elementId);
+        if (entry.members.size === 0) {
+            entry.observer.disconnect();
+            _vpObservers.delete(sig);
+        }
+    }
 }
 
 export function observeViewport(elementId, dotnetRef, options) {
@@ -393,18 +445,16 @@ export function observeViewport(elementId, dotnetRef, options) {
     // Detach from any previously assigned observer first so re-observing with different options
     // doesn't stack duplicate subscriptions (which would fire OnIntersect multiple times and
     // break the "once" behaviour across option changes).
-    _vpObservers.forEach(obs => obs.unobserve(el));
+    _detachFromObservers(el, elementId);
     _vpRefs.set(elementId, { dotnetRef, once });
-    _getVpObserver(margin, threshold).observe(el);
+    const entry = _getVpEntry(margin, threshold);
+    entry.members.add(elementId);
+    entry.observer.observe(el);
 }
 
 export function unobserveViewport(elementId) {
     const el = document.getElementById(elementId);
-    const ref = _vpRefs.get(elementId);
-    if (el && ref) {
-        // unobserve from every observer that might track this element
-        _vpObservers.forEach(obs => obs.unobserve(el));
-    }
+    _detachFromObservers(el, elementId);
     _vpRefs.delete(elementId);
 }
 

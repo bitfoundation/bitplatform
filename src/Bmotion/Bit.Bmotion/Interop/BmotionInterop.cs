@@ -51,6 +51,20 @@ public sealed class BmotionInterop : IAsyncDisposable
     public async ValueTask<bool> PrefersReducedMotionAsync()
         => await (await Module()).InvokeAsync<bool>("prefersReducedMotion");
 
+    /// <summary>
+    /// Subscribes to live changes of the <c>prefers-reduced-motion</c> media query. JS calls
+    /// <c>OnReducedMotionChanged(bool)</c> on the engine ref whenever the OS preference changes.
+    /// </summary>
+    public async ValueTask WatchReducedMotionAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class
+        => await (await Module()).InvokeVoidAsync("watchReducedMotion", dotnetRef);
+
+    /// <summary>Unsubscribes the engine ref from <c>prefers-reduced-motion</c> change notifications.</summary>
+    public async ValueTask UnwatchReducedMotionAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class
+    {
+        if (!_moduleTask.IsValueCreated) return;
+        await (await Module()).InvokeVoidAsync("unwatchReducedMotion", dotnetRef);
+    }
+
     // ── Style application ─────────────────────────────────────────────────────
 
     /// <summary>Instantly apply a CSS styles object to a DOM element (for <c>set()</c> calls).</summary>

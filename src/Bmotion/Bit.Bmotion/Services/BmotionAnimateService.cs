@@ -105,13 +105,24 @@ public sealed class BmotionAnimateService
 
         var completion = Task.WhenAll(completionTasks);
 
-        // Release our refcount on every target once the animations settle.
-        _ = completion.ContinueWith(_ =>
+        // The controls own the single refcount release (idempotent). It fires whichever happens
+        // first: natural completion, Stop(), or Complete(). This is what prevents an
+        // infinite-repeat animation - whose completion task never resolves - from leaking refcounts.
+        var released = false;
+        void Release()
         {
+            if (released) return;
+            released = true;
             foreach (var id in elementIds)
                 _engine.UnregisterElement(id);
-        }, TaskScheduler.Default);
+        }
 
-        return new BmotionAnimationControls(elementIds, _engine, completion);
+        var controls = new BmotionAnimationControls(elementIds, _engine, completion, Release);
+
+        _ = completion.ContinueWith(
+            _ => controls.OnCompletionSettled(),
+            TaskScheduler.Default);
+
+        return controls;
     }
 }

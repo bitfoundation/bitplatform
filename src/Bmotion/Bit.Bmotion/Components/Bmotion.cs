@@ -94,6 +94,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private string? _prevInheritedVariant;
     private int _variantChildIndex = -1;
     private BmotionBoundingRect? _layoutSnapshot;
+    // The style string most recently emitted into the render tree, and the one we've reconciled
+    // with the engine. When these diverge after init, Blazor has rewritten the element's inline
+    // style, so we re-flush the engine's live values on top to avoid resetting animated props.
+    private string _pendingStyle = string.Empty;
+    private string _committedStyle = string.Empty;
 
     // ════════════════════════════════════════════════════════════════════════════
     // Rendering
@@ -120,6 +125,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
         var motionStyle = BuildInitialStyle();
         var combinedStyle = string.IsNullOrEmpty(Style) ? motionStyle : motionStyle + Style;
+        _pendingStyle = combinedStyle ?? string.Empty;
         if (!string.IsNullOrEmpty(combinedStyle))
             builder.AddAttribute(5, "style", combinedStyle);
 
@@ -127,16 +133,38 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
         if (Variants != null)
         {
-            _ownVariantCtx ??= new BmotionVariantContext();
             // Fall back to an inherited active variant from an ancestor so nested variant trees
             // propagate the active label when this component doesn't set its own Animate.Variant.
-            _ownVariantCtx.ActiveVariant = Animate?.IsVariant == true ? Animate.Variant : VariantCtx?.ActiveVariant;
+            var active = Animate?.IsVariant == true ? Animate.Variant : VariantCtx?.ActiveVariant;
             // Mirror the ActiveVariant fallback: descendants inherit the initial variant label from
             // an ancestor when this node defines Variants without its own local Initial variant.
-            _ownVariantCtx.InitialVariant = Initial?.IsVariant == true ? Initial.Variant : VariantCtx?.InitialVariant;
-            _ownVariantCtx.Variants = Variants;
-            _ownVariantCtx.StaggerChildren = Transition?.StaggerChildren ?? 0;
-            _ownVariantCtx.DelayChildren = Transition?.DelayChildren ?? 0;
+            var initial = Initial?.IsVariant == true ? Initial.Variant : VariantCtx?.InitialVariant;
+            var stagger = Transition?.StaggerChildren ?? 0;
+            var delayChildren = Transition?.DelayChildren ?? 0;
+
+            // A cascaded context whose fields are mutated in place does NOT reliably notify
+            // descendants (CascadingValue change-detection is reference-based). So when any cascaded
+            // value actually changes, publish a NEW context instance - the changed reference forces
+            // CascadingValue to re-notify children. The child-index counter is carried over so any
+            // child registering after the swap still gets a stable stagger position.
+            if (_ownVariantCtx is null ||
+                _ownVariantCtx.ActiveVariant != active ||
+                _ownVariantCtx.InitialVariant != initial ||
+                !ReferenceEquals(_ownVariantCtx.Variants, Variants) ||
+                _ownVariantCtx.StaggerChildren != stagger ||
+                _ownVariantCtx.DelayChildren != delayChildren)
+            {
+                var previous = _ownVariantCtx;
+                _ownVariantCtx = new BmotionVariantContext
+                {
+                    ActiveVariant = active,
+                    InitialVariant = initial,
+                    Variants = Variants,
+                    StaggerChildren = stagger,
+                    DelayChildren = delayChildren,
+                };
+                if (previous != null) _ownVariantCtx.SeedChildIndex(previous.NextChildIndex);
+            }
 
             builder.OpenComponent<CascadingValue<BmotionVariantContext>>(7);
             builder.AddComponentParameter(8, "Value", _ownVariantCtx);
@@ -169,6 +197,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             _dotnet = DotNetObjectReference.Create(this);
             await InitialiseAsync();
             _initialized = true;
+            // The initial inline style is what the engine seeded the DOM with; mark it reconciled.
+            _committedStyle = _pendingStyle;
         }
         else if (_initialized)
         {
@@ -180,6 +210,17 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 var snap = _layoutSnapshot;
                 _layoutSnapshot = null;
                 await PlayFlipAsync(snap);
+            }
+
+            // If a re-render rewrote the inline style attribute (e.g. the consumer changed Style),
+            // Blazor will have wiped the engine's live transform/opacity/etc. Re-flush the current
+            // engine values on top so animated state isn't visibly reset.
+            if (_pendingStyle != _committedStyle)
+            {
+                _committedStyle = _pendingStyle;
+                var live = Engine.GetCurrentStyles(_id);
+                if (live is { Count: > 0 })
+                    await Interop.ApplyStylesAsync(_id, live);
             }
         }
     }
@@ -333,6 +374,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             : BmotionEasingFunctions.ToCssString(t);
         string? finalT = Engine.GetCurrentTransformString(_id);
 
+        // Pause the engine's per-frame transform writes for the duration of the FLIP so the rAF
+        // loop and the WAAPI layout animation don't both write `transform` and tear each other.
+        Engine.SuspendTransformWrites(_id, dur);
+
         await Interop.PlayWaapiFlipAsync(_id, dx, dy, sx, sy, dur, easing, finalT);
     }
 
@@ -442,10 +487,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     /// <summary>Called synchronously from JS to get current XY for drag start offset (Blazor WASM only).</summary>
     [JSInvokable]
-    public object GetCurrentXY()
+    public BmotionXY GetCurrentXY()
     {
         var (x, y) = Engine.GetCurrentXY(_id);
-        return new { x, y };
+        return new BmotionXY(x, y);
     }
 
     [JSInvokable] public async Task OnDragMove() => await OnDrag.InvokeAsync();

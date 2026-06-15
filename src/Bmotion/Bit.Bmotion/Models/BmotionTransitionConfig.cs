@@ -38,8 +38,20 @@ public class BmotionTransitionConfig
     }
 
     // ── Repeat ────────────────────────────────────────────────────────────────
-    /// <summary>Number of times to repeat. Set to <c>int.MaxValue</c> for infinite.</summary>
+    /// <summary>
+    /// Number of times to repeat. Setting <see cref="RepeatInfinite"/> (preferred) or the legacy
+    /// sentinel <c>int.MaxValue</c> makes the animation repeat forever.
+    /// </summary>
     public int Repeat { get; set; } = 0;
+
+    /// <summary>
+    /// When <c>true</c> the animation repeats forever, regardless of <see cref="Repeat"/>.
+    /// Prefer this over the legacy <c>Repeat = int.MaxValue</c> sentinel.
+    /// </summary>
+    public bool RepeatInfinite { get; set; }
+
+    /// <summary>True when this transition repeats forever (via flag or legacy sentinel).</summary>
+    internal bool IsInfiniteRepeat => RepeatInfinite || Repeat == int.MaxValue;
 
     /// <summary>How to repeat: Loop, Mirror (ping-pong), or Reverse.</summary>
     public BmotionRepeatType RepeatType { get; set; } = BmotionRepeatType.Loop;
@@ -144,6 +156,7 @@ public class BmotionTransitionConfig
         Ease = Ease,
         EaseCubicBezier = EaseCubicBezier is null ? null : (double[])EaseCubicBezier.Clone(),
         Repeat = Repeat,
+        RepeatInfinite = RepeatInfinite,
         RepeatType = RepeatType,
         RepeatDelay = RepeatDelay,
         Times = Times is null ? null : (double[])Times.Clone(),

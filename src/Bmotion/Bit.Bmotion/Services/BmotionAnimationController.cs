@@ -5,6 +5,13 @@ namespace Bit.Bmotion;
 /// Analogous to Framer Motion's <c>useAnimate()</c>.
 /// Obtain via DI (<c>@inject BmotionAnimationController</c>) and bind to an element ID.
 /// All animation math runs in the C# <see cref="BmotionAnimationEngine"/>.
+/// <para>
+/// <b>Lifetime / disposal:</b> registered <c>Transient</c> and meant to be owned by a single
+/// component. When injected with <c>@inject</c>, Blazor resolves it from the root scope and only
+/// disposes it at app shutdown, so the <b>consuming component must dispose it explicitly</b>
+/// (implement <see cref="IDisposable"/> and call <see cref="Dispose"/> from the component's
+/// <c>Dispose</c>) - otherwise the bound element stays registered with the engine until the app ends.
+/// </para>
 /// </summary>
 public sealed class BmotionAnimationController : IDisposable
 {

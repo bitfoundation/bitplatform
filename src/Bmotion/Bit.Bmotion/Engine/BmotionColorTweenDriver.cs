@@ -32,7 +32,7 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
         _delayMs = config.Delay * 1000;
         _easeFn = BmotionEasingFunctions.Get(config);
         _repeat = config.Repeat;
-        _isInfinite = config.Repeat == int.MaxValue;
+        _isInfinite = config.IsInfiniteRepeat;
         _repeatType = config.RepeatType;
         _repeatDelayMs = config.RepeatDelay * 1000;
         _apply = apply;

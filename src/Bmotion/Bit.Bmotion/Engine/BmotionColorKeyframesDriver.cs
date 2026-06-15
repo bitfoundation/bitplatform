@@ -31,7 +31,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         _durationMs = config.Duration * 1000;
         _delayMs = config.Delay * 1000;
         _repeat = config.Repeat;
-        _isInfinite = config.Repeat == int.MaxValue;
+        _isInfinite = config.IsInfiniteRepeat;
         _repeatType = config.RepeatType;
         _repeatDelayMs = config.RepeatDelay * 1000;
         _apply = apply;
