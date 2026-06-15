@@ -151,12 +151,19 @@ internal sealed class BmotionElementAnimationState
 
             if (TryGetDoubleArray(value, out double[]? doubleFrames))
                 CreateNumericKeyframesDriver(key, doubleFrames!, perKey);
-            else if (TryGetStringArray(value, out string[]? strFrames))
+            else if (IsColorProp(key) && TryGetStringArray(value, out string[]? strFrames))
                 CreateColorKeyframesDriver(key, strFrames!, perKey);
             else if (IsColorProp(key) && value is string colorStr)
                 CreateColorDriver(key, colorStr, perKey);
             else if (value is string dimStr)
                 CreateCssDimensionDriver(key, dimStr, perKey);
+            else if (TryGetStringArray(value, out string[]? otherFrames) && otherFrames!.Length > 0)
+            {
+                // Non-colour string keyframes (e.g. dimension arrays) have no interpolating driver;
+                // snap to the final frame so the value still lands on its destination.
+                StringValues[key] = otherFrames[^1];
+                _dirtyProps.Add(key);
+            }
             else
                 CreateNumericDriver(key, Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture), perKey);
         }
@@ -167,6 +174,9 @@ internal sealed class BmotionElementAnimationState
         foreach (var (key, value) in values)
         {
             if (value == null) continue;
+            // Cancel any in-flight driver for this property so the instant value is authoritative
+            // and isn't overwritten on the next tick by an ongoing animation.
+            CancelProp(key);
             if (BmotionTransformComposer.IsTransformProp(key))
             {
                 Transforms[key] = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
@@ -195,8 +205,17 @@ internal sealed class BmotionElementAnimationState
         if (properties == null || properties.Length == 0)
             CancelAll();
         else
+        {
             foreach (var p in properties)
                 CancelProp(p);
+            // If those were the only running animations, resolve any pending awaiter so callers
+            // of AnimateToAwaitAsync don't hang forever (matches CancelAll's behaviour).
+            if (_activeAnims.Count == 0 && _completionSource != null)
+            {
+                _completionSource.TrySetResult();
+                _completionSource = null;
+            }
+        }
     }
 
     internal void CancelAll()
@@ -244,6 +263,20 @@ internal sealed class BmotionElementAnimationState
     public void ActivateGestureLayer(string gesture, Dictionary<string, object?> values, BmotionTransitionConfig? transition)
     {
         _gestureLayers[gesture] = new GestureLayer(values, transition);
+
+        // Respect gesture priority: don't let a lower-priority gesture animate over a
+        // higher-priority one that is already active (mirrors DeactivateGestureLayer).
+        int newPriority = Array.IndexOf(GesturePriority, gesture);
+        if (newPriority >= 0)
+        {
+            foreach (var other in _gestureLayers.Keys)
+            {
+                if (other == gesture) continue;
+                int otherPriority = Array.IndexOf(GesturePriority, other);
+                if (otherPriority >= 0 && otherPriority < newPriority) return; // higher-priority layer wins
+            }
+        }
+
         AnimateTo(values, transition);
     }
 
@@ -455,7 +488,9 @@ internal sealed class BmotionElementAnimationState
     private static bool TryGetStringArray(object? value, out string[]? result)
     {
         result = null;
+        if (value is string) return false; // a single string is not a keyframe array
         if (value is string[] sa) { result = sa; return true; }
+        if (value is IEnumerable<string> se) { result = se.ToArray(); return true; }
         if (value is object[] oa && oa.Length > 0 && oa[0] is string)
         {
             result = oa.Cast<string>().ToArray();

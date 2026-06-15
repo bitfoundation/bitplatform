@@ -53,6 +53,16 @@ internal static class BmotionEasingFunctions
             BmotionEasing.EaseIn    => "ease-in",
             BmotionEasing.EaseOut   => "ease-out",
             BmotionEasing.EaseInOut => "ease-in-out",
+            // Circ* have no CSS keyword - map to their closest cubic-bezier approximations.
+            BmotionEasing.CircIn    => "cubic-bezier(0.55,0,1,0.45)",
+            BmotionEasing.CircOut   => "cubic-bezier(0,0.55,0.45,1)",
+            BmotionEasing.CircInOut => "cubic-bezier(0.85,0,0.15,1)",
+            // Back* map exactly to the cubic-beziers used by Get(...).
+            BmotionEasing.BackIn    => "cubic-bezier(0.31455,-0.37755,0.69245,1.37755)",
+            BmotionEasing.BackOut   => "cubic-bezier(0.33915,0,0.68085,1.4)",
+            BmotionEasing.BackInOut => "cubic-bezier(0.68987,-0.45,0.32,1.45)",
+            // Anticipate has no CSS equivalent; use the backIn curve as the nearest fallback.
+            BmotionEasing.Anticipate => "cubic-bezier(0.31455,-0.37755,0.69245,1.37755)",
             _                => "ease",
         };
     }

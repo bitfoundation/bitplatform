@@ -112,7 +112,10 @@ public class BmotionAnimationProps
 
         if (CssVars != null)
             foreach (var kv in CssVars)
+            {
+                if (!kv.Key.StartsWith("--")) continue; // contract: CSS custom property keys start with "--"
                 d[kv.Key] = kv.Value;
+            }
 
         // Keyframe arrays override single values
         if (Keyframes != null)
@@ -174,7 +177,10 @@ public class BmotionAnimationProps
 
         if (CssVars != null)
             foreach (var kv in CssVars)
+            {
+                if (!kv.Key.StartsWith("--")) continue; // contract: CSS custom property keys start with "--"
                 sb.Append($"{kv.Key}:{kv.Value};");
+            }
 
         return sb.ToString();
     }
@@ -231,7 +237,10 @@ public class BmotionAnimationProps
 
         if (CssVars != null)
             foreach (var kv in CssVars)
+            {
+                if (!kv.Key.StartsWith("--")) continue; // contract: CSS custom property keys start with "--"
                 d[kv.Key] = kv.Value;
+            }
 
         return d;
     }

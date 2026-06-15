@@ -98,9 +98,9 @@ public class EasingFunctionsTests
     [DataRow((int)BmotionEasing.EaseIn, "ease-in")]
     [DataRow((int)BmotionEasing.EaseOut, "ease-out")]
     [DataRow((int)BmotionEasing.EaseInOut, "ease-in-out")]
-    [DataRow((int)BmotionEasing.CircIn, "ease")]
-    [DataRow((int)BmotionEasing.BackOut, "ease")]
-    [DataRow((int)BmotionEasing.Anticipate, "ease")]
+    [DataRow((int)BmotionEasing.CircIn, "cubic-bezier(0.55,0,1,0.45)")]
+    [DataRow((int)BmotionEasing.BackOut, "cubic-bezier(0.33915,0,0.68085,1.4)")]
+    [DataRow((int)BmotionEasing.Anticipate, "cubic-bezier(0.31455,-0.37755,0.69245,1.37755)")]
     public void ToCssString_NamedEasing_ReturnsCorrectString(int easing, string expected)
     {
         var config = new BmotionTransitionConfig { Ease = (BmotionEasing)easing };

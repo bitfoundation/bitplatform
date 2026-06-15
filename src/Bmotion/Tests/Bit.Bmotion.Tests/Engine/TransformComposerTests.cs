@@ -42,7 +42,7 @@ public class TransformComposerTests
     [TestMethod]
     public void Build_AllIdentityValues_ReturnsEmpty()
     {
-        var t = new Dictionary<string, double> { ["x"] = 0, ["y"] = 0, ["rotate"] = 0 };
+        var t = new Dictionary<string, double> { ["x"] = 0, ["y"] = 0, ["rotate"] = 0, ["scale"] = 1 };
         Assert.AreEqual(string.Empty, BmotionTransformComposer.Build(t));
     }
 

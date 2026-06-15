@@ -37,7 +37,7 @@ internal static class BmotionTransformComposer
                 ? $"translate3d({BmotionCssFormat.Num(x)}px,{BmotionCssFormat.Num(y)}px,{BmotionCssFormat.Num(z)}px)"
                 : $"translate({BmotionCssFormat.Num(x)}px,{BmotionCssFormat.Num(y)}px)");
 
-        if (t.TryGetValue("scale", out double scale))
+        if (t.TryGetValue("scale", out double scale) && scale != 1)
             parts.Add($"scale({BmotionCssFormat.Num(scale)})");
         else
         {

@@ -36,7 +36,7 @@
         <div class="demo-card" style="flex-direction:column;gap:.5rem;align-items:stretch;width:100%;min-width:280px;">
             @foreach (var item in _items)
             {
-                <BmotionAnimatePresence IsPresent="true" @key="item.Id">
+                <BmotionAnimatePresence IsPresent="@item.Present" @key="item.Id">
                     <Bmotion Tag="div"
                             Style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;"
                             Initial="@(new BmotionAnimationProps { Opacity = 0, X = -30 })"
@@ -61,11 +61,27 @@
     private bool _visible = true;
     private int  _nextId  = 4;
 
-    private record Item(int Id, string Label);
+    private sealed class Item(int id, string label)
+    {
+        public int Id { get; } = id;
+        public string Label { get; } = label;
+        // Drives the per-item AnimatePresence: flipped to false to play the exit animation
+        // *before* the item is removed from the collection.
+        public bool Present { get; set; } = true;
+    }
+
     private List<Item> _items = [new(1,"Item One"), new(2,"Item Two"), new(3,"Item Three")];
 
     void AddItem() => _items.Add(new(_nextId++, $"Item {_nextId - 1}"));
-    void RemoveItem(int id) => _items.RemoveAll(i => i.Id == id);
+
+    async Task RemoveItem(int id)
+    {
+        var item = _items.Find(i => i.Id == id);
+        if (item is null || !item.Present) return;
+        item.Present = false;   // trigger the exit animation
+        await Task.Delay(400);  // let it finish before dropping the item from the list
+        _items.Remove(item);
+    }
 
     private const string _presenceCode = """
         @using Bit.Bmotion
@@ -143,7 +159,7 @@
                 <div class="demo-card" style="flex-direction:column;gap:.5rem;align-items:stretch;width:100%;min-width:280px;">
                     @foreach (var item in _items)
                     {
-                        <BmotionAnimatePresence IsPresent="true" @key="item.Id">
+                        <BmotionAnimatePresence IsPresent="@item.Present" @key="item.Id">
                             <Bmotion Tag="div"
                                     Style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;"
                                     Initial="@(new BmotionAnimationProps { Opacity = 0, X = -30 })"
@@ -165,11 +181,25 @@
         @code {
             private int _nextId = 4;
 
-            private record Item(int Id, string Label);
+            private sealed class Item(int id, string label)
+            {
+                public int Id { get; } = id;
+                public string Label { get; } = label;
+                public bool Present { get; set; } = true;
+            }
+
             private List<Item> _items = [new(1,"Item One"), new(2,"Item Two"), new(3,"Item Three")];
 
             void AddItem() => _items.Add(new(_nextId++, $"Item {_nextId - 1}"));
-            void RemoveItem(int id) => _items.RemoveAll(i => i.Id == id);
+
+            async Task RemoveItem(int id)
+            {
+                var item = _items.Find(i => i.Id == id);
+                if (item is null || !item.Present) return;
+                item.Present = false;   // trigger the exit animation
+                await Task.Delay(400);  // let it finish before removing the item
+                _items.Remove(item);
+            }
         }
         """;
 }

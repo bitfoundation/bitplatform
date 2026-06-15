@@ -199,18 +199,23 @@ export function attachEventListeners(elementId, events, dotnetRef) {
 
 function _attachPan(el, dotnetRef, cleanups) {
     const PAN_THRESHOLD = 3; // pixels before pan is detected
+    let down = false;        // whether a pointer is currently pressed on this element
     let panning = false;
     let startX, startY, lastX, lastY, lastT;
     let velX = 0, velY = 0;
 
     const onDown = (e) => {
         if (e.button !== 0 && e.pointerType !== 'touch') return;
+        down = true;
         startX = lastX = e.clientX; startY = lastY = e.clientY;
         lastT = Date.now(); velX = velY = 0; panning = false;
         el.setPointerCapture(e.pointerId);
     };
 
     const onMove = (e) => {
+        // Ignore moves when no pointer is pressed (e.g. plain hover) so stale start
+        // coordinates from a previous gesture can't trigger a phantom pan.
+        if (!down) return;
         const dx = e.clientX - startX, dy = e.clientY - startY;
         const now = Date.now(), dt = now - lastT;
         const deltaX = e.clientX - lastX, deltaY = e.clientY - lastY;
@@ -234,7 +239,7 @@ function _attachPan(el, dotnetRef, cleanups) {
         lastX = e.clientX; lastY = e.clientY; lastT = now;
     };
 
-    const onUp = () => { if (panning) { panning = false; dotnetRef.invokeMethodAsync('OnPanEnd_'); } };
+    const onUp = () => { down = false; if (panning) { panning = false; dotnetRef.invokeMethodAsync('OnPanEnd_'); } };
 
     el.addEventListener('pointerdown',   onDown);
     el.addEventListener('pointermove',   onMove);

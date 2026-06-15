@@ -19,6 +19,8 @@ public sealed class BmotionAnimationController
     /// </summary>
     public void BindTo(string elementId)
     {
+        if (string.IsNullOrWhiteSpace(elementId))
+            throw new ArgumentException("Element ID must not be null or whitespace.", nameof(elementId));
         _elementId = elementId;
         _engine.RegisterElement(elementId);
     }

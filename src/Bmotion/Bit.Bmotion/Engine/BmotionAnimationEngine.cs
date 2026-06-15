@@ -215,6 +215,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
 
         var (posX, posY) = state.GetCurrentXY();
 
+        bool inertiaXStarted = false, inertiaYStarted = false;
         if (momentum)
         {
             if (axis != "y" && Math.Abs(velX) > 0.5)
@@ -228,6 +229,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
                 };
                 var valuesX = new Dictionary<string, object?> { ["x"] = posX };
                 state.AnimateTo(valuesX, inertiaX);
+                inertiaXStarted = true;
             }
 
             if (axis != "x" && Math.Abs(velY) > 0.5)
@@ -241,9 +243,14 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
                 };
                 var valuesY = new Dictionary<string, object?> { ["y"] = posY };
                 state.AnimateTo(valuesY, inertiaY);
+                inertiaYStarted = true;
             }
         }
-        else if (constraints != null)
+
+        // Snap-back runs independently of momentum: when momentum produced no inertia animation
+        // for an axis (velocity below threshold or disabled) the element can still be out of
+        // bounds, so any axis without an active inertia animation is corrected here.
+        if (constraints != null)
         {
             // Snap to constraint bounds
             double cx = posX, cy = posY;
@@ -251,12 +258,12 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             var snapT = snapTransition ?? new BmotionTransitionConfig
                 { Type = BmotionTransitionType.Spring, Stiffness = 400, Damping = 35 };
 
-            if (axis != "y")
+            if (axis != "y" && !inertiaXStarted)
             {
                 if (constraints.Left.HasValue && cx < constraints.Left.Value) { cx = constraints.Left.Value; snap = true; }
                 if (constraints.Right.HasValue && cx > constraints.Right.Value) { cx = constraints.Right.Value; snap = true; }
             }
-            if (axis != "x")
+            if (axis != "x" && !inertiaYStarted)
             {
                 if (constraints.Top.HasValue && cy < constraints.Top.Value) { cy = constraints.Top.Value; snap = true; }
                 if (constraints.Bottom.HasValue && cy > constraints.Bottom.Value) { cy = constraints.Bottom.Value; snap = true; }
@@ -265,8 +272,8 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             if (snap)
             {
                 var snapValues = new Dictionary<string, object?>();
-                if (axis != "y") snapValues["x"] = cx;
-                if (axis != "x") snapValues["y"] = cy;
+                if (axis != "y" && !inertiaXStarted) snapValues["x"] = cx;
+                if (axis != "x" && !inertiaYStarted) snapValues["y"] = cy;
                 state.AnimateTo(snapValues, snapT);
             }
         }
@@ -335,9 +342,11 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
                 "Bit.Bmotion requires synchronous JS interop and is only supported on Blazor WebAssembly. " +
                 "It cannot run on Blazor Server or during server-side prerendering.");
 
-        _loopRunning = true;
         _dotnet ??= DotNetObjectReference.Create(this);
         await _interop.StartRafLoopAsync(_dotnet);
+        // Only flag the loop as running once startup actually succeeded; if the interop call
+        // throws, the flag stays false so a later call can retry instead of silently no-op'ing.
+        _loopRunning = true;
     }
 
     private void StopLoopInternal()

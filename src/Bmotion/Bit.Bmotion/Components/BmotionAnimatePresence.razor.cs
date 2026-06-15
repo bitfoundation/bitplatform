@@ -43,7 +43,9 @@ public partial class BmotionAnimatePresence : ComponentBase
 
     private readonly BmotionPresenceContext _presenceCtx = new();
     private bool _shouldRender = true;
-    private bool _prevIsPresent = true;
+    // Starts false so an initial IsPresent=false is treated as "nothing was present yet"
+    // rather than a present→absent exit transition.
+    private bool _prevIsPresent;
     private bool _deferEnter;
 
     // ═══════════════════════════════════════════════════════════════════════════

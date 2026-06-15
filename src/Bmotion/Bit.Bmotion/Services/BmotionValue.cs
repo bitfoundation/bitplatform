@@ -35,7 +35,12 @@ public class BmotionValue<T> : IDisposable where T : struct
     {
         _value = value;
         foreach (var sub in _subscribers.ToArray())
-            _ = ObserveAsync(sub(value));
+        {
+            // Guard the invocation itself: a subscriber may throw synchronously before returning a
+            // Task. Catch so one faulty subscriber can't skip the rest of the chain.
+            try { _ = ObserveAsync(sub(value)); }
+            catch { /* subscriber failures are swallowed to avoid faulting the host */ }
+        }
     }
 
     private static async Task ObserveAsync(Task task)
@@ -49,7 +54,12 @@ public class BmotionValue<T> : IDisposable where T : struct
     {
         _value = value;
         foreach (var sub in _subscribers.ToArray())
-            await sub(value);
+        {
+            // Catch both synchronous throws and faulted tasks so a single failing subscriber
+            // doesn't prevent the remaining subscribers from being notified.
+            try { await sub(value); }
+            catch { /* subscriber failures are swallowed to avoid faulting the host */ }
+        }
     }
 
     // ── Subscriptions ─────────────────────────────────────────────────────────

@@ -30,12 +30,13 @@ public class BmotionViewportOptions
 
     internal object ToJsObject()
     {
-        double threshold = Amount switch
+        var amount = Amount?.ToLowerInvariant();
+        double threshold = amount switch
         {
             "some" => 0.0,
             "all"  => 1.0,
-            _      => double.TryParse(Amount, System.Globalization.NumberStyles.Any,
-                           System.Globalization.CultureInfo.InvariantCulture, out var v)
+            _      => double.TryParse(amount, System.Globalization.NumberStyles.Any,
+                           System.Globalization.CultureInfo.InvariantCulture, out var v) && double.IsFinite(v)
                            ? Math.Clamp(v, 0, 1) : 0.0,
         };
 

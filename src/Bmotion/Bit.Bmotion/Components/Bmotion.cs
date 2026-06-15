@@ -128,7 +128,9 @@ public class Bmotion : ComponentBase, IAsyncDisposable
         if (Variants != null)
         {
             _ownVariantCtx ??= new BmotionVariantContext();
-            _ownVariantCtx.ActiveVariant = Animate?.IsVariant == true ? Animate.Variant : null;
+            // Fall back to an inherited active variant from an ancestor so nested variant trees
+            // propagate the active label when this component doesn't set its own Animate.Variant.
+            _ownVariantCtx.ActiveVariant = Animate?.IsVariant == true ? Animate.Variant : VariantCtx?.ActiveVariant;
             _ownVariantCtx.InitialVariant = Initial?.IsVariant == true ? Initial.Variant : null;
             _ownVariantCtx.Variants = Variants;
             _ownVariantCtx.StaggerChildren = Transition?.StaggerChildren ?? 0;
@@ -388,6 +390,7 @@ public class Bmotion : ComponentBase, IAsyncDisposable
         if (WhileTap != null)
             await Engine.DeactivateGestureLayerAsync(_id, "tap");
         if (isInsideElement) await OnTap.InvokeAsync();
+        else await OnTapCancel.InvokeAsync(); // released outside the element ⇒ tap cancelled
     }
 
     [JSInvokable]

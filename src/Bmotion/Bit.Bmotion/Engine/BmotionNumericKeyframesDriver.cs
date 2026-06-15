@@ -57,7 +57,10 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
                 if (!_isInfinite) _iteration++;
                 _startTime = timestamp + _repeatDelayMs;
                 if (_repeatType == BmotionRepeatType.Mirror || _repeatType == BmotionRepeatType.Reverse)
+                {
                     Array.Reverse(_curFrames);
+                    MirrorTimes(_times);
+                }
                 return false;
             }
             return true;
@@ -68,6 +71,24 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
     public void Cancel() => _cancelled = true;
 
     public void Complete() => _apply(_frames[^1]);
+
+    /// <summary>
+    /// Mirrors a (possibly non-uniform) times array in place so segment durations line up with the
+    /// reversed frame order: <c>newTimes[i] = 1 - times[n-1-i]</c>. Applying it twice restores the
+    /// original, matching how Mirror/Reverse alternate direction each iteration.
+    /// </summary>
+    private static void MirrorTimes(double[] times)
+    {
+        int n = times.Length;
+        for (int i = 0; i < n / 2; i++)
+        {
+            double a = 1 - times[n - 1 - i];
+            double b = 1 - times[i];
+            times[i] = a;
+            times[n - 1 - i] = b;
+        }
+        if (n % 2 == 1) times[n / 2] = 1 - times[n / 2];
+    }
 
     private static double Interpolate(double[] frames, double[] times, Func<double, double>[] eases, double t)
     {
