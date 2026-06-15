@@ -332,16 +332,17 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing is false) return;
-        if (_listenerIds.IsEmpty) return;
-
-        var snapshot = _listenerIds.Keys.ToArray();
-        _listenerIds.Clear();
 
         try
         {
-            foreach (var (id, evt, useCapture) in snapshot)
+            if (_listenerIds.IsEmpty is false)
             {
-                await _events.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
+                var snapshot = _listenerIds.Keys.ToArray();
+                _listenerIds.Clear();
+                foreach (var (id, evt, useCapture) in snapshot)
+                {
+                    await _events.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
+                }
             }
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed

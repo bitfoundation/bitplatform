@@ -74,6 +74,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// Strongly-typed accessor for <see cref="GetState"/>.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("JSON deserialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
     public async Task<T?> GetState<[System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T>()
         => await js.Invoke<T?>("BitButil.history.state");
 

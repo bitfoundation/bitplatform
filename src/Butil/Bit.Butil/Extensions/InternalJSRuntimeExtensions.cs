@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 using static Bit.Butil.LinkerFlags;
 

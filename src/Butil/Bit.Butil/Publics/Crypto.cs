@@ -212,6 +212,10 @@ public class Crypto(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/decrypt">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/decrypt</see>
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesCtrCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesCbcCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesGcmCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(RsaOaepCryptoAlgorithmParams))]
     public ValueTask<byte[]> Decrypt<T>(T algorithm, byte[] key, byte[] data, CryptoKeyHash? keyHash = null) where T : ICryptoAlgorithmParams
     {
         if (algorithm.GetType() == typeof(RsaOaepCryptoAlgorithmParams))

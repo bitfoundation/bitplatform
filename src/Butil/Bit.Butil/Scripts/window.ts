@@ -149,8 +149,17 @@ var BitButil = BitButil || {};
     function open(id: string, url?: string, target?: string, windowFeatures?: string) {
         const ref = window.open(url, target, windowFeatures);
         if (!ref) return undefined;
+        // Prune refs for popups the user closed manually. close(id) only runs on explicit
+        // closes, so without this sweep those entries would linger in _refs until dispose().
+        pruneClosedRefs();
         _refs[id] = ref;
         return id;
+    }
+
+    function pruneClosedRefs() {
+        for (const key of Object.keys(_refs)) {
+            if (_refs[key].closed) delete _refs[key];
+        }
     }
 
     function scroll(options?: ScrollToOptions, x?: number, y?: number) {
