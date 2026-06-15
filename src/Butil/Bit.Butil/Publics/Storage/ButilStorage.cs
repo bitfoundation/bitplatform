@@ -73,6 +73,16 @@ public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
     /// <summary>
     /// Returns a JSON-deserialized value, or default(<typeparamref name="T"/>) when the key is missing.
     /// </summary>
+    /// <remarks>
+    /// The stored value is expected to be valid JSON for <typeparamref name="T"/> (i.e. written via
+    /// <see cref="SetItem{T}(string, T, JsonSerializerOptions)"/>). When <typeparamref name="T"/> is
+    /// <see cref="string"/> the raw value is returned as-is. For any other type a value written through
+    /// the untyped <see cref="SetItem(string, string)"/> may not be valid JSON (for example the bare
+    /// text <c>"123"</c> deserializes fine to <see cref="int"/>, but <c>"abc"</c> does not), in which
+    /// case <see cref="JsonException"/> is thrown. Use <see cref="SetItem{T}(string, T, JsonSerializerOptions)"/>
+    /// to write values you intend to read back with this overload.
+    /// </remarks>
+    /// <exception cref="JsonException">The stored value is not valid JSON for <typeparamref name="T"/>.</exception>
     [RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON deserialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
     public async Task<T?> GetItem<[DynamicallyAccessedMembers(JsonSerialized)] T>(string key, JsonSerializerOptions? options = null)
@@ -126,6 +136,11 @@ public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
     /// Subscribes to cross-tab <c>storage</c> events for this storage area
     /// (<c>localStorage</c> or <c>sessionStorage</c>). The event only fires when another
     /// tab/window of the same origin modifies the matching storage.
+    /// <br />
+    /// <b>Note:</b> the DOM <c>storage</c> event only propagates across tabs for
+    /// <c>localStorage</c>. <c>sessionStorage</c> is scoped to a single tab/window, so changes to a
+    /// <c>sessionStorage</c> area are never observed by other tabs and this subscription will not
+    /// receive cross-tab notifications for it.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event">window.storage</see>
     /// </summary>

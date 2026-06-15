@@ -1,7 +1,7 @@
 var BitButil = BitButil || {};
 
 (function (butil: any) {
-    const _handlers = {};
+    const _handlers: { [id: string]: EventListener } = {};
 
     butil.visualViewport = {
         offsetLeft() { return window.visualViewport.offsetLeft; },
@@ -15,15 +15,15 @@ var BitButil = BitButil || {};
         addScroll, removeScroll
     };
 
-    function addResize(dotNetRef, listenerId) {
-        const handler = e => {
+    function addResize(dotNetRef: DotNet.DotNetObject, listenerId: string) {
+        const handler: EventListener = () => {
             dotNetRef.invokeMethodAsync('InvokeVisualViewport', listenerId);
         };
 
         _handlers[listenerId] = handler;
         window.visualViewport.addEventListener('resize', handler);
     }
-    function removeResize(ids) {
+    function removeResize(ids: string[]) {
         ids.forEach(id => {
             const handler = _handlers[id];
             delete _handlers[id];
@@ -31,15 +31,15 @@ var BitButil = BitButil || {};
         });
     }
 
-    function addScroll(dotNetRef, listenerId) {
-        const handler = e => {
+    function addScroll(dotNetRef: DotNet.DotNetObject, listenerId: string) {
+        const handler: EventListener = () => {
             dotNetRef.invokeMethodAsync('InvokeVisualViewport', listenerId);
         };
 
         _handlers[listenerId] = handler;
         window.visualViewport.addEventListener('scroll', handler);
     }
-    function removeScroll(ids) {
+    function removeScroll(ids: string[]) {
         ids.forEach(id => {
             const handler = _handlers[id];
             delete _handlers[id];

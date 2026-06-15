@@ -48,7 +48,7 @@ internal sealed class DomEventsInterop : IDisposable
         var (methodName, members) = Resolve(argType);
         var options = useCapture;
         var id = Guid.NewGuid();
-        _listeners.TryAdd(id, new Entry { Action = listener, ArgType = argType, Element = elementName, UseCapture = useCapture });
+        _listeners.TryAdd(id, new Entry { Action = listener, ArgType = argType, Element = elementName, Event = domEvent, UseCapture = useCapture });
 
         await js.AddEventListener(elementName, domEvent, methodName, DotNetRef, id, members, options, preventDefault, stopPropagation);
 
@@ -68,7 +68,7 @@ internal sealed class DomEventsInterop : IDisposable
             throw new InvalidOperationException($"Invalid listener type ({argType}) for this dom event type ({eventType})");
 
         var ids = _listeners
-            .Where(l => Equals(l.Value.Action, listener) && l.Value.Element == elementName && l.Value.UseCapture == useCapture)
+            .Where(l => Equals(l.Value.Action, listener) && l.Value.Element == elementName && l.Value.Event == domEvent && l.Value.UseCapture == useCapture)
             .Select(l => l.Key)
             .ToArray();
 
@@ -92,11 +92,11 @@ internal sealed class DomEventsInterop : IDisposable
     /// callback routing and the per-instance reference.
     /// </summary>
     internal (Guid Id, string MethodName, string[] Members, DotNetObjectReference<DomEventsInterop> Ref) Register<T>(
-        Action<T> listener, string element, bool useCapture)
+        Action<T> listener, string element, string domEvent, bool useCapture)
     {
         var (methodName, members) = Resolve(typeof(T));
         var id = Guid.NewGuid();
-        _listeners.TryAdd(id, new Entry { Action = listener, ArgType = typeof(T), Element = element, UseCapture = useCapture });
+        _listeners.TryAdd(id, new Entry { Action = listener, ArgType = typeof(T), Element = element, Event = domEvent, UseCapture = useCapture });
         return (id, methodName, members, DotNetRef);
     }
 
@@ -147,6 +147,7 @@ internal sealed class DomEventsInterop : IDisposable
         public object Action { get; set; } = default!;
         public Type ArgType { get; set; } = default!;
         public string Element { get; set; } = string.Empty;
+        public string Event { get; set; } = string.Empty;
         public bool UseCapture { get; set; }
     }
 }

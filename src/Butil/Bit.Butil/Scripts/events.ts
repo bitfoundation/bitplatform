@@ -1,7 +1,7 @@
 var BitButil = BitButil || {};
 
 (function (butil: any) {
-    const _handlers = {};
+    const _handlers: { [id: string]: EventListener } = {};
 
     butil.events = {
         addEventListener,
@@ -66,11 +66,11 @@ var BitButil = BitButil || {};
         return undefined;
     }
 
-    function addEventListener(elementName, eventName, methodName, dotNetRef, listenerId, argsMembers, options, preventDefault, stopPropagation) {
+    function addEventListener(elementName: string, eventName: string, methodName: string, dotNetRef: DotNet.DotNetObject, listenerId: string, argsMembers: string[], options: AddEventListenerOptions | boolean, preventDefault: boolean, stopPropagation: boolean) {
         const target = resolveTarget(elementName);
         if (!target) return;
 
-        const handler = e => {
+        const handler: EventListener = e => {
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
             dotNetRef.invokeMethodAsync(methodName, listenerId, mapEvent(e, argsMembers));
@@ -81,7 +81,7 @@ var BitButil = BitButil || {};
         target.addEventListener(eventName, handler, options);
     }
 
-    function removeEventListener(elementName, eventName, dotnetListenerIds, options) {
+    function removeEventListener(elementName: string, eventName: string, dotnetListenerIds: string[], options: EventListenerOptions | boolean) {
         const target = resolveTarget(elementName);
 
         dotnetListenerIds.forEach(id => {

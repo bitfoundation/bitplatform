@@ -251,7 +251,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     private async Task ReportVisibilityAsync(Action<VisibilityState> handler)
     {
         try { handler(await GetVisibilityState()); }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 
     /// <summary>
@@ -273,7 +273,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
             var hasFs = await js.Invoke<bool>("BitButil.document.hasFullscreenElement");
             handler(hasFs);
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 
     /// <summary>
@@ -303,7 +303,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
             var hasLock = await js.Invoke<bool>("BitButil.document.hasPointerLockElement");
             handler(hasLock);
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 
     /// <summary>Fires when entering pointer lock fails.</summary>

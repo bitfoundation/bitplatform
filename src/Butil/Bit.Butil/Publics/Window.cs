@@ -23,6 +23,16 @@ public class Window(IJSRuntime js) : IAsyncDisposable
 
     private readonly System.Collections.Concurrent.ConcurrentDictionary<(Guid Id, string Element, string Event, bool UseCapture), byte> _listenerIds = new();
 
+    // Popups opened by *this* instance, tracked so disposal can release only these refs from the
+    // module-global JS _refs map instead of wiping every instance's popups (see DisposeAsync).
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> _popupIds = new();
+
+    // beforeunload registrations made by *this* instance. Tracked so RemoveBeforeUnload and
+    // disposal detach only this instance's handlers (the JS side now uses addEventListener with
+    // per-id handlers rather than the single window.onbeforeunload slot), keeping subscribers from
+    // different circuits/apps - and the host app's own handler - isolated and leak-free.
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> _beforeUnloadIds = new();
+
     // DOM events go through a per-instance dispatcher; matchMedia callbacks are hosted directly on
     // this instance. Both keep listeners isolated per circuit / WASM app and leak-free on disposal.
     private readonly DomEventsInterop _events = new();
@@ -89,8 +99,8 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event">https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event</see>
     /// </summary>
-    public async Task AddBeforeUnload()
-        => await js.InvokeVoid("BitButil.window.addBeforeUnload");
+    public Task AddBeforeUnload()
+        => AddBeforeUnloadCore(null);
 
     /// <summary>
     /// Same as <see cref="AddBeforeUnload()"/> but stores a confirmation message. Modern browsers
@@ -98,7 +108,16 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// guarantees the prompt fires consistently across user-gesture vs auto-navigation cases.
     /// </summary>
     public Task AddBeforeUnload(string message)
-        => js.InvokeVoid("BitButil.window.addBeforeUnload", message).AsTask();
+        => AddBeforeUnloadCore(message);
+
+    private async Task AddBeforeUnloadCore(string? message)
+    {
+        // Each registration gets its own id + JS handler (via addEventListener), so this instance's
+        // handler never clobbers another subscriber's or the host app's beforeunload handler.
+        var id = Guid.NewGuid().ToString();
+        _beforeUnloadIds.TryAdd(id, 0);
+        await js.InvokeVoid("BitButil.window.addBeforeUnload", id, message);
+    }
 
     /// <summary>
     /// The beforeunload event is fired when the current window, contained document, and associated resources are about to be unloaded. 
@@ -107,7 +126,15 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event">https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event</see>
     /// </summary>
     public async Task RemoveBeforeUnload()
-        => await js.InvokeVoid("BitButil.window.removeBeforeUnload");
+    {
+        if (_beforeUnloadIds.IsEmpty) return;
+
+        // Detach only the handlers this instance registered. new object?[] { ids } wraps the array
+        // as a single JS argument; passing the string[] directly would spread each id as a separate arg.
+        var ids = _beforeUnloadIds.Keys.ToArray();
+        _beforeUnloadIds.Clear();
+        await js.InvokeVoid("BitButil.window.removeBeforeUnload", new object?[] { ids });
+    }
 
     // ─── Page Lifecycle ─────────────────────────────────────────────────────────
 
@@ -278,8 +305,16 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/close">https://developer.mozilla.org/en-US/docs/Web/API/Window/close</see>
     /// </summary>
     public async Task Close(string? id = null)
-        => await (id is null ? js.InvokeVoid("BitButil.window.close")
-                             : js.InvokeVoid("BitButil.window.close", id));
+    {
+        if (id is null)
+        {
+            await js.InvokeVoid("BitButil.window.close");
+            return;
+        }
+
+        _popupIds.TryRemove(id, out _);
+        await js.InvokeVoid("BitButil.window.close", id);
+    }
 
     /// <summary>
     /// Displays a dialog with a message that the user needs to respond to.
@@ -412,7 +447,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/open">https://developer.mozilla.org/en-US/docs/Web/API/Window/open</see>
     /// </summary>
     public async Task<string?> Open(string? url = null, string? target = null, string? windowFeatures = null)
-        => await js.Invoke<string?>("BitButil.window.open", Guid.NewGuid(), url, target, windowFeatures);
+    {
+        var id = await js.Invoke<string?>("BitButil.window.open", Guid.NewGuid(), url, target, windowFeatures);
+        if (id is not null) _popupIds.TryAdd(id, 0);
+        return id;
+    }
     /// <summary>
     /// Opens a new window.
     /// <br/>
@@ -423,7 +462,11 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/open">https://developer.mozilla.org/en-US/docs/Web/API/Window/open</see>
     /// </summary>
     public async Task<string?> Open(string? url = null, string? target = null, WindowFeatures? windowFeatures = null)
-        => await js.Invoke<string?>("BitButil.window.open", Guid.NewGuid(), url, target, windowFeatures?.ToString());
+    {
+        var id = await js.Invoke<string?>("BitButil.window.open", Guid.NewGuid(), url, target, windowFeatures?.ToString());
+        if (id is not null) _popupIds.TryAdd(id, 0);
+        return id;
+    }
 
     /// <summary>
     /// Opens the Print Dialog to print the current document.
@@ -509,7 +552,21 @@ public class Window(IJSRuntime js) : IAsyncDisposable
                 }
             }
 
-            await js.InvokeVoid("BitButil.window.dispose");
+            // Release only the popups this instance opened. Passing the ids (rather than letting
+            // JS wipe its shared _refs map) keeps popups from other live circuits/apps tracked, so
+            // their Close(id) keeps working. new object?[] { ids } wraps the array as a single JS
+            // argument; passing the string[] directly would spread each id as a separate arg.
+            var popupIds = _popupIds.Keys.ToArray();
+            _popupIds.Clear();
+            await js.InvokeVoid("BitButil.window.dispose", new object?[] { popupIds });
+
+            // Detach this instance's beforeunload handlers so they don't outlive the component.
+            if (_beforeUnloadIds.IsEmpty is false)
+            {
+                var beforeUnloadIds = _beforeUnloadIds.Keys.ToArray();
+                _beforeUnloadIds.Clear();
+                await js.InvokeVoid("BitButil.window.removeBeforeUnload", new object?[] { beforeUnloadIds });
+            }
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

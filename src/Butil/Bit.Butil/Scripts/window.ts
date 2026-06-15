@@ -1,8 +1,12 @@
 var BitButil = BitButil || {};
 
 (function (butil: any) {
-    let _refs = {};
+    const _refs = {};
     const _mediaQueryHandlers: { [id: string]: { mql: MediaQueryList, handler: (e: MediaQueryListEvent) => void } } = {};
+    // beforeunload handlers keyed by a per-registration id. We use addEventListener (not the
+    // single window.onbeforeunload slot) so multiple subscribers - and the host app's own
+    // handler - coexist instead of clobbering one another, and each can be removed individually.
+    const _beforeUnloadHandlers: { [id: string]: (e: BeforeUnloadEvent) => any } = {};
 
     butil.window = {
         addBeforeUnload,
@@ -63,8 +67,10 @@ var BitButil = BitButil || {};
         dispose
     };
 
-    function addBeforeUnload(message?: string) {
-        window.onbeforeunload = e => {
+    function addBeforeUnload(id: string, message?: string) {
+        // Replace any prior handler registered under the same id so repeated calls stay idempotent.
+        removeBeforeUnload([id]);
+        const handler = (e: BeforeUnloadEvent) => {
             e.preventDefault();
             // Modern browsers ignore the returnValue/message text and show their own copy,
             // but legacy and some embedded webviews still honor it.
@@ -72,10 +78,19 @@ var BitButil = BitButil || {};
             (e as any).returnValue = msg;
             return msg;
         };
+        _beforeUnloadHandlers[id] = handler;
+        window.addEventListener('beforeunload', handler);
     }
 
-    function removeBeforeUnload() {
-        window.onbeforeunload = null;
+    function removeBeforeUnload(ids?: string[]) {
+        // No ids => remove every handler this module registered (legacy "remove all" behavior).
+        const targets = ids ?? Object.keys(_beforeUnloadHandlers);
+        targets.forEach(id => {
+            const handler = _beforeUnloadHandlers[id];
+            if (!handler) return;
+            delete _beforeUnloadHandlers[id];
+            window.removeEventListener('beforeunload', handler);
+        });
     }
 
     function close(id: string | undefined) {
@@ -178,10 +193,16 @@ var BitButil = BitButil || {};
         }
     }
 
-    function dispose() {
+    function dispose(ids?: string[]) {
         // matchMedia handlers are unsubscribed individually by the C# side (it tracks the ids and
         // calls unsubscribeMatchMedia before dispose), so we deliberately don't touch
         // _mediaQueryHandlers here - wiping the shared map would clobber any other live instance.
-        _refs = {};
+        //
+        // _refs is shared across every Butil Window instance (i.e. across all Blazor Server
+        // circuits and WASM apps in the module). Wiping it wholesale would orphan popups opened
+        // by *other* live instances, silently turning their close(id) into a no-op. So we only
+        // drop the ids this instance opened, which the C# side tracks and passes in here.
+        if (!ids) return;
+        ids.forEach(id => { delete _refs[id]; });
     }
 }(BitButil));

@@ -38,7 +38,7 @@ public static class ElementReferenceEventExtensions
         // Each element gets a generated id so the JS side can target it directly.
         var elementId = Guid.NewGuid().ToString("N");
         var host = new DomEventsInterop();
-        var (listenerId, methodName, members, dotNetRef) = host.Register(listener, elementId, useCapture);
+        var (listenerId, methodName, members, dotNetRef) = host.Register(listener, elementId, domEvent, useCapture);
 
         object options = useCapture;
 
