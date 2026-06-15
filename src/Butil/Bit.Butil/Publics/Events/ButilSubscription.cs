@@ -38,6 +38,7 @@ public sealed class ButilSubscription : IAsyncDisposable
             await remover();
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException())
+        catch (Exception ex) when (ex.IsIgnorableDisposalException())
         {
             // Teardown - circuit gone, the call was cancelled, or the runtime was already disposed.
         }

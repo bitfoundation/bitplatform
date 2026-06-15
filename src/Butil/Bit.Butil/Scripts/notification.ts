@@ -61,6 +61,13 @@ var BitButil = BitButil || {};
                 dotNetRef.invokeMethodAsync('InvokeNotificationClose', id);
                 untrack(id);
             };
+            n.onclose = () => {
+                // `close` fires for both natural dismiss and programmatic close(id), so this is the
+                // single cleanup point: notify .NET (which also drops the C# listener) then purge the
+                // JS-side entry so neither side accumulates references for the service lifetime.
+                dotNetRef.invokeMethodAsync('InvokeNotificationClose', id);
+                untrack(id);
+            };
             n.onerror = () => dotNetRef.invokeMethodAsync('InvokeNotificationError', id);
         } catch {
             // Service-worker fallback can't be tracked the same way (the toast is owned by the SW)
