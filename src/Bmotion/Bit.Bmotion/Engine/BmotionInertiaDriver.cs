@@ -40,7 +40,7 @@ internal sealed class BmotionInertiaDriver : IBmotionAnimationDriver
 
     public bool Tick(double timestamp)
     {
-        if (_cancelled) { _apply(_projected); return true; }
+        if (_cancelled) return true;
 
         if (_startTs < 0) _startTs = timestamp;
         if (timestamp - _startTs < _delayMs) { _apply(_start); return false; }

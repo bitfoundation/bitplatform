@@ -6,7 +6,7 @@ namespace Bit.Bmotion;
 /// Obtain via DI (<c>@inject BmotionAnimationController</c>) and bind to an element ID.
 /// All animation math runs in the C# <see cref="BmotionAnimationEngine"/>.
 /// </summary>
-public sealed class BmotionAnimationController
+public sealed class BmotionAnimationController : IDisposable
 {
     private readonly BmotionAnimationEngine _engine;
     private string? _elementId;
@@ -21,6 +21,9 @@ public sealed class BmotionAnimationController
     {
         if (string.IsNullOrWhiteSpace(elementId))
             throw new ArgumentException("Element ID must not be null or whitespace.", nameof(elementId));
+        // Release the previously bound element so repeated BindTo calls don't leak engine state.
+        if (!string.IsNullOrEmpty(_elementId) && _elementId != elementId)
+            _engine.UnregisterElement(_elementId);
         _elementId = elementId;
         _engine.RegisterElement(elementId);
     }
@@ -52,5 +55,15 @@ public sealed class BmotionAnimationController
         if (_elementId == null) return;
         var props = properties == null || properties.Length == 0 ? null : properties;
         _engine.Stop(_elementId, props);
+    }
+
+    /// <summary>Unregister the bound element from the engine when the controller is disposed.</summary>
+    public void Dispose()
+    {
+        if (!string.IsNullOrEmpty(_elementId))
+        {
+            _engine.UnregisterElement(_elementId);
+            _elementId = null;
+        }
     }
 }

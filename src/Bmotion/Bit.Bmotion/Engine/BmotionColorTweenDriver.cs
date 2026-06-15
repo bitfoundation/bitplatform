@@ -35,7 +35,7 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
 
     public bool Tick(double timestamp)
     {
-        if (_cancelled) { _apply(_to); return true; }
+        if (_cancelled) return true;
 
         if (_startTime < 0) _startTime = timestamp + _delayMs;
         if (timestamp < _startTime) { _apply(_curFrom); return false; }

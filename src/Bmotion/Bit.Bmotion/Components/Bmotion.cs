@@ -131,7 +131,9 @@ public class Bmotion : ComponentBase, IAsyncDisposable
             // Fall back to an inherited active variant from an ancestor so nested variant trees
             // propagate the active label when this component doesn't set its own Animate.Variant.
             _ownVariantCtx.ActiveVariant = Animate?.IsVariant == true ? Animate.Variant : VariantCtx?.ActiveVariant;
-            _ownVariantCtx.InitialVariant = Initial?.IsVariant == true ? Initial.Variant : null;
+            // Mirror the ActiveVariant fallback: descendants inherit the initial variant label from
+            // an ancestor when this node defines Variants without its own local Initial variant.
+            _ownVariantCtx.InitialVariant = Initial?.IsVariant == true ? Initial.Variant : VariantCtx?.InitialVariant;
             _ownVariantCtx.Variants = Variants;
             _ownVariantCtx.StaggerChildren = Transition?.StaggerChildren ?? 0;
             _ownVariantCtx.DelayChildren = Transition?.DelayChildren ?? 0;

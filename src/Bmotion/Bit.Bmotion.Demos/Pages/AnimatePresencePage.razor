@@ -45,6 +45,7 @@
                             Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:25)">
                         <span>@item.Label</span>
                         <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
+                                aria-label="Remove item"
                                 @onclick="@(() => RemoveItem(item.Id))">✕</button>
                     </Bmotion>
                 </BmotionAnimatePresence>
@@ -168,6 +169,7 @@
                                     Transition="@BmotionTransitionConfig.Spring(stiffness:300, damping:25)">
                                 <span>@item.Label</span>
                                 <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
+                                        aria-label="Remove item"
                                         @onclick="@(() => RemoveItem(item.Id))">✕</button>
                             </Bmotion>
                         </BmotionAnimatePresence>

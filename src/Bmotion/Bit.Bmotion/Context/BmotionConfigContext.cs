@@ -16,7 +16,18 @@ public class BmotionConfigContext
 
     /// <summary>
     /// Scale factor applied to all animation durations. 0 = instant, 2 = half speed
-    /// (durations are multiplied by this factor). Default: 1.
+    /// (durations are multiplied by this factor). Default: 1. Negative values are rejected.
     /// </summary>
-    public double TransitionSpeed { get; set; } = 1.0;
+    public double TransitionSpeed
+    {
+        get => _transitionSpeed;
+        set
+        {
+            if (value < 0)
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "TransitionSpeed must be non-negative.");
+            _transitionSpeed = value;
+        }
+    }
+    private double _transitionSpeed = 1.0;
 }

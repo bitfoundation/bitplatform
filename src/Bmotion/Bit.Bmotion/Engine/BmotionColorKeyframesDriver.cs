@@ -20,6 +20,11 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
 
     public BmotionColorKeyframesDriver(string[] frames, BmotionTransitionConfig config, Action<string> apply)
     {
+        if (frames is null || frames.Length < 2)
+            throw new ArgumentException("Keyframe animations require at least 2 frames.", nameof(frames));
+        if (config.Times != null && config.Times.Length != frames.Length)
+            throw new ArgumentException("Times array length must match the number of frames.", nameof(config));
+
         _frames = frames;
         _curFrames = (string[])frames.Clone();
         _durationMs = config.Duration * 1000;
@@ -31,7 +36,10 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         _apply = apply;
 
         int n = frames.Length;
-        _times = config.Times ?? Enumerable.Range(0, n).Select(i => (double)i / (n - 1)).ToArray();
+        // Clone the caller's Times so the in-place MirrorTimes mutation never touches their config.
+        _times = config.Times != null
+            ? (double[])config.Times.Clone()
+            : Enumerable.Range(0, n).Select(i => (double)i / (n - 1)).ToArray();
         var globalEase = BmotionEasingFunctions.Get(config);
         _eases = Enumerable.Repeat(globalEase, n - 1).ToArray();
     }

@@ -42,7 +42,9 @@ public partial class BmotionAnimatePresence : ComponentBase
     // ── Internal state ────────────────────────────────────────────────────────
 
     private readonly BmotionPresenceContext _presenceCtx = new();
-    private bool _shouldRender = true;
+    // Starts false so an initial IsPresent=false renders nothing (children stay unmounted) rather
+    // than mounting them; the OnParametersSet transitions flip it on when content should appear.
+    private bool _shouldRender;
     // Starts false so an initial IsPresent=false is treated as "nothing was present yet"
     // rather than a present→absent exit transition.
     private bool _prevIsPresent;

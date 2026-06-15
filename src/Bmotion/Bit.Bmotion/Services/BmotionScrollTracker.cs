@@ -47,6 +47,7 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
     public async Task ObserveAsync(string? containerId, Func<BmotionScrollInfo, Task> onChange)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(onChange);
         // Remove any existing subscription so only one stays active.
         foreach (var existing in _subscriptionKeys)
             await _interop.UnobserveScrollAsync(existing);
@@ -71,7 +72,12 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
         ScrollX   = info.ScrollX;
         ScrollY   = info.ScrollY;
         if (_onScroll != null)
-            await _onScroll(info);
+        {
+            // Guard the user callback so a faulting handler can't fault the JS-invokable flow
+            // (which would destabilise the interop bridge / host circuit).
+            try { await _onScroll(info); }
+            catch { /* swallow user-callback failures to keep the scroll bridge alive */ }
+        }
     }
 
     public async ValueTask DisposeAsync()

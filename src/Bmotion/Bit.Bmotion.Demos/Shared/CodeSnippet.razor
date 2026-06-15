@@ -41,8 +41,7 @@
     {
         try
         {
-            await JS.InvokeVoidAsync("bmCopyToClipboard", Code.Trim('\n'));
-            _copied = true;
+            _copied = await JS.InvokeAsync<bool>("bmCopyToClipboard", Code.Trim('\n'));
         }
         catch
         {

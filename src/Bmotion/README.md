@@ -11,15 +11,15 @@ A Blazor-native animation library inspired by [Framer Motion](https://www.framer
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Components](#components)
-  - [Motion](#motion)
-  - [AnimatePresence](#animatepresence)
-  - [MotionConfig](#motionconfig)
+  - [Bmotion](#bmotion)
+  - [BmotionAnimatePresence](#bmotionanimatepresence)
+  - [BmotionConfig](#bmotionconfig)
 - [Animation Models](#animation-models)
-  - [AnimationProps](#animationprops)
-  - [TransitionConfig](#transitionconfig)
+  - [BmotionAnimationProps](#bmotionanimationprops)
+  - [BmotionTransitionConfig](#bmotiontransitionconfig)
   - [BmotionMotionVariants](#bmotionmotionvariants)
   - [BmotionDragOptions](#bmotiondragoptions)
-  - [ViewportOptions](#viewportoptions)
+  - [BmotionViewportOptions](#bmotionviewportoptions)
 - [Services](#services)
   - [BmotionAnimationController](#bmotionanimationcontroller)
   - [BmotionAnimateService](#bmotionanimateservice)
@@ -52,13 +52,12 @@ required.
 ## Quick Start
 
 ```razor
-@using Bit.Bmotion.Components
-@using Bit.Bmotion.Models
+@using Bit.Bmotion
 
-<Motion Animate='new AnimationProps { Opacity = 1, Y = 0 }'
-        Initial='new AnimationProps { Opacity = 0, Y = 20 }'>
+<Bmotion Animate='new BmotionAnimationProps { Opacity = 1, Y = 0 }'
+         Initial='new BmotionAnimationProps { Opacity = 0, Y = 20 }'>
     Hello, Bmotion!
-</Motion>
+</Bmotion>
 ```
 
 That's it - the element fades in and slides up on first render.
@@ -67,21 +66,21 @@ That's it - the element fades in and slides up on first render.
 
 ## Components
 
-### Motion
+### Bmotion
 
-`<Motion>` is the core component. It replaces any HTML element and adds animation superpowers.
+`<Bmotion>` is the core component. It replaces any HTML element and adds animation superpowers.
 
 ```razor
-<Motion Tag="section"
-        Class="my-card"
-        Initial='new AnimationProps { Opacity = 0, Scale = 0.9 }'
-        Animate='new AnimationProps { Opacity = 1, Scale = 1 }'
-        Exit='new AnimationProps { Opacity = 0, Scale = 0.9 }'
-        WhileHover='new AnimationProps { Scale = 1.05 }'
-        WhileTap='new AnimationProps { Scale = 0.97 }'
-        Transition='new TransitionConfig { Type = TransitionType.Spring, Stiffness = 200, Damping = 20 }'>
+<Bmotion Tag="section"
+         Class="my-card"
+         Initial='new BmotionAnimationProps { Opacity = 0, Scale = 0.9 }'
+         Animate='new BmotionAnimationProps { Opacity = 1, Scale = 1 }'
+         Exit='new BmotionAnimationProps { Opacity = 0, Scale = 0.9 }'
+         WhileHover='new BmotionAnimationProps { Scale = 1.05 }'
+         WhileTap='new BmotionAnimationProps { Scale = 0.97 }'
+         Transition='new BmotionTransitionConfig { Type = BmotionTransitionType.Spring, Stiffness = 200, Damping = 20 }'>
     <p>Content</p>
-</Motion>
+</Bmotion>
 ```
 
 #### Parameters
@@ -94,19 +93,19 @@ That's it - the element fades in and slides up on first render.
 | `ChildContent` | `RenderFragment?` | Child content |
 | `Initial` | `BmotionAnimationTarget?` | Starting state (props, variant name, or `false`) |
 | `Animate` | `BmotionAnimationTarget?` | Target state |
-| `Exit` | `BmotionAnimationTarget?` | State to animate to before unmounting (requires `<AnimatePresence>`) |
+| `Exit` | `BmotionAnimationTarget?` | State to animate to before unmounting (requires `<BmotionAnimatePresence>`) |
 | `WhileHover` | `BmotionAnimationTarget?` | Overlay applied while hovered |
 | `WhileTap` | `BmotionAnimationTarget?` | Overlay applied while tapped/pressed |
 | `WhileFocus` | `BmotionAnimationTarget?` | Overlay applied while focused |
 | `WhileDrag` | `BmotionAnimationTarget?` | Overlay applied while dragging |
 | `WhileInView` | `BmotionAnimationTarget?` | Overlay applied while in viewport |
-| `Transition` | `TransitionConfig?` | Controls timing/physics of all transitions |
+| `Transition` | `BmotionTransitionConfig?` | Controls timing/physics of all transitions |
 | `Variants` | `BmotionMotionVariants?` | Named animation states |
 | `Drag` | `bool` | Enable drag gesture |
 | `DragOptions` | `BmotionDragOptions?` | Drag axis, constraints, elasticity |
 | `Layout` | `bool` | Enable automatic FLIP layout animations |
 | `Once` | `bool` | `WhileInView` fires once and never reverses |
-| `Viewport` | `ViewportOptions?` | Advanced viewport tracking options |
+| `Viewport` | `BmotionViewportOptions?` | Advanced viewport tracking options |
 | `AdditionalAttributes` | `Dictionary<string, object>?` | Extra HTML attributes (passed through) |
 
 #### Event Callbacks
@@ -123,18 +122,18 @@ OnViewportEnter / OnViewportLeave
 
 ---
 
-### AnimatePresence
+### BmotionAnimatePresence
 
 Wraps conditional content to enable exit animations. Children remain in the DOM while their exit animation plays, then are removed.
 
 ```razor
-<AnimatePresence IsPresent="@_show">
-    <Motion Initial='new AnimationProps { Opacity = 0 }'
-            Animate='new AnimationProps { Opacity = 1 }'
-            Exit='new AnimationProps { Opacity = 0 }'>
+<BmotionAnimatePresence IsPresent="@_show">
+    <Bmotion Initial='new BmotionAnimationProps { Opacity = 0 }'
+             Animate='new BmotionAnimationProps { Opacity = 1 }'
+             Exit='new BmotionAnimationProps { Opacity = 0 }'>
         I animate in and out!
-    </Motion>
-</AnimatePresence>
+    </Bmotion>
+</BmotionAnimatePresence>
 
 <button @onclick="() => _show = !_show">Toggle</button>
 
@@ -151,20 +150,20 @@ Wraps conditional content to enable exit animations. Children remain in the DOM 
 
 ---
 
-### MotionConfig
+### BmotionConfig
 
 Provides global animation defaults to an entire subtree via cascading values.
 
 ```razor
-<MotionConfig Transition='new TransitionConfig { Duration = 0.2 }'
-              TransitionSpeed="1.5">
-    <!-- all Motion elements inside inherit these defaults -->
-</MotionConfig>
+<BmotionConfig Transition='new BmotionTransitionConfig { Duration = 0.2 }'
+               TransitionSpeed="1.5">
+    <!-- all Bmotion elements inside inherit these defaults -->
+</BmotionConfig>
 ```
 
 | Parameter | Type | Description |
 |---|---|---|
-| `Transition` | `TransitionConfig?` | Global default transition for all descendant `<Motion>` elements |
+| `Transition` | `BmotionTransitionConfig?` | Global default transition for all descendant `<Bmotion>` elements |
 | `ReduceMotion` | `bool?` | Reduced-motion for this subtree: `null` = respect OS preference, `true` = always reduce, `false` = always animate |
 | `TransitionSpeed` | `double` | Scale factor for all animation durations (default: `1.0`) |
 
@@ -172,12 +171,12 @@ Provides global animation defaults to an entire subtree via cascading values.
 
 ## Animation Models
 
-### AnimationProps
+### BmotionAnimationProps
 
 Describes the animatable state - the *what* of an animation.
 
 ```csharp
-new AnimationProps
+new BmotionAnimationProps
 {
     // Transform
     X = 100, Y = -20, Z = 0,
@@ -208,24 +207,24 @@ new AnimationProps
 }
 ```
 
-### TransitionConfig
+### BmotionTransitionConfig
 
 Controls *how* a value moves between states.
 
 ```csharp
 // Tween (duration-based, default)
-new TransitionConfig
+new BmotionTransitionConfig
 {
-    Type = TransitionType.Tween,
+    Type = BmotionTransitionType.Tween,
     Duration = 0.4,
     Delay = 0.1,
-    Ease = Easing.EaseInOut
+    Ease = BmotionEasing.EaseInOut
 }
 
 // Spring (physics-based)
-new TransitionConfig
+new BmotionTransitionConfig
 {
-    Type = TransitionType.Spring,
+    Type = BmotionTransitionType.Spring,
     Stiffness = 200,
     Damping = 15,
     Mass = 1,
@@ -234,9 +233,9 @@ new TransitionConfig
 }
 
 // Inertia (momentum deceleration)
-new TransitionConfig
+new BmotionTransitionConfig
 {
-    Type = TransitionType.Inertia,
+    Type = BmotionTransitionType.Inertia,
     InertiaVelocity = 500,
     TimeConstant = 700,
     Power = 0.8,
@@ -244,28 +243,28 @@ new TransitionConfig
 }
 ```
 
-Shorthand: `TransitionConfig.Spring(stiffness: 150, damping: 12)`
+Shorthand: `BmotionTransitionConfig.Spring(stiffness: 150, damping: 12)`
 
-Repeat: `new TransitionConfig { Repeat = int.MaxValue, RepeatType = RepeatType.Mirror }`
+Repeat: `new BmotionTransitionConfig { Repeat = int.MaxValue, RepeatType = BmotionRepeatType.Mirror }`
 
 ### BmotionMotionVariants
 
 ```csharp
 var variants = BmotionMotionVariants.Create(
-    ("hidden",  new AnimationProps { Opacity = 0, Y = 20 }),
-    ("visible", new AnimationProps { Opacity = 1, Y = 0  })
+    ("hidden",  new BmotionAnimationProps { Opacity = 0, Y = 20 }),
+    ("visible", new BmotionAnimationProps { Opacity = 1, Y = 0  })
 );
 ```
 
 ```razor
-<Motion Variants="variants"
-        Initial='"hidden"'
-        Animate='"visible"'
-        Transition='new TransitionConfig { StaggerChildren = 0.1 }'>
-    <Motion>Item 1</Motion>
-    <Motion>Item 2</Motion>
-    <Motion>Item 3</Motion>
-</Motion>
+<Bmotion Variants="variants"
+         Initial='"hidden"'
+         Animate='"visible"'
+         Transition='new BmotionTransitionConfig { StaggerChildren = 0.1 }'>
+    <Bmotion>Item 1</Bmotion>
+    <Bmotion>Item 2</Bmotion>
+    <Bmotion>Item 3</Bmotion>
+</Bmotion>
 ```
 
 ### BmotionDragOptions
@@ -282,10 +281,10 @@ new BmotionDragOptions
 }
 ```
 
-### ViewportOptions
+### BmotionViewportOptions
 
 ```csharp
-new ViewportOptions
+new BmotionViewportOptions
 {
     Once = true,
     Margin = "-100px",
@@ -304,7 +303,7 @@ Programmatic control bound to a specific element by ID.
 ```razor
 @inject BmotionAnimationController Controller
 
-<Motion id="my-box" ... />
+<Bmotion id="my-box" ... />
 
 @code {
     protected override void OnAfterRender(bool firstRender)
@@ -313,14 +312,14 @@ Programmatic control bound to a specific element by ID.
     }
 
     async Task Pulse() => await Controller.AnimateAsync(
-        new AnimationProps { Scale = 1.2 },
-        new TransitionConfig { Type = TransitionType.Spring, Bounce = 0.5 });
+        new BmotionAnimationProps { Scale = 1.2 },
+        new BmotionTransitionConfig { Type = BmotionTransitionType.Spring, Bounce = 0.5 });
 }
 ```
 
 ### BmotionAnimateService
 
-Animate elements by CSS selector or `ElementReference` without wrapping them in `<Motion>`.
+Animate elements by CSS selector or `ElementReference` without wrapping them in `<Bmotion>`.
 
 ```razor
 @inject BmotionAnimateService Motion
@@ -332,8 +331,8 @@ Animate elements by CSS selector or `ElementReference` without wrapping them in 
     {
         var controls = await Motion.AnimateAsync(
             "#target",
-            new AnimationProps { X = 100, Opacity = 0.5 },
-            new TransitionConfig { Duration = 0.6 });
+            new BmotionAnimationProps { X = 100, Opacity = 0.5 },
+            new BmotionTransitionConfig { Duration = 0.6 });
 
         await controls.WhenCompleteAsync();
     }
@@ -368,13 +367,13 @@ animations, scroll/viewport effects and programmatic control.
 
 Bmotion can honour the user's **prefers-reduced-motion** preference, collapsing animations to
 instant state changes. To keep it from ever disabling animations an app didn't opt into, this
-is **scoped to `<MotionConfig>`**: an element only consults the preference when it sits inside
-one. Elements with no surrounding `<MotionConfig>` always animate.
+is **scoped to `<BmotionConfig>`**: an element only consults the preference when it sits inside
+one. Elements with no surrounding `<BmotionConfig>` always animate.
 
 ```razor
-<MotionConfig ReduceMotion="null">   @* respect the OS prefers-reduced-motion setting *@
+<BmotionConfig ReduceMotion="null">   @* respect the OS prefers-reduced-motion setting *@
     ...
-</MotionConfig>
+</BmotionConfig>
 ```
 
 ---

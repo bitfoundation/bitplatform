@@ -35,14 +35,20 @@ export function stopRafLoop() {
 
 function _tick(timestamp) {
     if (!_animEngine) return;
-    // invokeMethod is synchronous in Blazor WASM  C# does all animation math here
-    const updates = _animEngine.invokeMethod('ComputeFrame', timestamp);
-    if (updates) {
-        for (const elementId in updates) {
-            const el = document.getElementById(elementId);
-            if (!el) continue;
-            _applyStyles(el, updates[elementId]);
+    try {
+        // invokeMethod is synchronous in Blazor WASM  C# does all animation math here
+        const updates = _animEngine.invokeMethod('ComputeFrame', timestamp);
+        if (updates) {
+            for (const elementId in updates) {
+                const el = document.getElementById(elementId);
+                if (!el) continue;
+                _applyStyles(el, updates[elementId]);
+            }
         }
+    } catch (e) {
+        // Swallow transient frame failures so the rAF loop always reschedules below and
+        // animations don't stall permanently after a single bad frame.
+        console.error('bmotion: ComputeFrame tick failed', e);
     }
     _rafId = requestAnimationFrame(_tick);
 }
@@ -373,6 +379,10 @@ export function observeViewport(elementId, dotnetRef, options) {
     const once      = options?.once      ?? false;
     const margin    = options?.margin    ?? '0px';
     const threshold = options?.threshold ?? 0;
+    // Detach from any previously assigned observer first so re-observing with different options
+    // doesn't stack duplicate subscriptions (which would fire OnIntersect multiple times and
+    // break the "once" behaviour across option changes).
+    _vpObservers.forEach(obs => obs.unobserve(el));
     _vpRefs.set(elementId, { dotnetRef, once });
     _getVpObserver(margin, threshold).observe(el);
 }

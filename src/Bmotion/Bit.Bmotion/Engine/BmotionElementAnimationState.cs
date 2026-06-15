@@ -491,7 +491,7 @@ internal sealed class BmotionElementAnimationState
         if (value is string) return false; // a single string is not a keyframe array
         if (value is string[] sa) { result = sa; return true; }
         if (value is IEnumerable<string> se) { result = se.ToArray(); return true; }
-        if (value is object[] oa && oa.Length > 0 && oa[0] is string)
+        if (value is object[] oa && oa.Length > 0 && oa.All(x => x is string))
         {
             result = oa.Cast<string>().ToArray();
             return true;

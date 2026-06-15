@@ -18,8 +18,24 @@ public class BmotionTransitionConfig
 
     /// <summary>
     /// Custom cubic-bezier as [x1, y1, x2, y2]. Overrides <see cref="Ease"/> when set.
+    /// Must be either <c>null</c> or an array of exactly 4 finite values.
     /// </summary>
-    public double[]? EaseCubicBezier { get; set; }
+    public double[]? EaseCubicBezier
+    {
+        get => _easeCubicBezier;
+        set => _easeCubicBezier = ValidateCubicBezier(value);
+    }
+    private double[]? _easeCubicBezier;
+
+    private static double[]? ValidateCubicBezier(double[]? value)
+    {
+        if (value is null) return null;
+        if (value.Length != 4 || !value.All(double.IsFinite))
+            throw new ArgumentException(
+                "EaseCubicBezier must be null or an array of exactly 4 finite values [x1, y1, x2, y2].",
+                nameof(value));
+        return value;
+    }
 
     // ── Repeat ────────────────────────────────────────────────────────────────
     /// <summary>Number of times to repeat. Set to <c>int.MaxValue</c> for infinite.</summary>

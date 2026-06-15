@@ -32,6 +32,7 @@
     {
         _ctx.DefaultTransition  = Transition;
         _ctx.ReduceMotion       = ReduceMotion;
-        _ctx.TransitionSpeed    = TransitionSpeed < 0 ? 0 : TransitionSpeed;
+        // Reject negative and non-finite (NaN/Infinity) speeds, which would corrupt duration math.
+        _ctx.TransitionSpeed    = double.IsFinite(TransitionSpeed) && TransitionSpeed >= 0 ? TransitionSpeed : 0;
     }
 }

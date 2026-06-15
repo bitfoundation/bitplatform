@@ -66,7 +66,7 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 
     public bool Tick(double timestamp)
     {
-        if (_cancelled) { _apply(_target); return true; }
+        if (_cancelled) return true;
 
         if (_startTs < 0) _startTs = timestamp;
         if (timestamp - _startTs < _currentDelayMs) { _apply(_pos); return false; }

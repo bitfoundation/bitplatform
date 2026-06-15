@@ -45,8 +45,9 @@ internal static class BmotionTransformComposer
             if (t.TryGetValue("scaleY", out double sy) && sy != 1) parts.Add($"scaleY({BmotionCssFormat.Num(sy)})");
         }
 
-        // rotateZ / rotate aliases
-        double rz = t.TryGetValue("rotateZ", out double rz2) ? rz2 : t.GetValueOrDefault("rotate");
+        // rotateZ / rotate aliases: prefer a non-zero rotateZ, otherwise fall back to rotate so a
+        // zero rotateZ doesn't mask a meaningful rotate value.
+        double rz = t.TryGetValue("rotateZ", out double rz2) && rz2 != 0 ? rz2 : t.GetValueOrDefault("rotate");
         if (rz != 0) parts.Add($"rotate({BmotionCssFormat.Num(rz)}deg)");
         if (t.TryGetValue("rotateX", out double rx) && rx != 0) parts.Add($"rotateX({BmotionCssFormat.Num(rx)}deg)");
         if (t.TryGetValue("rotateY", out double ry) && ry != 0) parts.Add($"rotateY({BmotionCssFormat.Num(ry)}deg)");

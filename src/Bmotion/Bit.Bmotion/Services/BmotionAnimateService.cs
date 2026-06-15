@@ -55,6 +55,7 @@ public sealed class BmotionAnimateService
     {
         if (string.IsNullOrWhiteSpace(selector))
             throw new ArgumentException("Selector must not be null or whitespace.", nameof(selector));
+        ArgumentNullException.ThrowIfNull(keyframes);
         var ids = await _interop.ResolveOrRegisterBySelectorAsync(selector);
         return StartAnimations(ids, keyframes, transition);
     }
@@ -76,6 +77,7 @@ public sealed class BmotionAnimateService
         BmotionAnimationProps keyframes,
         BmotionTransitionConfig? transition = null)
     {
+        ArgumentNullException.ThrowIfNull(keyframes);
         var id = await _interop.ResolveOrRegisterByRefAsync(elementReference);
         return StartAnimations([id], keyframes, transition);
     }

@@ -10,6 +10,14 @@ public class BmotionValue<T> : IDisposable where T : struct
     private T _value;
     private readonly List<Func<T, Task>> _subscribers = new();
 
+    /// <summary>Numeric value types accepted by the range-mapping <c>Transform</c> overload.</summary>
+    private static readonly HashSet<Type> _numericTypes = new()
+    {
+        typeof(byte), typeof(sbyte), typeof(short), typeof(ushort),
+        typeof(int), typeof(uint), typeof(long), typeof(ulong),
+        typeof(float), typeof(double), typeof(decimal),
+    };
+
     /// <summary>Subscription to a parent BmotionValue when this instance is a derived/transformed value.</summary>
     private IDisposable? _upstream;
 
@@ -67,13 +75,17 @@ public class BmotionValue<T> : IDisposable where T : struct
     /// <summary>Subscribe to value changes. Returns an unsubscribe action.</summary>
     public IDisposable Subscribe(Func<T, Task> callback)
     {
+        ArgumentNullException.ThrowIfNull(callback);
         _subscribers.Add(callback);
         return new Subscription(() => _subscribers.Remove(callback));
     }
 
     /// <summary>Synchronous convenience overload.</summary>
     public IDisposable Subscribe(Action<T> callback)
-        => Subscribe(v => { callback(v); return Task.CompletedTask; });
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return Subscribe(v => { callback(v); return Task.CompletedTask; });
+    }
 
     // ── Transforms ────────────────────────────────────────────────────────────
 
@@ -95,6 +107,9 @@ public class BmotionValue<T> : IDisposable where T : struct
     /// </summary>
     public BmotionValue<double> Transform(double[] inputRange, double[] outputRange)
     {
+        if (!_numericTypes.Contains(typeof(T)))
+            throw new ArgumentException(
+                $"Transform(inputRange, outputRange) only supports numeric value types; '{typeof(T).Name}' is not numeric.");
         if (inputRange.Length != outputRange.Length)
             throw new ArgumentException("inputRange and outputRange must have the same length.");
         if (inputRange.Length < 2)

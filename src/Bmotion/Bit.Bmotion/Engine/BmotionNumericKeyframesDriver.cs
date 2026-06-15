@@ -20,6 +20,11 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
 
     public BmotionNumericKeyframesDriver(double[] frames, BmotionTransitionConfig config, Action<double> apply)
     {
+        if (frames is null || frames.Length < 2)
+            throw new ArgumentException("Keyframe animations require at least 2 frames.", nameof(frames));
+        if (config.Times != null && config.Times.Length != frames.Length)
+            throw new ArgumentException("Times array length must match the number of frames.", nameof(config));
+
         _frames = frames;
         _curFrames = (double[])frames.Clone();
         _durationMs = config.Duration * 1000;
@@ -31,7 +36,10 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
         _apply = apply;
 
         int n = frames.Length;
-        _times = config.Times ?? Enumerable.Range(0, n).Select(i => (double)i / (n - 1)).ToArray();
+        // Clone the caller's Times so the in-place MirrorTimes mutation never touches their config.
+        _times = config.Times != null
+            ? (double[])config.Times.Clone()
+            : Enumerable.Range(0, n).Select(i => (double)i / (n - 1)).ToArray();
 
         // Per-segment easing: if ease is an array of length n-1, use one per segment; otherwise use same for all
         _eases = new Func<double, double>[n - 1];

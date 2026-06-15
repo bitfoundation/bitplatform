@@ -14,7 +14,11 @@ namespace Bit.Bmotion;
 /// </summary>
 internal static class BmotionCssFormat
 {
-    /// <summary>Formats a double as an invariant-culture string with full round-trip precision.</summary>
+    /// <summary>
+    /// Formats a double as an invariant-culture string using compact <c>"G6"</c> formatting
+    /// (up to 6 significant digits). This is lossy, not full round-trip precision, but keeps
+    /// emitted CSS short while staying visually accurate for animation values.
+    /// </summary>
     public static string Num(double value)
         => value.ToString("G6", CultureInfo.InvariantCulture);
 

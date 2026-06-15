@@ -50,7 +50,7 @@
                     Class="box box-sm"
                     Style="cursor:grab"
                     Drag="true"
-                    OnDrag="@HandleDrag"
+                    OnDragStart="@HandleDragStart"
                     OnDragEnd="@HandleDragEnd" />
             <div style="position:absolute;bottom:.75rem;left:50%;transform:translateX(-50%);font-size:.78rem;color:#888;white-space:nowrap">
                 @_dragInfo
@@ -64,8 +64,8 @@
 @code {
     private string _dragInfo = "Drag the box";
 
-    void HandleDrag()  => _dragInfo = "Dragging…";
-    void HandleDragEnd() => _dragInfo = "Released";
+    void HandleDragStart() => _dragInfo = "Dragging…";
+    void HandleDragEnd()   => _dragInfo = "Released";
 
     private const string _dragCode = """
         @using Bit.Bmotion
@@ -149,7 +149,7 @@
                             Class="box box-sm"
                             Style="cursor:grab"
                             Drag="true"
-                            OnDrag="@HandleDrag"
+                            OnDragStart="@HandleDragStart"
                             OnDragEnd="@HandleDragEnd" />
                     <div style="position:absolute;bottom:.75rem;left:50%;transform:translateX(-50%);font-size:.78rem;color:#888;white-space:nowrap">
                         @_dragInfo
@@ -161,8 +161,8 @@
         @code {
             private string _dragInfo = "Drag the box";
 
-            void HandleDrag()    => _dragInfo = "Dragging…";
-            void HandleDragEnd() => _dragInfo = "Released";
+            void HandleDragStart() => _dragInfo = "Dragging…";
+            void HandleDragEnd()   => _dragInfo = "Released";
         }
         """;
 }

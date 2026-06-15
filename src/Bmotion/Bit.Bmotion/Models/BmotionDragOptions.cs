@@ -4,7 +4,7 @@ namespace Bit.Bmotion;
 /// </summary>
 public class BmotionDragOptions
 {
-    /// <summary>Restrict drag to a single axis. Null = both axes.</summary>
+    /// <summary>Restrict drag to a single axis. Defaults to <see cref="BmotionDragAxis.Both"/>.</summary>
     public BmotionDragAxis Axis { get; set; } = BmotionDragAxis.Both;
 
     /// <summary>
