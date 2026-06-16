@@ -22,8 +22,12 @@ public class BmotionTransitionConfig
     /// </summary>
     public double[]? EaseCubicBezier
     {
-        get => _easeCubicBezier;
-        set => _easeCubicBezier = ValidateCubicBezier(value);
+        get => _easeCubicBezier is null ? null : (double[])_easeCubicBezier.Clone();
+        set
+        {
+            var validated = ValidateCubicBezier(value);
+            _easeCubicBezier = validated is null ? null : (double[])validated.Clone();
+        }
     }
     private double[]? _easeCubicBezier;
 

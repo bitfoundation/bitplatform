@@ -148,11 +148,19 @@ public class BmotionAnimationProps
             else
                 transforms.Add($"translate({BmotionCssFormat.Num(x)}px,{BmotionCssFormat.Num(y)}px)");
         }
-        if (Scale.HasValue) transforms.Add($"scale({BmotionCssFormat.Num(Scale.Value)})");
-        if (ScaleX.HasValue) transforms.Add($"scaleX({BmotionCssFormat.Num(ScaleX.Value)})");
-        if (ScaleY.HasValue) transforms.Add($"scaleY({BmotionCssFormat.Num(ScaleY.Value)})");
-        if (Rotate.HasValue || RotateZ.HasValue)
-            transforms.Add($"rotate({BmotionCssFormat.Num(RotateZ ?? Rotate ?? 0)}deg)");
+        if (Scale.HasValue && Scale.Value != 1)
+        {
+            transforms.Add($"scale({BmotionCssFormat.Num(Scale.Value)})");
+        }
+        else
+        {
+            if (ScaleX.HasValue && ScaleX.Value != 1) transforms.Add($"scaleX({BmotionCssFormat.Num(ScaleX.Value)})");
+            if (ScaleY.HasValue && ScaleY.Value != 1) transforms.Add($"scaleY({BmotionCssFormat.Num(ScaleY.Value)})");
+        }
+        // Prefer a non-zero rotateZ, otherwise fall back to rotate, so an explicit RotateZ = 0
+        // doesn't mask a meaningful Rotate value (matches BmotionTransformComposer).
+        double rotateZ = RotateZ.HasValue && RotateZ.Value != 0 ? RotateZ.Value : (Rotate ?? 0);
+        if (rotateZ != 0) transforms.Add($"rotate({BmotionCssFormat.Num(rotateZ)}deg)");
         if (RotateX.HasValue) transforms.Add($"rotateX({BmotionCssFormat.Num(RotateX.Value)}deg)");
         if (RotateY.HasValue) transforms.Add($"rotateY({BmotionCssFormat.Num(RotateY.Value)}deg)");
         if (SkewX.HasValue) transforms.Add($"skewX({BmotionCssFormat.Num(SkewX.Value)}deg)");
@@ -211,10 +219,19 @@ public class BmotionAnimationProps
                 ? $"translate3d({BmotionCssFormat.Num(x)}px,{BmotionCssFormat.Num(y)}px,{BmotionCssFormat.Num(z)}px)"
                 : $"translate({BmotionCssFormat.Num(x)}px,{BmotionCssFormat.Num(y)}px)");
         }
-        if (Scale.HasValue) transforms.Add($"scale({BmotionCssFormat.Num(Scale.Value)})");
-        if (ScaleX.HasValue) transforms.Add($"scaleX({BmotionCssFormat.Num(ScaleX.Value)})");
-        if (ScaleY.HasValue) transforms.Add($"scaleY({BmotionCssFormat.Num(ScaleY.Value)})");
-        if (Rotate.HasValue || RotateZ.HasValue) transforms.Add($"rotate({BmotionCssFormat.Num(RotateZ ?? Rotate ?? 0)}deg)");
+        if (Scale.HasValue && Scale.Value != 1)
+        {
+            transforms.Add($"scale({BmotionCssFormat.Num(Scale.Value)})");
+        }
+        else
+        {
+            if (ScaleX.HasValue && ScaleX.Value != 1) transforms.Add($"scaleX({BmotionCssFormat.Num(ScaleX.Value)})");
+            if (ScaleY.HasValue && ScaleY.Value != 1) transforms.Add($"scaleY({BmotionCssFormat.Num(ScaleY.Value)})");
+        }
+        // Prefer a non-zero rotateZ, otherwise fall back to rotate, so an explicit RotateZ = 0
+        // doesn't mask a meaningful Rotate value (matches BmotionTransformComposer).
+        double rotateZ = RotateZ.HasValue && RotateZ.Value != 0 ? RotateZ.Value : (Rotate ?? 0);
+        if (rotateZ != 0) transforms.Add($"rotate({BmotionCssFormat.Num(rotateZ)}deg)");
         if (RotateX.HasValue) transforms.Add($"rotateX({BmotionCssFormat.Num(RotateX.Value)}deg)");
         if (RotateY.HasValue) transforms.Add($"rotateY({BmotionCssFormat.Num(RotateY.Value)}deg)");
         if (SkewX.HasValue) transforms.Add($"skewX({BmotionCssFormat.Num(SkewX.Value)}deg)");

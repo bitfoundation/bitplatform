@@ -8,12 +8,12 @@ internal static partial class BmotionColorInterpolator
     // Source-generated regexes: faster than the static Regex cache and trim-safe (no runtime
     // IL emit), which matters because this assembly is built with IsTrimmable=true.
     [System.Text.RegularExpressions.GeneratedRegex(
-        @"rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)",
+        @"^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$",
         System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
     private static partial System.Text.RegularExpressions.Regex RgbRegex();
 
     [System.Text.RegularExpressions.GeneratedRegex(
-        @"hsla?\(\s*([\d.]+)\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?(?:\s*,\s*([\d.]+))?\s*\)",
+        @"^hsla?\(\s*([\d.]+)\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?(?:\s*,\s*([\d.]+))?\s*\)$",
         System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
     private static partial System.Text.RegularExpressions.Regex HslRegex();
     /// <summary>
@@ -40,10 +40,10 @@ internal static partial class BmotionColorInterpolator
     /// </summary>
     public static string Lerp(double[] from, double[] to, double t)
     {
-        int r = (int)Math.Round(from[0] + (to[0] - from[0]) * t);
-        int g = (int)Math.Round(from[1] + (to[1] - from[1]) * t);
-        int b = (int)Math.Round(from[2] + (to[2] - from[2]) * t);
-        double a = from[3] + (to[3] - from[3]) * t;
+        int r = (int)Math.Round(Math.Clamp(from[0] + (to[0] - from[0]) * t, 0, 255));
+        int g = (int)Math.Round(Math.Clamp(from[1] + (to[1] - from[1]) * t, 0, 255));
+        int b = (int)Math.Round(Math.Clamp(from[2] + (to[2] - from[2]) * t, 0, 255));
+        double a = Math.Clamp(from[3] + (to[3] - from[3]) * t, 0, 1);
         return $"rgba({r},{g},{b},{BmotionCssFormat.Num(a, "G4")})";
     }
 

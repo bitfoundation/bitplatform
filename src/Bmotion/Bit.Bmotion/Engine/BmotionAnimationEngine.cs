@@ -30,6 +30,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     private readonly Dictionary<string, BmotionElementAnimationState> _elements = new();
     private DotNetObjectReference<BmotionAnimationEngine>? _dotnet;
     private bool _loopRunning;
+    private readonly SemaphoreSlim _loopStartGate = new(1, 1);
     private bool _reducedMotionDetected;
 
     // Reused across frames so the rAF tick doesn't allocate a fresh outer dictionary every ~16 ms.
@@ -443,19 +444,33 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     {
         if (_loopRunning) return;
 
-        // Bit.Bmotion's animation loop relies on synchronous JS→.NET interop (the JS rAF ticker
-        // calls ComputeFrame synchronously). That is only available on Blazor WebAssembly; on
-        // Blazor Server / SSR the call would throw an opaque error, so fail fast with a clear one.
-        if (!_interop.IsInProcess)
-            throw new PlatformNotSupportedException(
-                "Bit.Bmotion requires synchronous JS interop and is only supported on Blazor WebAssembly. " +
-                "It cannot run on Blazor Server or during server-side prerendering.");
+        // Concurrent callers (e.g. several elements registering on the same frame) can all pass the
+        // check above before any of them flips _loopRunning, which would start the rAF loop more
+        // than once. Serialize startup behind a gate so only the first caller starts it; the rest
+        // re-check _loopRunning after acquiring the gate and become no-ops.
+        await _loopStartGate.WaitAsync();
+        try
+        {
+            if (_loopRunning) return;
 
-        _dotnet ??= DotNetObjectReference.Create(this);
-        await _interop.StartRafLoopAsync(_dotnet);
-        // Only flag the loop as running once startup actually succeeded; if the interop call
-        // throws, the flag stays false so a later call can retry instead of silently no-op'ing.
-        _loopRunning = true;
+            // Bit.Bmotion's animation loop relies on synchronous JS→.NET interop (the JS rAF ticker
+            // calls ComputeFrame synchronously). That is only available on Blazor WebAssembly; on
+            // Blazor Server / SSR the call would throw an opaque error, so fail fast with a clear one.
+            if (!_interop.IsInProcess)
+                throw new PlatformNotSupportedException(
+                    "Bit.Bmotion requires synchronous JS interop and is only supported on Blazor WebAssembly. " +
+                    "It cannot run on Blazor Server or during server-side prerendering.");
+
+            _dotnet ??= DotNetObjectReference.Create(this);
+            await _interop.StartRafLoopAsync(_dotnet);
+            // Only flag the loop as running once startup actually succeeded; if the interop call
+            // throws, the flag stays false so a later call can retry instead of silently no-op'ing.
+            _loopRunning = true;
+        }
+        finally
+        {
+            _loopStartGate.Release();
+        }
     }
 
     private void StopLoopInternal()
@@ -500,6 +515,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             _dotnet.Dispose();
             _dotnet = null;
         }
+        _loopStartGate.Dispose();
         // BmotionInterop is owned and disposed by the DI container (it is registered scoped),
         // so the engine must not dispose it here or it would be disposed twice.
     }

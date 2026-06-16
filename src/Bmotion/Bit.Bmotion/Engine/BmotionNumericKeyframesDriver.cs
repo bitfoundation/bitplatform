@@ -124,7 +124,7 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
         }
         double segLen = times[seg + 1] - times[seg];
         double segT = segLen > 0 ? (t - times[seg]) / segLen : 1.0;
-        double easedT = eases[seg](Math.Min(segT, 1.0));
+        double easedT = eases[seg](Math.Clamp(segT, 0.0, 1.0));
         return frames[seg] + (frames[seg + 1] - frames[seg]) * easedT;
     }
 }
