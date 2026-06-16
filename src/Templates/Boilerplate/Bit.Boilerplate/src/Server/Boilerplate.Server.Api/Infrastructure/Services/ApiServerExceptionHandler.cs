@@ -1,14 +1,16 @@
-﻿using System.Net;
+﻿//+:cnd:noEmit
+using System.Net;
 using Polly.CircuitBreaker;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Authentication;
+using System.Data.Common;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
 
-public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDetailsWriter
+public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProblemDetailsWriter
 {
     [AutoInject] private IHostEnvironment env = default!;
-    [AutoInject] private ILogger<ServerExceptionHandler> logger = default!;
+    [AutoInject] private ILogger<ApiServerExceptionHandler> logger = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
@@ -51,7 +53,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             { "ActivityId", Activity.Current?.Id },
             { "ParentActivityId", Activity.Current?.ParentId },
             { "ServerAppSessionId", appSessionId },
-            { "ServerAppVersion", typeof(ServerExceptionHandler).Assembly.GetName().Version },
+            { "ServerAppVersion", typeof(ApiServerExceptionHandler).Assembly.GetName().Version },
             { "Culture", CultureInfo.CurrentUICulture.Name },
             { "Environment", env.EnvironmentName },
             { "ServerDateTime", DateTimeOffset.UtcNow.ToString("u") },
@@ -96,31 +98,21 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         var message = GetExceptionMessageToShow(exception);
         var exceptionKey = knownException?.Key ?? nameof(UnknownException);
 
-        foreach (var item in GetExceptionData(exception))
-        {
-            if (item.Value is Dictionary<string, object?> appProblemExtensionsData)
-            {
-                foreach (var innerDataItem in appProblemExtensionsData)
-                {
-                    data[innerDataItem.Key] = innerDataItem.Value;
-                }
-
-                continue;
-            }
-
-            data[item.Key] = item.Value;
-        }
-
-        if (parameters is not null)
-        {
-            foreach (var parameter in parameters)
-            {
-                data[parameter.Key] = parameter.Value;
-            }
-        }
-
         if (IgnoreException(exception) is false)
         {
+            foreach (var item in GetExceptionData(exception))
+            {
+                data[item.Key] = item.Value;
+            }
+
+            if (parameters is not null)
+            {
+                foreach (var parameter in parameters)
+                {
+                    data[parameter.Key] = parameter.Value;
+                }
+            }
+
             using var scope = logger.BeginScope(data);
 
             var exceptionMessageToLog = GetExceptionMessageToLog(exception);
@@ -134,6 +126,18 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
                 logger.LogCritical(exception, exceptionMessageToLog);
             }
         }
+
+        if (exception is KnownException)
+        {
+            Activity.Current?.AddTag("HasKnownException", "true");
+        }
+
+        if (IsTransientException(exception))
+        {
+            Activity.Current?.AddTag("HasTransientException", "true");
+        }
+
+        Activity.Current?.SetStatus(ActivityStatusCode.Error, message);
 
         if (instance is null || traceIdentifier is null)
         {
@@ -177,5 +181,17 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
     {
         Handle(UnWrapException(exp), parameters, httpContextAccessor.HttpContext, out var _, out var problemDetails);
         return problemDetails;
+    }
+
+    public override bool IsTransientException(Exception exp)
+    {
+        return base.IsTransientException(exp)
+            || exp is BrokenCircuitException
+            //#if (redis == true)
+            || exp is StackExchange.Redis.RedisConnectionException redisExp
+            //#endif
+            || exp is DbException dbException && dbException.IsTransient;
+        // Azure's IotHubException's IsTransient
+        // MassTransit's ConnectionException's IsTransient
     }
 }

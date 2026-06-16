@@ -1,9 +1,9 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Shared;
+namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class MainLayout
 {
 
-    private readonly List<BitNavItem> _navItems =
+    public static readonly List<BitNavItem> NavItems =
     [
         new() { Text = "Overview", Url = "/overview", AdditionalUrls = ["/components"] },
         new() { Text = "Getting started", Url = "/getting-started" },
@@ -107,7 +107,7 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "Loading", Url = "/components/loading" },
-                new() { Text = "Progress", Url = "/components/progress", AdditionalUrls = ["/components/progressindicator", "/components/progress-indicator", "/components/progressbar"], Description = "ProgressIndicator, ProgressBar" },
+                new() { Text = "Progress", Url = "/components/progress", AdditionalUrls = ["/components/progressindicator", "/components/progress-indicator", "/components/progressbar", "/components/spinner"], Description = "ProgressIndicator, ProgressBar, Spinner" },
                 new() { Text = "Shimmer", Url = "/components/shimmer", Description = "Skeleton" },
             ],
         },
@@ -154,6 +154,7 @@ public partial class MainLayout
             Text = "Extras",
             ChildItems =
             [
+                new() { Text = "AccordionList", Url = "/components/accordionlist", Description = "Expander, Accordion" },
                 new() { Text = "AppShell", Url = "/components/appshell" },
                 new() { Text = "Chart", Url = "/components/chart" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
@@ -164,21 +165,17 @@ public partial class MainLayout
                 new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor" },
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
                 new() { Text = "MessageBox", Url = "/components/messagebox" },
+                new() { Text = "ModalService", Url = "/components/modalservice" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
                 new() { Text = "PdfReader", Url = "/components/pdfreader" },
+                new() { Text = "PhoneInput", Url = "/components/phoneinput" },
+                new() { Text = "ProModal", Url = "/components/promodal" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor" },
-                new()
-                {
-                    Text = "Services",
-                    ChildItems =
-                    [
-                        new() { Text = "ModalService", Url = "/components/modalservice" },
-                    ]
-                },
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },
         new() { Text = "Theming", Url = "/theming" },
     ];
 }
+

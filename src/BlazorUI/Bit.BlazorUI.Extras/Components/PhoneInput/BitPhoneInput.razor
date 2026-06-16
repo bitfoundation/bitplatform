@@ -1,0 +1,139 @@
+@namespace Bit.BlazorUI
+@inherits BitInputBase<string?>
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     aria-owns="@(_isOpen ? _calloutId : null)">
+
+    @if (LabelTemplate is not null)
+    {
+        <label id="@_labelId" for="@_inputId" style="@Styles?.Label" class="bit-phi-lbl @Classes?.Label">
+            @LabelTemplate
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label id="@_labelId" for="@_inputId" style="@Styles?.Label" class="bit-phi-lbl @Classes?.Label">
+            @Label
+        </label>
+    }
+
+    <div id="@_fieldGroupId" style="@Styles?.FieldGroup" class="bit-phi-fgp @Classes?.FieldGroup">
+
+        <button @onclick="HandleOnDropdownClick"
+                @ref="_dropdownButtonRef"
+                @onkeydown="HandleOnKeyDown"
+                @onfocusin="HandleOnInputFocusIn"
+                @onfocusout="HandleOnInputFocusOut"
+                type="button"
+                id="@_dropdownId"
+                role="combobox"
+                aria-haspopup="listbox"
+                aria-expanded="@(_isOpen ? "true" : "false")"
+                aria-controls="@(_isOpen ? _calloutId : null)"
+                aria-activedescendant="@(_isOpen && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+                disabled="@(IsEnabled is false)"
+                tabindex="@(IsEnabled && ReadOnly is false ? 0 : -1)"
+                style="@Styles?.Dropdown"
+                class="bit-phi-drp @Classes?.Dropdown">
+            <span style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
+                @if (Country is not null)
+                {
+                    <img class="bit-phi-flg" src="@GetFlagUrl(Country)" alt="@Country.Name" loading="lazy" />
+                    <span class="bit-phi-cod">+@Country.Code</span>
+                }
+                else
+                {
+                    <span class="bit-phi-pls">@DropdownPlaceholder</span>
+                }
+            </span>
+            <span aria-hidden="true" class="bit-phi-car"></span>
+        </button>
+
+        <input @ref="InputElement"
+               @attributes="InputHtmlAttributes"
+               @onchange="HandleOnNumberChange"
+               @oninput="HandleOnNumberInput"
+               @onfocusin="HandleOnInputFocusIn"
+               @onfocusout="HandleOnInputFocusOut"
+               type="tel"
+               id="@_inputId"
+               name="@Name"
+               readonly="@ReadOnly"
+               required="@Required"
+               value="@CurrentValueAsString"
+               placeholder="@Placeholder"
+               disabled="@(IsEnabled is false)"
+               maxlength="@(MaxLength >= 0 ? MaxLength : null)"
+               style="@Styles?.Input"
+               class="bit-phi-inp @Classes?.Input"
+               aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)" />
+    </div>
+</div>
+
+<div @onclick="CloseCallout"
+     id="@_overlayId"
+     style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay"
+     class="bit-phi-ovl @Classes?.Overlay"></div>
+
+<div id="@_calloutId"
+     tabindex="0"
+     role="listbox"
+     style="@Styles?.Callout"
+     class="bit-phi-cal @Classes?.Callout"
+     aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)">
+
+    @if (NoSearchBox is false)
+    {
+        <div style="@Styles?.SearchBox" class="bit-phi-sbx @Classes?.SearchBox">
+            <input @ref="_searchInputRef"
+                   @oninput="HandleOnSearchInput"
+                   @onkeydown="HandleOnKeyDown"
+                   type="text"
+                   role="searchbox"
+                   id="@_searchId"
+                   autocomplete="off"
+                   value="@_searchText"
+                   aria-label="@(SearchBoxAriaLabel ?? SearchBoxPlaceholder ?? "Search countries")"
+                   class="bit-phi-srch"
+                   placeholder="@(SearchBoxPlaceholder ?? "Search")" />
+        </div>
+    }
+
+    <div id="@_scrollContainerId" style="@Styles?.ScrollContainer" class="bit-phi-scn @Classes?.ScrollContainer">
+        <div class="bit-phi-lst">
+            @{
+                var items = GetFilteredCountries();
+            }
+            @for (var i = 0; i < items.Count; i++)
+            {
+                var index = i;
+                var country = items[index];
+                var isSelected = country.Iso2 == Country?.Iso2;
+                var isActive = index == _activeIndex;
+                var itemClass = $"bit-phi-itm{(isSelected ? " bit-phi-sel" : "")}{(isActive ? " bit-phi-act" : "")}";
+                <button @key="country.Iso2"
+                        id="@GetOptionId(index)"
+                        @onclick="() => HandleOnCountrySelect(country)"
+                        type="button"
+                        role="option"
+                        title="@country.Name"
+                        aria-selected="@(isSelected ? "true" : "false")"
+                        class="@itemClass">
+                    <img class="bit-phi-flg" src="@GetFlagUrl(country)" alt="@country.Name" loading="lazy" />
+                    <span style="@Styles?.ItemName" class="bit-phi-inm @Classes?.ItemName">@country.Name</span>
+                    <span style="@Styles?.ItemCode" class="bit-phi-icd @Classes?.ItemCode">+@country.Code</span>
+                </button>
+            }
+
+            @if (items.Count == 0)
+            {
+                <div class="bit-phi-nor">@(NoResultsMessage ?? "No results found")</div>
+            }
+        </div>
+    </div>
+</div>

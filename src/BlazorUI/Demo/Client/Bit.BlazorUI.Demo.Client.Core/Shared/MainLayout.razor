@@ -9,7 +9,7 @@
             <BitNavPanel @bind-IsOpen="_isNavPanelOpen"
                          Top="65"
                          NoPad NoToggle
-                         Items="_navItems"
+                         Items="NavItems"
                          Style="width:222px"
                          SearchBoxPlaceholder="Search component"
                          SearchBoxStyles="@(new() { Root = "padding-inline:8px" })" />
@@ -25,6 +25,7 @@
     </BitLayout>
 </BitAppShell>
 
-<BitModalContainer ModalParameters="@(new() { AutoToggleScroll = true, ScrollerSelector = "#BitAppShell-container" })" />
+<BitModalContainer />
 
 <AppAiChatPanel />
+

@@ -7,6 +7,10 @@
         "MicrosoftLearn": {
             "type": "http",
             "url": "https://learn.microsoft.com/api/mcp"
+        },
+        "bitBlazorUI": {
+            "type": "http",
+            "url": "https://blazorui.bitplatform.dev/mcp"
         }
     }
 }

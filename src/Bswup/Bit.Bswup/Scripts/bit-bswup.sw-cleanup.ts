@@ -1,4 +1,4 @@
-(self as any)['bit-bswup.sw-cleanup version'] = '10.4.5';
+(self as any)['bit-bswup.sw-cleanup version'] = '10.5.0-pre-01';
 
 // Self-destructing "uninstall" service worker. Deploy this in place of the real
 // bit-bswup.sw.js when an app needs to fully back out of Bswup (e.g. switching a site away

@@ -6,9 +6,7 @@
 /// <typeparam name="TValue"></typeparam>
 public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 {
-    private readonly BitDebouncer _debouncer = new();
-    private readonly BitThrottler _throttler = new();
-    private ChangeEventArgs _lastThrottleEventArgs = default!;
+    private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
 
 
     /// <summary>
@@ -111,18 +109,7 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
         if (Immediate is false) return;
 
-        if (DebounceTime > 0)
-        {
-            await _debouncer.Do(DebounceTime, async () => await InvokeAsync(async () => await HandleOnStringValueChangeAsync(e)));
-        }
-        else if (ThrottleTime > 0)
-        {
-            _lastThrottleEventArgs = e;
-            await _throttler.Do(ThrottleTime, async () => await InvokeAsync(async () => await HandleOnStringValueChangeAsync(_lastThrottleEventArgs)));
-        }
-        else
-        {
-            await HandleOnStringValueChangeAsync(e);
-        }
+        await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
+            await InvokeAsync(async () => await HandleOnStringValueChangeAsync(args)));
     }
 }

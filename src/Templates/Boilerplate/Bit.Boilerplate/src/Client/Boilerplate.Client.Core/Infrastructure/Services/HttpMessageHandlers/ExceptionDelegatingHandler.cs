@@ -7,6 +7,7 @@ namespace Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                                                 IStringLocalizer<AppStrings> localizer,
                                                 JsonSerializerOptions jsonSerializerOptions,
+                                                ClientExceptionHandlerBase exceptionHandler,
                                                 HttpMessageHandler handler) : DelegatingHandler(handler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -66,7 +67,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 pubSubService.Publish(ClientAppMessages.FORCE_UPDATE, persistent: true);
                 throw;
             }
-            catch (Exception exp) when (IsServerConnectionException(exp) || (exp is HttpRequestException && serverCommunicationSuccess is false))
+            catch (Exception exp) when (exceptionHandler.IsTransientException(exp) || (exp is HttpRequestException && serverCommunicationSuccess is false))
             {
                 serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
                 throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
@@ -84,17 +85,5 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             exp.WithData("RequestId", requestIdValue ?? "?"); // Connect the exception to its corresponding request id, if one exists.
             throw;
         }
-    }
-
-    private bool IsServerConnectionException(Exception exp)
-    {
-        return (exp is TimeoutException)
-             || (exp is WebException webExp && webExp.WithData("Status", webExp.Status).Status is WebExceptionStatus.ConnectFailure)
-             || (exp.InnerException is not null && IsServerConnectionException(exp.InnerException))
-             || (exp is HttpIOException httpIOExp && httpIOExp.WithData("HttpRequestError", httpIOExp.HttpRequestError).HttpRequestError is not HttpRequestError.UserAuthenticationError)
-             || (exp is AggregateException aggExp && aggExp.InnerExceptions.Any(IsServerConnectionException))
-             || (exp is SocketException sockExp && sockExp.WithData("SocketErrorCode", sockExp.SocketErrorCode).SocketErrorCode is SocketError.HostNotFound or SocketError.HostUnreachable or SocketError.HostDown or SocketError.TimedOut)
-             || (exp is HttpRequestException reqExp && reqExp.WithData("StatusCode", reqExp.StatusCode).StatusCode is HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable or HttpStatusCode.RequestTimeout)
-             || (exp is HttpProtocolException proExp && proExp.WithData("HttpRequestError", proExp.HttpRequestError).WithData("ErrorCode", proExp.ErrorCode).HttpRequestError is not HttpRequestError.UserAuthenticationError);
     }
 }

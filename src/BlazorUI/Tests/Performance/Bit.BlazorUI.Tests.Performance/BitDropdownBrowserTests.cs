@@ -25,7 +25,7 @@ public class BitDropdownBrowserTests : PerformanceTestBase
 {
     // ── Thresholds ────────────────────────────────────────────────────────────
 
-    // Render thresholds (ms) — dropdowns are heavier than simple buttons.
+    // Render thresholds (ms) - dropdowns are heavier than simple buttons.
     private const double RenderThreshold10  = 800;
     private const double RenderThreshold100 = 3000;
     private const double RenderThreshold500 = 12000;
@@ -136,7 +136,7 @@ public class BitDropdownBrowserTests : PerformanceTestBase
     /// disposed in DisposeAsync when Responsive=false, causing a GCHandle to be retained
     /// for every component instance across every mount/unmount cycle. With the leak in
     /// place, growth per cycle stayed roughly constant. After the fix, growth decelerates
-    /// and approaches an asymptote — Blazor Server JIT/cache warm-up still allocates a
+    /// and approaches an asymptote - Blazor Server JIT/cache warm-up still allocates a
     /// few MB on first runs, but no further growth occurs once steady state is reached.
     ///
     /// The assertion compares the per-cycle growth rate of an early window (cycles 1-10
@@ -209,7 +209,7 @@ public class BitDropdownBrowserTests : PerformanceTestBase
         var firstWindowRate  = (samples[0].HeapMB - baseline)             / 5.0;
         var lateWindowRate   = (samples[3].HeapMB - samples[2].HeapMB)    / 20.0;
 
-        Console.WriteLine($"Per-cycle growth — first 5: {firstWindowRate:F4} MB/cycle, late 20: {lateWindowRate:F4} MB/cycle");
+        Console.WriteLine($"Per-cycle growth - first 5: {firstWindowRate:F4} MB/cycle, late 20: {lateWindowRate:F4} MB/cycle");
 
         // The GC endpoint reports the ENTIRE server heap. When running in parallel with
         // other test processes, their allocations inflate the late window. A relative
@@ -256,7 +256,7 @@ public class BitDropdownBrowserTests : PerformanceTestBase
                 new PageWaitForFunctionOptions { Timeout = DefaultTimeout });
         }
 
-        // Warm-up — JIT, expression-tree caches, SignalR buffers etc. allocate during
+        // Warm-up - JIT, expression-tree caches, SignalR buffers etc. allocate during
         // the first few cycles. We measure only after this has settled.
         for (int i = 0; i < warmupCycles; i++)
         {
@@ -287,8 +287,8 @@ public class BitDropdownBrowserTests : PerformanceTestBase
         var afterLateMB = await GetServerGCMemoryMB();
         var lateGrowth  = afterLateMB - afterGapMB;
 
-        Console.WriteLine($"[responsive={responsive}] heap MB — afterWarmup={afterWarmupMB:F2}, afterEarly={afterEarlyMB:F2}, afterGap={afterGapMB:F2}, afterLate={afterLateMB:F2}");
-        Console.WriteLine($"[responsive={responsive}] growth — early {earlyWindowSize} cycles: {earlyGrowth:F2} MB | late {lateWindowSize} cycles: {lateGrowth:F2} MB");
+        Console.WriteLine($"[responsive={responsive}] heap MB - afterWarmup={afterWarmupMB:F2}, afterEarly={afterEarlyMB:F2}, afterGap={afterGapMB:F2}, afterLate={afterLateMB:F2}");
+        Console.WriteLine($"[responsive={responsive}] growth - early {earlyWindowSize} cycles: {earlyGrowth:F2} MB | late {lateWindowSize} cycles: {lateGrowth:F2} MB");
 
         // Strategy: The GC endpoint reports the ENTIRE server heap, which includes
         // allocations from all concurrent test circuits when running in parallel.

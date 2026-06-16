@@ -85,10 +85,51 @@
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
     --bit-drm-transform-factor: 1;
-}
 
-.bit-drm-cal.bit-drm-rtl {
-    --bit-drm-transform-factor: -1;
+    &.bit-drm-rtl {
+        --bit-drm-transform-factor: -1;
+    }
+
+    &.bit-drm-nsh {
+        box-shadow: none;
+    }
+
+    &.bit-drm-pbg {
+        background-color: $clr-bg-pri;
+    }
+
+    &.bit-drm-sbg {
+        background-color: $clr-bg-sec;
+    }
+
+    &.bit-drm-tbg {
+        background-color: $clr-bg-ter;
+    }
+
+    &.bit-drm-rbg {
+        background-color: transparent;
+    }
+
+    &.bit-drm-brd {
+        border-width: $shp-border-width;
+        border-style: $shp-border-style;
+
+        &.bit-drm-pbr {
+            border-color: $clr-brd-pri;
+        }
+
+        &.bit-drm-sbr {
+            border-color: $clr-brd-sec;
+        }
+
+        &.bit-drm-tbr {
+            border-color: $clr-brd-ter;
+        }
+
+        &.bit-drm-rbr {
+            border-color: transparent;
+        }
+    }
 }
 
 .bit-drm-res {

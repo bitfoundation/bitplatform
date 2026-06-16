@@ -1,7 +1,9 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
 public partial class BitNavBarDemo
 {
+    [Parameter, CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

@@ -198,7 +198,41 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="NormalizeDigits" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            Enables culture-agnostic normalization of non-Latin decimal digits (e.g. Persian "۱۲۳" or Arabic "١٢٣")
+            and the Arabic decimal separator (٫) to their Latin equivalents before parsing. This makes the field accept
+            numbers typed from the various Persian/Arabic keyboard layouts that emit different Unicode code points.
+        </div>
+        <br />
+        <div>
+            <div class="example-box">
+                <BitNumberField Label="Without NormalizeDigits" @bind-Value="normalizeOffValue" Placeholder="۱۲۳" />
+                <div>Value: @normalizeOffValue</div>
+                <br />
+                <BitNumberField Label="With NormalizeDigits (۱۲۳)" @bind-Value="normalizeOnValue" NormalizeDigits Placeholder="۱۲۳" />
+                <div>Value: @normalizeOnValue</div>
+                <br />
+                <BitNumberField Label="Fractioned NormalizeDigits (۱۲٫۵)" @bind-Value="normalizeDecimalValue" NormalizeDigits Placeholder="۱۲٫۵" Precision="2" />
+                <div>Value: @normalizeDecimalValue</div>
+            </div>
+        </div>
+        <br />
+        <div>
+            For full control, provide a custom <b>DigitsNormalizer</b> function. It receives the raw input string and returns
+            the normalized string before parsing, taking precedence over <b>NormalizeDigits</b>. The example below normalizes
+            non-Latin digits and also strips spaces and thousand separators (both Latin "," and Persian "٬").
+        </div>
+        <br />
+        <div>
+            <div class="example-box">
+                <BitNumberField Label="Custom DigitsNormalizer (۱٬۲۳۴)" @bind-Value="customNormalizerValue" DigitsNormalizer="CustomDigitsNormalizer" Placeholder="۱٬۲۳۴" />
+                <div>Value: @customNormalizerValue</div>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Validation" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>Demonstrates validation for BitNumberField within a form, including required fields and custom validation messages.</div>
         <br />
         <div class="example-box">
@@ -220,7 +254,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b>, <b>IncrementIcon</b>, and <b>DecrementIcon</b> parameters.</div>
 
         <br />
@@ -267,7 +301,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
         <div>Explores styling and class customization for BitNumberField, including component styles, custom classes, and detailed style options.</div>
         <br /><br />
         <div class="example-box">
@@ -298,7 +332,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
         <div>Use BitNumberField in right-to-left (RTL).</div>
         <br />
         <div dir="rtl">

@@ -1,0 +1,9 @@
+@import "../../../Bit.BlazorUI/Styles/functions.scss";
+
+.bit-acl {
+    width: 100%;
+    display: flex;
+    box-sizing: border-box;
+    flex-flow: column nowrap;
+    gap: spacing(1);
+}

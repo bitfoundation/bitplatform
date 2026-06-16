@@ -109,7 +109,7 @@
                    @onfocusin="HandleOnFocusIn"
                    @onfocusout="HandleOnFocusOut"
                    @onwheel="HandleOnMouseWheel"
-                   @bind-value:get="@CurrentValueAsString"
+                   @bind-value:get="@GetDisplayValueAsString()"
                    @bind-value:set="@HandleOnStringValueSet"
                    @bind-value:event="@(Immediate ? "oninput" : "onchange")"
                    form=""
@@ -133,7 +133,7 @@
                    aria-valuemax="@_max"
                    aria-describedby="@AriaDescription"
                    aria-valuenow="@(AriaValueNow ?? CurrentValue)"
-                   aria-valuetext="@(AriaValueText ?? CurrentValueAsString)"
+                   aria-valuetext="@(AriaValueText ?? GetDisplayValueAsString())"
                    aria-disabled="@(IsEnabled is false)" />
 
                    @if (ShowClearButton && (CurrentValue is not null || _tempValue.HasValue()))

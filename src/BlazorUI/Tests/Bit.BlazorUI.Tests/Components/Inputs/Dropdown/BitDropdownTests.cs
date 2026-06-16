@@ -853,6 +853,7 @@ public class BitDropdownTests : BunitTestContext
         {
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Immediate, true);
             parameters.Add(p => p.MultiSelect, isMultiSelect);
             parameters.Add(p => p.Items, items);
         });
@@ -875,6 +876,120 @@ public class BitDropdownTests : BunitTestContext
             searchInput.Input(string.Empty);
             Assert.AreEqual(items.Count, drpItems.Count);
         }
+    }
+
+    [TestMethod,
+        DataRow(null, false),
+        DataRow("app", false),
+        DataRow(null, true),
+        DataRow("app", true)
+    ]
+    public void BitDropdownSearchItemOnChangeTest(string search, bool isMultiSelect)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.MultiSelect, isMultiSelect);
+            parameters.Add(p => p.Items, items);
+        });
+
+        var bitDropdown = component.Find(".bit-drp-wrp");
+        bitDropdown.Click();
+
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm", true);
+
+        Assert.AreEqual(items.Count, drpItems.Count);
+
+        var searchInput = component.Find(".bit-drp-sin");
+
+        // Without Immediate, typing (oninput) should not filter the items.
+        searchInput.Input(search);
+        Assert.AreEqual(items.Count, drpItems.Count);
+
+        // Filtering happens on the change event instead.
+        searchInput.Change(search);
+
+        var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
+        Assert.AreEqual(itemCount, drpItems.Count);
+    }
+
+    [TestMethod,
+        DataRow(null, false),
+        DataRow("app", false),
+        DataRow(null, true),
+        DataRow("app", true)
+    ]
+    public void BitDropdownComboSearchItemTest(string search, bool isMultiSelect)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MultiSelect, isMultiSelect);
+            parameters.Add(p => p.Items, items);
+        });
+
+        var bitDropdown = component.Find(".bit-drp-wrp");
+        bitDropdown.Click();
+
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm", true);
+
+        Assert.AreEqual(items.Count, drpItems.Count);
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input(search);
+
+        var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
+        Assert.AreEqual(itemCount, drpItems.Count);
+
+        if (string.IsNullOrEmpty(search) is false)
+        {
+            comboInput.Input(string.Empty);
+            Assert.AreEqual(items.Count, drpItems.Count);
+        }
+    }
+
+    [TestMethod,
+        DataRow(null, false),
+        DataRow("app", false),
+        DataRow(null, true),
+        DataRow("app", true)
+    ]
+    public void BitDropdownComboSearchItemOnChangeTest(string search, bool isMultiSelect)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.MultiSelect, isMultiSelect);
+            parameters.Add(p => p.Items, items);
+        });
+
+        var bitDropdown = component.Find(".bit-drp-wrp");
+        bitDropdown.Click();
+
+        var drpItems = component.FindAll(isMultiSelect ? ".bit-drp-iwr" : ".bit-drp-itm", true);
+
+        Assert.AreEqual(items.Count, drpItems.Count);
+
+        var comboInput = component.Find(".bit-drp-inp");
+
+        // The non-Immediate combo commits its search on the change event (HandleOnComboChange).
+        comboInput.Change(search);
+
+        var itemCount = string.IsNullOrEmpty(search) ? items.Count : items.Count(item => item.Text?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false);
+        Assert.AreEqual(itemCount, drpItems.Count);
     }
 
     [TestMethod,
@@ -1162,6 +1277,7 @@ public class BitDropdownTests : BunitTestContext
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Immediate, true);
             parameters.Add(p => p.Items, items);
 
             if (iconName is not null)

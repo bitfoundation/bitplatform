@@ -82,6 +82,10 @@
     <Project Path="src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj" />
 <!--#endif-->
   </Folder>
+  <Folder Name="/.SolutionItems/.grafana/">
+    <File Path=".grafana/dashboard.json" />
+    <File Path=".grafana/README.MD" />
+  </Folder>
   <Folder Name="/Client/">
     <Project Path="src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj" />
     <Project Path="src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj">

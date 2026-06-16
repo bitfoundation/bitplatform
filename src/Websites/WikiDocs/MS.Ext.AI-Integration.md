@@ -80,7 +80,7 @@ If your application uses **PostgreSQL** as the database provider, the bit Boiler
 
 ### Why Use Vector Embeddings?
 
-Vector embeddings allow you to store and query high-dimensional data—such as semantic representations of text—in a relational database. This opens up powerful capabilities like:
+Vector embeddings allow you to store and query high-dimensional data-such as semantic representations of text-in a relational database. This opens up powerful capabilities like:
 
 - Semantic search over product descriptions
 - Similarity matching between user queries and stored content

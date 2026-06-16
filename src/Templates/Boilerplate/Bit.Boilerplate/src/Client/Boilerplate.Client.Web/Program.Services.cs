@@ -38,6 +38,7 @@ public static partial class Program
             return httpClient;
         });
         services.AddScoped<IExceptionHandler, WebClientExceptionHandler>();
+        services.AddScoped(sp => (ClientExceptionHandlerBase)sp.GetRequiredService<IExceptionHandler>());
 
         services.AddTransient<IPrerenderStateService, WebClientPrerenderStateService>();
     }
