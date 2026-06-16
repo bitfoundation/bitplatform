@@ -36,4 +36,41 @@ public class WindowDocumentHistoryTests : ButilPageTest
     {
         await ClickAndExpectAsync("history-state", "history:len:True");
     }
+
+    [Test]
+    public async Task History_ReplaceState_Then_GetState_Roundtrips_Typed_Payload()
+    {
+        await ClickAndExpectAsync("history-replace", "history:state:7/replaced");
+    }
+
+    [Test]
+    public async Task History_ScrollRestoration_Set_Then_Get_Roundtrips()
+    {
+        await ClickAndExpectAsync("history-scroll", "history:scroll:Manual");
+    }
+
+    [Test]
+    public async Task Location_Parts_Report_Protocol_Pathname_And_Origin()
+    {
+        await ClickAndExpectAsync("loc-parts", "loc:parts:True/True/True");
+    }
+
+    [Test]
+    public async Task Document_Meta_Reports_Visibility_Charset_And_Url()
+    {
+        // A headless foreground page reports "Visible"; charset and url are always populated.
+        await ClickAndExpectAsync("doc-meta", "doc:meta:Visible/True/True");
+    }
+
+    [Test]
+    public async Task Window_Metrics_Report_Positive_Inner_Size()
+    {
+        await ClickAndExpectAsync("window-metrics", "window:metrics:True");
+    }
+
+    [Test]
+    public async Task Window_MatchMedia_Evaluates_A_Query()
+    {
+        await ClickAndExpectAsync("window-matchmedia", "window:media:True");
+    }
 }

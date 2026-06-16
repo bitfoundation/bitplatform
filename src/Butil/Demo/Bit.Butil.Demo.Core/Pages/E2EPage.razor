@@ -29,6 +29,8 @@
     <button id="ls-typed-get" @onclick="LocalStorageTypedGet">GetItem&lt;T&gt;</button>
     <button id="ss-set" @onclick="SessionStorageSet">sessionStorage.setItem</button>
     <button id="ss-get" @onclick="SessionStorageGet">sessionStorage.getItem</button>
+    <button id="ls-remove" @onclick="LocalStorageRemove">localStorage.removeItem</button>
+    <button id="ls-meta" @onclick="LocalStorageMeta">length/key/containsKey</button>
     <button id="ls-clear" @onclick="LocalStorageClear">localStorage.clear</button>
     <button id="ss-clear" @onclick="SessionStorageClear">sessionStorage.clear</button>
 </section>
@@ -46,15 +48,37 @@
     <button id="crypto-rand" @onclick="CryptoRand">getRandomValues(32)</button>
     <button id="crypto-digest" @onclick="CryptoDigestSha256">SHA-256("hello")</button>
     <button id="crypto-roundtrip" @onclick="CryptoAesRoundTrip">AES-GCM roundtrip</button>
+    <button id="crypto-aes-cbc" @onclick="CryptoAesCbcRoundTrip">AES-CBC roundtrip</button>
+    <button id="crypto-hmac" @onclick="CryptoHmac">HMAC sign + verify</button>
+    <button id="crypto-ecdsa" @onclick="CryptoEcdsa">ECDSA sign + verify</button>
+    <button id="crypto-pbkdf2" @onclick="CryptoPbkdf2">PBKDF2 derive</button>
 </section>
 
 <section>
-    <h3>Performance + Window + Document + History</h3>
+    <h3>Location</h3>
+    <button id="loc-href" @onclick="LocationHref">location.href</button>
+    <button id="loc-parts" @onclick="LocationParts">protocol/pathname/origin</button>
+</section>
+
+<section>
+    <h3>History</h3>
+    <button id="history-state" @onclick="HistoryPush">history.pushState</button>
+    <button id="history-replace" @onclick="HistoryReplace">replaceState + state</button>
+    <button id="history-scroll" @onclick="HistoryScrollRestoration">scrollRestoration</button>
+</section>
+
+<section>
+    <h3>Document</h3>
+    <button id="doc-title" @onclick="DocSetTitle">Set document.title</button>
+    <button id="doc-meta" @onclick="DocMeta">visibility/charset/url</button>
+</section>
+
+<section>
+    <h3>Window + Performance</h3>
     <button id="perf-now" @onclick="PerfNow">performance.now</button>
     <button id="window-base64" @onclick="WindowBase64">btoa/atob roundtrip</button>
-    <button id="doc-title" @onclick="DocSetTitle">Set document.title</button>
-    <button id="loc-href" @onclick="LocationHref">location.href</button>
-    <button id="history-state" @onclick="HistoryPush">history.pushState</button>
+    <button id="window-metrics" @onclick="WindowMetrics">inner size + secure ctx</button>
+    <button id="window-matchmedia" @onclick="WindowMatchMedia">matchMedia</button>
 </section>
 
 @code {
@@ -97,6 +121,24 @@
     }
     private async Task LocalStorageClear() { await localStorage.Clear(); Set("ls:clear"); }
     private async Task SessionStorageClear() { await sessionStorage.Clear(); Set("ss:clear"); }
+    private async Task LocalStorageRemove()
+    {
+        await localStorage.SetItem("butil-e2e-remove", "x");
+        await localStorage.RemoveItem("butil-e2e-remove");
+        var present = await localStorage.ContainsKey("butil-e2e-remove");
+        Set($"ls:removed:{!present}");
+    }
+    private async Task LocalStorageMeta()
+    {
+        await localStorage.Clear();
+        await localStorage.SetItem("alpha", "1");
+        await localStorage.SetItem("beta", "2");
+        var len = await localStorage.GetLength();
+        var key0 = await localStorage.GetKey(0);
+        var hasAlpha = await localStorage.ContainsKey("alpha");
+        var hasGhost = await localStorage.ContainsKey("ghost");
+        Set($"ls:meta:{len}/{key0}/{hasAlpha}/{hasGhost}");
+    }
 
     // ─── Cookie ─────────────────────────────────────────────────────────────────
     private async Task CookieSet()
@@ -144,6 +186,43 @@
         Set($"crypto:aes-gcm:{matches}");
     }
 
+    private async Task CryptoAesCbcRoundTrip()
+    {
+        var key = await crypto.GenerateAesKey(256);
+        var iv = await crypto.GetRandomValues(16);
+        var data = System.Text.Encoding.UTF8.GetBytes("payload");
+        var cipher = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, data, iv);
+        var plain = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, cipher, iv);
+        var matches = plain is not null && System.Text.Encoding.UTF8.GetString(plain) == "payload";
+        Set($"crypto:aes-cbc:{matches}");
+    }
+
+    private async Task CryptoHmac()
+    {
+        var key = await crypto.GenerateHmacKey(CryptoKeyHash.Sha256);
+        var data = System.Text.Encoding.UTF8.GetBytes("payload");
+        var sig = await crypto.SignHmac(CryptoKeyHash.Sha256, key, data);
+        var ok = await crypto.VerifyHmac(CryptoKeyHash.Sha256, key, sig, data);
+        Set($"crypto:hmac:{ok}");
+    }
+
+    private async Task CryptoEcdsa()
+    {
+        var pair = await crypto.GenerateEcdsaKeyPair();
+        var data = System.Text.Encoding.UTF8.GetBytes("payload");
+        var sig = await crypto.SignEcdsa(pair.PrivateKey, data, pair.Curve);
+        var ok = await crypto.VerifyEcdsa(pair.PublicKey, sig, data, pair.Curve);
+        Set($"crypto:ecdsa:{ok}");
+    }
+
+    private async Task CryptoPbkdf2()
+    {
+        var password = System.Text.Encoding.UTF8.GetBytes("correct horse");
+        var salt = await crypto.GetRandomValues(16);
+        var bits = await crypto.DerivePbkdf2(password, salt, 100_000, 256);
+        Set($"crypto:pbkdf2:{bits.Length}");
+    }
+
     // ─── Misc ──────────────────────────────────────────────────────────────────
     private async Task PerfNow()
     {
@@ -162,16 +241,55 @@
         var t = await document.GetTitle();
         Set($"doc:title:{t}");
     }
+    private async Task DocMeta()
+    {
+        var visibility = await document.GetVisibilityState();
+        var charset = await document.GetCharacterSet();
+        var url = await document.GetUrl();
+        Set($"doc:meta:{visibility}/{charset.Length > 0}/{url.Contains("/e2e")}");
+    }
     private async Task LocationHref()
     {
         var href = await location.GetHref();
         Set($"loc:href:{href.Contains("/e2e")}");
+    }
+    private async Task LocationParts()
+    {
+        var protocol = await location.GetProtocol();
+        var pathname = await location.GetPathname();
+        var origin = await location.GetOrigin();
+        var protocolOk = protocol is "http:" or "https:";
+        Set($"loc:parts:{protocolOk}/{pathname == "/e2e"}/{origin.Contains(protocol)}");
+    }
+    private async Task WindowMetrics()
+    {
+        var innerWidth = await window.GetInnerWidth();
+        var innerHeight = await window.GetInnerHeight();
+        Set($"window:metrics:{innerWidth > 0 && innerHeight > 0}");
+    }
+    private async Task WindowMatchMedia()
+    {
+        var mql = await window.MatchMedia("(min-width: 1px)");
+        Set($"window:media:{mql.Matches}");
     }
     private async Task HistoryPush()
     {
         await history.PushState(new SamplePayload(1, "marker"), "/e2e?marked");
         var len = await history.GetLength();
         Set($"history:len:{len > 0}");
+    }
+    private async Task HistoryReplace()
+    {
+        await history.ReplaceState(new SamplePayload(7, "replaced"), "/e2e?replaced");
+        var state = await history.GetState<SamplePayload>();
+        Set($"history:state:{state?.Number}/{state?.Label}");
+    }
+    private async Task HistoryScrollRestoration()
+    {
+        await history.SetScrollRestoration(ScrollRestoration.Manual);
+        var value = await history.GetScrollRestoration();
+        await history.SetScrollRestoration(ScrollRestoration.Auto);
+        Set($"history:scroll:{value}");
     }
 
     public class SamplePayload(int number, string label)

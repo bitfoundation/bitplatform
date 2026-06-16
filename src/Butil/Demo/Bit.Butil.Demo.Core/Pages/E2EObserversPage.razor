@@ -5,6 +5,13 @@
 @inject Bit.Butil.NetworkInformation networkInformation
 @inject Bit.Butil.BroadcastChannel broadcastChannel
 @inject Bit.Butil.IndexedDb indexedDb
+@inject Bit.Butil.CacheStorage cacheStorage
+@inject Bit.Butil.WebLocks webLocks
+@inject Bit.Butil.ObjectUrls objectUrls
+@inject Bit.Butil.CookieStore cookieStore
+@inject Bit.Butil.Navigator navigator
+@inject Bit.Butil.UserAgent userAgent
+@inject Bit.Butil.Screen screen
 @inject IJSRuntime js
 
 @*
@@ -48,6 +55,38 @@
 <section>
     <h3>IndexedDB</h3>
     <button id="idb-roundtrip" @onclick="IndexedDbRoundTrip">open + put + get</button>
+</section>
+
+<section>
+    <h3>CacheStorage</h3>
+    <button id="cache-roundtrip" @onclick="CacheRoundTrip">putText + match + delete</button>
+</section>
+
+<section>
+    <h3>Web Locks</h3>
+    <button id="lock-run" @onclick="LockRun">acquire + run + release</button>
+</section>
+
+<section>
+    <h3>Object URLs</h3>
+    <button id="objurl-create" @onclick="ObjectUrlCreate">createObjectURL</button>
+</section>
+
+<section>
+    <h3>CookieStore</h3>
+    <button id="cookiestore-roundtrip" @onclick="CookieStoreRoundTrip">set + get + delete</button>
+</section>
+
+<section>
+    <h3>Performance entries</h3>
+    <button id="perf-entries" @onclick="PerfEntries">mark + getEntries + clear</button>
+</section>
+
+<section>
+    <h3>Platform</h3>
+    <button id="nav-info" @onclick="NavInfo">navigator info</button>
+    <button id="ua-extract" @onclick="UaExtract">userAgent.extract</button>
+    <button id="screen-metrics" @onclick="ScreenMetrics">screen metrics</button>
 </section>
 
 @code {
@@ -183,6 +222,93 @@
         await db.Put("items", new IdbItem { Id = "k1", Value = "stored" });
         var item = await db.Get<IdbItem>("items", "k1");
         Set($"idb:get:{item?.Value}");
+    }
+
+    // ─── CacheStorage ────────────────────────────────────────────────────────────
+    private async Task CacheRoundTrip()
+    {
+        const string cacheName = "butil-e2e-cache";
+        const string url = "https://butil.e2e/cached-resource";
+        await cacheStorage.PutText(cacheName, url, "hello-cache");
+        var match = await cacheStorage.Match(cacheName, url);
+        var body = match.Found ? System.Text.Encoding.UTF8.GetString(match.Body) : "";
+        var deleted = await cacheStorage.DeleteEntry(cacheName, url);
+        await cacheStorage.Delete(cacheName);
+        Set($"cache:roundtrip:{match.Found}/{body}/{deleted}");
+    }
+
+    // ─── Web Locks ─────────────────────────────────────────────────────────────
+    private async Task LockRun()
+    {
+        var ran = false;
+        var heldExclusively = false;
+        await webLocks.Run("butil-e2e-lock", async () =>
+        {
+            ran = true;
+            var snapshot = await webLocks.Query();
+            heldExclusively = snapshot.Held.Any(l => l.Name == "butil-e2e-lock");
+        });
+        Set($"lock:run:{ran}/{heldExclusively}");
+    }
+
+    // ─── Object URLs ─────────────────────────────────────────────────────────────
+    private async Task ObjectUrlCreate()
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes("blob-bytes");
+        var url = await objectUrls.Create(bytes, "text/plain");
+        var ok = url.StartsWith("blob:", StringComparison.Ordinal);
+        await objectUrls.Revoke(url);
+        Set($"objurl:create:{ok}");
+    }
+
+    // ─── CookieStore ─────────────────────────────────────────────────────────────
+    private async Task CookieStoreRoundTrip()
+    {
+        if (!await cookieStore.IsSupported())
+        {
+            Set("cookiestore:unsupported");
+            return;
+        }
+
+        await cookieStore.Set(new CookieStoreItem { Name = "butil-e2e-cs", Value = "csval", Path = "/" });
+        var item = await cookieStore.Get("butil-e2e-cs");
+        await cookieStore.Delete("butil-e2e-cs");
+        Set($"cookiestore:get:{item?.Value}");
+    }
+
+    // ─── Performance entries ───────────────────────────────────────────────────
+    private async Task PerfEntries()
+    {
+        await performance.ClearMarks();
+        await performance.Mark("butil-e2e-entry");
+        var entries = await performance.GetEntries("butil-e2e-entry", "mark");
+        await performance.ClearMarks();
+        var cleared = await performance.GetEntries("butil-e2e-entry", "mark");
+        Set($"perf:entries:{entries.Length > 0}/{cleared.Length == 0}");
+    }
+
+    // ─── Platform ─────────────────────────────────────────────────────────────
+    private async Task NavInfo()
+    {
+        var language = await navigator.GetLanguage();
+        var cores = await navigator.GetHardwareConcurrency();
+        var online = await navigator.IsOnLine();
+        Set($"nav:info:{language.Length > 0 && cores > 0 && online}");
+    }
+
+    private async Task UaExtract()
+    {
+        var props = await userAgent.Extract();
+        var ok = props is not null && !string.IsNullOrEmpty(props.UserAgentValue);
+        Set($"ua:extract:{ok}");
+    }
+
+    private async Task ScreenMetrics()
+    {
+        var width = await screen.GetWidth();
+        var height = await screen.GetHeight();
+        var depth = await screen.GetColorDepth();
+        Set($"screen:metrics:{width > 0 && height > 0 && depth > 0}");
     }
 
     private static async Task<bool> WaitFor(TaskCompletionSource<bool> tcs, int timeoutMs)

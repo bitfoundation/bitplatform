@@ -48,8 +48,8 @@ dotnet test .\Bit.Butil.E2ETests.csproj
 
 Two deterministic pages live in `Bit.Butil.Demo.Core/Pages`:
 
-* `/e2e` - storage, cookie, crypto, performance.now, window base64, document title, location, history.
-* `/e2e-observers` - PerformanceObserver, StorageManager, NetworkInformation, IntersectionObserver, ResizeObserver, MutationObserver, BroadcastChannel, IndexedDB.
+* `/e2e` - storage (round-trip, typed JSON, removeItem, length/key/containsKey, clear), cookie, crypto (UUID, random bytes, SHA-256, AES-GCM, AES-CBC, HMAC, ECDSA, PBKDF2), performance.now, window (base64, inner size, secure context, matchMedia), document (title, visibility/charset/url), location (href + protocol/pathname/origin), history (pushState, replaceState + state, scrollRestoration).
+* `/e2e-observers` - PerformanceObserver, performance mark/measure/getEntries/clearMarks, StorageManager, NetworkInformation, IntersectionObserver, ResizeObserver, MutationObserver, BroadcastChannel, IndexedDB, CacheStorage, Web Locks, Object URLs, CookieStore, navigator/userAgent/screen platform getters.
 
 Both expose stable element ids and funnel results through a single `#status` element so test selectors stay simple.
 
