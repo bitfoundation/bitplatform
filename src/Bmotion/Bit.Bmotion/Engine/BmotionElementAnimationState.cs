@@ -89,8 +89,11 @@ internal sealed class BmotionElementAnimationState
         List<string>? completed = null;
         foreach (var (key, driver) in _activeAnims.ToArray())
         {
-            // The driver may have been removed by a re-entrant callback earlier in this loop.
-            if (!_activeAnims.ContainsKey(key)) continue;
+            // The driver may have been removed - or replaced with a different driver - by a
+            // re-entrant callback earlier in this loop. Skip unless the live driver for this key
+            // is still the exact one captured in the snapshot, so a stale driver can't tick and
+            // later evict the replacement at the removal step below.
+            if (!_activeAnims.TryGetValue(key, out var current) || !ReferenceEquals(current, driver)) continue;
             if (driver.Tick(timestamp))
                 (completed ??= new List<string>()).Add(key);
         }

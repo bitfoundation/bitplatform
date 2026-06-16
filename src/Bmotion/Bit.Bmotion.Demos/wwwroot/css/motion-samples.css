@@ -43,6 +43,12 @@ body {
     transition: color .2s;
 }
 .bm-nav a:hover, .bm-nav a.active { color: var(--bm-text); }
+.bm-nav a:focus-visible {
+    color: var(--bm-text);
+    outline: 2px solid var(--bm-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
 
 .bm-page {
     max-width: 900px;
@@ -116,6 +122,11 @@ body {
     transition: opacity .2s;
 }
 .btn-bm:hover { opacity: .85; }
+.btn-bm:focus-visible {
+    opacity: .85;
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
 
 /* ── Code snippets ─────────────────────────────────────────────────────────── */
 
@@ -161,6 +172,13 @@ body {
     border-color: var(--bm-primary);
     background: rgba(108,71,255,.12);
 }
+.code-toggle:focus-visible {
+    color: #fff;
+    border-color: var(--bm-primary);
+    background: rgba(108,71,255,.12);
+    outline: 2px solid var(--bm-primary);
+    outline-offset: 2px;
+}
 .code-toggle-icon {
     font-size: .7rem;
     line-height: 1;
@@ -183,6 +201,13 @@ body {
     color: #fff;
     border-color: var(--bm-primary);
     background: rgba(108,71,255,.12);
+}
+.code-copy:focus-visible {
+    color: #fff;
+    border-color: var(--bm-primary);
+    background: rgba(108,71,255,.12);
+    outline: 2px solid var(--bm-primary);
+    outline-offset: 2px;
 }
 .code-snippet .code-block {
     margin-top: .75rem;

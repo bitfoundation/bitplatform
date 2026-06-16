@@ -495,7 +495,17 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
 
         async Task StopRafLoopGatedAsync()
         {
-            await _loopStartGate.WaitAsync();
+            try
+            {
+                await _loopStartGate.WaitAsync();
+            }
+            catch (ObjectDisposedException)
+            {
+                // DisposeAsync may dispose the gate while this fire-and-forget task is still
+                // pending. Bail out gracefully rather than surfacing an unobserved exception -
+                // teardown already stopped the JS loop explicitly.
+                return;
+            }
             try
             {
                 // A restart may have re-flipped _loopRunning to true after we cleared it (and

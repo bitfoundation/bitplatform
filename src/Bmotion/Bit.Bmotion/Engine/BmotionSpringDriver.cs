@@ -56,8 +56,12 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
         // 0.01px-per-sec target for many extra frames. Small ranges keep the absolute thresholds.
         double range = Math.Abs(to - from);
         double restScale = range > 1.0 ? range : 1.0;
-        _restSpeed = config.RestSpeed * restScale;
-        _restDelta = config.RestDelta * restScale;
+        // Clamp to a small positive floor: a non-positive RestSpeed/RestDelta would make the
+        // completion gate (Abs(vel) < restSpeed && Abs(pos-target) < restDelta) unsatisfiable,
+        // leaving the spring ticking forever.
+        const double minRest = 1e-4;
+        _restSpeed = Math.Max(config.RestSpeed * restScale, minRest);
+        _restDelta = Math.Max(config.RestDelta * restScale, minRest);
         _currentDelayMs = config.Delay * 1000;
         _repeatDelayMs = config.RepeatDelay * 1000;
         _repeat = config.Repeat;

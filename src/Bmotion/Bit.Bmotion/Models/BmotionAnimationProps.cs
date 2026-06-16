@@ -190,8 +190,8 @@ public class BmotionAnimationProps
         if (PathLength.HasValue)
         {
             double clamped = Math.Max(0, Math.Min(1, PathLength.Value));
-            double spacing = PathSpacing ?? 1.0;
-            double offset = PathOffset ?? 0.0;
+            double spacing = Math.Max(0, Math.Min(1, PathSpacing ?? 1.0));
+            double offset = Math.Max(0, Math.Min(1, PathOffset ?? 0.0));
             sb.Append($"stroke-dasharray:{BmotionCssFormat.Num(clamped)} {BmotionCssFormat.Num(spacing)};");
             sb.Append($"stroke-dashoffset:{BmotionCssFormat.Num(1 - clamped - offset)};");
         }
@@ -259,8 +259,8 @@ public class BmotionAnimationProps
         if (PathLength.HasValue)
         {
             double clamped = Math.Max(0, Math.Min(1, PathLength.Value));
-            double spacing = PathSpacing ?? 1.0;
-            double offset = PathOffset ?? 0.0;
+            double spacing = Math.Max(0, Math.Min(1, PathSpacing ?? 1.0));
+            double offset = Math.Max(0, Math.Min(1, PathOffset ?? 0.0));
             d["strokeDasharray"] = $"{BmotionCssFormat.Num(clamped)} {BmotionCssFormat.Num(spacing)}";
             d["strokeDashoffset"] = BmotionCssFormat.Num(1 - clamped - offset);
         }

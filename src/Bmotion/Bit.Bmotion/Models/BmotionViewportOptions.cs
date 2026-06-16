@@ -30,7 +30,7 @@ public class BmotionViewportOptions
 
     internal object ToJsObject()
     {
-        var amount = Amount?.ToLowerInvariant();
+        var amount = Amount?.Trim().ToLowerInvariant();
         double threshold = amount switch
         {
             "some" => 0.0,

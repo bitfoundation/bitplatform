@@ -80,6 +80,7 @@
         var item = _items.Find(i => i.Id == id);
         if (item is null || !item.Present) return;
         item.Present = false;   // trigger the exit animation
+        StateHasChanged();      // force a render so the exit animation runs before the delay
         await Task.Delay(400);  // let it finish before dropping the item from the list
         _items.Remove(item);
     }
@@ -199,6 +200,7 @@
                 var item = _items.Find(i => i.Id == id);
                 if (item is null || !item.Present) return;
                 item.Present = false;   // trigger the exit animation
+                StateHasChanged();      // force a render so the exit animation runs before the delay
                 await Task.Delay(400);  // let it finish before removing the item
                 _items.Remove(item);
             }

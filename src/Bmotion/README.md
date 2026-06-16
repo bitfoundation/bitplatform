@@ -302,6 +302,7 @@ Programmatic control bound to a specific element by ID.
 
 ```razor
 @inject BmotionAnimationController Controller
+@implements IDisposable
 
 <Bmotion id="my-box" ... />
 
@@ -314,6 +315,9 @@ Programmatic control bound to a specific element by ID.
     async Task Pulse() => await Controller.AnimateAsync(
         new BmotionAnimationProps { Scale = 1.2 },
         new BmotionTransitionConfig { Type = BmotionTransitionType.Spring, Bounce = 0.5 });
+
+    // Dispose the controller so the bound element is unregistered from the engine on teardown.
+    public void Dispose() => Controller.Dispose();
 }
 ```
 

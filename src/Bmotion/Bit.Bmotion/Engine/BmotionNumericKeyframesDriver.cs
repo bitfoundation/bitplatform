@@ -16,6 +16,7 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
     private double _startTime = -1;
     private bool _cancelled;
     private int _iteration;
+    private bool _reversed;
     private double[] _curFrames;
 
     public BmotionNumericKeyframesDriver(double[] frames, BmotionTransitionConfig config, Action<double> apply)
@@ -35,6 +36,10 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
             // negative/zero segment lengths and NaN output, so reject them up front.
             for (int i = 0; i < config.Times.Length; i++)
             {
+                // double.NaN/infinity slip past the relational checks below (every comparison with
+                // NaN is false), so reject non-finite entries explicitly before the range/order tests.
+                if (!double.IsFinite(config.Times[i]))
+                    throw new ArgumentException("Times values must be finite.", nameof(config));
                 if (config.Times[i] < 0 || config.Times[i] > 1)
                     throw new ArgumentException("Times values must be within the range [0, 1].", nameof(config));
                 if (i > 0 && config.Times[i] < config.Times[i - 1])
@@ -85,10 +90,20 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
             {
                 if (!_isInfinite) _iteration++;
                 _startTime = timestamp + _repeatDelayMs;
-                if (_repeatType == BmotionRepeatType.Mirror || _repeatType == BmotionRepeatType.Reverse)
+                // Mirror ping-pongs: reverse the playback direction every cycle (0→1, 1→0, …).
+                // Reverse plays the frames backwards repeatedly (1→0, 1→0, …): reverse once on the
+                // first repeat, then keep that order so each subsequent cycle replays in reverse
+                // rather than toggling back to forward.
+                if (_repeatType == BmotionRepeatType.Mirror)
                 {
                     Array.Reverse(_curFrames);
                     MirrorTimes(_times);
+                }
+                else if (_repeatType == BmotionRepeatType.Reverse && !_reversed)
+                {
+                    Array.Reverse(_curFrames);
+                    MirrorTimes(_times);
+                    _reversed = true;
                 }
                 return false;
             }

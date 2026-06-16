@@ -442,8 +442,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnPointerLeave()
     {
-        if (WhileHover != null)
-            await Engine.DeactivateGestureLayerAsync(_id, "hover");
+        // Deactivate unconditionally: if WhileHover was cleared while the hover layer was still
+        // active, a null guard here would strand the layer's styles. DeactivateGestureLayerAsync
+        // is a no-op when no matching layer is active.
+        await Engine.DeactivateGestureLayerAsync(_id, "hover");
         await OnHoverEnd.InvokeAsync();
     }
 
@@ -460,8 +462,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnPointerUp(bool isInsideElement)
     {
-        if (WhileTap != null)
-            await Engine.DeactivateGestureLayerAsync(_id, "tap");
+        await Engine.DeactivateGestureLayerAsync(_id, "tap");
         if (isInsideElement) await OnTap.InvokeAsync();
         else await OnTapCancel.InvokeAsync(); // released outside the element ⇒ tap cancelled
     }
@@ -469,8 +470,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnPointerCancel()
     {
-        if (WhileTap != null)
-            await Engine.DeactivateGestureLayerAsync(_id, "tap");
+        await Engine.DeactivateGestureLayerAsync(_id, "tap");
         await OnTapCancel.InvokeAsync();
     }
 
@@ -487,8 +487,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnFocusOut()
     {
-        if (WhileFocus != null)
-            await Engine.DeactivateGestureLayerAsync(_id, "focus");
+        await Engine.DeactivateGestureLayerAsync(_id, "focus");
         await OnFocusEnd.InvokeAsync();
     }
 
@@ -518,8 +517,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnPointerUp_Drag(double velX, double velY)
     {
-        if (WhileDrag != null)
-            await Engine.DeactivateGestureLayerAsync(_id, "drag");
+        await Engine.DeactivateGestureLayerAsync(_id, "drag");
 
         var dragOpt = DragOptions ?? new BmotionDragOptions();
 
@@ -578,7 +576,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         }
         else
         {
-            if (WhileInView != null && !(Viewport?.Once ?? Once))
+            if (!(Viewport?.Once ?? Once))
                 await Engine.DeactivateGestureLayerAsync(_id, "inview");
             await OnViewportLeave.InvokeAsync();
         }
