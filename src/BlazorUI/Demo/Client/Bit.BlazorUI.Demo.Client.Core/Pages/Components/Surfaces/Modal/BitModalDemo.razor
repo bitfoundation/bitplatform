@@ -210,7 +210,9 @@
 
         <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>Use BitModal in right-to-left (RTL).</div><br />
-            <BitButton Dir="BitDir.Rtl" OnClick="() => isOpenRtl = true">باز کردن مُدال</BitButton>
+            <div dir="rtl">
+                <BitButton Dir="BitDir.Rtl" OnClick="() => isOpenRtl = true">باز کردن مُدال</BitButton>
+            </div>
             <BitModal Dir="BitDir.Rtl" @bind-IsOpen="isOpenRtl">
                 <div class="modal-header">
                     <span class="modal-header-text">لورم ایپسوم</span>
