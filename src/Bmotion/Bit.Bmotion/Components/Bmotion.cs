@@ -99,6 +99,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // style, so we re-flush the engine's live values on top to avoid resetting animated props.
     private string _pendingStyle = string.Empty;
     private string _committedStyle = string.Empty;
+    // Signatures of the gesture-event flags and viewport options currently wired up in JS. Compared
+    // each update so listeners/observers are re-attached only when the effective configuration
+    // changes (gestures are otherwise wired once and would ignore later parameter changes).
+    private string _eventFlagsSig = string.Empty;
+    private string? _viewportSig;
 
     // ════════════════════════════════════════════════════════════════════════════
     // Rendering
@@ -180,11 +185,16 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     private string BuildInitialStyle()
     {
+        // The initial inline style exists only to avoid a flash of unstyled content before interop
+        // initialises; it never changes after the first paint (the engine owns live styles from
+        // then on), so compute it once and reuse the cached string on subsequent renders.
+        if (_initialStyleCache != null) return _initialStyleCache;
         var props = ResolveProps(Initial);
         if (props == null && Animate == null && VariantCtx?.InitialVariant is string initVariant)
             props = Variants?.Get(initVariant) ?? VariantCtx.Variants?.Get(initVariant);
-        return props?.ToCssStyleString() ?? string.Empty;
+        return _initialStyleCache = props?.ToCssStyleString() ?? string.Empty;
     }
+    private string? _initialStyleCache;
 
     // ════════════════════════════════════════════════════════════════════════════
     // Lifecycle
@@ -263,19 +273,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
         PresenceCtx?.Register(this);
 
-        // Attach events the JS bridge needs to listen to
-        var events = BuildEventFlags();
-        if (events.Count > 0)
-            await Interop.AttachEventListenersAsync(_id, events, _dotnet!);
-
-        // Viewport observation - JS IntersectionObserver callbacks C#
-        if (WhileInView != null || OnViewportEnter.HasDelegate || OnViewportLeave.HasDelegate)
-        {
-            if (Viewport != null)
-                await Interop.ObserveViewportWithOptionsAsync(_id, _dotnet!, Viewport);
-            else
-                await Interop.ObserveViewportAsync(_id, _dotnet!, Once);
-        }
+        // Attach gesture listeners + viewport observation through the same reconciliation path used
+        // on later updates, so enabling/disabling a gesture after first render is handled uniformly.
+        await ReconcileEventListenersAsync();
+        await ReconcileViewportAsync();
 
         // Start enter animation
         if (Animate != null)
@@ -285,7 +286,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             {
                 await OnAnimationStart.InvokeAsync();
                 await Engine.AnimateToAsync(_id, animateProps.ToJsDictionary(), BuildEffectiveTransition(),
-                    () => OnAnimationComplete.InvokeAsync());
+                    () => OnAnimationComplete.InvokeAsync(), setAsBase: true);
             }
         }
         else if (VariantCtx != null && (Variants != null || VariantCtx.Variants != null))
@@ -300,7 +301,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 var props = Variants?.Get(inheritedVariant) ?? VariantCtx.Variants?.Get(inheritedVariant);
                 if (props != null)
                     await Engine.AnimateToAsync(_id, props.ToJsDictionary(),
-                        BuildEffectiveTransitionWithDelay(VariantCtx.GetChildDelay(_variantChildIndex)));
+                        BuildEffectiveTransitionWithDelay(VariantCtx.GetChildDelay(_variantChildIndex)),
+                        setAsBase: true);
             }
         }
 
@@ -311,6 +313,23 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     {
         if (_isExiting) return;
 
+        // Recovery: if the engine evicted this element after a driver fault (see
+        // BmotionAnimationEngine.ComputeFrame), it silently stopped animating. Re-register and
+        // re-seed it here so a subsequent parameter change brings it back to life.
+        if (!Engine.IsRegistered(_id))
+        {
+            var seed = ResolveProps(Initial);
+            Engine.RegisterElement(_id, seed?.ToJsDictionary());
+            _prevAnimate = null;            // force the animate below to replay
+            _prevInheritedVariant = null;   // and the variant path too
+        }
+
+        // Gesture listeners and viewport observation are wired once at init; re-wire them when the
+        // set of needed events / viewport options changes so gestures enabled (or disabled) after
+        // the first render actually take effect.
+        await ReconcileEventListenersAsync();
+        await ReconcileViewportAsync();
+
         if (!BmotionAnimationTarget.AreEquivalent(_prevAnimate, Animate))
         {
             var animateProps = ResolveProps(Animate);
@@ -318,7 +337,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             {
                 await OnAnimationStart.InvokeAsync();
                 await Engine.AnimateToAsync(_id, animateProps.ToJsDictionary(), BuildEffectiveTransition(),
-                    () => OnAnimationComplete.InvokeAsync());
+                    () => OnAnimationComplete.InvokeAsync(), setAsBase: true);
             }
             _prevAnimate = Animate;
         }
@@ -335,7 +354,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                     {
                         double delay = _variantChildIndex >= 0 ? VariantCtx!.GetChildDelay(_variantChildIndex) : 0;
                         await Engine.AnimateToAsync(_id, props.ToJsDictionary(),
-                            BuildEffectiveTransitionWithDelay(delay));
+                            BuildEffectiveTransitionWithDelay(delay), setAsBase: true);
                     }
                 }
             }
@@ -669,6 +688,87 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             if (dragOpt.DirectionLock) d["dragDirectionLock"] = true;
         }
         return d;
+    }
+
+    /// <summary>
+    /// Re-wires the JS gesture listeners when the effective event set changes. Attaching always
+    /// runs the JS-side cleanup first, so passing an empty set also safely detaches everything.
+    /// </summary>
+    private async Task ReconcileEventListenersAsync()
+    {
+        var events = BuildEventFlags();
+        var sig = SignatureOf(events);
+        if (sig == _eventFlagsSig) return;
+        _eventFlagsSig = sig;
+        await Interop.AttachEventListenersAsync(_id, events, _dotnet!);
+    }
+
+    /// <summary>Re-observes (or stops observing) the viewport when the effective options change.</summary>
+    private async Task ReconcileViewportAsync()
+    {
+        var sig = BuildViewportSignature();
+        if (sig == _viewportSig) return;
+        _viewportSig = sig;
+        if (sig == null)
+        {
+            await Interop.UnobserveViewportAsync(_id);
+            return;
+        }
+        if (Viewport != null)
+            await Interop.ObserveViewportWithOptionsAsync(_id, _dotnet!, Viewport);
+        else
+            await Interop.ObserveViewportAsync(_id, _dotnet!, Once);
+    }
+
+    private string? BuildViewportSignature()
+    {
+        bool needed = WhileInView != null || OnViewportEnter.HasDelegate || OnViewportLeave.HasDelegate;
+        if (!needed) return null;
+        return Viewport != null
+            ? $"opt|{Viewport.Once}|{Viewport.Margin}|{Viewport.Amount}"
+            : $"once|{Once}";
+    }
+
+    /// <summary>Builds a stable, order-independent string signature for an event-flags dictionary.</summary>
+    private static string SignatureOf(Dictionary<string, object?> d)
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (var key in d.Keys.OrderBy(k => k, StringComparer.Ordinal))
+        {
+            sb.Append(key).Append('=');
+            AppendValue(sb, d[key]);
+            sb.Append(';');
+        }
+        return sb.ToString();
+    }
+
+    private static void AppendValue(System.Text.StringBuilder sb, object? value)
+    {
+        switch (value)
+        {
+            case null:
+                sb.Append("null");
+                break;
+            case double dbl:
+                sb.Append(BmotionCssFormat.Num(dbl));
+                break;
+            case bool b:
+                sb.Append(b ? "1" : "0");
+                break;
+            case IDictionary<string, object?> nested:
+                sb.Append('{');
+                foreach (var key in nested.Keys.OrderBy(k => k, StringComparer.Ordinal))
+                {
+                    sb.Append(key).Append(':');
+                    AppendValue(sb, nested[key]);
+                    sb.Append(',');
+                }
+                sb.Append('}');
+                break;
+            default:
+                sb.Append(Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture));
+                break;
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════════════

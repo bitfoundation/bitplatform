@@ -97,9 +97,11 @@ public class BmotionValue<T> : IDisposable where T : struct
     {
         ArgumentNullException.ThrowIfNull(fn);
         var derived = new BmotionValue<TOut>($"{_id}_t", fn(_value));
-        // Keep the parent→derived link so it can be torn down when the derived value is disposed,
-        // otherwise the parent would hold the derived value alive indefinitely (a leak).
-        derived._upstream = Subscribe(async v => await derived.SetAsync(fn(v)));
+        // Subscribe weakly: the parent must not keep the derived value alive (that would make the
+        // parent→derived link a leak for callers that drop the derived). The derived keeps the
+        // parent alive via _upstream for as long as the caller holds the derived, which is the
+        // intended direction. The subscription self-removes once the derived is collected.
+        derived._upstream = SubscribeWeak(derived, fn);
         return derived;
     }
 
@@ -136,8 +138,28 @@ public class BmotionValue<T> : IDisposable where T : struct
         }
 
         var derived = new BmotionValue<double>($"{_id}_tr", Map(_value));
-        derived._upstream = Subscribe(async v => await derived.SetAsync(Map(v)));
+        derived._upstream = SubscribeWeak(derived, Map);
         return derived;
+    }
+
+    /// <summary>
+    /// Subscribes the <paramref name="derived"/> value to this value's changes through a weak
+    /// reference, so this (parent) value never keeps the derived one alive. The subscription
+    /// removes itself the first time it fires after the derived value has been collected.
+    /// </summary>
+    private IDisposable SubscribeWeak<TOut>(BmotionValue<TOut> derived, Func<T, TOut> project)
+        where TOut : struct
+    {
+        var weak = new WeakReference<BmotionValue<TOut>>(derived);
+        IDisposable? sub = null;
+        sub = Subscribe(async v =>
+        {
+            if (weak.TryGetTarget(out var target))
+                await target.SetAsync(project(v));
+            else
+                sub?.Dispose(); // derived value collected - drop the dead subscription
+        });
+        return sub;
     }
 
     public void Dispose()

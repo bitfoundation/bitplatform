@@ -34,6 +34,13 @@ public class BmotionTransitionConfig
             throw new ArgumentException(
                 "EaseCubicBezier must be null or an array of exactly 4 finite values [x1, y1, x2, y2].",
                 nameof(value));
+        // The control-point X coordinates must stay within [0, 1] so the bezier's x(t) curve is
+        // monotonic. Outside that range x(t) can fold back on itself, and the Newton-Raphson solver
+        // in BmotionEasingFunctions can then converge to the wrong root (a visibly broken easing).
+        if (value[0] is < 0 or > 1 || value[2] is < 0 or > 1)
+            throw new ArgumentException(
+                "EaseCubicBezier X coordinates (x1, x2) must be within [0, 1]; only Y may overshoot.",
+                nameof(value));
         return value;
     }
 

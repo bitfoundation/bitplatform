@@ -259,7 +259,7 @@ function _attachPan(el, dotnetRef, cleanups, skipCapture) {
         if (e.button !== 0 && e.pointerType !== 'touch') return;
         down = true;
         startX = lastX = e.clientX; startY = lastY = e.clientY;
-        lastT = Date.now(); velX = velY = 0; panning = false;
+        lastT = performance.now(); velX = velY = 0; panning = false;
         // Skip when drag already owns the pointer capture for this element.
         if (!skipCapture) el.setPointerCapture(e.pointerId);
     };
@@ -269,7 +269,7 @@ function _attachPan(el, dotnetRef, cleanups, skipCapture) {
         // coordinates from a previous gesture can't trigger a phantom pan.
         if (!down) return;
         const dx = e.clientX - startX, dy = e.clientY - startY;
-        const now = Date.now(), dt = now - lastT;
+        const now = performance.now(), dt = now - lastT;
         const deltaX = e.clientX - lastX, deltaY = e.clientY - lastY;
         if (dt > 0) {
             velX = deltaX / dt * 1000;
@@ -330,7 +330,7 @@ function _attachDrag(elementId, el, opts, dotnetRef, cleanups) {
         startElX = pos ? pos.x : 0;
         startElY = pos ? pos.y : 0;
         startPX = e.clientX; startPY = e.clientY;
-        lastPX = e.clientX; lastPY = e.clientY; lastT = Date.now();
+        lastPX = e.clientX; lastPY = e.clientY; lastT = performance.now();
         velX = velY = 0;
         dragging = true;
         lockedAxis = null;
@@ -340,7 +340,7 @@ function _attachDrag(elementId, el, opts, dotnetRef, cleanups) {
 
     const onMove = (e) => {
         if (!dragging) return;
-        const now = Date.now(), dt = now - lastT;
+        const now = performance.now(), dt = now - lastT;
         if (dt > 0) { velX = (e.clientX - lastPX) / dt * FRAME_MS; velY = (e.clientY - lastPY) / dt * FRAME_MS; }
         lastPX = e.clientX; lastPY = e.clientY; lastT = now;
 

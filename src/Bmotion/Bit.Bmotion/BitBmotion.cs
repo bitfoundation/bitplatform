@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Bmotion;
@@ -28,6 +29,12 @@ public static class BitBmotion
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        // Keep the JSON-marshaled interop DTOs trim/AOT-safe. These types cross the JS↔.NET
+        // boundary via reflection-based System.Text.Json (InvokeAsync<T>, [JSInvokable] params),
+        // so the trimmer can't see their members as used and would otherwise strip them - leading
+        // to empty/failed deserialization in published WebAssembly builds.
+        PreserveInteropContracts();
+
         // Slim browser-API interop bridge - one instance per DI scope
         services.AddScoped<BmotionInterop>();
 
@@ -46,4 +53,14 @@ public static class BitBmotion
 
         return services;
     }
+
+    // Roots the public properties + parameterless constructors of every type that is (de)serialized
+    // across JS interop so the trimmer preserves them. The [DynamicDependency] attributes take
+    // effect because this method is reachable from AddBitBmotionServices (an app entry point).
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionBoundingRect))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionScrollInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionXY))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionViewportOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionDragConstraints))]
+    private static void PreserveInteropContracts() { }
 }

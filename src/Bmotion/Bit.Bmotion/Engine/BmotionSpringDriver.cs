@@ -51,8 +51,13 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
         // trap the spring (the rest test would never pass). Fall back to the default mass of 1.
         _m = config.Mass > 0 ? config.Mass : 1.0;
         _vel = _initialVel = config.Velocity;
-        _restSpeed = config.RestSpeed;
-        _restDelta = config.RestDelta;
+        // Rest thresholds are scaled by the animation's magnitude so large-range springs (e.g.
+        // x: 0→1000) settle in proportion to their distance instead of chasing an absolute 0.01px/
+        // 0.01px-per-sec target for many extra frames. Small ranges keep the absolute thresholds.
+        double range = Math.Abs(to - from);
+        double restScale = range > 1.0 ? range : 1.0;
+        _restSpeed = config.RestSpeed * restScale;
+        _restDelta = config.RestDelta * restScale;
         _currentDelayMs = config.Delay * 1000;
         _repeatDelayMs = config.RepeatDelay * 1000;
         _repeat = config.Repeat;

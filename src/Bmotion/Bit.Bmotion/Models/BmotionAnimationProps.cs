@@ -4,6 +4,12 @@ namespace Bit.Bmotion;
 /// Describes a set of animatable CSS / transform properties - the "what" of an animation.
 /// Assign to Initial, Animate, Exit, WhileHover, WhileTap, etc.
 /// </summary>
+/// <remarks>
+/// <b>Security:</b> string-valued properties (<see cref="BackgroundColor"/>, <see cref="Width"/>,
+/// <see cref="BoxShadow"/>, <see cref="CssVars"/>, …) are written verbatim into the element's
+/// inline style. They are intended for developer-authored values; binding untrusted end-user input
+/// to them risks CSS injection into the element's <c>style</c>.
+/// </remarks>
 public class BmotionAnimationProps
 {
     // ── Transform properties ──────────────────────────────────────────────────

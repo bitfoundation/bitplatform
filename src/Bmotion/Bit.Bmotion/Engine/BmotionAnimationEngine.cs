@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Bit.Bmotion;
@@ -10,9 +11,22 @@ namespace Bit.Bmotion;
 /// <c>requestAnimationFrame</c> tick and receives back a dictionary of
 /// CSS style updates to apply to the DOM.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <b>Threading:</b> the engine is intentionally lock-free. All of its mutable state
+/// (the element map, per-element driver dictionaries, completion batches, dirty flags) is only
+/// safe to touch from a single thread, and every entry point - the rAF <see cref="ComputeFrame"/>
+/// tick, the synchronous JS drag callbacks, and the awaited animate APIs - is expected to run on
+/// the Blazor WebAssembly UI thread. Completion continuations are scheduled on
+/// <see cref="TaskScheduler.Default"/>, which on single-threaded WASM still runs on that same
+/// thread. <b>Do not enable WebAssembly multithreading (<c>&lt;WasmEnableThreads&gt;</c>)</b> with
+/// this library: the engine has no synchronization and concurrent access would corrupt its state.
+/// </para>
+/// </remarks>
 public sealed class BmotionAnimationEngine : IAsyncDisposable
 {
     private readonly BmotionInterop _interop;
+    private readonly ILogger<BmotionAnimationEngine>? _logger;
     private readonly Dictionary<string, BmotionElementAnimationState> _elements = new();
     private DotNetObjectReference<BmotionAnimationEngine>? _dotnet;
     private bool _loopRunning;
@@ -22,7 +36,11 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     // Marshaled synchronously to JS before the next ComputeFrame runs (single-threaded Blazor WASM).
     private readonly Dictionary<string, Dictionary<string, string>> _frameResult = new();
 
-    public BmotionAnimationEngine(BmotionInterop interop) => _interop = interop;
+    public BmotionAnimationEngine(BmotionInterop interop, ILogger<BmotionAnimationEngine>? logger = null)
+    {
+        _interop = interop;
+        _logger = logger;
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Reduced-motion (accessibility)
@@ -101,15 +119,24 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     // Animation control
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// <summary>Start animating to the given values. Returns immediately (fire-and-forget).</summary>
+    /// <summary>
+    /// Start animating to the given values. Returns immediately (fire-and-forget).
+    /// <para>
+    /// Set <paramref name="setAsBase"/> to <c>true</c> only for the element's resting target
+    /// (the <c>Animate</c>/variant state a gesture layer should revert to). One-off programmatic
+    /// animations and drag snap-backs leave it <c>false</c> so they don't clobber the gesture base
+    /// (which would strand unrelated animated properties when a gesture later deactivates).
+    /// </para>
+    /// </summary>
     public async ValueTask AnimateToAsync(
         string elementId,
         Dictionary<string, object?> values,
         BmotionTransitionConfig? transition,
-        Func<Task>? onComplete = null)
+        Func<Task>? onComplete = null,
+        bool setAsBase = false)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
-        state.SetBaseAnimation(values, transition);
+        if (setAsBase) state.SetBaseAnimation(values, transition);
         if (onComplete != null)
         {
             var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -135,11 +162,12 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     public async ValueTask AnimateToAwaitAsync(
         string elementId,
         Dictionary<string, object?> values,
-        BmotionTransitionConfig? transition)
+        BmotionTransitionConfig? transition,
+        bool setAsBase = false)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        state.SetBaseAnimation(values, transition);
+        if (setAsBase) state.SetBaseAnimation(values, transition);
         state.AnimateTo(values, transition, tcs);
         await EnsureLoopRunningAsync();
         await tcs.Task;
@@ -262,12 +290,17 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         bool inertiaXStarted = false, inertiaYStarted = false;
         if (momentum)
         {
+            // velX/velY arrive from JS already scaled to "px per frame" (~16 ms). The * 50 factor
+            // converts that frame-relative figure into the larger projected-distance velocity the
+            // exponential-decay inertia driver expects (tuned so a natural flick throws roughly the
+            // distance Framer Motion produces for the same gesture).
+            const double inertiaVelocityScale = 50.0;
             if (axis != "y" && Math.Abs(velX) > 0.5)
             {
                 var inertiaX = new BmotionTransitionConfig
                 {
                     Type = BmotionTransitionType.Inertia,
-                    InertiaVelocity = velX * 50,
+                    InertiaVelocity = velX * inertiaVelocityScale,
                     InertiaMin = constraints?.Left,
                     InertiaMax = constraints?.Right,
                 };
@@ -281,7 +314,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
                 var inertiaY = new BmotionTransitionConfig
                 {
                     Type = BmotionTransitionType.Inertia,
-                    InertiaVelocity = velY * 50,
+                    InertiaVelocity = velY * inertiaVelocityScale,
                     InertiaMin = constraints?.Top,
                     InertiaMax = constraints?.Bottom,
                 };
@@ -386,6 +419,12 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
                 {
                     try { badState.CancelAll(); } catch { /* best-effort cleanup */ }
                     _elements.Remove(id);
+                    // Surface the eviction: the owning component still believes it's registered, so
+                    // without this signal a faulted element would silently stop animating forever.
+                    // Bmotion re-registers on its next parameter update (see IsRegistered check).
+                    _logger?.LogWarning(
+                        "Bmotion evicted element '{ElementId}' after its animation tick threw. " +
+                        "Animations on it are stopped until it re-registers.", id);
                 }
             }
         }
