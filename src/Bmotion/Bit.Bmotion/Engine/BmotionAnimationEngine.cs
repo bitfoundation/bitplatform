@@ -63,12 +63,8 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         try
         {
             OsPrefersReducedMotion = await _interop.PrefersReducedMotionAsync();
-            // Subscribe to live OS changes so toggling prefers-reduced-motion at runtime is honoured
-            // (the value was previously cached for the engine's whole lifetime).
-            _dotnet ??= DotNetObjectReference.Create(this);
-            await _interop.WatchReducedMotionAsync(_dotnet);
-            // Only mark detection complete once both interop calls succeed, so a transient
-            // failure leaves the flag unset and a later call can retry.
+            // Mark detection complete as soon as the initial probe succeeds: the probed value is
+            // valid regardless of whether the live-change subscription below can be set up.
             _reducedMotionDetected = true;
         }
         catch
@@ -76,6 +72,19 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             // Detection is best-effort: if the browser probe fails we default to
             // animating normally rather than letting it break element initialisation.
             OsPrefersReducedMotion = false;
+            return;
+        }
+
+        try
+        {
+            // Subscribe to live OS changes so toggling prefers-reduced-motion at runtime is honoured.
+            // Best-effort: a watch-setup failure must not discard the successfully probed value above.
+            _dotnet ??= DotNetObjectReference.Create(this);
+            await _interop.WatchReducedMotionAsync(_dotnet);
+        }
+        catch
+        {
+            // Watch subscription failed; the initial preference stays valid and detection stays complete.
         }
     }
 

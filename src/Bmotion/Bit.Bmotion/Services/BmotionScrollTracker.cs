@@ -107,11 +107,19 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
         if (_disposed) return;
         _disposed = true;
 
-        foreach (var key in _subscriptionKeys)
-            await _interop.UnobserveScrollAsync(key);
-        _subscriptionKeys.Clear();
-        _onScroll = null;
-        _dotnet?.Dispose();
-        // Note: BmotionInterop itself is DI-scoped and disposed by the DI container
+        try
+        {
+            foreach (var key in _subscriptionKeys)
+                await _interop.UnobserveScrollAsync(key);
+        }
+        finally
+        {
+            // Always release local resources, even if a JS unobserve call faults during teardown,
+            // so the DotNetObjectReference and callback don't leak.
+            _subscriptionKeys.Clear();
+            _onScroll = null;
+            _dotnet?.Dispose();
+            // Note: BmotionInterop itself is DI-scoped and disposed by the DI container
+        }
     }
 }

@@ -49,7 +49,14 @@ public class BmotionAnimationProps
     public string? BoxShadow { get; set; }
 
     // ── SVG path drawing ──────────────────────────────────────────────────────
-    /// <summary>0 = invisible, 1 = fully drawn. Drives strokeDashoffset.</summary>
+    /// <summary>
+    /// 0 = invisible, 1 = fully drawn. Drives strokeDashoffset.
+    /// <para>
+    /// The generated <c>stroke-dasharray</c>/<c>stroke-dashoffset</c> values are normalised to a
+    /// unit path length, so the target SVG element must declare <c>pathLength="1"</c> for the
+    /// drawing to render correctly.
+    /// </para>
+    /// </summary>
     public double? PathLength { get; set; }
     /// <summary>Offset along the path (0–1).</summary>
     public double? PathOffset { get; set; }
@@ -161,10 +168,10 @@ public class BmotionAnimationProps
         // doesn't mask a meaningful Rotate value (matches BmotionTransformComposer).
         double rotateZ = RotateZ.HasValue && RotateZ.Value != 0 ? RotateZ.Value : (Rotate ?? 0);
         if (rotateZ != 0) transforms.Add($"rotate({BmotionCssFormat.Num(rotateZ)}deg)");
-        if (RotateX.HasValue) transforms.Add($"rotateX({BmotionCssFormat.Num(RotateX.Value)}deg)");
-        if (RotateY.HasValue) transforms.Add($"rotateY({BmotionCssFormat.Num(RotateY.Value)}deg)");
-        if (SkewX.HasValue) transforms.Add($"skewX({BmotionCssFormat.Num(SkewX.Value)}deg)");
-        if (SkewY.HasValue) transforms.Add($"skewY({BmotionCssFormat.Num(SkewY.Value)}deg)");
+        if (RotateX.HasValue && RotateX.Value != 0) transforms.Add($"rotateX({BmotionCssFormat.Num(RotateX.Value)}deg)");
+        if (RotateY.HasValue && RotateY.Value != 0) transforms.Add($"rotateY({BmotionCssFormat.Num(RotateY.Value)}deg)");
+        if (SkewX.HasValue && SkewX.Value != 0) transforms.Add($"skewX({BmotionCssFormat.Num(SkewX.Value)}deg)");
+        if (SkewY.HasValue && SkewY.Value != 0) transforms.Add($"skewY({BmotionCssFormat.Num(SkewY.Value)}deg)");
         if (Perspective.HasValue) transforms.Insert(0, $"perspective({BmotionCssFormat.Num(Perspective.Value)}px)");
 
         if (transforms.Count > 0) sb.Append($"transform:{string.Join(" ", transforms)};");
@@ -232,10 +239,10 @@ public class BmotionAnimationProps
         // doesn't mask a meaningful Rotate value (matches BmotionTransformComposer).
         double rotateZ = RotateZ.HasValue && RotateZ.Value != 0 ? RotateZ.Value : (Rotate ?? 0);
         if (rotateZ != 0) transforms.Add($"rotate({BmotionCssFormat.Num(rotateZ)}deg)");
-        if (RotateX.HasValue) transforms.Add($"rotateX({BmotionCssFormat.Num(RotateX.Value)}deg)");
-        if (RotateY.HasValue) transforms.Add($"rotateY({BmotionCssFormat.Num(RotateY.Value)}deg)");
-        if (SkewX.HasValue) transforms.Add($"skewX({BmotionCssFormat.Num(SkewX.Value)}deg)");
-        if (SkewY.HasValue) transforms.Add($"skewY({BmotionCssFormat.Num(SkewY.Value)}deg)");
+        if (RotateX.HasValue && RotateX.Value != 0) transforms.Add($"rotateX({BmotionCssFormat.Num(RotateX.Value)}deg)");
+        if (RotateY.HasValue && RotateY.Value != 0) transforms.Add($"rotateY({BmotionCssFormat.Num(RotateY.Value)}deg)");
+        if (SkewX.HasValue && SkewX.Value != 0) transforms.Add($"skewX({BmotionCssFormat.Num(SkewX.Value)}deg)");
+        if (SkewY.HasValue && SkewY.Value != 0) transforms.Add($"skewY({BmotionCssFormat.Num(SkewY.Value)}deg)");
         if (transforms.Count > 0) d["transform"] = string.Join(" ", transforms);
 
         if (Opacity.HasValue) d["opacity"] = BmotionCssFormat.Num(Opacity.Value);

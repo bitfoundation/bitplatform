@@ -123,18 +123,23 @@ public class BmotionValue<T> : IDisposable where T : struct
             if (inputRange[i + 1] <= inputRange[i])
                 throw new ArgumentException("inputRange must be strictly increasing (no repeated or decreasing points).");
 
+        // Snapshot the ranges so the Map closure isn't affected by the caller mutating the
+        // passed-in arrays after this method returns (which would bypass the validation above).
+        var inRange = (double[])inputRange.Clone();
+        var outRange = (double[])outputRange.Clone();
+
         double Map(T v)
         {
             double x = Convert.ToDouble(v);
-            for (int i = 0; i < inputRange.Length - 1; i++)
+            for (int i = 0; i < inRange.Length - 1; i++)
             {
-                if (x >= inputRange[i] && x <= inputRange[i + 1])
+                if (x >= inRange[i] && x <= inRange[i + 1])
                 {
-                    double t = (x - inputRange[i]) / (inputRange[i + 1] - inputRange[i]);
-                    return outputRange[i] + t * (outputRange[i + 1] - outputRange[i]);
+                    double t = (x - inRange[i]) / (inRange[i + 1] - inRange[i]);
+                    return outRange[i] + t * (outRange[i + 1] - outRange[i]);
                 }
             }
-            return x < inputRange[0] ? outputRange[0] : outputRange[^1];
+            return x < inRange[0] ? outRange[0] : outRange[^1];
         }
 
         var derived = new BmotionValue<double>($"{_id}_tr", Map(_value));

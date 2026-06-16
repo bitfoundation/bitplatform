@@ -273,7 +273,9 @@ public class TransitionConfigTests
 
         var clone = original.Clone();
         clone.Duration = 9.9;
-        clone.EaseCubicBezier![0] = 99;
+        // EaseCubicBezier's getter returns a defensive copy, so mutating the getter result would
+        // hit a throwaway array. Assign a new array to mutate the clone's actual stored state.
+        clone.EaseCubicBezier = [0.9, 0.2, 0.3, 0.4];
         clone.Times![0] = 99;
 
         Assert.AreEqual(0.3, original.Duration);              // scalar untouched

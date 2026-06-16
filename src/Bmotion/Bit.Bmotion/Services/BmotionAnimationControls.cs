@@ -43,6 +43,9 @@ public sealed class BmotionAnimationControls
     /// </summary>
     public void Stop()
     {
+        // Once released (e.g. a natural finish already settled the completion), the target elements
+        // may be owned by newer animations - skip engine side effects so we don't disturb them.
+        if (System.Threading.Volatile.Read(ref _released) != 0) return;
         foreach (var id in _elementIds)
             _engine.Stop(id, null);
         ReleaseOnce();
@@ -53,6 +56,8 @@ public sealed class BmotionAnimationControls
     /// </summary>
     public void Complete()
     {
+        // See Stop(): no engine side effects once released, to avoid affecting newer animations.
+        if (System.Threading.Volatile.Read(ref _released) != 0) return;
         foreach (var id in _elementIds)
             _engine.Complete(id);
         ReleaseOnce();

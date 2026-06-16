@@ -89,24 +89,30 @@ internal static partial class BmotionColorInterpolator
         var m = RgbRegex().Match(c);
         if (m.Success)
         {
-            return
-            [
-                BmotionCssFormat.Parse(m.Groups[1].Value),
-                BmotionCssFormat.Parse(m.Groups[2].Value),
-                BmotionCssFormat.Parse(m.Groups[3].Value),
-                m.Groups[4].Success ? BmotionCssFormat.Parse(m.Groups[4].Value) : 1.0,
-            ];
+            // Use TryParse so malformed numerics like "1..2" fall back to null (and the Lerp
+            // string overload then returns the target) instead of throwing a FormatException.
+            if (!BmotionCssFormat.TryParse(m.Groups[1].Value, out double mr) ||
+                !BmotionCssFormat.TryParse(m.Groups[2].Value, out double mg) ||
+                !BmotionCssFormat.TryParse(m.Groups[3].Value, out double mb))
+                return null;
+            double ma = 1.0;
+            if (m.Groups[4].Success && !BmotionCssFormat.TryParse(m.Groups[4].Value, out ma))
+                return null;
+            return [mr, mg, mb, ma];
         }
 
         // hsl() / hsla()
         var mh = HslRegex().Match(c);
         if (mh.Success)
         {
-            double h2  = BmotionCssFormat.Parse(mh.Groups[1].Value);
-            double s2  = BmotionCssFormat.Parse(mh.Groups[2].Value) / 100.0;
-            double l2  = BmotionCssFormat.Parse(mh.Groups[3].Value) / 100.0;
-            double a2  = mh.Groups[4].Success ? BmotionCssFormat.Parse(mh.Groups[4].Value) : 1.0;
-            var rgb2 = HslToRgb(h2, s2, l2);
+            if (!BmotionCssFormat.TryParse(mh.Groups[1].Value, out double h2) ||
+                !BmotionCssFormat.TryParse(mh.Groups[2].Value, out double s2raw) ||
+                !BmotionCssFormat.TryParse(mh.Groups[3].Value, out double l2raw))
+                return null;
+            double a2 = 1.0;
+            if (mh.Groups[4].Success && !BmotionCssFormat.TryParse(mh.Groups[4].Value, out a2))
+                return null;
+            var rgb2 = HslToRgb(h2, s2raw / 100.0, l2raw / 100.0);
             return [rgb2[0], rgb2[1], rgb2[2], a2];
         }
 

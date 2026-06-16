@@ -2,13 +2,15 @@
 @inject BmotionScrollTracker Scroll
 @implements IAsyncDisposable
 
+<h1>Scroll Animations</h1>
+
 <div style="position:sticky;top:3.25rem;z-index:50;background:var(--bm-card);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.35)">
     <div style="font-size:.9rem;color:#888;margin-bottom:.5rem">Window scroll progress</div>
     <div style="background:#111;border-radius:6px;height:8px;overflow:hidden;width:100%">
         <div style="@($"height:100%;border-radius:6px;background:linear-gradient(90deg,#6c47ff,#ff4785);width:{(_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}%;transition:width .05s")" />
     </div>
     <div style="font-size:.85rem;color:#aaa;margin-top:.4rem">
-        Y: @((_progressY * 100).ToString("F1"))%  |  X: @((_progressX * 100).ToString("F1"))%
+        Y: @((_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%  |  X: @((_progressX * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%
     </div>
 </div>
 
@@ -86,7 +88,7 @@
                 <div style="@($"height:100%;border-radius:6px;background:linear-gradient(90deg,#6c47ff,#ff4785);width:{(_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}%;transition:width .05s")" />
             </div>
             <div style="font-size:.85rem;color:#aaa;margin-top:.4rem">
-                Y: @((_progressY * 100).ToString("F1"))%  |  X: @((_progressX * 100).ToString("F1"))%
+                Y: @((_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%  |  X: @((_progressX * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%
             </div>
         </div>
 

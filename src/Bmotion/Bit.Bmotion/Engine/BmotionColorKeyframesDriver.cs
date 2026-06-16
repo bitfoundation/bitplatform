@@ -23,8 +23,25 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
     {
         if (frames is null || frames.Length < 2)
             throw new ArgumentException("Keyframe animations require at least 2 frames.", nameof(frames));
+        if (!double.IsFinite(config.Duration) || !double.IsFinite(config.Delay) || !double.IsFinite(config.RepeatDelay))
+            // NaN/infinite timing values poison _startTime in the progress math, pushing invalid
+            // values through _apply. Reject them up front (matches the numeric keyframes driver).
+            throw new ArgumentException(
+                "Duration, Delay and RepeatDelay must be finite values.", nameof(config));
         if (config.Times != null && config.Times.Length != frames.Length)
             throw new ArgumentException("Times array length must match the number of frames.", nameof(config));
+        if (config.Times != null)
+        {
+            // Times feed the segment math; non-monotonic or out-of-range values produce
+            // negative/zero segment lengths and NaN output, so reject them up front.
+            for (int i = 0; i < config.Times.Length; i++)
+            {
+                if (config.Times[i] < 0 || config.Times[i] > 1)
+                    throw new ArgumentException("Times values must be within the range [0, 1].", nameof(config));
+                if (i > 0 && config.Times[i] < config.Times[i - 1])
+                    throw new ArgumentException("Times values must be in monotonically ascending order.", nameof(config));
+            }
+        }
 
         _frames = (string[])frames.Clone();
         _curFrames = (string[])frames.Clone();
