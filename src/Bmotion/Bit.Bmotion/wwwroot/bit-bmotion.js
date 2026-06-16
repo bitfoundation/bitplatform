@@ -210,8 +210,12 @@ export function attachEventListeners(elementId, events, dotnetRef) {
     //  Tap 
     if (events.tap) {
         let pressing = false;
-        const onDown = () => { pressing = true; dotnetRef.invokeMethodAsync('OnPointerDown'); };
+        const onDown = (e) => {
+            if (e.button !== 0 && e.pointerType !== 'touch') return; // primary button / touch only
+            pressing = true; dotnetRef.invokeMethodAsync('OnPointerDown');
+        };
         const onUp   = (e) => {
+            if (e.button !== 0 && e.pointerType !== 'touch') return; // ignore non-primary releases
             if (!pressing) return; pressing = false;
             dotnetRef.invokeMethodAsync('OnPointerUp', el.contains(e.target) || el === e.target);
         };

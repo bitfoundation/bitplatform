@@ -98,10 +98,22 @@ public sealed class BmotionAnimateService
         foreach (var id in elementIds)
             _engine.RegisterElement(id);
 
-        // Start all animations concurrently; collect their completion tasks.
-        var completionTasks = elementIds
-            .Select(id => _engine.AnimateToAwaitAsync(id, values, transition).AsTask())
-            .ToArray();
+        // Start all animations concurrently; collect their completion tasks. If task creation
+        // throws synchronously (e.g. a driver rejects the keyframes), release every element we
+        // already registered so they don't leak a refcount before the exception propagates.
+        Task[] completionTasks;
+        try
+        {
+            completionTasks = elementIds
+                .Select(id => _engine.AnimateToAwaitAsync(id, values, transition).AsTask())
+                .ToArray();
+        }
+        catch
+        {
+            foreach (var id in elementIds)
+                _engine.UnregisterElement(id);
+            throw;
+        }
 
         var completion = Task.WhenAll(completionTasks);
 

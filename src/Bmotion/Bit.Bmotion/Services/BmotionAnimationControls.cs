@@ -43,12 +43,13 @@ public sealed class BmotionAnimationControls
     /// </summary>
     public void Stop()
     {
-        // Once released (e.g. a natural finish already settled the completion), the target elements
-        // may be owned by newer animations - skip engine side effects so we don't disturb them.
-        if (System.Threading.Volatile.Read(ref _released) != 0) return;
+        // Atomically claim ownership: only the caller that flips _released from 0→1 runs the engine
+        // side effects. Once released (e.g. a natural finish already settled the completion), the
+        // target elements may be owned by newer animations - skip so we don't disturb them.
+        if (System.Threading.Interlocked.CompareExchange(ref _released, 1, 0) != 0) return;
         foreach (var id in _elementIds)
             _engine.Stop(id, null);
-        ReleaseOnce();
+        _release();
     }
 
     /// <summary>
@@ -56,11 +57,12 @@ public sealed class BmotionAnimationControls
     /// </summary>
     public void Complete()
     {
-        // See Stop(): no engine side effects once released, to avoid affecting newer animations.
-        if (System.Threading.Volatile.Read(ref _released) != 0) return;
+        // See Stop(): atomically claim ownership so engine side effects run exactly once and never
+        // after a concurrent settlement has handed the elements to newer animations.
+        if (System.Threading.Interlocked.CompareExchange(ref _released, 1, 0) != 0) return;
         foreach (var id in _elementIds)
             _engine.Complete(id);
-        ReleaseOnce();
+        _release();
     }
 
     /// <summary>A <see cref="Task"/> that resolves when all animations finish naturally.</summary>

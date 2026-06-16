@@ -249,6 +249,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // animation to replay by invalidating the cached previous target.
             _isExiting = false;
             _prevAnimate = null;
+            _prevInheritedVariant = null;
             PresenceCtx?.Register(this); // re-register in case the context was reset
         }
 

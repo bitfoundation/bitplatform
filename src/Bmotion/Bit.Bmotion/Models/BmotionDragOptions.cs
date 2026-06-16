@@ -15,9 +15,14 @@ public class BmotionDragOptions
 
     /// <summary>
     /// Elasticity when the drag exceeds constraints (0 = rigid, 1 = fully elastic).
-    /// Default: 0.35.
+    /// Default: 0.35. Values are clamped to the [0, 1] range.
     /// </summary>
-    public double Elastic { get; set; } = 0.35;
+    public double Elastic
+    {
+        get => _elastic;
+        set => _elastic = Math.Clamp(value, 0, 1);
+    }
+    private double _elastic = 0.35;
 
     /// <summary>
     /// Whether to apply momentum / inertia after releasing. Default: true.

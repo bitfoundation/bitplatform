@@ -29,7 +29,7 @@ public sealed class BmotionAnimationTarget
         if (a is null || b is null) return false;
         if (a.IsDisabled || b.IsDisabled) return a.IsDisabled == b.IsDisabled;
         if (a.IsVariant || b.IsVariant)
-            return string.Equals(a.Variant, b.Variant, StringComparison.Ordinal);
+            return string.Equals(a.Variant, b.Variant, StringComparison.OrdinalIgnoreCase);
         if (a.Props is null || b.Props is null) return a.Props is null && b.Props is null;
         return a.Props.ValueEquals(b.Props);
     }
