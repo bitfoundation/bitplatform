@@ -70,9 +70,14 @@ var BitButil = BitButil || {};
         const target = resolveTarget(elementName);
         if (!target) return;
 
+        // When { once: true } is requested the browser auto-detaches after the first call; mirror
+        // that by dropping our own map entry so the listenerId doesn't linger after it fires.
+        const once = typeof options === 'object' && options.once === true;
+
         const handler: EventListener = e => {
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
+            if (once) delete _handlers[listenerId];
             butil.utils.dispatch(dotNetRef, methodName, listenerId, mapEvent(e, argsMembers));
         };
 
@@ -87,13 +92,12 @@ var BitButil = BitButil || {};
         dotnetListenerIds.forEach(id => {
             const handler = _handlers[id];
             if (!handler) return;
-            // Only forget the handler once it's actually been detached. If the target isn't
-            // available yet, keep the entry so a later removal (when it is) can still detach it,
-            // instead of orphaning a live listener.
-            if (target) {
-                target.removeEventListener(eventName, handler, options);
-                delete _handlers[id];
-            }
+            // A handler is only ever stored after a successful add (which requires the target to be
+            // available), and the only targets are window/document - both live for the page's
+            // lifetime. So we always drop the map entry here to keep it from growing unbounded;
+            // detach from the target when it's resolvable (it normally is).
+            if (target) target.removeEventListener(eventName, handler, options);
+            delete _handlers[id];
         });
     }
 }(BitButil));

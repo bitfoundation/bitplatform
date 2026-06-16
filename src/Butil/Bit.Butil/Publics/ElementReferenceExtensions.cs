@@ -216,6 +216,13 @@ public static class ElementReferenceExtensions
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute">https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute</see>
     /// </summary>
+    /// <remarks>
+    /// <b>Security note:</b> attribute values are written verbatim and bypass Blazor's encoding.
+    /// Setting event-handler attributes (<c>onclick</c>, ...), navigational attributes with a
+    /// <c>javascript:</c> URL (<c>href</c>, <c>src</c>, <c>formaction</c>), or <c>srcdoc</c> from
+    /// untrusted input is an XSS vector. Validate <paramref name="name"/>/<paramref name="value"/>
+    /// before passing user-supplied data.
+    /// </remarks>
     public static async ValueTask SetAttribute(this ElementReference element, string name, string value)
         => await GetJSRuntime(element).InvokeVoid("BitButil.element.setAttribute", element, name, value);
 

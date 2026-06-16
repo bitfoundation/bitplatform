@@ -66,6 +66,15 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
                 cancellationToken,
                 id, request, onProgress is not null ? DotNetRef : null, onProgress is not null);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The token fired: the JS side was aborted (via the registration above) and produced an
+            // aborted response, but awaiting with the token also cancels this .NET task before that
+            // response is marshaled back. Honor the documented contract - cancellation yields a
+            // FetchResponse with Aborted = true, matching the AbortableFetch.Abort() path - instead
+            // of surfacing an exception that callers using the token path wouldn't expect.
+            return new FetchResponse { Url = request.Url, Aborted = true };
+        }
         finally
         {
             registration.Dispose();

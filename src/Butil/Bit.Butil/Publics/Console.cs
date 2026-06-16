@@ -169,7 +169,7 @@ public class Console(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/console/timelog_static">https://developer.mozilla.org/en-US/docs/Web/API/console/timelog_static</see>
     /// </summary>
     public async Task TimeLog(string? label = null, params object?[]? args)
-        => await (label is null ? js.InvokeVoidFast("BitButil.console.timeLog")
+        => await (label is null ? js.InvokeVoidFast("BitButil.console.timeLog", args ?? [])
                                 : js.InvokeVoidFast("BitButil.console.timeLog", [label, .. args ?? []]));
 
     /// <summary>

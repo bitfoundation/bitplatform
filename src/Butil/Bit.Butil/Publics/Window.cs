@@ -61,7 +61,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <remarks>
     /// Listeners are matched by delegate identity, so you must pass the very same
     /// <paramref name="listener"/> instance that was registered. A newly-created lambda will not
-    /// match and nothing will be removed. For lambdas, prefer <see cref="SubscribeEvent{T}"/>,
+    /// match and nothing will be removed. For lambdas, prefer <see cref="SubscribeEvent{T}(string, Action{T}, bool)"/>,
     /// which returns a disposable <see cref="ButilSubscription"/> you can dispose to detach.
     /// </remarks>
     public async Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
@@ -77,12 +77,19 @@ public class Window(IJSRuntime js) : IAsyncDisposable
         => SubscribeEventCore(ElementName, domEvent, listener, useCapture);
 
     /// <summary>
+    /// <see cref="ButilEventListenerOptions"/> variant of <see cref="SubscribeEvent{T}(string, Action{T}, bool)"/>,
+    /// adding <c>passive</c> and <c>once</c> control on top of <c>capture</c>.
+    /// </summary>
+    public Task<ButilSubscription> SubscribeEvent<T>(string domEvent, Action<T> listener, ButilEventListenerOptions options)
+        => SubscribeEventCore(ElementName, domEvent, listener, options.Capture, options.Passive, options.Once);
+
+    /// <summary>
     /// Subscribes to a DOM event on the given target ("window"/"document"). Tracks the element name
     /// per listener so disposal detaches from the correct target.
     /// </summary>
-    private async Task<ButilSubscription> SubscribeEventCore<T>(string elementName, string domEvent, Action<T> listener, bool useCapture)
+    private async Task<ButilSubscription> SubscribeEventCore<T>(string elementName, string domEvent, Action<T> listener, bool useCapture, bool passive = false, bool once = false)
     {
-        var id = await _events.AddEventListener(js, elementName, domEvent, listener, useCapture);
+        var id = await _events.AddEventListener(js, elementName, domEvent, listener, useCapture, passive: passive, once: once);
         var key = (id, elementName, domEvent, useCapture);
         _listenerIds.TryAdd(key, 0);
 

@@ -96,19 +96,23 @@ var BitButil = BitButil || {};
     }
 
     function subscribeEvent(element: HTMLElement, elementId: string, eventName: string, methodName: string,
-        dotNetRef: any, listenerId: string, argsMembers: string[], useCapture: boolean,
+        dotNetRef: any, listenerId: string, argsMembers: string[], options: AddEventListenerOptions | boolean,
         preventDefault: boolean, stopPropagation: boolean) {
         if (!element) return;
+        // When { once: true } is set the browser auto-detaches after the first call; mirror that by
+        // dropping our tracking entry so the listenerId doesn't linger after it fires.
+        const once = typeof options === 'object' && options.once === true;
         const handler = (e: any) => {
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
+            if (once) delete _elementHandlers[listenerId];
             butil.utils.dispatch(dotNetRef, methodName, listenerId, butil.events.mapEvent(e, argsMembers));
         };
-        _elementHandlers[listenerId] = { element, eventName, handler, options: useCapture };
-        element.addEventListener(eventName, handler, useCapture);
+        _elementHandlers[listenerId] = { element, eventName, handler, options };
+        element.addEventListener(eventName, handler, options);
     }
 
-    function unsubscribeEvent(elementId: string, eventName: string, listenerId: string, useCapture: boolean) {
+    function unsubscribeEvent(elementId: string, eventName: string, listenerId: string, options: AddEventListenerOptions | boolean) {
         const entry = _elementHandlers[listenerId];
         if (!entry) return;
         delete _elementHandlers[listenerId];

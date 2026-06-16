@@ -31,13 +31,16 @@ internal sealed class DomEventsInterop : IDisposable
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilDragEventArgs))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilClipboardEventArgs))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilCompositionEventArgs))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsAddEventListenerOptions))]
     internal async Task<Guid> AddEventListener<T>(IJSRuntime js,
         string elementName,
         string domEvent,
         Action<T> listener,
         bool useCapture = false,
         bool preventDefault = false,
-        bool stopPropagation = false)
+        bool stopPropagation = false,
+        bool passive = false,
+        bool once = false)
     {
         var argType = typeof(T);
         var eventType = DomEventArgs.TypeOf(domEvent);
@@ -46,7 +49,11 @@ internal sealed class DomEventsInterop : IDisposable
             throw new InvalidOperationException($"Invalid listener type ({argType}) for this dom event type ({eventType})");
 
         var (methodName, members) = Resolve(argType);
-        var options = useCapture;
+        // Pass a bare boolean for the common capture-only case (keeps the wire payload minimal and
+        // backward-compatible); upgrade to the full options object only when passive/once are set.
+        var options = (passive || once)
+            ? (object)new JsAddEventListenerOptions { Capture = useCapture, Passive = passive, Once = once }
+            : useCapture;
         var id = Guid.NewGuid();
         _listeners.TryAdd(id, new Entry { Action = listener, ArgType = argType, Element = elementName, Event = domEvent, UseCapture = useCapture });
 

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -30,7 +31,7 @@ public static class ElementReferenceEventExtensions
     /// captures) for the lifetime of the circuit. Prefer <c>await using</c>, or store the handle and
     /// dispose it in the component's <c>DisposeAsync</c>.
     /// </remarks>
-    public static async Task<ButilSubscription> SubscribeEvent<T>(
+    public static Task<ButilSubscription> SubscribeEvent<T>(
         this ElementReference element,
         IJSRuntime js,
         string domEvent,
@@ -38,6 +39,35 @@ public static class ElementReferenceEventExtensions
         bool useCapture = false,
         bool preventDefault = false,
         bool stopPropagation = false)
+        => SubscribeEventCore(element, js, domEvent, listener, useCapture, false, false, preventDefault, stopPropagation);
+
+    /// <summary>
+    /// <see cref="ButilEventListenerOptions"/> variant of
+    /// <see cref="SubscribeEvent{T}(ElementReference, IJSRuntime, string, Action{T}, bool, bool, bool)"/>,
+    /// adding <c>passive</c> and <c>once</c> control on top of <c>capture</c>. The same disposal
+    /// requirement applies.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsAddEventListenerOptions))]
+    public static Task<ButilSubscription> SubscribeEvent<T>(
+        this ElementReference element,
+        IJSRuntime js,
+        string domEvent,
+        Action<T> listener,
+        ButilEventListenerOptions options,
+        bool preventDefault = false,
+        bool stopPropagation = false)
+        => SubscribeEventCore(element, js, domEvent, listener, options.Capture, options.Passive, options.Once, preventDefault, stopPropagation);
+
+    private static async Task<ButilSubscription> SubscribeEventCore<T>(
+        ElementReference element,
+        IJSRuntime js,
+        string domEvent,
+        Action<T> listener,
+        bool useCapture,
+        bool passive,
+        bool once,
+        bool preventDefault,
+        bool stopPropagation)
     {
         var argType = typeof(T);
         var eventType = DomEventArgs.TypeOf(domEvent);
@@ -49,7 +79,10 @@ public static class ElementReferenceEventExtensions
         var host = new DomEventsInterop();
         var (listenerId, methodName, members, dotNetRef) = host.Register(listener, elementId, domEvent, useCapture);
 
-        object options = useCapture;
+        // Bare boolean for the capture-only case; full options object when passive/once are set.
+        object options = (passive || once)
+            ? new JsAddEventListenerOptions { Capture = useCapture, Passive = passive, Once = once }
+            : useCapture;
 
         await js.InvokeVoid("BitButil.element.subscribeEvent",
             element,

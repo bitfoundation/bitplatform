@@ -120,20 +120,28 @@ internal static class InternalJSRuntimeExtensions
     /// The value handed back when the runtime is invalid (prerender/SSR). Reference types that are
     /// routinely dereferenced - <see cref="string"/> and arrays - become empty instead of
     /// <c>null</c> to avoid surprise <see cref="NullReferenceException"/>s; all other types fall
-    /// back to <c>default(TValue)</c>.
+    /// back to <c>default(TValue)</c>. The computed value is cached per <typeparamref name="TValue"/>
+    /// so repeated prerender calls don't re-run the type inspection / array allocation.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Array.CreateInstance with a concrete element type is AOT-safe; no members are reflected over.")]
-    private static ValueTask<TValue> SafeDefault<TValue>()
+    private static ValueTask<TValue> SafeDefault<TValue>() => new(SafeDefaultHolder<TValue>.Value);
+
+    private static class SafeDefaultHolder<TValue>
     {
-        var type = typeof(TValue);
+        internal static readonly TValue Value = Create();
 
-        if (type == typeof(string))
-            return new ValueTask<TValue>((TValue)(object)string.Empty);
+        [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Array.CreateInstance with a concrete element type is AOT-safe; no members are reflected over.")]
+        private static TValue Create()
+        {
+            var type = typeof(TValue);
 
-        if (type.IsArray)
-            return new ValueTask<TValue>((TValue)(object)Array.CreateInstance(type.GetElementType()!, 0));
+            if (type == typeof(string))
+                return (TValue)(object)string.Empty;
 
-        return default;
+            if (type.IsArray)
+                return (TValue)(object)Array.CreateInstance(type.GetElementType()!, 0);
+
+            return default!;
+        }
     }
 
     /// <summary>
@@ -221,6 +229,14 @@ internal static class InternalJSRuntimeExtensions
     private static readonly ConcurrentDictionary<Type, PropertyInfo?> IsInitializedCache = new();
     private static readonly ConcurrentDictionary<Type, FieldInfo?> IpcSenderCache = new();
 
+    // Once a Server/Hybrid runtime instance reports "ready", it never reverts (IsInitialized and
+    // _ipcSender only flip not-ready -> ready over an instance's lifetime). Remembering the ready
+    // verdict per instance lets the hot path short-circuit the per-call reflection read - we only
+    // reflect until the first "ready", then never again for that instance. A ConditionalWeakTable
+    // keys on the runtime instance without keeping it alive.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<IJSRuntime, object> ReadyRuntimes = new();
+    private static readonly object ReadyMarker = new();
+
     [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Reflected members belong to framework JS runtime types that are always present at runtime; we fail open if a member is trimmed/renamed.")]
     [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Reflected members belong to framework JS runtime types that are always present at runtime; we fail open if a member is trimmed/renamed.")]
     internal static bool IsJsRuntimeInvalid(this IJSRuntime? jsRuntime)
@@ -243,16 +259,28 @@ internal static class InternalJSRuntimeExtensions
                 return true;
 
             case JsRuntimeKind.RemoteServer:
-                // Server circuit is unusable until IsInitialized becomes true (after prerender).
-                var isInitialized = IsInitializedCache.GetOrAdd(type,
-                    static t => t.GetProperty("IsInitialized", BindingFlags.Public | BindingFlags.Instance));
-                return isInitialized?.GetValue(jsRuntime) is false;
-
             case JsRuntimeKind.WebViewHybrid:
-                // Hybrid runtime is unusable until the WebView attaches its IPC sender.
-                var ipcSender = IpcSenderCache.GetOrAdd(type,
-                    static t => t.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance));
-                return ipcSender is not null && ipcSender.GetValue(jsRuntime) is null;
+                // If we've already seen this instance become ready, skip the reflection entirely.
+                if (ReadyRuntimes.TryGetValue(jsRuntime, out _)) return false;
+
+                bool ready;
+                if (kind == JsRuntimeKind.RemoteServer)
+                {
+                    // Server circuit is unusable until IsInitialized becomes true (after prerender).
+                    var isInitialized = IsInitializedCache.GetOrAdd(type,
+                        static t => t.GetProperty("IsInitialized", BindingFlags.Public | BindingFlags.Instance));
+                    ready = isInitialized?.GetValue(jsRuntime) is not false;
+                }
+                else
+                {
+                    // Hybrid runtime is unusable until the WebView attaches its IPC sender.
+                    var ipcSender = IpcSenderCache.GetOrAdd(type,
+                        static t => t.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance));
+                    ready = ipcSender is null || ipcSender.GetValue(jsRuntime) is not null;
+                }
+
+                if (ready) ReadyRuntimes.AddOrUpdate(jsRuntime, ReadyMarker);
+                return ready is false;
 
             default:
                 return false;
