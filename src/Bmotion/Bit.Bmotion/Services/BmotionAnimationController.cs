@@ -40,21 +40,24 @@ public sealed class BmotionAnimationController : IDisposable
     /// <summary>Animate the bound element to the given props (fire-and-forget).</summary>
     public async ValueTask AnimateAsync(BmotionAnimationProps props, BmotionTransitionConfig? transition = null)
     {
-        if (_elementId == null || props == null) return;
+        ArgumentNullException.ThrowIfNull(props);
+        if (_elementId == null) return;
         await _engine.AnimateToAsync(_elementId, props.ToJsDictionary(), transition);
     }
 
     /// <summary>Animate and await completion.</summary>
     public async ValueTask AnimateAwaitAsync(BmotionAnimationProps props, BmotionTransitionConfig? transition = null)
     {
-        if (_elementId == null || props == null) return;
+        ArgumentNullException.ThrowIfNull(props);
+        if (_elementId == null) return;
         await _engine.AnimateToAwaitAsync(_elementId, props.ToJsDictionary(), transition);
     }
 
     /// <summary>Instantly set props without animation.</summary>
     public void Set(BmotionAnimationProps props)
     {
-        if (_elementId == null || props == null) return;
+        ArgumentNullException.ThrowIfNull(props);
+        if (_elementId == null) return;
         _engine.SetInstant(_elementId, props.ToJsDictionary());
     }
 

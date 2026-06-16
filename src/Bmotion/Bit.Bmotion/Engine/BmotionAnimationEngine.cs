@@ -476,10 +476,32 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     private void StopLoopInternal()
     {
         if (!_loopRunning) return;
+        // Clear the flag synchronously so a re-entrant ComputeFrame this frame doesn't schedule a
+        // second stop, but defer the actual JS teardown behind _loopStartGate (the same gate
+        // EnsureLoopRunningAsync uses to start the loop). Serializing stop and start prevents a
+        // delayed stop from racing a restart - tearing down a freshly started loop while
+        // _loopRunning is true would otherwise leave the engine stuck (flagged running, JS stopped).
         _loopRunning = false;
-        // Pass our own engine ref so only this engine is removed from the shared JS loop,
-        // leaving any other Blazor-root engines ticking.
-        _ = _interop.StopRafLoopAsync(_dotnet);
+        _ = StopRafLoopGatedAsync();
+
+        async Task StopRafLoopGatedAsync()
+        {
+            await _loopStartGate.WaitAsync();
+            try
+            {
+                // A restart may have re-flipped _loopRunning to true after we cleared it (and
+                // already (re)started the JS loop). Skip the stale stop so we don't tear it down.
+                if (_loopRunning) return;
+                // Pass our own engine ref so only this engine is removed from the shared JS loop,
+                // leaving any other Blazor-root engines ticking.
+                await _interop.StopRafLoopAsync(_dotnet);
+            }
+            catch { /* mid-session stop is best-effort; teardown is ordered explicitly in DisposeAsync */ }
+            finally
+            {
+                _loopStartGate.Release();
+            }
+        }
     }
 
     /// <summary>

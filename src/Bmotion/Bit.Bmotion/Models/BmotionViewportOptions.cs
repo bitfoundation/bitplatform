@@ -35,7 +35,7 @@ public class BmotionViewportOptions
         {
             "some" => 0.0,
             "all"  => 1.0,
-            _      => double.TryParse(amount, System.Globalization.NumberStyles.Any,
+            _      => double.TryParse(amount, System.Globalization.NumberStyles.Float,
                            System.Globalization.CultureInfo.InvariantCulture, out var v) && double.IsFinite(v)
                            ? Math.Clamp(v, 0, 1) : 0.0,
         };

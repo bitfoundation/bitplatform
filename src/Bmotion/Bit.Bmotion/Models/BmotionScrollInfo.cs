@@ -15,8 +15,15 @@ public class BmotionScrollInfo
     /// <summary>Vertical scroll progress 0–1.</summary>
     public double ProgressY { get; init; }
 
+    /// <summary>Total scrollable content width in pixels (including the part outside the viewport).</summary>
     public double ScrollWidth { get; init; }
+
+    /// <summary>Total scrollable content height in pixels (including the part outside the viewport).</summary>
     public double ScrollHeight { get; init; }
+
+    /// <summary>Visible viewport width in pixels (the currently displayed area).</summary>
     public double ClientWidth { get; init; }
+
+    /// <summary>Visible viewport height in pixels (the currently displayed area).</summary>
     public double ClientHeight { get; init; }
 }

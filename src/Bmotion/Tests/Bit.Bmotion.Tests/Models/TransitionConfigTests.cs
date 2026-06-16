@@ -165,6 +165,30 @@ public class TransitionConfigTests
         Assert.AreEqual(0.25, config.EaseCubicBezier[0]);
     }
 
+    [TestMethod]
+    public void EaseCubicBezier_WrongLength_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() =>
+            _ = new BmotionTransitionConfig { EaseCubicBezier = [0.25, 0.1, 0.25] });
+    }
+
+    [TestMethod]
+    public void EaseCubicBezier_NonFiniteValue_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() =>
+            _ = new BmotionTransitionConfig { EaseCubicBezier = [0.25, 0.1, double.NaN, 1.0] });
+    }
+
+    [TestMethod]
+    public void EaseCubicBezier_XControlPointOutOfRange_Throws()
+    {
+        // x1 (index 0) and x2 (index 2) must stay within [0, 1]; only Y may overshoot.
+        Assert.ThrowsExactly<ArgumentException>(() =>
+            _ = new BmotionTransitionConfig { EaseCubicBezier = [1.5, 0.1, 0.25, 1.0] });
+        Assert.ThrowsExactly<ArgumentException>(() =>
+            _ = new BmotionTransitionConfig { EaseCubicBezier = [0.25, 0.1, -0.2, 1.0] });
+    }
+
     // ── Clone ─────────────────────────────────────────────────────────────────
 
     [TestMethod]

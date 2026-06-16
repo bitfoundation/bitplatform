@@ -31,6 +31,25 @@ public class TransformComposerTests
         Assert.AreEqual(expected, BmotionTransformComposer.IsTransformProp(key));
     }
 
+    // ── Build - case-insensitive keys ─────────────────────────────────────────
+
+    [TestMethod]
+    public void Build_MixedCaseKeys_ComposesTransform()
+    {
+        // The engine stores transform components in a case-insensitive dictionary (matching
+        // IsTransformProp's OrdinalIgnoreCase contract), so mixed-case keys identified as valid
+        // transform props must still compose end-to-end rather than being silently dropped.
+        var t = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["X"] = 10,
+            ["SCALE"] = 2.0,
+        };
+        var result = BmotionTransformComposer.Build(t);
+
+        StringAssert.Contains(result, "translate(10px,0px)");
+        StringAssert.Contains(result, "scale(2)");
+    }
+
     // ── Build - empty/identity ────────────────────────────────────────────────
 
     [TestMethod]

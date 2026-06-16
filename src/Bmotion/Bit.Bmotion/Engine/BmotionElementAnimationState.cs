@@ -273,6 +273,7 @@ internal sealed class BmotionElementAnimationState
                 // Non-colour string keyframes (e.g. dimension arrays) have no interpolating driver;
                 // snap to the final frame so the value still lands on its destination.
                 StringValues[key] = otherFrames[^1];
+                NumericValues.Remove(key); // keep numeric/string stores mutually exclusive
                 _dirtyProps.Add(key);
             }
             else if (TryConvertToDouble(value, out double numeric))
@@ -315,16 +316,19 @@ internal sealed class BmotionElementAnimationState
             else if (IsColorProp(key) && value is string colorStr)
             {
                 StringValues[key] = colorStr;
+                NumericValues.Remove(key); // keep numeric/string stores mutually exclusive
                 _dirtyProps.Add(key);
             }
             else if (value is string dimStr)
             {
                 StringValues[key] = dimStr;
+                NumericValues.Remove(key); // keep numeric/string stores mutually exclusive
                 _dirtyProps.Add(key);
             }
             else if (TryConvertToDouble(value, out double nv))
             {
                 NumericValues[key] = nv;
+                StringValues.Remove(key); // keep numeric/string stores mutually exclusive
                 _dirtyProps.Add(key);
             }
         }
@@ -566,12 +570,18 @@ internal sealed class BmotionElementAnimationState
     private void ApplyNumeric(string key, double value)
     {
         NumericValues[key] = value;
+        // Keep the numeric/string stores mutually exclusive: Tick emits a prop from NumericValues
+        // first, so a stale string entry for the same key would otherwise be masked (and vice versa).
+        StringValues.Remove(key);
         _dirtyProps.Add(key);
     }
 
     private void ApplyString(string key, string value)
     {
         StringValues[key] = value;
+        // Mutually exclusive with NumericValues (see ApplyNumeric): a stale numeric entry for this
+        // key would mask the string update during Tick emission.
+        NumericValues.Remove(key);
         _dirtyProps.Add(key);
     }
 
@@ -643,6 +653,7 @@ internal sealed class BmotionElementAnimationState
         {
             // Snap and mark dirty - no interpolation possible across different units.
             StringValues[key] = toValue;
+            NumericValues.Remove(key); // keep numeric/string stores mutually exclusive
             _dirtyProps.Add(key);
         }
     }

@@ -22,6 +22,11 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
     {
         if (frames is null || frames.Length < 2)
             throw new ArgumentException("Keyframe animations require at least 2 frames.", nameof(frames));
+        if (!double.IsFinite(config.Duration) || !double.IsFinite(config.Delay) || !double.IsFinite(config.RepeatDelay))
+            // NaN/infinite timing values poison _startTime in the progress math (e.g. a NaN delay
+            // makes _startTime NaN), pushing invalid values through _apply. Reject them up front.
+            throw new ArgumentException(
+                "Duration, Delay and RepeatDelay must be finite values.", nameof(config));
         if (config.Times != null && config.Times.Length != frames.Length)
             throw new ArgumentException("Times array length must match the number of frames.", nameof(config));
         if (config.Times != null)

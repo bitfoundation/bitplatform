@@ -165,7 +165,9 @@ public class BmotionTransitionConfig
         Duration = Duration,
         Delay = Delay,
         Ease = Ease,
-        EaseCubicBezier = EaseCubicBezier is null ? null : (double[])EaseCubicBezier.Clone(),
+        // Read the backing field directly: the EaseCubicBezier getter already returns a defensive
+        // clone, so cloning it again here would allocate a redundant second copy.
+        EaseCubicBezier = _easeCubicBezier is null ? null : (double[])_easeCubicBezier.Clone(),
         Repeat = Repeat,
         RepeatInfinite = RepeatInfinite,
         RepeatType = RepeatType,

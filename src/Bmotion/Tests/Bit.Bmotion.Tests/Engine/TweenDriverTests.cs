@@ -169,4 +169,24 @@ public class TweenDriverTests
             Assert.IsFalse(done, $"Unexpected completion after iteration {i}");
         }
     }
+
+    [TestMethod]
+    public void Tick_RepeatInfiniteFlag_NeverReturnsDone()
+    {
+        // Exercises the preferred RepeatInfinite flag directly rather than the legacy
+        // Repeat = int.MaxValue sentinel covered above.
+        var log = new List<double>();
+        var driver = Create(0, 100, new BmotionTransitionConfig
+        {
+            Duration = 0.3,
+            RepeatInfinite = true,
+        }, log);
+
+        driver.Tick(0);
+        for (int i = 1; i <= 10; i++)
+        {
+            bool done = driver.Tick(i * 300.0);
+            Assert.IsFalse(done, $"Unexpected completion after iteration {i}");
+        }
+    }
 }
