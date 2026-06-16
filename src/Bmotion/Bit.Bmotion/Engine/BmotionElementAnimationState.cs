@@ -11,7 +11,9 @@ internal sealed class BmotionElementAnimationState
     // ── Live CSS values ───────────────────────────────────────────────────────
 
     /// <summary>Current values of transform components (x, y, scale, rotate, …).</summary>
-    internal readonly Dictionary<string, double> Transforms = new();
+    // Case-insensitive so keys accepted by BmotionTransformComposer.IsTransformProp (which compares
+    // OrdinalIgnoreCase) match the canonical lowercase keys the composer reads when emitting.
+    internal readonly Dictionary<string, double> Transforms = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Current values of numeric non-transform properties (opacity, pathLength, …).</summary>
     internal readonly Dictionary<string, double> NumericValues = new();
@@ -81,10 +83,14 @@ internal sealed class BmotionElementAnimationState
 
         if (_isDragging) _transformDirty = true; // drag always refreshes transform
 
-        // Advance all drivers. Only allocate the "completed" list when something finishes.
+        // Advance all drivers. Iterate over a snapshot because driver.Tick can invoke a user
+        // OnUpdate callback that re-enters and mutates _activeAnims (e.g. starts/cancels an
+        // animation on this same element), which would otherwise corrupt the enumeration.
         List<string>? completed = null;
-        foreach (var (key, driver) in _activeAnims)
+        foreach (var (key, driver) in _activeAnims.ToArray())
         {
+            // The driver may have been removed by a re-entrant callback earlier in this loop.
+            if (!_activeAnims.ContainsKey(key)) continue;
             if (driver.Tick(timestamp))
                 (completed ??= new List<string>()).Add(key);
         }
@@ -593,7 +599,16 @@ internal sealed class BmotionElementAnimationState
         if (value is IEnumerable<double> de) { result = de.ToArray(); return true; }
         if (value is object[] oa && oa.Length > 0 && oa[0] is double or float or int or long)
         {
-            result = oa.Select(x => Convert.ToDouble(x, System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+            // Convert each element defensively: a mixed array like [0, "bad"] must not throw.
+            var arr = new double[oa.Length];
+            for (int i = 0; i < oa.Length; i++)
+            {
+                if (oa[i] is null) return false;
+                try { arr[i] = Convert.ToDouble(oa[i], System.Globalization.CultureInfo.InvariantCulture); }
+                catch (Exception e) when (e is FormatException or InvalidCastException or OverflowException)
+                { return false; }
+            }
+            result = arr;
             return true;
         }
         // Any other numeric sequence (int[], float[], List<int>, …). Strings are excluded so

@@ -47,7 +47,9 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 
         _k = k;
         _d = d;
-        _m = config.Mass;
+        // Mass divides the acceleration each sub-step; a value <= 0 would yield NaN/Infinity and
+        // trap the spring (the rest test would never pass). Fall back to the default mass of 1.
+        _m = config.Mass > 0 ? config.Mass : 1.0;
         _vel = _initialVel = config.Velocity;
         _restSpeed = config.RestSpeed;
         _restDelta = config.RestDelta;

@@ -95,6 +95,7 @@ public class BmotionValue<T> : IDisposable where T : struct
     /// </summary>
     public BmotionValue<TOut> Transform<TOut>(Func<T, TOut> fn) where TOut : struct
     {
+        ArgumentNullException.ThrowIfNull(fn);
         var derived = new BmotionValue<TOut>($"{_id}_t", fn(_value));
         // Keep the parent→derived link so it can be torn down when the derived value is disposed,
         // otherwise the parent would hold the derived value alive indefinitely (a leak).
@@ -107,6 +108,8 @@ public class BmotionValue<T> : IDisposable where T : struct
     /// </summary>
     public BmotionValue<double> Transform(double[] inputRange, double[] outputRange)
     {
+        ArgumentNullException.ThrowIfNull(inputRange);
+        ArgumentNullException.ThrowIfNull(outputRange);
         if (!_numericTypes.Contains(typeof(T)))
             throw new ArgumentException(
                 $"Transform(inputRange, outputRange) only supports numeric value types; '{typeof(T).Name}' is not numeric.");

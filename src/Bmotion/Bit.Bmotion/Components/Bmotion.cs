@@ -581,8 +581,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
          HasPathLength(WhileHover) || HasPathLength(WhileTap) || HasPathLength(WhileFocus) ||
          HasPathLength(WhileInView) || HasPathLength(WhileDrag));
 
-    private static bool HasPathLength(BmotionAnimationTarget? t) =>
-        t?.Props?.PathLength != null;
+    // Resolve the effective props (direct or variant-referenced) so pathLength is detected
+    // whether the target carries Props directly or points at a variant label.
+    private bool HasPathLength(BmotionAnimationTarget? t) =>
+        ResolveProps(t)?.PathLength != null;
 
     private BmotionAnimationProps? ResolveProps(BmotionAnimationTarget? target)
     {

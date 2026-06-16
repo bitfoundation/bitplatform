@@ -24,6 +24,18 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
             throw new ArgumentException("Keyframe animations require at least 2 frames.", nameof(frames));
         if (config.Times != null && config.Times.Length != frames.Length)
             throw new ArgumentException("Times array length must match the number of frames.", nameof(config));
+        if (config.Times != null)
+        {
+            // Times feed the Interpolate segment math; non-monotonic or out-of-range values produce
+            // negative/zero segment lengths and NaN output, so reject them up front.
+            for (int i = 0; i < config.Times.Length; i++)
+            {
+                if (config.Times[i] < 0 || config.Times[i] > 1)
+                    throw new ArgumentException("Times values must be within the range [0, 1].", nameof(config));
+                if (i > 0 && config.Times[i] < config.Times[i - 1])
+                    throw new ArgumentException("Times values must be in monotonically ascending order.", nameof(config));
+            }
+        }
 
         _frames = frames;
         _curFrames = (double[])frames.Clone();

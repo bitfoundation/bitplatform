@@ -41,7 +41,6 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     public async ValueTask EnsureReducedMotionDetectedAsync()
     {
         if (_reducedMotionDetected) return;
-        _reducedMotionDetected = true;
         try
         {
             OsPrefersReducedMotion = await _interop.PrefersReducedMotionAsync();
@@ -49,6 +48,9 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             // (the value was previously cached for the engine's whole lifetime).
             _dotnet ??= DotNetObjectReference.Create(this);
             await _interop.WatchReducedMotionAsync(_dotnet);
+            // Only mark detection complete once both interop calls succeed, so a transient
+            // failure leaves the flag unset and a later call can retry.
+            _reducedMotionDetected = true;
         }
         catch
         {

@@ -86,6 +86,9 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
     [JSInvokable]
     public async Task OnScroll(BmotionScrollInfo info)
     {
+        // info crosses the JS→C# boundary; guard against a null payload so the property reads below
+        // don't throw a NullReferenceException inside the interop callback.
+        if (info is null) return;
         ProgressX = info.ProgressX;
         ProgressY = info.ProgressY;
         ScrollX   = info.ScrollX;

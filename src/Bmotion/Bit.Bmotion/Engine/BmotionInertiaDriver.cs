@@ -23,7 +23,9 @@ internal sealed class BmotionInertiaDriver : IBmotionAnimationDriver
     {
         _start = from;
         _timeConstantSec = config.TimeConstant > 0 ? config.TimeConstant / 1000.0 : 1e-6;
-        _restDelta = config.InertiaRestDelta;
+        // Rest delta must be strictly positive, otherwise the completion test
+        // (|projected - pos| < restDelta) can never pass and the driver runs forever.
+        _restDelta = config.InertiaRestDelta > 0 ? config.InertiaRestDelta : 0.01;
         _delayMs = config.Delay * 1000;
         _apply = apply;
 

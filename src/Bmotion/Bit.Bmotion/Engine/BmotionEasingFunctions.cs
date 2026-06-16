@@ -46,7 +46,7 @@ internal static class BmotionEasingFunctions
     {
         if (config == null) return "ease";
         if (config.EaseCubicBezier is { Length: 4 } cb)
-            return $"cubic-bezier({cb[0]},{cb[1]},{cb[2]},{cb[3]})";
+            return $"cubic-bezier({BmotionCssFormat.Num(cb[0])},{BmotionCssFormat.Num(cb[1])},{BmotionCssFormat.Num(cb[2])},{BmotionCssFormat.Num(cb[3])})";
         return config.Ease switch
         {
             BmotionEasing.Linear    => "linear",

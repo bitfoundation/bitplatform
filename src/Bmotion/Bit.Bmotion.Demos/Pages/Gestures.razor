@@ -216,6 +216,9 @@
             void AddEvent(string name)
             {
                 _events.Add($"[{DateTime.Now:HH:mm:ss.ff}] {name}");
+                // Only the last 8 entries are ever shown; trim the rest so a long session can't grow this list unbounded.
+                if (_events.Count > 8)
+                    _events.RemoveRange(0, _events.Count - 8);
                 StateHasChanged();
             }
         }
