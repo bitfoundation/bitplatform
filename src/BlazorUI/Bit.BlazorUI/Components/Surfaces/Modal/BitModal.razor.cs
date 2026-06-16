@@ -31,10 +31,6 @@ public partial class BitModal : BitComponentBase
 
 
 
-    [Inject] private IJSRuntime _js { get; set; } = default!;
-
-
-
     /// <summary>
     /// Whether the Modal should be announced as modal to assistive technologies.
     /// </summary>
@@ -224,7 +220,14 @@ public partial class BitModal : BitComponentBase
     {
         if (IsOpen || IsRendered is false) return;
 
-        _ = _params.OnDismiss.InvokeAsync().ContinueWith(_ => InvokeAsync(StateHasChanged));
+        // Fire-and-forget the dismiss callback, then re-render. Wrapped in a local async method
+        // (instead of ContinueWith) so a throwing OnDismiss surfaces through Blazor's normal async
+        // error handling via the renderer dispatcher rather than being swallowed on an unobserved task.
+        _ = InvokeAsync(async () =>
+        {
+            await _params.OnDismiss.InvokeAsync();
+            StateHasChanged();
+        });
     }
 
     /// <summary>

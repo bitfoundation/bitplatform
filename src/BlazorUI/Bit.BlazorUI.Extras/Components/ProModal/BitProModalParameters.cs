@@ -11,6 +11,11 @@ public class BitProModalParameters
     public bool? AbsolutePosition { get; set; }
 
     /// <summary>
+    /// The aria-label of the Modal for accessibility.
+    /// </summary>
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
     /// Enables the auto scrollbar toggle behavior of the Modal.
     /// </summary>
     public bool? AutoToggleScroll { get; set; }
@@ -170,6 +175,11 @@ public class BitProModalParameters
     /// </summary>
     public string? TitleAriaId { get; set; }
 
+    /// <summary>
+    /// The visibility state (visible, hidden, or collapsed) of the Modal.
+    /// </summary>
+    public BitVisibility? Visibility { get; set; }
+
 
 
     /// <summary>
@@ -186,6 +196,7 @@ public class BitProModalParameters
         return new BitProModalParameters
         {
             AbsolutePosition = params1.AbsolutePosition ?? params2.AbsolutePosition,
+            AriaLabel = params1.AriaLabel ?? params2.AriaLabel,
             AutoToggleScroll = params1.AutoToggleScroll ?? params2.AutoToggleScroll,
             Blocking = params1.Blocking ?? params2.Blocking,
             Classes = BitProModalClassStyles.Merge(params1.Classes, params2.Classes),
@@ -230,6 +241,7 @@ public class BitProModalParameters
             Styles = BitProModalClassStyles.Merge(params1.Styles, params2.Styles),
             SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,
             TitleAriaId = params1.TitleAriaId ?? params2.TitleAriaId,
+            Visibility = params1.Visibility ?? params2.Visibility,
         };
     }
 }

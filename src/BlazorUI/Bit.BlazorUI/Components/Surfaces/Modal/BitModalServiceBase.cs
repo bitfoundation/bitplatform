@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -8,12 +7,28 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <typeparam name="TReference">The concrete modal reference type returned by the Show methods.</typeparam>
 /// <typeparam name="TParameters">The parameters type used to customize the shown modal.</typeparam>
+/// <remarks>
+/// LIFETIME: this service keeps a reference to the currently mounted modal container component and routes
+/// every Show/Close through it. It is therefore tied to a single rendering scope. Register it as <c>Scoped</c>
+/// for Blazor Server (one instance per circuit/user). Registering it as a <c>Singleton</c> is only safe for
+/// single-user hosting models (Blazor WebAssembly and Hybrid/MAUI); a singleton on Blazor Server would be
+/// shared across circuits, leaking modals between users and holding on to disposed containers.
+/// <br/>
+/// Calling a Show overload while no container is mounted only renders the modal later if it is
+/// <c>persistent</c> (persistent modals are tracked and injected into the next container that mounts).
+/// A non-persistent modal shown with no active container is not rendered and its reference is inert.
+/// </remarks>
 public abstract class BitModalServiceBase<TReference, TParameters>
     where TReference : BitModalReferenceBase<TReference, TParameters>
     where TParameters : class, new()
 {
     private BitModalContainerBase<TReference, TParameters>? _container;
-    private readonly ConcurrentQueue<TReference> _persistentModalsQueue = new();
+    // Persistent modals are tracked in a non-destructive list (not a drained queue) so they survive
+    // container remounts: when the active container is disposed and a new one mounts, InitContainer
+    // re-injects the still-open persistent modals into it. Entries are removed when their modal is
+    // closed (see Close) so a closed persistent modal doesn't reappear after a remount.
+    private readonly List<TReference> _persistentModals = [];
+    private readonly object _persistentModalsLock = new();
 
 
 
@@ -35,14 +50,21 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     /// <remarks>
     /// This may be called more than once over the application lifetime: when a container is disposed it
     /// calls <see cref="RemoveContainer"/> (clearing the reference), and a newly mounted container then
-    /// re-initializes the service. The most recently initialized container becomes the active one and any
-    /// queued persistent modals are injected into it. Mounting multiple containers simultaneously is not
-    /// supported; the last one to initialize wins.
+    /// re-initializes the service. The most recently initialized container becomes the active one and the
+    /// still-open persistent modals are (re-)injected into it. Mounting multiple containers simultaneously
+    /// is not supported; the last one to initialize wins.
     /// </remarks>
     public void InitContainer(BitModalContainerBase<TReference, TParameters> container)
     {
         _container = container;
-        _container.InjectPersistentModals(_persistentModalsQueue);
+
+        TReference[] persistentModals;
+        lock (_persistentModalsLock)
+        {
+            persistentModals = [.. _persistentModals];
+        }
+
+        _container.InjectPersistentModals(persistentModals);
     }
 
     /// <summary>
@@ -62,6 +84,15 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     /// </summary>
     public async Task Close(TReference modalRef)
     {
+        // Stop tracking persistent modals once closed so they aren't re-injected on a container remount.
+        if (modalRef.Persistent)
+        {
+            lock (_persistentModalsLock)
+            {
+                _persistentModals.Remove(modalRef);
+            }
+        }
+
         var modalClose = OnCloseModal;
         if (modalClose is not null)
         {
@@ -177,9 +208,14 @@ public abstract class BitModalServiceBase<TReference, TParameters>
             }
         }
 
-        if (persistent && _container is null)
+        // Track every persistent modal (regardless of whether a container currently exists) so it can be
+        // (re-)injected into the active container, including after a container remount.
+        if (persistent)
         {
-            _persistentModalsQueue.Enqueue(modalReference);
+            lock (_persistentModalsLock)
+            {
+                _persistentModals.Add(modalReference);
+            }
         }
 
         return modalReference;

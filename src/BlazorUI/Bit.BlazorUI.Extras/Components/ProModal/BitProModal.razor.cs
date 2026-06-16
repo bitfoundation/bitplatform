@@ -12,6 +12,9 @@ public partial class BitProModal : BitComponentBase
 
     private bool _internalIsOpen;
     private float _offsetTop;
+    // Captures whether scroll was actually locked during the open sequence, so the close sequence
+    // unlocks if and only if it locked, regardless of later changes to AutoToggleScroll.
+    private bool _scrollLockedOnOpen;
 
     // Stable EventCallback wrappers created once (in OnInitialized) instead of on every
     // BuildParameters call. Re-creating them per render produced new delegate instances each
@@ -24,7 +27,9 @@ public partial class BitProModal : BitComponentBase
 
     // Memoizes the merged HtmlAttributes dictionary so BuildParameters doesn't re-run the
     // Concat/GroupBy/ToDictionary allocation on every OnParametersSet when neither the own nor the
-    // cascaded HtmlAttributes reference changed.
+    // cascaded HtmlAttributes reference changed. In-place mutation through the service is still
+    // reflected because BitProModalParameters.Merge allocates a fresh dictionary on every Refresh,
+    // changing the reference and invalidating this cache (mirrors BitModal's behavior).
     private Dictionary<string, object>? _mergedHtmlAttributes;
     private Dictionary<string, object>? _lastOwnHtmlAttributes;
     private Dictionary<string, object>? _lastCascadedHtmlAttributes;
@@ -407,7 +412,18 @@ public partial class BitProModal : BitComponentBase
 
     private async Task ToggleScroll(bool isOpen)
     {
-        if ((_params.AutoToggleScroll ?? false) is false) return;
+        if (isOpen)
+        {
+            // Snapshot the lock decision at open time; close reuses it instead of re-reading
+            // AutoToggleScroll, which may have changed since the modal was opened.
+            _scrollLockedOnOpen = _params.AutoToggleScroll ?? false;
+            if (_scrollLockedOnOpen is false) return;
+        }
+        else
+        {
+            // Only unlock if we actually locked during open, regardless of the current parameter value.
+            if (_scrollLockedOnOpen is false) return;
+        }
 
         if (_params.ScrollerElement.HasValue)
         {
@@ -448,6 +464,7 @@ public partial class BitProModal : BitComponentBase
         return new BitProModalParameters
         {
             AbsolutePosition = AbsolutePosition ? true : p.AbsolutePosition,
+            AriaLabel = AriaLabel ?? p.AriaLabel,
             AutoToggleScroll = AutoToggleScroll ? true : p.AutoToggleScroll,
             Blocking = Blocking ? true : p.Blocking,
             CloseButtonTitle = CloseButtonTitle ?? p.CloseButtonTitle,
@@ -479,6 +496,9 @@ public partial class BitProModal : BitComponentBase
             ShowCloseButton = ShowCloseButton ? true : p.ShowCloseButton,
             SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
             TitleAriaId = TitleAriaId ?? p.TitleAriaId,
+            // Can only force off (default is Visible): own value wins only when it's a meaningful
+            // (non-default) override, otherwise the cascaded value is used.
+            Visibility = Visibility != BitVisibility.Visible ? Visibility : p.Visibility,
         };
     }
 

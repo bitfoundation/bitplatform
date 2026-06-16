@@ -21,7 +21,7 @@ public partial class BitProModalServiceDemo
         new()
         {
             Name = "Close",
-            Type = "void (BitProModalReference modal)",
+            Type = "Task (BitProModalReference modal)",
             DefaultValue = "",
             Description = "Closes an already opened modal using its reference.",
         },

@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -85,10 +83,12 @@ public abstract class BitModalContainerBase<TReference, TParameters> : Component
 
 
 
-    internal void InjectPersistentModals(ConcurrentQueue<TReference> queue)
+    internal void InjectPersistentModals(IReadOnlyList<TReference> modals)
     {
-        while (queue.TryDequeue(out var modalRef))
+        foreach (var modalRef in modals)
         {
+            if (_modalRefs.Contains(modalRef)) continue;
+
             _modalRefs.Add(modalRef);
         }
     }

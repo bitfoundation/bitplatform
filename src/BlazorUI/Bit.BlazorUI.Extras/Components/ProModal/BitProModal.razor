@@ -1,7 +1,7 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<BitModal AriaLabel="@AriaLabel"
+<BitModal AriaLabel="@_params.AriaLabel"
           AriaModal="(_params.Modeless ?? false) is false"
           Class="@ClassBuilder.Value"
           Dir="_params.Dir"
@@ -9,7 +9,7 @@
           Id="@_modalId"
           IsEnabled="_params.IsEnabled ?? true"
           Style="@StyleBuilder.Value"
-          Visibility="Visibility"
+          Visibility="_params.Visibility ?? BitVisibility.Visible"
           Blocking="_params.Blocking ?? false"
           Classes="_classes"
           FullHeight="(_params.FullHeight ?? false) || (_params.FullSize ?? false)"
