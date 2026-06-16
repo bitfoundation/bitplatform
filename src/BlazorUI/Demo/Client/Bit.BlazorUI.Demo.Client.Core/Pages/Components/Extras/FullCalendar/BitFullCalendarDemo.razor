@@ -28,7 +28,8 @@
         <BitText>
             The BitFullCalendar brings a complete scheduling experience to Blazor: multiple view modes
             (day, week, month, year, agenda, and a resource timeline), built-in event create/edit/delete,
-            drag-and-drop, resize, filtering, theming, dark mode, and culture-aware date rendering.
+            drag-and-drop, resize, filtering, theming that follows the Bit theme (including dark mode),
+            and culture-aware date rendering.
             Explore a live calendar below — switch views, add events, and drag them around.
         </BitText>
         <br />
@@ -41,19 +42,23 @@
             <BitFullCalendar Events="basicEvents" />
         </DemoExample>
 
-        <DemoExample Title="Fluent theme" RazorCode="@example2RazorCode" Id="example2">
-            <div>Use the Theme parameter to switch to the Microsoft Fluent (WinUI-style) theme.</div>
+        <DemoExample Title="Theme" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                BitFullCalendar follows the application's Bit theme automatically. Switch the Bit theme
+                (for example to a dark theme) and the calendar surfaces, text, and accent colors update
+                with it — there is no component-level theme or dark-mode switch.
+            </div>
             <br />
-            <BitFullCalendar Events="themeEvents" Theme="BitFullCalendarTheme.Fluent" />
+            <BitFullCalendar Events="themeEvents" />
         </DemoExample>
 
         <DemoExample Title="Options" RazorCode="@example3RazorCode" Id="example3">
             <div>
-                Drive initial preferences from code with the Options parameter — dark mode, 12/24-hour
+                Drive initial preferences from code with the Options parameter — 12/24-hour
                 time format, day start hour, badge variant, and agenda grouping.
             </div>
             <br />
-            <BitFullCalendar Events="optionsEvents" Options="darkOptions" />
+            <BitFullCalendar Events="optionsEvents" Options="options" />
         </DemoExample>
 
         <DemoExample Title="Event templates" RazorCode="@example4RazorCode" Id="example4">

@@ -9,15 +9,6 @@
         <div class="bfc-dropdown-menu">
             <div class="bfc-dropdown-label">@Texts.CalendarSettingsLabel</div>
 
-            <div class="bfc-dropdown-item" @onclick="State.ToggleDarkMode">
-                <span>@Texts.DarkModeLabel</span>
-                <label class="bfc-toggle">
-                    <input type="checkbox" checked="@State.IsDarkMode" />
-                    <span class="bfc-toggle-track"></span>
-                    <span class="bfc-toggle-thumb"></span>
-                </label>
-            </div>
-
             <div class="bfc-dropdown-item" @onclick="() => State.SetBadgeVariant(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? BitFullCalendarBadgeVariant.Colored : BitFullCalendarBadgeVariant.Dot)">
                 <span>@Texts.DotBadgeLabel</span>
                 <label class="bfc-toggle">

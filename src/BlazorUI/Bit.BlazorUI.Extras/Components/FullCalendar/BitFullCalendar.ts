@@ -209,10 +209,6 @@ namespace BitBlazorUI {
             });
         }
 
-        public static isDarkMode(): boolean {
-            return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
-        }
-
         public static isMobile(): boolean {
             return window.innerWidth <= 768;
         }

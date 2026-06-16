@@ -34,15 +34,6 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
-            Name = "Theme",
-            Type = "BitFullCalendarTheme",
-            DefaultValue = "BitFullCalendarTheme.Default",
-            Description = "Visual theme — Default or Fluent (WinUI-style). Dark mode is supported for both.",
-            LinkType = LinkType.Link,
-            Href = "#theme-enum",
-        },
-        new()
-        {
             Name = "EventColorOptions",
             Type = "IReadOnlyList<BitFullCalendarColorOption>?",
             DefaultValue = "null",
@@ -111,7 +102,7 @@ public partial class BitFullCalendarDemo
             Name = "Options",
             Type = "BitFullCalendarOptions",
             DefaultValue = "new()",
-            Description = "Initial preferences — dark mode, 12/24-hour time format, badge variant, day start hour, and agenda grouping.",
+            Description = "Initial preferences — 12/24-hour time format, badge variant, day start hour, and agenda grouping.",
         },
         new()
         {
@@ -145,17 +136,6 @@ public partial class BitFullCalendarDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "theme-enum",
-            Name = "BitFullCalendarTheme",
-            Description = "Visual theme for the calendar chrome.",
-            Items =
-            [
-                new() { Name = "Default", Description = "Built-in neutral palette.", Value = "0" },
-                new() { Name = "Fluent", Description = "Microsoft Fluent-inspired tokens (WinUI-like surfaces).", Value = "1" },
-            ]
-        },
         new()
         {
             Id = "mode-enum",
@@ -239,9 +219,8 @@ public partial class BitFullCalendarDemo
     private readonly List<BitFullCalendarEvent> changeEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> localizationEvents = CreateEvents();
 
-    private readonly BitFullCalendarOptions darkOptions = new()
+    private readonly BitFullCalendarOptions options = new()
     {
-        IsDarkMode = true,
         Use24HourFormat = false,
         StartOfDayHour = 7,
         BadgeVariant = BitFullCalendarBadgeVariant.Dot
@@ -320,7 +299,7 @@ public partial class BitFullCalendarDemo
 }";
 
     private readonly string example2RazorCode = @"
-<BitFullCalendar Events=""events"" Theme=""BitFullCalendarTheme.Fluent"" />";
+<BitFullCalendar Events=""events"" />";
 
     private readonly string example3RazorCode = @"
 <BitFullCalendar Events=""events"" Options=""options"" />
@@ -328,7 +307,6 @@ public partial class BitFullCalendarDemo
 @code {
     private readonly BitFullCalendarOptions options = new()
     {
-        IsDarkMode = true,
         Use24HourFormat = false,
         StartOfDayHour = 7,
         BadgeVariant = BitFullCalendarBadgeVariant.Dot

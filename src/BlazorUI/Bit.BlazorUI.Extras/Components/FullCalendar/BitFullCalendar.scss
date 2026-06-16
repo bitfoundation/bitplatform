@@ -1,59 +1,41 @@
 /* BitFullCalendar */
 
-@import "BitFullCalendar.fluent.scss";
+@import "../../../Bit.BlazorUI/Styles/functions.scss";
 
-/* ===== CSS Variables ===== */
-:root {
-    --bfc-bg: #ffffff;
-    --bfc-bg-secondary: #f9fafb;
-    --bfc-bg-hover: #f3f4f6;
-    --bfc-border: #e5e7eb;
-    --bfc-text: #111827;
-    --bfc-text-secondary: #6b7280;
-    --bfc-text-muted: #9ca3af;
-    --bfc-primary: #3b82f6;
-    --bfc-primary-hover: #2563eb;
-    --bfc-primary-text: #ffffff;
-    --bfc-danger: #ef4444;
-    --bfc-danger-hover: #dc2626;
-    --bfc-radius: 8px;
-    --bfc-radius-sm: 6px;
-    --bfc-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-    --bfc-shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+/* ===== CSS Variables =====
+   The calendar maps its internal --bfc-* custom properties onto the Bit BlazorUI theme tokens
+   (--bit-clr-*, shape and shadow tokens). Because those tokens are redefined by the active Bit
+   theme (including dark mode via :root[bit-theme="dark"]), the calendar follows the application
+   theme automatically without any component-level theme or dark-mode switch. */
+.bfc-root {
+    --bfc-bg: #{$clr-bg-pri};
+    --bfc-bg-secondary: #{$clr-bg-sec};
+    --bfc-bg-hover: #{$clr-bg-pri-hover};
+    --bfc-border: #{$clr-brd-ter};
+    --bfc-text: #{$clr-fg-pri};
+    --bfc-text-secondary: #{$clr-fg-sec};
+    --bfc-text-muted: #{$clr-fg-ter};
+    --bfc-primary: #{$clr-pri};
+    --bfc-primary-hover: #{$clr-pri-hover};
+    --bfc-primary-text: #{$clr-pri-text};
+    --bfc-danger: #{$clr-err};
+    --bfc-danger-hover: #{$clr-err-hover};
+    --bfc-radius: #{$shp-border-radius};
+    --bfc-radius-sm: #{$shp-border-radius};
+    --bfc-shadow: #{$box-shadow-md};
+    --bfc-shadow-lg: #{$box-shadow-lg};
     --bfc-hour-height: 96px;
-    --bfc-timeline-color: #ef4444;
-    --bfc-resize-ring: rgba(59, 130, 246, 0.65);
-    --bfc-resize-glow: rgba(59, 130, 246, 0.22);
-    --bfc-resize-preview-bg: rgba(255, 255, 255, 0.96);
-    --bfc-resize-preview-border: rgba(59, 130, 246, 0.45);
-    --bfc-resize-handle-line: #3b82f6;
-}
-
-.bfc-dark {
-    --bfc-bg: #111827;
-    --bfc-bg-secondary: #1f2937;
-    --bfc-bg-hover: #374151;
-    --bfc-border: #374151;
-    --bfc-text: #f9fafb;
-    --bfc-text-secondary: #d1d5db;
-    --bfc-text-muted: #6b7280;
-    --bfc-primary: #3b82f6;
-    --bfc-primary-hover: #60a5fa;
-    --bfc-primary-text: #ffffff;
-    --bfc-danger: #f87171;
-    --bfc-danger-hover: #ef4444;
-    --bfc-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    --bfc-shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.3);
-    --bfc-resize-ring: rgba(96, 165, 250, 0.85);
-    --bfc-resize-glow: rgba(59, 130, 246, 0.35);
-    --bfc-resize-preview-bg: rgba(31, 41, 55, 0.96);
-    --bfc-resize-preview-border: rgba(96, 165, 250, 0.55);
-    --bfc-resize-handle-line: #60a5fa;
+    --bfc-timeline-color: #{$clr-err};
+    --bfc-resize-ring: color-mix(in srgb, #{$clr-pri} 65%, transparent);
+    --bfc-resize-glow: color-mix(in srgb, #{$clr-pri} 22%, transparent);
+    --bfc-resize-preview-bg: #{$clr-bg-pri};
+    --bfc-resize-preview-border: color-mix(in srgb, #{$clr-pri} 45%, transparent);
+    --bfc-resize-handle-line: #{$clr-pri};
 }
 
 /* ===== Base ===== */
 .bfc-root {
-    font-family: -apple-system, BlazorSegoeUI, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: #{$tg-font-family};
     background: var(--bfc-bg);
     color: var(--bfc-text);
     border: 1px solid var(--bfc-border);
@@ -326,7 +308,7 @@
     height: 7px;
     border-radius: 50%;
     flex-shrink: 0;
-    background: var(--bfc-evt-color, #3b82f6);
+    background: var(--bfc-evt-color, var(--bfc-primary));
 }
 
 /* ===== Color Classes =====
@@ -335,23 +317,13 @@
    (bfc-color) and a solid swatch (bfc-bg) from that single value using color-mix(), so any CSS
    color works without authoring extra rules. */
 .bfc-color {
-    background: color-mix(in srgb, var(--bfc-evt-color, #3b82f6) 18%, var(--bfc-bg, #ffffff));
-    color: color-mix(in srgb, var(--bfc-evt-color, #3b82f6) 75%, #1f2937);
-    border-color: color-mix(in srgb, var(--bfc-evt-color, #3b82f6) 32%, var(--bfc-bg, #ffffff));
-}
-
-.bfc-dark .bfc-color {
-    background: color-mix(in srgb, var(--bfc-evt-color, #3b82f6) 28%, #0b0f19);
-    color: color-mix(in srgb, var(--bfc-evt-color, #3b82f6) 72%, #f9fafb);
-    border-color: color-mix(in srgb, var(--bfc-evt-color, #3b82f6) 52%, #0b0f19);
+    background: color-mix(in srgb, var(--bfc-evt-color, var(--bfc-primary)) 18%, var(--bfc-bg));
+    color: color-mix(in srgb, var(--bfc-evt-color, var(--bfc-primary)) 75%, var(--bfc-text));
+    border-color: color-mix(in srgb, var(--bfc-evt-color, var(--bfc-primary)) 32%, var(--bfc-bg));
 }
 
 .bfc-bg {
-    background: var(--bfc-evt-color, #3b82f6);
-}
-
-.bfc-dark .bfc-bg {
-    background: color-mix(in srgb, var(--bfc-evt-color, #3b82f6) 88%, #000000);
+    background: var(--bfc-evt-color, var(--bfc-primary));
 }
 
 /* Dot-variant badge (neutral background, colored dot) */
@@ -472,13 +444,6 @@
         var(--bfc-shadow);
     transition: box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
 }
-.bfc-dark .bfc-event-block-resizing {
-    box-shadow:
-        0 0 0 2px var(--bfc-resize-ring),
-        0 0 0 5px var(--bfc-resize-glow),
-        0 12px 32px rgba(0, 0, 0, 0.45),
-        var(--bfc-shadow);
-}
 
 .bfc-event-block-title {
     font-weight: 600;
@@ -537,13 +502,13 @@
 .bfc-event-block-resizing .bfc-resize-handle::after {
     opacity: 1;
     width: 40px;
-    box-shadow: 0 0 0 2px var(--bfc-resize-glow), 0 2px 6px rgba(59, 130, 246, 0.35);
+    box-shadow: 0 0 0 2px var(--bfc-resize-glow), 0 2px 6px color-mix(in srgb, var(--bfc-primary) 35%, transparent);
 }
 .bfc-event-block-resizing.bfc-resize-dir-top .bfc-resize-handle-top::after,
 .bfc-event-block-resizing.bfc-resize-dir-bottom .bfc-resize-handle-bottom::after {
     height: 4px;
     width: 44px;
-    box-shadow: 0 0 0 3px var(--bfc-resize-glow), 0 2px 10px rgba(59, 130, 246, 0.45);
+    box-shadow: 0 0 0 3px var(--bfc-resize-glow), 0 2px 10px color-mix(in srgb, var(--bfc-primary) 45%, transparent);
 }
 
 .bfc-resize-preview {
@@ -566,19 +531,13 @@
     border-radius: var(--bfc-radius-sm);
     box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.5) inset,
-        0 4px 14px rgba(59, 130, 246, 0.2),
+        0 4px 14px color-mix(in srgb, var(--bfc-primary) 20%, transparent),
         var(--bfc-shadow);
     z-index: 14;
     white-space: nowrap;
     pointer-events: none;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-}
-.bfc-dark .bfc-resize-preview {
-    color: #93c5fd;
-    box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.06) inset,
-        0 4px 18px rgba(0, 0, 0, 0.35);
 }
 .bfc-event-block-resizing.bfc-resize-dir-top .bfc-resize-preview {
     top: 6px;
@@ -591,9 +550,6 @@
 .bfc-resize-preview-time {
     color: var(--bfc-text);
     font-weight: 700;
-}
-.bfc-dark .bfc-resize-preview-time {
-    color: #e5e7eb;
 }
 
 /* When resizing a timeline event from the start edge, anchor the floating preview to the
@@ -874,7 +830,7 @@
     font-size: 13px;
     outline: none;
 }
-.bfc-agenda-search input:focus { border-color: var(--bfc-primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+.bfc-agenda-search input:focus { border-color: var(--bfc-primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--bfc-primary) 15%, transparent); }
 
 .bfc-agenda-group {
     border-bottom: 1px solid var(--bfc-border);
@@ -1026,7 +982,7 @@
 }
 .bfc-field input:focus, .bfc-field select:focus, .bfc-field textarea:focus {
     border-color: var(--bfc-primary);
-    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bfc-primary) 15%, transparent);
 }
 .bfc-field textarea { resize: vertical; min-height: 60px; }
 .bfc-field .bfc-field-error { color: var(--bfc-danger); font-size: 12px; margin-top: 2px; }
@@ -1173,7 +1129,7 @@
     border: 2px solid transparent;
     cursor: pointer;
     transition: transform 0.1s, border-color 0.1s;
-    background: var(--bfc-evt-color, #3b82f6);
+    background: var(--bfc-evt-color, var(--bfc-primary));
 }
 .bfc-color-swatch:hover { transform: scale(1.1); }
 .bfc-color-swatch.selected { border-color: var(--bfc-text); transform: scale(1.15); }
@@ -1253,7 +1209,7 @@
 }
 .bfc-attendee-add-row input:focus {
     border-color: var(--bfc-primary);
-    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bfc-primary) 15%, transparent);
 }
 
 /* ===== Event Details Dialog ===== */
@@ -1286,7 +1242,6 @@
     border: 1px solid rgba(0, 0, 0, 0.12);
     box-sizing: border-box;
 }
-.bfc-dark .bfc-event-detail-swatch { border-color: rgba(255, 255, 255, 0.2); }
 
 .bfc-event-detail-color {
     display: inline-block;
@@ -1396,7 +1351,7 @@
 }
 .bfc-filter-select:focus {
     border-color: var(--bfc-primary);
-    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bfc-primary) 15%, transparent);
 }
 
 /* ===== User Select ===== */
@@ -1431,7 +1386,7 @@
 
 /* ===== Drag feedback ===== */
 .bfc-dragging { opacity: 0.5; }
-.bfc-drop-target { background: rgba(59,130,246,0.08) !important; }
+.bfc-drop-target { background: color-mix(in srgb, var(--bfc-primary) 8%, transparent) !important; }
 
 /* ===== Mini calendar (day picker sidebar) ===== */
 .bfc-mini-calendar { width: 100%; }
@@ -1540,36 +1495,31 @@
 
 .bfc-week-mobile-warning {
     padding: 12px 16px;
-    background: #fef3c7;
-    color: #92400e;
+    background: color-mix(in srgb, #{$clr-wrn} 18%, var(--bfc-bg));
+    color: #{$clr-wrn-dark};
     font-size: 13px;
     text-align: center;
-    border-bottom: 1px solid #fde68a;
-}
-.bfc-dark .bfc-week-mobile-warning {
-    background: #422006;
-    color: #fde047;
-    border-color: #713f12;
+    border-bottom: 1px solid color-mix(in srgb, #{$clr-wrn} 35%, var(--bfc-bg));
 }
 
 /* ===== Droppable area hover states ===== */
 .bfc-droppable { transition: background 0.1s; }
-.bfc-droppable.drag-over { background: rgba(59,130,246,0.08); }
+.bfc-droppable.drag-over { background: color-mix(in srgb, var(--bfc-primary) 8%, transparent); }
 .bfc-droppable.bfc-drop-preview-hour {
     background: linear-gradient(
         to bottom,
-        rgba(59,130,246,0.16) 0%,
-        rgba(59,130,246,0.16) 50%,
+        color-mix(in srgb, var(--bfc-primary) 16%, transparent) 0%,
+        color-mix(in srgb, var(--bfc-primary) 16%, transparent) 50%,
         transparent 50%,
         transparent 100%
     );
-    outline: 1px solid rgba(59,130,246,0.45);
+    outline: 1px solid color-mix(in srgb, var(--bfc-primary) 45%, transparent);
     outline-offset: -1px;
     z-index: 6;
 }
 .bfc-droppable.bfc-drop-preview-half {
-    background: rgba(59,130,246,0.16);
-    outline: 1px solid rgba(59,130,246,0.45);
+    background: color-mix(in srgb, var(--bfc-primary) 16%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--bfc-primary) 45%, transparent);
     outline-offset: -1px;
     z-index: 7;
     opacity: 1;
@@ -1863,7 +1813,7 @@
 }
 
 .bfc-tl-time-cell.today {
-    background: rgba(59, 130, 246, 0.08);
+    background: color-mix(in srgb, var(--bfc-primary) 8%, transparent);
 }
 
 .bfc-tl-time-cell-label {
@@ -2031,13 +1981,6 @@
         var(--bfc-shadow);
     transition: box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
 }
-.bfc-dark .bfc-timeline-event-resizing {
-    box-shadow:
-        0 0 0 2px var(--bfc-resize-ring),
-        0 0 0 5px var(--bfc-resize-glow),
-        0 12px 32px rgba(0, 0, 0, 0.45),
-        var(--bfc-shadow);
-}
 .bfc-timeline-event-resizing .bfc-resize-handle-start {
     background: linear-gradient(to right, var(--bfc-resize-glow), transparent);
 }
@@ -2047,13 +1990,13 @@
 .bfc-timeline-event-resizing .bfc-resize-handle-h::after {
     opacity: 1;
     height: 40px;
-    box-shadow: 0 0 0 2px var(--bfc-resize-glow), 0 2px 6px rgba(59, 130, 246, 0.35);
+    box-shadow: 0 0 0 2px var(--bfc-resize-glow), 0 2px 6px color-mix(in srgb, var(--bfc-primary) 35%, transparent);
 }
 .bfc-timeline-event-resizing.bfc-resize-dir-start .bfc-resize-handle-start::after,
 .bfc-timeline-event-resizing.bfc-resize-dir-end .bfc-resize-handle-end::after {
     width: 4px;
     height: 44px;
-    box-shadow: 0 0 0 3px var(--bfc-resize-glow), 0 2px 10px rgba(59, 130, 246, 0.45);
+    box-shadow: 0 0 0 3px var(--bfc-resize-glow), 0 2px 10px color-mix(in srgb, var(--bfc-primary) 45%, transparent);
 }
 
 .bfc-timeline-event-row {

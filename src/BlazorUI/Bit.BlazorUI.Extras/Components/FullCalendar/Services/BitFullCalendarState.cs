@@ -19,7 +19,6 @@ public class BitFullCalendarState
     public BitFullCalendarBadgeVariant BadgeVariant { get; private set; } = BitFullCalendarBadgeVariant.Colored;
     public int StartOfDayHour { get; private set; } = 8;
     public BitFullCalendarAgendaGroupBy AgendaModeGroupBy { get; private set; } = BitFullCalendarAgendaGroupBy.Date;
-    public bool IsDarkMode { get; private set; }
 
     /// <summary>Incremented when <see cref="GoToToday"/> is invoked in agenda view so the list can scroll to today.</summary>
     public ulong AgendaScrollToTodayNonce { get; private set; }
@@ -131,20 +130,6 @@ public class BitFullCalendarState
         if (AgendaModeGroupBy == groupBy)
             return;
         AgendaModeGroupBy = groupBy;
-        NotifyStateChanged();
-    }
-
-    public void SetDarkMode(bool value)
-    {
-        if (IsDarkMode == value)
-            return;
-        IsDarkMode = value;
-        NotifyStateChanged();
-    }
-
-    public void ToggleDarkMode()
-    {
-        IsDarkMode = !IsDarkMode;
         NotifyStateChanged();
     }
 

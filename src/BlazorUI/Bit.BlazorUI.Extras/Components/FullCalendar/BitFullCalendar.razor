@@ -64,11 +64,6 @@
     [Parameter] public BitFullCalendarTexts Texts { get; set; } = new();
 
     /// <summary>
-    /// Visual theme for calendar surfaces and controls.
-    /// </summary>
-    [Parameter] public BitFullCalendarTheme Theme { get; set; } = BitFullCalendarTheme.Default;
-
-    /// <summary>
     /// Ordered list of event colors shown in pickers, filters, agenda headers, badges, and bullets.
     /// Each entry has its own <see cref="BitFullCalendarColorOption.Id"/> (matched against
     /// <see cref="BitFullCalendarEvent.Color"/>), <see cref="BitFullCalendarColorOption.Title"/>
@@ -171,13 +166,7 @@
     private BitFullCalendarColorScheme _colorScheme = new(null);
     private BitFullCalendarOptions? _appliedOptions;
 
-    private string RootCssClass =>
-        string.Join(' ', new[]
-        {
-            "bfc-root",
-            State.IsDarkMode ? "bfc-dark" : "",
-            Theme == BitFullCalendarTheme.Fluent ? "bfc-theme-fluent" : ""
-        }.Where(s => !string.IsNullOrEmpty(s)));
+    private string RootCssClass => "bfc-root";
 
     private CultureInfo ResolveCulture() =>
         CultureName is { Length: > 0 } name
@@ -216,7 +205,6 @@
             return;
 
         _appliedOptions = Options;
-        State.SetDarkMode(Options.IsDarkMode);
         State.SetUse24HourFormat(Options.Use24HourFormat);
         State.SetBadgeVariant(Options.BadgeVariant);
         State.SetStartOfDayHour(Options.StartOfDayHour);

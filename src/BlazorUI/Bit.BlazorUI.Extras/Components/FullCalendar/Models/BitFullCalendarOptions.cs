@@ -7,9 +7,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public class BitFullCalendarOptions
 {
-    /// <summary>Starts the calendar in dark mode.</summary>
-    public bool IsDarkMode { get; set; }
-
     /// <summary>Uses 24-hour time format instead of 12-hour (AM/PM).</summary>
     public bool Use24HourFormat { get; set; } = true;
 

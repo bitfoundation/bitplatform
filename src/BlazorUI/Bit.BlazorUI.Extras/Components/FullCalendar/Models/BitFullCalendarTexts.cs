@@ -25,7 +25,6 @@ public class BitFullCalendarTexts
     public string UnnamedAttendee { get; set; } = "(Unnamed)";
 
     public string CalendarSettingsLabel { get; set; } = "Calendar settings";
-    public string DarkModeLabel { get; set; } = "Dark mode";
     public string DotBadgeLabel { get; set; } = "Dot badge";
     public string TwentyFourHourFormatLabel { get; set; } = "24-hour format";
     public string DayStartsAtLabel { get; set; } = "Day starts at";
