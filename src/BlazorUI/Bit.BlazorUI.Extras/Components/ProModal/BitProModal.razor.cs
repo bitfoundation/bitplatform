@@ -19,6 +19,9 @@ public partial class BitProModal : BitComponentBase
     // same scroller even if ScrollerElement/ScrollerSelector changed since the modal was opened.
     private ElementReference? _scrollerElementOnOpen;
     private string? _scrollerSelectorOnOpen;
+    // Snapshots the drag element selector used to register drag handlers, so teardown unregisters
+    // the exact same selector even if DragElementSelector changed since the modal was opened.
+    private string? _dragElementSelectorOnSetup;
 
     // Stable EventCallback wrappers created once (in OnInitialized) instead of on every
     // BuildParameters call. Re-creating them per render produced new delegate instances each
@@ -359,7 +362,8 @@ public partial class BitProModal : BitComponentBase
 
                 if (_params.Draggable ?? false)
                 {
-                    _ = _js.BitDragDropSetup(_containerSelector, _containerSelector, _dragElementSelector);
+                    _dragElementSelectorOnSetup = _dragElementSelector;
+                    _ = _js.BitDragDropSetup(_containerSelector, _containerSelector, _dragElementSelectorOnSetup);
                 }
 
                 // Reset _offsetTop before ToggleScroll. When AutoToggleScroll is false,
@@ -387,7 +391,7 @@ public partial class BitProModal : BitComponentBase
             {
                 _internalIsOpen = false;
 
-                _ = _js.BitDragDropRemove(_containerSelector, _dragElementSelector);
+                _ = _js.BitDragDropRemove(_containerSelector, _dragElementSelectorOnSetup ?? _dragElementSelector);
 
                 await ToggleScroll(false);
             }
@@ -541,7 +545,7 @@ public partial class BitProModal : BitComponentBase
         {
             if (_internalIsOpen)
             {
-                await _js.BitDragDropRemove(_containerSelector, _dragElementSelector);
+                await _js.BitDragDropRemove(_containerSelector, _dragElementSelectorOnSetup ?? _dragElementSelector);
                 await ToggleScroll(false);
             }
         }
