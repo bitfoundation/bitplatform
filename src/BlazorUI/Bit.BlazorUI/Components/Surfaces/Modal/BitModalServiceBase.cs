@@ -199,22 +199,25 @@ public abstract class BitModalServiceBase<TReference, TParameters>
         var modal = BuildModalFragment(modalReference, content);
         modalReference.SetModal(modal);
 
+        // Track every persistent modal (regardless of whether a container currently exists) so it can be
+        // (re-)injected into the active container, including after a container remount. This must happen
+        // before invoking the OnAddModal handlers: a handler may close the modal during its execution, and
+        // Close can only remove the reference if it's already tracked here. Tracking after the handlers ran
+        // would let such a close slip through, leaving a closed modal to reappear on a container remount.
+        if (persistent)
+        {
+            lock (_persistentModalsLock)
+            {
+                _persistentModals.Add(modalReference);
+            }
+        }
+
         var modalAdd = OnAddModal;
         if (modalAdd is not null)
         {
             foreach (var handler in modalAdd.GetInvocationList().Cast<Func<TReference, Task>>())
             {
                 await handler(modalReference);
-            }
-        }
-
-        // Track every persistent modal (regardless of whether a container currently exists) so it can be
-        // (re-)injected into the active container, including after a container remount.
-        if (persistent)
-        {
-            lock (_persistentModalsLock)
-            {
-                _persistentModals.Add(modalReference);
             }
         }
 

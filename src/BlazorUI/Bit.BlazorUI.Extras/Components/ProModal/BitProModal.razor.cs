@@ -15,6 +15,10 @@ public partial class BitProModal : BitComponentBase
     // Captures whether scroll was actually locked during the open sequence, so the close sequence
     // unlocks if and only if it locked, regardless of later changes to AutoToggleScroll.
     private bool _scrollLockedOnOpen;
+    // Snapshots the scroller target captured during open, so the close sequence unlocks the exact
+    // same scroller even if ScrollerElement/ScrollerSelector changed since the modal was opened.
+    private ElementReference? _scrollerElementOnOpen;
+    private string? _scrollerSelectorOnOpen;
 
     // Stable EventCallback wrappers created once (in OnInitialized) instead of on every
     // BuildParameters call. Re-creating them per render produced new delegate instances each
@@ -418,6 +422,11 @@ public partial class BitProModal : BitComponentBase
             // AutoToggleScroll, which may have changed since the modal was opened.
             _scrollLockedOnOpen = _params.AutoToggleScroll ?? false;
             if (_scrollLockedOnOpen is false) return;
+
+            // Snapshot the scroller target at open time so close unlocks the same scroller,
+            // even if ScrollerElement/ScrollerSelector changed in the meantime.
+            _scrollerElementOnOpen = _params.ScrollerElement;
+            _scrollerSelectorOnOpen = _params.ScrollerSelector;
         }
         else
         {
@@ -425,13 +434,13 @@ public partial class BitProModal : BitComponentBase
             if (_scrollLockedOnOpen is false) return;
         }
 
-        if (_params.ScrollerElement.HasValue)
+        if (_scrollerElementOnOpen.HasValue)
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(_params.ScrollerElement.Value, isOpen);
+            _offsetTop = await _js.BitUtilsToggleOverflow(_scrollerElementOnOpen.Value, isOpen);
         }
         else
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(_params.ScrollerSelector ?? "body", isOpen);
+            _offsetTop = await _js.BitUtilsToggleOverflow(_scrollerSelectorOnOpen ?? "body", isOpen);
         }
     }
 

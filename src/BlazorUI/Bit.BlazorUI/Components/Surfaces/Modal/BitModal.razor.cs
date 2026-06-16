@@ -148,15 +148,15 @@ public partial class BitModal : BitComponentBase
         // Create the event callbacks once. They read the current OnXxx properties and the
         // cascaded ModalParameters at invoke time, so they stay correct without being rebuilt
         // every render.
-        _onDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+        _onDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, async (MouseEventArgs e) =>
         {
-            await OnDismiss.InvokeAsync();
-            await ModalParameters!.OnDismiss.InvokeAsync();
+            await OnDismiss.InvokeAsync(e);
+            await ModalParameters!.OnDismiss.InvokeAsync(e);
         });
-        _onOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, async () =>
+        _onOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, async (MouseEventArgs e) =>
         {
-            await OnOverlayClick.InvokeAsync();
-            await ModalParameters!.OnOverlayClick.InvokeAsync();
+            await OnOverlayClick.InvokeAsync(e);
+            await ModalParameters!.OnOverlayClick.InvokeAsync(e);
         });
 
         base.OnInitialized();
