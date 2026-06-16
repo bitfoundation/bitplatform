@@ -192,7 +192,7 @@ private string? toggleKey = ""play"";
 private List<Operation> toggledCustoms =
 [
     new() { Id = ""back"", OnName = ""Back (2X)"", OffName = ""Back (1X)"", OnImage = BitIconName.RewindTwoX, OffImage = BitIconName.Rewind },
-    new() { Id = ""play"", OnTitle = ""Resume"", OffTitle = ""Play"", OnImage = BitIconName.PlayResume, OffImage = BitIconName.Play },
+    new() { Id = ""play"", OnName = ""Resume"", OffName = ""Play"", OnImage = BitIconName.PlayResume, OffImage = BitIconName.Play },
     new() { Id = ""forward"", OnName = ""Forward (2X)"", OffName = ""Forward (1X)"", OnImage = BitIconName.FastForwardTwoX, OffImage = BitIconName.FastForward, ReversedIcon = true }
 ];
 
@@ -200,7 +200,7 @@ private Operation? onChangeToggleCustom;
 private List<Operation> changeToggledCustoms =
 [
     new() { Id = ""back"", OnName = ""Back (2X)"", OffName = ""Back (1X)"", OnImage = BitIconName.RewindTwoX, OffImage = BitIconName.Rewind },
-    new() { Id = ""play"", OnTitle = ""Resume"", OffTitle = ""Play"", OnImage = BitIconName.PlayResume, OffImage = BitIconName.Play },
+    new() { Id = ""play"", OnName = ""Resume"", OffName = ""Play"", OnImage = BitIconName.PlayResume, OffImage = BitIconName.Play },
     new() { Id = ""forward"", OnName = ""Forward (2X)"", OffName = ""Forward (1X)"", OnImage = BitIconName.FastForwardTwoX, OffImage = BitIconName.FastForward, ReversedIcon = true }
 ];";
 

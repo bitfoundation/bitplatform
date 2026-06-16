@@ -180,7 +180,7 @@
         <div>Fill (default)</div>
         <BitButtonGroup Toggle Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
             <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
-            <BitButtonGroupOption OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
+            <BitButtonGroupOption OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
             <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
         </BitButtonGroup>
     </div>
@@ -189,7 +189,7 @@
         <div>Outline</div>
         <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
             <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
-            <BitButtonGroupOption OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
+            <BitButtonGroupOption OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
             <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
         </BitButtonGroup>
     </div>
@@ -198,7 +198,7 @@
         <div>Text</div>
         <BitButtonGroup Toggle Variant="BitVariant.Text" TItem="BitButtonGroupOption">
             <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
-            <BitButtonGroupOption OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
+            <BitButtonGroupOption OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
             <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
         </BitButtonGroup>
     </div>
@@ -206,7 +206,7 @@
     <div>Binding:</div><br />
     <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption" @bind-ToggleKey="toggleKey">
         <BitButtonGroupOption Key="back" OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
-        <BitButtonGroupOption Key="play" OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
+        <BitButtonGroupOption Key="play" OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
         <BitButtonGroupOption Key="forward" OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
     </BitButtonGroup>
     <div>Toggle key: @toggleKey</div>
@@ -215,7 +215,7 @@
     <div>OnToggleChange:</div><br />
     <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption" DefaultToggleKey="forward" OnToggleChange="(BitButtonGroupOption o) => onChangeToggleOption = o">
         <BitButtonGroupOption Key="back" OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
-        <BitButtonGroupOption Key="play" OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
+        <BitButtonGroupOption Key="play" OnText="Resume" OffText="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
         <BitButtonGroupOption Key="forward" OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
     </BitButtonGroup>
     <div>Changed toggle: @onChangeToggleOption?.Key , @onChangeToggleOption?.IsToggled</div>
