@@ -21,6 +21,8 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
 
     public BmotionNumericKeyframesDriver(double[] frames, BmotionTransitionConfig config, Action<double> apply)
     {
+        ArgumentNullException.ThrowIfNull(config);
+        ArgumentNullException.ThrowIfNull(apply);
         if (frames is null || frames.Length < 2)
             throw new ArgumentException("Keyframe animations require at least 2 frames.", nameof(frames));
         if (!double.IsFinite(config.Duration) || !double.IsFinite(config.Delay) || !double.IsFinite(config.RepeatDelay))

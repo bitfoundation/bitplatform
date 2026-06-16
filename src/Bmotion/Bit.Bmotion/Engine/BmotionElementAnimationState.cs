@@ -365,7 +365,10 @@ internal sealed class BmotionElementAnimationState
     /// </summary>
     internal void CompleteAll()
     {
-        foreach (var driver in _activeAnims.Values)
+        // Snapshot the drivers before iterating: driver.Complete() applies the final value, which
+        // can invoke a user OnUpdate callback that re-enters and mutates _activeAnims (e.g. starts
+        // a new animation on this element). Iterating the live Values collection would then throw.
+        foreach (var driver in _activeAnims.Values.ToArray())
             driver.Complete();
         _activeAnims.Clear();
         ResolveAllBatches(true); // snapped to end values = completed

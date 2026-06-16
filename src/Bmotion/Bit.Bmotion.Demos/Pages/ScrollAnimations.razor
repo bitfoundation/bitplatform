@@ -61,7 +61,7 @@
             {
                 _progressX = info.ProgressX;
                 _progressY = info.ProgressY;
-                InvokeAsync(StateHasChanged);
+                return InvokeAsync(StateHasChanged);
             });
         }
     }
@@ -104,7 +104,7 @@
                     {
                         _progressX = info.ProgressX;
                         _progressY = info.ProgressY;
-                        InvokeAsync(StateHasChanged);
+                        return InvokeAsync(StateHasChanged);
                     });
                 }
             }

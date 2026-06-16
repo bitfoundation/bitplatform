@@ -249,6 +249,52 @@ public class SpringDriverTests
         Assert.IsFalse(done, "Infinite-repeat spring should never report completion");
     }
 
+    // ── Constructor safety guards (non-terminating spring prevention) ─────────
+
+    [TestMethod]
+    public void Tick_NonPositiveMass_StillTerminatesAtTarget()
+    {
+        // A Mass <= 0 would divide the acceleration into NaN/Infinity and trap the spring forever.
+        // The constructor falls back to a positive mass, so the spring must still settle.
+        double lastValue = double.NaN;
+        var config = new BmotionTransitionConfig
+        {
+            Stiffness = 100,
+            Damping = 20,
+            Mass = 0, // non-positive: must be guarded
+            RestSpeed = 0.01,
+            RestDelta = 0.01,
+        };
+        var driver = new BmotionSpringDriver(0, 100, config, v => lastValue = v);
+
+        int ticks = RunUntilComplete(driver);
+
+        Assert.IsTrue(ticks > 0, "Spring with non-positive Mass never terminated");
+        Assert.AreEqual(100.0, lastValue, 1e-2);
+    }
+
+    [TestMethod]
+    public void Tick_NonPositiveRestThresholds_StillTerminates()
+    {
+        // Non-positive RestSpeed/RestDelta would make the at-rest gate unsatisfiable, leaving the
+        // spring ticking forever. The constructor clamps them to a positive floor, so it must end.
+        double lastValue = double.NaN;
+        var config = new BmotionTransitionConfig
+        {
+            Stiffness = 100,
+            Damping = 20,
+            Mass = 1,
+            RestSpeed = 0,  // non-positive: must be guarded
+            RestDelta = 0,  // non-positive: must be guarded
+        };
+        var driver = new BmotionSpringDriver(0, 100, config, v => lastValue = v);
+
+        int ticks = RunUntilComplete(driver);
+
+        Assert.IsTrue(ticks > 0, "Spring with non-positive rest thresholds never terminated");
+        Assert.AreEqual(100.0, lastValue, 1e-1);
+    }
+
     private static int RunUntilComplete(BmotionSpringDriver driver, double maxMs = 30_000)
     {
         int ticks = 0;

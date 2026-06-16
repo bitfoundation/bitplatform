@@ -199,7 +199,9 @@ public class BmotionTransitionConfig
         if (source is null) return null;
         var copy = new Dictionary<string, BmotionTransitionConfig>(source.Count);
         foreach (var kv in source)
-            copy[kv.Key] = kv.Value.Clone();
+            // A null per-property override has nothing to deep-copy; preserve it as-is rather than
+            // dereferencing it for Clone() (which would throw a NullReferenceException).
+            copy[kv.Key] = kv.Value?.Clone()!;
         return copy;
     }
 

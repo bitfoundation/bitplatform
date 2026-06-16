@@ -518,7 +518,11 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             catch { /* mid-session stop is best-effort; teardown is ordered explicitly in DisposeAsync */ }
             finally
             {
-                _loopStartGate.Release();
+                // DisposeAsync may dispose the gate (line below) while this fire-and-forget task is
+                // still unwinding through the await above. Guard Release() so a disposal race can't
+                // surface as an unobserved ObjectDisposedException on this path.
+                try { _loopStartGate.Release(); }
+                catch (ObjectDisposedException) { /* gate disposed during teardown; nothing to release */ }
             }
         }
     }

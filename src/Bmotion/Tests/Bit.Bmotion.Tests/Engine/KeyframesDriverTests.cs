@@ -146,6 +146,48 @@ public class NumericKeyframesDriverTests
 }
 
 [TestClass]
+public class NumericKeyframesDriverValidationTests
+{
+    // ── Constructor input guards ──────────────────────────────────────────────
+
+    [TestMethod]
+    public void Ctor_TimesLengthMismatch_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new BmotionNumericKeyframesDriver(
+            [0, 50, 100],
+            new BmotionTransitionConfig { Duration = 0.3, Times = [0.0, 1.0] }, // 2 times, 3 frames
+            _ => { }));
+    }
+
+    [TestMethod]
+    public void Ctor_TimesOutOfRange_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new BmotionNumericKeyframesDriver(
+            [0, 100],
+            new BmotionTransitionConfig { Duration = 0.3, Times = [0.0, 1.5] }, // 1.5 > 1
+            _ => { }));
+    }
+
+    [TestMethod]
+    public void Ctor_TimesNonFinite_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new BmotionNumericKeyframesDriver(
+            [0, 100],
+            new BmotionTransitionConfig { Duration = 0.3, Times = [0.0, double.NaN] },
+            _ => { }));
+    }
+
+    [TestMethod]
+    public void Ctor_NonFiniteDuration_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new BmotionNumericKeyframesDriver(
+            [0, 100],
+            new BmotionTransitionConfig { Duration = double.PositiveInfinity },
+            _ => { }));
+    }
+}
+
+[TestClass]
 public class ColorKeyframesDriverTests
 {
     // ── Interpolation ─────────────────────────────────────────────────────────
@@ -239,3 +281,4 @@ public class ColorKeyframesDriverTests
         Assert.AreEqual("rgba(0,0,0,1)", lastValue);
     }
 }
+

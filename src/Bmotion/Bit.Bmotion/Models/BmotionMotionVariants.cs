@@ -28,6 +28,7 @@ public class BmotionMotionVariants
     // ── Builder shorthand ─────────────────────────────────────────────────────
     public static BmotionMotionVariants Create(params (string name, BmotionAnimationProps props)[] entries)
     {
+        ArgumentNullException.ThrowIfNull(entries);
         var mv = new BmotionMotionVariants();
         foreach (var (name, props) in entries)
             mv.Add(name, props);
