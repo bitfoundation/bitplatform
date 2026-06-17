@@ -226,13 +226,25 @@ public abstract class BitModalServiceBase<TReference, TParameters>
             {
                 // A handler threw before the modal was fully registered with a container. Undo the
                 // persistent tracking added above so a failed Show doesn't leave a stale persistent
-                // entry that would reappear on a container remount, then rethrow. (Remove is a no-op
-                // if an earlier handler already closed and untracked the modal.)
+                // entry that would reappear on a container remount. (Remove is a no-op if an earlier
+                // handler already closed and untracked the modal.)
                 if (persistent)
                 {
                     lock (_persistentModalsLock)
                     {
                         _persistentModals.Remove(modalReference);
+                    }
+                }
+
+                // Earlier handlers may have already added (and rendered) the modal in a container.
+                // Roll that state back by invoking the close handlers so a failed Show doesn't leave
+                // a partially-added, visible modal behind. Removing an unknown modal is a no-op.
+                var modalCloseRollback = OnCloseModal;
+                if (modalCloseRollback is not null)
+                {
+                    foreach (var handler in modalCloseRollback.GetInvocationList().Cast<Func<TReference, Task>>())
+                    {
+                        await handler(modalReference);
                     }
                 }
 

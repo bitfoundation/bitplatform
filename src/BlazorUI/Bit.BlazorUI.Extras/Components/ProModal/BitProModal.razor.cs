@@ -363,7 +363,7 @@ public partial class BitProModal : BitComponentBase
                 if (_params.Draggable ?? false)
                 {
                     _dragElementSelectorOnSetup = _dragElementSelector;
-                    _ = _js.BitDragDropSetup(_containerSelector, _containerSelector, _dragElementSelectorOnSetup);
+                    await _js.BitDragDropSetup(_containerSelector, _containerSelector, _dragElementSelectorOnSetup);
                 }
 
                 // Reset _offsetTop before ToggleScroll. When AutoToggleScroll is false,
@@ -391,7 +391,7 @@ public partial class BitProModal : BitComponentBase
             {
                 _internalIsOpen = false;
 
-                _ = _js.BitDragDropRemove(_containerSelector, _dragElementSelectorOnSetup ?? _dragElementSelector);
+                await _js.BitDragDropRemove(_containerSelector, _dragElementSelectorOnSetup ?? _dragElementSelector);
 
                 await ToggleScroll(false);
             }

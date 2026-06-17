@@ -225,7 +225,7 @@ public partial class BitModal : BitComponentBase
         // error handling via the renderer dispatcher rather than being swallowed on an unobserved task.
         _ = InvokeAsync(async () =>
         {
-            await _params.OnDismiss.InvokeAsync();
+            await _params.OnDismiss.InvokeAsync(new MouseEventArgs());
             StateHasChanged();
         });
     }

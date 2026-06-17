@@ -101,7 +101,7 @@ public class BitModalParameters
         return new BitModalParameters
         {
             IsEnabled = params1.IsEnabled ?? params2.IsEnabled,
-            HtmlAttributes = params2.HtmlAttributes.Concat(params1.HtmlAttributes).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
+            HtmlAttributes = (params2.HtmlAttributes ?? []).Concat(params1.HtmlAttributes ?? []).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
             Dir = params1.Dir ?? params2.Dir,
             AriaModal = params1.AriaModal ?? params2.AriaModal,
             Blocking = params1.Blocking ?? params2.Blocking,
