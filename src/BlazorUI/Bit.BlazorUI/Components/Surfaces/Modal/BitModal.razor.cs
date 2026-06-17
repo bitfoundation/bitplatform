@@ -24,10 +24,19 @@ public partial class BitModal : BitComponentBase
 
     // Memoizes the merged HtmlAttributes dictionary so BuildParameters doesn't re-run the
     // Concat/GroupBy/ToDictionary allocation on every OnParametersSet when neither the own nor the
-    // cascaded HtmlAttributes reference changed.
+    // cascaded HtmlAttributes content changed. The last-seen sources are stored as content snapshots
+    // (copies) rather than references so that in-place mutations of the live dictionaries are detected.
     private Dictionary<string, object>? _mergedHtmlAttributes;
     private Dictionary<string, object>? _lastOwnHtmlAttributes;
     private Dictionary<string, object>? _lastCascadedHtmlAttributes;
+
+    // Snapshots of the scalar values the class/style builders consume. The Classes/Styles inputs are
+    // mutable: their members can change without the instance reference changing (e.g. via
+    // BitModalService.Refresh), so we compare against these value snapshots rather than references.
+    private string? _lastClassesRoot;
+    private string? _lastParamsClassesRoot;
+    private string? _lastStylesRoot;
+    private string? _lastParamsStylesRoot;
 
 
 
@@ -169,22 +178,33 @@ public partial class BitModal : BitComponentBase
         _params = BuildParameters();
 
         // The [ResetClassBuilder] attribute only resets ClassBuilder when this component's own
-        // parameters change. However, the registered class/style lambdas read the merged _params
-        // values, which also incorporate the cascaded BitModalParameters. When those cascaded values
-        // are mutated in place (e.g. via BitModalService.Refresh), no own-parameter change occurs, so
-        // the builders would otherwise keep their cached (stale) values. Reset them here when any
-        // class/style-affecting merged value actually changed.
+        // parameters change. However, the registered class/style lambdas also read the (own and
+        // cascaded) Classes/Styles values. Those are mutable inputs: mutating their members in place
+        // (e.g. via BitModalService.Refresh) doesn't change the instance reference, so a reference
+        // comparison can miss the change and leave the builders with stale cached values. Compare the
+        // actual scalar values the builders consume against the previous snapshot so that any change
+        // is detected, regardless of whether the instance reference changed.
+        var classesRoot = Classes?.Root;
+        var paramsClassesRoot = _params.Classes?.Root;
         if (previous.FullHeight != _params.FullHeight ||
             previous.FullWidth != _params.FullWidth ||
-            ReferenceEquals(previous.Classes, _params.Classes) is false)
+            _lastClassesRoot != classesRoot ||
+            _lastParamsClassesRoot != paramsClassesRoot)
         {
             ClassBuilder.Reset();
         }
+        _lastClassesRoot = classesRoot;
+        _lastParamsClassesRoot = paramsClassesRoot;
 
-        if (ReferenceEquals(previous.Styles, _params.Styles) is false)
+        var stylesRoot = Styles?.Root;
+        var paramsStylesRoot = _params.Styles?.Root;
+        if (_lastStylesRoot != stylesRoot ||
+            _lastParamsStylesRoot != paramsStylesRoot)
         {
             StyleBuilder.Reset();
         }
+        _lastStylesRoot = stylesRoot;
+        _lastParamsStylesRoot = paramsStylesRoot;
 
         base.OnParametersSet();
     }
@@ -281,22 +301,40 @@ public partial class BitModal : BitComponentBase
 
     /// <summary>
     /// Merges the cascaded and own HtmlAttributes (own values win), reusing the previous result when
-    /// neither source dictionary reference changed to avoid a per-render allocation.
+    /// neither source dictionary changed by content to avoid a per-render allocation. Content (rather
+    /// than reference) comparison is used so in-place mutations of these mutable inputs are detected.
     /// </summary>
     private Dictionary<string, object> MergeHtmlAttributes(Dictionary<string, object> cascaded, Dictionary<string, object> own)
     {
         if (_mergedHtmlAttributes is not null &&
-            ReferenceEquals(_lastCascadedHtmlAttributes, cascaded) &&
-            ReferenceEquals(_lastOwnHtmlAttributes, own))
+            DictionaryContentEqual(_lastCascadedHtmlAttributes, cascaded) &&
+            DictionaryContentEqual(_lastOwnHtmlAttributes, own))
         {
             return _mergedHtmlAttributes;
         }
 
-        _lastCascadedHtmlAttributes = cascaded;
-        _lastOwnHtmlAttributes = own;
+        // Store independent content snapshots (copies) so a later in-place mutation of the live source
+        // dictionaries differs from what was captured here and forces a rebuild.
+        _lastCascadedHtmlAttributes = new Dictionary<string, object>(cascaded);
+        _lastOwnHtmlAttributes = new Dictionary<string, object>(own);
         _mergedHtmlAttributes = cascaded.Concat(own).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value);
 
         return _mergedHtmlAttributes;
+    }
+
+    private static bool DictionaryContentEqual(Dictionary<string, object>? a, Dictionary<string, object>? b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null) return false;
+        if (a.Count != b.Count) return false;
+
+        foreach (var kv in a)
+        {
+            if (b.TryGetValue(kv.Key, out var value) is false) return false;
+            if (Equals(kv.Value, value) is false) return false;
+        }
+
+        return true;
     }
 
 
