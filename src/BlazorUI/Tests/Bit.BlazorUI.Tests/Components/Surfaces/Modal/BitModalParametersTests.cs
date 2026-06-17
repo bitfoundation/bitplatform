@@ -64,4 +64,34 @@ public class BitModalParametersTests
         Assert.AreEqual("a", merged.HtmlAttributes["data-a"]);
         Assert.AreEqual("b", merged.HtmlAttributes["data-b"]);
     }
+
+    [TestMethod]
+    public void MergeShouldHandleNullHtmlAttributes()
+    {
+        var firstNull = new BitModalParameters { HtmlAttributes = null! };
+        var second = new BitModalParameters
+        {
+            HtmlAttributes = new Dictionary<string, object> { ["data-b"] = "b" }
+        };
+
+        var mergedFirstNull = BitModalParameters.Merge(firstNull, second)!;
+        Assert.IsNotNull(mergedFirstNull.HtmlAttributes);
+        Assert.AreEqual("b", mergedFirstNull.HtmlAttributes["data-b"]);
+
+        var first = new BitModalParameters
+        {
+            HtmlAttributes = new Dictionary<string, object> { ["data-a"] = "a" }
+        };
+        var secondNull = new BitModalParameters { HtmlAttributes = null! };
+
+        var mergedSecondNull = BitModalParameters.Merge(first, secondNull)!;
+        Assert.IsNotNull(mergedSecondNull.HtmlAttributes);
+        Assert.AreEqual("a", mergedSecondNull.HtmlAttributes["data-a"]);
+
+        var bothNull = BitModalParameters.Merge(
+            new BitModalParameters { HtmlAttributes = null! },
+            new BitModalParameters { HtmlAttributes = null! })!;
+        Assert.IsNotNull(bothNull.HtmlAttributes);
+        Assert.AreEqual(0, bothNull.HtmlAttributes.Count);
+    }
 }

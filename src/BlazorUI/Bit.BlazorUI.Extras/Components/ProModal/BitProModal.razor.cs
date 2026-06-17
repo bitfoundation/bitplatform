@@ -519,7 +519,7 @@ public partial class BitProModal : BitComponentBase
     /// Merges the cascaded and own HtmlAttributes (own values win), reusing the previous result when
     /// neither source dictionary reference changed to avoid a per-render allocation.
     /// </summary>
-    private Dictionary<string, object> MergeHtmlAttributes(Dictionary<string, object> cascaded, Dictionary<string, object> own)
+    private Dictionary<string, object> MergeHtmlAttributes(Dictionary<string, object>? cascaded, Dictionary<string, object>? own)
     {
         if (_mergedHtmlAttributes is not null &&
             ReferenceEquals(_lastCascadedHtmlAttributes, cascaded) &&
@@ -530,7 +530,7 @@ public partial class BitProModal : BitComponentBase
 
         _lastCascadedHtmlAttributes = cascaded;
         _lastOwnHtmlAttributes = own;
-        _mergedHtmlAttributes = cascaded.Concat(own).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value);
+        _mergedHtmlAttributes = (cascaded ?? []).Concat(own ?? []).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value);
 
         return _mergedHtmlAttributes;
     }

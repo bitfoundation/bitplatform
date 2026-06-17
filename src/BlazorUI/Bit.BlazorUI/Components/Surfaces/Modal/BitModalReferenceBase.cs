@@ -17,6 +17,13 @@ public abstract class BitModalReferenceBase<TReference, TParameters>
 
     public bool Persistent { get; private set; }
 
+    /// <summary>
+    /// Indicates that this modal has been closed. Once closed a reference is never reused (each Show
+    /// creates a new reference), so this flag stays set and lets in-flight add handlers detect a modal
+    /// that was closed mid-show and avoid (re-)adding it.
+    /// </summary>
+    public bool IsClosed { get; private set; }
+
     public object? Content { get; private set; }
 
     public RenderFragment? Modal { get; private set; }
@@ -47,6 +54,11 @@ public abstract class BitModalReferenceBase<TReference, TParameters>
     internal void SetParameters(TParameters? parameters)
     {
         Parameters = parameters;
+    }
+
+    internal void MarkClosed()
+    {
+        IsClosed = true;
     }
 
     public Task Close()

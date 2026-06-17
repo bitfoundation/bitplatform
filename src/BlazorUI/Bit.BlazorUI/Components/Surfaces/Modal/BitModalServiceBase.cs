@@ -84,6 +84,10 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     /// </summary>
     public async Task Close(TReference modalRef)
     {
+        // Mark the reference closed up front so any add handler still iterating in a concurrent Show
+        // (a handler may close the modal mid-show) can detect the close and skip (re-)adding it.
+        modalRef.MarkClosed();
+
         // Stop tracking persistent modals once closed so they aren't re-injected on a container remount.
         if (modalRef.Persistent)
         {
@@ -220,6 +224,11 @@ public abstract class BitModalServiceBase<TReference, TParameters>
                 foreach (var handler in modalAdd.GetInvocationList().Cast<Func<TReference, Task>>())
                 {
                     await handler(modalReference);
+
+                    // A handler may have closed the modal during its execution (e.g. via Close on the
+                    // reference). Stop here so a later handler can't re-add an already-closed modal back
+                    // into a container.
+                    if (modalReference.IsClosed) break;
                 }
             }
             catch
