@@ -352,7 +352,7 @@ public partial class BitProPanelDemo
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
     </div>
 </BitProPanel>";
     private readonly string example1CsharpCode = @"
@@ -363,11 +363,11 @@ private bool isBasicProPanelOpen;";
 <BitProPanel @bind-IsOpen=""isProPanelWithHeaderTextOpen"" HeaderText=""BitProPanel with HeaderText"">
     <div style=""max-width:300px"">
         Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
-        These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+        These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape. 
         Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
         inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
         spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
-        in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities 
+        in potential-the quiet magic of beginnings, where everything is still to come, and the possibilities 
         are boundless. This space is yours to craft, yours to shape, yours to bring to life.
     </div>
 </BitProPanel>
@@ -383,11 +383,11 @@ private bool isBasicProPanelOpen;";
     <Body>
         <div style=""max-width:300px"">
             Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. 
-            These placeholder words symbolize the beginning—a moment of possibility where creativity has yet to take shape. 
+            These placeholder words symbolize the beginning-a moment of possibility where creativity has yet to take shape. 
             Imagine this text as the scaffolding of something remarkable, a foundation upon which connections and 
             inspirations will be built. Soon, these lines will transform into narratives that provoke thought, 
             spark emotion, and resonate with those who encounter them. Until then, they remind us of the beauty 
-            in potential—the quiet magic of beginnings, where everything is still to come, and the possibilities 
+            in potential-the quiet magic of beginnings, where everything is still to come, and the possibilities 
             are boundless. This space is yours to craft, yours to shape, yours to bring to life.
         </div>
     </Body>
@@ -397,13 +397,13 @@ private bool isBasicProPanelOpen;";
 <BitButton OnClick=""() => isProPanelWithFooterTextOpen = true"">Open ProPanel with FooterText</BitButton>
 <BitProPanel @bind-IsOpen=""isProPanelWithFooterTextOpen"" FooterText=""BitProPanel with FooterText"">
     <div style=""max-width:300px"">
-        In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+        In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
         to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
         possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
         vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
         shaped into meaning, and the emotions ready to resonate with every reader.
         In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-        each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+        each word has the power to transform into something extraordinary. Here lies the start of something new-an 
         opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
         idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
         begins here, in this quiet moment where everything is possible.
@@ -414,13 +414,13 @@ private bool isBasicProPanelOpen;";
 <BitProPanel @bind-IsOpen=""isProPanelWithFooterOpen"">
     <Body>
         <div style=""max-width:300px"">
-            In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+            In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
             to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
             possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
             vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
             shaped into meaning, and the emotions ready to resonate with every reader.
             In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-            each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+            each word has the power to transform into something extraordinary. Here lies the start of something new-an 
             opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
             idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
             begins here, in this quiet moment where everything is possible.
@@ -445,7 +445,7 @@ private bool isProPanelWithFooterOpen;";
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
     </div>
 </BitProPanel>
 
@@ -455,7 +455,7 @@ private bool isProPanelWithFooterOpen;";
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
     </div>
 </BitProPanel>
 
@@ -465,7 +465,7 @@ private bool isProPanelWithFooterOpen;";
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
     </div>
 </BitProPanel>
 
@@ -475,7 +475,7 @@ private bool isProPanelWithFooterOpen;";
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
     </div>
 </BitProPanel>
 
@@ -485,7 +485,7 @@ private bool isProPanelWithFooterOpen;";
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
     </div>
 </BitProPanel>";
     private readonly string example3CsharpCode = @"
@@ -514,7 +514,7 @@ private BitProPanel bitProPanelRef = default!;";
     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
     Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
     when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-    for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+    for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
 </BitProPanel>
 
 <BitProPanel @bind-Size=""customProPanelSize""
@@ -526,7 +526,7 @@ private BitProPanel bitProPanelRef = default!;";
     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
     Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
     when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-    for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+    for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
 </BitProPanel>
 
 <BitProPanel @bind-Size=""customProPanelSize""
@@ -538,7 +538,7 @@ private BitProPanel bitProPanelRef = default!;";
     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
     Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
     when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-    for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+    for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
 </BitProPanel>
 
 <BitProPanel @bind-Size=""customProPanelSize""
@@ -550,7 +550,7 @@ private BitProPanel bitProPanelRef = default!;";
     Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
     Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
     when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-    for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+    for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
 </BitProPanel>";
     private readonly string example4CsharpCode = @"
 private double customPanelSize = 300;
@@ -566,7 +566,7 @@ private bool isOpenInPositionBottom;";
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
         <br /><br />
         The following text field will be focused on open:
         <br /><br />
@@ -582,7 +582,7 @@ private bool isOpenInPositionBottom;";
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
     </div>
 </BitProPanel>";
     private readonly string example5CsharpCode = @"
@@ -646,7 +646,7 @@ private BitTextField onDismissTextFieldRef = default!;";
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
     </div>
 </BitProPanel>
 
@@ -660,7 +660,7 @@ private BitTextField onDismissTextFieldRef = default!;";
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
     </div>
 </BitProPanel>
 
@@ -679,7 +679,7 @@ private BitTextField onDismissTextFieldRef = default!;";
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
     </div>
 </BitProPanel>";
     private readonly string example6CsharpCode = @"
@@ -700,7 +700,7 @@ private bool isProPanelClassesOpen;";
         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
         Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
         when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-        for ideas that change minds and spark emotions. This is where the journey begins—your words will lead the way.
+        for ideas that change minds and spark emotions. This is where the journey begins-your words will lead the way.
     </div>
 </BitProPanel>";
     private readonly string example7CsharpCode = @"

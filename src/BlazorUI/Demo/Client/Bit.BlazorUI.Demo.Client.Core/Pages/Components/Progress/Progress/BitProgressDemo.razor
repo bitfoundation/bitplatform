@@ -2,15 +2,17 @@
 @page "/components/progressbar"
 @page "/components/progressindicator"
 @page "/components/progress-indicator"
+@page "/components/spinner"
 
 <PageOutlet Url="components/progress"
             Title="Progress"
             Description="progress component of the bit BlazorUI components" />
 
 <DemoPage Name="Progress"
-          SecondaryNames="@(["ProgressIndicator", "ProgressBar"])"
+          SecondaryNames="@(["ProgressIndicator", "ProgressBar", "Spinner"])"
           Description="BitProgress is used to show the completion status of an operation."
           SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
           Parameters="componentParameters"
           GitHubUrl="Progress/Progress/BitProgress.razor"
           GitHubDemoUrl="Progress/Progress/BitProgressDemo.razor">
@@ -64,13 +66,55 @@
     </DemoExample>
 
     <DemoExample Title="Color" RazorCode="@example6RazorCode" Id="example6">
-        <BitProgress Color="#c10606" Percent="69" />
+        <div class="example-box">
+            <BitProgress Color="BitColor.Primary" Percent="69" />
+            <BitProgress Color="BitColor.Secondary" Percent="69" />
+            <BitProgress Color="BitColor.Tertiary" Percent="69" />
+            <BitProgress Color="BitColor.Info" Percent="69" />
+            <BitProgress Color="BitColor.Success" Percent="69" />
+            <BitProgress Color="BitColor.Warning" Percent="69" />
+            <BitProgress Color="BitColor.SevereWarning" Percent="69" />
+            <BitProgress Color="BitColor.Error" Percent="69" />
+        </div>
         <br />
-        <BitProgress Color="#ffba17" Indeterminate />
+        <div class="circular-box">
+            <BitProgress Color="BitColor.Primary" Circular Percent="69" />
+            <BitProgress Color="BitColor.Secondary" Circular Percent="69" />
+            <BitProgress Color="BitColor.Tertiary" Circular Percent="69" />
+            <BitProgress Color="BitColor.Info" Circular Percent="69" />
+            <BitProgress Color="BitColor.Success" Circular Percent="69" />
+            <BitProgress Color="BitColor.Warning" Circular Percent="69" />
+            <BitProgress Color="BitColor.SevereWarning" Circular Percent="69" />
+            <BitProgress Color="BitColor.Error" Circular Percent="69" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example9RazorCode" Id="example9">
+        <BitProgress Size="BitSize.Small" Label="Small" Percent="69" ShowPercentNumber />
+        <br />
+        <BitProgress Size="BitSize.Medium" Label="Medium" Percent="69" ShowPercentNumber />
+        <br />
+        <BitProgress Size="BitSize.Large" Label="Large" Percent="69" ShowPercentNumber />
         <br /><br />
-        <BitProgress Color="#c10606" Circular Percent="69" />
+        <div class="circular-box">
+            <BitProgress Size="BitSize.Small" Circular Percent="69" ShowPercentNumber />
+            <BitProgress Size="BitSize.Medium" Circular Percent="69" ShowPercentNumber />
+            <BitProgress Size="BitSize.Large" Circular Percent="69" ShowPercentNumber />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Spinner" RazorCode="@example10RazorCode" Id="example10">
+        <div class="circular-box">
+            <BitProgress Circular Indeterminate Size="BitSize.Small" />
+            <BitProgress Circular Indeterminate Size="BitSize.Medium" />
+            <BitProgress Circular Indeterminate Size="BitSize.Large" />
+        </div>
         <br />
-        <BitProgress Color="#ffba17" Circular Indeterminate />
+        <div class="circular-box">
+            <BitProgress Circular Indeterminate Color="BitColor.Success" />
+            <BitProgress Circular Indeterminate Color="BitColor.Warning" />
+            <BitProgress Circular Indeterminate Color="BitColor.Error" />
+        </div>
     </DemoExample>
 
     <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">

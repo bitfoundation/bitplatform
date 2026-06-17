@@ -1,0 +1,2006 @@
+{
+    "apiVersion": "dashboard.grafana.app/v2",
+    "kind": "Dashboard",
+    "metadata": {
+        "name": "boilerplate-app-overview",
+        "generation": 117,
+        "creationTimestamp": "2026-06-12T11:54:48Z",
+        "labels": {},
+        "annotations": {}
+    },
+    "spec": {
+        "annotations": [
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "query": {
+                        "kind": "DataQuery",
+                        "group": "grafana",
+                        "version": "v0",
+                        "spec": {}
+                    },
+                    "enable": true,
+                    "hide": true,
+                    "iconColor": "rgba(0, 211, 255, 1)",
+                    "name": "Annotations & Alerts",
+                    "builtIn": true
+                }
+            }
+        ],
+        "cursorSync": "Crosshair",
+        "editable": true,
+        "elements": {
+            "panel-12": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 12,
+                    "title": "Exception Rate",
+                    "description": "",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "legendFormat": "known",
+                                                    "mode": "raw",
+                                                    "query": "AppExceptions\n| where $__timeFilter(TimeGenerated)\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| extend IsLowSeverity = (\n    tostring(Properties[\"TransientException\"]) == \"True\" or \n    tostring(Properties[\"KnownException\"]) == \"True\" or \n    toint(SeverityLevel) < 3\n)\n| summarize \n    LowSeverityCount = countif(IsLowSeverity == true),\n    HighSeverityCount = countif(IsLowSeverity == false)\n    by bin(TimeGenerated, $__interval), AppRoleName\n| order by TimeGenerated asc",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "time_series"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "timeseries",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [
+                                        "sum"
+                                    ],
+                                    "displayMode": "table",
+                                    "enableFacetedFilter": false,
+                                    "placement": "bottom",
+                                    "showLegend": true
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "unit": "short",
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            }
+                                        ]
+                                    },
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "exceptions/interval",
+                                        "axisPlacement": "auto",
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "bars",
+                                        "fillOpacity": 70,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "normal"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    }
+                                },
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "HighSeverityCount"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "red",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "KnownCount"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "dark-green",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "LowSeverityCount"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "semi-dark-yellow",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "panel-15": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 15,
+                    "title": "Requests success rate",
+                    "description": "",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "mode": "raw",
+                                                    "query": "AppRequests\n| where $__timeFilter(TimeGenerated)\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize\n    ['Success'] = countif(Success == true),\n    ['Warning'] = countif(Success == false and (Properties[\"HasTransientException\"] == \"true\" or Properties[\"HasKnownException\"] == \"true\")),\n    ['Error'] = countif(Success == false and (Properties[\"HasTransientException\"] != \"true\" and Properties[\"HasKnownException\"] != \"true\"))\n    by bin(TimeGenerated, $__interval), AppRoleName\n| order by TimeGenerated asc",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "time_series"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "timeseries",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [
+                                        "mean",
+                                        "lastNotNull"
+                                    ],
+                                    "displayMode": "table",
+                                    "enableFacetedFilter": false,
+                                    "placement": "bottom",
+                                    "showLegend": true
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "unit": "short",
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            }
+                                        ]
+                                    },
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "requests/interval",
+                                        "axisPlacement": "auto",
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 15,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "smooth",
+                                        "lineWidth": 2,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    }
+                                },
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "Success"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "green",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "Warning"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "orange",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "Error"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "red",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "panel-18": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 18,
+                    "title": "Ongoing AI Conversations",
+                    "description": "Number of active SignalR chatbot streams (`appHub.ongoing_conversations_count` UpDownCounter from customMetrics). Tracks concurrent AI workloads in the AppHub.",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "mode": "raw",
+                                                    "query": "AppMetrics\n| where $__timeFilter(TimeGenerated)\n| where Name == \"appHub.ongoing_conversations_count\"\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize ConversationCount = avg(Sum) by bin(TimeGenerated, $__interval), AppRoleName\n| order by TimeGenerated asc",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "time_series"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "timeseries",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "enableFacetedFilter": false,
+                                    "placement": "bottom",
+                                    "showLegend": true
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "single",
+                                    "sort": "none"
+                                }
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "unit": "short",
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            },
+                                            {
+                                                "value": 20,
+                                                "color": "yellow"
+                                            },
+                                            {
+                                                "value": 100,
+                                                "color": "red"
+                                            }
+                                        ]
+                                    },
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "auto",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    }
+                                },
+                                "overrides": []
+                            }
+                        }
+                    }
+                }
+            },
+            "panel-19": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 19,
+                    "title": "Attachment Resize P95",
+                    "description": "P95 duration of image resize operations (`attachment.resize_duration` histogram from customMetrics). Values are in milliseconds.",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "mode": "raw",
+                                                    "query": "AppMetrics\n| where $__timeFilter(TimeGenerated)\n| where Name == \"attachment.resize_duration\"\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize P95_ms = percentile(Sum, 95) by bin(TimeGenerated, $__interval), AppRoleName\n| order by TimeGenerated asc",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "time_series"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "timeseries",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "enableFacetedFilter": false,
+                                    "placement": "bottom",
+                                    "showLegend": true
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "single",
+                                    "sort": "none"
+                                }
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "unit": "ms",
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            },
+                                            {
+                                                "value": 500,
+                                                "color": "yellow"
+                                            },
+                                            {
+                                                "value": 1000,
+                                                "color": "red"
+                                            }
+                                        ]
+                                    },
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "auto",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    }
+                                },
+                                "overrides": []
+                            }
+                        }
+                    }
+                }
+            },
+            "panel-2": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 2,
+                    "title": "Application Throughput (RPS)",
+                    "description": "Monitors the application's traffic load by displaying the dynamic Requests Per Second (RPS) over the selected time range to identify traffic trends and spikes.",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "mode": "raw",
+                                                    "query": "AppRequests\n| where $__timeFilter(TimeGenerated)\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize RequestsCount = count() by bin(TimeGenerated, $__interval), AppRoleName\n| extend RPS = RequestsCount / (totimespan($__interval) / 1s)\n| project TimeGenerated, RPS, AppRoleName\n| order by TimeGenerated asc",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "time_series",
+                                                    "timeColumn": "TimeGenerated"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "timeseries",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "enableFacetedFilter": false,
+                                    "placement": "bottom",
+                                    "showLegend": true
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "single",
+                                    "sort": "none"
+                                }
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "unit": "short",
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            },
+                                            {
+                                                "value": 50,
+                                                "color": "yellow"
+                                            },
+                                            {
+                                                "value": 200,
+                                                "color": "red"
+                                            }
+                                        ]
+                                    },
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "bars",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "auto",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    }
+                                },
+                                "overrides": []
+                            }
+                        }
+                    }
+                }
+            },
+            "panel-21": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 21,
+                    "title": "Memory Working Set",
+                    "description": "`dotnet.process.memory.working_set` — physical memory currently used by the process (from customMetrics).",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "mode": "raw",
+                                                    "query": "AppMetrics\n| where $__timeFilter(TimeGenerated)\n| where Name == \"dotnet.process.memory.working_set\"\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize WorkingSet = max(Sum) by bin(TimeGenerated, $__interval), AppRoleName\n| order by TimeGenerated asc",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "time_series"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "timeseries",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "enableFacetedFilter": false,
+                                    "placement": "bottom",
+                                    "showLegend": true
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "single",
+                                    "sort": "none"
+                                }
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "unit": "decbytes",
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            },
+                                            {
+                                                "value": 200,
+                                                "color": "yellow"
+                                            },
+                                            {
+                                                "value": 400,
+                                                "color": "red"
+                                            }
+                                        ]
+                                    },
+                                    "color": {
+                                        "mode": "continuous-GrYlRd",
+                                        "seriesBy": "last"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 17,
+                                        "gradientMode": "scheme",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineStyle": {
+                                            "fill": "solid"
+                                        },
+                                        "lineWidth": 2,
+                                        "pointSize": 3,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "auto",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    }
+                                },
+                                "overrides": []
+                            }
+                        }
+                    }
+                }
+            },
+            "panel-24": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 24,
+                    "title": "Top slow responses",
+                    "description": "",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "mode": "raw",
+                                                    "query": "AppRequests\n| where $__timeFilter(TimeGenerated)\n| where Name != \"GET /app-hub\"\n| where tostring(Properties[\"rpc.system\"]) != \"signalr\"\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize \n    AvgDurationMs = avg(DurationMs),\n    MaxDurationMs = max(DurationMs),\n    RequestCount = count(),\n    SampleUrl = any(Url)\n    by RequestName = Name, AppRoleName\n| top 100 by AvgDurationMs desc\n| project RequestName, AppRoleName, AvgDurationMs, MaxDurationMs, RequestCount, SampleUrl",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "table"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "table",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "cellHeight": "sm",
+                                "showHeader": true,
+                                "sortBy": [
+                                    {
+                                        "desc": true,
+                                        "displayName": "DurationMs"
+                                    }
+                                ]
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "unit": "ms",
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            }
+                                        ]
+                                    },
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "custom": {
+                                        "align": "auto",
+                                        "cellOptions": {
+                                            "type": "auto"
+                                        },
+                                        "footer": {
+                                            "reducers": []
+                                        },
+                                        "inspect": false
+                                    },
+                                    "fieldMinMax": false
+                                },
+                                "overrides": []
+                            }
+                        }
+                    },
+                    "transparent": true
+                }
+            },
+            "panel-25": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 25,
+                    "title": "Exceptions",
+                    "description": "",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "mode": "raw",
+                                                    "query": "AppExceptions\n| where $__timeFilter(TimeGenerated)\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize \n    // Get the first occurrence of these properties for each unique error group\n    // Note: If ExceptionMessage is still empty, try replacing it with OuterMessage\n    ErrorMessage = any(OuterMessage), \n    IsKnown = any(tostring(Properties[\"KnownException\"])),\n    IsTransient = any(tostring(Properties[\"TransientException\"])),\n    Severity = case(\n        any(SeverityLevel) == 0, \"Verbose\",\n        any(SeverityLevel) == 1, \"Information\",\n        any(SeverityLevel) == 2, \"Warning\",\n        any(SeverityLevel) == 3, \"Error\",\n        any(SeverityLevel) == 4, \"Critical\",\n        \"Unknown\"\n    ),\n    Occurrence = count() \n    by Type = ExceptionType\n| extend Category = case(\n    IsKnown == \"True\", \"Known\",\n    IsTransient == \"True\", \"Transient\",\n    \"Unknown\" // Default fallback if neither is True\n)\n| project Message = ErrorMessage, Type, Category, Severity, Occurrence\n| top 100 by Occurrence desc",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "table"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "table",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "cellHeight": "sm",
+                                "showHeader": true,
+                                "sortBy": [
+                                    {
+                                        "desc": true,
+                                        "displayName": "Occurrence"
+                                    }
+                                ]
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "unit": "none",
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            }
+                                        ]
+                                    },
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "custom": {
+                                        "align": "auto",
+                                        "cellOptions": {
+                                            "type": "auto"
+                                        },
+                                        "footer": {
+                                            "reducers": []
+                                        },
+                                        "inspect": false
+                                    },
+                                    "fieldMinMax": false
+                                },
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "Category"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "custom.width",
+                                                "value": 76
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "Occurrence"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "custom.width",
+                                                "value": 110
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "Severity"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "custom.width",
+                                                "value": 69
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "transparent": true
+                }
+            },
+            "panel-26": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 26,
+                    "title": "Problematic requests",
+                    "description": "",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "mode": "raw",
+                                                    "query": "AppRequests\n| where $__timeFilter(TimeGenerated)\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n// 1. Immediately drop successful requests to focus only on failures\n| where Success == false\n| extend \n    IsWarning = (Properties[\"HasTransientException\"] == \"true\" or Properties[\"HasKnownException\"] == \"true\"),\n    IsCriticalError = (Properties[\"HasTransientException\"] != \"true\" and Properties[\"HasKnownException\"] != \"true\")\n| summarize\n    CriticalErrorCount = countif(IsCriticalError),\n    WarningCount = countif(IsWarning),\n    TotalFailures = count(),\n    ResultCodes = make_set(ResultCode), // Shows what HTTP status codes were returned (e.g., 500, 400)\n    SampleUrl = any(Url)\n    by RequestName = Name, AppRoleName\n// 2. Score and rank them: Critical Errors are weighted 3x more heavily than warnings\n| extend TroubleScore = (CriticalErrorCount * 3) + WarningCount\n| project RequestName, AppRoleName, CriticalErrorCount, WarningCount, TotalFailures, ResultCodes, SampleUrl, TroubleScore\n| order by TroubleScore desc",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "table"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "table",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "cellHeight": "sm",
+                                "showHeader": true,
+                                "sortBy": [
+                                    {
+                                        "desc": true,
+                                        "displayName": "Occurrence"
+                                    }
+                                ]
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "unit": "none",
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            }
+                                        ]
+                                    },
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "custom": {
+                                        "align": "auto",
+                                        "cellOptions": {
+                                            "type": "auto"
+                                        },
+                                        "footer": {
+                                            "reducers": []
+                                        },
+                                        "inspect": false
+                                    },
+                                    "fieldMinMax": false
+                                },
+                                "overrides": []
+                            }
+                        }
+                    },
+                    "transparent": true
+                }
+            },
+            "panel-27": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 27,
+                    "title": "Database Command Execution Time",
+                    "description": "",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "mode": "raw",
+                                                    "query": "AppDependencies\n| where $__timeFilter(TimeGenerated)\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| where DependencyType == \"postgresql\"\n| summarize \n    Avg = avg(DurationMs),\n    P95 = percentile(DurationMs, 95),\n    Max = max(DurationMs)\n    by bin(TimeGenerated, $__interval), AppRoleName\n| project TimeGenerated, Avg, P95, Max, AppRoleName\n| order by TimeGenerated asc",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "time_series"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "timeseries",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "table",
+                                    "enableFacetedFilter": false,
+                                    "placement": "bottom",
+                                    "showLegend": true
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "unit": "ms",
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            },
+                                            {
+                                                "value": 80,
+                                                "color": "red"
+                                            }
+                                        ]
+                                    },
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "Duration (ms)",
+                                        "axisPlacement": "auto",
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 10,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 2,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    }
+                                },
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "Avg"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "green",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "P95"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "yellow",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "Max"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "red",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "panel-28": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 28,
+                    "title": "Top 100 Slowest Database Queries",
+                    "description": "",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "mode": "raw",
+                                                    "query": "AppDependencies\n| where $__timeFilter(TimeGenerated)\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| where DependencyType == \"postgresql\"\n| project TimeGenerated, AppRoleName, Data, DurationMs, Success\n| top 100 by DurationMs desc",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "table"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "table",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "cellHeight": "sm",
+                                "enablePagination": false,
+                                "showHeader": true
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            },
+                                            {
+                                                "value": 80,
+                                                "color": "red"
+                                            }
+                                        ]
+                                    },
+                                    "custom": {
+                                        "align": "auto",
+                                        "cellOptions": {
+                                            "type": "auto"
+                                        },
+                                        "footer": {
+                                            "reducers": []
+                                        },
+                                        "inspect": false
+                                    }
+                                },
+                                "overrides": []
+                            }
+                        }
+                    }
+                }
+            },
+            "panel-6": {
+                "kind": "Panel",
+                "spec": {
+                    "id": 6,
+                    "title": "Server Response Time",
+                    "description": "",
+                    "links": [],
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "query": {
+                                            "kind": "DataQuery",
+                                            "group": "grafana-azure-monitor-datasource",
+                                            "version": "v0",
+                                            "datasource": {
+                                                "name": "${datasource}"
+                                            },
+                                            "spec": {
+                                                "azureLogAnalytics": {
+                                                    "dashboardTime": false,
+                                                    "mode": "raw",
+                                                    "query": "AppRequests\n| where $__timeFilter(TimeGenerated)\n| where Name != \"GET /app-hub\"\n| where tostring(Properties[\"rpc.system\"]) != \"signalr\"\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize\n    AVG = avg(DurationMs),\n    P95 = percentile(DurationMs, 95),\n    MAX = max(DurationMs)\n    by bin(TimeGenerated, $__interval),\n    AppRoleName\n| order by TimeGenerated asc",
+                                                    "resources": [
+                                                        "${workspace}"
+                                                    ],
+                                                    "resultFormat": "time_series"
+                                                },
+                                                "queryType": "Azure Log Analytics"
+                                            }
+                                        },
+                                        "refId": "A",
+                                        "hidden": false
+                                    }
+                                }
+                            ],
+                            "transformations": [],
+                            "queryOptions": {}
+                        }
+                    },
+                    "vizConfig": {
+                        "kind": "VizConfig",
+                        "group": "timeseries",
+                        "version": "13.1.0-27335746580",
+                        "spec": {
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "enableFacetedFilter": true,
+                                    "placement": "bottom",
+                                    "showLegend": true
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "single",
+                                    "sort": "none"
+                                }
+                            },
+                            "fieldConfig": {
+                                "defaults": {
+                                    "unit": "ms",
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "value": 0,
+                                                "color": "green"
+                                            }
+                                        ]
+                                    },
+                                    "color": {
+                                        "mode": "continuous-GrYlRd",
+                                        "seriesBy": "last"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 17,
+                                        "gradientMode": "scheme",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineStyle": {
+                                            "fill": "solid"
+                                        },
+                                        "lineWidth": 2,
+                                        "pointSize": 3,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "auto",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "fieldMinMax": false
+                                },
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "MAX"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "dark-red",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "P95"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "dark-yellow",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "scope": "series",
+                                            "options": "AVG"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "dark-green",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "transparent": true
+                }
+            }
+        },
+        "layout": {
+            "kind": "RowsLayout",
+            "spec": {
+                "rows": [
+                    {
+                        "kind": "RowsLayoutRow",
+                        "spec": {
+                            "title": "Performance",
+                            "collapse": false,
+                            "layout": {
+                                "kind": "AutoGridLayout",
+                                "spec": {
+                                    "maxColumnCount": 3,
+                                    "columnWidthMode": "standard",
+                                    "rowHeightMode": "standard",
+                                    "items": [
+                                        {
+                                            "kind": "AutoGridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-6"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "kind": "AutoGridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-2"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "kind": "AutoGridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-24"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "kind": "AutoGridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-21"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "kind": "AutoGridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-27"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "kind": "AutoGridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-28"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "kind": "RowsLayoutRow",
+                        "spec": {
+                            "title": "Exceptions",
+                            "collapse": false,
+                            "layout": {
+                                "kind": "GridLayout",
+                                "spec": {
+                                    "items": [
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "x": 0,
+                                                "y": 0,
+                                                "width": 10,
+                                                "height": 8,
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-12"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "x": 10,
+                                                "y": 0,
+                                                "width": 14,
+                                                "height": 8,
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-25"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "kind": "RowsLayoutRow",
+                        "spec": {
+                            "title": "Requests",
+                            "collapse": false,
+                            "layout": {
+                                "kind": "GridLayout",
+                                "spec": {
+                                    "items": [
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "x": 0,
+                                                "y": 0,
+                                                "width": 12,
+                                                "height": 9,
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-15"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "x": 12,
+                                                "y": 0,
+                                                "width": 12,
+                                                "height": 5,
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-18"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "x": 12,
+                                                "y": 5,
+                                                "width": 12,
+                                                "height": 4,
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-19"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "x": 0,
+                                                "y": 9,
+                                                "width": 24,
+                                                "height": 8,
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-26"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "links": [],
+        "liveNow": false,
+        "preload": false,
+        "tags": [
+            "dotnet",
+            "aspnetcore",
+            "boilerplate",
+            "opentelemetry",
+            "azure-monitor",
+            "application-insights"
+        ],
+        "timeSettings": {
+            "timezone": "browser",
+            "from": "now-24h",
+            "to": "now",
+            "autoRefresh": "30s",
+            "autoRefreshIntervals": [
+                "5s",
+                "10s",
+                "30s",
+                "1m",
+                "5m",
+                "15m",
+                "30m",
+                "1h",
+                "2h",
+                "1d"
+            ],
+            "hideTimepicker": false,
+            "fiscalYearStartMonth": 0
+        },
+        "title": "Boilerplate",
+        "variables": [
+            {
+                "kind": "DatasourceVariable",
+                "spec": {
+                    "name": "datasource",
+                    "pluginId": "grafana-azure-monitor-datasource",
+                    "refresh": "onDashboardLoad",
+                    "regex": "",
+                    "current": {
+                        "text": "",
+                        "value": ""
+                    },
+                    "options": [],
+                    "multi": false,
+                    "includeAll": false,
+                    "label": "Azure Monitor",
+                    "hide": "dontHide",
+                    "skipUrlSync": false,
+                    "allowCustomValue": true
+                }
+            },
+            {
+                "kind": "QueryVariable",
+                "spec": {
+                    "name": "subscription",
+                    "current": {
+                        "text": "",
+                        "value": ""
+                    },
+                    "label": "Subscription",
+                    "hide": "dontHide",
+                    "refresh": "onTimeRangeChanged",
+                    "skipUrlSync": false,
+                    "query": {
+                        "kind": "DataQuery",
+                        "group": "grafana-azure-monitor-datasource",
+                        "version": "v0",
+                        "datasource": {
+                            "name": "${datasource}"
+                        },
+                        "spec": {
+                            "__legacyStringValue": "subscriptions()"
+                        }
+                    },
+                    "regex": "",
+                    "regexApplyTo": "value",
+                    "sort": "alphabeticalAsc",
+                    "definition": "subscriptions()",
+                    "options": [],
+                    "multi": false,
+                    "includeAll": false,
+                    "allowCustomValue": true
+                }
+            },
+            {
+                "kind": "QueryVariable",
+                "spec": {
+                    "name": "workspace",
+                    "current": {
+                        "text": "",
+                        "value": ""
+                    },
+                    "label": "Log Analytics Workspace",
+                    "hide": "dontHide",
+                    "refresh": "onTimeRangeChanged",
+                    "skipUrlSync": false,
+                    "query": {
+                        "kind": "DataQuery",
+                        "group": "grafana-azure-monitor-datasource",
+                        "version": "v0",
+                        "datasource": {
+                            "name": "${datasource}"
+                        },
+                        "spec": {
+                            "__legacyStringValue": "workspaces($subscription)"
+                        }
+                    },
+                    "regex": "",
+                    "regexApplyTo": "value",
+                    "sort": "alphabeticalAsc",
+                    "definition": "workspaces($subscription)",
+                    "options": [],
+                    "multi": false,
+                    "includeAll": false,
+                    "allowCustomValue": true
+                }
+            },
+            {
+                "kind": "QueryVariable",
+                "spec": {
+                    "name": "Apps",
+                    "current": {
+                        "text": "",
+                        "value": ""
+                    },
+                    "hide": "dontHide",
+                    "refresh": "onDashboardLoad",
+                    "skipUrlSync": false,
+                    "query": {
+                        "kind": "DataQuery",
+                        "group": "grafana-azure-monitor-datasource",
+                        "version": "v0",
+                        "datasource": {
+                            "name": "${datasource}"
+                        },
+                        "spec": {
+                            "azureLogAnalytics": {
+                                "mode": "raw",
+                                "query": "AppExceptions\r\n| distinct iff(isempty(AppRoleName), \"Client\", AppRoleName)",
+                                "resources": [
+                                    "${workspace}"
+                                ]
+                            },
+                            "queryType": "Azure Log Analytics",
+                            "refId": "A",
+                            "subscription": "${subscription}"
+                        }
+                    },
+                    "regex": "",
+                    "regexApplyTo": "value",
+                    "sort": "disabled",
+                    "definition": "",
+                    "options": [],
+                    "multi": true,
+                    "includeAll": true,
+                    "allowCustomValue": true
+                }
+            }
+        ]
+    }
+}

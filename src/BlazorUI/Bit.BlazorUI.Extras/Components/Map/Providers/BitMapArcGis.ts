@@ -708,7 +708,7 @@ namespace BitBlazorUI {
 
             // pointer-up / pointer-leave clear `active` and restore actionMap.dragPrimary
             // even if the corresponding pointer-down hitTest promise hasn't resolved
-            // yet — and even if it resolves later, releaseActive() ensures the
+            // yet - and even if it resolves later, releaseActive() ensures the
             // override is undone the next time the pointer is released or leaves.
             view.on('pointer-up', () => releaseActive());
             view.on('pointer-leave', () => releaseActive());

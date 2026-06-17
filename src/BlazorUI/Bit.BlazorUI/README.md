@@ -8,7 +8,7 @@
 - **Light Weight**: Built for low load time and fast render.
 - **High Performance**: Built for optimal speed and performance.
 - **Blazor Native**: Specifically designed as native Blazor components, ensuring a consistent development experience.
-- **Universal Support**: Compatible with all interactive Blazor modes — **Server**, **WASM**, and **Hybrid**.
+- **Universal Support**: Compatible with all interactive Blazor modes - **Server**, **WASM**, and **Hybrid**.
 
 ### Getting Started
 

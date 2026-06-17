@@ -4,7 +4,7 @@ public enum SameSite
 {
     /// <summary>
     /// Explicitly states no restrictions will be applied. 
-    /// The cookie will be sent in all requests—both cross-site and same-site.
+    /// The cookie will be sent in all requests, both cross-site and same-site.
     /// </summary>
     None,
 

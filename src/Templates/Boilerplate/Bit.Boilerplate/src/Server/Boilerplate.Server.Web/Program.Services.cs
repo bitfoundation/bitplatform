@@ -9,6 +9,7 @@ using Boilerplate.Client.Web;
 using Boilerplate.Server.Shared;
 using Microsoft.AspNetCore.Antiforgery;
 using Boilerplate.Server.Web.Infrastructure.Services;
+using Boilerplate.Client.Core.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
@@ -106,6 +107,8 @@ public static partial class Program
 
         services.AddTransient<IPrerenderStateService, WebServerPrerenderStateService>();
         services.AddScoped<IExceptionHandler, WebServerExceptionHandler>();
+        services.AddScoped(sp => (ClientExceptionHandlerBase)sp.GetRequiredService<IExceptionHandler>());
+
         services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddScoped<HttpClient>(sp =>
         {

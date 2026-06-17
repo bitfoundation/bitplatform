@@ -28,9 +28,10 @@ public partial class BitProgress : BitComponentBase
     [Parameter] public BitProgressClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Color of the BitProgress.
+    /// The general color of the BitProgress.
     /// </summary>
-    [Parameter] public string? Color { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// Text describing or supplementing the operation.
@@ -43,9 +44,9 @@ public partial class BitProgress : BitComponentBase
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
-    /// Thickness of the BitProgress.
+    /// Thickness of the BitProgress. When not set, the value is determined by the Size parameter.
     /// </summary>
-    [Parameter] public int Thickness { get; set; } = 2;
+    [Parameter] public int? Thickness { get; set; }
 
     /// <summary>
     /// Whether or not to show indeterminate progress animation.
@@ -83,6 +84,12 @@ public partial class BitProgress : BitComponentBase
     [Parameter] public bool ShowPercentNumber { get; set; }
 
     /// <summary>
+    /// The size of the BitProgress.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitProgress.
     /// </summary>
     [Parameter] public BitProgressClassStyles? Styles { get; set; }
@@ -93,6 +100,36 @@ public partial class BitProgress : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-prb-pri",
+            BitColor.Secondary => "bit-prb-sec",
+            BitColor.Tertiary => "bit-prb-ter",
+            BitColor.Info => "bit-prb-inf",
+            BitColor.Success => "bit-prb-suc",
+            BitColor.Warning => "bit-prb-wrn",
+            BitColor.SevereWarning => "bit-prb-swr",
+            BitColor.Error => "bit-prb-err",
+            BitColor.PrimaryBackground => "bit-prb-pbg",
+            BitColor.SecondaryBackground => "bit-prb-sbg",
+            BitColor.TertiaryBackground => "bit-prb-tbg",
+            BitColor.PrimaryForeground => "bit-prb-pfg",
+            BitColor.SecondaryForeground => "bit-prb-sfg",
+            BitColor.TertiaryForeground => "bit-prb-tfg",
+            BitColor.PrimaryBorder => "bit-prb-pbr",
+            BitColor.SecondaryBorder => "bit-prb-sbr",
+            BitColor.TertiaryBorder => "bit-prb-tbr",
+            _ => "bit-prb-pri"
+        });
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-prb-sm",
+            BitSize.Medium => "bit-prb-md",
+            BitSize.Large => "bit-prb-lg",
+            _ => string.Empty
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -110,13 +147,19 @@ public partial class BitProgress : BitComponentBase
 
     private static double Normalize(double? value) => Math.Clamp(value.GetValueOrDefault(), 0, 100);
 
+    private int GetThickness() => Thickness ?? Size switch
+    {
+        BitSize.Small => 2,
+        BitSize.Medium => 4,
+        BitSize.Large => 8,
+        _ => 2
+    };
+
     private string GetProgressStyle()
     {
         StringBuilder sb = new();
 
-        sb.Append($"{(Circular ? "stroke-width" : "height")}: {Thickness}px;");
-
-        sb.Append($"--bit-prb-bar-color:{(Color.HasValue() ? Color : "var(--bit-clr-pri)")};");
+        sb.Append($"{(Circular ? "stroke-width" : "height")}: {GetThickness()}px;");
 
         sb.Append(Styles?.Bar);
 

@@ -183,8 +183,8 @@ public static partial class Program
         }));
         //#endif
 
-        services.AddSingleton<ServerExceptionHandler>();
-        services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ServerExceptionHandler>());
+        services.AddSingleton<ApiServerExceptionHandler>();
+        services.AddSingleton(sp => (IProblemDetailsWriter)sp.GetRequiredService<ApiServerExceptionHandler>());
         services.AddProblemDetails();
 
         services.AddCors(builder =>

@@ -24,9 +24,10 @@
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>Show a FullWidth modal using the BitModalService:</div><br/>
             <BitButton OnClick="ShowModal">Show</BitButton>
 
-            @* <BitModalContainer ModalParameters="@(new() { AutoToggleScroll = true })" /> *@
+            @* <BitModalContainer ModalParameters="@(new() { FullWidth = true })" /> *@
         </DemoExample>
     </Examples>
 </DemoPage>

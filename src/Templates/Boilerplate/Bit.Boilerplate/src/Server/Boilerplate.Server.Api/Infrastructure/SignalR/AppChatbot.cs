@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading.Channels;
 using Boilerplate.Shared.Features.Chatbot;
+using Boilerplate.Server.Api.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 
 namespace Boilerplate.Server.Api.Infrastructure.SignalR;
@@ -27,6 +28,7 @@ public partial class AppChatbot
     [AutoInject] private ILogger<AppChatbot> logger = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
+    [AutoInject] private ApiServerExceptionHandler exceptionHandler = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
     private string? variablesDefault;
@@ -85,7 +87,7 @@ public partial class AppChatbot
     /// <summary>
     /// Stops streaming
     /// </summary>
-    public void Stop() => responseChannel.Writer.Complete();
+    public void Stop() => responseChannel.Writer.TryComplete();
 
     /// <summary>
     /// Process an incoming message and stream the AI response
@@ -139,7 +141,7 @@ public partial class AppChatbot
                 await responseChannel.Writer.WriteAsync(result, cancellationToken);
             }
 
-            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_PROCESS_SUCCESS, cancellationToken);
+            await SendStringToClient(SharedAppMessages.MESSAGE_PROCESS_SUCCESS, cancellationToken);
 
             if (generateFollowUpSuggestions)
             {
@@ -150,13 +152,13 @@ public partial class AppChatbot
                     chatOptions,
                     cancellationToken);
 
-                await responseChannel.Writer.WriteAsync(JsonSerializer.Serialize(followUpSuggestions), cancellationToken);
+                await SendStringToClient(JsonSerializer.Serialize(followUpSuggestions), cancellationToken);
             }
         }
         catch (Exception exp)
         {
-            logger.LogError(exp, "Error processing message in chatbot service");
-            await responseChannel.Writer.WriteAsync(SharedAppMessages.MESSAGE_PROCESS_ERROR, cancellationToken);
+            exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } });
+            await SendStringToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR, cancellationToken);
         }
         finally
         {
@@ -276,5 +278,15 @@ public partial class AppChatbot
             .Where(s => s.Id == userSessionId)
             .Select(s => s.SignalRConnectionId)
             .FirstOrDefaultAsync() ?? throw new InvalidOperationException("There's no access to your app on your device.");
+    }
+
+    private async Task SendStringToClient(string message, CancellationToken ct)
+    {
+        try
+        {
+            await responseChannel.Writer.WriteAsync(message, ct);
+        }
+        catch (ChannelClosedException) { } // Normal when client has disconnected / stream ended.
+        catch (OperationCanceledException) { }
     }
 }

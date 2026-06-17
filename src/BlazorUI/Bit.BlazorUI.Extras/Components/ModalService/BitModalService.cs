@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -132,10 +132,7 @@ public class BitModalService
             builder.OpenComponent<BitModal>(seq++);
             builder.SetKey(modalReference.Id);
             builder.AddComponentParameter(seq++, nameof(BitModal.IsOpen), true);
-            if (modalParameters?.Blocking is not true)
-            {
-                builder.AddComponentParameter(seq++, nameof(BitModal.OnOverlayClick), EventCallback.Factory.Create<MouseEventArgs>(modalReference, () => modalReference.Close()));
-            }
+            builder.AddComponentParameter(seq++, nameof(BitModal.OnOverlayClick), EventCallback.Factory.Create<MouseEventArgs>(modalReference, () => modalReference.Close()));
             builder.AddComponentParameter(seq++, nameof(BitModal.ChildContent), content);
             builder.CloseComponent();
         });

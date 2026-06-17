@@ -1,6 +1,6 @@
 ---
 name: Contribute to bitplatform
-description: Guides you through the full contribution workflow for bitfoundation/bitplatform — from writing a focused Issue, to branching on your fork, implementing the change, and opening a well-formed Pull Request.
+description: Guides you through the full contribution workflow for bitfoundation/bitplatform - from writing a focused Issue, to branching on your fork, implementing the change, and opening a well-formed Pull Request.
 ---
 
 # Contribute to bitplatform
@@ -24,7 +24,7 @@ If either remote is missing, help the user add it before continuing.
 
 ---
 
-## Step 1 — Sync your fork with upstream
+## Step 1 - Sync your fork with upstream
 
 Before doing anything else, ensure the local `develop` branch is up to date:
 
@@ -37,14 +37,14 @@ git push origin develop
 
 ---
 
-## Step 2 — Create a focused Issue on bitfoundation/bitplatform
+## Step 2 - Create a focused Issue on bitfoundation/bitplatform
 
 A good Issue describes **the problem**, not the solution.
 
 ### Issue Title
 The title must state **what is wrong or missing**, not what should be done to fix it.
 
-Use a plain, descriptive sentence — **do not** use conventional-commit prefixes in Issue titles (those are for PR titles only, see Step 5).
+Use a plain, descriptive sentence - **do not** use conventional-commit prefixes in Issue titles (those are for PR titles only, see Step 5).
 
 ### Choosing a Label
 Pick **one** primary label from the table below.
@@ -67,11 +67,11 @@ If multiple apply, prefer the most specific one.
 | `testing` | Test coverage, test infrastructure |
 | `question` | Asking for clarification or guidance |
 
-After the Issue is created, note the **Issue number** — you will need it in Steps 3 and 5.
+After the Issue is created, note the **Issue number** - you will need it in Steps 3 and 5.
 
 ---
 
-## Step 3 — Create a branch on your fork
+## Step 3 - Create a branch on your fork
 
 Branch off of the latest `upstream/develop`:
 
@@ -81,18 +81,18 @@ git checkout -b <branch-name> upstream/develop
 ```
 
 ### Branch Naming Convention
-`<type>/<issue-number>-<short-kebab-description>` — for example:
+`<type>/<issue-number>-<short-kebab-description>` - for example:
 - `fix/1234-bitbutton-disabled-pointer-events`
 - `feat/5678-add-dark-mode-toggle`
 - `docs/9012-update-contributing-guide`
 
 ---
 
-## Step 4 — Implement the change
+## Step 4 - Implement the change
 
 ---
 
-## Step 5 — Push and open a Pull Request
+## Step 5 - Push and open a Pull Request
 
 Push your branch to your fork:
 

@@ -17,7 +17,7 @@ public partial class PushNotificationJobRunner
 {
     [AutoInject] private AppDbContext dbContext = default!;
     [AutoInject] private IAdsPushSender adsPushSender = default!;
-    [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
+    [AutoInject] private ApiServerExceptionHandler serverExceptionHandler = default!;
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> hubContext = default!;
     //#endif

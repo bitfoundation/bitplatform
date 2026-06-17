@@ -68,14 +68,14 @@ private double elevation = 7;";
 
     private readonly string example6RazorCode = @"
 <BitMessage Multiline Color=""BitColor.Success"">
-    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
     vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
     shaped into meaning, and the emotions ready to resonate with every reader.
     <br />
     In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    each word has the power to transform into something extraordinary. Here lies the start of something new-an 
     opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
     begins here, in this quiet moment where everything is possible.
@@ -83,14 +83,14 @@ private double elevation = 7;";
 
     private readonly string example7RazorCode = @"
 <BitMessage Truncate Color=""BitColor.Warning"">
-    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
     vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
     shaped into meaning, and the emotions ready to resonate with every reader.
     <br />
     In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    each word has the power to transform into something extraordinary. Here lies the start of something new-an 
     opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
     begins here, in this quiet moment where everything is possible.
@@ -153,14 +153,14 @@ private bool isAutoDismissed;";
 <BitMessage Truncate Color=""BitColor.Warning""
             ExpandIconName=""@BitIconName.ChevronDownEnd""
             CollapseIconName=""@BitIconName.ChevronUpEnd"">
-    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
     vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
     shaped into meaning, and the emotions ready to resonate with every reader.
     <br />
     In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    each word has the power to transform into something extraordinary. Here lies the start of something new-an 
     opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
     begins here, in this quiet moment where everything is possible.
@@ -169,14 +169,14 @@ private bool isAutoDismissed;";
     private readonly string example12RazorCode = @"
 <BitMessage Truncate OnDismiss=""() => isWarningDismissed = true"" Color=""BitColor.Warning"">
     <Content>
-        In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+        In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
         to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
         possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
         vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
         shaped into meaning, and the emotions ready to resonate with every reader.
         <br />
         In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-        each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+        each word has the power to transform into something extraordinary. Here lies the start of something new-an 
         opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
         idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
         begins here, in this quiet moment where everything is possible.
@@ -191,14 +191,14 @@ private bool isAutoDismissed;";
 
 <BitMessage Multiline OnDismiss=""() => isErrorDismissed = true"" Color=""BitColor.Error"">
     <Content>
-        In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+        In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
         to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
         possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
         vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
         shaped into meaning, and the emotions ready to resonate with every reader.
         <br />
         In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-        each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+        each word has the power to transform into something extraordinary. Here lies the start of something new-an 
         opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
         idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
         begins here, in this quiet moment where everything is possible.
@@ -248,14 +248,14 @@ private bool isErrorDismissed;";
 <BitMessage Truncate Color=""BitColor.Warning""
             ExpandIcon=""@BitIconInfo.Bi(""chevron-double-down"")""
             CollapseIcon=""@BitIconInfo.Bi(""chevron-double-up"")"">
-    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
     vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
     shaped into meaning, and the emotions ready to resonate with every reader.
     <br />
     In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    each word has the power to transform into something extraordinary. Here lies the start of something new-an 
     opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
     begins here, in this quiet moment where everything is possible.
@@ -294,14 +294,14 @@ private bool isErrorDismissed;";
             Color=""BitColor.Info"" 
             Style=""padding:8px;color:red;"">
     <b>Styled Message.</b>
-    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
     vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
     shaped into meaning, and the emotions ready to resonate with every reader.
     <br />
     In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    each word has the power to transform into something extraordinary. Here lies the start of something new-an 
     opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
     begins here, in this quiet moment where everything is possible.
@@ -311,14 +311,14 @@ private bool isErrorDismissed;";
             Class=""custom-class""
             Color=""BitColor.Success"">
     <b>Classed Message.</b>
-    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
     vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
     shaped into meaning, and the emotions ready to resonate with every reader.
     <br />
     In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    each word has the power to transform into something extraordinary. Here lies the start of something new-an 
     opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
     begins here, in this quiet moment where everything is possible.
@@ -336,14 +336,14 @@ private bool isErrorDismissed;";
                           Actions=""justify-content:center;gap:1rem"" })"">
 <Content>
     <b>Styles.</b>
-    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
     vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
     shaped into meaning, and the emotions ready to resonate with every reader.
     <br />
     In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    each word has the power to transform into something extraordinary. Here lies the start of something new-an 
     opportunity to craft, inspire, and create. Whether it's a tale of adventure, a reflection of truth, or an 
     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
     begins here, in this quiet moment where everything is possible.
@@ -362,14 +362,14 @@ private bool isErrorDismissed;";
                                ExpanderIcon=""custom-expander-icon"",
                                DismissIcon=""custom-dismiss-icon"" })"">
     <b>Classes.</b>
-    In the beginning, there is silence—a blank canvas yearning to be filled, a quiet space where creativity waits 
+    In the beginning, there is silence-a blank canvas yearning to be filled, a quiet space where creativity waits 
     to awaken. These words are temporary, standing in place of ideas yet to come, a glimpse into the infinite 
     possibilities that lie ahead. Think of this text as a bridge, connecting the empty spaces of now with the 
     vibrant narratives of tomorrow. It whispers of the stories waiting to be told, of the thoughts yet to be 
     shaped into meaning, and the emotions ready to resonate with every reader.
     <br />
     In this space, potential reigns supreme. It is a moment suspended in time, where imagination dances freely and 
-    each word has the power to transform into something extraordinary. Here lies the start of something new—an 
+    each word has the power to transform into something extraordinary. Here lies the start of something new, an 
     opportunity to craft, inspire, and to create. Whether it's a tale of adventure, a reflection of truth, or an 
     idea that sparks change, these lines are yours to fill, to shape, and to make uniquely yours. The journey 
     begins here, in this quiet moment where everything is possible.

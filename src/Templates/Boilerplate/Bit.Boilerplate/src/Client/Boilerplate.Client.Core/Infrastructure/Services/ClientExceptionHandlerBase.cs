@@ -18,25 +18,26 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "")
     {
-        parameters = TelemetryContext.ToDictionary(parameters);
+        parameters ??= [];
 
         parameters[nameof(filePath)] = filePath;
         parameters[nameof(memberName)] = memberName;
         parameters[nameof(lineNumber)] = lineNumber;
-        parameters["exceptionId"] = Guid.CreateVersion7(); // This will remain consistent across different registered loggers, such as Sentry, Application Insights, etc.
+
+        Handle(exception, displayKind, parameters);
+    }
+
+    protected virtual void Handle(Exception exception,
+        ExceptionDisplayKind displayKind,
+        Dictionary<string, object?> parameters)
+    {
+        parameters = TelemetryContext.ToDictionary(parameters);
 
         foreach (var item in GetExceptionData(exception))
         {
             parameters[item.Key] = item.Value;
         }
 
-        Handle(exception, displayKind, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
-    }
-
-    protected virtual void Handle(Exception exception,
-        ExceptionDisplayKind displayKind,
-        Dictionary<string, object> parameters)
-    {
         var isDevEnv = AppEnvironment.IsDevelopment();
 
         using (var scope = Logger.BeginScope(parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty)))

@@ -33,6 +33,37 @@
             }
         }
 
+        // Returns the currently visible region of the page. On iOS the on-screen keyboard
+        // shrinks the visual viewport without changing window.innerHeight, so relying on
+        // window.inner* mispositions fixed elements (e.g. callouts) behind the keyboard.
+        // window.visualViewport reflects the real visible area, which we fall back from
+        // gracefully on browsers that don't support it.
+        public static getViewport() {
+            const vv = window.visualViewport;
+            return {
+                width: vv?.width ?? window.innerWidth,
+                height: vv?.height ?? window.innerHeight,
+                offsetLeft: vv?.offsetLeft ?? 0,
+                offsetTop: vv?.offsetTop ?? 0,
+                layoutHeight: window.innerHeight,
+            };
+        }
+
+        // Detects whether an editable element (input/textarea/contenteditable) currently has
+        // focus. Used to avoid dismissing an open callout when iOS fires a scroll event as a
+        // side effect of showing the virtual keyboard.
+        public static isEditableElementFocused() {
+            try {
+                const el = document.activeElement as HTMLElement | null;
+                if (!el) return false;
+                const tag = el.tagName;
+                return tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable === true;
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.isEditableElementFocused:", e);
+                return false;
+            }
+        }
+
         public static setProperty(element: Record<string, any>, property: string, value: any): void {
             if (!element) return;
 

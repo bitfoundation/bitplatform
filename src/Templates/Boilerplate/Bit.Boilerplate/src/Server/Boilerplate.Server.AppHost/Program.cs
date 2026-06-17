@@ -27,12 +27,14 @@ var sqlite = builder.AddSqlite();
 var azureBlobStorage = builder.AddAzureStorage();
 //#elif (filesStorage == "S3")
 var s3Storage = builder.AddMinioContainer("s3")
+    .WithOtlpExporter()
     .WithDataVolume();
 //#endif
 
 // https://aspire.dev/integrations/security/keycloak/
 var keycloak = builder.AddKeycloak("keycloak", 8080)
     .WithDataVolume()
+    .WithOtlpExporter()
     .WithRealmImport("./Infrastructure/Realms");
 
 var serverWebProject = builder.AddProject("serverweb", "../Boilerplate.Server.Web/Boilerplate.Server.Web.csproj")
@@ -107,6 +109,7 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
         .WithExplicitStart();
 
     var mailpit = builder.AddMailPit("smtp") // For testing purposes only, in production, you would use a real SMTP server.
+        .WithOtlpExporter()
         .WithDataVolume("mailpit");
 
     //#if (api == "Standalone")

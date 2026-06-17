@@ -30,7 +30,7 @@ namespace BitBlazorUI {
                         e.preventDefault();
                     }
                 } catch { }
-            }, true); // capture phase — runs before the browser default and Blazor's handler
+            }, true); // capture phase - runs before the browser default and Blazor's handler
         }
     }
 }

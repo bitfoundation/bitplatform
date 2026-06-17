@@ -49,7 +49,7 @@
     private double _renderTimeMs;
     private double _reRenderTimeMs;
     // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects.
-    // Only OnAfterRenderAsync(firstRender=true) — which never runs during SSR — transitions
+    // Only OnAfterRenderAsync(firstRender=true) - which never runs during SSR - transitions
     // this to "Ready", giving Playwright a reliable "Blazor interactive circuit is up" signal.
     private string _status = "Loading";
     private bool _isRendered;
@@ -57,7 +57,7 @@
     private bool _responsive;
     private readonly System.Diagnostics.Stopwatch _stopwatch = new();
 
-    // Shared static item list — same items are reused across all dropdown instances
+    // Shared static item list - same items are reused across all dropdown instances
     // to keep allocations focused on component lifecycle rather than data.
     private static readonly List<BitDropdownItem<string>> _items =
         Enumerable.Range(1, 10)

@@ -6,7 +6,7 @@ namespace Boilerplate.Server.Api.Features.Identity;
 
 public partial class IdentityController
 {
-    [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
+    [AutoInject] private ApiServerExceptionHandler serverExceptionHandler = default!;
     [AutoInject] private IAuthenticationSchemeProvider authenticationSchemeProvider = default!;
 
     [HttpGet]
