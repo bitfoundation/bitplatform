@@ -711,6 +711,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         if (sig == null)
         {
             await Interop.UnobserveViewportAsync(_id);
+            // Unobserving stops future intersect callbacks but doesn't undo an already-active
+            // in-view layer, so clear it here to avoid leaving inview styles stuck on the element.
+            await Engine.DeactivateGestureLayerAsync(_id, "inview");
             return;
         }
         if (Viewport != null)

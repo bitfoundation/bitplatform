@@ -4,6 +4,7 @@ namespace Bit.Bmotion;
 internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
 {
     private readonly string _to;
+    private readonly string _from;
     private readonly double _durationMs;
     private readonly double _delayMs;
     private readonly Func<double, double> _easeFn;
@@ -23,7 +24,7 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
 
     public BmotionColorTweenDriver(string from, string to, BmotionTransitionConfig config, Action<string> apply)
     {
-        _curFrom = from;
+        _curFrom = _from = from;
         _curTo = _to = to;
         // Parse once up-front so Tick() doesn't run the color regex ~60 times per second.
         _curFromCh = BmotionColorInterpolator.Parse(from);
@@ -74,5 +75,16 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
 
     public void Cancel() => _cancelled = true;
 
-    public void Complete() => _apply(_to);
+    public void Complete()
+    {
+        // Mirror/Reverse ping-pong each pass, so the natural terminal colour depends on how many
+        // passes run: total passes = _repeat + 1. An even count ends back on _from, an odd count
+        // ends on _to. (Infinite repeats have no natural end, so fall through to _to.)
+        if (!_isInfinite && (_repeatType == BmotionRepeatType.Mirror || _repeatType == BmotionRepeatType.Reverse))
+        {
+            _apply((_repeat + 1) % 2 == 0 ? _from : _to);
+            return;
+        }
+        _apply(_to);
+    }
 }

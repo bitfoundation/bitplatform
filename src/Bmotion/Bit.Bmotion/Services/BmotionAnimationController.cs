@@ -18,7 +18,11 @@ public sealed class BmotionAnimationController : IDisposable
     private readonly BmotionAnimationEngine _engine;
     private string? _elementId;
 
-    public BmotionAnimationController(BmotionAnimationEngine engine) => _engine = engine;
+    public BmotionAnimationController(BmotionAnimationEngine engine)
+    {
+        ArgumentNullException.ThrowIfNull(engine);
+        _engine = engine;
+    }
 
     /// <summary>
     /// Bind by element ID. Ensures the element is registered with the engine so the controller
