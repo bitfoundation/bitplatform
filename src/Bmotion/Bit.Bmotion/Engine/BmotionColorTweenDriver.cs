@@ -24,6 +24,12 @@ internal sealed class BmotionColorTweenDriver : IBmotionAnimationDriver
 
     public BmotionColorTweenDriver(string from, string to, BmotionTransitionConfig config, Action<string> apply)
     {
+        if (!double.IsFinite(config.Duration) || !double.IsFinite(config.Delay) || !double.IsFinite(config.RepeatDelay))
+            // NaN/infinite timing values poison _startTime in the progress math, pushing invalid
+            // values through _apply. Reject them up front (matches the keyframe drivers).
+            throw new ArgumentException(
+                "Duration, Delay and RepeatDelay must be finite values.", nameof(config));
+
         _curFrom = _from = from;
         _curTo = _to = to;
         // Parse once up-front so Tick() doesn't run the color regex ~60 times per second.

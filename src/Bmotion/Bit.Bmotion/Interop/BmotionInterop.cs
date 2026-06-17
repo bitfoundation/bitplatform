@@ -154,7 +154,12 @@ public sealed class BmotionInterop : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_moduleTask.IsValueCreated)
-            await (await Module()).DisposeAsync();
+        if (!_moduleTask.IsValueCreated) return;
+        var module = await Module();
+        // Stop the rAF loop before disposing the module so no callbacks remain scheduled against a
+        // disposed module reference (passing null stops all engines). This keeps the JS side from
+        // invoking ComputeFrame on a torn-down reference during teardown.
+        await module.InvokeVoidAsync("stopRafLoop", new object?[] { null });
+        await module.DisposeAsync();
     }
 }

@@ -197,11 +197,19 @@ public class BmotionTransitionConfig
         Dictionary<string, BmotionTransitionConfig>? source)
     {
         if (source is null) return null;
-        var copy = new Dictionary<string, BmotionTransitionConfig>(source.Count);
+        // Preserve the source's key comparer so a custom (e.g. case-insensitive) lookup semantic
+        // survives the clone instead of silently reverting to the default ordinal comparer.
+        var copy = new Dictionary<string, BmotionTransitionConfig>(source.Count, source.Comparer);
         foreach (var kv in source)
-            // A null per-property override has nothing to deep-copy; preserve it as-is rather than
-            // dereferencing it for Clone() (which would throw a NullReferenceException).
-            copy[kv.Key] = kv.Value?.Clone()!;
+        {
+            // The dictionary's value type is non-nullable, so a null per-property override violates
+            // the contract and would surface as a NullReferenceException downstream. Reject it here
+            // with a clear message instead of propagating the null via the null-forgiving operator.
+            if (kv.Value is null)
+                throw new ArgumentException(
+                    $"Per-property transition override for '{kv.Key}' must not be null.", nameof(source));
+            copy[kv.Key] = kv.Value.Clone();
+        }
         return copy;
     }
 

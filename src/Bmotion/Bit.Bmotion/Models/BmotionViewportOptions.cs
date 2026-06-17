@@ -43,7 +43,9 @@ public class BmotionViewportOptions
         return new Dictionary<string, object?>
         {
             ["once"]      = Once,
-            ["margin"]    = Margin,
+            // Fall back to "0px" for null/whitespace so the JS side always receives a valid
+            // IntersectionObserver rootMargin string instead of an empty/invalid value.
+            ["margin"]    = string.IsNullOrWhiteSpace(Margin) ? "0px" : Margin,
             ["threshold"] = threshold,
         };
     }
