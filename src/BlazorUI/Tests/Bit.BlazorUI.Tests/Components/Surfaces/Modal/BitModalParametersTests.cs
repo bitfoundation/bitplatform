@@ -94,4 +94,34 @@ public class BitModalParametersTests
         Assert.IsNotNull(bothNull.HtmlAttributes);
         Assert.AreEqual(0, bothNull.HtmlAttributes.Count);
     }
+
+    [TestMethod]
+    public async System.Threading.Tasks.Task MergeShouldComposeCallbacksInvokingFirstThenSecond()
+    {
+        var order = new List<string>();
+
+        var first = new BitModalParameters
+        {
+            OnDismiss = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(
+                new object(), () => order.Add("dismiss-first")),
+            OnOverlayClick = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(
+                new object(), () => order.Add("overlay-first")),
+        };
+        var second = new BitModalParameters
+        {
+            OnDismiss = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(
+                new object(), () => order.Add("dismiss-second")),
+            OnOverlayClick = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(
+                new object(), () => order.Add("overlay-second")),
+        };
+
+        var merged = BitModalParameters.Merge(first, second)!;
+
+        await merged.OnDismiss.InvokeAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        await merged.OnOverlayClick.InvokeAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+
+        CollectionAssert.AreEqual(
+            new[] { "dismiss-first", "dismiss-second", "overlay-first", "overlay-second" },
+            order);
+    }
 }

@@ -109,23 +109,32 @@ public class BitModalParameters
             FullHeight = params1.FullHeight ?? params2.FullHeight,
             FullWidth = params1.FullWidth ?? params2.FullWidth,
             IsAlert = params1.IsAlert ?? params2.IsAlert,
-            // These callbacks are invoked manually (never bound to a child component), so the
-            // EventCallback receiver only needs to be non-null to be considered "has delegate".
-            // A throwaway object() is sufficient here; there's no component to associate for re-render.
-            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
-            {
-                await params1.OnDismiss.InvokeAsync(e);
-                await params2.OnDismiss.InvokeAsync(e);
-            }),
-            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
-            {
-                await params1.OnOverlayClick.InvokeAsync(e);
-                await params2.OnOverlayClick.InvokeAsync(e);
-            }),
+            OnDismiss = MergeCallbacks(params1.OnDismiss, params2.OnDismiss),
+            OnOverlayClick = MergeCallbacks(params1.OnOverlayClick, params2.OnOverlayClick),
             ShowOverlay = params1.ShowOverlay ?? params2.ShowOverlay,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
             SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,
             TitleAriaId = params1.TitleAriaId ?? params2.TitleAriaId,
         };
+    }
+
+    /// <summary>
+    /// Composes two <see cref="EventCallback{MouseEventArgs}"/> into one that invokes both (first then second).
+    /// Returns an empty callback when neither source has a delegate, so the merged result preserves the
+    /// "no delegate" semantics (<see cref="EventCallback.HasDelegate"/> stays <c>false</c>) instead of
+    /// reporting a handler that does nothing.
+    /// </summary>
+    private static EventCallback<MouseEventArgs> MergeCallbacks(EventCallback<MouseEventArgs> callback1, EventCallback<MouseEventArgs> callback2)
+    {
+        if (callback1.HasDelegate is false && callback2.HasDelegate is false) return default;
+
+        // These callbacks are invoked manually (never bound to a child component), so the
+        // EventCallback receiver only needs to be non-null to be considered "has delegate".
+        // A throwaway object() is sufficient here; there's no component to associate for re-render.
+        return EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
+        {
+            await callback1.InvokeAsync(e);
+            await callback2.InvokeAsync(e);
+        });
     }
 }

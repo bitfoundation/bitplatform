@@ -213,7 +213,7 @@ public class BitProModalParameters
             FullWidth = params1.FullWidth ?? params2.FullWidth,
             Header = params1.Header ?? params2.Header,
             HeaderText = params1.HeaderText ?? params2.HeaderText,
-            HtmlAttributes = params2.HtmlAttributes.Concat(params1.HtmlAttributes).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
+            HtmlAttributes = (params2.HtmlAttributes ?? []).Concat(params1.HtmlAttributes ?? []).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value),
             IsAlert = params1.IsAlert ?? params2.IsAlert,
             IsEnabled = params1.IsEnabled ?? params2.IsEnabled,
             ModeFull = params1.ModeFull ?? params2.ModeFull,

@@ -87,6 +87,36 @@ public class BitProModalParametersTests
     }
 
     [TestMethod]
+    public void MergeShouldHandleNullHtmlAttributes()
+    {
+        var firstNull = new BitProModalParameters { HtmlAttributes = null! };
+        var second = new BitProModalParameters
+        {
+            HtmlAttributes = new Dictionary<string, object> { ["data-b"] = "b" }
+        };
+
+        var mergedFirstNull = BitProModalParameters.Merge(firstNull, second)!;
+        Assert.IsNotNull(mergedFirstNull.HtmlAttributes);
+        Assert.AreEqual("b", mergedFirstNull.HtmlAttributes["data-b"]);
+
+        var first = new BitProModalParameters
+        {
+            HtmlAttributes = new Dictionary<string, object> { ["data-a"] = "a" }
+        };
+        var secondNull = new BitProModalParameters { HtmlAttributes = null! };
+
+        var mergedSecondNull = BitProModalParameters.Merge(first, secondNull)!;
+        Assert.IsNotNull(mergedSecondNull.HtmlAttributes);
+        Assert.AreEqual("a", mergedSecondNull.HtmlAttributes["data-a"]);
+
+        var bothNull = BitProModalParameters.Merge(
+            new BitProModalParameters { HtmlAttributes = null! },
+            new BitProModalParameters { HtmlAttributes = null! })!;
+        Assert.IsNotNull(bothNull.HtmlAttributes);
+        Assert.AreEqual(0, bothNull.HtmlAttributes.Count);
+    }
+
+    [TestMethod]
     public async System.Threading.Tasks.Task MergeShouldComposeCallbacksInvokingFirstThenSecond()
     {
         var order = new List<string>();

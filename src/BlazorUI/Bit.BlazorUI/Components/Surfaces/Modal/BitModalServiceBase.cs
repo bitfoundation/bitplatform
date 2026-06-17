@@ -100,9 +100,25 @@ public abstract class BitModalServiceBase<TReference, TParameters>
         var modalClose = OnCloseModal;
         if (modalClose is not null)
         {
+            // Invoke every handler even if an earlier one throws, so a single failing handler can't
+            // leave the modal half-removed (e.g. the container handler not running). Failures are
+            // collected and rethrown together after all handlers have had a chance to run.
+            List<Exception>? exceptions = null;
             foreach (var handler in modalClose.GetInvocationList().Cast<Func<TReference, Task>>())
             {
-                await handler(modalRef);
+                try
+                {
+                    await handler(modalRef);
+                }
+                catch (Exception ex)
+                {
+                    (exceptions ??= []).Add(ex);
+                }
+            }
+
+            if (exceptions is not null)
+            {
+                throw new AggregateException(exceptions);
             }
         }
     }
