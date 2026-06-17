@@ -10,8 +10,8 @@
 @code {
     [CascadingParameter] private BitProModalReference modalReference { get; set; } = default!;
 
-    private void Close()
+    private async Task Close()
     {
-        modalReference.Close();
+        await modalReference.Close();
     }
 }

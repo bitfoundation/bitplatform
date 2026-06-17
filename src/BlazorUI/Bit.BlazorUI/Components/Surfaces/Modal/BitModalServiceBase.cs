@@ -244,7 +244,18 @@ public abstract class BitModalServiceBase<TReference, TParameters>
                 {
                     foreach (var handler in modalCloseRollback.GetInvocationList().Cast<Func<TReference, Task>>())
                     {
-                        await handler(modalReference);
+                        // Swallow exceptions from individual rollback handlers so one failing handler
+                        // doesn't (a) prevent the remaining handlers from rolling back their state, or
+                        // (b) replace the original Show failure below. The root cause is preserved by
+                        // the throw that follows once all handlers have run.
+                        try
+                        {
+                            await handler(modalReference);
+                        }
+                        catch
+                        {
+                            // Intentionally ignored: continue rolling back and rethrow the original error.
+                        }
                     }
                 }
 

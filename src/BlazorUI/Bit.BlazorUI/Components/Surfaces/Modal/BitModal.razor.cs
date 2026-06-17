@@ -277,7 +277,10 @@ public partial class BitModal : BitComponentBase
         {
             // Can only force off (default is enabled): see remarks on asymmetric merge.
             IsEnabled = IsEnabled is false ? false : p.IsEnabled,
-            HtmlAttributes = MergeHtmlAttributes(p.HtmlAttributes, HtmlAttributes),
+            // HtmlAttributes on both sources are externally settable (non-nullable) properties, so a
+            // caller can still assign null. Coalesce to empty dictionaries so the Concat in
+            // MergeHtmlAttributes (and the snapshot copies) never NRE, mirroring BitModalParameters.Merge.
+            HtmlAttributes = MergeHtmlAttributes(p.HtmlAttributes ?? [], HtmlAttributes ?? []),
             Dir = Dir ?? p.Dir,
             // Can only force off (default is enabled): see remarks on asymmetric merge.
             AriaModal = AriaModal is false ? false : p.AriaModal,

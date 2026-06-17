@@ -85,4 +85,39 @@ public class BitProModalParametersTests
         Assert.AreEqual("a", merged.HtmlAttributes["data-a"]);
         Assert.AreEqual("b", merged.HtmlAttributes["data-b"]);
     }
+
+    [TestMethod]
+    public async System.Threading.Tasks.Task MergeShouldComposeCallbacksInvokingFirstThenSecond()
+    {
+        var order = new List<string>();
+
+        var first = new BitProModalParameters
+        {
+            OnDismiss = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(
+                new object(), () => order.Add("dismiss-first")),
+            OnOverlayClick = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(
+                new object(), () => order.Add("overlay-first")),
+            OnOpen = Microsoft.AspNetCore.Components.EventCallback.Factory.Create(
+                new object(), () => order.Add("open-first")),
+        };
+        var second = new BitProModalParameters
+        {
+            OnDismiss = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(
+                new object(), () => order.Add("dismiss-second")),
+            OnOverlayClick = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(
+                new object(), () => order.Add("overlay-second")),
+            OnOpen = Microsoft.AspNetCore.Components.EventCallback.Factory.Create(
+                new object(), () => order.Add("open-second")),
+        };
+
+        var merged = BitProModalParameters.Merge(first, second)!;
+
+        await merged.OnDismiss.InvokeAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        await merged.OnOverlayClick.InvokeAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        await merged.OnOpen.InvokeAsync();
+
+        CollectionAssert.AreEqual(
+            new[] { "dismiss-first", "dismiss-second", "overlay-first", "overlay-second", "open-first", "open-second" },
+            order);
+    }
 }

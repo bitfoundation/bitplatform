@@ -32,7 +32,7 @@ public class BitProModalServiceTests : BunitTestContext
         container.WaitForAssertion(() =>
         {
             Assert.AreEqual(1, container.FindAll(".bit-pmd").Count);
-            Assert.IsTrue(container.Markup.Contains(message));
+            Assert.AreEqual(message, container.Find(".test-promodal-content").TextContent);
         });
     }
 
@@ -85,7 +85,7 @@ public class BitProModalServiceTests : BunitTestContext
 
         container.WaitForAssertion(() =>
         {
-            Assert.IsTrue(container.Markup.Contains("the header"));
+            Assert.AreEqual("the header", container.Find(".bit-pmd-hdr").TextContent);
             Assert.AreEqual(1, container.FindAll(".bit-pmd-cls").Count);
         });
     }
