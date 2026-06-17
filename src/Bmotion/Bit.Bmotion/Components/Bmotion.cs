@@ -342,7 +342,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             }
             _prevAnimate = Animate;
         }
-        else if (Animate == null && (Variants != null || VariantCtx?.Variants != null))
+        // Not an "else": when Animate transitions to null the block above still runs (the targets
+        // differ) but applies nothing, so the inherited-variant fallback must be free to run in the
+        // same update cycle rather than being deferred to a later rerender.
+        if (Animate == null && (Variants != null || VariantCtx?.Variants != null))
         {
             var newVariant = VariantCtx?.ActiveVariant;
             if (newVariant != _prevInheritedVariant)

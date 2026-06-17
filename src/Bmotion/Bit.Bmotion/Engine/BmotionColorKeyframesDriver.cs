@@ -24,11 +24,13 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
     {
         if (frames is null || frames.Length < 2)
             throw new ArgumentException("Keyframe animations require at least 2 frames.", nameof(frames));
-        if (!double.IsFinite(config.Duration) || !double.IsFinite(config.Delay) || !double.IsFinite(config.RepeatDelay))
+        if (!double.IsFinite(config.Duration) || !double.IsFinite(config.Delay) || !double.IsFinite(config.RepeatDelay)
+            || config.Duration < 0 || config.Delay < 0 || config.RepeatDelay < 0)
             // NaN/infinite timing values poison _startTime in the progress math, pushing invalid
-            // values through _apply. Reject them up front (matches the numeric keyframes driver).
+            // values through _apply. Negative durations keep t below 1.0 so the animation never
+            // completes. Reject both up front (matches the numeric keyframes driver).
             throw new ArgumentException(
-                "Duration, Delay and RepeatDelay must be finite values.", nameof(config));
+                "Duration, Delay and RepeatDelay must be finite, non-negative values.", nameof(config));
         if (config.Times != null && config.Times.Length != frames.Length)
             throw new ArgumentException("Times array length must match the number of frames.", nameof(config));
         if (config.Times != null)
@@ -89,7 +91,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         for (int i = 0; i < n - 1; i++) { if (t <= _times[i + 1]) { seg = i; break; } }
         double segLen = _times[seg + 1] - _times[seg];
         double segT = segLen > 0 ? (t - _times[seg]) / segLen : 1.0;
-        double easedT = _eases[seg](Math.Min(segT, 1.0));
+        double easedT = _eases[seg](Math.Clamp(segT, 0.0, 1.0));
         var ca = _curChannels[seg];
         var cb = _curChannels[seg + 1];
         // Fall back to the raw target frame string when a color couldn't be parsed
@@ -130,7 +132,27 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
 
     public void Cancel() => _cancelled = true;
 
-    public void Complete() => _apply(_frames[^1]);
+    public void Complete()
+    {
+        // Mirror/Reverse don't always terminate on the last frame, so snap to the correct natural
+        // terminal frame (computed from the original forward-order _frames):
+        //  • Mirror ping-pongs each pass (total passes = _repeat + 1). An even count ends back on
+        //    the first frame, an odd count on the last.
+        //  • Reverse plays forward once then replays reversed for every later pass, so it ends on
+        //    the last frame only when there are no repeats, otherwise on the first frame.
+        // Infinite repeats have no natural end, so fall through to the last frame.
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Mirror)
+        {
+            _apply((_repeat + 1) % 2 == 0 ? _frames[0] : _frames[^1]);
+            return;
+        }
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Reverse)
+        {
+            _apply(_repeat == 0 ? _frames[^1] : _frames[0]);
+            return;
+        }
+        _apply(_frames[^1]);
+    }
 
     /// <summary>
     /// Mirrors a (possibly non-uniform) times array in place so segment durations line up with the

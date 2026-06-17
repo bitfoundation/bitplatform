@@ -39,6 +39,7 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
 
     public BmotionScrollTracker(BmotionInterop interop)
     {
+        ArgumentNullException.ThrowIfNull(interop);
         _interop = interop;
     }
 

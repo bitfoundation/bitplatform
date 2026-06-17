@@ -108,12 +108,15 @@ public class TweenDriverTests
         var driver = Create(0, 100, new BmotionTransitionConfig { Duration = 0.3 }, log);
 
         driver.Tick(0);
+        int logCountAfterFirstTick = log.Count;
         driver.Cancel();
         bool done = driver.Tick(150);
 
         // Cancel() freezes the animation in place rather than snapping to the target;
         // only completion is guaranteed.
         Assert.IsTrue(done);
+        // A cancelled Tick must exit before _apply, so no new value is emitted after Cancel().
+        Assert.AreEqual(logCountAfterFirstTick, log.Count);
     }
 
     // ── Repeat ────────────────────────────────────────────────────────────────

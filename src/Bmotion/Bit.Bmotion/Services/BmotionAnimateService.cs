@@ -28,6 +28,8 @@ public sealed class BmotionAnimateService
 
     public BmotionAnimateService(BmotionAnimationEngine engine, BmotionInterop interop)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(interop);
         _engine = engine;
         _interop = interop;
     }

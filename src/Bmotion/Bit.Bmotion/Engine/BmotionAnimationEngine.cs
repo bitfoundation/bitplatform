@@ -32,6 +32,9 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     private bool _loopRunning;
     private readonly SemaphoreSlim _loopStartGate = new(1, 1);
     private bool _reducedMotionDetected;
+    // A single in-flight detection attempt shared by all concurrent callers so the browser probe
+    // and live-change subscription run exactly once (reset to null on failure to allow a retry).
+    private Task? _reducedMotionDetection;
 
     // Reused across frames so the rAF tick doesn't allocate a fresh outer dictionary every ~16 ms.
     // Marshaled synchronously to JS before the next ComputeFrame runs (single-threaded Blazor WASM).
@@ -57,9 +60,18 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     /// Detects the user's <c>prefers-reduced-motion</c> setting from the browser the
     /// first time it is called and caches the result for the lifetime of this engine.
     /// </summary>
-    public async ValueTask EnsureReducedMotionDetectedAsync()
+    public ValueTask EnsureReducedMotionDetectedAsync()
     {
-        if (_reducedMotionDetected) return;
+        if (_reducedMotionDetected) return ValueTask.CompletedTask;
+        // Concurrent first-callers can all pass the check above before any of them completes the
+        // probe. Gate them behind a single shared detection task so the browser probe and the
+        // live-change subscription run once rather than racing duplicate setups.
+        _reducedMotionDetection ??= DetectReducedMotionAsync();
+        return new ValueTask(_reducedMotionDetection);
+    }
+
+    private async Task DetectReducedMotionAsync()
+    {
         try
         {
             OsPrefersReducedMotion = await _interop.PrefersReducedMotionAsync();
@@ -72,6 +84,8 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             // Detection is best-effort: if the browser probe fails we default to
             // animating normally rather than letting it break element initialisation.
             OsPrefersReducedMotion = false;
+            // Clear the shared task so a later caller can retry the probe.
+            _reducedMotionDetection = null;
             return;
         }
 

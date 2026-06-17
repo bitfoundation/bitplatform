@@ -35,11 +35,14 @@ public sealed class BmotionAnimationTarget
     }
 
     // ── Implicit conversions ──────────────────────────────────────────────────
-    public static implicit operator BmotionAnimationTarget(BmotionAnimationProps props)
-        => new() { Props = props };
+    // Null inputs convert to a null target (not a target wrapping null) so downstream code can
+    // distinguish "no target set" from "target set to empty props" - e.g. the variant-fallback
+    // check in Bmotion only fires when Animate is genuinely null.
+    public static implicit operator BmotionAnimationTarget?(BmotionAnimationProps? props)
+        => props is null ? null : new() { Props = props };
 
-    public static implicit operator BmotionAnimationTarget(string variant)
-        => new() { Variant = variant };
+    public static implicit operator BmotionAnimationTarget?(string? variant)
+        => variant is null ? null : new() { Variant = variant };
 
     public static implicit operator BmotionAnimationTarget(bool value)
         => value ? new() { Props = new BmotionAnimationProps() } : new() { IsDisabled = true };

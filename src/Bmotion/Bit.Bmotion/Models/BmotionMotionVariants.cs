@@ -14,6 +14,7 @@ public class BmotionMotionVariants
     /// </summary>
     public BmotionMotionVariants Add(string name, BmotionAnimationProps props)
     {
+        ArgumentNullException.ThrowIfNull(props);
         _variants[name] = props;
         return this;
     }

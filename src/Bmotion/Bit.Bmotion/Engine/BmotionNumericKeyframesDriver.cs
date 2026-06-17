@@ -49,7 +49,7 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
             }
         }
 
-        _frames = frames;
+        _frames = (double[])frames.Clone();
         _curFrames = (double[])frames.Clone();
         _durationMs = config.Duration * 1000;
         _delayMs = config.Delay * 1000;
@@ -116,7 +116,27 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
 
     public void Cancel() => _cancelled = true;
 
-    public void Complete() => _apply(_frames[^1]);
+    public void Complete()
+    {
+        // Mirror/Reverse don't always terminate on the last frame, so snap to the correct natural
+        // terminal frame (computed from the original forward-order _frames):
+        //  • Mirror ping-pongs each pass (total passes = _repeat + 1). An even count ends back on
+        //    the first frame, an odd count on the last.
+        //  • Reverse plays forward once then replays reversed for every later pass, so it ends on
+        //    the last frame only when there are no repeats, otherwise on the first frame.
+        // Infinite repeats have no natural end, so fall through to the last frame.
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Mirror)
+        {
+            _apply((_repeat + 1) % 2 == 0 ? _frames[0] : _frames[^1]);
+            return;
+        }
+        if (!_isInfinite && _repeatType == BmotionRepeatType.Reverse)
+        {
+            _apply(_repeat == 0 ? _frames[^1] : _frames[0]);
+            return;
+        }
+        _apply(_frames[^1]);
+    }
 
     /// <summary>
     /// Mirrors a (possibly non-uniform) times array in place so segment durations line up with the

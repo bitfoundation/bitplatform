@@ -18,10 +18,10 @@ public class BmotionPresenceContext
     {
         _children.Remove(child);
         _completedChildren.Remove(child);
-        // A child disposed mid-exit removes itself here. If every remaining child has already
-        // completed, NotifyExitComplete's count check won't run again, so re-evaluate now to
-        // avoid AllExitsComplete never firing.
-        if (IsExiting && _children.Count > 0 && _completedChildren.Count >= _children.Count)
+        // A child disposed mid-exit removes itself here. Re-evaluate completion now so
+        // AllExitsComplete still fires when either every remaining child has already completed, or
+        // no children remain at all (the last one just unregistered during an active exit).
+        if (IsExiting && _completedChildren.Count >= _children.Count)
             AllExitsComplete?.Invoke();
     }
 
