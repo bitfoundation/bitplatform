@@ -1,32 +1,14 @@
 @namespace Bit.BlazorUI
 
-<div class="bfc-view-tabs">
+<div class="bit-bfc-view-tabs">
     @foreach (var view in _views)
     {
         if (State.Mode == BitFullCalendarMode.Timeline && !_timelineViews.Contains(view))
             continue;
 
-        <button class="bfc-view-tab @(State.View == view ? "active" : "")"
+        <button class="bit-bfc-view-tab @(State.View == view ? "active" : "")"
                 @onclick="() => State.SetView(view)">
             @Texts.GetViewLabel(view)
         </button>
     }
 </div>
-
-@code {
-    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
-
-    private static readonly BitFullCalendarView[] _views = [
-        BitFullCalendarView.Day, BitFullCalendarView.Week, BitFullCalendarView.Month,
-        BitFullCalendarView.Year, BitFullCalendarView.Agenda
-    ];
-
-    private static readonly HashSet<BitFullCalendarView> _timelineViews =
-    [
-        BitFullCalendarView.Day,
-        BitFullCalendarView.Week,
-        BitFullCalendarView.Month
-    ];
-}
-

@@ -1,7 +1,7 @@
 @namespace Bit.BlazorUI
 @implements IDisposable
 
-<div class="bfc-body" @key="(State.Mode, State.View)">
+<div class="bit-bfc-body" @key="(State.Mode, State.View)">
     @if (State.Mode == BitFullCalendarMode.Timeline)
     {
         switch (State.View)
@@ -42,36 +42,3 @@
         }
     }
 </div>
-
-@code {
-    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-
-    [Parameter] public RenderFragment<BitFullCalendarEvent>? MonthEventTemplate { get; set; }
-    [Parameter] public RenderFragment<BitFullCalendarEvent>? WeekEventTemplate { get; set; }
-    [Parameter] public RenderFragment<BitFullCalendarEvent>? DayEventTemplate { get; set; }
-    [Parameter] public RenderFragment<BitFullCalendarEvent>? TimelineEventTemplate { get; set; }
-
-    private List<BitFullCalendarEvent> _singleDayEvents = [];
-    private List<BitFullCalendarEvent> _multiDayEvents = [];
-
-    protected override void OnInitialized()
-    {
-        State.OnStateChanged += Refresh;
-        ComputeEvents();
-    }
-
-    private void Refresh()
-    {
-        ComputeEvents();
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void ComputeEvents()
-    {
-        _singleDayEvents = State.Events.Where(e => e.IsSingleDay).ToList();
-        _multiDayEvents = State.Events.Where(e => e.IsMultiDay).ToList();
-    }
-
-    public void Dispose() => State.OnStateChanged -= Refresh;
-}
-

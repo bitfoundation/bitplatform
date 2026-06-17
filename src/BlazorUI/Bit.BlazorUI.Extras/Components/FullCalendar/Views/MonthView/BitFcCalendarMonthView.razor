@@ -7,26 +7,18 @@
     var weekDayHeaders = BitFullCalendarHelpers.GetWeekDayHeaders(State.Culture);
 }
 
-<div class="bfc-month">
-    <div class="bfc-month-header">
+<div class="bit-bfc-month">
+    <div class="bit-bfc-month-header">
         @foreach (var day in weekDayHeaders)
         {
-            <div class="bfc-month-header-cell">@day</div>
+            <div class="bit-bfc-month-header-cell">@day</div>
         }
     </div>
 
-    <div class="bfc-month-grid">
+    <div class="bit-bfc-month-grid">
         @foreach (var cell in cells)
         {
             <BitFcDayCell Cell="cell" Events="allEvents" EventPositions="eventPositions" EventTemplate="EventTemplate" />
         }
     </div>
 </div>
-
-@code {
-    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [Parameter] public List<BitFullCalendarEvent> SingleDayEvents { get; set; } = [];
-    [Parameter] public List<BitFullCalendarEvent> MultiDayEvents { get; set; } = [];
-    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
-}
-

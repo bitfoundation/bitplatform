@@ -1,70 +1,57 @@
 @namespace Bit.BlazorUI
 
-<div class="bfc-dropdown">
-    <button class="bfc-btn bfc-btn-icon bfc-btn-sm" @onclick="() => _open = !_open" title="@Texts.SettingsButtonTitle">
+<div class="bit-bfc-dropdown">
+    <button class="bit-bfc-btn bit-bfc-btn-icon bit-bfc-btn-sm" @onclick="() => _open = !_open" title="@Texts.SettingsButtonTitle">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
     @if (_open)
     {
-        <div class="bfc-dropdown-menu">
-            <div class="bfc-dropdown-label">@Texts.CalendarSettingsLabel</div>
+        <div class="bit-bfc-dropdown-menu">
+            <div class="bit-bfc-dropdown-label">@Texts.CalendarSettingsLabel</div>
 
-            <div class="bfc-dropdown-item" @onclick="() => State.SetBadgeVariant(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? BitFullCalendarBadgeVariant.Colored : BitFullCalendarBadgeVariant.Dot)">
+            <div class="bit-bfc-dropdown-item" @onclick="() => State.SetBadgeVariant(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? BitFullCalendarBadgeVariant.Colored : BitFullCalendarBadgeVariant.Dot)">
                 <span>@Texts.DotBadgeLabel</span>
-                <label class="bfc-toggle">
+                <label class="bit-bfc-toggle">
                     <input type="checkbox" checked="@(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot)" />
-                    <span class="bfc-toggle-track"></span>
-                    <span class="bfc-toggle-thumb"></span>
+                    <span class="bit-bfc-toggle-track"></span>
+                    <span class="bit-bfc-toggle-thumb"></span>
                 </label>
             </div>
 
-            <div class="bfc-dropdown-item" @onclick="State.ToggleTimeFormat">
+            <div class="bit-bfc-dropdown-item" @onclick="State.ToggleTimeFormat">
                 <span>@Texts.TwentyFourHourFormatLabel</span>
-                <label class="bfc-toggle">
+                <label class="bit-bfc-toggle">
                     <input type="checkbox" checked="@State.Use24HourFormat" />
-                    <span class="bfc-toggle-track"></span>
-                    <span class="bfc-toggle-thumb"></span>
+                    <span class="bit-bfc-toggle-track"></span>
+                    <span class="bit-bfc-toggle-thumb"></span>
                 </label>
             </div>
 
-            <div class="bfc-dropdown-sep"></div>
+            <div class="bit-bfc-dropdown-sep"></div>
 
-            <div class="bfc-dropdown-item">
+            <div class="bit-bfc-dropdown-item">
                 <span>@Texts.DayStartsAtLabel</span>
                 <div style="display:flex;align-items:center;gap:4px;">
                     <input type="number" min="0" max="16" value="@State.StartOfDayHour"
                            @onchange="OnStartHourChange"
-                           style="width:50px;padding:4px;font-size:12px;border:1px solid var(--bfc-border);border-radius:4px;background:var(--bfc-bg);color:var(--bfc-text);" />
+                           style="width:50px;padding:4px;font-size:12px;border:1px solid var(--bit-bfc-border);border-radius:4px;background:var(--bit-bfc-bg);color:var(--bit-bfc-text);" />
                     <span style="font-size:12px;">@Texts.HourSuffix</span>
                 </div>
             </div>
 
-            <div class="bfc-dropdown-sep"></div>
-            <div class="bfc-dropdown-label">@Texts.AgendaGroupByLabel</div>
+            <div class="bit-bfc-dropdown-sep"></div>
+            <div class="bit-bfc-dropdown-label">@Texts.AgendaGroupByLabel</div>
 
-            <div class="bfc-dropdown-item @(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "active" : "")"
+            <div class="bit-bfc-dropdown-item @(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "active" : "")"
                  @onclick="() => State.SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy.Date)"
-                 style="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "background:var(--bfc-bg-hover);" : "")">
+                 style="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "background:var(--bit-bfc-bg-hover);" : "")">
                 @Texts.AgendaGroupByDate
             </div>
-            <div class="bfc-dropdown-item @(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "active" : "")"
+            <div class="bit-bfc-dropdown-item @(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "active" : "")"
                  @onclick="() => State.SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy.Color)"
-                 style="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "background:var(--bfc-bg-hover);" : "")">
+                 style="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "background:var(--bit-bfc-bg-hover);" : "")">
                 @Texts.AgendaGroupByColor
             </div>
         </div>
     }
 </div>
-
-@code {
-    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
-    private bool _open;
-
-    private void OnStartHourChange(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), out int val))
-            State.SetStartOfDayHour(val);
-    }
-}
-

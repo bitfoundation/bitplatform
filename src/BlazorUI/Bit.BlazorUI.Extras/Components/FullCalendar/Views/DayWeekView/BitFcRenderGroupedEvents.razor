@@ -40,16 +40,9 @@
         var width = 100.0 - left;
         var zIndex = 2 + rank;
 
-        <div class="bfc-event-stack-item"
+        <div class="bit-bfc-event-stack-item"
              style="position:absolute;top:@(style.TopPx.ToString("F2", inv))px;width:@(width.ToString("F2", inv))%;left:@(left.ToString("F2", inv))%;z-index:@zIndex;pointer-events:none;">
             <BitFcEventBlock Event="ev" OnSelected="OnEventSelected" EventTemplate="EventTemplate" />
         </div>
     }
-}
-
-@code {
-    [Parameter] public List<List<BitFullCalendarEvent>> GroupedEvents { get; set; } = [];
-    [Parameter] public DateTime Day { get; set; }
-    [Parameter] public EventCallback<BitFullCalendarEvent> OnEventSelected { get; set; }
-    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
 }

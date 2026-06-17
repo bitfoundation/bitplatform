@@ -14,17 +14,17 @@ namespace BitBlazorUI {
 
         /**
          * Scrolls the timeline scroll container horizontally so the element marked with
-         * data-bfc-tl-scroll-target="true" sits just past the sticky resource gutter.
+         * data-bit-bfc-tl-scroll-target="true" sits just past the sticky resource gutter.
          * Direction-aware (works in both LTR and RTL layouts). Returns true if a target was
          * found and scroll was applied (or already in position), false otherwise.
          */
         public static scrollTimelineToTarget(scrollContainerId: string): boolean {
             const container = document.getElementById(scrollContainerId);
             if (!container) return false;
-            const target = container.querySelector('[data-bfc-tl-scroll-target="true"]');
+            const target = container.querySelector('[data-bit-bfc-tl-scroll-target="true"]');
             if (!target) return false;
 
-            const gutter = container.querySelector('.bfc-tl-corner');
+            const gutter = container.querySelector('.bit-bfc-tl-corner');
             const gutterWidth = gutter ? gutter.getBoundingClientRect().width : 0;
 
             const cRect = container.getBoundingClientRect();

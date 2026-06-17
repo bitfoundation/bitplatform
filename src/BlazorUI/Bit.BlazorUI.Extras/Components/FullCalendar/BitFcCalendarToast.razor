@@ -1,38 +1,10 @@
 @namespace Bit.BlazorUI
 
-<div class="bfc-toast-container">
+<div class="bit-bfc-toast-container">
     @foreach (var toast in _toasts)
     {
-        <div class="bfc-toast @(toast.IsError ? "error" : "success")">
+        <div class="bit-bfc-toast @(toast.IsError ? "error" : "success")">
             @toast.Message
         </div>
     }
 </div>
-
-@code {
-    private readonly List<ToastItem> _toasts = [];
-    private int _nextId;
-
-    public void Show(string message, bool isError = false)
-    {
-        var item = new ToastItem { Id = _nextId++, Message = message, IsError = isError };
-        _toasts.Add(item);
-        StateHasChanged();
-        _ = RemoveAfterDelay(item.Id);
-    }
-
-    private async Task RemoveAfterDelay(int id)
-    {
-        await Task.Delay(3000);
-        _toasts.RemoveAll(t => t.Id == id);
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private class ToastItem
-    {
-        public int Id { get; set; }
-        public string Message { get; set; } = "";
-        public bool IsError { get; set; }
-    }
-}
-

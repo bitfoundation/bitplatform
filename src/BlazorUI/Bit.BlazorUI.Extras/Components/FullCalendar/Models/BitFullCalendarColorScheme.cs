@@ -11,7 +11,7 @@ public sealed class BitFullCalendarColorScheme
     public const string FallbackColorId = "blue";
 
     /// <summary>Inline style emitted on color-bearing elements (bullets, swatches, chips, blocks).</summary>
-    public const string ColorVariableName = "--bfc-evt-color";
+    public const string ColorVariableName = "--bit-bfc-evt-color";
 
     private readonly Dictionary<string, BitFullCalendarColorOption> _byId;
 
@@ -61,7 +61,7 @@ public sealed class BitFullCalendarColorScheme
     /// <summary>
     /// Inline style string that publishes the resolved color value as the
     /// <see cref="ColorVariableName"/> CSS custom property. Combine with the matching CSS classes
-    /// (e.g. <c>bfc-color</c>, <c>bfc-bg</c>, <c>bfc-bullet</c>) to render the chip surface.
+    /// (e.g. <c>bit-bfc-color</c>, <c>bit-bfc-bg</c>, <c>bit-bfc-bullet</c>) to render the chip surface.
     /// </summary>
     public string GetColorStyle(string? colorId) =>
         $"{ColorVariableName}:{GetCssValue(colorId)};";

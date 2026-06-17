@@ -1,23 +1,23 @@
 @namespace Bit.BlazorUI
 @implements IDisposable
 
-<div class="bfc-header">
-    <div class="bfc-header-left">
+<div class="bit-bfc-header">
+    <div class="bit-bfc-header-left">
         <BitFcTodayButton />
         <BitFcDateNavigator />
     </div>
 
-    <div class="bfc-header-center">
+    <div class="bit-bfc-header-center">
         <BitFcModeTabs />
         <BitFcViewTabs />
     </div>
 
-    <div class="bfc-header-right">
+    <div class="bit-bfc-header-right">
         @if (!HideFilters)
         {
             <BitFcFilterEvents />
         }
-        <button class="bfc-btn bfc-btn-primary bfc-btn-sm" @onclick="OnAddEventClick">
+        <button class="bit-bfc-btn bit-bfc-btn-primary bit-bfc-btn-sm" @onclick="OnAddEventClick">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             @Texts.AddEventButton
         </button>
@@ -32,32 +32,3 @@
 {
     <BitFcAddEditEventDialog OnClose="() => _showAddDialog = false" />
 }
-
-@code {
-    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarOptions Options { get; set; } = default!;
-    [CascadingParameter(Name = "HideFilters")] public bool HideFilters { get; set; }
-    [CascadingParameter(Name = "HideSettings")] public bool HideSettings { get; set; }
-    [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
-
-    private bool _showAddDialog;
-
-    private async Task OnAddEventClick()
-    {
-        if (OnAddClick.HasDelegate)
-        {
-            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(
-                State.SelectedDate,
-                DateTime.Now.Hour);
-            await OnAddClick.InvokeAsync(draft);
-        }
-        else
-            _showAddDialog = true;
-    }
-
-    protected override void OnInitialized() => State.OnStateChanged += Refresh;
-    private void Refresh() => InvokeAsync(StateHasChanged);
-    public void Dispose() => State.OnStateChanged -= Refresh;
-}
-

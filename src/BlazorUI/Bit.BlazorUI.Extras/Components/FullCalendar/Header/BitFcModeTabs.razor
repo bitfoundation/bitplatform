@@ -7,24 +7,13 @@
 
 @if (State.Resources.Count > 0)
 {
-    <div class="bfc-mode-tabs">
+    <div class="bit-bfc-mode-tabs">
         @foreach (var mode in _modes)
         {
-            <button class="bfc-mode-tab @(State.Mode == mode ? "active" : "")"
+            <button class="bit-bfc-mode-tab @(State.Mode == mode ? "active" : "")"
                     @onclick="() => State.SetMode(mode)">
                 @Texts.GetModeLabel(mode)
             </button>
         }
     </div>
-}
-
-@code {
-    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
-
-    private static readonly BitFullCalendarMode[] _modes =
-    [
-        BitFullCalendarMode.Event,
-        BitFullCalendarMode.Timeline
-    ];
 }

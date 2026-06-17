@@ -1,24 +1,10 @@
 @namespace Bit.BlazorUI
 
 <div draggable="true"
-     class="@(_isDragged ? "bfc-dragging" : "") @Class"
+     class="@(_isDragged ? "bit-bfc-dragging" : "") @Class"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="OnClick"
      @onclick:stopPropagation="true">
     @ChildContent
 </div>
-
-@code {
-    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [Parameter] public BitFullCalendarEvent Event { get; set; } = default!;
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public string? Class { get; set; }
-    [Parameter] public EventCallback OnClick { get; set; }
-
-    private bool _isDragged => State.IsDragging && State.DraggedEvent?.Id == Event.Id;
-
-    private void OnDragStart() => State.StartDrag(Event);
-    private void OnDragEnd() => State.EndDrag();
-}
-
