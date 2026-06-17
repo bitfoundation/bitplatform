@@ -47,9 +47,15 @@ public sealed class BmotionAnimationControls
         // side effects. Once released (e.g. a natural finish already settled the completion), the
         // target elements may be owned by newer animations - skip so we don't disturb them.
         if (System.Threading.Interlocked.CompareExchange(ref _released, 1, 0) != 0) return;
-        foreach (var id in _elementIds)
-            _engine.Stop(id, null);
-        _release();
+        try
+        {
+            foreach (var id in _elementIds)
+                _engine.Stop(id, null);
+        }
+        finally
+        {
+            _release();
+        }
     }
 
     /// <summary>
@@ -60,9 +66,15 @@ public sealed class BmotionAnimationControls
         // See Stop(): atomically claim ownership so engine side effects run exactly once and never
         // after a concurrent settlement has handed the elements to newer animations.
         if (System.Threading.Interlocked.CompareExchange(ref _released, 1, 0) != 0) return;
-        foreach (var id in _elementIds)
-            _engine.Complete(id);
-        _release();
+        try
+        {
+            foreach (var id in _elementIds)
+                _engine.Complete(id);
+        }
+        finally
+        {
+            _release();
+        }
     }
 
     /// <summary>A <see cref="Task"/> that resolves when all animations finish naturally.</summary>

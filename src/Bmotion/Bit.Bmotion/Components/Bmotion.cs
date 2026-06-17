@@ -104,17 +104,24 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // changes (gestures are otherwise wired once and would ignore later parameter changes).
     private string _eventFlagsSig = string.Empty;
     private string? _viewportSig;
+    // Tracks whether WhileInView was set on the previous reconcile, so its removal can clear the
+    // active in-view gesture layer even when the (option-only) viewport signature is unchanged.
+    private bool _whileInViewSet;
 
     // ════════════════════════════════════════════════════════════════════════════
     // Rendering
     // ════════════════════════════════════════════════════════════════════════════
+
+    /// <summary>The element tag to render, normalized to "div" when null or blank so
+    /// <see cref="RenderTreeBuilder.OpenElement"/> always receives a valid tag name.</summary>
+    private string EffectiveTag => string.IsNullOrWhiteSpace(Tag) ? "div" : Tag;
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         // Sequence numbers are fixed literals (one per logical slot) rather than a running counter.
         // Blazor's diffing assumes stable sequence numbers; computing them dynamically alongside
         // conditional attributes shifts the numbers between renders and degrades diffing.
-        builder.OpenElement(0, Tag);
+        builder.OpenElement(0, EffectiveTag);
         builder.AddAttribute(1, "id", _id);
 
         if (AdditionalAttributes != null)
@@ -595,7 +602,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     };
 
     private bool NeedsPathLengthAttr() =>
-        _pathDrawableTags.Contains(Tag) &&
+        _pathDrawableTags.Contains(EffectiveTag) &&
         (AdditionalAttributes == null ||
          !AdditionalAttributes.Keys.Any(k => string.Equals(k, "pathLength", StringComparison.OrdinalIgnoreCase))) &&
         (HasPathLength(Initial) || HasPathLength(Animate) || HasPathLength(Exit) ||
@@ -708,6 +715,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// <summary>Re-observes (or stops observing) the viewport when the effective options change.</summary>
     private async Task ReconcileViewportAsync()
     {
+        // The viewport signature intentionally ignores WhileInView (it only tracks observation
+        // options). So if WhileInView is cleared while other viewport callbacks keep observation
+        // alive, the signature is unchanged and the early-return below would skip reconciliation,
+        // stranding an already-active in-view layer. Detect that transition explicitly and clear it.
+        bool whileInViewSet = WhileInView != null;
+        if (_whileInViewSet && !whileInViewSet)
+            await Engine.DeactivateGestureLayerAsync(_id, "inview");
+        _whileInViewSet = whileInViewSet;
+
         var sig = BuildViewportSignature();
         if (sig == _viewportSig) return;
         _viewportSig = sig;
