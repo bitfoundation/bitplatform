@@ -219,21 +219,30 @@ public class BitProModalParameters
             ModeFull = params1.ModeFull ?? params2.ModeFull,
             Modeless = params1.Modeless ?? params2.Modeless,
             NoBorder = params1.NoBorder ?? params2.NoBorder,
-            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
-            {
-                await params1.OnDismiss.InvokeAsync(e);
-                await params2.OnDismiss.InvokeAsync(e);
-            }),
-            OnOpen = EventCallback.Factory.Create(new object(), async () =>
-            {
-                await params1.OnOpen.InvokeAsync();
-                await params2.OnOpen.InvokeAsync();
-            }),
-            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
-            {
-                await params1.OnOverlayClick.InvokeAsync(e);
-                await params2.OnOverlayClick.InvokeAsync(e);
-            }),
+            // Only compose a callback when at least one side actually has a delegate. Otherwise leave
+            // the merged callback at its default (HasDelegate == false) to preserve the empty contract,
+            // so consumers (e.g. the inner BitModal) don't see a handler that does nothing.
+            OnDismiss = (params1.OnDismiss.HasDelegate || params2.OnDismiss.HasDelegate)
+                ? EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
+                {
+                    await params1.OnDismiss.InvokeAsync(e);
+                    await params2.OnDismiss.InvokeAsync(e);
+                })
+                : default,
+            OnOpen = (params1.OnOpen.HasDelegate || params2.OnOpen.HasDelegate)
+                ? EventCallback.Factory.Create(new object(), async () =>
+                {
+                    await params1.OnOpen.InvokeAsync();
+                    await params2.OnOpen.InvokeAsync();
+                })
+                : default,
+            OnOverlayClick = (params1.OnOverlayClick.HasDelegate || params2.OnOverlayClick.HasDelegate)
+                ? EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
+                {
+                    await params1.OnOverlayClick.InvokeAsync(e);
+                    await params2.OnOverlayClick.InvokeAsync(e);
+                })
+                : default,
             Position = params1.Position ?? params2.Position,
             ScrollerElement = params1.ScrollerElement ?? params2.ScrollerElement,
             ScrollerSelector = params1.ScrollerSelector ?? params2.ScrollerSelector,

@@ -150,4 +150,17 @@ public class BitProModalParametersTests
             new[] { "dismiss-first", "dismiss-second", "overlay-first", "overlay-second", "open-first", "open-second" },
             order);
     }
+
+    [TestMethod]
+    public void MergeShouldPreserveEmptyCallbackContractWhenBothInputsAreEmpty()
+    {
+        var first = new BitProModalParameters();
+        var second = new BitProModalParameters();
+
+        var merged = BitProModalParameters.Merge(first, second)!;
+
+        Assert.IsFalse(merged.OnDismiss.HasDelegate);
+        Assert.IsFalse(merged.OnOverlayClick.HasDelegate);
+        Assert.IsFalse(merged.OnOpen.HasDelegate);
+    }
 }
