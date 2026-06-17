@@ -215,9 +215,28 @@ public abstract class BitModalServiceBase<TReference, TParameters>
         var modalAdd = OnAddModal;
         if (modalAdd is not null)
         {
-            foreach (var handler in modalAdd.GetInvocationList().Cast<Func<TReference, Task>>())
+            try
             {
-                await handler(modalReference);
+                foreach (var handler in modalAdd.GetInvocationList().Cast<Func<TReference, Task>>())
+                {
+                    await handler(modalReference);
+                }
+            }
+            catch
+            {
+                // A handler threw before the modal was fully registered with a container. Undo the
+                // persistent tracking added above so a failed Show doesn't leave a stale persistent
+                // entry that would reappear on a container remount, then rethrow. (Remove is a no-op
+                // if an earlier handler already closed and untracked the modal.)
+                if (persistent)
+                {
+                    lock (_persistentModalsLock)
+                    {
+                        _persistentModals.Remove(modalReference);
+                    }
+                }
+
+                throw;
             }
         }
 

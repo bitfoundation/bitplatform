@@ -112,15 +112,15 @@ public class BitModalParameters
             // These callbacks are invoked manually (never bound to a child component), so the
             // EventCallback receiver only needs to be non-null to be considered "has delegate".
             // A throwaway object() is sufficient here; there's no component to associate for re-render.
-            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(new object(), async () =>
+            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
             {
-                await params1.OnDismiss.InvokeAsync();
-                await params2.OnDismiss.InvokeAsync();
+                await params1.OnDismiss.InvokeAsync(e);
+                await params2.OnDismiss.InvokeAsync(e);
             }),
-            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(new object(), async () =>
+            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(new object(), async (MouseEventArgs e) =>
             {
-                await params1.OnOverlayClick.InvokeAsync();
-                await params2.OnOverlayClick.InvokeAsync();
+                await params1.OnOverlayClick.InvokeAsync(e);
+                await params2.OnOverlayClick.InvokeAsync(e);
             }),
             ShowOverlay = params1.ShowOverlay ?? params2.ShowOverlay,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
