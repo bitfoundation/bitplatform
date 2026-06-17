@@ -13,9 +13,14 @@ namespace Bit.Butil;
 /// tone, master gain). Build a richer node graph in JS and call into it via interop when you
 /// need granular control.
 /// </remarks>
-public class WebAudio(IJSRuntime js)
+public class WebAudio(IJSRuntime js) : IAsyncDisposable
 {
     /// <summary>True when the runtime exposes <c>AudioContext</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.webAudio.isSupported");
 
     /// <summary>
@@ -53,5 +58,16 @@ public class WebAudio(IJSRuntime js)
         var id = Guid.NewGuid();
         await js.InvokeVoid("BitButil.webAudio.playTone", id, frequency, durationMs, waveform, startGain);
         return new AudioPlaybackHandle(js, id);
+    }
+
+    /// <summary>
+    /// Closes the underlying <c>AudioContext</c> (releasing the browser audio thread) and stops
+    /// any in-flight playback. Called automatically when the scoped service is disposed.
+    /// </summary>
+    public async ValueTask DisposeAsync()
+    {
+        try { await js.InvokeVoid("BitButil.webAudio.dispose"); }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        GC.SuppressFinalize(this);
     }
 }

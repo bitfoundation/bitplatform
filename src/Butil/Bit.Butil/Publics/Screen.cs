@@ -20,9 +20,9 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
 
     // Per-instance callback reference (see Keyboard): listeners are isolated per circuit / WASM app
-    // and released on disposal — no static state, no cross-circuit leak.
+    // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Screen>? _dotNetRef;
-    private DotNetObjectReference<Screen> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Screen> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// Invoked from JS on the screen <c>change</c> event. Public + <see cref="JSInvokableAttribute"/>
@@ -40,6 +40,11 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/availHeight">https://developer.mozilla.org/en-US/docs/Web/API/Screen/availHeight</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetAvailableHeight()
         => await js.Invoke<float>("BitButil.screen.availHeight");
 
@@ -48,6 +53,11 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/availWidth">https://developer.mozilla.org/en-US/docs/Web/API/Screen/availWidth</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetAvailableWidth()
         => await js.Invoke<float>("BitButil.screen.availWidth");
 
@@ -56,6 +66,11 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/colorDepth">https://developer.mozilla.org/en-US/docs/Web/API/Screen/colorDepth</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<byte> GetColorDepth()
         => await js.Invoke<byte>("BitButil.screen.colorDepth");
 
@@ -64,6 +79,11 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/height">https://developer.mozilla.org/en-US/docs/Web/API/Screen/height</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetHeight()
         => await js.Invoke<float>("BitButil.screen.height");
 
@@ -72,6 +92,11 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/isExtended">https://developer.mozilla.org/en-US/docs/Web/API/Screen/isExtended</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> IsExtended()
         => await js.Invoke<bool>("BitButil.screen.isExtended");
 
@@ -80,6 +105,11 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/pixelDepth">https://developer.mozilla.org/en-US/docs/Web/API/Screen/pixelDepth</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<byte> GetPixelDepth()
         => await js.Invoke<byte>("BitButil.screen.pixelDepth");
 
@@ -88,6 +118,11 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/width">https://developer.mozilla.org/en-US/docs/Web/API/Screen/width</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<float> GetWidth()
         => await js.Invoke<float>("BitButil.screen.width");
 
@@ -118,7 +153,7 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
-    /// Fired on a specific screen when it changes in some way — width or height, 
+    /// Fired on a specific screen when it changes in some way - width or height, 
     /// available width or height, color depth, or orientation.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event">https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event</see>
@@ -193,7 +228,7 @@ public class Screen(IJSRuntime js) : IAsyncDisposable
         {
             await RemoveAllChanges();
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

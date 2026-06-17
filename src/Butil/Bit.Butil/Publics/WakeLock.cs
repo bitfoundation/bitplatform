@@ -16,6 +16,11 @@ public class WakeLock(IJSRuntime js) : IAsyncDisposable
     private bool _heldByUs;
 
     /// <summary>True when the runtime exposes <c>navigator.wakeLock</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.wakeLock.isSupported");
 
     /// <summary>
@@ -24,6 +29,11 @@ public class WakeLock(IJSRuntime js) : IAsyncDisposable
     /// (typically when the page is hidden).
     /// </summary>
     /// <returns>True when the lock was acquired.</returns>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async ValueTask<bool> Request()
     {
         var ok = await js.Invoke<bool>("BitButil.wakeLock.request");
@@ -42,7 +52,7 @@ public class WakeLock(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Acquires a wake lock and keeps it alive across the page-visibility cycle by re-acquiring
     /// it whenever the page becomes visible again. Browsers always release the lock when the
-    /// page is hidden — this helper restores it on resume.
+    /// page is hidden - this helper restores it on resume.
     /// </summary>
     /// <returns>An <see cref="IAsyncDisposable"/> that stops the auto-reacquire and releases the lock.</returns>
     public async ValueTask<IAsyncDisposable> RequestPersistent()
@@ -58,7 +68,7 @@ public class WakeLock(IJSRuntime js) : IAsyncDisposable
         {
             await Release();
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         GC.SuppressFinalize(this);
     }
 
@@ -71,7 +81,7 @@ public class WakeLock(IJSRuntime js) : IAsyncDisposable
             if (_disposed) return;
             _disposed = true;
             try { await js.InvokeVoid("BitButil.wakeLock.unpersist", token); }
-            catch (JSDisconnectedException) { }
+            catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         }
     }
 }

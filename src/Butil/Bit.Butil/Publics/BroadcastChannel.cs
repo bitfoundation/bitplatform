@@ -14,10 +14,16 @@ namespace Bit.Butil;
 /// API for cross-tab pub/sub on the same origin.
 /// </summary>
 /// <remarks>
-/// Each <see cref="BroadcastChannel"/> instance can host any number of named channels — a
+/// Each <see cref="BroadcastChannel"/> instance can host any number of named channels - a
 /// new JS-side channel object is created on first <see cref="Subscribe"/> per name and torn
 /// down only when every subscription on that name has been disposed.
 /// </remarks>
+// DotNetObjectReference.Create demands every public method of this type be preserved for trimming, and
+// this type's public surface includes a [RequiresUnreferencedCode] JSON API (Post<T>), so holding a
+// DotNetObjectReference<BroadcastChannel> field/property raises IL2026. The interop ref only ever
+// dispatches the [JSInvokable] callbacks, never the JSON generic, and it keeps its own RUC/RDC attributes
+// so a trimming/AOT consumer is still warned at the real call site. Scoped to this type (not assembly-wide).
+[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DotNetObjectReference.Create preserves all public methods; the RUC JSON APIs it pulls in are never invoked through this ref and stay annotated for consumers.")]
 public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
 {
     internal const string MessageMethodName = nameof(InvokeBroadcastChannelMessage);
@@ -26,11 +32,16 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Listener> _subscriptions = new();
 
     // Per-instance callback reference (see Keyboard): subscriptions are isolated per circuit / WASM
-    // app and released on disposal — no static state, no cross-circuit leak.
+    // app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<BroadcastChannel>? _dotNetRef;
-    private DotNetObjectReference<BroadcastChannel> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<BroadcastChannel> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>True when the runtime exposes <c>BroadcastChannel</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.broadcastChannel.isSupported");
 
     /// <summary>
@@ -52,7 +63,7 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// Sends <paramref name="message"/> to every other listener on <paramref name="channelName"/>
-    /// in the same origin (the sender does not receive its own message — that's the spec).
+    /// in the same origin (the sender does not receive its own message - that's the spec).
     /// </summary>
     [RequiresUnreferencedCode("JSON serialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
@@ -99,7 +110,7 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
                 }
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

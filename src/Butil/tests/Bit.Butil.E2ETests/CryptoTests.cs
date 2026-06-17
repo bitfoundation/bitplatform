@@ -38,4 +38,29 @@ public class CryptoTests : ButilPageTest
     {
         await ClickAndExpectAsync("crypto-roundtrip", "crypto:aes-gcm:True");
     }
+
+    [Test]
+    public async Task AesCbc_Roundtrip_Recovers_Plaintext()
+    {
+        await ClickAndExpectAsync("crypto-aes-cbc", "crypto:aes-cbc:True");
+    }
+
+    [Test]
+    public async Task Hmac_Sign_Then_Verify_Succeeds()
+    {
+        await ClickAndExpectAsync("crypto-hmac", "crypto:hmac:True");
+    }
+
+    [Test]
+    public async Task Ecdsa_Sign_Then_Verify_Succeeds()
+    {
+        await ClickAndExpectAsync("crypto-ecdsa", "crypto:ecdsa:True");
+    }
+
+    [Test]
+    public async Task Pbkdf2_Derives_Requested_Bit_Length()
+    {
+        // 256 bits requested → 32 bytes derived.
+        await ClickAndExpectAsync("crypto-pbkdf2", "crypto:pbkdf2:32");
+    }
 }

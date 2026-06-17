@@ -10,11 +10,16 @@ namespace Bit.Butil;
 /// </summary>
 /// <remarks>
 /// Available on Chromium-based mobile browsers only. Users always see a native picker
-/// — there's no programmatic access to a user's contacts.
+/// - there's no programmatic access to a user's contacts.
 /// </remarks>
 public class ContactPicker(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>navigator.contacts</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.contactPicker.isSupported");
 
     /// <summary>
@@ -31,6 +36,10 @@ public class ContactPicker(IJSRuntime js)
     /// <param name="multiple">When true, the user can pick more than one contact.</param>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ContactInfo))]
     public ValueTask<ContactInfo[]> Select(string[]? properties = null, bool multiple = false)
-        => js.Invoke<ContactInfo[]>("BitButil.contactPicker.select",
-                                    properties ?? new[] { "name", "email", "tel" }, multiple);
+    {
+        // Treat null *and* empty as "use the default set". An empty array is truthy in JS, so the
+        // TS side can't fall back on its own - normalize it here so the two defaults stay in sync.
+        var props = properties is { Length: > 0 } ? properties : new[] { "name", "email", "tel" };
+        return js.Invoke<ContactInfo[]>("BitButil.contactPicker.select", props, multiple);
+    }
 }

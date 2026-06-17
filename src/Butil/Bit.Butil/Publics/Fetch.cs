@@ -18,9 +18,9 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
     private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action<FetchProgress>> _progressHandlers = new();
 
     // Per-instance callback reference (see Keyboard): progress callbacks are isolated per circuit /
-    // WASM app and released on disposal — no static state, no cross-circuit leak.
+    // WASM app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Fetch>? _dotNetRef;
-    private DotNetObjectReference<Fetch> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Fetch> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// Invoked from JS as bytes arrive. Public + <see cref="JSInvokableAttribute"/> so it can be
@@ -66,6 +66,15 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
                 cancellationToken,
                 id, request, onProgress is not null ? DotNetRef : null, onProgress is not null);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The token fired: the JS side was aborted (via the registration above) and produced an
+            // aborted response, but awaiting with the token also cancels this .NET task before that
+            // response is marshaled back. Honor the documented contract - cancellation yields a
+            // FetchResponse with Aborted = true, matching the AbortableFetch.Abort() path - instead
+            // of surfacing an exception that callers using the token path wouldn't expect.
+            return new FetchResponse { Url = request.Url, Aborted = true };
+        }
         finally
         {
             registration.Dispose();
@@ -75,7 +84,7 @@ public class Fetch(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// Starts the request and immediately returns an <see cref="AbortableFetch"/> abort handle.
-    /// This does not return the response payload — use <see cref="Send"/> for that. Prefer
+    /// This does not return the response payload - use <see cref="Send"/> for that. Prefer
     /// <see cref="Send"/> unless you only need fire-and-forget abort control.
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FetchRequest))]

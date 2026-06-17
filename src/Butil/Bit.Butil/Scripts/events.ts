@@ -1,7 +1,7 @@
 var BitButil = BitButil || {};
 
 (function (butil: any) {
-    const _handlers = {};
+    const _handlers: { [id: string]: EventListener } = {};
 
     butil.events = {
         addEventListener,
@@ -45,7 +45,7 @@ var BitButil = BitButil || {};
                     break;
                 case 'relatedTarget':
                     // A DOM node can't be marshaled to .NET, so we surface only its id.
-                    // Empty string when there's no related target or it has no id — this matches
+                    // Empty string when there's no related target or it has no id - this matches
                     // the string contract of ButilMouseEventArgs.RelatedTarget.
                     out[m] = e.relatedTarget?.id ?? '';
                     break;
@@ -66,14 +66,19 @@ var BitButil = BitButil || {};
         return undefined;
     }
 
-    function addEventListener(elementName, eventName, methodName, dotNetRef, listenerId, argsMembers, options, preventDefault, stopPropagation) {
+    function addEventListener(elementName: string, eventName: string, methodName: string, dotNetRef: DotNet.DotNetObject, listenerId: string, argsMembers: string[], options: AddEventListenerOptions | boolean, preventDefault: boolean, stopPropagation: boolean) {
         const target = resolveTarget(elementName);
         if (!target) return;
 
-        const handler = e => {
+        // When { once: true } is requested the browser auto-detaches after the first call; mirror
+        // that by dropping our own map entry so the listenerId doesn't linger after it fires.
+        const once = typeof options === 'object' && options.once === true;
+
+        const handler: EventListener = e => {
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
-            dotNetRef.invokeMethodAsync(methodName, listenerId, mapEvent(e, argsMembers));
+            if (once) delete _handlers[listenerId];
+            butil.utils.dispatch(dotNetRef, methodName, listenerId, mapEvent(e, argsMembers));
         };
 
         _handlers[listenerId] = handler;
@@ -81,15 +86,18 @@ var BitButil = BitButil || {};
         target.addEventListener(eventName, handler, options);
     }
 
-    function removeEventListener(elementName, eventName, dotnetListenerIds, options) {
+    function removeEventListener(elementName: string, eventName: string, dotnetListenerIds: string[], options: EventListenerOptions | boolean) {
         const target = resolveTarget(elementName);
 
         dotnetListenerIds.forEach(id => {
             const handler = _handlers[id];
+            if (!handler) return;
+            // A handler is only ever stored after a successful add (which requires the target to be
+            // available), and the only targets are window/document - both live for the page's
+            // lifetime. So we always drop the map entry here to keep it from growing unbounded;
+            // detach from the target when it's resolvable (it normally is).
+            if (target) target.removeEventListener(eventName, handler, options);
             delete _handlers[id];
-            if (target && handler) {
-                target.removeEventListener(eventName, handler, options);
-            }
         });
     }
 }(BitButil));

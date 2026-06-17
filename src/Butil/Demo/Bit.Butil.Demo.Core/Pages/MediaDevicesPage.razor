@@ -6,7 +6,7 @@
 
 <PageHeader Category="Browser & Device"
             Title="MediaDevices"
-            Lead="Enumerate cameras and microphones, then request a live stream and attach it to a video element — all from C#."
+            Lead="Enumerate cameras and microphones, then request a live stream and attach it to a video element - all from C#."
             MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices" />
 
 <pre>
@@ -88,7 +88,7 @@ await stream.AttachTo(videoElement);
         _stream = await mediaDevices.GetUserMedia(_requestAudio, _requestVideo);
         if (_stream is null)
         {
-            await output.Warn("GetUserMedia returned null — permission denied or no device available.");
+            await output.Warn("GetUserMedia returned null - permission denied or no device available.");
             return;
         }
 

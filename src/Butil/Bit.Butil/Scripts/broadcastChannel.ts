@@ -38,10 +38,10 @@ var BitButil = BitButil || {};
         if (!('BroadcastChannel' in window)) return;
         const entry = getChannel(channelName);
         const onMessage = (e: MessageEvent) => {
-            dotNetRef.invokeMethodAsync('InvokeBroadcastChannelMessage', listenerId, e.data ?? null);
+            butil.utils.dispatch(dotNetRef, 'InvokeBroadcastChannelMessage', listenerId, e.data ?? null);
         };
         const onError = () => {
-            dotNetRef.invokeMethodAsync('InvokeBroadcastChannelError', listenerId);
+            butil.utils.dispatch(dotNetRef, 'InvokeBroadcastChannelError', listenerId);
         };
         entry.ch.addEventListener('message', onMessage);
         entry.ch.addEventListener('messageerror', onError);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -20,9 +21,9 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Listener> _listeners = new();
 
     // Per-instance callback reference (see Keyboard): tracked notifications are isolated per circuit
-    // / WASM app and released on disposal — no static state, no cross-circuit leak.
+    // / WASM app and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Notification>? _dotNetRef;
-    private DotNetObjectReference<Notification> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Notification> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>Removes a tracked notification's callbacks. Called by <see cref="NotificationHandle"/>.</summary>
     internal void RemoveListener(Guid id) => _listeners.TryRemove(id, out _);
@@ -35,9 +36,10 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     [JSInvokable(ShowMethodName)]
     public void InvokeNotificationShow(Guid id) { if (_listeners.TryGetValue(id, out var l)) l.OnShow?.Invoke(); }
 
-    /// <summary>Invoked from JS when the notification is closed.</summary>
+    /// <summary>Invoked from JS when the notification is closed. Also drops the listener so the
+    /// map doesn't accumulate entries on natural dismiss or programmatic close.</summary>
     [JSInvokable(CloseMethodName)]
-    public void InvokeNotificationClose(Guid id) { if (_listeners.TryGetValue(id, out var l)) l.OnClose?.Invoke(); }
+    public void InvokeNotificationClose(Guid id) { if (_listeners.TryRemove(id, out var l)) l.OnClose?.Invoke(); }
 
     /// <summary>Invoked from JS on a notification error.</summary>
     [JSInvokable(ErrorMethodName)]
@@ -46,6 +48,11 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Checks if the runtime (browser or web-view) is supporting the Web Notification API.
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async ValueTask<bool> IsSupported()
     {
         return await js.Invoke<bool>("BitButil.notification.isSupported");
@@ -56,6 +63,11 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/permission_static">https://developer.mozilla.org/en-US/docs/Web/API/Notification/permission_static</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async ValueTask<NotificationPermission> GetPermission()
     {
         var permission = await js.Invoke<string>("BitButil.notification.getPermission");
@@ -74,6 +86,11 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/requestPermission_static">https://developer.mozilla.org/en-US/docs/Web/API/Notification/requestPermission_static</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async ValueTask<NotificationPermission> RequestPermission()
     {
         var permission = await js.Invoke<string>("BitButil.notification.requestPermission");
@@ -139,13 +156,30 @@ public class Notification(IJSRuntime js) : IAsyncDisposable
         return new NotificationHandle(this, js, id);
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        _listeners.Clear();
-        _dotNetRef?.Dispose();
-        _dotNetRef = null;
+        // Detach any still-tracked notifications on the JS side before releasing the ref. Without
+        // this, a notification left on screen would, on click/close, invoke a disposed
+        // DotNetObjectReference and surface an error in the browser (see Window/History/Geolocation
+        // which already clean up their JS-side listeners on disposal).
+        try
+        {
+            if (_listeners.IsEmpty is false)
+            {
+                var ids = _listeners.Keys.ToArray();
+                _listeners.Clear();
+                await js.InvokeVoid("BitButil.notification.disposeAll", new object?[] { ids });
+            }
+        }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        finally
+        {
+            _listeners.Clear();
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
+
         GC.SuppressFinalize(this);
-        return ValueTask.CompletedTask;
     }
 
     private class Listener

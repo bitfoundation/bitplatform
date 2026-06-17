@@ -3,7 +3,7 @@ using System;
 namespace Bit.Butil;
 
 /// <summary>
-/// Input/beforeinput event payload — see <see href="https://developer.mozilla.org/en-US/docs/Web/API/InputEvent">InputEvent</see>.
+/// Input/beforeinput event payload - see <see href="https://developer.mozilla.org/en-US/docs/Web/API/InputEvent">InputEvent</see>.
 /// </summary>
 public class ButilInputEventArgs : EventArgs
 {

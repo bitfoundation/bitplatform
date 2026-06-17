@@ -8,9 +8,14 @@ namespace Bit.Butil;
 /// <summary>
 /// Wraps <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices">navigator.mediaDevices</see>.
 /// </summary>
-public class MediaDevices(IJSRuntime js)
+public class MediaDevices(IJSRuntime js) : IAsyncDisposable
 {
     /// <summary>True when the runtime exposes <c>navigator.mediaDevices</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.mediaDevices.isSupported");
 
     /// <summary>
@@ -39,5 +44,15 @@ public class MediaDevices(IJSRuntime js)
         var ok = await js.Invoke<bool>("BitButil.mediaDevices.getUserMedia",
             id, audio, video, audioConstraints, videoConstraints);
         return ok ? new MediaStreamHandle(js, id) : null;
+    }
+
+    /// <summary>
+    /// On scope/circuit teardown, stops any streams whose <see cref="MediaStreamHandle"/> was never
+    /// disposed so the camera/mic hardware can't stay live after the user's session ends.
+    /// </summary>
+    public async ValueTask DisposeAsync()
+    {
+        try { await js.InvokeVoid("BitButil.mediaDevices.disposeAll"); }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 }

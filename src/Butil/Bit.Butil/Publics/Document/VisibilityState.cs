@@ -12,7 +12,7 @@ public enum VisibilityState
     Visible,
 
     /// <summary>
-    /// The page content is not visible to the user — the tab is in the background or
+    /// The page content is not visible to the user - the tab is in the background or
     /// the window is minimized, or the OS screen lock is active.
     /// </summary>
     Hidden

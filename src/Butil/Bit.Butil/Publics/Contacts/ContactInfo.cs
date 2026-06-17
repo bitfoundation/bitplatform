@@ -13,6 +13,10 @@ public class ContactInfo
     /// <summary>Postal addresses serialized as plain strings.</summary>
     public string[] Address { get; set; } = [];
 
-    /// <summary>Avatar URLs (object-URL form), if exposed by the platform.</summary>
+    /// <summary>
+    /// Avatar images as self-contained <c>data:</c> URLs (base64), if exposed by the platform.
+    /// These are inline payloads with no lifetime to manage - unlike object URLs they don't need
+    /// to be revoked.
+    /// </summary>
     public string[] Icon { get; set; } = [];
 }

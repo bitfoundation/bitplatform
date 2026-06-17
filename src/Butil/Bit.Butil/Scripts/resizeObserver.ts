@@ -32,7 +32,7 @@ var BitButil = BitButil || {};
                     devicePixelBlockSize: device.blockSize,
                 };
             });
-            dotNetRef.invokeMethodAsync('InvokeResize', listenerId, payload);
+            butil.utils.dispatch(dotNetRef, 'InvokeResize', listenerId, payload);
         });
 
         try {

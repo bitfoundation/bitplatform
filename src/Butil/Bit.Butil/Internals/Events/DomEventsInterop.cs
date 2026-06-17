@@ -18,7 +18,7 @@ internal sealed class DomEventsInterop : IDisposable
     private readonly ConcurrentDictionary<Guid, Entry> _listeners = new();
 
     private DotNetObjectReference<DomEventsInterop>? _dotNetRef;
-    private DotNetObjectReference<DomEventsInterop> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<DomEventsInterop> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilMouseEventArgs))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilKeyboardEventArgs))]
@@ -31,13 +31,16 @@ internal sealed class DomEventsInterop : IDisposable
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilDragEventArgs))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilClipboardEventArgs))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilCompositionEventArgs))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsAddEventListenerOptions))]
     internal async Task<Guid> AddEventListener<T>(IJSRuntime js,
         string elementName,
         string domEvent,
         Action<T> listener,
         bool useCapture = false,
         bool preventDefault = false,
-        bool stopPropagation = false)
+        bool stopPropagation = false,
+        bool passive = false,
+        bool once = false)
     {
         var argType = typeof(T);
         var eventType = DomEventArgs.TypeOf(domEvent);
@@ -46,9 +49,13 @@ internal sealed class DomEventsInterop : IDisposable
             throw new InvalidOperationException($"Invalid listener type ({argType}) for this dom event type ({eventType})");
 
         var (methodName, members) = Resolve(argType);
-        var options = useCapture;
+        // Pass a bare boolean for the common capture-only case (keeps the wire payload minimal and
+        // backward-compatible); upgrade to the full options object only when passive/once are set.
+        var options = (passive || once)
+            ? (object)new JsAddEventListenerOptions { Capture = useCapture, Passive = passive, Once = once }
+            : useCapture;
         var id = Guid.NewGuid();
-        _listeners.TryAdd(id, new Entry { Action = listener, ArgType = argType, Element = elementName, UseCapture = useCapture });
+        _listeners.TryAdd(id, new Entry { Action = listener, ArgType = argType, Element = elementName, Event = domEvent, UseCapture = useCapture });
 
         await js.AddEventListener(elementName, domEvent, methodName, DotNetRef, id, members, options, preventDefault, stopPropagation);
 
@@ -68,9 +75,11 @@ internal sealed class DomEventsInterop : IDisposable
             throw new InvalidOperationException($"Invalid listener type ({argType}) for this dom event type ({eventType})");
 
         var ids = _listeners
-            .Where(l => Equals(l.Value.Action, listener) && l.Value.Element == elementName && l.Value.UseCapture == useCapture)
+            .Where(l => Equals(l.Value.Action, listener) && l.Value.Element == elementName && l.Value.Event == domEvent && l.Value.UseCapture == useCapture)
             .Select(l => l.Key)
             .ToArray();
+
+        if (ids.Length == 0) return ids; // nothing matched - skip the interop round-trip
 
         foreach (var id in ids) _listeners.TryRemove(id, out _);
 
@@ -92,11 +101,11 @@ internal sealed class DomEventsInterop : IDisposable
     /// callback routing and the per-instance reference.
     /// </summary>
     internal (Guid Id, string MethodName, string[] Members, DotNetObjectReference<DomEventsInterop> Ref) Register<T>(
-        Action<T> listener, string element, bool useCapture)
+        Action<T> listener, string element, string domEvent, bool useCapture)
     {
         var (methodName, members) = Resolve(typeof(T));
         var id = Guid.NewGuid();
-        _listeners.TryAdd(id, new Entry { Action = listener, ArgType = typeof(T), Element = element, UseCapture = useCapture });
+        _listeners.TryAdd(id, new Entry { Action = listener, ArgType = typeof(T), Element = element, Event = domEvent, UseCapture = useCapture });
         return (id, methodName, members, DotNetRef);
     }
 
@@ -147,6 +156,7 @@ internal sealed class DomEventsInterop : IDisposable
         public object Action { get; set; } = default!;
         public Type ArgType { get; set; } = default!;
         public string Element { get; set; } = string.Empty;
+        public string Event { get; set; } = string.Empty;
         public bool UseCapture { get; set; }
     }
 }

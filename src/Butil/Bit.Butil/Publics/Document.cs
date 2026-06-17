@@ -14,7 +14,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<(Guid Id, string Event, bool UseCapture), byte> _listenerIds = new();
 
     // Per-instance DOM event dispatcher: listeners are isolated per circuit / WASM app and released
-    // on disposal — no static state, no cross-circuit leak.
+    // on disposal - no static state, no cross-circuit leak.
     private readonly DomEventsInterop _events = new();
 
     public async Task AddEventListener<T>(
@@ -34,7 +34,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <remarks>
     /// Listeners are matched by delegate identity, so you must pass the very same
     /// <paramref name="listener"/> instance that was registered. A newly-created lambda will not
-    /// match and nothing will be removed. For lambdas, prefer <see cref="SubscribeEvent{T}"/>,
+    /// match and nothing will be removed. For lambdas, prefer <see cref="SubscribeEvent{T}(string, Action{T}, bool, bool, bool)"/>,
     /// which returns a disposable <see cref="ButilSubscription"/> you can dispose to detach.
     /// </remarks>
     public async Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
@@ -66,6 +66,30 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     }
 
     /// <summary>
+    /// <see cref="ButilEventListenerOptions"/> variant of <see cref="SubscribeEvent{T}(string, Action{T}, bool, bool, bool)"/>,
+    /// adding <c>passive</c> and <c>once</c> control on top of <c>capture</c>.
+    /// </summary>
+    public async Task<ButilSubscription> SubscribeEvent<T>(
+        string domEvent,
+        Action<T> listener,
+        ButilEventListenerOptions options,
+        bool preventDefault = false,
+        bool stopPropagation = false)
+    {
+        var useCapture = options.Capture;
+        var id = await _events.AddEventListener(js, ElementName, domEvent, listener,
+            useCapture, preventDefault, stopPropagation, options.Passive, options.Once);
+        var key = (id, domEvent, useCapture);
+        _listenerIds.TryAdd(key, 0);
+
+        return new ButilSubscription(id, async () =>
+        {
+            _listenerIds.TryRemove(key, out _);
+            await _events.RemoveEventListenerById(js, ElementName, domEvent, id, useCapture);
+        });
+    }
+
+    /// <summary>
     /// Returns the character set being used by the document.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/characterSet">https://developer.mozilla.org/en-US/docs/Web/API/Document/characterSet</see>
@@ -78,6 +102,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/compatMode">https://developer.mozilla.org/en-US/docs/Web/API/Document/compatMode</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<CompatMode> GetCompatMode()
     {
         var mode = await js.Invoke<string>("BitButil.document.compatMode");
@@ -109,6 +138,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode">https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<DesignMode> GetDesignMode()
     {
         var mode = await js.Invoke<string>("BitButil.document.getDesignMode");
@@ -131,6 +165,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/dir">https://developer.mozilla.org/en-US/docs/Web/API/Document/dir</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<DocumentDir> GetDir()
     {
         var mode = await js.Invoke<string>("BitButil.document.getDir");
@@ -200,6 +239,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState">https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<VisibilityState> GetVisibilityState()
     {
         var raw = await js.Invoke<string>("BitButil.document.visibilityState");
@@ -211,6 +255,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/hidden">https://developer.mozilla.org/en-US/docs/Web/API/Document/hidden</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> IsHidden()
         => await js.Invoke<bool>("BitButil.document.hidden");
 
@@ -219,6 +268,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/hasFocus">https://developer.mozilla.org/en-US/docs/Web/API/Document/hasFocus</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<bool> HasFocus()
         => await js.Invoke<bool>("BitButil.document.hasFocus");
 
@@ -228,6 +282,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/wasDiscarded">Document.wasDiscarded</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> WasDiscarded() => js.Invoke<bool>("BitButil.document.wasDiscarded");
 
     // ─── Convenience subscription helpers built on SubscribeEvent ───────────────
@@ -237,11 +296,17 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event">visibilitychange</see>
     /// </summary>
+    /// <remarks>
+    /// The new state isn't carried on the event, so it's read back via a separate (cheap, synchronous)
+    /// interop call after the event fires. Under very rapid toggles the reported state can lag or
+    /// arrive slightly out of order relative to the raw events; treat the value as "latest known"
+    /// rather than a strictly-ordered log.
+    /// </remarks>
     public async Task<ButilSubscription> SubscribeVisibilityChange(Action<VisibilityState> handler)
     {
         Action<object> bridge = _ =>
         {
-            // We don't get the state on the event itself — fetch it on the fly.
+            // We don't get the state on the event itself - fetch it on the fly.
             // It's cheap (sync property) so the extra interop is acceptable.
             _ = ReportVisibilityAsync(handler);
         };
@@ -251,7 +316,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     private async Task ReportVisibilityAsync(Action<VisibilityState> handler)
     {
         try { handler(await GetVisibilityState()); }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 
     /// <summary>
@@ -260,6 +325,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenchange_event">fullscreenchange</see>
     /// </summary>
+    /// <remarks>
+    /// The fullscreen state is read back via a separate interop call after the event fires (the event
+    /// itself carries no payload), so under rapid toggles the reported value can lag or arrive
+    /// slightly out of order. Treat it as "latest known" rather than a strictly-ordered log.
+    /// </remarks>
     public async Task<ButilSubscription> SubscribeFullscreenChange(Action<bool> handler)
     {
         Action<object> bridge = _ => _ = ReportFullscreenAsync(handler);
@@ -273,11 +343,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
             var hasFs = await js.Invoke<bool>("BitButil.document.hasFullscreenElement");
             handler(hasFs);
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 
     /// <summary>
-    /// Fires when entering fullscreen fails. The handler receives no payload — the spec
+    /// Fires when entering fullscreen fails. The handler receives no payload - the spec
     /// doesn't expose a structured reason.
     /// </summary>
     public Task<ButilSubscription> SubscribeFullscreenError(Action handler)
@@ -290,6 +360,11 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// Fires when pointer lock is entered or exited. The handler receives true when an
     /// element currently has pointer lock.
     /// </summary>
+    /// <remarks>
+    /// The lock state is read back via a separate interop call after the event fires, so under rapid
+    /// toggles the reported value can lag or arrive slightly out of order. Treat it as "latest known"
+    /// rather than a strictly-ordered log.
+    /// </remarks>
     public async Task<ButilSubscription> SubscribePointerLockChange(Action<bool> handler)
     {
         Action<object> bridge = _ => _ = ReportPointerLockAsync(handler);
@@ -303,7 +378,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
             var hasLock = await js.Invoke<bool>("BitButil.document.hasPointerLockElement");
             handler(hasLock);
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 
     /// <summary>Fires when entering pointer lock fails.</summary>
@@ -332,19 +407,20 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing is false) return;
-        if (_listenerIds.IsEmpty) return;
-
-        var snapshot = _listenerIds.Keys.ToArray();
-        _listenerIds.Clear();
 
         try
         {
-            foreach (var (id, evt, useCapture) in snapshot)
+            if (_listenerIds.IsEmpty is false)
             {
-                await _events.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
+                var snapshot = _listenerIds.Keys.ToArray();
+                _listenerIds.Clear();
+                foreach (var (id, evt, useCapture) in snapshot)
+                {
+                    await _events.RemoveEventListenerById(js, ElementName, evt, id, useCapture);
+                }
             }
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _events.Dispose();

@@ -52,13 +52,13 @@ var BitButil = BitButil || {};
 
     function watchPosition(dotNetRef: any, listenerId: string, options: any) {
         if (!('geolocation' in window.navigator)) {
-            dotNetRef.invokeMethodAsync('InvokeError', listenerId, 0, 'Geolocation is not supported in this runtime.');
+            butil.utils.dispatch(dotNetRef, 'InvokeError', listenerId, 0, 'Geolocation is not supported in this runtime.');
             return;
         }
 
         const watchId = window.navigator.geolocation.watchPosition(
-            p => dotNetRef.invokeMethodAsync('InvokePosition', listenerId, toPosition(p)),
-            err => dotNetRef.invokeMethodAsync('InvokeError', listenerId, err.code, err.message),
+            p => butil.utils.dispatch(dotNetRef, 'InvokePosition', listenerId, toPosition(p)),
+            err => butil.utils.dispatch(dotNetRef, 'InvokeError', listenerId, err.code, err.message),
             toJsOptions(options));
 
         _watches[listenerId] = watchId;

@@ -14,7 +14,7 @@ public class FetchRequest
     /// <summary>HTTP verb. Defaults to GET.</summary>
     public string Method { get; set; } = "GET";
 
-    /// <summary>Headers as a key/value dictionary. Repeating keys aren't supported here — use one comma-joined value.</summary>
+    /// <summary>Headers as a key/value dictionary. Repeating keys aren't supported here - use one comma-joined value.</summary>
     public Dictionary<string, string> Headers { get; set; } = new();
 
     /// <summary>Optional body bytes. Set <see cref="Headers"/>'s <c>Content-Type</c> when needed.</summary>

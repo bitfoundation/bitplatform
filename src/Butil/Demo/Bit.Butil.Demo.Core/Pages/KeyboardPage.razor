@@ -6,7 +6,7 @@
 
 <PageHeader Category="Utilities"
             Title="Keyboard"
-            Lead="Register global keyboard shortcuts — including modifier combinations — that fire your C# callbacks no matter where focus is on the page."
+            Lead="Register global keyboard shortcuts - including modifier combinations - that fire your C# callbacks no matter where focus is on the page."
             MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Keyboard" />
 
 <pre>
@@ -20,13 +20,13 @@ await keyboard.Add(ButilKeyCodes.F10, () => { ... }, ButilModifiers.Alt | ButilM
           Description="Two shortcuts are registered for this page. Press them and watch the output below light up.">
     <div class="controls">
         <span class="result-pill"><b>F5</b></span>
-        <span class="muted">— logs a message</span>
+        <span class="muted">- logs a message</span>
     </div>
     <div class="controls" style="margin-top:.6rem">
         <span class="result-pill"><b>Ctrl + Alt + F10</b></span>
-        <span class="muted">— logs a message</span>
+        <span class="muted">- logs a message</span>
     </div>
-    <p class="muted" style="margin-top:1rem">Tip: F5 normally reloads the page — Bit.Butil intercepts it here so the handler runs instead.</p>
+    <p class="muted" style="margin-top:1rem">Tip: F5 normally reloads the page - Bit.Butil intercepts it here so the handler runs instead.</p>
 </DemoCard>
 
 <DemoConsole @ref="output" Title="keyboard output" Placeholder="Press F5 or Ctrl+Alt+F10..." />

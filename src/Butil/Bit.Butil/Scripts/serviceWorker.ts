@@ -52,7 +52,7 @@ var BitButil = BitButil || {};
     async function update(scope: string | null) {
         const reg = await window.navigator.serviceWorker?.getRegistration(scope ?? undefined);
         if (!reg) return;
-        try { await reg.update(); } catch { /* network failure / 404 — surface via subsequent getRegistration */ }
+        try { await reg.update(); } catch { /* network failure / 404 - surface via subsequent getRegistration */ }
     }
 
     async function unregister(scope: string | null) {
@@ -71,7 +71,7 @@ var BitButil = BitButil || {};
         const sw = window.navigator.serviceWorker;
         if (!sw) return;
         const handler = (e: MessageEvent) => {
-            dotNetRef.invokeMethodAsync('InvokeServiceWorkerMessage', listenerId, e.data ?? null);
+            butil.utils.dispatch(dotNetRef, 'InvokeServiceWorkerMessage', listenerId, e.data ?? null);
         };
         _msgListeners[listenerId] = handler;
         sw.addEventListener('message', handler);
@@ -87,7 +87,7 @@ var BitButil = BitButil || {};
     function subscribeControllerChange(dotNetRef: any, listenerId: string) {
         const sw = window.navigator.serviceWorker;
         if (!sw) return;
-        const handler = () => { dotNetRef.invokeMethodAsync('InvokeServiceWorkerControllerChange', listenerId); };
+        const handler = () => { butil.utils.dispatch(dotNetRef, 'InvokeServiceWorkerControllerChange', listenerId); };
         _ccListeners[listenerId] = handler;
         sw.addEventListener('controllerchange', handler);
     }

@@ -12,11 +12,16 @@ namespace Bit.Butil;
 /// The wrapper deliberately surfaces the most commonly needed CRUD shape rather than the
 /// full IDB transaction/cursor API; complex graph queries should drop down to interop.
 /// Each <see cref="Open"/> call returns an <see cref="IndexedDbHandle"/> that owns the JS
-/// <c>IDBDatabase</c> reference — dispose it when you're done so the connection closes.
+/// <c>IDBDatabase</c> reference - dispose it when you're done so the connection closes.
 /// </remarks>
 public class IndexedDb(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>indexedDB</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.indexedDb.isSupported");
 
     /// <summary>

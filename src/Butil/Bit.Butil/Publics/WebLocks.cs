@@ -19,13 +19,18 @@ namespace Bit.Butil;
 ///   This matches typical .NET <c>using</c> patterns.
 /// </item>
 /// <item>
-///   <see cref="Run"/> runs your callback while holding the lock — closer to the JS API.
+///   <see cref="Run"/> runs your callback while holding the lock - closer to the JS API.
 /// </item>
 /// </list>
 /// </remarks>
 public class WebLocks(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>navigator.locks</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.webLocks.isSupported");
 
     /// <summary>
@@ -81,7 +86,7 @@ public class WebLocks(IJSRuntime js)
             if (_disposed) return;
             _disposed = true;
             try { await js.InvokeVoid("BitButil.webLocks.release", token); }
-            catch (JSDisconnectedException) { }
+            catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         }
     }
 }

@@ -18,23 +18,33 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action<JsonElement[]>> _handlers = new();
 
     // Per-instance callback reference (see Keyboard): observers are isolated per circuit / WASM app
-    // and released on disposal — no static state, no cross-circuit leak.
+    // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<Performance>? _dotNetRef;
-    private DotNetObjectReference<Performance> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Performance> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// High-resolution timestamp (<c>DOMHighResTimeStamp</c>) since the time origin, in milliseconds.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/now">Performance.now()</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<double> Now()
         => js.Invoke<double>("BitButil.performance.now");
 
     /// <summary>
-    /// The time origin of the document — typically the navigation start, in Unix epoch milliseconds.
+    /// The time origin of the document - typically the navigation start, in Unix epoch milliseconds.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin">Performance.timeOrigin</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<double> TimeOrigin()
         => js.Invoke<double>("BitButil.performance.timeOrigin");
 
@@ -126,7 +136,7 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
                 await js.InvokeVoid("BitButil.performance.disconnect", id);
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

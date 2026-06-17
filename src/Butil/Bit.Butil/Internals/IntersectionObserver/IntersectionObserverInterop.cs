@@ -13,7 +13,7 @@ internal sealed class IntersectionObserverInterop(Action<IntersectionObserverEnt
     internal const string InvokeMethodName = nameof(InvokeIntersection);
 
     private DotNetObjectReference<IntersectionObserverInterop>? _dotNetRef;
-    internal DotNetObjectReference<IntersectionObserverInterop> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    internal DotNetObjectReference<IntersectionObserverInterop> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     [JSInvokable(InvokeMethodName)]
     public void InvokeIntersection(Guid id, IntersectionObserverEntry[] entries) => handler(entries);

@@ -6,6 +6,15 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// Registers global or element-scoped keyboard shortcuts.
+/// </summary>
+/// <remarks>
+/// All shortcuts are matched against the <c>keydown</c> event only. Key-up (<c>keyup</c>) and
+/// key-press (<c>keypress</c>) are not observed, so a handler fires when the key combination goes
+/// down, not when it is released. Matching is by the physical key (<c>KeyboardEvent.code</c>),
+/// not the produced character.
+/// </remarks>
 public class Keyboard(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeKeyboard);
@@ -14,11 +23,11 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
 
     // One DotNetObjectReference per service instance. Because the listeners live on this (scoped)
     // instance instead of in static state, they are isolated per Blazor circuit / WASM app and are
-    // released when the instance is disposed — no cross-circuit bleed and no leak when a circuit
+    // released when the instance is disposed - no cross-circuit bleed and no leak when a circuit
     // drops without an explicit Remove. Created lazily so prerender/SSR (which never adds listeners)
     // doesn't allocate one.
     private DotNetObjectReference<Keyboard>? _dotNetRef;
-    private DotNetObjectReference<Keyboard> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<Keyboard> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// Invoked from JS when a registered shortcut fires. Public + <see cref="JSInvokableAttribute"/>
@@ -106,7 +115,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
     /// </remarks>
     public async ValueTask<Guid[]> Remove(Action handler)
     {
-        var ids = _handlers.Where(h => h.Value == handler).Select(h => h.Key).ToArray();
+        var ids = _handlers.Where(h => Equals(h.Value, handler)).Select(h => h.Key).ToArray();
 
         await Remove(ids);
 
@@ -161,7 +170,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         {
             await RemoveAll();
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

@@ -37,7 +37,7 @@ public class ObjectUrls(IJSRuntime js) : IAsyncDisposable
                 await Revoke(url);
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         GC.SuppressFinalize(this);
     }
 }

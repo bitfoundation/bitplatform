@@ -51,7 +51,7 @@ var BitButil = BitButil || {};
             statusText,
             headers: { 'Content-Type': contentType || 'application/octet-stream' }
         });
-        await cache.put(url, response);
+        try { await cache.put(url, response); } catch { /* quota exceeded / put failed */ }
     }
 
     async function putText(name: string, url: string, text: string, contentType: string, status: number, statusText: string) {
@@ -62,26 +62,28 @@ var BitButil = BitButil || {};
             statusText,
             headers: { 'Content-Type': contentType || 'text/plain;charset=utf-8' }
         });
-        await cache.put(url, response);
+        try { await cache.put(url, response); } catch { /* quota exceeded / put failed */ }
     }
 
     async function match(name: string, url: string) {
         const empty = { found: false, status: 0, statusText: '', url: '', headers: {}, body: new Uint8Array() };
         if (!('caches' in window)) return empty;
-        const cache = await caches.open(name);
-        const response = await cache.match(url);
-        if (!response) return empty;
-        const buf = await response.arrayBuffer();
-        const headers: any = {};
-        response.headers.forEach((v, k) => { headers[k] = v; });
-        return {
-            found: true,
-            status: response.status,
-            statusText: response.statusText,
-            url: response.url || url,
-            headers,
-            body: new Uint8Array(buf)
-        };
+        try {
+            const cache = await caches.open(name);
+            const response = await cache.match(url);
+            if (!response) return empty;
+            const buf = await response.arrayBuffer();
+            const headers: any = {};
+            response.headers.forEach((v, k) => { headers[k] = v; });
+            return {
+                found: true,
+                status: response.status,
+                statusText: response.statusText,
+                url: response.url || url,
+                headers,
+                body: new Uint8Array(buf)
+            };
+        } catch { return empty; }
     }
 
     async function deleteEntry(name: string, url: string) {
@@ -92,8 +94,10 @@ var BitButil = BitButil || {};
 
     async function entryKeys(name: string) {
         if (!('caches' in window)) return [];
-        const cache = await caches.open(name);
-        const reqs = await cache.keys();
-        return reqs.map(r => r.url);
+        try {
+            const cache = await caches.open(name);
+            const reqs = await cache.keys();
+            return reqs.map(r => r.url);
+        } catch { return []; }
     }
 }(BitButil));

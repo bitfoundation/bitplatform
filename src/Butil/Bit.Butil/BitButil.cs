@@ -59,7 +59,9 @@ public static class BitButil
         return services;
     }
 
-    internal static bool FastInvokeEnabled { get; private set; }
+    private static volatile bool _fastInvokeEnabled;
+
+    internal static bool FastInvokeEnabled => _fastInvokeEnabled;
 
     /// <summary>
     /// Enables the synchronous in-process ("fast") invoke path for the APIs that opt into it.
@@ -76,15 +78,15 @@ public static class BitButil
     /// </summary>
     public static void UseFastInvoke()
     {
-        FastInvokeEnabled = true;
+        _fastInvokeEnabled = true;
     }
 
     /// <summary>
     /// Disables the synchronous in-process ("fast") invoke path; all calls run asynchronously.
-    /// Process-wide static toggle — see <see cref="UseFastInvoke"/>.
+    /// Process-wide static toggle - see <see cref="UseFastInvoke"/>.
     /// </summary>
     public static void UseNormalInvoke()
     {
-        FastInvokeEnabled = false;
+        _fastInvokeEnabled = false;
     }
 }

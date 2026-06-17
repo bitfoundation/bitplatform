@@ -5,24 +5,6 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
-        <!-- Ensure the JS bundle is generated/refreshed before THIS framework's static web assets
-             are resolved, so wwwroot/bit-butil.js is always packaged up-to-date for every TFM
-             (not just one). The generation is incremental (see the Inputs/Outputs below), and in a
-             multi-targeted build the outer build already produced it (BuildButilJavaScriptOnCrossTargeting),
-             so these per-TFM runs are cheap up-to-date no-ops. -->
-        <ResolveStaticWebAssetsInputsDependsOn>
-            BuildButilJavaScript;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
-        <!-- IL2026 is suppressed for THIS assembly's own build only; it does not affect consumers.
-             The JSON-(de)serializing public APIs (e.g. ButilStorage.GetItem<T>/SetItem<T>,
-             BroadcastChannel.Post<T>, ServiceWorker.PostMessage<T>, History.GetState<T>) are each
-             individually annotated with [RequiresUnreferencedCode]/[RequiresDynamicCode], so a
-             trimming/AOT consumer still gets the warning at their call site. The warnings produced
-             here are just the internal propagation of those (already-annotated) members through the
-             synchronous fast-invoke helpers, which only ever pass trim-safe primitives. Keeping the
-             real protection (the attributes) while quieting the redundant internal noise. -->
-        <NoWarn>$(NoWarn);IL2026</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -48,6 +30,26 @@
          via their Inputs/Outputs, so this is a no-op when nothing changed. -->
     <Target Name="BuildButilJavaScript" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript" />
 
+    <!-- The bundle (wwwroot/bit-butil.js) is a generated, git-ignored file. On a clean build it does
+         not exist when the default "wwwroot/**" Content glob is evaluated, so the static web asset
+         discovery in ResolveProjectStaticWebAssets would miss it and consumers get a 404 for
+         _content/Bit.Butil/bit-butil.js (this is what breaks the demo on a fresh checkout).
+
+         ResolveProjectStaticWebAssets runs BeforeTargets="AssignTargetPaths" and does NOT depend on
+         ResolveStaticWebAssetsInputs, so the old ResolveStaticWebAssetsInputsDependsOn hook never ran
+         early enough. Hooking BeforeTargets="ResolveProjectStaticWebAssets" guarantees the bundle is
+         generated first (DependsOnTargets) and then explicitly added to @(Content) so discovery picks
+         it up. The Remove-before-Include keeps it to a single Content entry (avoiding a duplicate /
+         conflicting-target-path error) for builds where the glob already captured it. -->
+    <Target Name="IncludeButilJavaScriptAsStaticWebAsset"
+            BeforeTargets="ResolveProjectStaticWebAssets"
+            DependsOnTargets="BuildButilJavaScript">
+        <ItemGroup>
+            <Content Remove="wwwroot\bit-butil.js" />
+            <Content Include="wwwroot\bit-butil.js" />
+        </ItemGroup>
+    </Target>
+
     <!-- In a multi-targeted build, produce the bundle exactly once in the outer (cross-targeting)
          build, before the per-TFM inner builds are dispatched. This prevents several inner builds
          from invoking tsc/esbuild concurrently against the same shared wwwroot output file.
@@ -65,7 +67,12 @@
 
     <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/bit-butil.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <!-- Minify to a temp file and move it into place, rather than overwriting the input in-place.
+             An interrupted in-place minify could leave a half-written bundle that the Outputs check
+             above then treats as up-to-date, requiring a clean to recover. The Move is atomic enough
+             to avoid that. -->
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-butil.min.js" DestinationFiles="wwwroot/bit-butil.js" OverwriteReadOnlyFiles="true" />
     </Target>
 
 </Project>

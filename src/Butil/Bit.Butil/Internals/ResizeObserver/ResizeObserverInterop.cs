@@ -13,7 +13,7 @@ internal sealed class ResizeObserverInterop(Action<ResizeObserverEntry[]> handle
     internal const string InvokeMethodName = nameof(InvokeResize);
 
     private DotNetObjectReference<ResizeObserverInterop>? _dotNetRef;
-    internal DotNetObjectReference<ResizeObserverInterop> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    internal DotNetObjectReference<ResizeObserverInterop> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     [JSInvokable(InvokeMethodName)]
     public void InvokeResize(Guid id, ResizeObserverEntry[] entries) => handler(entries);

@@ -9,7 +9,7 @@ namespace Bit.Butil;
 public class BrowserReport
 {
     /// <summary>
-    /// Report type — typical values include <c>"deprecation"</c>, <c>"intervention"</c>,
+    /// Report type - typical values include <c>"deprecation"</c>, <c>"intervention"</c>,
     /// <c>"crash"</c>, <c>"csp-violation"</c>.
     /// </summary>
     public string Type { get; set; } = string.Empty;

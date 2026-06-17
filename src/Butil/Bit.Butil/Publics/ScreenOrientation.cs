@@ -19,9 +19,9 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Action<OrientationState>> _handlers = new();
 
     // Per-instance callback reference (see Keyboard): listeners are isolated per circuit / WASM app
-    // and released on disposal — no static state, no cross-circuit leak.
+    // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<ScreenOrientation>? _dotNetRef;
-    private DotNetObjectReference<ScreenOrientation> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<ScreenOrientation> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>
     /// Invoked from JS on the orientation <c>change</c> event. Public + <see cref="JSInvokableAttribute"/>
@@ -38,6 +38,11 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/type">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/type</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<ScreenOrientationType> GetOrientationType()
     {
         var type = await js.Invoke<string>("BitButil.screenOrientation.type");
@@ -57,6 +62,11 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<ushort> GetAngle()
         => await js.Invoke<ushort>("BitButil.screenOrientation.angle");
 
@@ -195,7 +205,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
         {
             await RemoveAllChanges();
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();

@@ -13,10 +13,14 @@ var BitButil = BitButil || {};
     };
 
     function start(id: string, options: any, dotNetRef: any) {
+        // Defensive: if a recognizer is already registered under this id, stop it
+        // before replacing it so we don't orphan a running recognizer.
+        stop(id);
+
         const W = window as any;
         const Ctor = W.SpeechRecognition || W.webkitSpeechRecognition;
         if (!Ctor) {
-            dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionError', id, 'SpeechRecognition is not supported.');
+            butil.utils.dispatch(dotNetRef, 'InvokeSpeechRecognitionError', id, 'SpeechRecognition is not supported.');
             return;
         }
         const r = new Ctor();
@@ -32,7 +36,7 @@ var BitButil = BitButil || {};
                 // maxAlternatives and read each result via getEntries-style observation.
                 const top = res?.[0];
                 if (!top) continue;
-                dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionResult', id, {
+                butil.utils.dispatch(dotNetRef, 'InvokeSpeechRecognitionResult', id, {
                     transcript: top.transcript ?? '',
                     confidence: top.confidence ?? 0,
                     isFinal: !!res.isFinal
@@ -40,16 +44,19 @@ var BitButil = BitButil || {};
             }
         };
         r.onerror = (event: any) => {
-            dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionError', id, event?.error ?? 'unknown');
+            butil.utils.dispatch(dotNetRef, 'InvokeSpeechRecognitionError', id, event?.error ?? 'unknown');
+            // A terminal error may not be followed by an onend, so clean up here
+            // too. delete is idempotent, so a later onend remains harmless.
+            delete _sessions[id];
         };
         r.onend = () => {
-            dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionEnd', id);
+            butil.utils.dispatch(dotNetRef, 'InvokeSpeechRecognitionEnd', id);
             delete _sessions[id];
         };
 
         try { r.start(); _sessions[id] = r; }
         catch (e: any) {
-            dotNetRef.invokeMethodAsync('InvokeSpeechRecognitionError', id, e?.message ?? String(e));
+            butil.utils.dispatch(dotNetRef, 'InvokeSpeechRecognitionError', id, e?.message ?? String(e));
         }
     }
 

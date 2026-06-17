@@ -20,11 +20,16 @@ public class SpeechRecognition(IJSRuntime js) : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, Listener> _listeners = new();
 
     // Per-instance callback reference (see Keyboard): sessions are isolated per circuit / WASM app
-    // and released on disposal — no static state, no cross-circuit leak.
+    // and released on disposal - no static state, no cross-circuit leak.
     private DotNetObjectReference<SpeechRecognition>? _dotNetRef;
-    private DotNetObjectReference<SpeechRecognition> DotNetRef => _dotNetRef ??= DotNetObjectReference.Create(this);
+    private DotNetObjectReference<SpeechRecognition> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
 
     /// <summary>True when the runtime exposes a SpeechRecognition implementation.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.speechRecognition.isSupported");
 
     /// <summary>
@@ -96,7 +101,7 @@ public class SpeechRecognition(IJSRuntime js) : IAsyncDisposable
                 await js.InvokeVoid("BitButil.speechRecognition.stop", id);
             }
         }
-        catch (JSDisconnectedException) { }
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
             _dotNetRef?.Dispose();
@@ -122,7 +127,7 @@ public class SpeechRecognition(IJSRuntime js) : IAsyncDisposable
             _disposed = true;
             owner._listeners.TryRemove(id, out _);
             try { await js.InvokeVoid("BitButil.speechRecognition.stop", id); }
-            catch (JSDisconnectedException) { }
+            catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         }
     }
 }

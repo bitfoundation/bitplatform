@@ -31,7 +31,7 @@ var BitButil = BitButil || {};
                 if (document.visibilityState !== 'visible') return;
                 const entry = _persistent[token];
                 // The sentinel may already be active and unreleased, in which case re-requesting
-                // would create a second one we can't track — bail out.
+                // would create a second one we can't track - bail out.
                 if (entry?.sentinel && !entry.sentinel.released) return;
                 try {
                     const sentinel = await lockApi.request('screen');

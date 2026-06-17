@@ -37,16 +37,16 @@ var BitButil = BitButil || {};
             if (!('PerformanceObserver' in window) || !entryTypes?.length) return;
             const observer = new PerformanceObserver(list => {
                 const payload = list.getEntries().map(e => (e as any).toJSON ? (e as any).toJSON() : e);
-                dotNetRef.invokeMethodAsync('InvokePerformanceObserver', listenerId, payload);
+                butil.utils.dispatch(dotNetRef, 'InvokePerformanceObserver', listenerId, payload);
             });
             try {
                 // observe() with a "type" + "buffered" can only handle one entry type at a time;
                 // loop so we register each one separately and merge their reports.
                 for (const t of entryTypes) {
                     try { observer.observe({ type: t, buffered }); }
-                    catch { /* type isn't supported on this UA — skip silently */ }
+                    catch { /* type isn't supported on this UA - skip silently */ }
                 }
-            } catch { /* observe() rejected the whole batch — fall through with no records */ }
+            } catch { /* observe() rejected the whole batch - fall through with no records */ }
             _perfObservers[listenerId] = observer;
         },
         disconnect(listenerId: string) {

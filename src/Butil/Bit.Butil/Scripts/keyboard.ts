@@ -24,7 +24,7 @@ var BitButil = BitButil || {};
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
 
-            dotNetRef.invokeMethodAsync('InvokeKeyboard', listenerId);
+            butil.utils.dispatch(dotNetRef, 'InvokeKeyboard', listenerId);
         };
     }
 

@@ -15,6 +15,11 @@ namespace Bit.Butil;
 public class CookieStore(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>cookieStore</c>.</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.cookieStore.isSupported");
 
     /// <summary>Returns every cookie visible to the current document.</summary>
@@ -25,7 +30,7 @@ public class CookieStore(IJSRuntime js)
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CookieStoreItem))]
     public ValueTask<CookieStoreItem?> Get(string name) => js.Invoke<CookieStoreItem?>("BitButil.cookieStore.get", name);
 
-    /// <summary>Sets a cookie. Use <see cref="Delete"/> to remove one (don't pass MaxAge=0 — that's the legacy trick).</summary>
+    /// <summary>Sets a cookie. Use <see cref="Delete"/> to remove one (don't pass MaxAge=0 - that's the legacy trick).</summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CookieStoreItem))]
     public ValueTask Set(CookieStoreItem cookie) => js.InvokeVoid("BitButil.cookieStore.set", cookie);
 

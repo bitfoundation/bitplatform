@@ -29,4 +29,18 @@ public class StorageTests : ButilPageTest
         await ClickAndExpectAsync("ss-set", "ss:set");
         await ClickAndExpectAsync("ss-get", "ss:get:butil-e2e-svalue");
     }
+
+    [Test]
+    public async Task LocalStorage_RemoveItem_Removes_The_Key()
+    {
+        await ClickAndExpectAsync("ls-remove", "ls:removed:True");
+    }
+
+    [Test]
+    public async Task LocalStorage_Reports_Length_Key_And_ContainsKey()
+    {
+        // After clear + two known writes: length is 2, the first key is "alpha",
+        // ContainsKey("alpha") is true and ContainsKey("ghost") is false.
+        await ClickAndExpectAsync("ls-meta", "ls:meta:2/alpha/True/False");
+    }
 }

@@ -32,11 +32,11 @@ var BitButil = BitButil || {};
                 addedCount: r.addedNodes?.length ?? 0,
                 removedCount: r.removedNodes?.length ?? 0
             }));
-            dotNetRef.invokeMethodAsync('InvokeMutation', listenerId, payload);
+            butil.utils.dispatch(dotNetRef, 'InvokeMutation', listenerId, payload);
         });
 
         try { observer.observe(element, init); }
-        catch { /* invalid options combo — silently ignore so dotnet sees no records */ }
+        catch { /* invalid options combo - silently ignore so dotnet sees no records */ }
         _observers[listenerId] = observer;
     }
 

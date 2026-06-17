@@ -18,7 +18,7 @@ public class AnimationOptions
     /// <summary>Number of iterations. Use <see cref="double.PositiveInfinity"/> to loop forever.</summary>
     public double Iterations { get; set; } = 1;
 
-    /// <summary>Easing — e.g. <c>"linear"</c>, <c>"ease-in"</c>, <c>"cubic-bezier(0,0,0.2,1)"</c>.</summary>
+    /// <summary>Easing - e.g. <c>"linear"</c>, <c>"ease-in"</c>, <c>"cubic-bezier(0,0,0.2,1)"</c>.</summary>
     public string Easing { get; set; } = "linear";
 
     /// <summary>One of <c>"normal"</c>, <c>"reverse"</c>, <c>"alternate"</c>, <c>"alternate-reverse"</c>.</summary>
