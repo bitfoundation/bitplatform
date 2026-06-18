@@ -127,7 +127,7 @@ public abstract class BitMapProviderBase : IBitMapProvider
 
         return new Dictionary<string, object?>
         {
-            ["center"] = new { lat = Center.Latitude, lng = Center.Longitude },
+            ["center"] = new Dictionary<string, object?> { ["lat"] = Center.Latitude, ["lng"] = Center.Longitude },
             ["zoom"] = Zoom,
             ["minZoom"] = MinZoom,
             ["maxZoom"] = MaxZoom,
@@ -140,10 +140,10 @@ public abstract class BitMapProviderBase : IBitMapProvider
             ["dragPan"] = Dragging,
             ["keyboardNavigation"] = KeyboardNavigation,
             ["maxBounds"] = MaxBounds is { } b
-                ? new
+                ? new Dictionary<string, object?>
                 {
-                    southWest = new { lat = b.SouthWest.Latitude, lng = b.SouthWest.Longitude },
-                    northEast = new { lat = b.NorthEast.Latitude, lng = b.NorthEast.Longitude },
+                    ["southWest"] = new Dictionary<string, object?> { ["lat"] = b.SouthWest.Latitude, ["lng"] = b.SouthWest.Longitude },
+                    ["northEast"] = new Dictionary<string, object?> { ["lat"] = b.NorthEast.Latitude, ["lng"] = b.NorthEast.Longitude },
                 }
                 : null,
         };
