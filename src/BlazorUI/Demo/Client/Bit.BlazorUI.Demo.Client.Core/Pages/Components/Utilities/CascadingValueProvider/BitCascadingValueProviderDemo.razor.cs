@@ -126,77 +126,11 @@ public partial class BitCascadingValueProviderDemo
                  new(new CascadingDemoUser(""Saleh Xafan"", ""CTO""), ""NamedUser""),
                  new(new CascadingDemoUser(""Yaser Moradi"", ""CEO""))
              ])"">
-    <CascadingValueConsumer />
+    <!-- Place components with cascading parameters here.
+        The demo CascadingValueDemoConsumer's source code is located at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingValueDemoConsumer.razor
+        CascadingDemoUser's source code can be found at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingDemoUser.cs -->
+    <CascadingValueDemoConsumer />
 </BitCascadingValueProvider>";
-    private readonly string example1CsharpCode = @"
-public sealed class CascadingValueConsumer : ComponentBase
-{
-    [Parameter] public string? Title { get; set; }
-
-    [CascadingParameter(Name = ""Theme"")]
-    public string? Theme { get; set; }
-
-    [CascadingParameter(Name = ""NotificationCount"")]
-    public int? NotificationCount { get; set; }
-
-    [CascadingParameter(Name = ""IsAuthenticated"")]
-    public bool? IsAuthenticated { get; set; }
-
-    [CascadingParameter(Name = ""NamedUser"")]
-    public CascadingDemoUser? NamedUser { get; set; }
-
-    [CascadingParameter]
-    public CascadingDemoUser? TypedUser { get; set; }
-
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        var seq = 0;
-
-        builder.OpenElement(seq++, ""div"");
-
-        builder.OpenElement(seq++, ""div"");
-        builder.AddAttribute(seq++, ""style"", ""font-weight:bold;font-size:20px"");
-        builder.AddContent(seq++, Title ?? ""Child component with cascading parameters:"");
-        builder.CloseElement();
-
-        builder.AddMarkupContent(seq++, ""<br />"");
-
-        builder.OpenElement(seq++, ""div"");
-
-        AddValueRow(ref seq, builder, ""Theme: "", Theme ?? ""null"");
-
-        AddValueRow(ref seq, builder, ""Notifications: "", NotificationCount?.ToString() ?? ""null"");
-
-        AddValueRow(ref seq, builder, ""Authenticated: "", IsAuthenticated?.ToString() ?? ""null"");
-
-        AddValueRow(ref seq, builder, ""User (named parameter): "", FormatUser(NamedUser) ?? ""null"");
-        AddValueRow(ref seq, builder, ""User (typed parameter): "", FormatUser(TypedUser) ?? ""null"");
-
-        builder.CloseElement();
-
-        builder.CloseElement();
-    }
-
-    private static void AddValueRow(ref int seq, RenderTreeBuilder builder, string caption, string? value)
-    {
-        if (value is null) return;
-
-        builder.OpenElement(seq++, ""div"");
-
-        builder.OpenElement(seq++, ""span"");
-        builder.AddAttribute(seq++, ""style"", ""font-weight:bold"");
-        builder.AddContent(seq++, caption);
-        builder.CloseElement();
-
-        builder.OpenElement(seq++, ""span"");
-        builder.AddContent(seq++, value);
-        builder.CloseElement();
-
-        builder.CloseElement();
-    }
-
-    private static string? FormatUser(CascadingDemoUser? user) => user is null ? null : $""{user.Name} [{user.Role}]"";
-}";
 
     private readonly string example2RazorCode = @"
 <BitButton OnClick=""() => currentTheme = nextTheme"">Switch to @nextTheme theme</BitButton>
@@ -207,7 +141,10 @@ public sealed class CascadingValueConsumer : ComponentBase
 
 
 <BitCascadingValueProvider Values=""values"">
-    <CascadingValueConsumer Title=""Values"" />
+    <!-- Place components with cascading parameters here.
+        The demo CascadingValueDemoConsumer's source code is located at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingValueDemoConsumer.razor
+        CascadingDemoUser's source code can be found at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingDemoUser.cs -->
+    <CascadingValueDemoConsumer />
 </BitCascadingValueProvider>";
     private readonly string example2CsharpCode = @"
 private bool isAuthenticated = true;
@@ -225,78 +162,7 @@ private IEnumerable<BitCascadingValue> values =>
     (notificationCount, ""NotificationCount""),
     new (new CascadingDemoUser(""Saleh Xafan"", ""CTO""), ""NamedUser""),
     new (new CascadingDemoUser(userName, userRole))
-];
-
-
-
-public sealed class CascadingValueConsumer : ComponentBase
-{
-    [Parameter] public string? Title { get; set; }
-
-    [CascadingParameter(Name = ""Theme"")]
-    public string? Theme { get; set; }
-
-    [CascadingParameter(Name = ""NotificationCount"")]
-    public int? NotificationCount { get; set; }
-
-    [CascadingParameter(Name = ""IsAuthenticated"")]
-    public bool? IsAuthenticated { get; set; }
-
-    [CascadingParameter(Name = ""NamedUser"")]
-    public CascadingDemoUser? NamedUser { get; set; }
-
-    [CascadingParameter]
-    public CascadingDemoUser? TypedUser { get; set; }
-
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        var seq = 0;
-
-        builder.OpenElement(seq++, ""div"");
-
-        builder.OpenElement(seq++, ""div"");
-        builder.AddAttribute(seq++, ""style"", ""font-weight:bold;font-size:20px"");
-        builder.AddContent(seq++, Title ?? ""Child component with cascading parameters:"");
-        builder.CloseElement();
-
-        builder.AddMarkupContent(seq++, ""<br />"");
-
-        builder.OpenElement(seq++, ""div"");
-
-        AddValueRow(ref seq, builder, ""Theme: "", Theme ?? ""null"");
-
-        AddValueRow(ref seq, builder, ""Notifications: "", NotificationCount?.ToString() ?? ""null"");
-
-        AddValueRow(ref seq, builder, ""Authenticated: "", IsAuthenticated?.ToString() ?? ""null"");
-
-        AddValueRow(ref seq, builder, ""User (named parameter): "", FormatUser(NamedUser) ?? ""null"");
-        AddValueRow(ref seq, builder, ""User (typed parameter): "", FormatUser(TypedUser) ?? ""null"");
-
-        builder.CloseElement();
-
-        builder.CloseElement();
-    }
-
-    private static void AddValueRow(ref int seq, RenderTreeBuilder builder, string caption, string? value)
-    {
-        if (value is null) return;
-
-        builder.OpenElement(seq++, ""div"");
-
-        builder.OpenElement(seq++, ""span"");
-        builder.AddAttribute(seq++, ""style"", ""font-weight:bold"");
-        builder.AddContent(seq++, caption);
-        builder.CloseElement();
-
-        builder.OpenElement(seq++, ""span"");
-        builder.AddContent(seq++, value);
-        builder.CloseElement();
-
-        builder.CloseElement();
-    }
-
-    private static string? FormatUser(CascadingDemoUser? user) => user is null ? null : $""{user.Name} [{user.Role}]"";
-}";
+];";
 
     private readonly string example3RazorCode = @"
 <BitCascadingValueProvider 
@@ -308,83 +174,15 @@ public sealed class CascadingValueConsumer : ComponentBase
                     { nullableNamedUser, ""UserInfo"" },
                     { nullableTypedUser }
                 })"">
-    <CascadingValueConsumer Title=""ValueList"" />
+    <!-- Place components with cascading parameters here.
+        The demo CascadingValueDemoConsumer's source code is located at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingValueDemoConsumer.razor
+        CascadingDemoUser's source code can be found at https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages/Components/Utilities/CascadingValueProvider/CascadingDemoUser.cs -->
+    <CascadingValueDemoConsumer />
 </BitCascadingValueProvider>";
     private readonly string example3CsharpCode = @"
 private readonly string? nullableTheme = null;
 private readonly bool? nullableIsAuthenticated = null;
 private readonly int? nullableNotificationCount = null;
 private readonly CascadingDemoUser? nullableNamedUser = null;
-private readonly CascadingDemoUser? nullableTypedUser = null;
-
-
-
-public sealed class CascadingValueConsumer : ComponentBase
-{
-    [Parameter] public string? Title { get; set; }
-
-    [CascadingParameter(Name = ""Theme"")]
-    public string? Theme { get; set; }
-
-    [CascadingParameter(Name = ""NotificationCount"")]
-    public int? NotificationCount { get; set; }
-
-    [CascadingParameter(Name = ""IsAuthenticated"")]
-    public bool? IsAuthenticated { get; set; }
-
-    [CascadingParameter(Name = ""NamedUser"")]
-    public CascadingDemoUser? NamedUser { get; set; }
-
-    [CascadingParameter]
-    public CascadingDemoUser? TypedUser { get; set; }
-
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        var seq = 0;
-
-        builder.OpenElement(seq++, ""div"");
-
-        builder.OpenElement(seq++, ""div"");
-        builder.AddAttribute(seq++, ""style"", ""font-weight:bold;font-size:20px"");
-        builder.AddContent(seq++, Title ?? ""Child component with cascading parameters:"");
-        builder.CloseElement();
-
-        builder.AddMarkupContent(seq++, ""<br />"");
-
-        builder.OpenElement(seq++, ""div"");
-
-        AddValueRow(ref seq, builder, ""Theme: "", Theme ?? ""null"");
-
-        AddValueRow(ref seq, builder, ""Notifications: "", NotificationCount?.ToString() ?? ""null"");
-
-        AddValueRow(ref seq, builder, ""Authenticated: "", IsAuthenticated?.ToString() ?? ""null"");
-
-        AddValueRow(ref seq, builder, ""User (named parameter): "", FormatUser(NamedUser) ?? ""null"");
-        AddValueRow(ref seq, builder, ""User (typed parameter): "", FormatUser(TypedUser) ?? ""null"");
-
-        builder.CloseElement();
-
-        builder.CloseElement();
-    }
-
-    private static void AddValueRow(ref int seq, RenderTreeBuilder builder, string caption, string? value)
-    {
-        if (value is null) return;
-
-        builder.OpenElement(seq++, ""div"");
-
-        builder.OpenElement(seq++, ""span"");
-        builder.AddAttribute(seq++, ""style"", ""font-weight:bold"");
-        builder.AddContent(seq++, caption);
-        builder.CloseElement();
-
-        builder.OpenElement(seq++, ""span"");
-        builder.AddContent(seq++, value);
-        builder.CloseElement();
-
-        builder.CloseElement();
-    }
-
-    private static string? FormatUser(CascadingDemoUser? user) => user is null ? null : $""{user.Name} [{user.Role}]"";
-}";
+private readonly CascadingDemoUser? nullableTypedUser = null;";
 }

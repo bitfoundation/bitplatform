@@ -1,0 +1,55 @@
+﻿<div>
+    <div style="font-weight:bold;font-size:20px">
+        @(Title ?? "Child component with cascading parameters:")
+    </div>
+
+    <br />
+
+    <div>
+        <div>
+            <span style="font-weight:bold">Theme: </span>
+            <span>@(Theme ?? "null")</span>
+        </div>
+
+        <div>
+            <span style="font-weight:bold">Notifications: </span>
+            <span>@(NotificationCount?.ToString() ?? "null")</span>
+        </div>
+
+        <div>
+            <span style="font-weight:bold">Authenticated: </span>
+            <span>@(IsAuthenticated?.ToString() ?? "null")</span>
+        </div>
+
+        <div>
+            <span style="font-weight:bold">User (named parameter): </span>
+            <span>@(FormatUser(NamedUser) ?? "null")</span>
+        </div>
+
+        <div>
+            <span style="font-weight:bold">User (typed parameter): </span>
+            <span>@(FormatUser(TypedUser) ?? "null")</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+
+    [CascadingParameter(Name = "Theme")]
+    public string? Theme { get; set; }
+
+    [CascadingParameter(Name = "NotificationCount")]
+    public int? NotificationCount { get; set; }
+
+    [CascadingParameter(Name = "IsAuthenticated")]
+    public bool? IsAuthenticated { get; set; }
+
+    [CascadingParameter(Name = "NamedUser")]
+    public CascadingDemoUser? NamedUser { get; set; }
+
+    [CascadingParameter]
+    public CascadingDemoUser? TypedUser { get; set; }
+
+    private static string? FormatUser(CascadingDemoUser? user) => user is null ? null : $"{user.Name} [{user.Role}]";
+}
