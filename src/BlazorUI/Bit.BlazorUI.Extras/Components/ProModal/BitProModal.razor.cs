@@ -275,7 +275,7 @@ public partial class BitProModal : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => (_params.ModeFull ?? false) ? "bit-pmd-mfl" : string.Empty);
-        ClassBuilder.Register(() => (_params.NoBorder ?? false) ? string.Empty : "bit-pmd-tbr");
+        ClassBuilder.Register(() => (_params.NoBorder ?? false) ? string.Empty : "bit-pmd-nbr");
         ClassBuilder.Register(() => (_params.AbsolutePosition ?? false) ? "bit-pmd-abs" : string.Empty);
         ClassBuilder.Register(() => _params.Position switch
         {
