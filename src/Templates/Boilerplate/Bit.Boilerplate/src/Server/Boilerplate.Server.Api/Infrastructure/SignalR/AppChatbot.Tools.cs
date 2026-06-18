@@ -9,6 +9,7 @@ using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Shared.Features.Identity.Dtos;
 using Boilerplate.Server.Api.Infrastructure.Services;
+using Microsoft.Agents.AI;
 
 namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 
@@ -51,7 +52,7 @@ public partial class AppChatbot
 
             // Ideally, store these in a CRM or app database,
             // but for now, we'll log them!
-            scope.ServiceProvider.GetRequiredService<ILogger<IChatClient>>()
+            scope.ServiceProvider.GetRequiredService<ILogger<AIAgent>>()
                 .LogError("Chat reported issue: User email: {emailAddress}, Conversation history: {conversationHistory}", emailAddress, conversationHistory);
 
             return "User email and conversation history saved successfully.";
@@ -66,7 +67,7 @@ public partial class AppChatbot
     /// <summary>
     /// Navigates the user to a specific page within the application.
     /// </summary>
-    [Description("Navigates the user to a specific page within the application. Use this tool when the user requests to go to a particular section or feature of the app.")]
+    [Description("Navigates the user to a specific page within the application. Use this tool only when the user explicitly requests to go to a particular section or feature of the app.")]
     [McpServerTool(Name = nameof(NavigateToPage))]
     private async Task<string?> NavigateToPage(
         [Required, Description("Page URL to navigate to")] string pageUrl)
@@ -123,9 +124,9 @@ public partial class AppChatbot
     /// <summary>
     /// Changes the user's culture/language setting.
     /// </summary>
-    [Description("Changes the user's culture/language setting. Use this tool when the user requests to change the app language. Common LCIDs: 1033=en-US, 1065=fa-IR, 1053=sv-SE, 2057=en-GB, 1043=nl-NL, 1081=hi-IN, 2052=zh-CN, 3082=es-ES, 1036=fr-FR, 1025=ar-SA, 1031=de-DE.")]
-    [McpServerTool(Name = nameof(SetCulture))]
-    private async Task<string?> SetCulture(
+    [Description("Changes the user's culture/language setting. Use this tool only when the user explicitly requests to change the app language. Common LCIDs: 1033=en-US, 1065=fa-IR, 1053=sv-SE, 2057=en-GB, 1043=nl-NL, 1081=hi-IN, 2052=zh-CN, 3082=es-ES, 1036=fr-FR, 1025=ar-SA, 1031=de-DE.")]
+    [McpServerTool(Name = nameof(SetApplicationCulture))]
+    private async Task<string?> SetApplicationCulture(
         [Required, Description("Culture LCID (e.g., 1033 for en-US, 1065 for fa-IR)")] int cultureLcid)
     {
         await EnsureSignalRConnectionIdIsPresent();
@@ -155,9 +156,9 @@ public partial class AppChatbot
     /// <summary>
     /// Changes the user's theme preference between light and dark mode.
     /// </summary>
-    [Description("Changes the user's theme preference between light and dark mode. Use this tool when the user requests to change the app theme or appearance.")]
-    [McpServerTool(Name = nameof(SetTheme))]
-    private async Task<string?> SetTheme(
+    [Description("Changes the user's theme preference between light and dark mode. Use this tool only when the user explicitly requests to change the app theme or appearance.")]
+    [McpServerTool(Name = nameof(SetApplicationTheme))]
+    private async Task<string?> SetApplicationTheme(
         [Required, Description("Theme name: 'light' or 'dark'")] string theme)
     {
         await EnsureSignalRConnectionIdIsPresent();

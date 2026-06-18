@@ -20,6 +20,86 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
             Version = defaultVersion,
             Markdown = GetInitialSystemPromptMarkdown()
         });
+
+        builder.HasData(new SystemPrompt
+        {
+            Id = Guid.Parse("0234b819-030c-4f13-899d-3eca02bf7caf"),
+            PromptKind = PromptKind.AnalyzeProductImage,
+            Version = defaultVersion,
+            Markdown = GetAnalyzeProductImageSystemPromptMarkdown()
+        });
+
+        builder.HasData(new SystemPrompt
+        {
+            Id = Guid.Parse("7a454ba4-c0bf-438c-a97e-fd18ebeba540"),
+            PromptKind = PromptKind.FollowUpSuggestion,
+            Version = defaultVersion,
+            Markdown = GetFollowUpSuggestionSystemPromptMarkdown()
+        });
+    }
+
+    private static string GetAnalyzeProductImageSystemPromptMarkdown()
+    {
+        return """
+            You are a Follow-Up Suggestion Agent. Your role is to generate natural, contextual follow-up questions or actions for users.
+
+            ASSISTANT SCOPE:
+            The assistant can only perform actions that fall into these two categories:
+            1. Executing available Tools (Calling specific functions/APIs provided to the assistant).
+            2. Navigating between pages and locating/finding specific pages within the system.
+
+            ANALYSIS PROCESS:
+            1. Review the conversation context carefully
+            2. Identify logical next steps or questions the user might ask
+            3. Ensure suggestions are within the assistant's capabilities
+            4. Make suggestions actionable and user-centric
+
+            RESPONSE FORMAT:
+            Return ONLY a JSON object with:
+            - "FollowUpSuggestions": array of exactly 3 strings
+
+            VALIDATION RULES:
+            - Only suggest follow-up actions/questions that are within the assistant's scope and knowledge
+            - Do not suggest questions that require access to data or functionality that is unavailable or out of scope
+            - Avoid suggesting questions that the assistant would not be able to answer
+            - Written from the user's perspective (never from the assistant)
+            - Direct, natural, clickable actions/questions
+            - Keep each suggestion concise (under 60 characters)
+            """;
+    }
+
+    private static string GetFollowUpSuggestionSystemPromptMarkdown()
+    {
+        return @"You are a Follow-Up Suggestion Agent. Your role is to generate natural, contextual follow-up questions or actions for users.
+
+ANALYSIS PROCESS:
+1. Review the conversation context carefully
+2. Identify logical next steps or questions the user might ask
+3. Ensure suggestions are within the assistant's capabilities
+4. Make suggestions actionable and user-centric
+
+APP CAPABILITIES SUMMARY (Scope for Suggestions):
+- Navigation & Discovery: Find, open, or navigate directly to specific pages (e.g., Dashboard, Products, Sign-In, About, Terms).
+- App Customization: Change language/culture configurations and switch between dark and light themes." +
+//#if (module == 'Sales')
+        @"- Product Discovery: Get tailored car recommendations based on specific user preferences, budgets, or needs" +
+//#endif
+@"- Troubleshooting & Support: Troubleshoot app errors, check diagnostic logs, and guide users through fixing or clearing app cache/files.
+
+RESPONSE FORMAT:
+Return ONLY a JSON object with:
+- ""FollowUpSuggestions"": array of exactly 3 short follow-up suggestions for what user might want to ask or do next
+
+- ### Language:
+    - Respond in the language of the user's query. If the query's language cannot be determined, use the {{UserCulture}} variable if provided.
+
+VALIDATION RULES:
+- Only suggest follow-up actions/questions that are within the assistant's scope and knowledge
+- Do not suggest questions that require access to data or functionality that is unavailable or out of scope
+- Avoid suggesting questions that the assistant would not be able to answer
+- Written from the user's perspective (never from the assistant)
+- Direct, natural, clickable actions/questions
+- Keep each suggestion concise (under 60 characters)";
     }
 
     private static string GetInitialSystemPromptMarkdown()

@@ -2,7 +2,11 @@
 using System.Net;
 using System.Net.Mail;
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Hosting;
 using System.ClientModel.Primitives;
+using Boilerplate.Shared.Features.Chatbot;
+using Boilerplate.Server.Api.Infrastructure.SignalR;
 //#endif
 //#if (database == "PostgreSQL")
 using Npgsql;
@@ -509,6 +513,8 @@ public static partial class Program
             .UseFunctionInvocation()
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()
+
+            builder.AddAppAIAgents();
         }
 
         if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
@@ -582,6 +588,46 @@ public static partial class Program
             configuration.Bind("Hangfire", options);
         });
     }
+
+    //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+    private static void AddAppAIAgents(this WebApplicationBuilder builder)
+    {
+        static string GetSystemPrompt(PromptKind promptKind, IServiceProvider sp)
+        {
+            var cache = sp.GetRequiredService<IFusionCache>();
+            var dbContext = sp.GetRequiredService<AppDbContext>();
+            var result = cache.GetOrSet(
+                $"SystemPrompt_{promptKind}", _ =>
+                {
+                    var prompt = dbContext.SystemPrompts.FirstOrDefault(p => p.PromptKind == promptKind);
+                    return prompt?.Markdown ?? throw new ResourceNotFoundException();
+                },
+                options => options.Duration = TimeSpan.FromHours(1));
+            return result;
+        }
+
+        builder.AddAIAgent("AnalyzeProductImageAgent", (sp, _) => sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.AnalyzeProductImage, sp),
+                    name: "AnalyzeProductImageAgent",
+                    description: "Analyzes product images to ensure they meet catalog standards for car products"), lifetime: ServiceLifetime.Scoped);
+
+        builder.AddAIAgent("SupportAgent", (sp, _) =>
+        {
+            var aiFunctions = sp.GetRequiredService<AppChatbot>().GetAIFunctions();
+
+            return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.Support, sp),
+                    name: "SupportAgent",
+                    description: "Provides support and assistance to users", tools: [.. aiFunctions]);
+        }, lifetime: ServiceLifetime.Scoped);
+
+        builder.AddAIAgent("FollowUpSuggestionsAgent", (sp, _) =>
+        {
+            var aiFunctions = sp.GetRequiredService<AppChatbot>().GetAIFunctions();
+            return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.FollowUpSuggestion, sp),
+                    name: "FollowUpSuggestionsAgent",
+                    description: "Generates follow-up suggestions based on user interactions", tools: [.. aiFunctions]);
+        }, lifetime: ServiceLifetime.Scoped);
+    }
+    //#endif
 
     private static void AddIdentity(WebApplicationBuilder builder)
     {
@@ -732,7 +778,7 @@ public static partial class Program
         }
         return defaultValue ?? throw new ArgumentException($"Invalid connection string: '{key}' not found.");
     }
-    
+
     private static WebApplicationBuilder AddServerApiHealthChecks(this WebApplicationBuilder builder)
     {
         var configuration = builder.Configuration;
