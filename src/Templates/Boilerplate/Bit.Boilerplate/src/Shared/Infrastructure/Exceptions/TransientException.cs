@@ -3,19 +3,19 @@
 /// <summary>
 /// This exception is thrown when there is a failure connecting client app to the backend api server.
 /// </summary>
-public partial class ServerConnectionException : KnownException
+public partial class TransientException : KnownException
 {
-    public ServerConnectionException()
+    public TransientException()
         : base(nameof(AppStrings.ServerConnectionException))
     {
     }
 
-    public ServerConnectionException(string message)
+    public TransientException(string message)
         : base(message)
     {
     }
 
-    public ServerConnectionException(string message, Exception innerException)
+    public TransientException(string message, Exception innerException)
         : base(message, innerException)
     {
     }

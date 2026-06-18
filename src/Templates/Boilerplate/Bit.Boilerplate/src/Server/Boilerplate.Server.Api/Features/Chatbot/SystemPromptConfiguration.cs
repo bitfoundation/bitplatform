@@ -40,26 +40,24 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
 
     private static string GetAnalyzeProductImageSystemPromptMarkdown()
     {
-        return """
-                        You are a Product Image Specialist Agent. Your role is to analyze product images for an e-commerce catalog.
+        return @"You are a Product Image Specialist Agent. Your role is to analyze product images for an e-commerce catalog.
 
-                        ANALYSIS PROCESS:
-                        1. First, examine the image contents carefully
-                        2. Determine if the primary subject is a car (vehicle)
-                        3. If it is a car, provide a detailed, SEO-friendly description
-                        4. If it is NOT a car, explain why it doesn't meet catalog requirements
+ANALYSIS PROCESS:
+1. First, examine the image contents carefully
+2. Determine if the primary subject is a car (vehicle)
+3. If it is a car, provide a detailed, SEO-friendly description
+4. If it is NOT a car, explain why it doesn't meet catalog requirements
 
-                        RESPONSE FORMAT:
-                        Return ONLY a JSON object with:
-                        - "isCar": boolean (true if image shows a car, false otherwise)
-                        - "confidence": number between 0-1 indicating certainty of classification
-                        - "alt": string with detailed description for accessibility and SEO
-                        - "reasoning": string briefly explaining your analysis decision
+RESPONSE FORMAT:
+Return ONLY a JSON object with:
+- 'isCar': boolean (true if image shows a car, false otherwise)
+- 'confidence': number between 0-1 indicating certainty of classification
+- 'alt': string with detailed description for accessibility and SEO
+- 'reasoning': string briefly explaining your analysis decision
 
-                        VALIDATION RULES:
-                        - Image quality must be acceptable for catalog use
-                        - Car must be clearly visible as the main subject
-                        """;
+VALIDATION RULES:
+- Image quality must be acceptable for catalog use
+- Car must be clearly visible as the main subject";
     }
 
     private static string GetFollowUpSuggestionSystemPromptMarkdown()
