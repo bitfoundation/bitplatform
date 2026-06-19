@@ -8,6 +8,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitPhoneInput : BitInputBase<string?>
 {
+    private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
+
     private bool _isOpen;
     private bool _hasFocus;
     private int _activeIndex = -1;
@@ -63,6 +65,11 @@ public partial class BitPhoneInput : BitInputBase<string?>
     /// </summary>
     [Parameter, TwoWayBound]
     public BitCountry? Country { get; set; }
+
+    /// <summary>
+    /// The debounce time in milliseconds for the number input (applied when Immediate is enabled).
+    /// </summary>
+    [Parameter] public int DebounceTime { get; set; }
 
     /// <summary>
     /// The default selected country to be initially used when the Country parameter is not set.
@@ -140,6 +147,11 @@ public partial class BitPhoneInput : BitInputBase<string?>
     /// Custom CSS styles for different parts of the BitPhoneInput.
     /// </summary>
     [Parameter] public BitPhoneInputClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The throttle time in milliseconds for the number input (applied when Immediate is enabled).
+    /// </summary>
+    [Parameter] public int ThrottleTime { get; set; }
 
 
 
@@ -478,7 +490,8 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
         if (Immediate is false) return;
 
-        await SetCurrentValueAsStringAsync(e.Value?.ToString());
+        await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
+            await InvokeAsync(async () => await HandleOnNumberChange(args)));
     }
 
     private void HandleOnInputFocusIn()

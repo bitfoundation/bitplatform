@@ -51,6 +51,13 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
+            Name = "DebounceTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The debounce time in milliseconds for the number input (applied when Immediate is enabled).",
+        },
+        new()
+        {
             Name = "DropDirection",
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
@@ -149,6 +156,13 @@ public partial class BitPhoneInputDemo
             LinkType = LinkType.Link,
             Href = "#class-styles",
         },
+        new()
+        {
+            Name = "ThrottleTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The throttle time in milliseconds for the number input (applied when Immediate is enabled).",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -214,6 +228,9 @@ public partial class BitPhoneInputDemo
     private string? bindingNumber;
     private BitCountry? bindingCountry;
     private BitCountry? changedCountry;
+    private string? immediateNumber;
+    private string? debouncedNumber;
+    private string? throttledNumber;
     private readonly List<BitCountry> customCountries =
     [
         BitCountries.UnitedStates,
@@ -267,30 +284,55 @@ private readonly List<BitCountry> customCountries =
 <BitPhoneInput FullWidth DefaultCountry=""BitCountries.Italy"" Placeholder=""Enter your number"" />";
 
     private readonly string example7RazorCode = @"
+<BitPhoneInput Immediate
+               DefaultCountry=""BitCountries.UnitedStates""
+               Placeholder=""Enter your number""
+               @bind-Value=""immediateNumber"" />
+<div>Value: [@immediateNumber]</div>
+
+<BitPhoneInput Immediate
+               DebounceTime=""500""
+               DefaultCountry=""BitCountries.UnitedStates""
+               Placeholder=""Enter your number""
+               @bind-Value=""debouncedNumber"" />
+<div>Value: [@debouncedNumber]</div>
+
+<BitPhoneInput Immediate
+               ThrottleTime=""500""
+               DefaultCountry=""BitCountries.UnitedStates""
+               Placeholder=""Enter your number""
+               @bind-Value=""throttledNumber"" />
+<div>Value: [@throttledNumber]</div>";
+    private readonly string example7CsharpCode = @"
+private string? immediateNumber;
+private string? debouncedNumber;
+private string? throttledNumber;";
+
+    private readonly string example8RazorCode = @"
 <BitPhoneInput IsEnabled=""false"" DefaultCountry=""BitCountries.Spain"" Value=""1234567"" />
 
 <BitPhoneInput ReadOnly DefaultCountry=""BitCountries.Spain"" Value=""1234567"" />";
-    private readonly string example7CsharpCode = @"";
+    private readonly string example8CsharpCode = @"";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitPhoneInput DefaultCountry=""BitCountries.UnitedStates""
                OnCountryChange=""c => changedCountry = c""
                Placeholder=""Enter your number"" />
 
 <div>Selected country: @changedCountry?.Name</div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private BitCountry? changedCountry;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitPhoneInput DefaultCountry=""BitCountries.Netherlands""
                Placeholder=""Enter your number""
                Style=""width: 300px;""
                Class=""custom-class""
                Styles=""@(new() { FieldGroup = ""border-color: blueviolet;"" })""
                Classes=""@(new() { Input = ""custom-input"" })"" />";
-    private readonly string example9CsharpCode = @"";
+    private readonly string example10CsharpCode = @"";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <div dir=""rtl"">
     <BitPhoneInput Dir=""BitDir.Rtl"" DefaultCountry=""BitCountries.Iran"" Placeholder=""شماره خود را وارد کنید"" />
 </div>";

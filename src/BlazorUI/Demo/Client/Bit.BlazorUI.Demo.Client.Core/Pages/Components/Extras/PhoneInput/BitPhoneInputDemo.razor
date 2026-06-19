@@ -72,7 +72,39 @@
             <BitPhoneInput FullWidth DefaultCountry="BitCountries.Italy" Placeholder="Enter your number" />
         </DemoExample>
 
-        <DemoExample Title="Disabled & ReadOnly" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Immediate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                By default the value updates on the change event (when the input loses focus). Enable the
+                <b>Immediate</b> parameter to update the value on every keystroke (the 'oninput' event). To
+                rate-limit how often the value updates while typing, combine it with <b>DebounceTime</b> (waits
+                until typing pauses) or <b>ThrottleTime</b> (updates at most once per interval).
+            </div>
+            <br />
+            <div>Immediate:</div>
+            <BitPhoneInput Immediate
+                           DefaultCountry="BitCountries.UnitedStates"
+                           Placeholder="Enter your number"
+                           @bind-Value="immediateNumber" />
+            <div>Value: [@immediateNumber]</div>
+            <br />
+            <div>Immediate + DebounceTime (500ms):</div>
+            <BitPhoneInput Immediate
+                           DebounceTime="500"
+                           DefaultCountry="BitCountries.UnitedStates"
+                           Placeholder="Enter your number"
+                           @bind-Value="debouncedNumber" />
+            <div>Value: [@debouncedNumber]</div>
+            <br />
+            <div>Immediate + ThrottleTime (500ms):</div>
+            <BitPhoneInput Immediate
+                           ThrottleTime="500"
+                           DefaultCountry="BitCountries.UnitedStates"
+                           Placeholder="Enter your number"
+                           @bind-Value="throttledNumber" />
+            <div>Value: [@throttledNumber]</div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled & ReadOnly" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>Disabled:</div>
             <br />
             <BitPhoneInput IsEnabled="false" DefaultCountry="BitCountries.Spain" Value="1234567" />
@@ -82,7 +114,7 @@
             <BitPhoneInput ReadOnly DefaultCountry="BitCountries.Spain" Value="1234567" />
         </DemoExample>
 
-        <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>Use the OnCountryChange callback to react to the selected country changes.</div>
             <br />
             <BitPhoneInput DefaultCountry="BitCountries.UnitedStates"
@@ -92,7 +124,7 @@
             <div>Selected country: @changedCountry?.Name</div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>Customize the appearance of the BitPhoneInput using Style, Class, Styles, and Classes.</div>
             <br />
             <BitPhoneInput DefaultCountry="BitCountries.Netherlands"
@@ -103,7 +135,7 @@
                            Classes="@(new() { Input = "custom-input" })" />
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+        <DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
             <div>Use BitPhoneInput in right-to-left (RTL).</div>
             <br />
             <div dir="rtl">
