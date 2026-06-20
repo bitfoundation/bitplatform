@@ -100,7 +100,7 @@ namespace BitBlazorUI {
                         try {
                             const hits = map.queryRenderedFeatures(e.point, { layers: vectorLayerIds });
                             if (hits && hits.length > 0) return;
-                        } catch { /* ignore — fall through and fire OnClick */ }
+                        } catch { /* ignore - fall through and fire OnClick */ }
                     }
                     if (state.isDisposed || !state.dotnetObj) return;
                     state.dotnetObj.invokeMethodAsync('OnClick', { lat: e.lngLat.lat, lng: e.lngLat.lng });

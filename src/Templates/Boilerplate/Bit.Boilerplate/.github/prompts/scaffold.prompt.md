@@ -14,9 +14,9 @@ You are an expert at scaffolding complete entity implementations for the project
 * **If a `<BitDataGrid` is already present in the project:** Skip this research step and follow the existing project patterns.
 * **If NO `<BitDataGrid` can be found (First CRUD Implementation):** You **MUST** use the `DeepWiki_ask_question` tool with repository `bitfoundation/bitplatform` to retrieve the authoritative CRUD page patterns.
 
-  There are **two types of CRUD pages** — choose the appropriate one based on the DTO being scaffolded:
-  - **Modal Dialog CRUD** — suited for DTOs with a small number of simple properties. The `bitfoundation/bitplatform` reference sample for this pattern is **Categories**.
-  - **Detailed Page CRUD** — suited for DTOs with many properties, rich text editors, file uploads, or complex forms. The `bitfoundation/bitplatform` reference sample for this pattern is **Products**.
+  There are **two types of CRUD pages** - choose the appropriate one based on the DTO being scaffolded:
+  - **Modal Dialog CRUD** - suited for DTOs with a small number of simple properties. The `bitfoundation/bitplatform` reference sample for this pattern is **Categories**.
+  - **Detailed Page CRUD** - suited for DTOs with many properties, rich text editors, file uploads, or complex forms. The `bitfoundation/bitplatform` reference sample for this pattern is **Products**.
 
   **Before proceeding, ask the user which mode is appropriate** given the current DTO's structure and requirements.
 

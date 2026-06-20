@@ -197,7 +197,7 @@ public class BitProModalTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        Assert.IsTrue(withBorder.Find(".bit-mdl").ClassList.Contains("bit-pmd-tbr"));
+        Assert.IsTrue(withBorder.Find(".bit-mdl").ClassList.Contains("bit-pmd-nbr"));
 
         var noBorder = RenderComponent<BitProModal>(parameters =>
         {
@@ -205,7 +205,7 @@ public class BitProModalTests : BunitTestContext
             parameters.Add(p => p.NoBorder, true);
         });
 
-        Assert.IsFalse(noBorder.Find(".bit-mdl").ClassList.Contains("bit-pmd-tbr"));
+        Assert.IsFalse(noBorder.Find(".bit-mdl").ClassList.Contains("bit-pmd-nbr"));
     }
 
     [TestMethod]

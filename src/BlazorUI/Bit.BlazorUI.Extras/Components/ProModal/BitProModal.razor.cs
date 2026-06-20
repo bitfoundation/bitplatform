@@ -5,12 +5,68 @@
 /// </summary>
 public partial class BitProModal : BitComponentBase
 {
+    /// <summary>
+    /// The default title (and aria-label) used for the close button when none is provided.
+    /// </summary>
+    internal const string DefaultCloseButtonTitle = "Close";
+
     private bool _internalIsOpen;
     private float _offsetTop;
+    // Captures whether scroll was actually locked during the open sequence, so the close sequence
+    // unlocks if and only if it locked, regardless of later changes to AutoToggleScroll.
+    private bool _scrollLockedOnOpen;
+    // Snapshots the scroller target captured during open, so the close sequence unlocks the exact
+    // same scroller even if ScrollerElement/ScrollerSelector changed since the modal was opened.
+    private ElementReference? _scrollerElementOnOpen;
+    private string? _scrollerSelectorOnOpen;
+    // Snapshots the drag element selector used to register drag handlers, so teardown unregisters
+    // the exact same selector even if DragElementSelector changed since the modal was opened.
+    private string? _dragElementSelectorOnSetup;
+
+    // Stable EventCallback wrappers created once (in OnInitialized) instead of on every
+    // BuildParameters call. Re-creating them per render produced new delegate instances each
+    // time, which Blazor's change detection treats as changed parameters, defeating change
+    // detection on the inner BitModal. Their bodies read the current property / cascaded
+    // parameter values at invoke time, so they remain correct while staying reference-stable.
+    private EventCallback _onOpen;
+    private EventCallback<MouseEventArgs> _onDismiss;
+    private EventCallback<MouseEventArgs> _onOverlayClick;
+
+    // Memoizes the merged HtmlAttributes dictionary so BuildParameters doesn't re-run the
+    // Concat/GroupBy/ToDictionary allocation on every OnParametersSet when neither the own nor the
+    // cascaded HtmlAttributes reference changed. In-place mutation through the service is still
+    // reflected because BitProModalParameters.Merge allocates a fresh dictionary on every Refresh,
+    // changing the reference and invalidating this cache (mirrors BitModal's behavior).
+    private Dictionary<string, object>? _mergedHtmlAttributes;
+    private Dictionary<string, object>? _lastOwnHtmlAttributes;
+    private Dictionary<string, object>? _lastCascadedHtmlAttributes;
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    private BitProModalParameters _proModalParameters = new();
+    [CascadingParameter]
+    private BitProModalParameters? ProModalParameters
+    {
+        // Tolerate a null cascading value (e.g. ProModalParameters="null"): fall back to a fresh
+        // instance so downstream consumers (_classes, _styles, BuildParameters) never NRE.
+        get => _proModalParameters;
+        set => _proModalParameters = value ?? new();
+    }
+
+    // The effective parameters: the component's own parameters merged with the cascaded
+    // BitProModalParameters (the latter supplied by the BitProModalService). The component's
+    // own parameters take precedence. This is rebuilt in OnParametersSet whenever either source changes.
+    private BitProModalParameters _params = new();
+
+    // The merged class/style maps used by the razor. These are computed once per
+    // OnParametersSet (like _params) instead of on every property access, since the
+    // razor reads them many times per render and Merge allocates a new object each call.
+    private BitProModalClassStyles? _classes;
+    private BitProModalClassStyles? _styles;
 
 
 
@@ -47,8 +103,9 @@ public partial class BitProModal : BitComponentBase
 
     /// <summary>
     /// The title (and aria-label) of the close button for accessibility and localization.
+    /// Defaults to "Close" when not set.
     /// </summary>
-    [Parameter] public string CloseButtonTitle { get; set; } = "Close";
+    [Parameter] public string? CloseButtonTitle { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display in the close button using custom CSS classes for external icon libraries.
@@ -217,10 +274,10 @@ public partial class BitProModal : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => ModeFull ? "bit-pmd-mfl" : string.Empty);
-        ClassBuilder.Register(() => NoBorder ? string.Empty : "bit-pmd-tbr");
-        ClassBuilder.Register(() => AbsolutePosition ? "bit-pmd-abs" : string.Empty);
-        ClassBuilder.Register(() => Position switch
+        ClassBuilder.Register(() => (_params.ModeFull ?? false) ? "bit-pmd-mfl" : string.Empty);
+        ClassBuilder.Register(() => (_params.NoBorder ?? false) ? string.Empty : "bit-pmd-nbr");
+        ClassBuilder.Register(() => (_params.AbsolutePosition ?? false) ? "bit-pmd-abs" : string.Empty);
+        ClassBuilder.Register(() => _params.Position switch
         {
             BitPosition.TopLeft => "bit-pmd-tlf",
             BitPosition.TopCenter => "bit-pmd-tcr",
@@ -246,6 +303,55 @@ public partial class BitProModal : BitComponentBase
         StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
     }
 
+    protected override void OnInitialized()
+    {
+        // Create the event callbacks once. They read the current OnXxx properties and the
+        // cascaded ProModalParameters at invoke time, so they stay correct without being
+        // rebuilt every render.
+        _onDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, async (MouseEventArgs e) =>
+        {
+            await OnDismiss.InvokeAsync(e);
+            await ProModalParameters!.OnDismiss.InvokeAsync(e);
+        });
+        _onOpen = EventCallback.Factory.Create(this, async () =>
+        {
+            await OnOpen.InvokeAsync();
+            await ProModalParameters!.OnOpen.InvokeAsync();
+        });
+        _onOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, async (MouseEventArgs e) =>
+        {
+            await OnOverlayClick.InvokeAsync(e);
+            await ProModalParameters!.OnOverlayClick.InvokeAsync(e);
+        });
+
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        var previous = _params;
+
+        _params = BuildParameters();
+        _classes = BitProModalClassStyles.Merge(Classes, ProModalParameters.Classes);
+        _styles = BitProModalClassStyles.Merge(Styles, ProModalParameters.Styles);
+
+        // The [ResetClassBuilder] attribute only resets ClassBuilder when this component's own
+        // parameters change. However, the registered class lambdas read the merged _params values,
+        // which also incorporate the cascaded BitProModalParameters. When those cascaded values are
+        // mutated in place (e.g. via BitProModalService.Refresh), no own-parameter change occurs, so
+        // the ClassBuilder would otherwise keep its cached (stale) value. Reset it here when any
+        // class-affecting merged value actually changed.
+        if (previous.ModeFull != _params.ModeFull ||
+            previous.NoBorder != _params.NoBorder ||
+            previous.AbsolutePosition != _params.AbsolutePosition ||
+            previous.Position != _params.Position)
+        {
+            ClassBuilder.Reset();
+        }
+
+        base.OnParametersSet();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (IsOpen)
@@ -254,9 +360,10 @@ public partial class BitProModal : BitComponentBase
             {
                 _internalIsOpen = true;
 
-                if (Draggable)
+                if (_params.Draggable ?? false)
                 {
-                    _ = _js.BitDragDropSetup(_containerSelector, _containerSelector, _dragElementSelector);
+                    _dragElementSelectorOnSetup = _dragElementSelector;
+                    await _js.BitDragDropSetup(_containerSelector, _containerSelector, _dragElementSelectorOnSetup);
                 }
 
                 // Reset _offsetTop before ToggleScroll. When AutoToggleScroll is false,
@@ -269,13 +376,13 @@ public partial class BitProModal : BitComponentBase
                 // Only when AbsolutePosition is set do we reset the StyleBuilder and
                 // re-render, so the top-offset style (which ToggleScroll may have updated)
                 // gets applied on the next render.
-                if (AbsolutePosition)
+                if (_params.AbsolutePosition ?? false)
                 {
                     StyleBuilder.Reset();
                     StateHasChanged();
                 }
 
-                await OnOpen.InvokeAsync();
+                await _params.OnOpen.InvokeAsync();
             }
         }
         else
@@ -284,7 +391,7 @@ public partial class BitProModal : BitComponentBase
             {
                 _internalIsOpen = false;
 
-                _ = _js.BitDragDropRemove(_containerSelector, _dragElementSelector);
+                await _js.BitDragDropRemove(_containerSelector, _dragElementSelectorOnSetup ?? _dragElementSelector);
 
                 await ToggleScroll(false);
             }
@@ -297,7 +404,7 @@ public partial class BitProModal : BitComponentBase
 
     private string _modalId => Id ?? UniqueId;
     private string _containerSelector => $"#{_modalId} .bit-mdl-ctn";
-    private string _dragElementSelector => DragElementSelector ?? _containerSelector;
+    private string _dragElementSelector => _params.DragElementSelector ?? _containerSelector;
 
     private async Task HandleInnerIsOpenChanged(bool open)
     {
@@ -306,23 +413,126 @@ public partial class BitProModal : BitComponentBase
 
     private async Task CloseModal(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (_params.IsEnabled is false) return;
 
         await AssignIsOpen(false);
     }
 
     private async Task ToggleScroll(bool isOpen)
     {
-        if (AutoToggleScroll is false) return;
-
-        if (ScrollerElement.HasValue)
+        if (isOpen)
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerElement.Value, isOpen);
+            // Snapshot the lock decision at open time; close reuses it instead of re-reading
+            // AutoToggleScroll, which may have changed since the modal was opened.
+            _scrollLockedOnOpen = _params.AutoToggleScroll ?? false;
+            if (_scrollLockedOnOpen is false) return;
+
+            // Snapshot the scroller target at open time so close unlocks the same scroller,
+            // even if ScrollerElement/ScrollerSelector changed in the meantime.
+            _scrollerElementOnOpen = _params.ScrollerElement;
+            _scrollerSelectorOnOpen = _params.ScrollerSelector;
         }
         else
         {
-            _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector ?? "body", isOpen);
+            // Only unlock if we actually locked during open, regardless of the current parameter value.
+            if (_scrollLockedOnOpen is false) return;
         }
+
+        if (_scrollerElementOnOpen.HasValue)
+        {
+            _offsetTop = await _js.BitUtilsToggleOverflow(_scrollerElementOnOpen.Value, isOpen);
+        }
+        else
+        {
+            _offsetTop = await _js.BitUtilsToggleOverflow(_scrollerSelectorOnOpen ?? "body", isOpen);
+        }
+    }
+
+    /// <summary>
+    /// Builds the effective parameters by merging this component's own parameters with the cascaded
+    /// <see cref="BitProModalParameters"/>. The component's own values take precedence, preserving the
+    /// behavior previously provided by the parameters object reading back from the component.
+    /// </summary>
+    /// <remarks>
+    /// Nullable values use a simple "own value, else cascaded" precedence (<c>Own ?? p.Own</c>).
+    /// Non-nullable bools cannot distinguish "not set" from "explicitly false", so they merge
+    /// asymmetrically and the component param only expresses the "stronger" intent for that flag:
+    /// <list type="bullet">
+    /// <item>The feature flags below (<see cref="Blocking"/>, <see cref="FullHeight"/>, etc.) can only
+    /// force the behavior <b>on</b> (<c>X ? true : p.X</c>); they can never force it off, since they
+    /// default to <c>false</c> and enabling is the meaningful override.</item>
+    /// <item><see cref="BitComponentBase.IsEnabled"/> can only force the behavior <b>off</b>
+    /// (<c>X is false ? false : p.X</c>); it can never force it on, since it defaults to <c>true</c>
+    /// and disabling is the meaningful override.</item>
+    /// </list>
+    /// To express the opposite (non-overridable) intent, set the value through the cascaded
+    /// <see cref="BitProModalParameters"/> (e.g. via the <see cref="BitProModalService"/>) rather than the component parameter.
+    /// </remarks>
+    private BitProModalParameters BuildParameters()
+    {
+        var p = ProModalParameters;
+
+        // Non-nullable bools below follow the "can only force on" rule (see remarks);
+        // IsEnabled is the lone "can only force off" exception.
+        return new BitProModalParameters
+        {
+            AbsolutePosition = AbsolutePosition ? true : p.AbsolutePosition,
+            AriaLabel = AriaLabel ?? p.AriaLabel,
+            AutoToggleScroll = AutoToggleScroll ? true : p.AutoToggleScroll,
+            Blocking = Blocking ? true : p.Blocking,
+            CloseButtonTitle = CloseButtonTitle ?? p.CloseButtonTitle,
+            CloseIcon = CloseIcon ?? p.CloseIcon,
+            CloseIconName = CloseIconName ?? p.CloseIconName,
+            Dir = Dir ?? p.Dir,
+            DragElementSelector = DragElementSelector ?? p.DragElementSelector,
+            Draggable = Draggable ? true : p.Draggable,
+            Footer = Footer ?? p.Footer,
+            FooterText = FooterText ?? p.FooterText,
+            FullHeight = FullHeight ? true : p.FullHeight,
+            FullSize = FullSize ? true : p.FullSize,
+            FullWidth = FullWidth ? true : p.FullWidth,
+            Header = Header ?? p.Header,
+            HeaderText = HeaderText ?? p.HeaderText,
+            HtmlAttributes = MergeHtmlAttributes(p.HtmlAttributes, HtmlAttributes),
+            IsAlert = IsAlert ?? p.IsAlert,
+            // Can only force off (default is enabled): the lone exception to the "force on" rule above.
+            IsEnabled = IsEnabled is false ? false : p.IsEnabled,
+            ModeFull = ModeFull ? true : p.ModeFull,
+            Modeless = Modeless ? true : p.Modeless,
+            NoBorder = NoBorder ? true : p.NoBorder,
+            OnDismiss = _onDismiss,
+            OnOpen = _onOpen,
+            OnOverlayClick = _onOverlayClick,
+            Position = Position ?? p.Position,
+            ScrollerElement = ScrollerElement ?? p.ScrollerElement,
+            ScrollerSelector = ScrollerSelector ?? p.ScrollerSelector,
+            ShowCloseButton = ShowCloseButton ? true : p.ShowCloseButton,
+            SubtitleAriaId = SubtitleAriaId ?? p.SubtitleAriaId,
+            TitleAriaId = TitleAriaId ?? p.TitleAriaId,
+            // Can only force off (default is Visible): own value wins only when it's a meaningful
+            // (non-default) override, otherwise the cascaded value is used.
+            Visibility = Visibility != BitVisibility.Visible ? Visibility : p.Visibility,
+        };
+    }
+
+    /// <summary>
+    /// Merges the cascaded and own HtmlAttributes (own values win), reusing the previous result when
+    /// neither source dictionary reference changed to avoid a per-render allocation.
+    /// </summary>
+    private Dictionary<string, object> MergeHtmlAttributes(Dictionary<string, object>? cascaded, Dictionary<string, object>? own)
+    {
+        if (_mergedHtmlAttributes is not null &&
+            ReferenceEquals(_lastCascadedHtmlAttributes, cascaded) &&
+            ReferenceEquals(_lastOwnHtmlAttributes, own))
+        {
+            return _mergedHtmlAttributes;
+        }
+
+        _lastCascadedHtmlAttributes = cascaded;
+        _lastOwnHtmlAttributes = own;
+        _mergedHtmlAttributes = (cascaded ?? []).Concat(own ?? []).GroupBy(kv => kv.Key).ToDictionary(g => g.Key, g => g.Last().Value);
+
+        return _mergedHtmlAttributes;
     }
 
 
@@ -335,7 +545,7 @@ public partial class BitProModal : BitComponentBase
         {
             if (_internalIsOpen)
             {
-                await _js.BitDragDropRemove(_containerSelector, _dragElementSelector);
+                await _js.BitDragDropRemove(_containerSelector, _dragElementSelectorOnSetup ?? _dragElementSelector);
                 await ToggleScroll(false);
             }
         }

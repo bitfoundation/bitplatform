@@ -9,7 +9,7 @@ public partial class EmailServiceJobsRunner
     [AutoInject] IFluentEmail fluentEmail = default!;
     [AutoInject] private ServerApiSettings appSettings = default!;
     [AutoInject] IStringLocalizer<AppStrings> localizer = default!;
-    [AutoInject] ServerExceptionHandler serverExceptionHandler = default!;
+    [AutoInject] ApiServerExceptionHandler serverExceptionHandler = default!;
     [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
 
     [AutomaticRetry(Attempts = 3, DelaysInSeconds = [30] /*We primarily send tokens via email, which expire after 2 minutes by default. It's not worth retrying more than 3 times, with a 30-second delay between attempts.*/)]

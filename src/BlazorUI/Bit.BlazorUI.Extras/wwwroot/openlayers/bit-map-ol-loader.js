@@ -1,5 +1,5 @@
 // Loaded as <script type="module"> by the OpenLayers provider via Extras.initScripts.
-// Native dynamic import() inside an ES module is CSP-friendly — it does not require
+// Native dynamic import() inside an ES module is CSP-friendly - it does not require
 // 'unsafe-eval', unlike the `new Function('return import(u)')` workaround that the
 // concatenated, non-module BitBlazorUI bundle would otherwise need.
 //
@@ -54,7 +54,7 @@ const p = globalThis.__bitMapOlBundle || Promise.all([
 
 // Clear the global on failure so future loader injections can retry the imports
 // instead of being permanently stuck on a rejected promise. This handler only
-// performs cleanup — it must not rethrow, otherwise it would surface a second
+// performs cleanup - it must not rethrow, otherwise it would surface a second
 // unhandled rejection in addition to the original `p`. Awaiters receive the
 // original rejection through `p` itself.
 p.catch(() => {

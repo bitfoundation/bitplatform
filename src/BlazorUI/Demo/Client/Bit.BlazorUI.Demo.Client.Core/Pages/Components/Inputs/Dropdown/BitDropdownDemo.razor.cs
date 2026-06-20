@@ -2,6 +2,8 @@
 
 public partial class BitDropdownDemo
 {
+    [Parameter, CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

@@ -250,7 +250,7 @@ public class AutoInjectSourceGenerator : IIncrementalGenerator
 
     private static bool IsRazorComponent(INamedTypeSymbol @class)
     {
-        // Use interface check only — avoids File.Exists() I/O which is forbidden in incremental transforms
+        // Use interface check only - avoids File.Exists() I/O which is forbidden in incremental transforms
         return @class.AllInterfaces.Any(o => o.ToDisplayString() == "Microsoft.AspNetCore.Components.IComponent");
     }
 

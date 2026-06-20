@@ -1,14 +1,14 @@
-@page "/components/modalservice"
+@page "/components/promodalservice"
 
-<PageOutlet Url="components/modalservice"
-            Title="ModalService"
-            Description="modalservice component of the bit BlazorUI components" />
+<PageOutlet Url="components/promodalservice"
+            Title="ProModalService"
+            Description="promodalservice component of the bit BlazorUI components" />
 
-<DemoPage Name="ModalService"
-          Description="BitModalService is a service to globally handle modals with any content."
+<DemoPage Name="ProModalService"
+          Description="BitProModalService is a service to globally handle BitProModals with any content."
           Parameters="componentParameters"
-          GitHubExtrasUrl="ModalService/BitModalService.cs"
-          GitHubDemoUrl="Extras/ModalService/BitModalServiceDemo.razor">
+          GitHubExtrasUrl="ProModal/BitProModalService.cs"
+          GitHubDemoUrl="Extras/ProModalService/BitProModalServiceDemo.razor">
     <NotesTemplate>
         <BitText>
             To use this component, you need to install the
@@ -24,10 +24,8 @@
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-            <div>Show a FullWidth modal using the BitModalService:</div><br/>
+            <div>Show a BitProModal with a header and close button using the BitProModalService:</div><br />
             <BitButton OnClick="ShowModal">Show</BitButton>
-
-            @* <BitModalContainer ModalParameters="@(new() { FullWidth = true })" /> *@
         </DemoExample>
     </Examples>
 </DemoPage>

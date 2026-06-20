@@ -87,7 +87,7 @@ public partial class ComponentDetailsController : AppControllerBase
         if (demoPageType is null)
             return "No demo page found for the specified component.";
 
-        httpContextAccessor.HttpContext!.Items[nameof(Client.Core.Components.AppComponentBase.RenderForMcpClient)] = true;
+        httpContextAccessor.HttpContext!.Items["RenderForMcpClient"] = true;
 
         var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {

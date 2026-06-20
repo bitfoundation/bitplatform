@@ -21,6 +21,8 @@ public static partial class MauiProgram
 
         services.AddScoped<IWebAuthnService, MauiWebAuthnService>();
         services.AddScoped<IExceptionHandler, MauiExceptionHandler>();
+        services.AddScoped(sp => (ClientExceptionHandlerBase)sp.GetRequiredService<IExceptionHandler>());
+
         services.AddScoped<IAppUpdateService, MauiAppUpdateService>();
         services.AddScoped<IBitDeviceCoordinator, MauiDeviceCoordinator>();
         services.AddScoped<IExternalNavigationService, MauiExternalNavigationService>();
