@@ -1,5 +1,5 @@
 @namespace Bit.BlazorUI
-@inherits BitInputBase<string?>
+@inherits BitTextInputBase<string?>
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
@@ -56,8 +56,8 @@
 
         <input @ref="InputElement"
                @attributes="InputHtmlAttributes"
-               @onchange="HandleOnNumberChange"
-               @oninput="HandleOnNumberInput"
+               @onchange="HandleOnStringValueChangeAsync"
+               @oninput="HandleOnStringValueInputAsync"
                @onfocusin="HandleOnInputFocusIn"
                @onfocusout="HandleOnInputFocusOut"
                type="tel"
@@ -71,6 +71,7 @@
                maxlength="@(MaxLength >= 0 ? MaxLength : null)"
                style="@Styles?.Input"
                class="bit-phi-inp @Classes?.Input"
+               autocomplete="@AutoComplete"
                aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)" />
     </div>
 </div>
