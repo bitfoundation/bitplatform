@@ -7,6 +7,9 @@ env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
   ConnectionStrings__mssqldb: 'Data Source=localhost; Initial Catalog=BoilerplateTestDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
 
+permissions:
+  contents: read
+
 jobs:
 
 # Bit.BlazorUI solution is being built in bit.ci.yml
@@ -18,6 +21,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -46,6 +51,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -115,6 +122,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -187,6 +196,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -253,6 +264,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -291,6 +304,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -433,6 +448,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -461,6 +478,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -489,6 +508,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -517,6 +538,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -541,6 +564,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
