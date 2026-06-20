@@ -9,6 +9,9 @@ on:
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
 
+permissions:
+  contents: read
+
 jobs:
   build-Besql:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
@@ -19,6 +22,8 @@ jobs:
 
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10.0
       uses: actions/setup-dotnet@v5

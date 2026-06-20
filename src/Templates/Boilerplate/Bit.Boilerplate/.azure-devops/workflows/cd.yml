@@ -10,6 +10,9 @@ variables:
   WindowsUpdate.FilesUrl: 'https://use-your-api-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
   WebAppRender.BlazorMode: 'BlazorWebAssembly'
 
+permissions:
+  contents: read
+
 jobs:
 
 - job: build_api_blazor

@@ -6,6 +6,9 @@ on:
     tags:
       - 'v-*-pre-*'
 
+permissions:
+  contents: read
+
 jobs:
   build-publish:
     name: build & publish
@@ -13,6 +16,8 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
