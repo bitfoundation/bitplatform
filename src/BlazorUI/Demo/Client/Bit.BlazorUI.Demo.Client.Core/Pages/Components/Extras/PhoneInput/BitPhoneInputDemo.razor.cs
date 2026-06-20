@@ -261,12 +261,12 @@ public partial class BitPhoneInputDemo
 <BitPhoneInput DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Enter your number"" />";
 
     private readonly string example2RazorCode = @"
+<BitPhoneInput AutoFocus DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Enter your number"" />";
+
+    private readonly string example3RazorCode = @"
 <BitPhoneInput Label=""Phone number""
                DefaultCountry=""BitCountries.UnitedKingdom""
                Placeholder=""Enter your number"" />";
-
-    private readonly string example3RazorCode = @"
-<BitPhoneInput AutoFocus DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Enter your number"" />";
 
     private readonly string example4RazorCode = @"
 <BitPhoneInput NoSearchBox DefaultCountry=""BitCountries.France"" Placeholder=""Enter your number"" />";
