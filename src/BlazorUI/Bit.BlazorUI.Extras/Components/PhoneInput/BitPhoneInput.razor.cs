@@ -384,6 +384,13 @@ public partial class BitPhoneInput : BitInputBase<string?>
             {
                 await _js.BitExtrasSetPreventKeys(_searchInputRef, _searchBoxKeys);
             }
+
+            // Apply AutoFocus after the first render completes so focus lands on the number
+            // input once its element exists, following the BitTextInputBase pattern.
+            if (AutoFocus && IsEnabled)
+            {
+                await InputElement.FocusAsync();
+            }
         }
 
         // Keep the active option visible during keyboard navigation. Done after render so
