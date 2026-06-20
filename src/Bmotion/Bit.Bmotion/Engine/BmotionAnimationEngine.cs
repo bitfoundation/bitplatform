@@ -563,17 +563,37 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             state.CancelAll();
         _elements.Clear();
 
-        // Await the loop stop before disposing _dotnet so the JS call doesn't marshal a
-        // disposed DotNetObjectReference. StopLoopInternal's fire-and-forget path is fine for
-        // mid-session stops, but during teardown we must order it explicitly.
-        _loopRunning = false;
-        if (_dotnet != null)
+        // Serialize teardown behind the same gate EnsureLoopRunningAsync/StopLoopInternal use so a
+        // disposal can't interleave with an in-flight loop start - otherwise we could dispose
+        // _dotnet while StartRafLoopAsync is still marshaling it, or dispose the gate while a
+        // pending gated stop is using it. Acquiring it first drains any active start/stop.
+        bool gateHeld = false;
+        try
         {
-            try { await _interop.StopRafLoopAsync(_dotnet); } catch { /* ignore during teardown */ }
-            try { await _interop.UnwatchReducedMotionAsync(_dotnet); } catch { /* ignore during teardown */ }
-            _dotnet.Dispose();
-            _dotnet = null;
+            await _loopStartGate.WaitAsync();
+            gateHeld = true;
         }
+        catch (ObjectDisposedException) { /* already disposed; nothing to serialize against */ }
+
+        try
+        {
+            // Await the loop stop before disposing _dotnet so the JS call doesn't marshal a
+            // disposed DotNetObjectReference. StopLoopInternal's fire-and-forget path is fine for
+            // mid-session stops, but during teardown we must order it explicitly.
+            _loopRunning = false;
+            if (_dotnet != null)
+            {
+                try { await _interop.StopRafLoopAsync(_dotnet); } catch { /* ignore during teardown */ }
+                try { await _interop.UnwatchReducedMotionAsync(_dotnet); } catch { /* ignore during teardown */ }
+                _dotnet.Dispose();
+                _dotnet = null;
+            }
+        }
+        finally
+        {
+            if (gateHeld) _loopStartGate.Release();
+        }
+
         _loopStartGate.Dispose();
         // BmotionInterop is owned and disposed by the DI container (it is registered scoped),
         // so the engine must not dispose it here or it would be disposed twice.

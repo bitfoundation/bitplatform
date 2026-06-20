@@ -63,7 +63,10 @@ internal static partial class BmotionColorInterpolator
     /// </summary>
     internal static double[]? Parse(string c)
     {
-        if (string.IsNullOrEmpty(c)) return null;
+        if (string.IsNullOrWhiteSpace(c)) return null;
+        // Trim surrounding whitespace so padded inputs like " #fff " or " rgb(...) " still match the
+        // prefix checks and regexes below instead of falling through to the unparseable-null path.
+        c = c.Trim();
 
         if (c.StartsWith('#'))
         {

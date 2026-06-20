@@ -366,12 +366,23 @@ internal sealed class BmotionElementAnimationState
     internal void CompleteAll()
     {
         // Snapshot the drivers before iterating: driver.Complete() applies the final value, which
-        // can invoke a user OnUpdate callback that re-enters and mutates _activeAnims (e.g. starts
-        // a new animation on this element). Iterating the live Values collection would then throw.
-        foreach (var driver in _activeAnims.Values.ToArray())
+        // can invoke a user OnUpdate callback that re-enters and mutates _activeAnims/_batches
+        // (e.g. starts a new animation on this element). Only finish the animations captured here
+        // and let NotePropFinished resolve their batches - blanket-clearing the live collections
+        // would wipe (and prematurely resolve) any re-entrant animations the callbacks started.
+        foreach (var (key, driver) in _activeAnims.ToArray())
+        {
+            // Skip if a re-entrant callback earlier in this loop already removed or replaced the
+            // driver for this key, so a stale driver can't evict its replacement below.
+            if (!_activeAnims.TryGetValue(key, out var current) || !ReferenceEquals(current, driver)) continue;
             driver.Complete();
-        _activeAnims.Clear();
-        ResolveAllBatches(true); // snapped to end values = completed
+            // Re-check: Complete()'s callback may itself have removed/replaced this key.
+            if (_activeAnims.TryGetValue(key, out current) && ReferenceEquals(current, driver))
+            {
+                _activeAnims.Remove(key);
+                NotePropFinished(key, interrupted: false); // snapped to end value = natural completion
+            }
+        }
     }
 
     internal void CancelProp(string key)
