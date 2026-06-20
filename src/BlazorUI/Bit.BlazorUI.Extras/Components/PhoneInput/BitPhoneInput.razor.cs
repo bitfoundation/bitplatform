@@ -61,6 +61,11 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
 
     /// <summary>
+    /// Determines if the number input is auto focused on first render.
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitPhoneInput.
     /// </summary>
     [Parameter] public BitPhoneInputClassStyles? Classes { get; set; }
