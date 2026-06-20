@@ -32,6 +32,7 @@ public class BitFullCalendarTexts
     public string AgendaGroupByLabel { get; set; } = "Agenda group by";
     public string AgendaGroupByDate { get; set; } = "Date";
     public string AgendaGroupByColor { get; set; } = "Color";
+    public string StackedEventsLabel { get; set; } = "Stack overlapping events";
 
     public string WeekMobileWarning { get; set; } = "Weekly view is not recommended on smaller devices. Please switch to a desktop device or use the daily view instead.";
     public string HappeningNowTitle { get; set; } = "Happening now";

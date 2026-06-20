@@ -7,7 +7,7 @@ public partial class BitFullCalendar : IDisposable
     /// <summary>
     /// Events displayed in the calendar. Assign a list from parent state; updates are synced on each
     /// render when the reference or contents change. User-driven add, edit, and delete actions are
-    /// reported through <see cref="OnChange"/> — update this list (or your backing store) in the handler
+    /// reported through <see cref="OnChange"/> - update this list (or your backing store) in the handler
     /// to keep the UI in sync.
     /// </summary>
     [Parameter] public List<BitFullCalendarEvent>? Events { get; set; }
@@ -41,7 +41,7 @@ public partial class BitFullCalendar : IDisposable
     /// Ordered list of event colors shown in pickers, filters, agenda headers, badges, and bullets.
     /// Each entry has its own <see cref="BitFullCalendarColorOption.Id"/> (matched against
     /// <see cref="BitFullCalendarEvent.Color"/>), <see cref="BitFullCalendarColorOption.Title"/>
-    /// (the display name shown verbatim — for example <c>"SkyBlue"</c>), and
+    /// (the display name shown verbatim - for example <c>"SkyBlue"</c>), and
     /// <see cref="BitFullCalendarColorOption.Value"/> (any CSS color value used for swatches and badges).
     /// When <c>null</c> or empty, <see cref="BitFullCalendarColorOption.Defaults"/> is used.
     /// </summary>
@@ -78,7 +78,7 @@ public partial class BitFullCalendar : IDisposable
     [Parameter] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
 
     /// <summary>
-    /// Raised when the visible date range changes — for example when the user navigates
+    /// Raised when the visible date range changes - for example when the user navigates
     /// with prev/next/today buttons or switches views. The callback receives the inclusive
     /// start and end dates of the new range together with the active view.
     /// </summary>
@@ -194,6 +194,7 @@ public partial class BitFullCalendar : IDisposable
         State.SetBadgeVariant(Options.BadgeVariant);
         State.SetStartOfDayHour(Options.StartOfDayHour);
         State.SetAgendaModeGroupBy(Options.AgendaModeGroupBy);
+        State.SetEventLayout(Options.EventLayout);
     }
 
     private void HandleStateChanged() => InvokeAsync(StateHasChanged);

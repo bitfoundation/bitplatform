@@ -6,8 +6,9 @@
 
 <DemoPage Name="FullCalendar"
           Description="BitFullCalendar is a feature-rich, interactive calendar component with day, week, month, year, agenda, and resource timeline views, event CRUD, drag-and-drop, resize, and culture-aware date handling."
-          SecondaryNames="@(["Calendar", "Scheduler"])"
+          SecondaryNames="@(["Scheduler"])"
           Parameters="componentParameters"
+          SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubExtrasUrl="FullCalendar/BitFullCalendar.razor"
           GitHubDemoUrl="Extras/FullCalendar/BitFullCalendarDemo.razor">
@@ -30,10 +31,8 @@
             (day, week, month, year, agenda, and a resource timeline), built-in event create/edit/delete,
             drag-and-drop, resize, filtering, theming that follows the Bit theme (including dark mode),
             and culture-aware date rendering.
-            Explore a live calendar below — switch views, add events, and drag them around.
+            Explore a live calendar below - switch views, add events, and drag them around.
         </BitText>
-        <br />
-        <BitFullCalendar Events="basicEvents" />
     </IntroductionTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
@@ -42,23 +41,35 @@
             <BitFullCalendar Events="basicEvents" />
         </DemoExample>
 
-        <DemoExample Title="Theme" RazorCode="@example2RazorCode" Id="example2">
+        <DemoExample Title="Options" RazorCode="@example2RazorCode" Id="example2">
             <div>
-                BitFullCalendar follows the application's Bit theme automatically. Switch the Bit theme
-                (for example to a dark theme) and the calendar surfaces, text, and accent colors update
-                with it — there is no component-level theme or dark-mode switch.
-            </div>
-            <br />
-            <BitFullCalendar Events="themeEvents" />
-        </DemoExample>
-
-        <DemoExample Title="Options" RazorCode="@example3RazorCode" Id="example3">
-            <div>
-                Drive initial preferences from code with the Options parameter — 12/24-hour
+                Drive initial preferences from code with the Options parameter - 12/24-hour
                 time format, day start hour, badge variant, and agenda grouping.
             </div>
             <br />
             <BitFullCalendar Events="optionsEvents" Options="options" />
+        </DemoExample>
+
+        <DemoExample Title="Event layout" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                Choose how overlapping event cards are arranged in the day and week views with
+                <code>Options.EventLayout</code>. <b>Overlap</b> (default) cascades the cards on top of
+                each other, while <b>Stack</b> places them side by side in equal-width columns.
+                Switch to the Day or Week view to see the difference - pick a layout below, or toggle it
+                from the settings gear ("Stack overlapping events").
+            </div>
+            <br />
+            <BitChoiceGroup Horizontal
+                            Label="Event layout"
+                            TItem="BitChoiceGroupOption<BitFullCalendarEventLayout>"
+                            TValue="BitFullCalendarEventLayout"
+                            Value="layoutMode"
+                            OnChange="HandleLayoutChange">
+                <BitChoiceGroupOption Text="Overlap" Value="BitFullCalendarEventLayout.Overlap" />
+                <BitChoiceGroupOption Text="Stack" Value="BitFullCalendarEventLayout.Stack" />
+            </BitChoiceGroup>
+            <br />
+            <BitFullCalendar Events="layoutEvents" Options="layoutOptions" />
         </DemoExample>
 
         <DemoExample Title="Event templates" RazorCode="@example4RazorCode" Id="example4">
@@ -86,13 +97,15 @@
             <br />
             <BitFullCalendar Events="changeEvents" OnChange="HandleChange" />
             <br />
-            <BitText>Last change: <b>@(lastChange ?? "—")</b></BitText>
+            <BitText>Last change: <b>@(lastChange ?? "-")</b></BitText>
         </DemoExample>
 
         <DemoExample Title="Localization" RazorCode="@example7RazorCode" Id="example7">
             <div>
                 Render the calendar with a localized culture (here Persian, <code>fa-IR</code>) and
-                override UI strings with a customized BitFullCalendarTexts instance.
+                override the UI strings through a customized <code>BitFullCalendarTexts</code> instance.
+                This example translates most of the available strings - toolbar, view/mode tabs, filters,
+                settings panel, search/agenda, dialogs, form fields, validation messages, and resource labels.
             </div>
             <br />
             <BitFullCalendar Events="localizationEvents" CultureName="fa-IR" Texts="persianTexts" />

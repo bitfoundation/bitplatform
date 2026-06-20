@@ -2,6 +2,7 @@
 
 @{
     var inv = System.Globalization.CultureInfo.InvariantCulture;
+    var isStack = State.EventLayout == BitFullCalendarEventLayout.Stack;
 }
 
 @foreach (var (group, groupIndex) in GroupedEvents.Select((g, i) => (g, i)))
@@ -32,15 +33,31 @@
         var depth = leftConflicts + rightConflicts + 1;
         var rank = leftConflicts;
 
-        // Offset each successive overlapping card by a percentage of the column width and let the
-        // card extend to the right edge so users can still see most of every card. The step is
-        // capped so even with many conflicts the narrowest card stays at least ~50% wide.
-        var step = depth > 1 ? Math.Min(20.0, 50.0 / (depth - 1)) : 0.0;
-        var left = rank * step;
-        var width = 100.0 - left;
-        var zIndex = 2 + rank;
+        double left;
+        double width;
+        int zIndex;
 
-        <div class="bit-bfc-event-stack-item"
+        if (isStack)
+        {
+            // Stacked layout: split the column into equal-width lanes placed side by side with no
+            // overlap, so conflicting events sit close together and stay fully readable.
+            var laneWidth = 100.0 / depth;
+            left = rank * laneWidth;
+            width = laneWidth;
+            zIndex = 2;
+        }
+        else
+        {
+            // Overlap layout: offset each successive overlapping card by a percentage of the column
+            // width and let the card extend to the right edge so users can still see most of every
+            // card. The step is capped so even with many conflicts the narrowest card stays ~50% wide.
+            var step = depth > 1 ? Math.Min(20.0, 50.0 / (depth - 1)) : 0.0;
+            left = rank * step;
+            width = 100.0 - left;
+            zIndex = 2 + rank;
+        }
+
+        <div class="bit-bfc-event-stack-item @(isStack ? "bit-bfc-event-stack-item-side-by-side" : "")"
              style="position:absolute;top:@(style.TopPx.ToString("F2", inv))px;width:@(width.ToString("F2", inv))%;left:@(left.ToString("F2", inv))%;z-index:@zIndex;pointer-events:none;">
             <BitFcEventBlock Event="ev" OnSelected="OnEventSelected" EventTemplate="EventTemplate" />
         </div>

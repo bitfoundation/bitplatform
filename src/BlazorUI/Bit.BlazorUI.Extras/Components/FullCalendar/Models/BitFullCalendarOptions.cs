@@ -19,4 +19,6 @@ public class BitFullCalendarOptions
     /// <summary>How events are grouped in the agenda view.</summary>
     public BitFullCalendarAgendaGroupBy AgendaModeGroupBy { get; set; } = BitFullCalendarAgendaGroupBy.Date;
 
+    /// <summary>How overlapping event cards are positioned in the day and week views.</summary>
+    public BitFullCalendarEventLayout EventLayout { get; set; } = BitFullCalendarEventLayout.Overlap;
 }

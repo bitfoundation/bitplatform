@@ -87,7 +87,7 @@ public sealed class BitFullCalendarColorScheme
         return extra;
     }
 
-    /// <summary>Sort key for agenda grouping — configured order first, then unknown ids by name.</summary>
+    /// <summary>Sort key for agenda grouping - configured order first, then unknown ids by name.</summary>
     public int GetSortOrder(string? colorId)
     {
         if (string.IsNullOrWhiteSpace(colorId))

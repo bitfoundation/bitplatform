@@ -22,9 +22,10 @@
     --bit-bfc-danger-hover: #{$clr-err-hover};
     --bit-bfc-radius: #{$shp-border-radius};
     --bit-bfc-radius-sm: #{$shp-border-radius};
-    --bit-bfc-shadow: #{$box-shadow-md};
-    --bit-bfc-shadow-lg: #{$box-shadow-lg};
+    --bit-bfc-shadow: #{$box-shadow-sm};
+    --bit-bfc-shadow-lg: #{$box-shadow-md};
     --bit-bfc-hour-height: 96px;
+    --bit-bfc-height: 600px;
     --bit-bfc-timeline-color: #{$clr-err};
     --bit-bfc-resize-ring: color-mix(in srgb, #{$clr-pri} 65%, transparent);
     --bit-bfc-resize-glow: color-mix(in srgb, #{$clr-pri} 22%, transparent);
@@ -43,7 +44,11 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    /* A definite default height keeps the day/week time grids from expanding to their full
+       (24 * hour-height) intrinsic height when the host doesn't constrain the calendar. This makes
+       the views scrollable (so "scroll to start of day" works) out of the box. Override via the
+       --bit-bfc-height custom property, e.g. style="--bit-bfc-height: 100%" inside a sized container. */
+    height: var(--bit-bfc-height, 600px);
 }
 
 /* ===== Header ===== */
@@ -91,7 +96,7 @@
     cursor: pointer;
     transition: all 0.15s ease;
     white-space: nowrap;
-    line-height: 1.4;
+    line-height: 1.817;
 }
 
 .bit-bfc-btn:hover {
@@ -454,7 +459,7 @@
     position: relative;
 }
 
-/* Bottom half of each hour — must stretch from 50% to bottom or it has ~0 height
+/* Bottom half of each hour - must stretch from 50% to bottom or it has ~0 height
    and all drops land on the parent row (always :00). */
 .bit-bfc-hour-row-half {
     position: absolute;
@@ -510,6 +515,21 @@
 
 .bit-bfc-event-stack-item .bit-bfc-event-block:hover {
     z-index: 21;
+}
+
+/* Side-by-side stacked layout: equal-width lanes placed next to each other. A small right gap and
+   a flat left edge (no diagonal separator shadow) keep the cards close together yet distinct. */
+.bit-bfc-event-stack-item-side-by-side {
+    padding-right: 2px;
+    box-sizing: border-box;
+}
+
+.bit-bfc-event-stack-item-side-by-side .bit-bfc-event-block {
+    box-shadow: none;
+}
+
+.bit-bfc-event-stack-item-side-by-side .bit-bfc-event-block:hover {
+    box-shadow: var(--bit-bfc-shadow);
 }
 
 .bit-bfc-event-block-resizing {

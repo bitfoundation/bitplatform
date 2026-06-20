@@ -27,6 +27,15 @@
                 </label>
             </div>
 
+            <div class="bit-bfc-dropdown-item" @onclick="State.ToggleEventLayout">
+                <span>@Texts.StackedEventsLabel</span>
+                <label class="bit-bfc-toggle">
+                    <input type="checkbox" checked="@(State.EventLayout == BitFullCalendarEventLayout.Stack)" />
+                    <span class="bit-bfc-toggle-track"></span>
+                    <span class="bit-bfc-toggle-thumb"></span>
+                </label>
+            </div>
+
             <div class="bit-bfc-dropdown-sep"></div>
 
             <div class="bit-bfc-dropdown-item">

@@ -20,7 +20,7 @@ public sealed class BitFullCalendarColorOption
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// CSS color value used for swatches, bullets, badge accents, and chip surfaces — any value
+    /// CSS color value used for swatches, bullets, badge accents, and chip surfaces - any value
     /// accepted in CSS such as a hex (<c>"#3b82f6"</c>), <c>rgb()</c>, <c>hsl()</c>, or named color
     /// (<c>"skyblue"</c>). The calendar derives badge background, border, and text contrast tints
     /// from this single value at runtime.

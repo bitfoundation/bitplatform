@@ -19,7 +19,7 @@ public class BitFullCalendarState
     public BitFullCalendarBadgeVariant BadgeVariant { get; private set; } = BitFullCalendarBadgeVariant.Colored;
     public int StartOfDayHour { get; private set; } = 8;
     public BitFullCalendarAgendaGroupBy AgendaModeGroupBy { get; private set; } = BitFullCalendarAgendaGroupBy.Date;
-
+    public BitFullCalendarEventLayout EventLayout { get; private set; } = BitFullCalendarEventLayout.Overlap;
     /// <summary>Incremented when <see cref="GoToToday"/> is invoked in agenda view so the list can scroll to today.</summary>
     public ulong AgendaScrollToTodayNonce { get; private set; }
 
@@ -132,7 +132,21 @@ public class BitFullCalendarState
         AgendaModeGroupBy = groupBy;
         NotifyStateChanged();
     }
+    public void SetEventLayout(BitFullCalendarEventLayout layout)
+    {
+        if (EventLayout == layout)
+            return;
+        EventLayout = layout;
+        NotifyStateChanged();
+    }
 
+    public void ToggleEventLayout()
+    {
+        EventLayout = EventLayout == BitFullCalendarEventLayout.Overlap
+            ? BitFullCalendarEventLayout.Stack
+            : BitFullCalendarEventLayout.Overlap;
+        NotifyStateChanged();
+    }
     public void NavigatePrevious()
     {
         SelectedDate = BitFullCalendarHelpers.NavigateDate(SelectedDate, View, false, Culture);
@@ -158,7 +172,7 @@ public class BitFullCalendarState
 
     /// <summary>
     /// Replaces the internal event list with the supplied collection when the contents differ.
-    /// Safe to call from <c>OnParametersSet</c> — it short-circuits when the list hasn't changed,
+    /// Safe to call from <c>OnParametersSet</c> - it short-circuits when the list hasn't changed,
     /// preventing infinite re-render loops.
     /// </summary>
     public void SyncEvents(List<BitFullCalendarEvent> events)
@@ -173,7 +187,7 @@ public class BitFullCalendarState
 
     /// <summary>
     /// Replaces the resource list shown by the resource timeline view. Safe to call from
-    /// <c>OnParametersSet</c> — it short-circuits when the supplied list matches the current one.
+    /// <c>OnParametersSet</c> - it short-circuits when the supplied list matches the current one.
     /// </summary>
     public void SyncResources(IReadOnlyList<BitFullCalendarResource>? resources)
     {
