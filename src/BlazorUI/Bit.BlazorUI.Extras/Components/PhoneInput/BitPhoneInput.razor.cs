@@ -5,6 +5,13 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// BitPhoneInput is an input component for entering phone numbers with a searchable
 /// country selector that shows the flag and the dialing code of each country.
+/// <para>
+/// The two-way bound <see cref="BitInputBase{T}.Value"/> holds the full phone number in
+/// the E.164 form ("+[code][number]"), which makes it convenient to bind a single field in
+/// a form. The local part (the digits typed in the input box) is exposed separately through
+/// the two-way bound <see cref="Number"/> parameter, and the dialing code comes from the
+/// selected <see cref="Country"/>.
+/// </para>
 /// </summary>
 public partial class BitPhoneInput : BitInputBase<string?>
 {
@@ -15,6 +22,13 @@ public partial class BitPhoneInput : BitInputBase<string?>
     private string? _searchText;
     private int _activeIndex = -1;
     private int _lastScrolledIndex = -1;
+
+    // Reconciliation state between the full Value and its parts (Number + Country).
+    // _lastValue mirrors the last full value the component produced so an external Value
+    // change (e.g. from a form) can be told apart from the component's own updates.
+    private string? _lastValue;
+    private string? _lastNumber;
+    private string? _lastCountryIso;
 
     private string _labelId = string.Empty;
     private string _inputId = string.Empty;
@@ -126,6 +140,16 @@ public partial class BitPhoneInput : BitInputBase<string?>
     [Parameter] public bool NoSearchBox { get; set; }
 
     /// <summary>
+    /// The local phone number (the digits typed in the input box, without the country dialing code). (two-way bound)
+    /// <para>
+    /// This is the part the user edits. The full phone number, including the dialing code of the
+    /// selected <see cref="Country"/>, is exposed through the two-way bound <see cref="BitInputBase{T}.Value"/>.
+    /// </para>
+    /// </summary>
+    [Parameter, TwoWayBound]
+    public string? Number { get; set; }
+
+    /// <summary>
     /// The callback that is invoked when the selected country changes.
     /// </summary>
     [Parameter] public EventCallback<BitCountry?> OnCountryChange { get; set; }
@@ -161,11 +185,65 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
     /// <summary>
     /// The full phone number including the dialing code of the selected country in the form of "+[code][number]".
-    /// The dialing code is normalized to digits only (any hyphens are removed) so the result follows the E.164 format.
+    /// This is the same value exposed through the two-way bound <see cref="BitInputBase{T}.Value"/> and is kept for convenience.
     /// </summary>
-    public string? FullNumber => Country is null
-                                    ? CurrentValue
-                                    : $"+{Country.Code.Replace("-", string.Empty)}{CurrentValue}";
+    public string? FullNumber => CurrentValue;
+
+
+
+    // Builds the full phone number from the selected country and the local number. The dialing
+    // code is normalized to digits only (any hyphens are removed) so the result follows E.164.
+    // Returns null when there is no local number so an empty input maps to an empty value.
+    private static string? ComposeFullNumber(BitCountry? country, string? number)
+    {
+        if (string.IsNullOrEmpty(number)) return null;
+        if (country is null) return number;
+        return $"+{country.Code.Replace("-", string.Empty)}{number}";
+    }
+
+    // Splits a full phone number into its country and local-number parts. A leading '+' (or its
+    // "00" international call-prefix equivalent) triggers a dialing-code lookup (longest matching
+    // code wins; the current country is preferred to disambiguate shared codes like +1). Without
+    // such a prefix the whole input is treated as the local number and the current country is kept.
+    private (BitCountry? Country, string? Number) ParseFullNumber(string? full)
+    {
+        if (string.IsNullOrWhiteSpace(full)) return (Country, null);
+
+        full = full.Trim();
+
+        string digits;
+        if (full.StartsWith('+'))
+        {
+            digits = full[1..];
+        }
+        else if (full.StartsWith("00", StringComparison.Ordinal))
+        {
+            digits = full[2..];
+        }
+        else
+        {
+            return (Country, full);
+        }
+
+        BitCountry? best = null;
+        var bestLength = 0;
+        foreach (var country in _allItems)
+        {
+            var code = country.Code.Replace("-", string.Empty);
+            if (code.Length == 0 || digits.StartsWith(code, StringComparison.Ordinal) is false) continue;
+
+            // Prefer a longer (more specific) code, and prefer the currently selected country
+            // when its code is at least as specific so ambiguous codes (e.g. +1) stay stable.
+            var isCurrent = Country is not null && country.Iso2 == Country.Iso2;
+            if (code.Length > bestLength || (code.Length == bestLength && isCurrent))
+            {
+                best = country;
+                bestLength = code.Length;
+            }
+        }
+
+        return best is null ? (Country, digits) : (best, digits[bestLength..]);
+    }
 
 
 
@@ -247,6 +325,44 @@ public partial class BitPhoneInput : BitInputBase<string?>
         }
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await ReconcileValueAndParts();
+
+        await base.OnParametersSetAsync();
+    }
+
+    // Keeps the full Value and the (Number, Country) parts in sync when parameters change.
+    // An external Value change (e.g. a form or another field setting the bound value) is parsed
+    // back into the parts; otherwise the parts are the source of truth and the Value is recomposed
+    // from them. The parts and the value are always propagated through their two-way callbacks
+    // (AssignNumber/AssignCountry/SetCurrentValueAsString) so every bound parameter stays in sync.
+    private async Task ReconcileValueAndParts()
+    {
+        if (CurrentValue != _lastValue)
+        {
+            // The consumer changed the full Value, so derive the parts from it and notify the
+            // Number/Country bindings about the parsed values.
+            var (country, number) = ParseFullNumber(CurrentValue);
+
+            await AssignNumber(number);
+            if (country is not null)
+            {
+                await AssignCountry(country);
+            }
+
+            _lastValue = CurrentValue;
+            _lastNumber = Number;
+            _lastCountryIso = Country?.Iso2;
+        }
+        else if (Number != _lastNumber || Country?.Iso2 != _lastCountryIso)
+        {
+            // The parts changed (e.g. external Number/Country or the applied DefaultCountry),
+            // so recompose the full Value and notify the Value binding.
+            await UpdateValueFromParts();
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -473,10 +589,12 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
         // AssignCountry returns false for a one-way controlled Country (set without
         // CountryChanged). In that case the component cannot adopt the new selection, so
-        // raising OnCountryChange would report a country that the UI and FullNumber never
+        // raising OnCountryChange would report a country that the UI and Value never
         // actually switch to, desynchronizing consumer state. Only notify on a real change.
         if (await AssignCountry(country))
         {
+            await UpdateValueFromParts();
+
             await OnCountryChange.InvokeAsync(country);
         }
     }
@@ -485,7 +603,22 @@ public partial class BitPhoneInput : BitInputBase<string?>
     {
         if (IsEnabled is false || ReadOnly) return;
 
-        await SetCurrentValueAsStringAsync(e.Value?.ToString());
+        await AssignNumber(e.Value?.ToString());
+
+        await UpdateValueFromParts();
+    }
+
+    // Recomposes the full Value from the current Number and Country and pushes it out through
+    // the normal value pipeline so ValueChanged/OnChange and validation fire as expected.
+    private async Task UpdateValueFromParts()
+    {
+        var composed = ComposeFullNumber(Country, Number);
+
+        _lastValue = composed;
+        _lastNumber = Number;
+        _lastCountryIso = Country?.Iso2;
+
+        await SetCurrentValueAsStringAsync(composed);
     }
 
     private async Task HandleOnNumberInput(ChangeEventArgs e)

@@ -121,6 +121,13 @@ public partial class BitPhoneInputDemo
         },
         new()
         {
+            Name = "Number",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The local phone number (the digits in the input box, without the country dialing code). (two-way bound)",
+        },
+        new()
+        {
             Name = "OnCountryChange",
             Type = "EventCallback<BitCountry?>",
             DefaultValue = "",
@@ -225,6 +232,7 @@ public partial class BitPhoneInputDemo
 
 
 
+    private string? bindingValue;
     private string? bindingNumber;
     private BitCountry? bindingCountry;
     private BitCountry? changedCountry;
@@ -246,31 +254,18 @@ public partial class BitPhoneInputDemo
 <BitPhoneInput DefaultCountry=""BitCountries.UnitedStates"" Placeholder=""Enter your number"" />";
 
     private readonly string example2RazorCode = @"
-<BitPhoneInput @bind-Value=""bindingNumber""
-               @bind-Country=""bindingCountry""
-               DefaultCountry=""BitCountries.Germany""
-               Placeholder=""Enter your number"" />
-
-<div>Number: @bindingNumber</div>
-<div>Country: @bindingCountry?.Name</div>
-<div>Full number: +@bindingCountry?.Code@bindingNumber</div>";
-    private readonly string example2CsharpCode = @"
-private string? bindingNumber;
-private BitCountry? bindingCountry;";
-
-    private readonly string example3RazorCode = @"
 <BitPhoneInput Label=""Phone number""
                DefaultCountry=""BitCountries.UnitedKingdom""
                Placeholder=""Enter your number"" />";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example3RazorCode = @"
 <BitPhoneInput NoSearchBox DefaultCountry=""BitCountries.France"" Placeholder=""Enter your number"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitPhoneInput Countries=""customCountries""
                DefaultCountry=""BitCountries.Canada""
                Placeholder=""Enter your number"" />";
-    private readonly string example5CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private readonly List<BitCountry> customCountries =
 [
     BitCountries.UnitedStates,
@@ -280,10 +275,10 @@ private readonly List<BitCountry> customCountries =
     BitCountries.France,
 ];";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitPhoneInput FullWidth DefaultCountry=""BitCountries.Italy"" Placeholder=""Enter your number"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitPhoneInput Immediate
                DefaultCountry=""BitCountries.UnitedStates""
                Placeholder=""Enter your number""
@@ -303,15 +298,34 @@ private readonly List<BitCountry> customCountries =
                Placeholder=""Enter your number""
                @bind-Value=""throttledNumber"" />
 <div>Value: [@throttledNumber]</div>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private string? immediateNumber;
 private string? debouncedNumber;
 private string? throttledNumber;";
 
-    private readonly string example8RazorCode = @"
-<BitPhoneInput IsEnabled=""false"" DefaultCountry=""BitCountries.Spain"" Value=""1234567"" />
+    private readonly string example7RazorCode = @"
+<BitPhoneInput @bind-Value=""bindingValue""
+               @bind-Number=""bindingNumber""
+               @bind-Country=""bindingCountry""
+               Immediate
+               DebounceTime=""500""
+               DefaultCountry=""BitCountries.Germany""
+               Placeholder=""Enter your number"" />
 
-<BitPhoneInput ReadOnly DefaultCountry=""BitCountries.Spain"" Value=""1234567"" />";
+<BitTextField @bind-Value=""bindingValue"" Immediate DebounceTime=""500"" Placeholder=""Full phone number"" />
+
+<div>Value (full number): @bindingValue</div>
+<div>Number (local): @bindingNumber</div>
+<div>Country: @bindingCountry?.Name</div>";
+    private readonly string example7CsharpCode = @"
+private string? bindingValue;
+private string? bindingNumber;
+private BitCountry? bindingCountry;";
+
+    private readonly string example8RazorCode = @"
+<BitPhoneInput IsEnabled=""false"" DefaultCountry=""BitCountries.Spain"" Value=""+341234567"" />
+
+<BitPhoneInput ReadOnly DefaultCountry=""BitCountries.Spain"" Value=""+341234567"" />";
     private readonly string example8CsharpCode = @"";
 
     private readonly string example9RazorCode = @"

@@ -31,20 +31,7 @@
             <BitPhoneInput DefaultCountry="BitCountries.UnitedStates" Placeholder="Enter your number" />
         </DemoExample>
 
-        <DemoExample Title="Binding" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <div>Two-way bind both the phone number and the selected country.</div>
-            <br />
-            <BitPhoneInput @bind-Value="bindingNumber"
-                           @bind-Country="bindingCountry"
-                           DefaultCountry="BitCountries.Germany"
-                           Placeholder="Enter your number" />
-            <br />
-            <div>Number: @bindingNumber</div>
-            <div>Country: @bindingCountry?.Name</div>
-            <div>Full number: +@bindingCountry?.Code@bindingNumber</div>
-        </DemoExample>
-
-        <DemoExample Title="Label" RazorCode="@example3RazorCode" Id="example3">
+        <DemoExample Title="Label" RazorCode="@example2RazorCode" Id="example2">
             <div>Show a label above the field using the Label parameter.</div>
             <br />
             <BitPhoneInput Label="Phone number"
@@ -52,13 +39,13 @@
                            Placeholder="Enter your number" />
         </DemoExample>
 
-        <DemoExample Title="NoSearchBox" RazorCode="@example4RazorCode" Id="example4">
+        <DemoExample Title="NoSearchBox" RazorCode="@example3RazorCode" Id="example3">
             <div>Hide the search box of the country dropdown using the NoSearchBox parameter.</div>
             <br />
             <BitPhoneInput NoSearchBox DefaultCountry="BitCountries.France" Placeholder="Enter your number" />
         </DemoExample>
 
-        <DemoExample Title="Custom countries" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Custom countries" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>Limit the available countries by providing a custom list to the Countries parameter.</div>
             <br />
             <BitPhoneInput Countries="customCountries"
@@ -66,13 +53,13 @@
                            Placeholder="Enter your number" />
         </DemoExample>
 
-        <DemoExample Title="FullWidth" RazorCode="@example6RazorCode" Id="example6">
+        <DemoExample Title="FullWidth" RazorCode="@example5RazorCode" Id="example5">
             <div>Make the phone input fill 100% of its container width using the FullWidth parameter.</div>
             <br />
             <BitPhoneInput FullWidth DefaultCountry="BitCountries.Italy" Placeholder="Enter your number" />
         </DemoExample>
 
-        <DemoExample Title="Immediate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Immediate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 By default the value updates on the change event (when the input loses focus). Enable the
                 <b>Immediate</b> parameter to update the value on every keystroke (the 'oninput' event). To
@@ -104,14 +91,38 @@
             <div>Value: [@throttledNumber]</div>
         </DemoExample>
 
+        <DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                Two-way bind the full phone number (Value), the local number (Number), and the selected country.
+                The BitTextField below is bound to the same Value, so editing either field updates the other.
+                Both inputs are Immediate with a 500ms debounce.
+            </div>
+            <br />
+            <div style="width:300px">
+                <BitPhoneInput @bind-Value="bindingValue"
+                            @bind-Number="bindingNumber"
+                            @bind-Country="bindingCountry"
+                            Immediate
+                            DebounceTime="500"
+                            DefaultCountry="BitCountries.Germany"
+                            Placeholder="Enter your number" />
+                <br />
+                <BitTextField @bind-Value="bindingValue" Immediate DebounceTime="500" Placeholder="Full phone number" />
+                <br />
+                <div>Value (full number): @bindingValue</div>
+                <div>Number (local): @bindingNumber</div>
+                <div>Country: @bindingCountry?.Name</div>
+            </div>
+        </DemoExample>
+
         <DemoExample Title="Disabled & ReadOnly" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>Disabled:</div>
             <br />
-            <BitPhoneInput IsEnabled="false" DefaultCountry="BitCountries.Spain" Value="1234567" />
+            <BitPhoneInput IsEnabled="false" DefaultCountry="BitCountries.Spain" Value="+341234567" />
             <br /><br />
             <div>ReadOnly:</div>
             <br />
-            <BitPhoneInput ReadOnly DefaultCountry="BitCountries.Spain" Value="1234567" />
+            <BitPhoneInput ReadOnly DefaultCountry="BitCountries.Spain" Value="+341234567" />
         </DemoExample>
 
         <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
