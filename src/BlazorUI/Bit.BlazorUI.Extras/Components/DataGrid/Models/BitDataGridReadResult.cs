@@ -6,6 +6,10 @@ public sealed class BitDataGridReadResult<TItem>
 {
     public BitDataGridReadResult(IReadOnlyList<TItem> items, int totalCount)
     {
+        ArgumentNullException.ThrowIfNull(items);
+        if (totalCount < 0)
+            throw new ArgumentOutOfRangeException(nameof(totalCount), totalCount, "Total count must be greater than or equal to zero.");
+
         Items = items;
         TotalCount = totalCount;
     }

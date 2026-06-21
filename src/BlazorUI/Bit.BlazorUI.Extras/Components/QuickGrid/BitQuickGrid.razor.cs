@@ -127,7 +127,7 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public float ItemSize { get; set; } = 50;
 
     /// <summary>
-    /// A callback that supplies data for the rid.
+    /// A callback that supplies data for the grid.
     ///
     /// You should supply either <see cref="Items"/> or <see cref="ItemsProvider"/>, but not both.
     /// </summary>
@@ -347,7 +347,7 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
             {
                 _currentNonVirtualizedViewItems = result.Items;
                 _ariaBodyRowCount = _currentNonVirtualizedViewItems.Count;
-                Pagination?.SetTotalItemCountAsync(result.TotalItemCount);
+                await (Pagination?.SetTotalItemCountAsync(result.TotalItemCount) ?? Task.CompletedTask);
                 _pendingDataLoadCancellationTokenSource = null;
             }
         }
@@ -389,7 +389,7 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
             //       be better if we let the last page only be as big as its number of actual rows.
             _ariaBodyRowCount = Pagination is null ? providerResult.TotalItemCount : Pagination.ItemsPerPage;
 
-            Pagination?.SetTotalItemCountAsync(providerResult.TotalItemCount);
+            await (Pagination?.SetTotalItemCountAsync(providerResult.TotalItemCount) ?? Task.CompletedTask);
 
             // We're supplying the row index along with each row's data because we need it for aria-rowindex, and we have to account for
             // the virtualized start index. It might be more performant just to have some _latestQueryRowStartIndex field, but we'd have
@@ -446,36 +446,20 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
 
     private string? GetRowClass(TGridItem item)
     {
-        var classes = new List<string>();
+        var selected = RowClassSelector?.Invoke(item);
 
-        if (RowClass is not null)
-        {
-            classes.Add(RowClass);
-        }
-
-        if (RowClassSelector is not null)
-        {
-            classes.Add(RowClassSelector(item));
-        }
-
-        return classes.Any() ? string.Join(' ', classes) : null;
+        if (string.IsNullOrEmpty(RowClass)) return string.IsNullOrEmpty(selected) ? null : selected;
+        if (string.IsNullOrEmpty(selected)) return RowClass;
+        return $"{RowClass} {selected}";
     }
 
     private string? GetRowStyle(TGridItem item)
     {
-        var styles = new List<string>();
+        var selected = RowStyleSelector?.Invoke(item);
 
-        if (RowStyle is not null)
-        {
-            styles.Add(RowStyle);
-        }
-
-        if (RowStyleSelector is not null)
-        {
-            styles.Add(RowStyleSelector(item));
-        }
-
-        return styles.Any() ? string.Join(';', styles) : null;
+        if (string.IsNullOrEmpty(RowStyle)) return string.IsNullOrEmpty(selected) ? null : selected;
+        if (string.IsNullOrEmpty(selected)) return RowStyle;
+        return $"{RowStyle};{selected}";
     }
 
 

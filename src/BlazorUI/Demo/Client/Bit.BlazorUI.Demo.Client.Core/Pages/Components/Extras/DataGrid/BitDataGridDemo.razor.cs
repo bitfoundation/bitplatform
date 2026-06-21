@@ -145,8 +145,8 @@ public partial class BitDataGridDemo : AppComponentBase
             };
         }
 
-        var sort = request.Sorts.FirstOrDefault();
-        if (sort is not null)
+        IOrderedEnumerable<Product>? ordered = null;
+        foreach (var sort in request.Sorts)
         {
             Func<Product, object> key = sort.ColumnId switch
             {
@@ -157,10 +157,21 @@ public partial class BitDataGridDemo : AppComponentBase
                 nameof(Product.Stock) => p => p.Stock,
                 _ => p => p.Id
             };
-            query = sort.Direction == BitDataGridSortDirection.Descending
-                ? query.OrderByDescending(key)
-                : query.OrderBy(key);
+
+            if (ordered is null)
+            {
+                ordered = sort.Direction == BitDataGridSortDirection.Descending
+                    ? query.OrderByDescending(key)
+                    : query.OrderBy(key);
+            }
+            else
+            {
+                ordered = sort.Direction == BitDataGridSortDirection.Descending
+                    ? ordered.ThenByDescending(key)
+                    : ordered.ThenBy(key);
+            }
         }
+        if (ordered is not null) query = ordered;
 
         var filtered = query.ToList();
         var total = filtered.Count;
@@ -201,7 +212,9 @@ public partial class BitDataGridDemo : AppComponentBase
 
         infiniteRequests++;
         var end = request.Skip + batch.Count;
-        infiniteLog = $"Batch #{infiniteRequests} → loaded rows {request.Skip + 1}–{end} ({batch.Count} rows)";
+        infiniteLog = batch.Count == 0
+            ? $"Batch #{infiniteRequests} → no additional rows loaded"
+            : $"Batch #{infiniteRequests} → loaded rows {request.Skip + 1}–{end} ({batch.Count} rows)";
         await InvokeAsync(StateHasChanged);
 
         return new BitDataGridReadResult<Product>(batch, 0);

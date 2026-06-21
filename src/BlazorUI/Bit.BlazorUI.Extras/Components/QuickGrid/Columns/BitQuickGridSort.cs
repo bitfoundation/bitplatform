@@ -28,31 +28,31 @@ public class BitQuickGridSort<TGridItem>
     }
 
     /// <summary>
-    /// Produces a <see cref="BitQuickGridSort{T}"/> instance that sorts according to the specified <paramref name="expression"/>, ascending.
+    /// Produces a <see cref="BitQuickGridSort{TGridItem}"/> instance that sorts according to the specified <paramref name="expression"/>, ascending.
     /// </summary>
     /// <typeparam name="U">The type of the expression's value.</typeparam>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
-    /// <returns>A <see cref="BitQuickGridSort{T}"/> instance representing the specified sorting rule.</returns>
+    /// <returns>A <see cref="BitQuickGridSort{TGridItem}"/> instance representing the specified sorting rule.</returns>
     public static BitQuickGridSort<TGridItem> ByAscending<U>(Expression<Func<TGridItem, U>> expression)
         => new BitQuickGridSort<TGridItem>((queryable, asc) => asc ? queryable.OrderBy(expression) : queryable.OrderByDescending(expression),
             (expression, true));
 
     /// <summary>
-    /// Produces a <see cref="BitQuickGridSort{T}"/> instance that sorts according to the specified <paramref name="expression"/>, descending.
+    /// Produces a <see cref="BitQuickGridSort{TGridItem}"/> instance that sorts according to the specified <paramref name="expression"/>, descending.
     /// </summary>
     /// <typeparam name="U">The type of the expression's value.</typeparam>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
-    /// <returns>A <see cref="BitQuickGridSort{T}"/> instance representing the specified sorting rule.</returns>
+    /// <returns>A <see cref="BitQuickGridSort{TGridItem}"/> instance representing the specified sorting rule.</returns>
     public static BitQuickGridSort<TGridItem> ByDescending<U>(Expression<Func<TGridItem, U>> expression)
         => new BitQuickGridSort<TGridItem>((queryable, asc) => asc ? queryable.OrderByDescending(expression) : queryable.OrderBy(expression),
             (expression, false));
 
     /// <summary>
-    /// Updates a <see cref="BitQuickGridSort{T}"/> instance by appending a further sorting rule.
+    /// Updates a <see cref="BitQuickGridSort{TGridItem}"/> instance by appending a further sorting rule.
     /// </summary>
     /// <typeparam name="U">The type of the expression's value.</typeparam>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
-    /// <returns>A <see cref="BitQuickGridSort{T}"/> instance representing the specified sorting rule.</returns>
+    /// <returns>A <see cref="BitQuickGridSort{TGridItem}"/> instance representing the specified sorting rule.</returns>
     public BitQuickGridSort<TGridItem> ThenAscending<U>(Expression<Func<TGridItem, U>> expression)
     {
         _then ??= new();
@@ -65,11 +65,11 @@ public class BitQuickGridSort<TGridItem>
     }
 
     /// <summary>
-    /// Updates a <see cref="BitQuickGridSort{T}"/> instance by appending a further sorting rule.
+    /// Updates a <see cref="BitQuickGridSort{TGridItem}"/> instance by appending a further sorting rule.
     /// </summary>
     /// <typeparam name="U">The type of the expression's value.</typeparam>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
-    /// <returns>A <see cref="BitQuickGridSort{T}"/> instance representing the specified sorting rule.</returns>
+    /// <returns>A <see cref="BitQuickGridSort{TGridItem}"/> instance representing the specified sorting rule.</returns>
     public BitQuickGridSort<TGridItem> ThenDescending<U>(Expression<Func<TGridItem, U>> expression)
     {
         _then ??= new();

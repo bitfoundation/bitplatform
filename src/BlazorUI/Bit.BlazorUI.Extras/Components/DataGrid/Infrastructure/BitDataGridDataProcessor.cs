@@ -144,13 +144,13 @@ public static class BitDataGridDataProcessor
             case BitDataGridAggregateType.Sum:
             case BitDataGridAggregateType.Average:
             {
-                double sum = 0; int n = 0;
+                decimal sum = 0; int n = 0;
                 foreach (var item in source)
                 {
-                    if (TryToDouble(accessor.GetValue(item), out var d)) { sum += d; n++; }
+                    if (TryToDecimal(accessor.GetValue(item), out var d)) { sum += d; n++; }
                 }
                 if (column.Aggregate == BitDataGridAggregateType.Sum) return sum;
-                return n == 0 ? 0d : sum / n;
+                return n == 0 ? 0m : sum / n;
             }
             case BitDataGridAggregateType.Min:
             case BitDataGridAggregateType.Max:
@@ -171,11 +171,11 @@ public static class BitDataGridDataProcessor
         }
     }
 
-    private static bool TryToDouble(object? value, out double result)
+    private static bool TryToDecimal(object? value, out decimal result)
     {
         result = 0;
         if (value is null) return false;
-        try { result = Convert.ToDouble(value, CultureInfo.InvariantCulture); return true; }
+        try { result = Convert.ToDecimal(value, CultureInfo.InvariantCulture); return true; }
         catch { return false; }
     }
 

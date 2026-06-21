@@ -15,6 +15,8 @@ public static class SampleData
         var rng = new Random(seed);
         var categories = Enum.GetValues<Category>();
         var list = new List<Product>(count);
+        // Fixed reference date keeps the generated data deterministic regardless of when it runs.
+        var referenceDate = new DateTime(2024, 1, 1);
         for (int i = 1; i <= count; i++)
         {
             list.Add(new Product
@@ -26,7 +28,7 @@ public static class SampleData
                 Stock = rng.Next(0, 500),
                 Rating = Math.Round(rng.NextDouble() * 4 + 1, 1),
                 Discontinued = rng.Next(0, 5) == 0,
-                ReleaseDate = DateTime.Today.AddDays(-rng.Next(0, 2000)),
+                ReleaseDate = referenceDate.AddDays(-rng.Next(0, 2000)),
                 Supplier = Suppliers[rng.Next(Suppliers.Length)]
             });
         }

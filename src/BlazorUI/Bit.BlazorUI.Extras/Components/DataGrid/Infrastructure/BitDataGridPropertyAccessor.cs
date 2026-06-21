@@ -72,16 +72,29 @@ public sealed class BitDataGridPropertyAccessor<TItem>
     }
 
     public static BitDataGridPropertyAccessor<TItem> For(string path)
-        => Cache.GetOrAdd(path, Build);
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ArgumentException("Property path must not be null, empty or whitespace.", nameof(path));
+
+        return Cache.GetOrAdd(path, Build);
+    }
 
     private static BitDataGridPropertyAccessor<TItem> Build(string path)
     {
         var param = Expression.Parameter(typeof(TItem), "x");
         Expression body = param;
         PropertyInfo? lastProp = null;
+        Expression? nullGuard = null;
 
         foreach (var segment in path.Split('.', StringSplitOptions.RemoveEmptyEntries))
         {
+            // If the owner of this segment is an intermediate (nullable) value, guard against it being null.
+            if (!ReferenceEquals(body, param) && CanBeNull(body.Type))
+            {
+                var isNull = Expression.Equal(body, Expression.Constant(null, body.Type));
+                nullGuard = nullGuard is null ? isNull : Expression.OrElse(nullGuard, isNull);
+            }
+
             var prop = body.Type.GetProperty(segment,
                 BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
                 ?? throw new ArgumentException($"Property '{segment}' not found on type '{body.Type.Name}'.");
@@ -91,8 +104,12 @@ public sealed class BitDataGridPropertyAccessor<TItem>
 
         var propertyType = body.Type;
 
-        // Getter: x => (object)x.Path  (with null-safety on the object boxing)
-        var getterBody = Expression.Convert(body, typeof(object));
+        // Getter: x => (object)x.Path, returning null early if any intermediate property is null.
+        Expression getterBody = Expression.Convert(body, typeof(object));
+        if (nullGuard is not null)
+        {
+            getterBody = Expression.Condition(nullGuard, Expression.Constant(null, typeof(object)), getterBody);
+        }
         var getter = Expression.Lambda<Func<TItem, object?>>(getterBody, param).Compile();
 
         // Setter (only for a simple, writable, single-level-or-nested property)
@@ -108,4 +125,7 @@ public sealed class BitDataGridPropertyAccessor<TItem>
 
         return new BitDataGridPropertyAccessor<TItem>(path, propertyType, canWrite, getter, setter);
     }
+
+    private static bool CanBeNull(Type type)
+        => !type.IsValueType || Nullable.GetUnderlyingType(type) is not null;
 }

@@ -214,6 +214,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private IJSObjectReference? _infiniteHandle;
     private bool _infiniteObserverAttached;
 
+    // Cancels superseded in-flight OnRead/OnLoadMore requests.
+    private CancellationTokenSource? _loadCts;
+
     internal IReadOnlyList<BitDataGridColumn<TItem>> AllColumns => _columns;
     internal IReadOnlyList<BitDataGridColumn<TItem>> VisibleColumns => _columns.Where(c => c.Visible).ToList();
     internal IReadOnlyList<BitDataGridSortDescriptor> Sorts => _sorts;
@@ -452,26 +455,32 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _infiniteLoading = true;
         StateHasChanged();
 
-        var batch = Math.Max(1, LoadMoreBatchSize);
-        var read = new BitDataGridReadRequest
+        try
         {
-            Skip = _infiniteItems.Count,
-            Take = batch,
-            Sorts = _sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList(),
-            Filters = _filters.ToList()
-        };
+            var batch = Math.Max(1, LoadMoreBatchSize);
+            var read = new BitDataGridReadRequest
+            {
+                Skip = _infiniteItems.Count,
+                Take = batch,
+                Sorts = _sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList(),
+                Filters = _filters.ToList(),
+                CancellationToken = ResetLoadCancellation()
+            };
 
-        var result = await OnLoadMore(read);
-        var loaded = result.Items;
-        _infiniteItems.AddRange(loaded);
-        if (loaded.Count < batch) _infiniteHasMore = false;
+            var result = await OnLoadMore(read);
+            var loaded = result.Items;
+            _infiniteItems.AddRange(loaded);
+            if (loaded.Count < batch) _infiniteHasMore = false;
 
-        _view = _infiniteItems;
-        _pageItems = _infiniteItems;
-        _footerAggregates = BitDataGridDataProcessor.Aggregate(_infiniteItems, _columns);
-
-        _infiniteLoading = false;
-        StateHasChanged();
+            _view = _infiniteItems;
+            _pageItems = _infiniteItems;
+            _footerAggregates = BitDataGridDataProcessor.Aggregate(_infiniteItems, _columns);
+        }
+        finally
+        {
+            _infiniteLoading = false;
+            StateHasChanged();
+        }
     }
 
     /// <summary>Invoked from JavaScript when the viewport is scrolled near its end.</summary>
@@ -514,7 +523,21 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         catch (JSDisconnectedException) { }
         catch (JSException) { }
         _infiniteSelfRef?.Dispose();
+        _loadCts?.Cancel();
+        _loadCts?.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Cancels any in-flight data request and returns a fresh token for the next one,
+    /// so superseded requests can stop early.
+    /// </summary>
+    private CancellationToken ResetLoadCancellation()
+    {
+        _loadCts?.Cancel();
+        _loadCts?.Dispose();
+        _loadCts = new CancellationTokenSource();
+        return _loadCts.Token;
     }
 
     private async Task LoadServerDataAsync()
@@ -524,7 +547,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             Skip = Pageable ? (_currentPage - 1) * _effectivePageSize : 0,
             Take = Pageable ? _effectivePageSize : null,
             Sorts = _sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList(),
-            Filters = _filters.ToList()
+            Filters = _filters.ToList(),
+            CancellationToken = ResetLoadCancellation()
         };
         var result = await OnRead!(request);
         _pageItems = result.Items;
@@ -554,15 +578,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         if (!ColumnSortable(column)) return;
         var existing = GetSort(column);
 
-        if (!additive && (!MultiSort || true))
+        if (!additive && !MultiSort)
         {
             // Single sort: clear others unless additive
-            if (!additive)
-            {
-                var keep = existing;
-                _sorts.Clear();
-                if (keep is not null) _sorts.Add(keep);
-            }
+            var keep = existing;
+            _sorts.Clear();
+            if (keep is not null) _sorts.Add(keep);
         }
 
         if (existing is null)

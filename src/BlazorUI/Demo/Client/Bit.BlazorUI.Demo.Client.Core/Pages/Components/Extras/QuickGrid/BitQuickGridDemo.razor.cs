@@ -554,6 +554,7 @@ public partial class BitQuickGridDemo : AppComponentBase
     private IQueryable<CountryModel> allCountries = default!;
     private BitQuickGrid<FoodRecall> dataGrid = default!;
     private BitQuickGrid<ProductDto> productsDataGrid = default!;
+    private BitQuickGrid<ProductDto> loadingProductsDataGrid = default!;
     private BitQuickGridItemsProvider<FoodRecall> foodRecallProvider = default!;
     private BitQuickGridItemsProvider<ProductDto> productsItemsProvider = default!;
     private BitQuickGridPaginationState pagination1 = new() { ItemsPerPage = 7 };
@@ -656,7 +657,8 @@ public partial class BitQuickGridDemo : AppComponentBase
 
                 if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
                 {
-                    query.Add("$filter", $"contains(Name,'{_odataSampleNameFilter}')");
+                    var escapedFilter = _odataSampleNameFilter.Replace("'", "''");
+                    query.Add("$filter", $"contains(Name,'{escapedFilter}')");
                 }
 
                 if (req.GetSortByProperties().Any())
@@ -666,7 +668,7 @@ public partial class BitQuickGridDemo : AppComponentBase
 
                 var url = NavigationManager.GetUriWithQueryParameters("api/Products/GetProducts", query);
 
-                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, req.CancellationToken);
 
                 return BitQuickGridItemsProviderResult.From(data!.Items!, data!.TotalCount);
             }

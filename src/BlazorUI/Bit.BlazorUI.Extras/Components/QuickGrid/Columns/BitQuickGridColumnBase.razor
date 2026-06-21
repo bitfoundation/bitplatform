@@ -107,7 +107,7 @@
         {
             @if (ColumnOptions is not null && Align != BitQuickGridAlign.Right)
             {
-                <button type="button" class="bit-qkg-cob" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
+                <button type="button" class="bit-qkg-cob" aria-label="Column options" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
             }
 
             if (Sortable.HasValue ? Sortable.Value : IsSortableByDefault())
@@ -126,7 +126,7 @@
 
             @if (ColumnOptions is not null && Align == BitQuickGridAlign.Right)
             {
-                <button type="button" class="bit-qkg-cob" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
+                <button type="button" class="bit-qkg-cob" aria-label="Column options" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
             }
         }
     }

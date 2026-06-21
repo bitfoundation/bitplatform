@@ -44,7 +44,11 @@ namespace BitBlazorUI {
                     colOptions.style.transform = `translateX(${applyOffset}px)`;
                 }
 
-                colOptions.scrollIntoViewIfNeeded();
+                if (typeof colOptions.scrollIntoViewIfNeeded === 'function') {
+                    colOptions.scrollIntoViewIfNeeded();
+                } else {
+                    colOptions.scrollIntoView();
+                }
 
                 const autoFocusElem = colOptions.querySelector('[autofocus]');
                 if (autoFocusElem) {

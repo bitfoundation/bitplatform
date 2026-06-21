@@ -228,6 +228,7 @@ void OnReorder(BitDataGridRowReorderEventArgs<Product> e)
 </BitDataGrid>";
     private readonly string example16CsharpCode = @"
 void OnCellClick(BitDataGridCellEventArgs<Product> e) { /* e.Item, e.ColumnTitle, e.Value */ }
+void OnCellDoubleClick(BitDataGridCellEventArgs<Product> e) { /* e.Item, e.ColumnTitle, e.Value */ }
 void OnCellContextMenu(BitDataGridCellEventArgs<Product> e) { /* e.Mouse.ClientX / e.Mouse.ClientY */ }";
 
     private readonly string example17RazorCode = @"

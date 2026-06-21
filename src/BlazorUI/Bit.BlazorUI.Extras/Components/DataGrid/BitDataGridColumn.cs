@@ -127,6 +127,8 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     {
         if (HasField)
             Accessor = BitDataGridPropertyAccessor<TItem>.For(Field!);
+        else
+            Accessor = null;
     }
 
     public void Dispose() => Grid?.RemoveColumn(this);

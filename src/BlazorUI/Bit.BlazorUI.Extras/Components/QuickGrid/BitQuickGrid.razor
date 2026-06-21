@@ -104,7 +104,7 @@
 
     private void RenderPlaceholderRow(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)
     {
-        <tr aria-rowindex="@(placeholderContext.Index + 1)">
+        <tr aria-rowindex="@(placeholderContext.Index + 2)">
             @foreach (var col in _columns)
             {
                 <td class="bit-qkg-plh @ColumnClass(col)" @key="@col">

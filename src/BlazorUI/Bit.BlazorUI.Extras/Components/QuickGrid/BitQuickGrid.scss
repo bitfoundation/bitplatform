@@ -12,8 +12,7 @@
 
     &.loading > tbody {
         opacity: 0.25;
-        transition-delay: 25ms;
-        transition: opacity linear 100ms;
+        transition: opacity linear 100ms 25ms;
     }
 
     > tbody > tr > td {
