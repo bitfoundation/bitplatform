@@ -41,9 +41,9 @@
         var monthIndex = cal.GetMonth(monthDate);
         var monthName = dtf.GetMonthName(monthIndex);
         <div class="bit-bfc-year-month">
-            <div class="bit-bfc-year-month-title" @onclick="() => GoToMonth(monthDate)">
+            <button type="button" class="bit-bfc-year-month-title" @onclick="() => GoToMonth(monthDate)">
                 @monthName
-            </div>
+            </button>
             <div class="bit-bfc-year-weekdays">
                 @foreach (var wd in yearWeekDayHeaders)
                 {

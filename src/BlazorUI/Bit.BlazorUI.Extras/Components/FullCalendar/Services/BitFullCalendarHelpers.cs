@@ -207,7 +207,7 @@ public static class BitFullCalendarHelpers
         int monthsInYear   = cal.GetMonthsInYear(culturalYear);
         int lastDayOfYear  = cal.GetDaysInMonth(culturalYear, monthsInYear);
         DateTime yearEnd   = cal.ToDateTime(culturalYear, monthsInYear, lastDayOfYear, 23, 59, 59, 0);
-        return events.Where(ev => ev.StartDate.Date <= yearEnd && ev.EndDate.Date >= yearStart).ToList();
+        return events.Where(ev => ev.StartDate.Date <= yearEnd && ev.EndDate > yearStart).ToList();
     }
 
     public static string FormatTime(DateTime date, bool use24Hour)
@@ -466,7 +466,9 @@ public static class BitFullCalendarHelpers
         foreach (var ev in sorted)
         {
             var evStart = ev.StartDate.Date;
-            var evEnd = ev.EndDate.Date;
+            // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with
+            // IsSingleDay and GroupEventsByDayRange.
+            var evEnd = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
             var rangeStart = evStart < monthStart ? monthStart : evStart;
             var rangeEnd = evEnd > monthEnd ? monthEnd : evEnd;
 
@@ -581,7 +583,9 @@ public static class BitFullCalendarHelpers
         return events.Where(ev =>
         {
             var s = ev.StartDate.Date;
-            var e = ev.EndDate.Date;
+            // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with
+            // IsSingleDay and GroupEventsByDayRange.
+            var e = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
             if (weekOnly)
                 return ev.IsMultiDay && s <= target && e >= target;
             return s <= target && e >= target;
@@ -593,7 +597,7 @@ public static class BitFullCalendarHelpers
         var weekStart = StartOfWeek(date, culture);
         var weekEnd = weekStart.AddDays(6);
         return events.Where(ev =>
-            ev.StartDate.Date <= weekEnd && ev.EndDate.Date >= weekStart).ToList();
+            ev.StartDate.Date <= weekEnd && ev.EndDate > weekStart).ToList();
     }
 
     public static List<BitFullCalendarEvent> GetEventsForMonth(List<BitFullCalendarEvent> events, DateTime date, CultureInfo? culture = null)
@@ -605,7 +609,7 @@ public static class BitFullCalendarHelpers
         DateTime monthStart = cal.ToDateTime(y, m, 1, 0, 0, 0, 0);
         DateTime monthEnd   = cal.AddMonths(monthStart, 1).AddDays(-1);
         return events.Where(ev =>
-            ev.StartDate.Date <= monthEnd && ev.EndDate.Date >= monthStart).ToList();
+            ev.StartDate.Date <= monthEnd && ev.EndDate > monthStart).ToList();
     }
 
     /// <summary>

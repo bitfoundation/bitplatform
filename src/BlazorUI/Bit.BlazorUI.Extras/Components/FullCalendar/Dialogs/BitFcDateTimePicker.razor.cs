@@ -7,6 +7,8 @@ public partial class BitFcDateTimePicker : IDisposable
     [Parameter] public DateTime Value { get; set; }
     [Parameter] public EventCallback<DateTime> ValueChanged { get; set; }
     [Parameter] public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
+    [Parameter] public string PreviousMonthAriaLabel { get; set; } = "Previous month";
+    [Parameter] public string NextMonthAriaLabel { get; set; } = "Next month";
 
     private DateTime _visibleMonthAnchor;
     private int _hour;

@@ -23,4 +23,12 @@ public partial class BitFcEventListDialog
         _selectedEvent = ev;
         _showDetails = true;
     }
+
+    private async Task OnEventKeyDown(KeyboardEventArgs e, BitFullCalendarEvent ev)
+    {
+        if (e.Key is "Enter" or " " or "Spacebar")
+        {
+            await SelectEvent(ev);
+        }
+    }
 }

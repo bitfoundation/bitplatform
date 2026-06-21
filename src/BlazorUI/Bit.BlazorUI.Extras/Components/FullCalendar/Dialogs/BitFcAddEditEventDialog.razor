@@ -73,9 +73,9 @@
                     </div>
                 }
                 <div class="bit-bfc-attendee-add-row">
-                    <input type="text" @bind="_newFirstName" placeholder="@Texts.FirstNamePlaceholder" />
-                    <input type="text" @bind="_newLastName" placeholder="@Texts.LastNamePlaceholder" />
-                    <input type="text" @bind="_newId" placeholder="@Texts.IdOptionalPlaceholder" />
+                    <input type="text" @bind="_newFirstName" placeholder="@Texts.FirstNamePlaceholder" aria-label="@Texts.FirstNamePlaceholder" />
+                    <input type="text" @bind="_newLastName" placeholder="@Texts.LastNamePlaceholder" aria-label="@Texts.LastNamePlaceholder" />
+                    <input type="text" @bind="_newId" placeholder="@Texts.IdOptionalPlaceholder" aria-label="@Texts.IdOptionalPlaceholder" />
                     <button class="bit-bfc-btn bit-bfc-btn-sm" type="button" @onclick="AddAttendee">@Texts.AddButton</button>
                 </div>
                 @if (_errors.ContainsKey("attendee"))

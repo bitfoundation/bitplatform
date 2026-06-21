@@ -40,9 +40,9 @@
                         var isSelected = cell.Date.Date == State.SelectedDate.Date;
                         var cls = !cell.CurrentMonth ? "other-month" : isToday ? "today" : isSelected ? "selected" : "";
                         <td>
-                            <span class="bit-bfc-mini-calendar-day @cls" role="button" tabindex="0" @onclick="() => SelectDate(cell.Date)" @onkeydown="e => OnDayKeyDown(e, cell.Date)">
+                            <button type="button" class="bit-bfc-mini-calendar-day @cls" @onclick="() => SelectDate(cell.Date)">
                                 @cell.Day
-                            </span>
+                            </button>
                         </td>
                     }
                 </tr>

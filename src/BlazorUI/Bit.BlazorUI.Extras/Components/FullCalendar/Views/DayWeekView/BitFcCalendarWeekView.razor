@@ -41,10 +41,13 @@
                         {
                             var hour = h;
                             <div class="bit-bfc-hour-row bit-bfc-droppable @GetWeekDropClass(d, hour, 0)"
+                                 role="button"
+                                 tabindex="0"
                                  @ondragenter="() => OnDragEnterSlot(d, hour, 0)"
                                  @ondragover:preventDefault="true"
                                  @ondrop="() => OnDrop(d, hour, 0)"
-                                 @onclick="() => OnHourClickAsync(d, hour)">
+                                 @onclick="() => OnHourClickAsync(d, hour)"
+                                 @onkeydown="e => OnHourKeyDownAsync(e, d, hour)">
                                 @if (h > 0)
                                 {
                                     <div style="position:absolute;top:0;left:0;right:0;border-top:1px solid var(--bit-bfc-border);"></div>

@@ -12,7 +12,11 @@ public partial class BitFcDroppableArea
 
     private bool _isOver;
 
-    private void OnDragOver() => _isOver = true;
+    private void OnDragOver()
+    {
+        if (_isOver) return;
+        _isOver = true;
+    }
     private void OnDragLeave() => _isOver = false;
 
     private async Task OnDrop()

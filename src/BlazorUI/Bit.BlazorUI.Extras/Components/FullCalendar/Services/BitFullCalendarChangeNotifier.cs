@@ -66,7 +66,10 @@ public sealed class BitFullCalendarChangeNotifier
     }
 
     /// <summary>
-    /// Creates a deep snapshot of a calendar event payload suitable for change args.
+    /// Creates a snapshot of a calendar event payload suitable for change args. Value-type fields
+    /// and the <see cref="BitFullCalendarEvent.Attendees"/> collection are copied into fresh
+    /// instances, but the consumer-defined <see cref="BitFullCalendarEvent.Data"/> payload is
+    /// shared by reference (it is an opaque <c>object?</c> that cannot be generically cloned).
     /// </summary>
     public static BitFullCalendarEvent CloneEvent(BitFullCalendarEvent source) =>
         new()

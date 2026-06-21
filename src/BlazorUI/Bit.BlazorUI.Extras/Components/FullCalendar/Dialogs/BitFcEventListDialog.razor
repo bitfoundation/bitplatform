@@ -9,7 +9,7 @@
         <div class="bit-bfc-dialog-body" style="max-height:400px;overflow-y:auto;">
             @foreach (var ev in Events)
             {
-                <div class="bit-bfc-agenda-item" @onclick="() => SelectEvent(ev)">
+                <div class="bit-bfc-agenda-item" tabindex="0" role="button" @onclick="() => SelectEvent(ev)" @onkeydown="@(e => OnEventKeyDown(e, ev))">
                     <div class="bit-bfc-agenda-avatar bit-bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)">
                         @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
                     </div>

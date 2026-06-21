@@ -2,19 +2,20 @@
 
 @*
   Top-level mode switch (Event ⇄ Timeline). The Timeline tab is hidden when no resources are
-  supplied because the timeline mode is meaningless without resources.
+  supplied because the timeline mode is meaningless without resources, but the Event tab stays
+  visible so users are never stranded in a mode they can no longer switch out of.
 *@
 
-@if (State.Resources.Count > 0)
-{
-    <div class="bit-bfc-mode-tabs">
-        @foreach (var mode in _modes)
-        {
-            <button class="bit-bfc-mode-tab @(State.Mode == mode ? "active" : "")"
-                    type="button"
-                    @onclick="() => State.SetMode(mode)">
-                @Texts.GetModeLabel(mode)
-            </button>
-        }
-    </div>
-}
+<div class="bit-bfc-mode-tabs">
+    @foreach (var mode in _modes)
+    {
+        if (mode == BitFullCalendarMode.Timeline && State.Resources.Count == 0)
+            continue;
+
+        <button class="bit-bfc-mode-tab @(State.Mode == mode ? "active" : "")"
+                type="button"
+                @onclick="() => State.SetMode(mode)">
+            @Texts.GetModeLabel(mode)
+        </button>
+    }
+</div>

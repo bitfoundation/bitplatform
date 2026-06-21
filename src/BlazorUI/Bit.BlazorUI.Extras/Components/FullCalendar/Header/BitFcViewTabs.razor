@@ -7,6 +7,7 @@
             continue;
 
         <button class="bit-bfc-view-tab @(State.View == view ? "active" : "")"
+                type="button"
                 @onclick="() => State.SetView(view)">
             @Texts.GetViewLabel(view)
         </button>

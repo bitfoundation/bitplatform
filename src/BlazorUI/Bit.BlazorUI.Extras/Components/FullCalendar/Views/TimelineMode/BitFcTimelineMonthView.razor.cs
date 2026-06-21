@@ -116,8 +116,12 @@ public partial class BitFcTimelineMonthView
     {
         // Only the current month has a "today" scroll target; skip the interop entirely otherwise
         // so we don't make a JS round-trip on every render of a non-current month.
+        // Compare using the active culture's calendar since the rendered month follows that
+        // calendar system, not the Gregorian one.
+        var cal = State.Culture.Calendar;
         var today = DateTime.Today;
-        if (State.SelectedDate.Year != today.Year || State.SelectedDate.Month != today.Month)
+        if (cal.GetYear(State.SelectedDate) != cal.GetYear(today) ||
+            cal.GetMonth(State.SelectedDate) != cal.GetMonth(today))
             return;
 
         var sig = $"{State.SelectedDate:yyyy-MM}|{today:yyyy-MM-dd}";

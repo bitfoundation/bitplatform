@@ -11,11 +11,11 @@
     {
         <div class="bit-bfc-dtp-panel">
             <div class="bit-bfc-dtp-header">
-                <button type="button" class="bit-bfc-dtp-nav-btn" @onclick="ShowPreviousMonth" aria-label="Previous month">
+                <button type="button" class="bit-bfc-dtp-nav-btn" @onclick="ShowPreviousMonth" aria-label="@PreviousMonthAriaLabel">
                     &#8249;
                 </button>
                 <div class="bit-bfc-dtp-month-label">@GetMonthYearLabel(_visibleMonthAnchor)</div>
-                <button type="button" class="bit-bfc-dtp-nav-btn" @onclick="ShowNextMonth" aria-label="Next month">
+                <button type="button" class="bit-bfc-dtp-nav-btn" @onclick="ShowNextMonth" aria-label="@NextMonthAriaLabel">
                     &#8250;
                 </button>
             </div>

@@ -93,8 +93,6 @@ namespace BitBlazorUI {
                     el.setPointerCapture(e.pointerId);
                 } catch { /* older browsers */ }
 
-                await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
-
                 const flushMove = () => {
                     rafId = null;
                     const deltaMinutes = Math.round((latestY - startY) * minPerPixel);
@@ -138,9 +136,12 @@ namespace BitBlazorUI {
                     }
                 };
 
+                // Attach listeners before awaiting OnResizeStart so a fast pointer release is not missed.
                 document.addEventListener("pointermove", onPointerMove);
                 document.addEventListener("pointerup", endResize);
                 document.addEventListener("pointercancel", endResize);
+
+                await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
             });
         }
 
@@ -169,8 +170,6 @@ namespace BitBlazorUI {
                 let ended = false;
 
                 try { el.setPointerCapture(e.pointerId); } catch { /* older browsers */ }
-
-                await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
 
                 const flushMove = () => {
                     rafId = null;
@@ -213,9 +212,12 @@ namespace BitBlazorUI {
                     }
                 };
 
+                // Attach listeners before awaiting OnResizeStart so a fast pointer release is not missed.
                 document.addEventListener("pointermove", onPointerMove);
                 document.addEventListener("pointerup", endResize);
                 document.addEventListener("pointercancel", endResize);
+
+                await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
             });
         }
 

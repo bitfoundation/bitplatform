@@ -49,6 +49,12 @@ public partial class BitFcCalendarWeekView
         _showAddDialog = true;
     }
 
+    private async Task OnHourKeyDownAsync(KeyboardEventArgs e, DateTime day, int hour)
+    {
+        if (e.Key is "Enter" or " " or "Spacebar")
+            await OnHourClickAsync(day, hour);
+    }
+
     private async Task OnDrop(DateTime day, int hour, int minute)
     {
         _dragDate = null;
