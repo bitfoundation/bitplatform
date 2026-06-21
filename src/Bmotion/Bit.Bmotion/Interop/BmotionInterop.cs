@@ -21,6 +21,7 @@ public sealed class BmotionInterop : IAsyncDisposable
 
     public BmotionInterop(IJSRuntime js)
     {
+        ArgumentNullException.ThrowIfNull(js);
         IsInProcess = js is IJSInProcessRuntime;
         _moduleTask = new Lazy<Task<IJSObjectReference>>(
             () => js.InvokeAsync<IJSObjectReference>(

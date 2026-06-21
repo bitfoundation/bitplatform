@@ -144,7 +144,14 @@ let _programmaticSeq = 0;
 function _ensureElementId(el) {
     const existing = el.getAttribute('data-bmid');
     if (existing) return existing;
-    const id = el.id || ('bm-p' + (++_programmaticSeq));
+    let id = el.id;
+    if (!id) {
+        // Skip any generated id that already exists in the DOM so we never collide
+        // with an element that has the same id assigned elsewhere.
+        do {
+            id = 'bm-p' + (++_programmaticSeq);
+        } while (document.getElementById(id));
+    }
     el.id = id;
     el.setAttribute('data-bmid', id);
     return id;

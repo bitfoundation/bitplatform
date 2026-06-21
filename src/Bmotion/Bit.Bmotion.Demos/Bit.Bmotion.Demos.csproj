@@ -5,11 +5,15 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
-    <!--
-      Disable static web asset fingerprinting for this dev/sample app so the running
-      dev server and the browser's cached boot manifest can't drift and trigger SRI
-      integrity 404s on fingerprinted _framework assets.
-    -->
+  </PropertyGroup>
+
+  <!--
+    Disable static web asset fingerprinting only for Debug (dev) builds so the running
+    dev server and the browser's cached boot manifest can't drift and trigger SRI
+    integrity 404s on fingerprinted _framework assets. Release builds keep fingerprinting
+    enabled to avoid stale-cache issues in published deployments.
+  -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <WasmFingerprintAssets>false</WasmFingerprintAssets>
     <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
   </PropertyGroup>
