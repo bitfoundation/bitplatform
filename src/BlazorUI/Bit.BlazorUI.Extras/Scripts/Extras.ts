@@ -240,8 +240,12 @@ namespace BitBlazorUI {
             // hit the same entry.
             const cache = kind === 'script' ? Extras._scriptPromises : Extras._stylesheetPromises;
             const targetUrl = Extras.normalizeResourceUrl(url);
+            // The DOM lookup still matches by targetUrl, but the cache key for scripts also folds in the
+            // isModule flag so the same URL loaded as a classic script vs a module script are cached as
+            // distinct entries (they produce different <script> tags and execution semantics).
+            const cacheKey = kind === 'script' ? `${targetUrl}\n${isModule ? 'module' : 'classic'}` : targetUrl;
 
-            const existingPromise = cache[targetUrl];
+            const existingPromise = cache[cacheKey];
             if (existingPromise !== undefined) return existingPromise;
 
             // A tag we didn't add is host-provided. If the document has finished loading, verify the
@@ -258,11 +262,11 @@ namespace BitBlazorUI {
                 // confusing TypeError). The failed host tag is marked data-bit-load-failed, so
                 // findExistingResource skips it and the retry injects a fresh tag.
                 const withRetry = ready.catch(() => {
-                    delete cache[targetUrl];
+                    delete cache[cacheKey];
                     return Extras.loadResource(kind, url, isModule);
                 });
-                cache[targetUrl] = withRetry;
-                withRetry.catch(() => { delete cache[targetUrl]; });
+                cache[cacheKey] = withRetry;
+                withRetry.catch(() => { delete cache[cacheKey]; });
                 return withRetry;
             }
 
@@ -279,10 +283,10 @@ namespace BitBlazorUI {
                 Extras.appendResourceElement(kind, element);
             });
 
-            cache[targetUrl] = promise;
+            cache[cacheKey] = promise;
 
             // Don't cache a rejected load: a later retry should be able to attempt the resource again.
-            promise.catch(() => { delete cache[targetUrl]; });
+            promise.catch(() => { delete cache[cacheKey]; });
 
             return promise;
         }

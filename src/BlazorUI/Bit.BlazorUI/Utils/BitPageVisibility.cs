@@ -59,11 +59,15 @@ public class BitPageVisibility(IJSRuntime js) : IAsyncDisposable
                 await js.InvokeVoid("BitBlazorUI.PageVisibility.dispose");
             }
             catch (JSDisconnectedException) { } // circuit already gone; nothing to clean up on the JS side
-
-            _isInitialized = false;
+            finally
+            {
+                // Local cleanup runs in finally so it always executes even if the JS teardown throws
+                // something other than JSDisconnectedException (e.g. JSException, OperationCanceledException,
+                // InvalidOperationException), guaranteeing deterministic disposal.
+                _isInitialized = false;
+                _dotnetObj?.Dispose();
+            }
         }
-
-        _dotnetObj?.Dispose();
 
         GC.SuppressFinalize(this);
     }
