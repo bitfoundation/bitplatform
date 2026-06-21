@@ -10,11 +10,11 @@
             uploadEndpointUrl: string | undefined,
             headers: Record<string, string> | undefined) {
 
-            if (!inputElement?.files?.length) return [];
-
             if (!append) {
                 FileUpload.clear(id);
             }
+
+            if (!inputElement?.files?.length) return [];
 
             const lastIndex = append ? FileUpload._fileUploaders.filter(u => u.id === id).length : 0;
             const files = Array.from(inputElement.files).map((file, index) => ({
