@@ -16,9 +16,9 @@ namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
 /// </para>
 ///
 /// <para>
-/// Same-class delegation (e.g. <c>return Extras.loadResource(...)</c>) is propagated only from explicitly
-/// annotated/async callees — body-detected methods do not participate in the fixpoint, so heuristic false
-/// positives cannot compound through delegation chains.
+/// Same-class delegation (e.g. <c>return Extras.loadResource(...)</c>) is propagated transitively from
+/// explicitly annotated/async callees through multi-hop wrapper chains — body-detected methods do not
+/// participate in the fixpoint, so heuristic false positives cannot compound through delegation chains.
 /// </para>
 ///
 /// <para>
@@ -84,7 +84,6 @@ internal static class TsPromiseMethodScanner
                 annotatedPromise));
         }
 
-        var explicitPromiseMethods = new HashSet<string>(StringComparer.Ordinal);
         var promiseMethods = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var method in methods)
@@ -92,11 +91,14 @@ internal static class TsPromiseMethodScanner
             if (!method.DeclaredAsync && !method.AnnotatedPromise) continue;
 
             var key = $"{method.Class}.{method.Method}";
-            explicitPromiseMethods.Add(key);
             promiseMethods.Add(key);
         }
 
-        // Propagate delegation only from explicit async/: Promise sources (per-file; one class per file today).
+        // Propagate delegation transitively from explicit async/: Promise sources (per-file; one class per file
+        // today). The fixpoint checks against the growing promiseMethods set (seeded with explicitPromiseMethods)
+        // so multi-hop wrapper chains rooted at an explicit source are followed across multiple iterations.
+        // Body-scanned methods are still excluded here because they are only added after this loop, so heuristic
+        // false positives cannot compound through delegation chains.
         var changed = true;
         while (changed)
         {
@@ -107,7 +109,7 @@ internal static class TsPromiseMethodScanner
                 var key = $"{method.Class}.{method.Method}";
                 if (promiseMethods.Contains(key)) continue;
 
-                if (!BodyDelegatesToKnownMethods(method.Body, method.Class, explicitPromiseMethods)) continue;
+                if (!BodyDelegatesToKnownMethods(method.Body, method.Class, promiseMethods)) continue;
 
                 promiseMethods.Add(key);
                 changed = true;

@@ -133,6 +133,28 @@ public class TsPromiseMethodScannerTests
     }
 
     [TestMethod]
+    public void CollectFromSource_PropagatesTwoHopDelegationFromAnnotatedSource()
+    {
+        var ts = """
+            namespace BitBlazorUI {
+              class Sample {
+                private static loadAsync(): Promise<void> { return Promise.resolve(); }
+                private static wrap() { return Sample.loadAsync(); }
+                public static setup() { return Sample.wrap(); }
+              }
+            }
+            """;
+
+        var promiseMethods = TsPromiseMethodScanner.CollectFromSource(ts);
+
+        Assert.IsTrue(promiseMethods.Contains("Sample.loadAsync"));
+        Assert.IsTrue(promiseMethods.Contains("Sample.wrap"),
+            "First-hop wrapper of an explicit Promise source must be detected.");
+        Assert.IsTrue(promiseMethods.Contains("Sample.setup"),
+            "Second-hop wrapper must be detected via transitive delegation through the fixpoint.");
+    }
+
+    [TestMethod]
     public void CollectFromSource_DoesNotPropagateDelegationToBodyScannedCallee()
     {
         var ts = """

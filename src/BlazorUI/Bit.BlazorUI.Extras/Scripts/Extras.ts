@@ -194,10 +194,14 @@ namespace BitBlazorUI {
             });
         }
 
-        private static findExistingResource(kind: 'script' | 'stylesheet', targetUrl: string): HTMLElement | undefined {
+        private static findExistingResource(kind: 'script' | 'stylesheet', targetUrl: string, isModule?: boolean): HTMLElement | undefined {
             if (kind === 'script') {
+                // Match the script type too: a classic script must not be reused when a module script is
+                // requested (or vice versa), since they produce different <script> tags and execution semantics.
+                const wantModule = !!isModule;
                 return Array.from(document.scripts).find(s => !!s.src
                     && Extras.normalizeResourceUrl(s.src) === targetUrl
+                    && (s.type === 'module') === wantModule
                     && !s.hasAttribute('data-bit-load-failed')
                     && !(document.readyState === 'complete' && !Extras.isHostScriptLoaded(s)));
             }
@@ -254,7 +258,7 @@ namespace BitBlazorUI {
             // instead of assuming readiness from the mere presence of the tag. Waiting is gated on
             // document.readyState so we never block on a 'load' event that has already fired.
             // Host resources that failed to apply/load are skipped here so a working tag can be injected below.
-            const existingTag = Extras.findExistingResource(kind, targetUrl);
+            const existingTag = Extras.findExistingResource(kind, targetUrl, isModule);
             if (existingTag) {
                 const ready = Extras.awaitHostResource(existingTag, kind, url);
                 // Drop the cache entry before delegating so the retry doesn't read this very promise back
