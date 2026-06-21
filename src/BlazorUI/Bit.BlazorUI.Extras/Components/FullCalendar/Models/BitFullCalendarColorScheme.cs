@@ -56,7 +56,7 @@ public sealed class BitFullCalendarColorScheme
         if (opt is not null && !string.IsNullOrWhiteSpace(opt.Value))
             return opt.Value;
         var first = Options.Count > 0 ? Options[0] : null;
-        return first?.Value ?? "#3b82f6";
+        return !string.IsNullOrWhiteSpace(first?.Value) ? first!.Value : "#3b82f6";
     }
 
     /// <summary>

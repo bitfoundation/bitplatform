@@ -4,7 +4,7 @@
     <div class="bit-bfc-dialog" @onclick:stopPropagation="true">
         <div class="bit-bfc-dialog-header bit-bfc-dialog-header-row">
             <h3>@Event.Title</h3>
-            <button class="bit-bfc-dialog-close-btn" @onclick="OnClose" aria-label="@Texts.CloseAriaLabel">
+            <button type="button" class="bit-bfc-dialog-close-btn" @onclick="OnClose" aria-label="@Texts.CloseAriaLabel">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
         </div>
@@ -66,10 +66,10 @@
         </div>
         <div class="bit-bfc-dialog-footer" style="justify-content:space-between;">
             <div style="display:flex;gap:8px;">
-                <button class="bit-bfc-btn" @onclick="EditAsync">@Texts.EditButton</button>
-                <button class="bit-bfc-btn bit-bfc-btn-danger" @onclick="Delete">@Texts.DeleteButton</button>
+                <button type="button" class="bit-bfc-btn" @onclick="EditAsync">@Texts.EditButton</button>
+                <button type="button" class="bit-bfc-btn bit-bfc-btn-danger" @onclick="Delete">@Texts.DeleteButton</button>
             </div>
-            <button class="bit-bfc-btn" @onclick="OnClose">@Texts.CloseButton</button>
+            <button type="button" class="bit-bfc-btn" @onclick="OnClose">@Texts.CloseButton</button>
         </div>
     </div>
 </div>

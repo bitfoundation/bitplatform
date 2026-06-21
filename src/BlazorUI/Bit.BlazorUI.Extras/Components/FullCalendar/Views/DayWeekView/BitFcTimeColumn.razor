@@ -7,7 +7,7 @@
         <div class="bit-bfc-time-slot-label">
             @if (hour > 0)
             {
-                @BitFullCalendarHelpers.FormatHourLabel(hour, State.Use24HourFormat)
+                @BitFullCalendarHelpers.FormatHourLabel(hour, State.Use24HourFormat, State.Culture)
             }
         </div>
     }

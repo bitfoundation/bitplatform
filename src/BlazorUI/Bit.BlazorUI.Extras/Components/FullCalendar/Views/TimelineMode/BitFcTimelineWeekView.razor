@@ -83,7 +83,7 @@
                     var hour = h;
                     var isScrollTarget = dayIndex == scrollDayIdx && hour == scrollHour;
                     <div class="bit-bfc-tl-time-cell" style="width:@(hourWidth)px;" data-bit-bfc-tl-scroll-target="@(isScrollTarget ? "true" : null)">
-                        <span class="bit-bfc-tl-time-cell-label">@BitFullCalendarHelpers.FormatHourLabel(hour, State.Use24HourFormat)</span>
+                        <span class="bit-bfc-tl-time-cell-label">@BitFullCalendarHelpers.FormatHourLabel(hour, State.Use24HourFormat, State.Culture)</span>
                     </div>
                 }
             }
@@ -114,7 +114,8 @@
                      @ondragover:preventDefault="true"
                      @ondrop="() => OnDrop(rowKey, day, hour, 0)"
                      @onclick="() => OnSlotClickAsync(rowKey, day, hour, 0)"
-                     @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day, hour, 0)">
+                     @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day, hour, 0)"
+                     @onkeydown:preventDefault="true">
                     <div class="bit-bfc-tl-cell-half @(isPreviewHalf ? "bit-bfc-tl-drop-preview" : "")"
                          role="button"
                          tabindex="0"
@@ -127,6 +128,7 @@
                          @onclick:stopPropagation="true"
                          @onclick="() => OnSlotClickAsync(rowKey, day, hour, 30)"
                          @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day, hour, 30)"
+                         @onkeydown:preventDefault="true"
                          @onkeydown:stopPropagation="true"></div>
                     <div class="bit-bfc-cell-add-hint" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -166,7 +168,8 @@
                      @ondragover:preventDefault="true"
                      @ondrop="() => OnDrop(rowKey, day, hour, 0)"
                      @onclick="() => OnSlotClickAsync(rowKey, day, hour, 0)"
-                     @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day, hour, 0)">
+                     @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day, hour, 0)"
+                     @onkeydown:preventDefault="true">
                     <div class="bit-bfc-tl-cell-half @(isPreviewHalf ? "bit-bfc-tl-drop-preview" : "")"
                          role="button"
                          tabindex="0"
@@ -179,6 +182,7 @@
                          @onclick:stopPropagation="true"
                          @onclick="() => OnSlotClickAsync(rowKey, day, hour, 30)"
                          @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day, hour, 30)"
+                         @onkeydown:preventDefault="true"
                          @onkeydown:stopPropagation="true"></div>
                 </div>
             }

@@ -4,6 +4,7 @@ public partial class BitFcCalendarToast : IAsyncDisposable
 {
     private readonly List<ToastItem> _toasts = [];
     private readonly List<CancellationTokenSource> _removalTokens = [];
+    private readonly object _removalTokensLock = new();
     private int _nextId;
 
     public void Show(string message, bool isError = false)
@@ -13,7 +14,10 @@ public partial class BitFcCalendarToast : IAsyncDisposable
         StateHasChanged();
 
         var cts = new CancellationTokenSource();
-        _removalTokens.Add(cts);
+        lock (_removalTokensLock)
+        {
+            _removalTokens.Add(cts);
+        }
         _ = RemoveAfterDelay(item.Id, cts);
     }
 
@@ -41,16 +45,28 @@ public partial class BitFcCalendarToast : IAsyncDisposable
         {
             // Drop the token as soon as its timer finishes (or is cancelled) so _removalTokens
             // doesn't grow unbounded on long-lived pages that show many toasts.
-            if (_removalTokens.Remove(cts))
+            bool removed;
+            lock (_removalTokensLock)
+            {
+                removed = _removalTokens.Remove(cts);
+            }
+            if (removed)
                 cts.Dispose();
         }
     }
 
     public ValueTask DisposeAsync()
     {
-        // Snapshot first: RemoveAfterDelay also removes/disposes tokens as their timers complete,
-        // so iterating the live list here could race with that cleanup.
-        foreach (var cts in _removalTokens.ToArray())
+        // Snapshot under the lock: RemoveAfterDelay also removes/disposes tokens as their timers
+        // complete, so reading the live list here could race with that cleanup.
+        CancellationTokenSource[] tokens;
+        lock (_removalTokensLock)
+        {
+            tokens = _removalTokens.ToArray();
+            _removalTokens.Clear();
+        }
+
+        foreach (var cts in tokens)
         {
             try
             {
@@ -62,7 +78,6 @@ public partial class BitFcCalendarToast : IAsyncDisposable
                 // Already disposed by RemoveAfterDelay's cleanup; nothing to do.
             }
         }
-        _removalTokens.Clear();
         return ValueTask.CompletedTask;
     }
 

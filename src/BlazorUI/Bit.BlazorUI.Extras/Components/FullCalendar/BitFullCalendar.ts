@@ -90,6 +90,8 @@ namespace BitBlazorUI {
                 let rafId: number | null = null;
                 let activePointerId: number | null = e.pointerId;
                 let ended = false;
+                let startSucceeded = false;
+                let pendingEnd = false;
 
                 try {
                     el.setPointerCapture(e.pointerId);
@@ -104,6 +106,8 @@ namespace BitBlazorUI {
                 const onPointerMove = (ev: PointerEvent) => {
                     if (ev.pointerId !== activePointerId) return;
                     latestY = ev.clientY;
+                    // Don't emit move events until resize-start has been acknowledged by Blazor.
+                    if (!startSucceeded) return;
                     if (rafId == null) {
                         rafId = requestAnimationFrame(() => {
                             void flushMove();
@@ -113,6 +117,8 @@ namespace BitBlazorUI {
 
                 const endResize = async (ev?: PointerEvent) => {
                     if (ev && activePointerId != null && ev.pointerId !== activePointerId) return;
+                    // A pointer release before resize-start completes is deferred and replayed afterwards.
+                    if (!startSucceeded) { pendingEnd = true; return; }
                     if (ended) return;
                     ended = true;
                     document.removeEventListener("pointermove", onPointerMove);
@@ -144,6 +150,9 @@ namespace BitBlazorUI {
                 document.addEventListener("pointercancel", endResize);
 
                 await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
+                startSucceeded = true;
+                // Replay a pointer release that happened before start completed.
+                if (pendingEnd) await endResize();
             });
         }
 
@@ -170,6 +179,8 @@ namespace BitBlazorUI {
                 let rafId: number | null = null;
                 let activePointerId: number | null = e.pointerId;
                 let ended = false;
+                let startSucceeded = false;
+                let pendingEnd = false;
 
                 try { el.setPointerCapture(e.pointerId); } catch { /* older browsers */ }
 
@@ -182,6 +193,8 @@ namespace BitBlazorUI {
                 const onPointerMove = (ev: PointerEvent) => {
                     if (ev.pointerId !== activePointerId) return;
                     latestX = ev.clientX;
+                    // Don't emit move events until resize-start has been acknowledged by Blazor.
+                    if (!startSucceeded) return;
                     if (rafId == null) {
                         rafId = requestAnimationFrame(() => { void flushMove(); });
                     }
@@ -189,6 +202,8 @@ namespace BitBlazorUI {
 
                 const endResize = async (ev?: PointerEvent) => {
                     if (ev && activePointerId != null && ev.pointerId !== activePointerId) return;
+                    // A pointer release before resize-start completes is deferred and replayed afterwards.
+                    if (!startSucceeded) { pendingEnd = true; return; }
                     if (ended) return;
                     ended = true;
                     document.removeEventListener("pointermove", onPointerMove);
@@ -220,6 +235,9 @@ namespace BitBlazorUI {
                 document.addEventListener("pointercancel", endResize);
 
                 await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
+                startSucceeded = true;
+                // Replay a pointer release that happened before start completed.
+                if (pendingEnd) await endResize();
             });
         }
 

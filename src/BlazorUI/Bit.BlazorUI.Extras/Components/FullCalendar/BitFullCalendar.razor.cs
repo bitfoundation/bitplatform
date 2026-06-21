@@ -139,6 +139,7 @@ public partial class BitFullCalendar : IDisposable
     private BitFullCalendarChangeNotifier _changeNotifier = default!;
     private BitFullCalendarColorScheme _colorScheme = new(null);
     private BitFullCalendarOptions? _appliedOptions;
+    private bool _initialModeApplied;
 
     private BitCascadingValueList BuildCascadingValues() => new()
     {
@@ -174,8 +175,6 @@ public partial class BitFullCalendar : IDisposable
     {
         State.Initialize(Events ?? [], ResolveCulture());
         ApplyOptions();
-        if (InitialMode.HasValue)
-            State.SetMode(InitialMode.Value);
         _changeNotifier = new BitFullCalendarChangeNotifier(State, args => OnChange.InvokeAsync(args));
         State.OnStateChanged += HandleStateChanged;
         State.OnDateRangeChanged += HandleDateRangeChanged;
@@ -192,6 +191,15 @@ public partial class BitFullCalendar : IDisposable
             State.SyncEvents(Events);
 
         State.SyncResources(Resources);
+
+        // Apply InitialMode after resources are synced: Timeline mode requires Resources to be
+        // populated to take effect. Guarded so it only runs on the initial parameter set.
+        if (!_initialModeApplied)
+        {
+            _initialModeApplied = true;
+            if (InitialMode.HasValue)
+                State.SetMode(InitialMode.Value);
+        }
 
         ApplyOptions();
     }

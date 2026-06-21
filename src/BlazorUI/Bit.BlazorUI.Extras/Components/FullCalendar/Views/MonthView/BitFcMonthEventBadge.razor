@@ -14,12 +14,14 @@
     var colorStyleVar = ColorScheme.GetColorStyle(Event.Color);
     var showTitle = Position is "first" or "none";
     var showTime = Position is "last" or "none";
+    var badgeAriaLabel = $"{Event.Title}, {BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)} - {BitFullCalendarHelpers.FormatTime(Event.EndDate, State.Use24HourFormat, State.Culture)}";
 }
 
 <div class="bit-bfc-event-badge @colorClass @positionClass"
      style="@($"{colorStyleVar}{MarginStyle}")"
      role="button"
      tabindex="0"
+     aria-label="@badgeAriaLabel"
      draggable="true"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"

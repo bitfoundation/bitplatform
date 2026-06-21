@@ -179,7 +179,13 @@ public class BitFullCalendarState
     public void SyncEvents(List<BitFullCalendarEvent> events)
     {
         if (EventsMatch(events))
+        {
+            // References are unchanged, but event properties (color, attendees, ...) may have been
+            // mutated in place. Recompute the filtered projection so filter-dependent state stays
+            // accurate. Skip the change notification to avoid a re-render loop from OnParametersSet.
+            ApplyFilters();
             return;
+        }
 
         _allEvents = [.. events];
         ApplyFilters();

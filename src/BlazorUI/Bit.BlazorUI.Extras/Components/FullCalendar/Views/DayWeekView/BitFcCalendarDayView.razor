@@ -90,7 +90,7 @@
                         }
                         <div class="bit-bfc-happening-event-meta">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat) - @BitFullCalendarHelpers.FormatTime(ev.EndDate, State.Use24HourFormat)
+                            @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture) - @BitFullCalendarHelpers.FormatTime(ev.EndDate, State.Use24HourFormat, State.Culture)
                         </div>
                     </button>
                 }

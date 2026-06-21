@@ -229,7 +229,7 @@ public partial class BitFcTimelineEventBlock
             return startStr == endStr ? startStr : $"{startStr} - {endStr}";
         }
 
-        return $"{BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat)} - {BitFullCalendarHelpers.FormatTime(end, State.Use24HourFormat)}";
+        return $"{BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)} - {BitFullCalendarHelpers.FormatTime(end, State.Use24HourFormat, State.Culture)}";
     }
 
     public void Dispose() => _dotNetRef?.Dispose();

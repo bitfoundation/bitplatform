@@ -210,11 +210,12 @@ public static class BitFullCalendarHelpers
         return events.Where(ev => ev.StartDate.Date <= yearEnd && ev.EndDate > yearStart).ToList();
     }
 
-    public static string FormatTime(DateTime date, bool use24Hour)
+    public static string FormatTime(DateTime date, bool use24Hour, CultureInfo? culture = null)
     {
+        culture ??= CultureInfo.CurrentUICulture;
         return use24Hour
-            ? date.ToString("HH:mm", CultureInfo.CurrentUICulture)
-            : date.ToString("h:mm tt", CultureInfo.CurrentUICulture);
+            ? date.ToString("HH:mm", culture)
+            : date.ToString("h:mm tt", culture);
     }
 
     /// <summary>
@@ -245,12 +246,13 @@ public static class BitFullCalendarHelpers
         return string.Join('\n', lines);
     }
 
-    public static string FormatHourLabel(int hour, bool use24Hour)
+    public static string FormatHourLabel(int hour, bool use24Hour, CultureInfo? culture = null)
     {
         var dt = DateTime.Today.AddHours(hour);
+        culture ??= CultureInfo.CurrentUICulture;
         return use24Hour
-            ? dt.ToString("HH:00", CultureInfo.CurrentUICulture)
-            : dt.ToString("h tt", CultureInfo.CurrentUICulture);
+            ? dt.ToString("HH:00", culture)
+            : dt.ToString("h tt", culture);
     }
 
     /// <summary>

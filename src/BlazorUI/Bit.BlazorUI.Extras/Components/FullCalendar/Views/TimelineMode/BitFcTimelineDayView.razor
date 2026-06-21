@@ -45,7 +45,7 @@
                 var hour = h;
                 var isScrollTarget = hour == scrollHour;
                 <div class="bit-bfc-tl-time-cell" style="width:@(hourWidth)px;" data-bit-bfc-tl-scroll-target="@(isScrollTarget ? "true" : null)">
-                    <span class="bit-bfc-tl-time-cell-label">@BitFullCalendarHelpers.FormatHourLabel(hour, State.Use24HourFormat)</span>
+                    <span class="bit-bfc-tl-time-cell-label">@BitFullCalendarHelpers.FormatHourLabel(hour, State.Use24HourFormat, State.Culture)</span>
                 </div>
             }
         </div>
