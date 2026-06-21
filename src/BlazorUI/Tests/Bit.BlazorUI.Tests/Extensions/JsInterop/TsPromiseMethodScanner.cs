@@ -480,10 +480,60 @@ internal static class TsPromiseMethodScanner
         }
 
         var annotationStart = ++i;
-        while (i < text.Length && text[i] != '{' && text[i] != ';')
+
+        // Walk the return-type annotation while tracking the nesting depth of (), [] and <> so that a '{'
+        // belonging to the type rather than the method body is not mistaken for the body's opening brace.
+        // Two cases must be skipped: a top-level object-literal return type (e.g. "{ [id: string]: GlState }")
+        // and a '{' nested inside a generic argument (e.g. "Promise<{ x: number }>"). We use an "expecting type"
+        // flag (true right after ':' and after the type operators '<', '(', '|', '&', ',') to recognize an
+        // object-literal type and skip the whole balanced { ... }; the first '{' reached once a complete type has
+        // been read (at depth zero) is the actual method body.
+        var depth = 0;
+        var expectingType = true;
+        while (i < text.Length)
         {
             i = SkipNonCode(text, i, out var skipped);
             if (skipped) continue;
+            if (i >= text.Length) break;
+
+            var c = text[i];
+
+            if (char.IsWhiteSpace(c)) { i++; continue; }
+
+            if (c is '(' or '[' or '<')
+            {
+                depth++;
+                expectingType = true;
+                i++;
+                continue;
+            }
+
+            if (c is ')' or ']' or '>')
+            {
+                if (depth > 0) depth--;
+                expectingType = false;
+                i++;
+                continue;
+            }
+
+            if (depth == 0)
+            {
+                if (c == ';') break;
+
+                if (c == '{')
+                {
+                    if (!expectingType) break; // the method body's opening brace
+
+                    // Object-literal type in return position: skip the whole balanced { ... } and keep scanning.
+                    var close = FindMatching(text, i, '{', '}');
+                    if (close < 0) break;
+                    i = close + 1;
+                    expectingType = false;
+                    continue;
+                }
+            }
+
+            expectingType = c is '|' or '&' or ',';
             i++;
         }
 
