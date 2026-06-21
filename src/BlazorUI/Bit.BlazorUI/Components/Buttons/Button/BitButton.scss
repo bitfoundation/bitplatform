@@ -290,7 +290,7 @@
     --bit-btn-clr-txt: #{$clr-fg-pri};
     --bit-btn-clr-hover: #{$clr-bg-sec-hover};
     --bit-btn-clr-active: #{$clr-bg-sec-active};
-    --bit-btn-clr-focus: #{$clr-bg-sec};
+    --bit-btn-clr-focus: #{$clr-bg-sec-focus};
     --bit-btn-clr-spn: #{$clr-fg-pri};
     --bit-btn-clr-dis: #{$clr-bg-sec-dis};
     --bit-btn-clr-dis-text: #{$clr-bg-sec-dis-text};
@@ -301,7 +301,7 @@
     --bit-btn-clr-txt: #{$clr-fg-pri};
     --bit-btn-clr-hover: #{$clr-bg-ter-hover};
     --bit-btn-clr-active: #{$clr-bg-ter-active};
-    --bit-btn-clr-focus: #{$clr-bg-ter};
+    --bit-btn-clr-focus: #{$clr-bg-ter-focus};
     --bit-btn-clr-spn: #{$clr-fg-pri};
     --bit-btn-clr-dis: #{$clr-bg-ter-dis};
     --bit-btn-clr-dis-text: #{$clr-bg-ter-dis-text};
@@ -323,7 +323,7 @@
     --bit-btn-clr-txt: #{$clr-bg-pri};
     --bit-btn-clr-hover: #{$clr-fg-sec-hover};
     --bit-btn-clr-active: #{$clr-fg-sec-active};
-    --bit-btn-clr-focus: #{$clr-fg-sec};
+    --bit-btn-clr-focus: #{$clr-fg-sec-focus};
     --bit-btn-clr-spn: #{$clr-bg-pri};
     --bit-btn-clr-dis: #{$clr-fg-sec-dis};
     --bit-btn-clr-dis-text: #{$clr-fg-sec-dis-text};
@@ -334,7 +334,7 @@
     --bit-btn-clr-txt: #{$clr-bg-pri};
     --bit-btn-clr-hover: #{$clr-fg-ter-hover};
     --bit-btn-clr-active: #{$clr-fg-ter-active};
-    --bit-btn-clr-focus: #{$clr-fg-ter};
+    --bit-btn-clr-focus: #{$clr-fg-ter-focus};
     --bit-btn-clr-spn: #{$clr-bg-pri};
     --bit-btn-clr-dis: #{$clr-fg-ter-dis};
     --bit-btn-clr-dis-text: #{$clr-fg-ter-dis-text};
@@ -356,7 +356,7 @@
     --bit-btn-clr-txt: #{$clr-fg-pri};
     --bit-btn-clr-hover: #{$clr-brd-sec-hover};
     --bit-btn-clr-active: #{$clr-brd-sec-active};
-    --bit-btn-clr-focus: #{$clr-brd-sec};
+    --bit-btn-clr-focus: #{$clr-brd-sec-focus};
     --bit-btn-clr-spn: #{$clr-fg-pri};
     --bit-btn-clr-dis: #{$clr-brd-sec-dis};
     --bit-btn-clr-dis-text: #{$clr-brd-sec-dis-text};
@@ -367,7 +367,7 @@
     --bit-btn-clr-txt: #{$clr-fg-pri};
     --bit-btn-clr-hover: #{$clr-brd-ter-hover};
     --bit-btn-clr-active: #{$clr-brd-ter-active};
-    --bit-btn-clr-focus: #{$clr-brd-ter};
+    --bit-btn-clr-focus: #{$clr-brd-ter-focus};
     --bit-btn-clr-spn: #{$clr-fg-pri};
     --bit-btn-clr-dis: #{$clr-brd-ter-dis};
     --bit-btn-clr-dis-text: #{$clr-brd-ter-dis-text};

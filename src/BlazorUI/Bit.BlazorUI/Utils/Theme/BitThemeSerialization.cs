@@ -42,7 +42,7 @@ public static class BitThemeSerialization
     /// <summary>
     /// Normalizes <paramref name="theme"/> in place so every nested branch object is non-null,
     /// matching a freshly-constructed <c>new BitTheme()</c>. Returns the same instance for
-    /// convenient chaining. A <see langword="null"/> argument is ignored.
+    /// convenient chaining.
     /// </summary>
     /// <remarks>
     /// Exposed for the CSS-variable mapper and merge entry points (<see cref="BitThemeMapper"/>):
@@ -54,12 +54,9 @@ public static class BitThemeSerialization
     /// </remarks>
     internal static BitTheme Normalize(BitTheme theme)
     {
-        if (theme is not null)
-        {
-            EnsureNestedObjects(theme);
-        }
+        EnsureNestedObjects(theme);
 
-        return theme!;
+        return theme;
     }
 
     /// <summary>Removes JSON object properties whose value is an empty object <c>{}</c>, depth-first, so parents collapse when all children were empty.</summary>

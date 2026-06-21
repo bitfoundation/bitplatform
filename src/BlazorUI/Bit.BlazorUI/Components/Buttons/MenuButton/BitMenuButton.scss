@@ -331,7 +331,7 @@
     --bit-mnb-clr-txt: #{$clr-fg-pri};
     --bit-mnb-clr-hover: #{$clr-bg-sec-hover};
     --bit-mnb-clr-active: #{$clr-bg-sec-active};
-    --bit-mnb-clr-focus: #{$clr-bg-sec};
+    --bit-mnb-clr-focus: #{$clr-bg-sec-focus};
     --bit-mnb-clr-dis: #{$clr-bg-sec-dis};
     --bit-mnb-clr-dis-text: #{$clr-bg-sec-dis-text};
 }
@@ -341,7 +341,7 @@
     --bit-mnb-clr-txt: #{$clr-fg-pri};
     --bit-mnb-clr-hover: #{$clr-bg-ter-hover};
     --bit-mnb-clr-active: #{$clr-bg-ter-active};
-    --bit-mnb-clr-focus: #{$clr-bg-ter};
+    --bit-mnb-clr-focus: #{$clr-bg-ter-focus};
     --bit-mnb-clr-dis: #{$clr-bg-ter-dis};
     --bit-mnb-clr-dis-text: #{$clr-bg-ter-dis-text};
 }
@@ -361,7 +361,7 @@
     --bit-mnb-clr-txt: #{$clr-bg-pri};
     --bit-mnb-clr-hover: #{$clr-fg-sec-hover};
     --bit-mnb-clr-active: #{$clr-fg-sec-active};
-    --bit-mnb-clr-focus: #{$clr-fg-sec};
+    --bit-mnb-clr-focus: #{$clr-fg-sec-focus};
     --bit-mnb-clr-dis: #{$clr-fg-sec-dis};
     --bit-mnb-clr-dis-text: #{$clr-fg-sec-dis-text};
 }
@@ -371,7 +371,7 @@
     --bit-mnb-clr-txt: #{$clr-bg-pri};
     --bit-mnb-clr-hover: #{$clr-fg-ter-hover};
     --bit-mnb-clr-active: #{$clr-fg-ter-active};
-    --bit-mnb-clr-focus: #{$clr-fg-ter};
+    --bit-mnb-clr-focus: #{$clr-fg-ter-focus};
     --bit-mnb-clr-dis: #{$clr-fg-ter-dis};
     --bit-mnb-clr-dis-text: #{$clr-fg-ter-dis-text};
 }
@@ -391,7 +391,7 @@
     --bit-mnb-clr-txt: #{$clr-fg-pri};
     --bit-mnb-clr-hover: #{$clr-brd-sec-hover};
     --bit-mnb-clr-active: #{$clr-brd-sec-active};
-    --bit-mnb-clr-focus: #{$clr-brd-sec};
+    --bit-mnb-clr-focus: #{$clr-brd-sec-focus};
     --bit-mnb-clr-dis: #{$clr-brd-sec-dis};
     --bit-mnb-clr-dis-text: #{$clr-brd-sec-dis-text};
 }
@@ -401,7 +401,7 @@
     --bit-mnb-clr-txt: #{$clr-fg-pri};
     --bit-mnb-clr-hover: #{$clr-brd-ter-hover};
     --bit-mnb-clr-active: #{$clr-brd-ter-active};
-    --bit-mnb-clr-focus: #{$clr-brd-ter};
+    --bit-mnb-clr-focus: #{$clr-brd-ter-focus};
     --bit-mnb-clr-dis: #{$clr-brd-ter-dis};
     --bit-mnb-clr-dis-text: #{$clr-brd-ter-dis-text};
 }

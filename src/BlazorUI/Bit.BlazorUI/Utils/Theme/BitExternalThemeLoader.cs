@@ -22,19 +22,24 @@ public sealed class BitExternalThemeLoader
     /// <paramref name="linkElementId"/> with the given <paramref name="href"/>.
     /// </summary>
     /// <param name="linkElementId">DOM id used to find / create the link element.</param>
-    /// <param name="href">Stylesheet URL. Same-origin paths and absolute http/https URLs are accepted; non-http schemes are rejected.</param>
+    /// <param name="href">
+    /// Stylesheet URL. Only same-origin references are accepted: a same-origin relative path
+    /// (e.g. <c>/css/dark.css</c>) or an absolute http/https URL that resolves to the current
+    /// origin. Non-http(s) schemes and protocol-relative URLs are rejected here, and the JS side
+    /// additionally enforces same-origin (cross-origin http/https URLs are rejected there).
+    /// </param>
     public ValueTask AttachStylesheetAsync(string linkElementId, string href)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(linkElementId);
         ArgumentException.ThrowIfNullOrWhiteSpace(href);
 
-        // Defense-in-depth href validation. The XML doc warns the caller to use trusted URLs, but
-        // the JS side does no checking, so a tampered or user-supplied href could attach a
-        // `javascript:`/`data:` link that browsers may actually load when probed. Rejecting them
-        // here keeps the loader honest. Protocol-relative URLs (e.g. `//host/x.css`) are also
-        // rejected because the browser resolves them as cross-origin http(s), which violates the
-        // documented "same-origin relative path or absolute http/https URL" contract. Relative
-        // paths (no scheme) are allowed because that's the common same-origin case
+        // Defense-in-depth href validation. This C# check rejects `javascript:`/`data:`/`vbscript:`
+        // schemes and protocol-relative URLs up front so a tampered or user-supplied href can't
+        // attach a dangerous <link>. The JS side (BitTheme.ts) repeats these checks and also
+        // enforces same-origin, rejecting cross-origin http/https URLs; this C# layer intentionally
+        // does not re-implement the origin comparison (it has no reliable view of the document
+        // origin) and leaves that final gate to the browser-side validator. Relative paths
+        // (no scheme) are allowed because that's the common same-origin case
         // ("/css/dark.css", "themes/light.css").
         ValidateHref(href);
 

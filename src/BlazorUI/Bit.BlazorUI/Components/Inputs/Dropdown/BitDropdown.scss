@@ -34,6 +34,18 @@
                 @include focus-ring($clr-err-focus);
             }
         }
+
+        &.bit-drp-nbd {
+            .bit-drp-wrp {
+                &:focus {
+                    box-shadow: none;
+                }
+
+                &:focus-visible {
+                    @include focus-underline-ring($clr-err-focus);
+                }
+            }
+        }
     }
 
     &.bit-dis {
