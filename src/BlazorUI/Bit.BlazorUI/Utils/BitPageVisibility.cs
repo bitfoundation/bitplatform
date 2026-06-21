@@ -5,7 +5,7 @@
 /// <br />
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API"/>
 /// </summary>
-public class BitPageVisibility(IJSRuntime js) : IDisposable
+public class BitPageVisibility(IJSRuntime js) : IAsyncDisposable
 {
     private bool _isInitialized;
     private DotNetObjectReference<BitPageVisibility>? _dotnetObj;
@@ -47,17 +47,24 @@ public class BitPageVisibility(IJSRuntime js) : IDisposable
 
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         if (_isInitialized)
         {
-            _isInitialized = false;
+            // Awaits the JS teardown so the global visibilitychange listener is actually cleared and any
+            // failure surfaces instead of being swallowed by a fire-and-forget call. The JS-side init guard
+            // is reset too, so a future instance can re-init.
+            try
+            {
+                await js.InvokeVoid("BitBlazorUI.PageVisibility.dispose");
+            }
+            catch (JSDisconnectedException) { } // circuit already gone; nothing to clean up on the JS side
 
-            // Tears down the global visibilitychange listener and resets the JS-side init guard,
-            // so the now-disposed _dotnetObj is no longer referenced and a future instance can re-init.
-            _ = js.InvokeVoid("BitBlazorUI.PageVisibility.dispose");
+            _isInitialized = false;
         }
 
         _dotnetObj?.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

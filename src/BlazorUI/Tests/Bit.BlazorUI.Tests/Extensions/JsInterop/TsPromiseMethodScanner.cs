@@ -50,8 +50,6 @@ internal static class TsPromiseMethodScanner
     /// </summary>
     public static HashSet<string> CollectFromSource(string text)
     {
-        var result = new HashSet<string>(StringComparer.Ordinal);
-
         var classMatches = TsClassRegex.Matches(text)
             .Select(m => (Name: m.Groups["class"].Value, Index: m.Index))
             .OrderBy(c => c.Index)
@@ -127,12 +125,8 @@ internal static class TsPromiseMethodScanner
             }
         }
 
-        foreach (var key in promiseMethods)
-        {
-            result.Add(key);
-        }
-
-        return result;
+        // promiseMethods is the fully-populated result set; return it directly rather than copying.
+        return promiseMethods;
     }
 
     /// <summary>

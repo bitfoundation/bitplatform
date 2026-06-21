@@ -26,7 +26,7 @@
             try {
                 bitController?.dotnetObj?.dispose();
             } catch (e) {
-                console.error(e);
+                console.error("BitBlazorUI.ColorPicker.dispose:", e);
             }
 
             ColorPicker._bitControllers = ColorPicker._bitControllers.filter(bc => bc.id != id);

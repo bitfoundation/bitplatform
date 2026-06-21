@@ -60,6 +60,11 @@ public class FastInvokeSyncContractTests
                 {
                     var identifier = match.Groups["id"].Value;
                     // Reduce "BitBlazorUI.Utils.getBodyWidth" to "Utils.getBodyWidth" for TS class.method lookup.
+                    // This assumes TS class names are unique across the scanned sources: two classes with the
+                    // same name in different namespaces would collapse to the same key and could produce a false
+                    // positive. That's acceptable for the current single-project layout (one class per file,
+                    // distinct class names), so the simpler last-two-segments match is preferred over tracking
+                    // full namespaces. Revisit if the TypeScript sources ever introduce duplicate class names.
                     var classMethod = LastTwoSegments(identifier);
                     if (classMethod is null) continue;
 
