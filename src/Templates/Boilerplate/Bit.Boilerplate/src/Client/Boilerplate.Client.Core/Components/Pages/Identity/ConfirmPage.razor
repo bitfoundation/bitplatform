@@ -98,9 +98,9 @@
                                     <AppDataAnnotationsValidator />
 
                                     <BitStack FillContent>
-                                        <BitTextField @bind-Value="phoneModel.PhoneNumber"
+                                        <BitPhoneInput @bind-Value="phoneModel.PhoneNumber"
                                                       AutoFocus TabIndex="1"
-                                                      Type="BitInputType.Tel"
+                                                      DefaultCountry="@BitCountries.Current"
                                                       Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                                       IsEnabled="string.IsNullOrEmpty(PhoneNumberQueryString)"
                                                       Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
