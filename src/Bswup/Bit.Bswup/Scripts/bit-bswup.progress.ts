@@ -87,10 +87,19 @@
                         bswupEl && (bswupEl.style.display = 'block');
 
                         if (showAssets_ && assetsEl && data.asset) {
+                            // Build the row with the DOM API and textContent rather than
+                            // innerHTML. The url/hash come from the asset manifest (build
+                            // output), but assigning them via innerHTML would still treat any
+                            // markup-like characters as HTML; textContent guarantees they are
+                            // rendered as literal text, closing the injection surface for free.
                             const li = document.createElement('li');
-                            li.innerHTML = `${data.index}: <b>${data.asset.url}</b>: ${data.asset.hash}`
+                            const urlEl = document.createElement('b');
+                            urlEl.textContent = data.asset.url;
+                            li.append(`${data.index}: `, urlEl, `: ${data.asset.hash}`);
                             assetsEl.prepend(li);
-                        }                        const percent = Math.round(data.percent);
+                        }
+
+                        const percent = Math.round(data.percent);
                         const perStr = `${percent}%`;
                         bswupEl && bswupEl.style.setProperty('--bit-bswup-percent', perStr)
                         bswupEl && bswupEl.style.setProperty('--bit-bswup-percent-text', `"${perStr}"`)
@@ -98,7 +107,7 @@
                         // Keep the ARIA value in sync with the visual bar so assistive
                         // technology announces progress, not just a static 0%.
                         progressEl && progressEl.setAttribute('aria-valuenow', String(percent));
-                        percentEl && (percentEl.innerHTML = `${percent}%`);
+                        percentEl && (percentEl.textContent = `${percent}%`);
                         return showLogs_ ? console.log('asset downloaded:', data) : undefined;
 
                     case BswupMessage.downloadFinished:

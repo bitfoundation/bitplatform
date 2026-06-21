@@ -9,12 +9,12 @@
 // script. We avoid re-declaring `self` as ServiceWorkerGlobalScope because that conflicts
 // with the lib's own declaration in a non-module script. These declarations are ambient, so
 // bit-bswup.sw-cleanup.ts in the same compilation sees them too.
-interface WorkerGlobalScope {
-    clients: Clients
-    skipWaiting(): Promise<void>
+interface Window {
+    clients: any
+    skipWaiting: any
     importScripts: any
+    
     assetsManifest: any           // injected by service-worker-assets.js (version + asset list)
-
     assetsInclude: any            // extra RegExp(s) of asset URLs to precache
     assetsExclude: any            // RegExp(s) of asset URLs to skip
     externalAssets: any           // additional (often cross-origin) assets to cache
@@ -103,8 +103,6 @@ const CACHE_NAME_PREFIX = 'bit-bswup';
 const CACHE_VERSION = (typeof self.cacheVersion === 'string' && self.cacheVersion) || VERSION;
 const CACHE_NAME = `${CACHE_NAME_PREFIX} - ${CACHE_VERSION}`;
 
-let integrityFailureCount = 0;
-
 // Named presets that expand into a coherent bundle of the individual self.* settings, so an
 // app can pick a caching strategy with a single `mode` value instead of wiring each flag.
 // The comment beside each case names a representative app using that strategy. Every preset
@@ -170,9 +168,9 @@ diag('MAX_RETRIES:', MAX_RETRIES, 'RETRY_DELAY:', RETRY_DELAY);
 // event with waitUntil() so the browser keeps the worker alive until our async work
 // settles; fetch uses respondWith() to take over the response; message handles the
 // page<->worker commands (SKIP_WAITING, CLAIM_CLIENTS, BLAZOR_STARTED, CLEAN_UP).
-self.addEventListener('install', (e: ExtendableEvent) => e.waitUntil(handleInstall(e)));
-self.addEventListener('activate', (e: ExtendableEvent) => e.waitUntil(handleActivate(e)));
-self.addEventListener('fetch', (e: FetchEvent) => e.respondWith(handleFetch(e)));
+self.addEventListener('install', (e) => e.waitUntil(handleInstall(e)));
+self.addEventListener('activate', (e) => e.waitUntil(handleActivate(e)));
+self.addEventListener('fetch', (e) => e.respondWith(handleFetch(e)));
 self.addEventListener('message', handleMessage);
 
 async function handleInstall(e: any) {
@@ -485,8 +483,25 @@ async function createAssetsCache(ignoreProgressReport = false) {
     let current = 0;
     let total = UNIQUE_ASSETS.length;
 
-    const oldUrls = [] as any[];
-    const updatedAssets = [] as any[];
+    // Resolve each manifest asset to the exact absolute cache key the Cache API stores for it
+    // (createCacheUrl + the same URL resolution cache.put performs). Diffing the existing
+    // cache against these precomputed keys is exact and unambiguous.
+    //
+    // The previous approach recovered the asset URL and hash by splitting each cached key on
+    // its last '.', which mis-parsed hashless keys: 'index.html' became url 'index' + hash
+    // 'html', so every hashless asset looked "removed" and was re-downloaded on each update
+    // even when disableHashlessAssetsUpdate was set. Its endsWith fallback could also conflate
+    // distinct assets that merely share a URL suffix ('app.css' vs 'myapp.css'). Exact-key
+    // matching avoids both.
+    const fold = (s: string) => self.caseInsensitiveUrl ? s.toLowerCase() : s;
+    const assetByCacheKey = new Map<string, any>();
+    for (const asset of UNIQUE_ASSETS) {
+        assetByCacheKey.set(fold(new Request(createCacheUrl(asset)).url), asset);
+    }
+
+    // Assets confirmed present at their current cache key - these are not re-downloaded.
+    const cachedAssets = new Set<any>();
+
     // Collect stale entries to delete and await them as a batch below, rather than firing
     // newCache.delete(...) unawaited. The unawaited form let deletes race the subsequent
     // addCache puts (and the concurrent post-BLAZOR_STARTED top-up run), so a freshly
@@ -497,35 +512,42 @@ async function createAssetsCache(ignoreProgressReport = false) {
         const key = newCacheKeys[i];
         if (!key || !key.url) continue;
 
-        const lastIndex = key.url.lastIndexOf('.');
-        let url = lastIndex === -1 ? key.url : key.url.substring(0, lastIndex);
-        let hash = lastIndex === -1 ? '' : key.url.substring(lastIndex + 1);
-        oldUrls.push({ url, hash });
-
-        const foundAsset = UNIQUE_ASSETS.find(a => urlEndsWith(url, a.url));
-        if (!foundAsset) {
-            diag('*** removed oldUrl:', key.url);
+        const matched = assetByCacheKey.get(fold(key.url));
+        if (!matched) {
+            // No current asset maps to this key: the asset was removed from the manifest, or
+            // its hash changed (a changed hash yields a different key, so the old hashed key
+            // no longer matches). Either way it's stale - drop it.
+            diag('*** removed/stale cache key:', key.url);
             keysToDelete.push(key.url);
-        } else if ((hash && hash !== foundAsset.hash) || (!hash && !self.disableHashlessAssetsUpdate)) {
-            diag('*** updated oldUrl:', key.url);
-            keysToDelete.push(key.url);
-            updatedAssets.push(foundAsset);
+            continue;
         }
+
+        // Exact key match: the asset is cached at its current version. Hashed keys are
+        // content-addressed, so an unchanged hash means the bytes are current - keep them.
+        // Hashless keys carry no version, so re-download them each update unless the app
+        // opts out via disableHashlessAssetsUpdate.
+        if (!matched.hash && !self.disableHashlessAssetsUpdate) {
+            diag('*** refreshing hashless cache key:', key.url);
+            keysToDelete.push(key.url);
+        } else {
+            cachedAssets.add(matched);
+        }
+    }
+
+    // Always refresh the default document on each update so navigations pick up the latest
+    // app shell even when its hash is unchanged. If it was kept above, drop it from the kept
+    // set and delete its current entry so it is re-fetched below.
+    const defaultAsset = UNIQUE_ASSETS.find(a => a.url === DEFAULT_URL);
+    if (defaultAsset && cachedAssets.has(defaultAsset)) {
+        cachedAssets.delete(defaultAsset);
+        keysToDelete.push(new Request(createCacheUrl(defaultAsset)).url); // get the latest version of the default doc in each update if exists!!
     }
 
     await Promise.all(keysToDelete.map(url => newCache.delete(url)));
 
-    const defaultAsset = UNIQUE_ASSETS.find(a => a.url === DEFAULT_URL);
-    if (defaultAsset && !updatedAssets.includes(defaultAsset)) {
-        updatedAssets.push(defaultAsset); // get the latest version of the default doc in each update if exists!!
-    }
+    const assetsToCache = UNIQUE_ASSETS.filter(a => !cachedAssets.has(a));
 
-    diag('oldUrls:', oldUrls);
-    diag('updatedAssets:', updatedAssets);
-
-    const assetsToCache = updatedAssets.concat(UNIQUE_ASSETS.filter(a => !oldUrls.find(u => urlEndsWith(u.url, a.url) || urlEndsWith(a.url, u.url))));
-
-    diag('assetsToCache:', assetsToCache);
+    diag('cachedAssets:', cachedAssets.size, 'assetsToCache:', assetsToCache);
 
     total = assetsToCache.length;
 
@@ -739,19 +761,6 @@ function normalizeNonNegativeInt(value: any, fallback: number) {
     return Math.floor(n);
 }
 
-// Case-folding aware `endsWith` for asset URLs. handleFetch already resolves assets
-// case-insensitively when self.caseInsensitiveUrl is set; the install/update diff must use
-// the same folding so a pure casing change in the manifest/served path (e.g. IIS serving
-// Bit.Bswup.Foo.css vs bit.bswup.foo.css) is not mistaken for a removed+added asset, which
-// would needlessly evict and re-download a byte-identical file. Hashes stay case-sensitive
-// and are compared separately, so SRI/base64 integrity is unaffected.
-function urlEndsWith(value: string, suffix: string) {
-    if (self.caseInsensitiveUrl) {
-        return value.toLowerCase().endsWith(suffix.toLowerCase());
-    }
-    return value.endsWith(suffix);
-}
-
 // Builds the network Request used to download an asset. The asset version (its own hash, or
 // the manifest version as a fallback) is base64url-normalized and appended as a `?v=` cache
 // buster so each published version is fetched distinctly. For the default document the
@@ -940,18 +949,6 @@ function prepareRegExpArray(value: any) {
         console.warn('BitBswup SW: ignoring non-RegExp entry (expected RegExp or string):', p);
         return null;
     }).filter((p): p is RegExp => p !== null);
-}
-
-// When caseInsensitiveUrl is enabled, every URL-matching pattern (prohibited / server-handled
-// / server-rendered URLs and the user include/exclude lists) should fold case too, so routing
-// and asset matching behave consistently with the explicit toLowerCase comparisons in
-// handleFetch. Without this a pattern like /admin/ would not match /ADMIN/ even with
-// caseInsensitiveUrl set - a surprising gap for the security-relevant prohibitedUrls list.
-// Patterns that already carry the `i` flag (including RegExp instances the app built with it)
-// are returned unchanged.
-function applyUrlCaseSensitivity(re: RegExp): RegExp {
-    if (!self.caseInsensitiveUrl || re.flags.indexOf('i') !== -1) return re;
-    return new RegExp(re.source, re.flags + 'i');
 }
 
 // When caseInsensitiveUrl is enabled, every URL-matching pattern (prohibited / server-handled
