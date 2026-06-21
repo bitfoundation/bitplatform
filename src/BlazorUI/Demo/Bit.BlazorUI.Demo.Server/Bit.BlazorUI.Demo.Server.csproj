@@ -20,7 +20,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Jint" Version="4.10.0" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.1" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.7.0" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
@@ -59,12 +58,6 @@
             <Generator>PublicResXFileCodeGenerator</Generator>
             <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
         </EmbeddedResource>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-        <None Include="..\..\Bit.BlazorUI.Extras\wwwroot\marked\marked-15.0.7.js" Link="wwwroot\marked\marked-15.0.7.js">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
     </ItemGroup>
 
 </Project>

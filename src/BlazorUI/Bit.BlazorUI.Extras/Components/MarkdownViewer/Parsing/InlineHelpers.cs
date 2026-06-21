@@ -1,0 +1,47 @@
+using System.Text;
+using Bit.BlazorUI.Markdown.Syntax;
+
+namespace Bit.BlazorUI.Markdown.Parsing;
+
+/// <summary>Shared utilities used by the core inline parsers.</summary>
+public static class InlineHelpers
+{
+    public static int CountRun(string s, int start, char c)
+    {
+        int j = start;
+        while (j < s.Length && s[j] == c) j++;
+        return j - start;
+    }
+
+    public static bool IsAsciiPunctuation(char c) =>
+        (c >= '!' && c <= '/') || (c >= ':' && c <= '@') ||
+        (c >= '[' && c <= '`') || (c >= '{' && c <= '~');
+
+    public static bool IsPunctuation(char c) =>
+        IsAsciiPunctuation(c) || char.IsPunctuation(c) || char.IsSymbol(c);
+
+    /// <summary>Produces the plain-text form of inline nodes (used for image alt text).</summary>
+    public static string PlainText(IEnumerable<MarkdownNode> nodes)
+    {
+        var sb = new StringBuilder();
+        Append(nodes, sb);
+        return sb.ToString();
+
+        static void Append(IEnumerable<MarkdownNode> ns, StringBuilder sb)
+        {
+            foreach (var node in ns)
+            {
+                switch (node)
+                {
+                    case TextNode t: sb.Append(t.Text); break;
+                    case CodeSpanNode c: sb.Append(c.Content); break;
+                    case ImageNode im: sb.Append(im.Alt); break;
+                    case LineBreakNode: sb.Append(' '); break;
+                    default:
+                        if (node.ChildNodes is { } children) Append(children, sb);
+                        break;
+                }
+            }
+        }
+    }
+}

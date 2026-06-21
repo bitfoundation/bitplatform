@@ -1,0 +1,84 @@
+using Bit.BlazorUI.Markdown.Rendering;
+using Bit.BlazorUI.Markdown.Syntax;
+
+namespace Bit.BlazorUI;
+
+/// <summary>
+/// BitMarkdownViewer is a native, SEO friendly Blazor component that renders Markdown
+/// to HTML entirely in C#. There is no JavaScript interop and no third-party packages.
+/// </summary>
+/// <remarks>
+/// <para>
+/// By default the component understands only the basic CommonMark core. Richer flavors
+/// (GitHub tables, strikethrough, task lists, autolinks, emoji, ...) are opt-in: supply
+/// a <see cref="Pipeline"/> built with the desired extensions (for example
+/// <see cref="BitMarkdownPipelines.GitHub"/>).
+/// </para>
+/// <para>
+/// Parsing produces an AST which is walked with a <see cref="Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder"/>,
+/// so the output is real DOM rather than an <c>innerHTML</c> blob. Raw HTML in the source
+/// is treated as text and link / image URLs are sanitized, keeping the output safe from
+/// script injection by default.
+/// </para>
+/// </remarks>
+public partial class BitMarkdownViewer : BitComponentBase
+{
+    private DocumentNode _document = new();
+    private string? _parsedSource;
+    private BitMarkdownPipeline? _parsedWith;
+
+
+
+    /// <summary>
+    /// The Markdown string value to render as html elements.
+    /// </summary>
+    [Parameter] public string? Markdown { get; set; }
+
+    /// <summary>
+    /// The processing pipeline (flavor set). Defaults to <see cref="BitMarkdownPipeline.Basic"/>,
+    /// i.e. the basic CommonMark core with no extensions.
+    /// </summary>
+    [Parameter] public BitMarkdownPipeline? Pipeline { get; set; }
+
+
+
+    protected override string RootElementClass => "bit-mdv";
+
+    private BitMarkdownPipeline EffectivePipeline => Pipeline ?? BitMarkdownPipeline.Basic;
+
+    protected override void OnParametersSet()
+    {
+        var pipeline = EffectivePipeline;
+
+        // Re-parse only when the source or the pipeline reference changes.
+        if (_parsedSource != Markdown || ReferenceEquals(_parsedWith, pipeline) is false)
+        {
+            _document = pipeline.Parse(Markdown);
+            _parsedSource = Markdown;
+            _parsedWith = pipeline;
+        }
+
+        base.OnParametersSet();
+    }
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var renderer = EffectivePipeline.CreateRenderer();
+
+        builder.OpenElement(renderer.NextSeq(), "div");
+
+        builder.AddMultipleAttributes(renderer.NextSeq(), HtmlAttributes);
+        builder.AddAttribute(renderer.NextSeq(), "id", _Id);
+        builder.AddAttribute(renderer.NextSeq(), "style", StyleBuilder.Value);
+        builder.AddAttribute(renderer.NextSeq(), "class", ClassBuilder.Value);
+        if (Dir is not null)
+        {
+            builder.AddAttribute(renderer.NextSeq(), "dir", Dir.Value.ToString().ToLower());
+        }
+        builder.AddElementReferenceCapture(renderer.NextSeq(), v => RootElement = v);
+
+        renderer.WriteNodes(builder, _document.Children);
+
+        builder.CloseElement();
+    }
+}

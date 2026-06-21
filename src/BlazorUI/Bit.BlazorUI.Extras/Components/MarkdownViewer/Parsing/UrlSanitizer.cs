@@ -1,0 +1,54 @@
+namespace Bit.BlazorUI.Markdown.Parsing;
+
+/// <summary>
+/// Sanitizes link and image URLs so untrusted Markdown cannot inject active
+/// content (e.g. <c>javascript:</c> URIs) into the rendered output.
+/// </summary>
+internal static class UrlSanitizer
+{
+    // Schemes that are safe to allow for links.
+    private static readonly string[] AllowedLinkSchemes =
+        { "http:", "https:", "mailto:", "tel:", "ftp:", "ftps:" };
+
+    // Schemes that are safe to allow for image sources.
+    private static readonly string[] AllowedImageSchemes =
+        { "http:", "https:" };
+
+    public static string Sanitize(string url, bool isImage)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return string.Empty;
+
+        string trimmed = url.Trim();
+
+        // Relative URLs, anchors and protocol-relative URLs are allowed.
+        if (trimmed.StartsWith('#') || trimmed.StartsWith('/') ||
+            trimmed.StartsWith("./") || trimmed.StartsWith("../") ||
+            trimmed.StartsWith("//"))
+        {
+            return trimmed;
+        }
+
+        // Only treat the text before the first ':' as a scheme if it appears
+        // before any '/', '?' or '#'. Otherwise it's a relative path.
+        int colon = trimmed.IndexOf(':');
+        if (colon < 0)
+            return trimmed; // no scheme => relative
+
+        int slash = trimmed.IndexOfAny(new[] { '/', '?', '#' });
+        if (slash >= 0 && slash < colon)
+            return trimmed; // ':' belongs to the path, not a scheme
+
+        // Compare scheme case-insensitively, ignoring embedded control chars.
+        string scheme = trimmed[..(colon + 1)].Replace("\t", "").Replace("\n", "").ToLowerInvariant();
+        var allowed = isImage ? AllowedImageSchemes : AllowedLinkSchemes;
+        foreach (var s in allowed)
+        {
+            if (scheme == s)
+                return trimmed;
+        }
+
+        // Unknown/blocked scheme.
+        return string.Empty;
+    }
+}
