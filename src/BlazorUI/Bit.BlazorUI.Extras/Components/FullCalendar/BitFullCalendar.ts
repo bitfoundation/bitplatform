@@ -149,7 +149,21 @@ namespace BitBlazorUI {
                 document.addEventListener("pointerup", endResize);
                 document.addEventListener("pointercancel", endResize);
 
-                await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
+                try {
+                    await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
+                } catch {
+                    // Resize-start failed: detach the listeners we just attached so they don't
+                    // dangle and release any captured pointer.
+                    document.removeEventListener("pointermove", onPointerMove);
+                    document.removeEventListener("pointerup", endResize);
+                    document.removeEventListener("pointercancel", endResize);
+                    try {
+                        if (activePointerId != null && typeof el.releasePointerCapture === "function")
+                            el.releasePointerCapture(activePointerId);
+                    } catch { }
+                    activePointerId = null;
+                    return;
+                }
                 startSucceeded = true;
                 // Replay a pointer release that happened before start completed.
                 if (pendingEnd) await endResize();
@@ -234,7 +248,21 @@ namespace BitBlazorUI {
                 document.addEventListener("pointerup", endResize);
                 document.addEventListener("pointercancel", endResize);
 
-                await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
+                try {
+                    await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
+                } catch {
+                    // Resize-start failed: detach the listeners we just attached so they don't
+                    // dangle and release any captured pointer.
+                    document.removeEventListener("pointermove", onPointerMove);
+                    document.removeEventListener("pointerup", endResize);
+                    document.removeEventListener("pointercancel", endResize);
+                    try {
+                        if (activePointerId != null && typeof el.releasePointerCapture === "function")
+                            el.releasePointerCapture(activePointerId);
+                    } catch { }
+                    activePointerId = null;
+                    return;
+                }
                 startSucceeded = true;
                 // Replay a pointer release that happened before start completed.
                 if (pendingEnd) await endResize();

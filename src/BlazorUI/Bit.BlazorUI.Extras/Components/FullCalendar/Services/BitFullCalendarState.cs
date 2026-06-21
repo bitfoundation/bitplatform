@@ -72,6 +72,11 @@ public class BitFullCalendarState
     /// </summary>
     public void SetMode(BitFullCalendarMode mode)
     {
+        // Timeline mode requires at least one resource. Refuse to enter it when there are none
+        // so the state never lands in an unsupported (timeline-without-resources) configuration.
+        if (mode == BitFullCalendarMode.Timeline && _resources.Count == 0)
+            mode = BitFullCalendarMode.Event;
+
         if (Mode == mode)
             return;
 
@@ -203,6 +208,15 @@ public class BitFullCalendarState
             return;
 
         _resources = next;
+
+        // If resources were emptied while Timeline mode is active, fall back to Event mode so the
+        // calendar never stays in the unsupported timeline-without-resources state.
+        if (Mode == BitFullCalendarMode.Timeline && _resources.Count == 0)
+        {
+            Mode = BitFullCalendarMode.Event;
+            View = ClampViewForMode(View, Mode);
+        }
+
         NotifyStateChanged();
     }
 

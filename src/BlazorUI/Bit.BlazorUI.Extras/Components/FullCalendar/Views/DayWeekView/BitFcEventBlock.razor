@@ -15,7 +15,7 @@
         translateYPx = (displayStart - _resizeBaseEvent.StartDate).TotalMinutes / 60.0 * BitFullCalendarHelpers.HourHeightPx;
     var inv = System.Globalization.CultureInfo.InvariantCulture;
     var blockStyle = $"{colorStyleVar}height:{heightPx.ToString("F0", inv)}px;transform:translateY({translateYPx.ToString("F2", inv)}px);";
-    var tooltip = BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat);
+    var tooltip = BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture);
     var resizeClasses = "";
     if (_isResizing)
     {

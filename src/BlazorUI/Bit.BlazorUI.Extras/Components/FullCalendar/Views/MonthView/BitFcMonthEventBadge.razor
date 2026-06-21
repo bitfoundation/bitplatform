@@ -48,7 +48,7 @@
 
         @if (showTime)
         {
-            <span class="bit-bfc-event-badge-time">@BitFullCalendarHelpers.FormatTime(Position == "last" ? Event.EndDate : Event.StartDate, State.Use24HourFormat)</span>
+            <span class="bit-bfc-event-badge-time">@BitFullCalendarHelpers.FormatTime(Position == "last" ? Event.EndDate : Event.StartDate, State.Use24HourFormat, State.Culture)</span>
         }
     }
 </div>

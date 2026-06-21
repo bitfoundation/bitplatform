@@ -189,6 +189,10 @@ public partial class BitFullCalendar : IDisposable
 
         if (Events is not null)
             State.SyncEvents(Events);
+        else
+            // Events was cleared (set back to null); drop any previously loaded events so the
+            // calendar display reflects the empty state instead of keeping stale items.
+            State.SyncEvents([]);
 
         State.SyncResources(Resources);
 

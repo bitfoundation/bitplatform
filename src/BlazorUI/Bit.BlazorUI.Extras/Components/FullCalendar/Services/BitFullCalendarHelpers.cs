@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -223,13 +223,13 @@ public static class BitFullCalendarHelpers
     /// and (when present and not redundant with the title) the description. Used by event cards
     /// where layout space may hide most of the visual content.
     /// </summary>
-    public static string BuildEventTooltip(BitFullCalendarEvent ev, bool use24Hour)
+    public static string BuildEventTooltip(BitFullCalendarEvent ev, bool use24Hour, CultureInfo? culture = null)
     {
         if (ev is null)
             return string.Empty;
 
         var title = string.IsNullOrWhiteSpace(ev.Title) ? string.Empty : ev.Title.Trim();
-        var time = $"{FormatTime(ev.StartDate, use24Hour)} - {FormatTime(ev.EndDate, use24Hour)}";
+        var time = $"{FormatTime(ev.StartDate, use24Hour, culture)} - {FormatTime(ev.EndDate, use24Hour, culture)}";
 
         var lines = new List<string>(3);
         if (!string.IsNullOrEmpty(title))
@@ -616,7 +616,7 @@ public static class BitFullCalendarHelpers
 
     /// <summary>
     /// Events overlapping the date range implied by the current view and selected date
-    /// (used for attendee filters and similar â€œin this viewâ€ logic).
+    /// (used for attendee filters and similar "in this view" logic).
     /// </summary>
     public static List<BitFullCalendarEvent> GetEventsForView(
         List<BitFullCalendarEvent> events,
