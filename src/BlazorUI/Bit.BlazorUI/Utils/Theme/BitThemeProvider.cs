@@ -25,6 +25,23 @@ public sealed class BitThemeProvider : ComponentBase
     [Parameter] public BitTheme? Theme { get; set; }
 
     /// <summary>
+    /// Opts this provider into treating <see cref="Theme"/> and <see cref="ParentTheme"/> as
+    /// immutable ("frozen"). When <see langword="true"/>, the provider skips the relatively
+    /// expensive per-render rebuild (the <see cref="BitThemeMapper"/> merge that allocates a fresh
+    /// all-token <see cref="BitTheme"/> plus the ~300-entry CSS-variable string build) whenever both
+    /// references are unchanged since the last render — it just keeps the previously cached result.
+    /// </summary>
+    /// <remarks>
+    /// This is a performance opt-in for the common case where callers hand the provider a stable
+    /// <see cref="BitTheme"/> instance and never mutate it in place. The trade-off is that in-place
+    /// mutation of a frozen theme is NOT detected (the references don't change, so nothing is
+    /// rebuilt or re-cascaded); assign a new <see cref="BitTheme"/> instance to apply changes.
+    /// Leave this <see langword="false"/> (the default) to keep the mutation-in-place behavior where
+    /// every parameters update rebuilds from the current token values.
+    /// </remarks>
+    [Parameter] public bool Frozen { get; set; }
+
+    /// <summary>
     /// Optional name for <see cref="CascadingValue{T}"/>; when set, consumers use <c>[CascadingParameter(Name = …)]</c>.
     /// The cascaded <see cref="BitTheme"/> is the merge of <see cref="Theme"/> with <see cref="ParentTheme"/> (same as inline CSS variables on this provider's root).
     /// </summary>
@@ -59,6 +76,11 @@ public sealed class BitThemeProvider : ComponentBase
     private BitTheme? _cachedMergedTheme;
     private string? _cachedCssVarStyle;
 
+    // The Theme/ParentTheme references the cached result above was built from. Only consulted when
+    // Frozen is true, to short-circuit the merge + CSS rebuild when neither reference changed.
+    private BitTheme? _lastTheme;
+    private BitTheme? _lastParentTheme;
+
     protected override void OnParametersSet()
     {
         if (Theme is null && ParentTheme is null)
@@ -82,6 +104,19 @@ public sealed class BitThemeProvider : ComponentBase
             return;
         }
 
+        // Frozen fast path: when the caller opts into treating the theme references as immutable,
+        // skip the merge + CSS-string rebuild entirely if neither Theme nor ParentTheme changed by
+        // reference since the cached result was produced. _cachedCssVarStyle is only non-null after a
+        // rebuild in this branch, so this guards against reusing a stale cache from the Theme-null /
+        // no-tokens branches above.
+        if (Frozen
+            && _cachedCssVarStyle is not null
+            && ReferenceEquals(Theme, _lastTheme)
+            && ReferenceEquals(ParentTheme, _lastParentTheme))
+        {
+            return;
+        }
+
         // Always produce a FRESH merged BitTheme (BitThemeMapper.Merge allocates a new instance),
         // even when there is no ParentTheme. This keeps the CascadingValue<BitTheme?> change-detection
         // behavior consistent: previously the no-parent path cascaded the caller's own Theme instance,
@@ -94,6 +129,11 @@ public sealed class BitThemeProvider : ComponentBase
         var mergedTheme = BitThemeMapper.Merge(Theme, ParentTheme ?? new BitTheme());
 
         var cssVarStyle = BuildCssVarStyle(mergedTheme);
+
+        // Record the references this result was built from so a subsequent Frozen render can detect
+        // that nothing changed by reference and skip the rebuild above.
+        _lastTheme = Theme;
+        _lastParentTheme = ParentTheme;
 
         // Suppress propagation when the produced output is identical to the previous render —
         // this preserves the cascaded reference and avoids waking up every descendant consumer

@@ -224,6 +224,69 @@ public sealed class BitThemeProviderTests : BunitTestContext
         var probe = component.Find("span");
         // Inner Theme's Primary.Main should win.
         Assert.AreEqual(InnerPrimary, probe.GetAttribute("data-primary"));
+        // Parent's Secondary.Main is preserved because the inner theme does not override it.
+        Assert.AreEqual(ParentSecondary, probe.GetAttribute("data-secondary"));
+    }
+
+    [TestMethod]
+    public void FrozenSkipsRebuildButReCascadeStillReflectsReferenceChange()
+    {
+        var first = new BitTheme();
+        first.Color.Primary.Main = "#111111";
+
+        var component = RenderComponent<BitThemeProvider>(parameters =>
+        {
+            parameters.Add(p => p.Frozen, true);
+            parameters.Add(p => p.Theme, first);
+            parameters.AddChildContent<ThemeProbeConsumer>();
+        });
+
+        Assert.AreEqual("#111111", component.Find("span").GetAttribute("data-primary"));
+
+        // A new reference is a real change even when Frozen: the provider must rebuild and propagate.
+        var second = new BitTheme();
+        second.Color.Primary.Main = "#222222";
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Frozen, true);
+            parameters.Add(p => p.Theme, second);
+        });
+
+        Assert.AreEqual("#222222", component.Find("span").GetAttribute("data-primary"));
+    }
+
+    [TestMethod]
+    public void FrozenIgnoresInPlaceMutationOfTheSameThemeReference()
+    {
+        var theme = new BitTheme();
+        theme.Color.Primary.Main = "#111111";
+
+        var component = RenderComponent<BitThemeProvider>(parameters =>
+        {
+            parameters.Add(p => p.Frozen, true);
+            parameters.Add(p => p.Theme, theme);
+            parameters.Add(p => p.RootElement, "section");
+            parameters.AddChildContent<ThemeProbeConsumer>();
+        });
+
+        StringAssert.Contains(component.Find("section").GetAttribute("style"), "--bit-clr-pri:#111111");
+
+        // With Frozen, mutating the held instance in place is intentionally NOT detected: the
+        // reference is unchanged so the cached merge + CSS string are reused. Callers opting into
+        // Frozen must assign a new BitTheme instance to apply changes.
+        theme.Color.Primary.Main = "#222222";
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Frozen, true);
+            parameters.Add(p => p.Theme, theme);
+            parameters.Add(p => p.RootElement, "section");
+            parameters.AddChildContent<ThemeProbeConsumer>();
+        });
+
+        var style = component.Find("section").GetAttribute("style") ?? string.Empty;
+        StringAssert.Contains(style, "--bit-clr-pri:#111111");
+        Assert.IsFalse(style.Contains("--bit-clr-pri:#222222", StringComparison.Ordinal),
+            $"Frozen provider should not pick up in-place mutations. Actual: {style}");
     }
 
     /// <summary>

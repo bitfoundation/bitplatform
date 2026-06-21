@@ -16,6 +16,7 @@ internal sealed class ThemeProbeConsumer : ComponentBase
     {
         builder.OpenElement(0, "span");
         builder.AddAttribute(1, "data-primary", Theme?.Color?.Primary?.Main ?? "(none)");
+        builder.AddAttribute(2, "data-secondary", Theme?.Color?.Secondary?.Main ?? "(none)");
         builder.CloseElement();
     }
 }

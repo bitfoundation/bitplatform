@@ -385,7 +385,8 @@ namespace BitBlazorUI {
             if (!trimmed) {
                 throw new Error('Stylesheet href is required.');
             }
-            if (trimmed.startsWith('//') || trimmed.startsWith('\\\\')) {
+            if (trimmed.startsWith('//') || trimmed.startsWith('\\\\') ||
+                trimmed.startsWith('/\\') || trimmed.startsWith('\\/')) {
                 throw new Error('Stylesheet href must not be a protocol-relative URL.');
             }
             if (/^javascript:/i.test(trimmed) || /^data:/i.test(trimmed) || /^vbscript:/i.test(trimmed)) {

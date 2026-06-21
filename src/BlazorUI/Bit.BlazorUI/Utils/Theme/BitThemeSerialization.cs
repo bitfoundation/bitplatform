@@ -39,6 +39,29 @@ public static class BitThemeSerialization
         return theme;
     }
 
+    /// <summary>
+    /// Normalizes <paramref name="theme"/> in place so every nested branch object is non-null,
+    /// matching a freshly-constructed <c>new BitTheme()</c>. Returns the same instance for
+    /// convenient chaining. A <see langword="null"/> argument is ignored.
+    /// </summary>
+    /// <remarks>
+    /// Exposed for the CSS-variable mapper and merge entry points (<see cref="BitThemeMapper"/>):
+    /// those walk the graph (<c>theme.Color.Primary.Main</c>, <c>theme.Layout.Breakpoints.Xs</c>, …)
+    /// and would throw <see cref="NullReferenceException"/> on a hand-constructed sparse theme
+    /// (for example <c>new BitTheme { Color = null }</c> or <c>new BitThemeColors { Primary = null }</c>,
+    /// both reachable because the branch setters are public). The deserialization path already runs
+    /// this; running it at the mapper/merge entry covers the common hand-constructed path too.
+    /// </remarks>
+    internal static BitTheme Normalize(BitTheme theme)
+    {
+        if (theme is not null)
+        {
+            EnsureNestedObjects(theme);
+        }
+
+        return theme!;
+    }
+
     /// <summary>Removes JSON object properties whose value is an empty object <c>{}</c>, depth-first, so parents collapse when all children were empty.</summary>
     private static void PruneEmptyObjectNodes(JsonNode? node)
     {
@@ -60,7 +83,7 @@ public static class BitThemeSerialization
     }
 
     /// <summary>
-    /// Replaces <see langword="null"/> branch objects on a deserialized <see cref="BitTheme"/> so the
+    /// Replaces <see langword="null"/> branch objects on a <see cref="BitTheme"/> so the
     /// graph matches a freshly-constructed <c>new BitTheme()</c>. Callers that walk the graph (the
     /// mapper, merge, derivation helpers) rely on every branch being non-null.
     /// </summary>

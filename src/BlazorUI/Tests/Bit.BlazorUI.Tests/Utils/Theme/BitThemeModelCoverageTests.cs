@@ -118,7 +118,13 @@ public sealed class BitThemeModelCoverageTests
                     if (child is null)
                     {
                         child = Activator.CreateInstance(pt);
-                        if (child is null) continue;
+                        if (child is null)
+                        {
+                            throw new InvalidOperationException(
+                                $"Theme branch type '{pt.FullName}' (property '{prop.DeclaringType?.Name}.{prop.Name}') " +
+                                "could not be instantiated via its parameterless constructor. " +
+                                "Ensure every theme branch model exposes a public parameterless constructor.");
+                        }
                         prop.SetValue(obj, child);
                     }
                     Walk(child, visited, ref counter);

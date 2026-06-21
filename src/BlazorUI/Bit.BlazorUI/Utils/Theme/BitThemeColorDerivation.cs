@@ -81,9 +81,16 @@ public static class BitThemeColorDerivation
 
     private static double Clamp01(double v) => v < 0 ? 0 : v > 1 ? 1 : v;
 
+    // Picks black or white on-color text using the same WCAG sRGB relative-luminance contrast as
+    // BitThemeColorContrast (rather than the old YIQ 0.299/0.587/0.114 + 0.55 heuristic, which could
+    // disagree with the contrast helper and pick the lower-contrast color). We compare the actual
+    // contrast ratio of black vs white against the base color and keep whichever is higher, so the
+    // default suggestion is consistent with the adjustTextForWcagAa tie-breaker in FillColorRoleFromMain.
     private static string SuggestOnColorText(BitInternalColor c)
     {
-        var lum = (0.299 * c.R + 0.587 * c.G + 0.114 * c.B) / 255.0;
-        return lum > 0.55 ? "#000000" : "#FFFFFF";
+        var hex = c.Hex!;
+        var blackRatio = BitThemeColorContrast.GetContrastRatio("#000000", hex);
+        var whiteRatio = BitThemeColorContrast.GetContrastRatio("#FFFFFF", hex);
+        return blackRatio >= whiteRatio ? "#000000" : "#FFFFFF";
     }
 }

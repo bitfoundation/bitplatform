@@ -8,6 +8,11 @@ internal static class BitThemeMapper
 
         if (bitTheme is null) return result;
 
+        // Normalize so every branch object is non-null. A hand-constructed sparse theme
+        // (e.g. new BitTheme { Color = null } or new BitThemeColors { Primary = null }) is
+        // reachable via the public setters and would otherwise NRE while walking the graph below.
+        BitThemeSerialization.Normalize(bitTheme);
+
         addCssVar("--bit-clr-pri", bitTheme.Color.Primary.Main);
         addCssVar("--bit-clr-pri-hover", bitTheme.Color.Primary.MainHover);
         addCssVar("--bit-clr-pri-active", bitTheme.Color.Primary.MainActive);
@@ -487,6 +492,12 @@ internal static class BitThemeMapper
     internal static BitTheme Merge(BitTheme bitTheme, BitTheme other)
     {
         var result = new BitTheme();
+
+        // Normalize both inputs so every branch object is non-null. Hand-constructed sparse themes
+        // (e.g. new BitTheme { Color = null } or new BitThemeColors { Primary = null }) reach this
+        // path via the public setters and would otherwise NRE while walking the graph below.
+        BitThemeSerialization.Normalize(bitTheme);
+        BitThemeSerialization.Normalize(other);
 
         result.Color.Primary.Main = bitTheme.Color.Primary.Main ?? other.Color.Primary.Main;
         result.Color.Primary.MainHover = bitTheme.Color.Primary.MainHover ?? other.Color.Primary.MainHover;
