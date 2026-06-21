@@ -69,7 +69,7 @@ public static class IJSRuntimeFastExtensions
         if (handler is null)
         {
             System.Console.Error.WriteLine(
-                $"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}: {DescribeCause(exception)} {exception.Message}");
+                $"Error invoking '{identifier}': {DescribeCause(exception)} {exception.Message}");
 
             // Emit the "wire up OnError" guidance once. Without a handler these errors (including genuine
             // in-body script bugs) are only visible on the console, so surface the recommendation a single time.
