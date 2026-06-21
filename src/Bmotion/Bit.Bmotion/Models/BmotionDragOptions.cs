@@ -20,7 +20,9 @@ public class BmotionDragOptions
     public double Elastic
     {
         get => _elastic;
-        set => _elastic = Math.Clamp(value, 0, 1);
+        // Reject NaN/±Infinity (Math.Clamp passes NaN straight through), which would otherwise
+        // destabilise the drag elasticity math; fall back to the default when not finite.
+        set => _elastic = double.IsFinite(value) ? Math.Clamp(value, 0, 1) : 0.35;
     }
     private double _elastic = 0.35;
 

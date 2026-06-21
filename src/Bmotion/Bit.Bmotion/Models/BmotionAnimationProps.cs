@@ -329,12 +329,22 @@ public class BmotionAnimationProps
         {
             var ia = ea.GetEnumerator();
             var ib = eb.GetEnumerator();
-            while (true)
+            try
             {
-                bool na = ia.MoveNext(), nb = ib.MoveNext();
-                if (na != nb) return false;
-                if (!na) return true;
-                if (!Equals(ia.Current, ib.Current)) return false;
+                while (true)
+                {
+                    bool na = ia.MoveNext(), nb = ib.MoveNext();
+                    if (na != nb) return false;
+                    if (!na) return true;
+                    if (!Equals(ia.Current, ib.Current)) return false;
+                }
+            }
+            finally
+            {
+                // Non-generic GetEnumerator() may return an IDisposable enumerator (e.g. List<T>);
+                // dispose both so we don't leak iterator resources on early or normal exit.
+                (ia as IDisposable)?.Dispose();
+                (ib as IDisposable)?.Dispose();
             }
         }
         return false;

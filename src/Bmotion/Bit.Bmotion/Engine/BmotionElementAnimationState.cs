@@ -429,6 +429,13 @@ internal sealed class BmotionElementAnimationState
         try
         {
             result = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
+            // Convert.ToDouble happily returns NaN/±Infinity for those inputs; reject them so
+            // non-finite values never propagate into state, driver math or CSS output.
+            if (!double.IsFinite(result))
+            {
+                result = 0;
+                return false;
+            }
             return true;
         }
         catch (Exception e) when (e is FormatException or InvalidCastException or OverflowException)

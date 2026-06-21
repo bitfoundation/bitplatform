@@ -29,12 +29,13 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         if (frames is null || frames.Length < 2)
             throw new ArgumentException("Keyframe animations require at least 2 frames.", nameof(frames));
         if (!double.IsFinite(config.Duration) || !double.IsFinite(config.Delay) || !double.IsFinite(config.RepeatDelay)
-            || config.Duration < 0 || config.Delay < 0 || config.RepeatDelay < 0)
+            || config.Duration < 0)
             // NaN/infinite timing values poison _startTime in the progress math, pushing invalid
-            // values through _apply. Negative durations keep t below 1.0 so the animation never
-            // completes. Reject both up front (matches the numeric keyframes driver).
+            // values through _apply. A negative duration keeps t below 1.0 so the animation never
+            // completes. Reject both up front (matches the numeric keyframes / tween drivers, which
+            // also permit negative Delay/RepeatDelay so a shared config behaves consistently).
             throw new ArgumentException(
-                "Duration, Delay and RepeatDelay must be finite, non-negative values.", nameof(config));
+                "Duration, Delay and RepeatDelay must be finite values and Duration must be non-negative.", nameof(config));
         if (config.Times != null && config.Times.Length != frames.Length)
             throw new ArgumentException("Times array length must match the number of frames.", nameof(config));
         if (config.Times != null)

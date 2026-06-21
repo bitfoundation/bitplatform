@@ -17,7 +17,8 @@ internal static class BmotionEasingFunctions
     /// <summary>Returns an easing function for the given transition config.</summary>
     public static Func<double, double> Get(BmotionTransitionConfig config)
     {
-        if (config.EaseCubicBezier is { Length: 4 } cb)
+        if (config.EaseCubicBezier is { Length: 4 } cb &&
+            double.IsFinite(cb[0]) && double.IsFinite(cb[1]) && double.IsFinite(cb[2]) && double.IsFinite(cb[3]))
             return CubicBezier(cb[0], cb[1], cb[2], cb[3]);
 
         return config.Ease switch
@@ -45,7 +46,8 @@ internal static class BmotionEasingFunctions
     public static string ToCssString(BmotionTransitionConfig? config)
     {
         if (config == null) return "ease";
-        if (config.EaseCubicBezier is { Length: 4 } cb)
+        if (config.EaseCubicBezier is { Length: 4 } cb &&
+            double.IsFinite(cb[0]) && double.IsFinite(cb[1]) && double.IsFinite(cb[2]) && double.IsFinite(cb[3]))
             return $"cubic-bezier({BmotionCssFormat.Num(cb[0])},{BmotionCssFormat.Num(cb[1])},{BmotionCssFormat.Num(cb[2])},{BmotionCssFormat.Num(cb[3])})";
         return config.Ease switch
         {
