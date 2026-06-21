@@ -3,9 +3,6 @@ trigger:
 
 # https://bitplatform.dev/templates/devops
 
-permissions:
-  contents: read
-
 jobs:
 - job: build
   displayName: 'CI build'
