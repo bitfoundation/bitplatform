@@ -46,6 +46,6 @@ public sealed class BitFullCalendarChangeEventArgs
     /// <summary>
     /// The UI source that triggered this change.
     /// </summary>
-    public BitFullCalendarChangeSource Source { get; init; }
+    public required BitFullCalendarChangeSource Source { get; init; }
 }
 

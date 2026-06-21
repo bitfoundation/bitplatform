@@ -16,6 +16,8 @@ public class BitFullCalendarTexts
     public string AddEventHoverHint { get; set; } = "Add event";
     public string PreviousButtonTitle { get; set; } = "Previous";
     public string NextButtonTitle { get; set; } = "Next";
+    public string PreviousMonthAriaLabel { get; set; } = "Previous month";
+    public string NextMonthAriaLabel { get; set; } = "Next month";
     public string SettingsButtonTitle { get; set; } = "Settings";
 
     public string FilterByColorAriaLabel { get; set; } = "Filter events by color";
@@ -72,6 +74,7 @@ public class BitFullCalendarTexts
     public string LastNamePlaceholder { get; set; } = "Last name";
     public string IdOptionalPlaceholder { get; set; } = "ID (optional)";
     public string AddButton { get; set; } = "Add";
+    public string RemoveAttendeeAriaLabel { get; set; } = "Remove attendee";
 
     public string StartDateLabel { get; set; } = "Start Date";
     public string EndDateLabel { get; set; } = "End Date";

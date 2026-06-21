@@ -1,6 +1,6 @@
 namespace Bit.BlazorUI;
 
-public partial class BitFcCalendarDayView
+public partial class BitFcCalendarDayView : IDisposable
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
@@ -12,6 +12,7 @@ public partial class BitFcCalendarDayView
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
 
     private string? _timeGridScrollSignature;
+    private Timer? _nowTimer;
 
     private bool _showAddDialog;
     private DateTime _addStartDate;
@@ -20,6 +21,13 @@ public partial class BitFcCalendarDayView
     private BitFullCalendarEvent? _selectedEvent;
     private int? _dragHour;
     private int? _dragMinute;
+
+    protected override void OnInitialized()
+    {
+        // The "Happening now" panel is derived from DateTime.Now; refresh once a minute so it
+        // doesn't go stale during long sessions.
+        _nowTimer = new Timer(_ => InvokeAsync(StateHasChanged), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+    }
 
     private async Task SelectEvent(BitFullCalendarEvent ev)
     {
@@ -87,4 +95,6 @@ public partial class BitFcCalendarDayView
                 State.StartOfDayHour))
             _timeGridScrollSignature = sig;
     }
+
+    public void Dispose() => _nowTimer?.Dispose();
 }

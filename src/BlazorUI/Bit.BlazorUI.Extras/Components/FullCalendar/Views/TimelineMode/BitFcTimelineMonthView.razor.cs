@@ -15,7 +15,7 @@ public partial class BitFcTimelineMonthView
     private const int _laneHeight = 40;
     private const int _laneGap = 4;
     private const int _rowPadding = 4;
-    private const string _scrollContainerId = "bit-bfc-tl-month-scroll";
+    private readonly string _scrollContainerId = "bit-bfc-tl-month-scroll-" + Guid.NewGuid().ToString("N");
 
     private string? _scrollSignature;
 

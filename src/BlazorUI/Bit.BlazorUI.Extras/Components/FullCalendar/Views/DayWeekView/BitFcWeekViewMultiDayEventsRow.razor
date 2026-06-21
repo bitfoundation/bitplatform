@@ -11,9 +11,7 @@
                     @for (int row = 0; row < _rowCount; row++)
                     {
                         var r = row;
-                        var ev = _weekEvents.FirstOrDefault(e =>
-                            _eventRows.GetValueOrDefault(e.Id) == r &&
-                            e.StartDate.Date <= d.Date && e.EndDate.Date >= d.Date);
+                        var ev = _cellLookup.GetValueOrDefault((d.Date, r));
                         if (ev != null)
                         {
                             var position = ev.StartDate.Date == d.Date ? "first"

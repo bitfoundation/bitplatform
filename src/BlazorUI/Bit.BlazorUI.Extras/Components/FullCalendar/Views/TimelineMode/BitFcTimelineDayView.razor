@@ -57,8 +57,8 @@
         @for (var h = 0; h < 24; h++)
         {
             var hour = h;
-            var isPreviewHour = _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 0;
-            var isPreviewHalf = _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 30;
+            var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 0;
+            var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 30;
             <div class="bit-bfc-tl-cell @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
                  style="left:@(hour * hourWidth)px;width:@(hourWidth)px;"
                  @ondragenter="() => OnDragEnter(rowKey, hour, 0)"
@@ -92,8 +92,8 @@
         @for (var h = 0; h < 24; h++)
         {
             var hour = h;
-            var isPreviewHour = _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 0;
-            var isPreviewHalf = _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 30;
+            var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 0;
+            var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 30;
             <div class="bit-bfc-tl-cell @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
                  style="left:@(hour * hourWidth)px;width:@(hourWidth)px;"
                  @ondragenter="() => OnDragEnter(rowKey, hour, 0)"
@@ -119,10 +119,11 @@
 
 @if (_showAddDialog)
 {
-    <BitFcAddEditEventDialog StartDate="_addStartDate" StartHour="_addStartHour" OnClose="() => _showAddDialog = false" />
+    <BitFcAddEditEventDialog StartDate="_addStartDate" StartHour="_addStartHour" StartMinute="_addStartMinute" OnClose="() => _showAddDialog = false" />
 }
 
 @if (_selectedEvent != null)
 {
     <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
 }
+

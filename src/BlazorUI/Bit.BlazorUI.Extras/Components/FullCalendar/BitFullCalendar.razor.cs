@@ -153,10 +153,22 @@ public partial class BitFullCalendar : IDisposable
         { OnEventClick, "OnEventClick" },
     };
 
-    private CultureInfo ResolveCulture() =>
-        CultureName is { Length: > 0 } name
-            ? new CultureInfo(name)
-            : Culture ?? CultureInfo.CurrentUICulture;
+    private CultureInfo ResolveCulture()
+    {
+        if (CultureName is { Length: > 0 } name)
+        {
+            try
+            {
+                return new CultureInfo(name);
+            }
+            catch (CultureNotFoundException)
+            {
+                // Invalid CultureName supplied; fall back to the explicit Culture or the current UI culture.
+            }
+        }
+
+        return Culture ?? CultureInfo.CurrentUICulture;
+    }
 
     protected override void OnInitialized()
     {

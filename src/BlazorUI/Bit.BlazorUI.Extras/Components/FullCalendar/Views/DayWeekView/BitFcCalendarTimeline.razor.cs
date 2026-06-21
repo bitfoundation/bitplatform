@@ -12,8 +12,13 @@ public partial class BitFcCalendarTimeline
         UpdatePosition();
         _timer = new Timer(_ =>
         {
-            UpdatePosition();
-            InvokeAsync(StateHasChanged);
+            // Run both the state mutation and the re-render on the renderer's dispatcher so
+            // _positionPx is never modified outside the synchronization context.
+            InvokeAsync(() =>
+            {
+                UpdatePosition();
+                StateHasChanged();
+            });
         }, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
     }
 

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
@@ -16,7 +17,7 @@ internal static class BitFcAgendaScrollInterop
                 "BitBlazorUI.FullCalendar.scrollAgendaToDate",
                 cancellationToken,
                 scrollContainerId,
-                date.ToString("yyyy-MM-dd"));
+                date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
             return true;
         }
         catch (JSDisconnectedException)

@@ -76,7 +76,7 @@
             var dayIndex = di;
             var day = monthDays[dayIndex];
             var leftPx = dayIndex * dayWidth;
-            var isPreview = _dragResourceId == rowKey && _dragDay == day.Date;
+            var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
             <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
                  style="left:@(leftPx)px;width:@(dayWidth)px;"
                  @ondragenter="() => OnDragEnter(rowKey, day)"
@@ -103,7 +103,7 @@
             var dayIndex = di;
             var day = monthDays[dayIndex];
             var leftPx = dayIndex * dayWidth;
-            var isPreview = _dragResourceId == rowKey && _dragDay == day.Date;
+            var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
             <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
                  style="left:@(leftPx)px;width:@(dayWidth)px;"
                  @ondragenter="() => OnDragEnter(rowKey, day)"
@@ -127,3 +127,4 @@
 {
     <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
 }
+

@@ -11,6 +11,7 @@ public partial class BitFcWeekViewMultiDayEventsRow
     private DateTime[] _weekDays = [];
     private List<BitFullCalendarEvent> _weekEvents = [];
     private Dictionary<string, int> _eventRows = new();
+    private Dictionary<(DateTime Day, int Row), BitFullCalendarEvent> _cellLookup = new();
     private int _rowCount;
     private BitFullCalendarEvent? _selectedEvent;
 
@@ -45,6 +46,19 @@ public partial class BitFcWeekViewMultiDayEventsRow
         }
 
         _rowCount = _eventRows.Count > 0 ? _eventRows.Values.Max() + 1 : 0;
+
+        // Precompute (day, row) -> event so the render loop is an O(1) lookup instead of a
+        // FirstOrDefault scan per cell.
+        _cellLookup = new Dictionary<(DateTime, int), BitFullCalendarEvent>();
+        foreach (var ev in _weekEvents)
+        {
+            var row = _eventRows[ev.Id];
+            foreach (var d in _weekDays)
+            {
+                if (ev.StartDate.Date <= d.Date && ev.EndDate.Date >= d.Date)
+                    _cellLookup[(d.Date, row)] = ev;
+            }
+        }
     }
 
     private async Task ShowEventDetails(BitFullCalendarEvent ev)

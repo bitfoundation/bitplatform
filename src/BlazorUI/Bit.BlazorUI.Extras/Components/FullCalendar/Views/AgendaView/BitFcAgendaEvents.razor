@@ -20,11 +20,11 @@
     else if (State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)
     {
         agendaGroups = monthEvents
-            .GroupBy(e => e.StartDate.ToString("yyyy-MM-dd"))
+            .GroupBy(e => e.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))
             .OrderBy(g => g.Key)
             .Select(g =>
             {
-                var title = DateTime.TryParse(g.Key, out var dt)
+                var title = DateTime.TryParse(g.Key, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt)
                     ? $"{dt.ToString("dddd", State.Culture)}, {BitFullCalendarHelpers.FormatCultureDate(dt, State.Culture)}"
                     : g.Key;
                 return (DateKey: (string?)g.Key, GroupTitle: title, Items: g.ToList());
@@ -36,6 +36,7 @@
         agendaGroups = monthEvents
             .GroupBy(e => e.Color)
             .OrderBy(g => ColorScheme.GetSortOrder(g.Key))
+            .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
             .Select(g => (DateKey: (string?)null, GroupTitle: ColorScheme.GetLabel(g.Key), Items: g.ToList()))
             .ToList();
     }
@@ -58,7 +59,7 @@
                 <div class="bit-bfc-agenda-group-title">@groupTitle</div>
                 @foreach (var ev in items)
                 {
-                    <div class="bit-bfc-agenda-item" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd")" @onclick="() => ShowDetails(ev)">
+                    <div class="bit-bfc-agenda-item" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)" @onclick="() => ShowDetails(ev)">
                         <div class="bit-bfc-agenda-avatar bit-bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)">
                             @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
                         </div>

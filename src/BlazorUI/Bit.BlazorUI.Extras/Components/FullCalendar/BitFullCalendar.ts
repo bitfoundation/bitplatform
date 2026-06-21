@@ -122,15 +122,18 @@ namespace BitBlazorUI {
                         rafId = null;
                     }
                     const deltaMinutes = Math.round((latestY - startY) * minPerPixel);
-                    await dotNetRef.invokeMethodAsync("OnResizeMove", direction, deltaMinutes);
 
                     try {
-                        if (activePointerId != null && typeof el.releasePointerCapture === "function")
-                            el.releasePointerCapture(activePointerId);
-                    } catch { }
+                        await dotNetRef.invokeMethodAsync("OnResizeMove", direction, deltaMinutes);
+                    } finally {
+                        try {
+                            if (activePointerId != null && typeof el.releasePointerCapture === "function")
+                                el.releasePointerCapture(activePointerId);
+                        } catch { }
 
-                    activePointerId = null;
-                    await dotNetRef.invokeMethodAsync("OnResizeEnd");
+                        activePointerId = null;
+                        await dotNetRef.invokeMethodAsync("OnResizeEnd");
+                    }
                 };
 
                 document.addEventListener("pointermove", onPointerMove);
@@ -192,15 +195,18 @@ namespace BitBlazorUI {
                         rafId = null;
                     }
                     const deltaPx = latestX - startX;
-                    await dotNetRef.invokeMethodAsync("OnResizeMove", direction, deltaPx);
 
                     try {
-                        if (activePointerId != null && typeof el.releasePointerCapture === "function")
-                            el.releasePointerCapture(activePointerId);
-                    } catch { }
+                        await dotNetRef.invokeMethodAsync("OnResizeMove", direction, deltaPx);
+                    } finally {
+                        try {
+                            if (activePointerId != null && typeof el.releasePointerCapture === "function")
+                                el.releasePointerCapture(activePointerId);
+                        } catch { }
 
-                    activePointerId = null;
-                    await dotNetRef.invokeMethodAsync("OnResizeEnd");
+                        activePointerId = null;
+                        await dotNetRef.invokeMethodAsync("OnResizeEnd");
+                    }
                 };
 
                 document.addEventListener("pointermove", onPointerMove);

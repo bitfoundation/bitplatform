@@ -3,7 +3,7 @@
 <div class="bit-bfc-overlay" @onclick="OnClose">
     <div class="bit-bfc-dialog" @onclick:stopPropagation="true">
         <div class="bit-bfc-dialog-header">
-            <h3>@Texts.EventListTitlePrefix @Date.ToString("dddd, MMM d, yyyy")</h3>
+            <h3>@Texts.EventListTitlePrefix @Date.ToString("dddd, MMM d, yyyy", State.Culture)</h3>
             <p>@Events.Count @Texts.EventListCountSuffix</p>
         </div>
         <div class="bit-bfc-dialog-body" style="max-height:400px;overflow-y:auto;">

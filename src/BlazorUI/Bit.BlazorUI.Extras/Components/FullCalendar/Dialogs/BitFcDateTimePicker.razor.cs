@@ -53,7 +53,7 @@ public partial class BitFcDateTimePicker
 
     private async Task SelectDate(DateTime date)
     {
-        var selected = new DateTime(date.Year, date.Month, date.Day, _hour, _minute, 0, date.Kind);
+        var selected = new DateTime(date.Year, date.Month, date.Day, _hour, _minute, 0, Value.Kind);
         Value = selected;
         _lastSyncedDate = selected;
         _isOpen = false;

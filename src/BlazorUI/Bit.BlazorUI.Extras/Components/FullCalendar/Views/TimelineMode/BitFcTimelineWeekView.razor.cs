@@ -15,7 +15,7 @@ public partial class BitFcTimelineWeekView
     private const int _laneHeight = 44;
     private const int _laneGap = 4;
     private const int _rowPadding = 4;
-    private const string _scrollContainerId = "bit-bfc-tl-week-scroll";
+    private readonly string _scrollContainerId = "bit-bfc-tl-week-scroll-" + Guid.NewGuid().ToString("N");
 
     private string? _scrollSignature;
 
@@ -23,6 +23,7 @@ public partial class BitFcTimelineWeekView
     private bool _showAddDialog;
     private DateTime _addStartDate;
     private int _addStartHour;
+    private int _addStartMinute;
 
     private string? _dragResourceId;
     private DateTime? _dragDay;
@@ -83,6 +84,7 @@ public partial class BitFcTimelineWeekView
 
         _addStartDate = day;
         _addStartHour = hour;
+        _addStartMinute = minute;
         _showAddDialog = true;
     }
 

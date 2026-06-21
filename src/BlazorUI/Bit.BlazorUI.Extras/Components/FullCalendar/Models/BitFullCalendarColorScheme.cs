@@ -18,7 +18,8 @@ public sealed class BitFullCalendarColorScheme
     public BitFullCalendarColorScheme(IReadOnlyList<BitFullCalendarColorOption>? options)
     {
         var list = options is { Count: > 0 } ? options : BitFullCalendarColorOption.Defaults;
-        Options = list;
+        // Snapshot the source so Options and the _byId lookup can't drift apart if the caller mutates the original list.
+        Options = [.. list];
         _byId = new Dictionary<string, BitFullCalendarColorOption>(StringComparer.OrdinalIgnoreCase);
         foreach (var o in list)
         {
@@ -87,7 +88,7 @@ public sealed class BitFullCalendarColorScheme
         return extra;
     }
 
-    /// <summary>Sort key for agenda grouping - configured order first, then unknown ids by name.</summary>
+    /// <summary>Sort key for agenda grouping - configured order first, then unknown ids (sorted by name at the call site).</summary>
     public int GetSortOrder(string? colorId)
     {
         if (string.IsNullOrWhiteSpace(colorId))
@@ -98,6 +99,7 @@ public sealed class BitFullCalendarColorScheme
             if (string.Equals(Options[i].Id, trimmed, StringComparison.OrdinalIgnoreCase))
                 return i;
         }
-        return 1000 + StringComparer.OrdinalIgnoreCase.GetHashCode(trimmed);
+        // Deterministic: all unknown ids share the same key and are ordered lexically by a secondary sort.
+        return int.MaxValue;
     }
 }

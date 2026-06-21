@@ -28,10 +28,13 @@
 <div class="bit-bfc-event-block @colorClass @(State.IsDragging && State.DraggedEvent?.Id != Event.Id ? "bit-bfc-event-block-pass-through" : "") @resizeClasses"
      style="@blockStyle"
      title="@tooltip"
+     role="button"
+     tabindex="0"
      draggable="true"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="OnClick"
+     @onkeydown="OnKeyDown"
      @onclick:stopPropagation="true">
 
     <div id="@_topHandleId"

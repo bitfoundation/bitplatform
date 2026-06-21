@@ -27,6 +27,9 @@
 
     int LaneCountFor(string resourceId)
     {
+        if (string.IsNullOrEmpty(resourceId))
+            return 1;
+
         var max = 1;
         foreach (var dayMap in perDay)
         {
@@ -123,7 +126,7 @@
                 </div>
             }
 
-            @if (dayMap.TryGetValue(rowKey, out var lanes))
+            @if (!string.IsNullOrEmpty(rowKey) && dayMap.TryGetValue(rowKey, out var lanes))
             {
                 @RenderLanes(lanes, day, dayOffsetPx)
             }
@@ -162,7 +165,7 @@
                 </div>
             }
 
-            @if (dayMap.TryGetValue(rowKey, out var lanes))
+            @if (!string.IsNullOrEmpty(rowKey) && dayMap.TryGetValue(rowKey, out var lanes))
             {
                 @RenderLanes(lanes, day, dayOffsetPx)
             }
@@ -172,10 +175,11 @@
 
 @if (_showAddDialog)
 {
-    <BitFcAddEditEventDialog StartDate="_addStartDate" StartHour="_addStartHour" OnClose="() => _showAddDialog = false" />
+    <BitFcAddEditEventDialog StartDate="_addStartDate" StartHour="_addStartHour" StartMinute="_addStartMinute" OnClose="() => _showAddDialog = false" />
 }
 
 @if (_selectedEvent != null)
 {
     <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
 }
+

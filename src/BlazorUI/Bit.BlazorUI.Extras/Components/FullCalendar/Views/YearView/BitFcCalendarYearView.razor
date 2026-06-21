@@ -5,7 +5,7 @@
     var cal = State.Culture.Calendar;
     var dtf = State.Culture.DateTimeFormat;
     int culturalYear = cal.GetYear(State.SelectedDate);
-    var months = Enumerable.Range(1, 12)
+    var months = Enumerable.Range(1, cal.GetMonthsInYear(culturalYear))
         .Select(m => cal.ToDateTime(culturalYear, m, 1, 0, 0, 0, 0))
         .ToArray();
     var yearWeekDayHeaders = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(State.Culture);
@@ -34,7 +34,7 @@
                     var isCurrentMonth = cellCulturalMonth == monthIndex
                         && cal.GetYear(cell.Date) == culturalYear;
                     var isToday = cell.Date.Date == DateTime.Today;
-                    var dayEvents = allEvents.Where(e => e.StartDate.Date == cell.Date.Date).ToList();
+                    var dayEvents = allEvents.Where(e => e.StartDate.Date <= cell.Date.Date && e.EndDate.Date >= cell.Date.Date).ToList();
                     var hasEvents = isCurrentMonth && dayEvents.Count > 0;
 
                     <div class="bit-bfc-year-day @(!isCurrentMonth ? "other-month" : "") @(hasEvents ? "has-events" : "")"

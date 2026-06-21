@@ -49,6 +49,15 @@ public partial class BitFcEventBlock
         await OnSelected.InvokeAsync(Event);
     }
 
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (_isResizing)
+            return;
+
+        if (e.Key is "Enter" or " " or "Spacebar")
+            await OnSelected.InvokeAsync(Event);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_resizeInitialized)

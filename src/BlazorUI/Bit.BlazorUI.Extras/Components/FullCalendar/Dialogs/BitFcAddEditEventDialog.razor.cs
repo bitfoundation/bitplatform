@@ -9,6 +9,7 @@ public partial class BitFcAddEditEventDialog
     [Parameter] public BitFullCalendarEvent? ExistingEvent { get; set; }
     [Parameter] public DateTime? StartDate { get; set; }
     [Parameter] public int? StartHour { get; set; }
+    [Parameter] public int? StartMinute { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
     private bool _isEditing;
@@ -43,7 +44,7 @@ public partial class BitFcAddEditEventDialog
         {
             _color = defaultColor;
             var baseDate = StartDate ?? State.SelectedDate;
-            _startDate = baseDate.Date.AddHours(StartHour ?? DateTime.Now.Hour);
+            _startDate = baseDate.Date.AddHours(StartHour ?? DateTime.Now.Hour).AddMinutes(StartMinute ?? 0);
             _endDate = _startDate.AddMinutes(30);
         }
     }

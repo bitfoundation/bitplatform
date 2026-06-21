@@ -18,10 +18,13 @@
 
 <div class="bit-bfc-event-badge @colorClass @positionClass"
      style="@($"{colorStyleVar}{MarginStyle}")"
+     role="button"
+     tabindex="0"
      draggable="true"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="() => OnSelected.InvokeAsync(Event)"
+     @onkeydown="OnKeyDown"
      @onclick:stopPropagation="true">
 
     @if (EventTemplate != null)

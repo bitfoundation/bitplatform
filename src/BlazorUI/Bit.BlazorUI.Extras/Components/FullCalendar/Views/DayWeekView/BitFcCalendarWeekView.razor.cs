@@ -35,9 +35,10 @@ public partial class BitFcCalendarWeekView
 
     private async Task OnHourClickAsync(DateTime day, int hour)
     {
+        State.SetSelectedDate(day);
+
         if (OnAddClick.HasDelegate)
         {
-            State.SetSelectedDate(day);
             var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(day, hour);
             await OnAddClick.InvokeAsync(draft);
             return;

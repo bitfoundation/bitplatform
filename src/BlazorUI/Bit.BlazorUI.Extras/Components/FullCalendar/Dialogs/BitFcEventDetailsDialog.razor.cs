@@ -16,10 +16,10 @@ public partial class BitFcEventDetailsDialog
         _showEdit = true;
     }
 
-    private void OnEditClose()
+    private async Task OnEditClose()
     {
         _showEdit = false;
-        OnClose.InvokeAsync();
+        await OnClose.InvokeAsync();
     }
 
     private async Task Delete()

@@ -15,7 +15,7 @@ public partial class BitFcTimelineDayView
     private const int _laneHeight = 44;
     private const int _laneGap = 4;
     private const int _rowPadding = 4;
-    private const string _scrollContainerId = "bit-bfc-tl-day-scroll";
+    private readonly string _scrollContainerId = "bit-bfc-tl-day-scroll-" + Guid.NewGuid().ToString("N");
 
     private string? _scrollSignature;
 
@@ -23,6 +23,7 @@ public partial class BitFcTimelineDayView
     private bool _showAddDialog;
     private DateTime _addStartDate;
     private int _addStartHour;
+    private int _addStartMinute;
 
     private string? _dragResourceId;
     private int? _dragHour;
@@ -81,6 +82,7 @@ public partial class BitFcTimelineDayView
 
         _addStartDate = State.SelectedDate;
         _addStartHour = hour;
+        _addStartMinute = minute;
         _showAddDialog = true;
     }
 
