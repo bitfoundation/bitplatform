@@ -185,6 +185,15 @@ public class NumericKeyframesDriverValidationTests
             new BmotionTransitionConfig { Duration = double.PositiveInfinity },
             _ => { }));
     }
+
+    [TestMethod]
+    public void Ctor_NegativeDuration_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new BmotionNumericKeyframesDriver(
+            [0, 100],
+            new BmotionTransitionConfig { Duration = -0.1 },
+            _ => { }));
+    }
 }
 
 [TestClass]

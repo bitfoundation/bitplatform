@@ -233,7 +233,7 @@ public class SpringDriverTests
             Stiffness = 100,
             Damping = 20,
             Mass = 1,
-            Repeat = int.MaxValue,
+            RepeatInfinite = true,
             RepeatType = BmotionRepeatType.Loop,
         };
         var driver = new BmotionSpringDriver(0, 100, config, _ => { });

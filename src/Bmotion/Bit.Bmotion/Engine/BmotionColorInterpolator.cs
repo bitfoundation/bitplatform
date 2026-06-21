@@ -49,10 +49,14 @@ internal static partial class BmotionColorInterpolator
 
     /// <summary>Returns true if the CSS string looks like a color value.</summary>
     public static bool LooksLikeColor(string? value)
-        => value != null &&
-           (value.StartsWith('#') ||
-            value.StartsWith("rgb", StringComparison.OrdinalIgnoreCase) ||
-            value.StartsWith("hsl", StringComparison.OrdinalIgnoreCase));
+    {
+        if (value is null) return false;
+        // Trim first so padded inputs like " #fff " or " rgb(...) " match, consistent with Parse.
+        var v = value.AsSpan().Trim();
+        return v.StartsWith("#") ||
+               v.StartsWith("rgb", StringComparison.OrdinalIgnoreCase) ||
+               v.StartsWith("hsl", StringComparison.OrdinalIgnoreCase);
+    }
 
     // ── Internal ──────────────────────────────────────────────────────────────
 

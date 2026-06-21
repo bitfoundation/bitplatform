@@ -31,6 +31,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     private DotNetObjectReference<BmotionAnimationEngine>? _dotnet;
     private bool _loopRunning;
     private readonly SemaphoreSlim _loopStartGate = new(1, 1);
+    private bool _disposed;
     private bool _reducedMotionDetected;
     // A single in-flight detection attempt shared by all concurrent callers so the browser probe
     // and live-change subscription run exactly once (reset to null on failure to allow a retry).
@@ -559,6 +560,11 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        // Guard against repeated disposal (manual call + DI container teardown): the second pass
+        // would otherwise WaitAsync on / Dispose the already-disposed _loopStartGate.
+        if (_disposed) return;
+        _disposed = true;
+
         foreach (var (_, state) in _elements)
             state.CancelAll();
         _elements.Clear();

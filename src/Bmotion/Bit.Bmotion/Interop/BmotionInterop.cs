@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.Bmotion;
 /// <summary>
@@ -9,6 +10,14 @@ namespace Bit.Bmotion;
 public sealed class BmotionInterop : IAsyncDisposable
 {
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
+
+    // Generic JS-interop helpers forward DotNetObjectReference<T> to JS, where T is always a
+    // concrete component/service whose [JSInvokable] members are kept by the runtime, so the
+    // unannotated generic T raises no real trim/AOT concern. Scoped to these call sites instead
+    // of a project-wide NoWarn so genuine IL2091 regressions elsewhere stay visible.
+    private const string JsRefTrimJustification =
+        "DotNetObjectReference<T> only marshals a [JSInvokable]-annotated component/service ref to JS; " +
+        "the runtime preserves those members, so the unannotated generic T is safe under trimming.";
 
     public BmotionInterop(IJSRuntime js)
     {
@@ -33,10 +42,12 @@ public sealed class BmotionInterop : IAsyncDisposable
     /// Start the JS rAF loop. The loop calls <c>dotnetRef.invokeMethod('ComputeFrame', timestamp)</c>
     /// synchronously each tick (Blazor WASM) and applies the returned style updates.
     /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = JsRefTrimJustification)]
     public async ValueTask StartRafLoopAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class
         => await (await Module()).InvokeVoidAsync("startRafLoop", dotnetRef);
 
     /// <summary>Stop the JS rAF loop for the given engine reference (or all engines when null).</summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = JsRefTrimJustification)]
     public async ValueTask StopRafLoopAsync<T>(DotNetObjectReference<T>? dotnetRef = null) where T : class
     {
         if (!_moduleTask.IsValueCreated) return;
@@ -55,10 +66,12 @@ public sealed class BmotionInterop : IAsyncDisposable
     /// Subscribes to live changes of the <c>prefers-reduced-motion</c> media query. JS calls
     /// <c>OnReducedMotionChanged(bool)</c> on the engine ref whenever the OS preference changes.
     /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = JsRefTrimJustification)]
     public async ValueTask WatchReducedMotionAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class
         => await (await Module()).InvokeVoidAsync("watchReducedMotion", dotnetRef);
 
     /// <summary>Unsubscribes the engine ref from <c>prefers-reduced-motion</c> change notifications.</summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = JsRefTrimJustification)]
     public async ValueTask UnwatchReducedMotionAsync<T>(DotNetObjectReference<T> dotnetRef) where T : class
     {
         if (!_moduleTask.IsValueCreated) return;
@@ -88,17 +101,20 @@ public sealed class BmotionInterop : IAsyncDisposable
     /// Attach pointer / focus / drag event listeners to an element.
     /// JS forwards raw browser events to the DotNet ref via async callbacks.
     /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = JsRefTrimJustification)]
     public async ValueTask AttachEventListenersAsync<T>(
         string elementId, object events, DotNetObjectReference<T> dotnetRef) where T : class
         => await (await Module()).InvokeVoidAsync("attachEventListeners", elementId, events, dotnetRef);
 
     // ── Viewport observation ──────────────────────────────────────────────────
 
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = JsRefTrimJustification)]
     public async ValueTask ObserveViewportAsync<T>(
         string elementId, DotNetObjectReference<T> dotnetRef, bool once) where T : class
         => await (await Module()).InvokeVoidAsync("observeViewport", elementId, dotnetRef,
                new Dictionary<string, object?> { ["once"] = once, ["margin"] = "0px", ["threshold"] = 0.0 });
 
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = JsRefTrimJustification)]
     public async ValueTask ObserveViewportWithOptionsAsync<T>(
         string elementId, DotNetObjectReference<T> dotnetRef, BmotionViewportOptions options) where T : class
         => await (await Module()).InvokeVoidAsync("observeViewport", elementId, dotnetRef, options.ToJsObject());
@@ -124,6 +140,7 @@ public sealed class BmotionInterop : IAsyncDisposable
 
     // ── Scroll ────────────────────────────────────────────────────────────────
 
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = JsRefTrimJustification)]
     public async ValueTask<string?> ObserveScrollAsync<T>(
         string? containerId, DotNetObjectReference<T> dotnetRef) where T : class
         => await (await Module()).InvokeAsync<string?>("observeScroll", containerId, dotnetRef);
@@ -156,10 +173,9 @@ public sealed class BmotionInterop : IAsyncDisposable
     {
         if (!_moduleTask.IsValueCreated) return;
         var module = await Module();
-        // Stop the rAF loop before disposing the module so no callbacks remain scheduled against a
-        // disposed module reference (passing null stops all engines). This keeps the JS side from
-        // invoking ComputeFrame on a torn-down reference during teardown.
-        await module.InvokeVoidAsync("stopRafLoop", new object?[] { null });
+        // Note: each engine already removes itself from the shared JS rAF loop in its own
+        // DisposeAsync (StopRafLoopAsync(_dotnet)), so we must not issue the global stopRafLoop(null)
+        // here - that would tear down any other engines still sharing the module-level JS loop.
         await module.DisposeAsync();
     }
 }
