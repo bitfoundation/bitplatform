@@ -258,8 +258,8 @@ var variants = BmotionMotionVariants.Create(
 
 ```razor
 <Bmotion Variants="variants"
-         Initial='"hidden"'
-         Animate='"visible"'
+         Initial="hidden"
+         Animate="visible"
          Transition='new BmotionTransitionConfig { StaggerChildren = 0.1 }'>
     <Bmotion>Item 1</Bmotion>
     <Bmotion>Item 2</Bmotion>

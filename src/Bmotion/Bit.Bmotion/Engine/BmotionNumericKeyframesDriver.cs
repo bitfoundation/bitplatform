@@ -145,7 +145,8 @@ internal sealed class BmotionNumericKeyframesDriver : IBmotionAnimationDriver
     /// <summary>
     /// Mirrors a (possibly non-uniform) times array in place so segment durations line up with the
     /// reversed frame order: <c>newTimes[i] = 1 - times[n-1-i]</c>. Applying it twice restores the
-    /// original, matching how Mirror/Reverse alternate direction each iteration.
+    /// original: Mirror calls it every pass to ping-pong, while Reverse calls it once to latch the
+    /// reversed playback direction.
     /// </summary>
     private static void MirrorTimes(double[] times)
     {

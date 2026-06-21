@@ -28,8 +28,21 @@
 
     private BmotionConfigContext _ctx = new();
 
+    // Cache the last parameter values so OnParametersSet only swaps in a new context (and triggers
+    // a downstream re-render of the cascading value) when one of them actually changes.
+    private BmotionTransitionConfig? _lastTransition;
+    private bool? _lastReduceMotion;
+    private double _lastTransitionSpeed = 1.0;
+    private bool _ctxInitialized;
+
     protected override void OnParametersSet()
     {
+        if (_ctxInitialized &&
+            ReferenceEquals(_lastTransition, Transition) &&
+            _lastReduceMotion == ReduceMotion &&
+            _lastTransitionSpeed.Equals(TransitionSpeed))
+            return;
+
         // Replace the context with a fresh instance (rather than mutating in place) so the cascading
         // value's reference changes whenever parameters change, ensuring descendants are notified.
         // The TransitionSpeed setter still coerces negative / non-finite (NaN/Infinity) speeds to 0,
@@ -40,5 +53,9 @@
             ReduceMotion      = ReduceMotion,
             TransitionSpeed   = TransitionSpeed,
         };
+        _lastTransition = Transition;
+        _lastReduceMotion = ReduceMotion;
+        _lastTransitionSpeed = TransitionSpeed;
+        _ctxInitialized = true;
     }
 }

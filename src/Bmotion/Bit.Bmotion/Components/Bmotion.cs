@@ -722,6 +722,13 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         bool whileInViewSet = WhileInView != null;
         if (_whileInViewSet && !whileInViewSet)
             await Engine.DeactivateGestureLayerAsync(_id, "inview");
+        else if (!_whileInViewSet && whileInViewSet)
+            // WhileInView was just enabled. If observation is already active for other viewport
+            // callbacks the (option-only) signature is unchanged, so the early-return below would
+            // skip activating the in-view layer for an element that may already be visible. Drop
+            // the cached signature to force re-observation, which makes JS re-report the current
+            // intersection state (and activates the layer only when actually in view).
+            _viewportSig = null;
         _whileInViewSet = whileInViewSet;
 
         var sig = BuildViewportSignature();

@@ -21,6 +21,18 @@ internal sealed class BmotionInertiaDriver : IBmotionAnimationDriver
 
     public BmotionInertiaDriver(double from, BmotionTransitionConfig config, Action<double> apply)
     {
+        // Non-finite inertia inputs poison the decay math: a NaN/Infinity time constant, delay,
+        // power, velocity or bound produces NaN positions through _apply and can make the rest test
+        // (|projected - pos| < restDelta) unsatisfiable, so the driver ticks forever. Reject them up
+        // front like the tween/spring/keyframe drivers do.
+        if (!double.IsFinite(config.TimeConstant) || !double.IsFinite(config.Delay) ||
+            !double.IsFinite(config.Power) || !double.IsFinite(config.InertiaVelocity) ||
+            (config.InertiaMax.HasValue && !double.IsFinite(config.InertiaMax.Value)) ||
+            (config.InertiaMin.HasValue && !double.IsFinite(config.InertiaMin.Value)))
+            throw new ArgumentException(
+                "Inertia configuration values (TimeConstant, Delay, Power, InertiaVelocity and the " +
+                "optional InertiaMin/InertiaMax bounds) must be finite.", nameof(config));
+
         _start = from;
         _timeConstantSec = config.TimeConstant > 0 ? config.TimeConstant / 1000.0 : 1e-6;
         // Rest delta must be strictly positive, otherwise the completion test

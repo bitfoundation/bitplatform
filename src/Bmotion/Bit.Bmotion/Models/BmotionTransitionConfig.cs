@@ -73,9 +73,37 @@ public class BmotionTransitionConfig
     // ── Keyframes ─────────────────────────────────────────────────────────────
     /// <summary>
     /// Progress offsets (0–1) for each keyframe value. Length must match value array.
-    /// If omitted the frames are evenly distributed.
+    /// If omitted the frames are evenly distributed. When set, values must be finite, within
+    /// <c>[0, 1]</c> and in monotonically ascending order.
     /// </summary>
-    public double[]? Times { get; set; }
+    public double[]? Times
+    {
+        get => _times is null ? null : (double[])_times.Clone();
+        set
+        {
+            var validated = ValidateTimes(value);
+            _times = validated is null ? null : (double[])validated.Clone();
+        }
+    }
+    private double[]? _times;
+
+    private static double[]? ValidateTimes(double[]? value)
+    {
+        if (value is null) return null;
+        // These feed the keyframe interpolation segment math; non-finite, out-of-range or
+        // non-monotonic offsets produce negative/zero segment lengths and NaN output, so reject
+        // them up front (matches the validation in the keyframe drivers).
+        for (int i = 0; i < value.Length; i++)
+        {
+            if (!double.IsFinite(value[i]))
+                throw new ArgumentException("Times values must be finite.", nameof(value));
+            if (value[i] < 0 || value[i] > 1)
+                throw new ArgumentException("Times values must be within the range [0, 1].", nameof(value));
+            if (i > 0 && value[i] < value[i - 1])
+                throw new ArgumentException("Times values must be in monotonically ascending order.", nameof(value));
+        }
+        return value;
+    }
 
     // ── Spring ────────────────────────────────────────────────────────────────
     /// <summary>Spring stiffness (N/m). Higher = snappier. Default: 100.</summary>
@@ -172,7 +200,7 @@ public class BmotionTransitionConfig
         RepeatInfinite = RepeatInfinite,
         RepeatType = RepeatType,
         RepeatDelay = RepeatDelay,
-        Times = Times is null ? null : (double[])Times.Clone(),
+        Times = _times is null ? null : (double[])_times.Clone(),
         Stiffness = Stiffness,
         Damping = Damping,
         Mass = Mass,
