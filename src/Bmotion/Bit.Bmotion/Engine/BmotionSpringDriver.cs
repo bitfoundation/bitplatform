@@ -37,6 +37,11 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 
     public BmotionSpringDriver(double from, double to, BmotionTransitionConfig config, Action<double> apply)
     {
+        // Non-finite endpoints poison the physics just like non-finite config: a NaN/Infinity from
+        // or to makes _pos/_vel and the magnitude-scaled rest thresholds non-finite, so the rest
+        // gate can never be satisfied and the driver ticks forever. Reject them up front.
+        if (!double.IsFinite(from) || !double.IsFinite(to))
+            throw new ArgumentException("Spring endpoints (from, to) must be finite values.", nameof(from));
         // Non-finite spring inputs poison the physics: a NaN/Infinity stiffness, damping, velocity
         // or rest threshold makes _vel/_pos non-finite (or makes the rest gate unsatisfiable), so
         // the driver would tick forever. Reject them up front like the tween/keyframe drivers do.

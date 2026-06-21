@@ -22,6 +22,10 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
 
     public BmotionColorKeyframesDriver(string[] frames, BmotionTransitionConfig config, Action<string> apply)
     {
+        if (config is null)
+            throw new ArgumentException("Transition config must not be null.", nameof(config));
+        if (apply is null)
+            throw new ArgumentException("Apply callback must not be null.", nameof(apply));
         if (frames is null || frames.Length < 2)
             throw new ArgumentException("Keyframe animations require at least 2 frames.", nameof(frames));
         if (!double.IsFinite(config.Duration) || !double.IsFinite(config.Delay) || !double.IsFinite(config.RepeatDelay)

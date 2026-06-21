@@ -363,7 +363,13 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                     var props = Variants?.Get(newVariant) ?? VariantCtx?.Variants?.Get(newVariant);
                     if (props != null)
                     {
-                        double delay = _variantChildIndex >= 0 ? VariantCtx!.GetChildDelay(_variantChildIndex) : 0;
+                        // When this element rendered with a non-null Animate on first render it
+                        // never claimed a stagger slot, so _variantChildIndex is still -1 here.
+                        // Lazily claim one now (newVariant came from VariantCtx, so it's non-null)
+                        // so GetChildDelay receives a real index instead of collapsing to zero.
+                        if (_variantChildIndex < 0)
+                            _variantChildIndex = VariantCtx!.RegisterChild();
+                        double delay = VariantCtx!.GetChildDelay(_variantChildIndex);
                         await Engine.AnimateToAsync(_id, props.ToJsDictionary(),
                             BuildEffectiveTransitionWithDelay(delay), setAsBase: true);
                     }

@@ -144,4 +144,68 @@ public class ColorTweenDriverTests
 
         Assert.AreEqual("rgba(0,0,0,1)", lastValue);
     }
+
+    // ── Complete() terminal state ─────────────────────────────────────────────
+
+    [TestMethod]
+    public void Complete_MirrorRepeatOnce_SnapsBackToFirstColor()
+    {
+        string? lastValue = null;
+        var driver = new BmotionColorTweenDriver(
+            "#000000", "#ffffff",
+            new BmotionTransitionConfig
+            {
+                Duration = 0.3,
+                Ease = BmotionEasing.Linear,
+                Repeat = 1,
+                RepeatType = BmotionRepeatType.Mirror,
+            },
+            v => lastValue = v);
+
+        // Two passes (forward + mirrored) end back on the start; Complete() snaps there directly.
+        driver.Complete();
+
+        Assert.AreEqual("#000000", lastValue);
+    }
+
+    [TestMethod]
+    public void Complete_ReverseNoRepeat_SnapsToTargetColor()
+    {
+        string? lastValue = null;
+        var driver = new BmotionColorTweenDriver(
+            "#000000", "#ffffff",
+            new BmotionTransitionConfig
+            {
+                Duration = 0.3,
+                Ease = BmotionEasing.Linear,
+                RepeatType = BmotionRepeatType.Reverse,
+            },
+            v => lastValue = v);
+
+        // A single forward pass ends on the target colour.
+        driver.Complete();
+
+        Assert.AreEqual("#ffffff", lastValue);
+    }
+
+    [TestMethod]
+    public void Complete_ReverseRepeatOnce_SnapsBackToFirstColor()
+    {
+        string? lastValue = null;
+        var driver = new BmotionColorTweenDriver(
+            "#000000", "#ffffff",
+            new BmotionTransitionConfig
+            {
+                Duration = 0.3,
+                Ease = BmotionEasing.Linear,
+                Repeat = 1,
+                RepeatType = BmotionRepeatType.Reverse,
+            },
+            v => lastValue = v);
+
+        // Forward once then replayed reversed → ends on the start colour.
+        driver.Complete();
+
+        Assert.AreEqual("#000000", lastValue);
+    }
 }

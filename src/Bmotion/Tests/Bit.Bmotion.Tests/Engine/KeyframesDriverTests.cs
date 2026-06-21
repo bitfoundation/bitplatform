@@ -143,6 +143,51 @@ public class NumericKeyframesDriverTests
 
         Assert.AreEqual(0.0, log[^1], 1e-1);
     }
+
+    [TestMethod]
+    public void Tick_ReverseRepeat_PlaysForwardThenReversed()
+    {
+        var log = new List<double>();
+        var driver = new BmotionNumericKeyframesDriver(
+            [0, 100],
+            new BmotionTransitionConfig
+            {
+                Duration = 0.3,
+                Ease = BmotionEasing.Linear,
+                Repeat = 1,
+                RepeatType = BmotionRepeatType.Reverse,
+            },
+            v => log.Add(v));
+
+        driver.Tick(0);   // → 0
+        driver.Tick(300); // forward pass end → 100, reverses
+        driver.Tick(450); // midpoint of reversed pass → ≈ 50
+        driver.Tick(600); // reversed pass end → 0
+
+        Assert.AreEqual(50.0, log[^2], 1e-1);
+        Assert.AreEqual(0.0, log[^1], 1e-1);
+    }
+
+    [TestMethod]
+    public void Complete_ReverseRepeatOnce_ReturnsToStartValue()
+    {
+        var log = new List<double>();
+        var driver = new BmotionNumericKeyframesDriver(
+            [0, 100],
+            new BmotionTransitionConfig
+            {
+                Duration = 0.3,
+                Ease = BmotionEasing.Linear,
+                Repeat = 1,
+                RepeatType = BmotionRepeatType.Reverse,
+            },
+            v => log.Add(v));
+
+        // Forward once then replayed reversed → terminal value is the start frame.
+        driver.Complete();
+
+        Assert.AreEqual(0.0, log[^1], 1e-5);
+    }
 }
 
 [TestClass]
@@ -288,6 +333,71 @@ public class ColorKeyframesDriverTests
         driver.Tick(600); // reversed pass end → rgba(0,0,0,1)
 
         Assert.AreEqual("rgba(0,0,0,1)", lastValue);
+    }
+
+    // ── Reverse repeat ────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Tick_ReverseRepeat_SecondPassGoesBackToFirstFrame()
+    {
+        string? lastValue = null;
+        var driver = new BmotionColorKeyframesDriver(
+            ["#000000", "#ffffff"],
+            new BmotionTransitionConfig
+            {
+                Duration = 0.3,
+                Ease = BmotionEasing.Linear,
+                Repeat = 1,
+                RepeatType = BmotionRepeatType.Reverse,
+            },
+            v => lastValue = v);
+
+        driver.Tick(0);   // → rgba(0,0,0,1)
+        driver.Tick(300); // forward pass end → rgba(255,255,255,1), reverses
+        driver.Tick(600); // reversed pass end → rgba(0,0,0,1)
+
+        Assert.AreEqual("rgba(0,0,0,1)", lastValue);
+    }
+
+    [TestMethod]
+    public void Complete_ReverseNoRepeat_SnapsToLastFrame()
+    {
+        string? lastValue = null;
+        var driver = new BmotionColorKeyframesDriver(
+            ["#000000", "#ffffff"],
+            new BmotionTransitionConfig
+            {
+                Duration = 0.3,
+                Ease = BmotionEasing.Linear,
+                RepeatType = BmotionRepeatType.Reverse,
+            },
+            v => lastValue = v);
+
+        // A single forward pass ends on the last frame.
+        driver.Complete();
+
+        Assert.AreEqual("#ffffff", lastValue);
+    }
+
+    [TestMethod]
+    public void Complete_ReverseRepeatOnce_SnapsBackToFirstFrame()
+    {
+        string? lastValue = null;
+        var driver = new BmotionColorKeyframesDriver(
+            ["#000000", "#ffffff"],
+            new BmotionTransitionConfig
+            {
+                Duration = 0.3,
+                Ease = BmotionEasing.Linear,
+                Repeat = 1,
+                RepeatType = BmotionRepeatType.Reverse,
+            },
+            v => lastValue = v);
+
+        // Forward once then replayed reversed → terminal value is the first frame.
+        driver.Complete();
+
+        Assert.AreEqual("#000000", lastValue);
     }
 }
 
