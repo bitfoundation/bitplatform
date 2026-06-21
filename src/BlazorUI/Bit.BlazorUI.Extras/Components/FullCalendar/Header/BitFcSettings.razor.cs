@@ -6,6 +6,9 @@ public partial class BitFcSettings
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     private bool _open;
 
+    // Unique per instance so multiple calendars on one page don't produce duplicate element IDs.
+    private readonly string _menuId = $"bit-bfc-settings-menu-{Guid.NewGuid():N}";
+
     private void OnStartHourChange(ChangeEventArgs e)
     {
         if (int.TryParse(e.Value?.ToString(), out int val))

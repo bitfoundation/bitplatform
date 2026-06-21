@@ -12,8 +12,8 @@ public class BitFullCalendarAttendee
     {
         get
         {
-            var first = FirstName.Length > 0 ? char.ToUpperInvariant(FirstName[0]).ToString() : "";
-            var last = LastName.Length > 0 ? char.ToUpperInvariant(LastName[0]).ToString() : "";
+            var first = FirstName?.Length > 0 ? char.ToUpperInvariant(FirstName[0]).ToString() : "";
+            var last = LastName?.Length > 0 ? char.ToUpperInvariant(LastName[0]).ToString() : "";
             return first + last;
         }
     }

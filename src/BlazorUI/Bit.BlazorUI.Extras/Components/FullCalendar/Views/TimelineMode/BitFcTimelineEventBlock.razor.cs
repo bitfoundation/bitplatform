@@ -57,6 +57,12 @@ public partial class BitFcTimelineEventBlock
         await OnSelected.InvokeAsync(Event);
     }
 
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " " or "Spacebar")
+            await OnClick();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_resizeInitialized || PixelsPerMinute <= 0) return;

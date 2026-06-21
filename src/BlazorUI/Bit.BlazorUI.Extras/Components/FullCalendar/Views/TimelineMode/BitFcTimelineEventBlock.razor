@@ -39,11 +39,14 @@
 
 <div class="bit-bfc-timeline-event @colorClass @(passThrough ? "bit-bfc-timeline-event-pass-through" : "") @resizeClasses"
      style="@blockStyle"
+     role="button"
+     tabindex="0"
      draggable="true"
      title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat)"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="OnClick"
+     @onkeydown="OnKeyDown"
      @onclick:stopPropagation="true">
 
     @if (canResize)

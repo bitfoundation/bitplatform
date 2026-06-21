@@ -213,8 +213,8 @@ public static class BitFullCalendarHelpers
     public static string FormatTime(DateTime date, bool use24Hour)
     {
         return use24Hour
-            ? date.ToString("HH:mm", CultureInfo.InvariantCulture)
-            : date.ToString("h:mm tt", CultureInfo.InvariantCulture);
+            ? date.ToString("HH:mm", CultureInfo.CurrentUICulture)
+            : date.ToString("h:mm tt", CultureInfo.CurrentUICulture);
     }
 
     /// <summary>
@@ -249,8 +249,8 @@ public static class BitFullCalendarHelpers
     {
         var dt = DateTime.Today.AddHours(hour);
         return use24Hour
-            ? dt.ToString("HH:00", CultureInfo.InvariantCulture)
-            : dt.ToString("h tt", CultureInfo.InvariantCulture);
+            ? dt.ToString("HH:00", CultureInfo.CurrentUICulture)
+            : dt.ToString("h tt", CultureInfo.CurrentUICulture);
     }
 
     /// <summary>

@@ -15,12 +15,17 @@ public partial class BitFcDateTimePicker : IDisposable
     private int _minute;
     private bool _isOpen;
     private DateTime _lastSyncedDate = DateTime.MinValue;
+    private CultureInfo? _lastSyncedCulture;
     private string[] _weekdayHeaders = [];
     private CancellationTokenSource? _closeCts;
 
     protected override void OnParametersSet()
     {
-        if (_lastSyncedDate != Value)
+        // Re-anchor the visible month when the value changes, and also when the culture/calendar
+        // system changes - the same DateTime maps to a different month label across calendars.
+        var cultureChanged = !ReferenceEquals(_lastSyncedCulture, Culture);
+
+        if (_lastSyncedDate != Value || cultureChanged)
         {
             _hour = Value.Hour;
             _minute = Value.Minute;
@@ -28,6 +33,7 @@ public partial class BitFcDateTimePicker : IDisposable
             _lastSyncedDate = Value;
         }
 
+        _lastSyncedCulture = Culture;
         _weekdayHeaders = BuildWeekdayHeaders();
     }
 

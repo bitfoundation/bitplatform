@@ -49,6 +49,7 @@ public class BitFullCalendarState
     {
         Culture = culture;
         UpdateUI();
+        NotifyDateRangeChanged();
     }
 
     public void SetSelectedDate(DateTime date)

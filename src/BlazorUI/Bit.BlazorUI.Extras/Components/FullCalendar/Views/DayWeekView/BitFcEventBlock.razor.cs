@@ -70,9 +70,9 @@ public partial class BitFcEventBlock
             await JS.InvokeVoidAsync("BitBlazorUI.FullCalendar.initResize", _dotNetRef, _bottomHandleId, "bottom");
             _resizeInitialized = true;
         }
-        catch (JSException)
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException or OperationCanceledException)
         {
-            // BitBlazorUI.FullCalendar JS not yet available; will retry on the next render
+            // BitBlazorUI.FullCalendar JS not yet available, or the circuit/render is mid-teardown; retry on next render.
         }
     }
 
