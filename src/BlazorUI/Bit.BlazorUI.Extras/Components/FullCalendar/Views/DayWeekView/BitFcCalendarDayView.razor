@@ -32,10 +32,14 @@
                 {
                     var hour = h;
                         <div class="bit-bfc-hour-row bit-bfc-droppable @GetHourDropClass(hour, 0)"
+                             role="button"
+                             tabindex="0"
+                             aria-label="@HourSlotAriaLabel(hour)"
                              @ondragenter="() => OnDragEnterHour(hour, 0)"
                              @ondragover:preventDefault="true"
                              @ondrop="() => OnDropHour(hour, 0)"
-                             @onclick="() => OnHourClickAsync(hour)">
+                             @onclick="() => OnHourClickAsync(hour)"
+                             @onkeydown="e => OnHourKeyDownAsync(e, hour)">
                             @if (h > 0)
                             {
                                 <div style="position:absolute;top:0;left:0;right:0;border-top:1px solid var(--bit-bfc-border);"></div>

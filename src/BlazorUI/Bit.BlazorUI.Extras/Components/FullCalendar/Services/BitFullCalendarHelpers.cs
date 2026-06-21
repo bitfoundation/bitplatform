@@ -27,7 +27,7 @@ public static class BitFullCalendarHelpers
                 int y = cal.GetYear(date);
                 int m = cal.GetMonth(date);
                 string monthName = dtf.GetMonthName(m);
-                return $"{monthName} {y}";
+                return $"{monthName} {y.ToString(culture)}";
             }
             case BitFullCalendarView.Week:
             {
@@ -57,7 +57,7 @@ public static class BitFullCalendarHelpers
         int m = cal.GetMonth(date);
         int d = cal.GetDayOfMonth(date);
         string abbr = dtf.GetAbbreviatedMonthName(m);
-        return $"{abbr} {d}, {y}";
+        return $"{abbr} {d.ToString(culture)}, {y.ToString(culture)}";
     }
 
     // -- Culture-aware: Navigation ------------------------------

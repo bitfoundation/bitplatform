@@ -12,13 +12,12 @@ internal static class BitFcTimeGridScrollInterop
     {
         try
         {
-            await js.InvokeVoidAsync(
+            return await js.InvokeAsync<bool>(
                 "BitBlazorUI.FullCalendar.scrollToHour",
                 cancellationToken,
                 elementId,
                 startOfDayHour,
                 BitFullCalendarHelpers.HourHeightPx);
-            return true;
         }
         catch (JSDisconnectedException)
         {

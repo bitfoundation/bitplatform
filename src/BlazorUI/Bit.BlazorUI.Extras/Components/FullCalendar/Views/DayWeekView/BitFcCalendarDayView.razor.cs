@@ -54,6 +54,18 @@ public partial class BitFcCalendarDayView : IDisposable
         _showAddDialog = true;
     }
 
+    private async Task OnHourKeyDownAsync(KeyboardEventArgs e, int hour)
+    {
+        if (e.Key is "Enter" or " " or "Spacebar")
+            await OnHourClickAsync(hour);
+    }
+
+    private string HourSlotAriaLabel(int hour)
+    {
+        var start = State.SelectedDate.Date.AddHours(hour);
+        return $"{Texts.AddEventHoverHint}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat)}";
+    }
+
     private async Task OnDropHour(int hour, int minute)
     {
         _dragHour = null;

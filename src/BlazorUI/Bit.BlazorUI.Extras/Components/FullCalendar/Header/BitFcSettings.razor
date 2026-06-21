@@ -9,31 +9,28 @@
         <div class="bit-bfc-dropdown-menu" id="@_menuId">
             <div class="bit-bfc-dropdown-label">@Texts.CalendarSettingsLabel</div>
 
-            <button type="button" class="bit-bfc-dropdown-item" @onclick="() => State.SetBadgeVariant(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? BitFullCalendarBadgeVariant.Colored : BitFullCalendarBadgeVariant.Dot)">
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot)" @onclick="() => State.SetBadgeVariant(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? BitFullCalendarBadgeVariant.Colored : BitFullCalendarBadgeVariant.Dot)">
                 <span>@Texts.DotBadgeLabel</span>
-                <label class="bit-bfc-toggle">
-                    <input type="checkbox" checked="@(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot)" aria-label="@Texts.DotBadgeLabel" />
+                <span class="bit-bfc-toggle @(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? "checked" : "")" aria-hidden="true">
                     <span class="bit-bfc-toggle-track"></span>
                     <span class="bit-bfc-toggle-thumb"></span>
-                </label>
+                </span>
             </button>
 
-            <button type="button" class="bit-bfc-dropdown-item" @onclick="State.ToggleTimeFormat">
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@State.Use24HourFormat" @onclick="State.ToggleTimeFormat">
                 <span>@Texts.TwentyFourHourFormatLabel</span>
-                <label class="bit-bfc-toggle">
-                    <input type="checkbox" checked="@State.Use24HourFormat" aria-label="@Texts.TwentyFourHourFormatLabel" />
+                <span class="bit-bfc-toggle @(State.Use24HourFormat ? "checked" : "")" aria-hidden="true">
                     <span class="bit-bfc-toggle-track"></span>
                     <span class="bit-bfc-toggle-thumb"></span>
-                </label>
+                </span>
             </button>
 
-            <button type="button" class="bit-bfc-dropdown-item" @onclick="State.ToggleEventLayout">
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@(State.EventLayout == BitFullCalendarEventLayout.Stack)" @onclick="State.ToggleEventLayout">
                 <span>@Texts.StackedEventsLabel</span>
-                <label class="bit-bfc-toggle">
-                    <input type="checkbox" checked="@(State.EventLayout == BitFullCalendarEventLayout.Stack)" aria-label="@Texts.StackedEventsLabel" />
+                <span class="bit-bfc-toggle @(State.EventLayout == BitFullCalendarEventLayout.Stack ? "checked" : "")" aria-hidden="true">
                     <span class="bit-bfc-toggle-track"></span>
                     <span class="bit-bfc-toggle-thumb"></span>
-                </label>
+                </span>
             </button>
 
             <div class="bit-bfc-dropdown-sep"></div>

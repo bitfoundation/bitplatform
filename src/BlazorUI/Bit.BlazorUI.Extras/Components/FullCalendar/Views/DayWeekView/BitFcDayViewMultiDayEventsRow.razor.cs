@@ -19,7 +19,11 @@ public partial class BitFcDayViewMultiDayEventsRow
     private string GetPosition(BitFullCalendarEvent ev)
     {
         if (ev.StartDate.Date == Date.Date) return "first";
-        if (ev.EndDate.Date == Date.Date) return "last";
+        // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with
+        // GetEventsForDay/GroupEventsByDayRange, so an event ending at midnight is still marked
+        // "last" on its real final visible day rather than "middle".
+        var endInclusive = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+        if (endInclusive == Date.Date) return "last";
         return "middle";
     }
 

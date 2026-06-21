@@ -86,6 +86,18 @@ public partial class BitFcTimelineDayView
         _showAddDialog = true;
     }
 
+    private async Task OnSlotKeyDownAsync(KeyboardEventArgs e, string resourceId, int hour, int minute)
+    {
+        if (e.Key is "Enter" or " " or "Spacebar")
+            await OnSlotClickAsync(resourceId, hour, minute);
+    }
+
+    private string SlotAriaLabel(int hour, int minute)
+    {
+        var start = State.SelectedDate.Date.AddHours(hour).AddMinutes(minute);
+        return $"{Texts.AddEventHoverHint}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat)}";
+    }
+
     private void OnDragEnter(string resourceId, int hour, int minute)
     {
         if (!State.IsDragging) return;

@@ -1,8 +1,8 @@
 namespace BitBlazorUI {
     export class FullCalendar {
-        public static scrollToHour(elementId: string, hour: number, pixelsPerHour: number | null) {
+        public static scrollToHour(elementId: string, hour: number, pixelsPerHour: number | null): boolean {
             const el = document.getElementById(elementId);
-            if (!el) return;
+            if (!el) return false;
             const pxPerHour = pixelsPerHour ?? 96;
             const top = hour * pxPerHour;
             if (typeof el.scrollTo === "function") {
@@ -10,6 +10,7 @@ namespace BitBlazorUI {
             } else {
                 el.scrollTop = top;
             }
+            return true;
         }
 
         /**
@@ -40,11 +41,11 @@ namespace BitBlazorUI {
             return true;
         }
 
-        public static scrollAgendaToDate(scrollContainerId: string, dateIso: string) {
+        public static scrollAgendaToDate(scrollContainerId: string, dateIso: string): boolean {
             const container = document.getElementById(scrollContainerId);
-            if (!container) return;
+            if (!container) return false;
             const nodes = container.querySelectorAll('[data-agenda-date="' + dateIso + '"]');
-            if (!nodes.length) return;
+            if (!nodes.length) return false;
 
             let target = nodes[0];
             let bestTop = target.getBoundingClientRect().top;
@@ -64,6 +65,7 @@ namespace BitBlazorUI {
             } else {
                 container.scrollTop = scrollTop;
             }
+            return true;
         }
 
         /**

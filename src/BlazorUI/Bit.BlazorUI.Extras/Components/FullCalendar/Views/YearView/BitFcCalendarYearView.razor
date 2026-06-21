@@ -21,7 +21,10 @@
     foreach (var ev in allEvents)
     {
         var from = ev.StartDate.Date < lookupStart ? lookupStart : ev.StartDate.Date;
-        var to = ev.EndDate.Date > lookupEnd ? lookupEnd : ev.EndDate.Date;
+        // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with the
+        // rest of the calendar, so an event ending at midnight isn't indexed onto the next day.
+        var endInclusive = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+        var to = endInclusive > lookupEnd ? lookupEnd : endInclusive;
         for (var d = from; d <= to; d = d.AddDays(1))
         {
             if (!eventsByDay.TryGetValue(d, out var list))

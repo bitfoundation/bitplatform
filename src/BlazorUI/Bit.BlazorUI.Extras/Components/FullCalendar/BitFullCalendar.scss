@@ -1566,10 +1566,6 @@
     cursor: pointer;
 }
 
-.bit-bfc-toggle input {
-    display: none;
-}
-
 .bit-bfc-toggle-track {
     width: 100%;
     height: 100%;
@@ -1578,7 +1574,7 @@
     transition: background 0.2s;
 }
 
-.bit-bfc-toggle input:checked+.bit-bfc-toggle-track {
+.bit-bfc-toggle.checked .bit-bfc-toggle-track {
     background: var(--bit-bfc-primary);
 }
 
@@ -1594,7 +1590,7 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.bit-bfc-toggle input:checked~.bit-bfc-toggle-thumb {
+.bit-bfc-toggle.checked .bit-bfc-toggle-thumb {
     transform: translateX(16px);
 }
 

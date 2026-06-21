@@ -101,6 +101,11 @@ public partial class BitFcTimelineMonthView
             await OnSlotClickAsync(resourceId, day);
     }
 
+    private string SlotAriaLabel(DateTime day)
+    {
+        return $"{Texts.AddEventHoverHint}, {day.ToString("D", State.Culture)}";
+    }
+
     private void OnDragEnter(string resourceId, DateTime day)
     {
         if (!State.IsDragging) return;
