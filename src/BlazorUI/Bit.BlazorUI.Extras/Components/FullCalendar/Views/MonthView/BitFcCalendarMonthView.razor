@@ -18,7 +18,7 @@
     <div class="bit-bfc-month-grid">
         @foreach (var cell in cells)
         {
-            <BitFcDayCell Cell="cell" Events="allEvents" EventPositions="eventPositions" EventTemplate="EventTemplate" />
+            <BitFcDayCell @key="cell.Date" Cell="cell" Events="allEvents" EventPositions="eventPositions" EventTemplate="EventTemplate" />
         }
     </div>
 </div>

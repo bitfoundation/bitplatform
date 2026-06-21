@@ -194,10 +194,10 @@
     min-height: 0;
     overflow: hidden;
     position: relative;
-    animation: bfcFadeIn 0.2s ease;
+    animation: bit-bfc-fade-in 0.2s ease;
 }
 
-@keyframes bfcFadeIn {
+@keyframes bit-bfc-fade-in {
     from {
         opacity: 0;
     }
@@ -1089,7 +1089,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: bfcFadeIn 0.15s ease;
+    animation: bit-bfc-fade-in 0.15s ease;
 }
 
 .bit-bfc-dialog {
@@ -1100,10 +1100,10 @@
     max-width: 480px;
     max-height: 90vh;
     overflow-y: auto;
-    animation: bfcSlideUp 0.2s ease;
+    animation: bit-bfc-slide-up 0.2s ease;
 }
 
-@keyframes bfcSlideUp {
+@keyframes bit-bfc-slide-up {
     from {
         opacity: 0;
         transform: translateY(12px);
@@ -1524,7 +1524,7 @@
     min-width: 240px;
     z-index: 50;
     padding: 6px;
-    animation: bfcSlideUp 0.15s ease;
+    animation: bit-bfc-slide-up 0.15s ease;
 }
 
 .bit-bfc-dropdown-label {
@@ -1645,7 +1645,7 @@
     min-width: 200px;
     z-index: 50;
     padding: 4px;
-    animation: bfcSlideUp 0.15s ease;
+    animation: bit-bfc-slide-up 0.15s ease;
 }
 
 .bit-bfc-user-option {
@@ -1814,7 +1814,7 @@
     border-radius: var(--bit-bfc-radius);
     box-shadow: var(--bit-bfc-shadow-lg);
     font-size: 13px;
-    animation: bfcSlideUp 0.2s ease;
+    animation: bit-bfc-slide-up 0.2s ease;
     display: flex;
     align-items: center;
     gap: 8px;

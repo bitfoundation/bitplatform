@@ -2,9 +2,12 @@
 
 <div draggable="true"
      class="@(_isDragged ? "bit-bfc-dragging" : "") @Class"
+     role="button"
+     tabindex="0"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="OnClick"
+     @onkeydown="OnKeyDown"
      @onclick:stopPropagation="true">
     @ChildContent
 </div>

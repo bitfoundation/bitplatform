@@ -14,34 +14,53 @@ public partial class BitFcCalendarToast : IAsyncDisposable
 
         var cts = new CancellationTokenSource();
         _removalTokens.Add(cts);
-        _ = RemoveAfterDelay(item.Id, cts.Token);
+        _ = RemoveAfterDelay(item.Id, cts);
     }
 
-    private async Task RemoveAfterDelay(int id, CancellationToken cancellationToken)
+    private async Task RemoveAfterDelay(int id, CancellationTokenSource cts)
     {
         try
         {
-            await Task.Delay(3000, cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
+            try
+            {
+                await Task.Delay(3000, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
 
-        // Mutate the toast list on the renderer's dispatcher to avoid racing the template's foreach.
-        await InvokeAsync(() =>
+            // Mutate the toast list on the renderer's dispatcher to avoid racing the template's foreach.
+            await InvokeAsync(() =>
+            {
+                _toasts.RemoveAll(t => t.Id == id);
+                StateHasChanged();
+            });
+        }
+        finally
         {
-            _toasts.RemoveAll(t => t.Id == id);
-            StateHasChanged();
-        });
+            // Drop the token as soon as its timer finishes (or is cancelled) so _removalTokens
+            // doesn't grow unbounded on long-lived pages that show many toasts.
+            if (_removalTokens.Remove(cts))
+                cts.Dispose();
+        }
     }
 
     public ValueTask DisposeAsync()
     {
-        foreach (var cts in _removalTokens)
+        // Snapshot first: RemoveAfterDelay also removes/disposes tokens as their timers complete,
+        // so iterating the live list here could race with that cleanup.
+        foreach (var cts in _removalTokens.ToArray())
         {
-            cts.Cancel();
-            cts.Dispose();
+            try
+            {
+                cts.Cancel();
+                cts.Dispose();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already disposed by RemoveAfterDelay's cleanup; nothing to do.
+            }
         }
         _removalTokens.Clear();
         return ValueTask.CompletedTask;

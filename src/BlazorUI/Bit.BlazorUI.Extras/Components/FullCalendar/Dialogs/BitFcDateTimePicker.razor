@@ -1,7 +1,7 @@
 @using System.Globalization
 @namespace Bit.BlazorUI
 
-<div class="bit-bfc-dtp" tabindex="-1" @onfocusout="OnFocusOut">
+<div class="bit-bfc-dtp" tabindex="-1" @onfocusout="OnFocusOut" @onfocusin="OnFocusIn">
     <button type="button" class="bit-bfc-dtp-trigger" @onclick="ToggleOpen" aria-expanded="@_isOpen">
         <span>@GetDisplayText()</span>
         <span class="bit-bfc-dtp-trigger-icon">&#9662;</span>

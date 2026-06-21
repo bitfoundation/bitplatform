@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace Bit.BlazorUI;
 
-public partial class BitFcDateTimePicker
+public partial class BitFcDateTimePicker : IDisposable
 {
     [Parameter] public DateTime Value { get; set; }
     [Parameter] public EventCallback<DateTime> ValueChanged { get; set; }
@@ -14,6 +14,7 @@ public partial class BitFcDateTimePicker
     private bool _isOpen;
     private DateTime _lastSyncedDate = DateTime.MinValue;
     private string[] _weekdayHeaders = [];
+    private CancellationTokenSource? _closeCts;
 
     protected override void OnParametersSet()
     {
@@ -68,9 +69,40 @@ public partial class BitFcDateTimePicker
         await ValueChanged.InvokeAsync(selected);
     }
 
-    private void OnFocusOut(FocusEventArgs _)
+    private void OnFocusOut(FocusEventArgs args)
     {
+        // Blazor's FocusEventArgs doesn't expose relatedTarget, so we can't tell from the event
+        // alone whether focus moved to a child (day button, time select) or left the picker.
+        // Defer the close briefly: if focus lands back inside the picker, OnFocusIn cancels it.
+        _closeCts?.Cancel();
+        _closeCts?.Dispose();
+        _closeCts = new CancellationTokenSource();
+        var token = _closeCts.Token;
+        _ = CloseAfterDelay(token);
+    }
+
+    private void OnFocusIn(FocusEventArgs _)
+    {
+        // Focus returned to (or moved within) the picker - keep it open.
+        _closeCts?.Cancel();
+    }
+
+    private async Task CloseAfterDelay(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(120, token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (token.IsCancellationRequested || !_isOpen)
+            return;
+
         _isOpen = false;
+        await InvokeAsync(StateHasChanged);
     }
 
     private IEnumerable<CalendarDay> BuildCalendarDays()
@@ -128,4 +160,10 @@ public partial class BitFcDateTimePicker
     }
 
     private sealed record CalendarDay(DateTime Date, string Label, bool IsCurrentMonth, bool IsSelected);
+
+    public void Dispose()
+    {
+        _closeCts?.Cancel();
+        _closeCts?.Dispose();
+    }
 }

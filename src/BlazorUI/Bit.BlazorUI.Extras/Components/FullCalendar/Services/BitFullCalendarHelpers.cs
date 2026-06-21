@@ -82,7 +82,7 @@ public static class BitFullCalendarHelpers
 
     public static DateTime StartOfWeek(DateTime date, CultureInfo? culture = null)
     {
-        var startDay = culture?.DateTimeFormat.FirstDayOfWeek ?? DayOfWeek.Sunday;
+        var startDay = (culture ?? CultureInfo.CurrentUICulture).DateTimeFormat.FirstDayOfWeek;
         return StartOfWeek(date, startDay);
     }
 
@@ -510,7 +510,10 @@ public static class BitFullCalendarHelpers
         var eventsForDate = events.Where(ev =>
         {
             var s = ev.StartDate.Date;
-            var e = ev.EndDate.Date;
+            // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with
+            // IsSingleDay and GroupEventsByDayRange, so an event ending at midnight doesn't show
+            // up as a carry-over in the next day's cell.
+            var e = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
             return (dayStart >= s && dayStart <= e) || s == dayStart || e == dayStart;
         }).ToList();
 

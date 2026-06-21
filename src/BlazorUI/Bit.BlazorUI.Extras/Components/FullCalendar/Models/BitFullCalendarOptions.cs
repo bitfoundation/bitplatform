@@ -13,8 +13,13 @@ public class BitFullCalendarOptions
     /// <summary>Badge display style in the month view.</summary>
     public BitFullCalendarBadgeVariant BadgeVariant { get; set; } = BitFullCalendarBadgeVariant.Colored;
 
-    /// <summary>Hour (0–16) at which the day/week time grid begins.</summary>
-    public int StartOfDayHour { get; set; } = 8;
+    /// <summary>Hour (0–16) at which the day/week time grid begins. Values outside the range are clamped.</summary>
+    public int StartOfDayHour
+    {
+        get => _startOfDayHour;
+        set => _startOfDayHour = Math.Clamp(value, 0, 16);
+    }
+    private int _startOfDayHour = 8;
 
     /// <summary>How events are grouped in the agenda view.</summary>
     public BitFullCalendarAgendaGroupBy AgendaModeGroupBy { get; set; } = BitFullCalendarAgendaGroupBy.Date;

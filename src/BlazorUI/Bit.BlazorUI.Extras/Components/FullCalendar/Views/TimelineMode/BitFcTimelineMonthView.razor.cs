@@ -114,7 +114,13 @@ public partial class BitFcTimelineMonthView
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var sig = $"{State.SelectedDate:yyyy-MM}|{DateTime.Today:yyyy-MM-dd}";
+        // Only the current month has a "today" scroll target; skip the interop entirely otherwise
+        // so we don't make a JS round-trip on every render of a non-current month.
+        var today = DateTime.Today;
+        if (State.SelectedDate.Year != today.Year || State.SelectedDate.Month != today.Month)
+            return;
+
+        var sig = $"{State.SelectedDate:yyyy-MM}|{today:yyyy-MM-dd}";
         if (sig == _scrollSignature) return;
 
         if (await BitFcTimelineScrollInterop.TryScrollToTargetAsync(JS, _scrollContainerId))

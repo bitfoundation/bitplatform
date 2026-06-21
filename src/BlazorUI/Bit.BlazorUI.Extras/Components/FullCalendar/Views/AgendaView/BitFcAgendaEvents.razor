@@ -44,7 +44,7 @@
 
 <div id="bit-bfc-agenda-scroll" class="bit-bfc-agenda">
     <div class="bit-bfc-agenda-search">
-        <input type="text" placeholder="@Texts.SearchEventsPlaceholder" @bind="_search" @bind:event="oninput" />
+        <input type="text" placeholder="@Texts.SearchEventsPlaceholder" aria-label="@Texts.SearchEventsPlaceholder" @bind="_search" @bind:event="oninput" />
     </div>
 
     @if (agendaGroups.Count == 0)
@@ -59,7 +59,10 @@
                 <div class="bit-bfc-agenda-group-title">@groupTitle</div>
                 @foreach (var ev in items)
                 {
-                    <div class="bit-bfc-agenda-item" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)" @onclick="() => ShowDetails(ev)">
+                    <div class="bit-bfc-agenda-item" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)"
+                         role="button" tabindex="0"
+                         @onclick="() => ShowDetails(ev)"
+                         @onkeydown="e => OnItemKeyDown(e, ev)">
                         <div class="bit-bfc-agenda-avatar bit-bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)">
                             @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
                         </div>

@@ -41,6 +41,12 @@ public partial class BitFcDayCell
             _showAddDialog = true;
     }
 
+    private async Task OnCellKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " " or "Spacebar")
+            await OnCellClick();
+    }
+
     private string GetBadgePosition(BitFullCalendarEvent ev, DateTime cellDate)
     {
         if (ev.IsSingleDay) return "none";

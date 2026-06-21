@@ -10,6 +10,13 @@ public partial class BitFcCalendarTimeline
     protected override void OnInitialized()
     {
         UpdatePosition();
+
+        // Align the first tick to the next clock-minute boundary so the "now" marker doesn't lag
+        // by up to ~60s; subsequent ticks fire every minute.
+        var now = DateTime.Now;
+        var msUntilNextMinute = 60_000 - ((now.Second * 1000) + now.Millisecond);
+        var dueTime = TimeSpan.FromMilliseconds(msUntilNextMinute);
+
         _timer = new Timer(_ =>
         {
             // Run both the state mutation and the re-render on the renderer's dispatcher so
@@ -19,7 +26,7 @@ public partial class BitFcCalendarTimeline
                 UpdatePosition();
                 StateHasChanged();
             });
-        }, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+        }, null, dueTime, TimeSpan.FromMinutes(1));
     }
 
     private void UpdatePosition()

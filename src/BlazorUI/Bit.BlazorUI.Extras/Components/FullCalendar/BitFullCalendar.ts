@@ -102,6 +102,7 @@ namespace BitBlazorUI {
                 };
 
                 const onPointerMove = (ev: PointerEvent) => {
+                    if (ev.pointerId !== activePointerId) return;
                     latestY = ev.clientY;
                     if (rafId == null) {
                         rafId = requestAnimationFrame(() => {
@@ -110,7 +111,8 @@ namespace BitBlazorUI {
                     }
                 };
 
-                const endResize = async () => {
+                const endResize = async (ev?: PointerEvent) => {
+                    if (ev && activePointerId != null && ev.pointerId !== activePointerId) return;
                     if (ended) return;
                     ended = true;
                     document.removeEventListener("pointermove", onPointerMove);
@@ -177,13 +179,15 @@ namespace BitBlazorUI {
                 };
 
                 const onPointerMove = (ev: PointerEvent) => {
+                    if (ev.pointerId !== activePointerId) return;
                     latestX = ev.clientX;
                     if (rafId == null) {
                         rafId = requestAnimationFrame(() => { void flushMove(); });
                     }
                 };
 
-                const endResize = async () => {
+                const endResize = async (ev?: PointerEvent) => {
+                    if (ev && activePointerId != null && ev.pointerId !== activePointerId) return;
                     if (ended) return;
                     ended = true;
                     document.removeEventListener("pointermove", onPointerMove);

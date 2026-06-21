@@ -52,12 +52,16 @@
             <div class="bit-bfc-dropdown-label">@Texts.AgendaGroupByLabel</div>
 
             <div class="bit-bfc-dropdown-item @(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "active" : "")"
+                 role="button" tabindex="0"
                  @onclick="() => State.SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy.Date)"
+                 @onkeydown="e => OnGroupByKeyDown(e, BitFullCalendarAgendaGroupBy.Date)"
                  style="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "background:var(--bit-bfc-bg-hover);" : "")">
                 @Texts.AgendaGroupByDate
             </div>
             <div class="bit-bfc-dropdown-item @(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "active" : "")"
+                 role="button" tabindex="0"
                  @onclick="() => State.SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy.Color)"
+                 @onkeydown="e => OnGroupByKeyDown(e, BitFullCalendarAgendaGroupBy.Color)"
                  style="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "background:var(--bit-bfc-bg-hover);" : "")">
                 @Texts.AgendaGroupByColor
             </div>

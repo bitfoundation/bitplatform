@@ -11,6 +11,7 @@
         @foreach (var mode in _modes)
         {
             <button class="bit-bfc-mode-tab @(State.Mode == mode ? "active" : "")"
+                    type="button"
                     @onclick="() => State.SetMode(mode)">
                 @Texts.GetModeLabel(mode)
             </button>

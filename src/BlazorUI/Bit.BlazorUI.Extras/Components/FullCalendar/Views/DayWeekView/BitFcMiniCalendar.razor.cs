@@ -40,4 +40,10 @@ public partial class BitFcMiniCalendar
         _lastSyncedSelectedDate = State.SelectedDate;
         _displayMonth = StartOfDisplayMonth(date);
     }
+
+    private void OnDayKeyDown(KeyboardEventArgs e, DateTime date)
+    {
+        if (e.Key is "Enter" or " " or "Spacebar")
+            SelectDate(date);
+    }
 }

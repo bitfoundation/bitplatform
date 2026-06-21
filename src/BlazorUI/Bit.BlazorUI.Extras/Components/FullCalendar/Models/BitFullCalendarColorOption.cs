@@ -11,13 +11,13 @@ public sealed class BitFullCalendarColorOption
     /// Stable identifier of the color (matched against <see cref="BitFullCalendarEvent.Color"/>).
     /// Treated case-insensitively. Use a short, slug-style value such as <c>"blue"</c> or <c>"skyblue"</c>.
     /// </summary>
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; init; } = string.Empty;
 
     /// <summary>
     /// Display label shown in pickers, filters, agenda headers, and event details. This is the full
     /// human-readable color name and is used as-is (no localization/transformation is applied).
     /// </summary>
-    public string Title { get; set; } = string.Empty;
+    public string Title { get; init; } = string.Empty;
 
     /// <summary>
     /// CSS color value used for swatches, bullets, badge accents, and chip surfaces - any value
@@ -25,7 +25,7 @@ public sealed class BitFullCalendarColorOption
     /// (<c>"skyblue"</c>). The calendar derives badge background, border, and text contrast tints
     /// from this single value at runtime.
     /// </summary>
-    public string Value { get; set; } = string.Empty;
+    public string Value { get; init; } = string.Empty;
 
     /// <summary>
     /// Built-in palette used when <c>EventColorOptions</c> is <c>null</c> or empty. The IDs

@@ -9,6 +9,29 @@
         .Select(m => cal.ToDateTime(culturalYear, m, 1, 0, 0, 0, 0))
         .ToArray();
     var yearWeekDayHeaders = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(State.Culture);
+
+    // Pre-compute a date -> events lookup once instead of scanning every event for every cell
+    // (the year grid has ~500 cells, so the per-cell Where was O(cells * events)).
+    var monthsInYear = cal.GetMonthsInYear(culturalYear);
+    var yearStartDate = cal.ToDateTime(culturalYear, 1, 1, 0, 0, 0, 0);
+    var yearEndDate = cal.ToDateTime(culturalYear, monthsInYear, cal.GetDaysInMonth(culturalYear, monthsInYear), 0, 0, 0, 0);
+    var lookupStart = yearStartDate.AddDays(-7);
+    var lookupEnd = yearEndDate.AddDays(7);
+    var eventsByDay = new Dictionary<DateTime, List<BitFullCalendarEvent>>();
+    foreach (var ev in allEvents)
+    {
+        var from = ev.StartDate.Date < lookupStart ? lookupStart : ev.StartDate.Date;
+        var to = ev.EndDate.Date > lookupEnd ? lookupEnd : ev.EndDate.Date;
+        for (var d = from; d <= to; d = d.AddDays(1))
+        {
+            if (!eventsByDay.TryGetValue(d, out var list))
+            {
+                list = [];
+                eventsByDay[d] = list;
+            }
+            list.Add(ev);
+        }
+    }
 }
 
 <div class="bit-bfc-year">
@@ -34,11 +57,14 @@
                     var isCurrentMonth = cellCulturalMonth == monthIndex
                         && cal.GetYear(cell.Date) == culturalYear;
                     var isToday = cell.Date.Date == DateTime.Today;
-                    var dayEvents = allEvents.Where(e => e.StartDate.Date <= cell.Date.Date && e.EndDate.Date >= cell.Date.Date).ToList();
+                    var dayEvents = eventsByDay.TryGetValue(cell.Date.Date, out var evs) ? evs : [];
                     var hasEvents = isCurrentMonth && dayEvents.Count > 0;
 
                     <div class="bit-bfc-year-day @(!isCurrentMonth ? "other-month" : "") @(hasEvents ? "has-events" : "")"
-                         @onclick="() => { if (hasEvents) ShowEventsForDay(cell.Date, dayEvents); }">
+                         role="@(hasEvents ? "button" : null)"
+                         tabindex="@(hasEvents ? "0" : null)"
+                         @onclick="() => { if (hasEvents) ShowEventsForDay(cell.Date, dayEvents); }"
+                         @onkeydown="e => OnDayKeyDown(e, hasEvents, cell.Date, dayEvents)">
                         <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
                         @if (hasEvents)
                         {

@@ -11,4 +11,10 @@ public partial class BitFcSettings
         if (int.TryParse(e.Value?.ToString(), out int val))
             State.SetStartOfDayHour(val);
     }
+
+    private void OnGroupByKeyDown(KeyboardEventArgs e, BitFullCalendarAgendaGroupBy groupBy)
+    {
+        if (e.Key is "Enter" or " " or "Spacebar")
+            State.SetAgendaModeGroupBy(groupBy);
+    }
 }
