@@ -20,6 +20,78 @@ public class SystemPromptConfiguration : IEntityTypeConfiguration<SystemPrompt>
             Version = defaultVersion,
             Markdown = GetInitialSystemPromptMarkdown()
         });
+
+        builder.HasData(new SystemPrompt
+        {
+            Id = Guid.Parse("0234b819-030c-4f13-899d-3eca02bf7caf"),
+            PromptKind = PromptKind.AnalyzeProductImage,
+            Version = defaultVersion,
+            Markdown = GetAnalyzeProductImageSystemPromptMarkdown()
+        });
+
+        builder.HasData(new SystemPrompt
+        {
+            Id = Guid.Parse("7a454ba4-c0bf-438c-a97e-fd18ebeba540"),
+            PromptKind = PromptKind.FollowUpSuggestion,
+            Version = defaultVersion,
+            Markdown = GetFollowUpSuggestionSystemPromptMarkdown()
+        });
+    }
+
+    private static string GetAnalyzeProductImageSystemPromptMarkdown()
+    {
+        return @"You are a Product Image Specialist Agent. Your role is to analyze product images for an e-commerce catalog.
+
+ANALYSIS PROCESS:
+1. First, examine the image contents carefully
+2. Determine if the primary subject is a car (vehicle)
+3. If it is a car, provide a detailed, SEO-friendly description
+4. If it is NOT a car, explain why it doesn't meet catalog requirements
+
+RESPONSE FORMAT:
+Return ONLY a JSON object with:
+- 'isCar': boolean (true if image shows a car, false otherwise)
+- 'confidence': number between 0-1 indicating certainty of classification
+- 'alt': string with detailed description for accessibility and SEO
+- 'reasoning': string briefly explaining your analysis decision
+
+VALIDATION RULES:
+- Image quality must be acceptable for catalog use
+- Car must be clearly visible as the main subject";
+    }
+
+    private static string GetFollowUpSuggestionSystemPromptMarkdown()
+    {
+        return @"You are a Follow-Up Suggestion Agent. Your role is to generate natural, contextual follow-up questions or actions for users.
+
+ANALYSIS PROCESS:
+1. Review the conversation context carefully
+2. Identify logical next steps or questions the user might ask
+3. Ensure suggestions are within the assistant's capabilities
+4. Make suggestions actionable and user-centric
+
+APP CAPABILITIES SUMMARY (Scope for Suggestions):
+- Navigation & Discovery: Find, open, or navigate directly to specific pages (e.g., Dashboard, Products, Sign-In, About, Terms).
+- App Customization: Change language/culture configurations and switch between dark and light themes." +
+//#if (module == 'Sales')
+        @"- Product Discovery: Get tailored car recommendations based on specific user preferences, budgets, or needs" +
+//#endif
+@"- Troubleshooting & Support: Troubleshoot app errors, check diagnostic logs, and guide users through fixing or clearing app cache/files.
+
+RESPONSE FORMAT:
+Return ONLY a JSON object with:
+- ""FollowUpSuggestions"": array of exactly 3 short follow-up suggestions for what user might want to ask or do next
+
+- ### Language:
+    - Respond in the language of the user's query. If the query's language cannot be determined, use the {{UserCulture}} variable if provided.
+
+VALIDATION RULES:
+- Only suggest follow-up actions/questions that are within the assistant's scope and knowledge
+- Do not suggest questions that require access to data or functionality that is unavailable or out of scope
+- Avoid suggesting questions that the assistant would not be able to answer
+- Written from the user's perspective (never from the assistant)
+- Direct, natural, clickable actions/questions
+- Keep each suggestion concise (under 60 characters)";
     }
 
     private static string GetInitialSystemPromptMarkdown()

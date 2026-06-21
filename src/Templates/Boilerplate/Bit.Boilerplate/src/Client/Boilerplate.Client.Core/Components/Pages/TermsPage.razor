@@ -1,5 +1,7 @@
 @attribute [Route(PageUrls.Terms)]
 @attribute [Route("{culture?}" + PageUrls.Terms)]
+@attribute [Route(PageUrls.PrivacyPolicy)]
+@attribute [Route("{culture?}" + PageUrls.PrivacyPolicy)]
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
 @inherits AppPageBase
 
@@ -10,7 +12,7 @@
     <article>
         <BitStack>
             <BitCard FullSize>
-                <BitText Typography="BitTypography.H3">Boilerplate license</BitText>
+                <BitText Typography="BitTypography.H3">Boilerplate Terms and Privacy Policy</BitText>
                 <BitText>
                     This EULA and Privacy Policy are written for individuals who use the Boilerplate Demo Version through the
                     <BitLink Href="https://use-your-web-app-url-here.com" Target="_blank">https://use-your-web-app-url-here.com</BitLink> website, or the
@@ -20,6 +22,16 @@
                     <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE" Target="_blank">License</BitLink>
                     and create your own project, publish it with the relevant EULA and Privacy Policy for your business.
                 </BitText>
+                <br />
+                <BitText Typography="BitTypography.H5">Privacy Policy</BitText>
+                <ul>
+                    <li><BitText>bit platform is committed to protecting the privacy of the user data.</BitText></li>
+                    <li><BitText>We will only use the data collected from the user for the purposes of the Boilerplate Demo Version and will delete this data upon user request, using one of the contact methods provided above.</BitText></li>
+                    <li><BitText>We do not share the user data with any third parties and do not allow users to share data with anyone in any way.</BitText></li>
+                    <li><BitText>We do not collect any information on user's usage in the Boilerplate Demo Version.</BitText></li>
+                    <li><BitText>We do not display any Third-Party content, advertisements, or any purchases in the Boilerplate Demo Version.</BitText></li>
+                    <li><BitText>This Privacy Policy is effective until 2026-12-31 and is subject to change without notice.</BitText></li>
+                </ul>
                 <br />
                 <BitText Typography="BitTypography.H5">End-User License Agreement (EULA) for Boilerplate Demo Version</BitText>
                 <BitText>
@@ -107,16 +119,6 @@
                     or call <BitLink Href="tel:+31684207362">+31684207362</BitLink>, or visit our website at
                     <BitLink Href="https://bitplatform.dev/contact-us" Target="_blank">our website</BitLink> or visit us at Sixmastraat 15, 8932 PA Leeuwarden, Netherlands.
                 </BitText>
-                <br />
-                <BitText Typography="BitTypography.H5">Privacy Policy</BitText>
-                <ul>
-                    <li><BitText>bit platform is committed to protecting the privacy of the user data.</BitText></li>
-                    <li><BitText>We will only use the data collected from the user for the purposes of the Boilerplate Demo Version and will delete this data upon user request, using one of the contact methods provided above.</BitText></li>
-                    <li><BitText>We do not share the user data with any third parties and do not allow users to share data with anyone in any way.</BitText></li>
-                    <li><BitText>We do not collect any information on user's usage in the Boilerplate Demo Version.</BitText></li>
-                    <li><BitText>We do not display any Third-Party content, advertisements, or any purchases in the Boilerplate Demo Version.</BitText></li>
-                    <li><BitText>This Privacy Policy is effective until 2026-12-31 and is subject to change without notice.</BitText></li>
-                </ul>
             </BitCard>
         </BitStack>
     </article>

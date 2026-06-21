@@ -1,0 +1,17 @@
+<BitStack Style="padding:1rem;max-width:30rem">
+    <BitText>This is the body of a BitProModal shown by the BitProModalService.</BitText>
+    <BitSeparator />
+    <BitStack Horizontal>
+        <BitButton OnClick="Close">Ok</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="Close">Cancel</BitButton>
+    </BitStack>
+</BitStack>
+
+@code {
+    [CascadingParameter] private BitProModalReference modalReference { get; set; } = default!;
+
+    private async Task Close()
+    {
+        await modalReference.Close();
+    }
+}

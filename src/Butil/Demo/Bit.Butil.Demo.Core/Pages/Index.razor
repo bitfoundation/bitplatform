@@ -1,5 +1,58 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Butil - Demo</PageTitle>
 
-<h1>Hello Butil users!</h1>
+<div class="hero">
+    <span class="logo-lg">B</span>
+    <h1>Bit.Butil</h1>
+    <p>
+        A thin, strongly-typed .NET wrapper over the browser's built-in JavaScript APIs.
+        Call the Clipboard, Crypto, Storage, History, Notification and dozens of other Web
+        APIs straight from C&#35; - no JS interop boilerplate. Pick an API below to try it live.
+    </p>
+</div>
+
+<div class="tile-grid">
+    @foreach (var tile in Tiles)
+    {
+        <a class="tile" href="@tile.Href">
+            <span class="tile-ico">@tile.Icon</span>
+            <span class="tile-name">@tile.Name</span>
+            <div class="tile-desc">@tile.Desc</div>
+        </a>
+    }
+</div>
+
+@code {
+    private record Tile(string Name, string Href, string Icon, string Desc);
+
+    private static readonly Tile[] Tiles =
+    [
+        new("Clipboard", "clipboard", "📋", "Read & write the system clipboard"),
+        new("Cookie", "cookie", "🍪", "Get, set and remove cookies"),
+        new("Storage", "storage", "💾", "Local & session storage"),
+        new("Crypto", "crypto", "🔐", "Encrypt, hash & random values"),
+        new("Fetch", "fetch", "🌐", "HTTP fetch with progress & abort"),
+        new("Files", "files", "📁", "FileReader & object URLs"),
+        new("Speech", "speech", "🗣️", "Text-to-speech & recognition"),
+        new("Console", "console", "🖨️", "Log, group, time & trace"),
+        new("Document", "document", "📄", "Title, dir, events & more"),
+        new("Element", "element", "🧱", "Attributes, scroll & layout"),
+        new("Window", "window", "🪟", "Alerts, scroll, base64 & find"),
+        new("Observers", "observers", "👁️", "Intersection, resize & mutation"),
+        new("Navigator", "navigator", "🧭", "Device, share & vibrate"),
+        new("UserAgent", "userAgent", "🪪", "Parse the user-agent string"),
+        new("Permissions", "permissions", "✅", "Query browser permission state"),
+        new("MediaDevices", "mediaDevices", "🎥", "Cameras, mics & getUserMedia"),
+        new("Geolocation", "geolocation", "📡", "Current position & watch"),
+        new("Device Sensors", "device", "🔋", "Battery, network & wake lock"),
+        new("Screen", "screen", "🖥️", "Screen size & color depth"),
+        new("ScreenOrientation", "screenOrientation", "🔄", "Read & lock orientation"),
+        new("VisualViewport", "visualViewport", "🔍", "Viewport offset & scale"),
+        new("History", "history", "🕘", "Navigate & manage state"),
+        new("Location", "location", "📍", "Read & change the URL"),
+        new("Keyboard", "keyboard", "⌨️", "Global keyboard shortcuts"),
+        new("Notification", "notification", "🔔", "Show system notifications"),
+        new("WebAuthn", "webauthn", "🔑", "Passkey credentials"),
+    ];
+}

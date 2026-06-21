@@ -1,0 +1,93 @@
+@page "/geolocation"
+@implements IAsyncDisposable
+@inject Bit.Butil.Geolocation geolocation
+
+<PageTitle>Butil - Geolocation Samples</PageTitle>
+
+<PageHeader Category="Browser & Device"
+            Title="Geolocation"
+            Lead="Read the device's current position once or subscribe to continuous updates - with typed coordinates and accuracy metadata."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API" />
+
+<pre>
+@@inject Bit.Butil.Geolocation geolocation
+
+var pos = await geolocation.GetCurrentPosition();
+await using var sub = await geolocation.SubscribeWatch(p => { /* … */ });
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Support check" Api="IsSupported"
+              Description="True when navigator.geolocation is available.">
+        <button @onclick="CheckSupported">IsSupported</button>
+    </DemoCard>
+
+    <DemoCard Title="Current position" Api="GetCurrentPosition"
+              Description="One-shot read. The browser will prompt for permission on first use.">
+        <button @onclick="GetCurrent">GetCurrentPosition</button>
+    </DemoCard>
+
+    <DemoCard Title="Watch position" Api="SubscribeWatch / ClearWatch"
+              Description="Continuous updates until you stop watching.">
+        <div class="controls">
+            <button @onclick="StartWatch">Start watch</button>
+            <button class="danger" @onclick="StopWatch">Stop watch</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="geolocation output" />
+
+@code {
+    private DemoConsole output = default!;
+    private ButilSubscription? _watchSub;
+
+    private async Task CheckSupported()
+    {
+        await output.Success("IsSupported →", await geolocation.IsSupported());
+    }
+
+    private async Task GetCurrent()
+    {
+        try
+        {
+            var pos = await geolocation.GetCurrentPosition();
+            await LogPosition("GetCurrentPosition", pos);
+        }
+        catch (GeolocationException ex)
+        {
+            await output.Error(ex.Code, "→", ex.Message);
+        }
+    }
+
+    private async Task StartWatch()
+    {
+        await StopWatch();
+
+        _watchSub = await geolocation.SubscribeWatch(
+            onPosition: pos => _ = LogPosition("Watch", pos),
+            onError: ex => _ = output.Error(ex.Code, "→", ex.Message));
+
+        await output.Log("Watch started.");
+    }
+
+    private async Task StopWatch()
+    {
+        if (_watchSub is null) return;
+        await _watchSub.DisposeAsync();
+        _watchSub = null;
+        await output.Log("Watch stopped.");
+    }
+
+    private async Task LogPosition(string source, GeolocationPosition pos)
+    {
+        var c = pos.Coords;
+        await output.Success($"{source} →",
+            $"lat={c.Latitude:F6}, lng={c.Longitude:F6}, accuracy={c.Accuracy:F1}m");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await geolocation.DisposeAsync();
+    }
+}

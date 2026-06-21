@@ -1,11 +1,24 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="page">
-    <Header />
+    <NavMenu @ref="_navMenu" />
 
-    <main>
-        <article>
-            @Body
-        </article>
-    </main>
+    <div class="app-content">
+        <div class="topbar">
+            <button type="button" class="menu-btn" aria-label="Open navigation menu" @onclick="ToggleNav">☰</button>
+            <span class="title">Bit.Butil Demo</span>
+        </div>
+
+        <main>
+            <article>
+                @Body
+            </article>
+        </main>
+    </div>
 </div>
+
+@code {
+    private NavMenu? _navMenu;
+
+    private void ToggleNav() => _navMenu?.Toggle();
+}

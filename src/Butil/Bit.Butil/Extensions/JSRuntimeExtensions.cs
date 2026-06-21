@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -35,12 +34,15 @@ public static class JSRuntimeExtensions
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TResult"/> obtained by JSON-deserializing the return value.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    public static ValueTask<TResult> FastInvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TResult>(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
+    public static async ValueTask<TResult> FastInvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TResult>(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
+        // Must be async: the CancellationTokenSource's timer enforces the timeout and has to
+        // remain alive until the call finishes. Disposing it synchronously (as a non-async
+        // method would) cancels the timer and defeats the timeout.
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
-        return FastInvokeAsync<TResult>(jsRuntime, identifier, cancellationToken, args);
+        return await FastInvokeAsync<TResult>(jsRuntime, identifier, cancellationToken, args);
     }
 
     /// <summary>
@@ -60,20 +62,14 @@ public static class JSRuntimeExtensions
     {
         if (jsRuntime is IJSInProcessRuntime jsInProcessRuntime)
         {
-            try
-            {
-                return ValueTask.FromResult(jsInProcessRuntime.Invoke<TResult>(identifier, args));
-            }
-            catch (JsonException ex)
-            {
-                System.Console.Error.WriteLine($"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}. A JSON-related issue occurred: {ex.Message}.");
-                return ValueTask.FromResult(default(TResult)!);
-            }
+            // We deliberately do not catch JsonException here. Calling the synchronous
+            // Invoke<T> against a JS function that returns a Promise produces a JSON
+            // payload that cannot deserialize to TResult; surfacing the error makes the
+            // mistake visible instead of silently returning default(TResult).
+            return ValueTask.FromResult(jsInProcessRuntime.Invoke<TResult>(identifier, args));
         }
-        else
-        {
-            return jsRuntime.InvokeAsync<TResult>(identifier, cancellationToken, args);
-        }
+
+        return jsRuntime.InvokeAsync<TResult>(identifier, cancellationToken, args);
     }
 
 
@@ -95,12 +91,13 @@ public static class JSRuntimeExtensions
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    public static ValueTask FastInvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
+    public static async ValueTask FastInvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
+        // Async on purpose - the CTS timer must outlive the call for the timeout to fire.
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
-        return FastInvokeVoidAsync(jsRuntime, identifier, cancellationToken, args);
+        await FastInvokeVoidAsync(jsRuntime, identifier, cancellationToken, args);
     }
 
     /// <summary>
@@ -117,21 +114,12 @@ public static class JSRuntimeExtensions
     {
         if (jsRuntime is IJSInProcessRuntime jsInProcessRuntime)
         {
-            try
-            {
-                jsInProcessRuntime.Invoke<IJSVoidResult>(identifier, args);
-                return ValueTask.CompletedTask;
-            }
-            catch (JsonException ex)
-            {
-                System.Console.Error.WriteLine($"Error invoking '{identifier}' using {nameof(IJSInProcessRuntime)}. A JSON-related issue occurred: {ex.Message}.");
-                return ValueTask.CompletedTask;
-            }
+            // Don't swallow JsonException - see FastInvokeAsync<TResult> for rationale.
+            jsInProcessRuntime.Invoke<IJSVoidResult>(identifier, args);
+            return ValueTask.CompletedTask;
         }
-        else
-        {
-            return jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
-        }
+
+        return jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
     }
 
 

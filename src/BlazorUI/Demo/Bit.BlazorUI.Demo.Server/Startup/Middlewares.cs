@@ -60,11 +60,8 @@ public class Middlewares
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
 
-        if (env.IsProduction() is false)
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+        app.UseSwagger();
+        app.UseSwaggerUI();
 
         app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
 

@@ -1,41 +1,52 @@
 ﻿@page "/keyboard"
 @implements IAsyncDisposable
-@inject Bit.Butil.Console console
 @inject Bit.Butil.Keyboard keyboard
 
-<PageTitle>Keyboard Samples</PageTitle>
+<PageTitle>Butil - Keyboard Samples</PageTitle>
 
-<h1>Keyboard</h1>
+<PageHeader Category="Utilities"
+            Title="Keyboard"
+            Lead="Register global keyboard shortcuts - including modifier combinations - that fire your C# callbacks no matter where focus is on the page."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Keyboard" />
 
-<pre style="font-family:Consolas">
+<pre>
 @@inject Bit.Butil.Keyboard keyboard
 
-@@code {
-    ...
-    await keyboard.Add(ButilKeyCodes.F10, args => { ... }, , ButilModifiers.Alt | ButilModifiers.Ctrl);
-    ...
-}
+await keyboard.Add(ButilKeyCodes.F5, () => { ... });
+await keyboard.Add(ButilKeyCodes.F10, () => { ... }, ButilModifiers.Alt | ButilModifiers.Ctrl);
 </pre>
 
-<br />
-<hr />
+<DemoCard Title="Try the registered shortcuts" Api="Add"
+          Description="Two shortcuts are registered for this page. Press them and watch the output below light up.">
+    <div class="controls">
+        <span class="result-pill"><b>F5</b></span>
+        <span class="muted">- logs a message</span>
+    </div>
+    <div class="controls" style="margin-top:.6rem">
+        <span class="result-pill"><b>Ctrl + Alt + F10</b></span>
+        <span class="muted">- logs a message</span>
+    </div>
+    <p class="muted" style="margin-top:1rem">Tip: F5 normally reloads the page - Bit.Butil intercepts it here so the handler runs instead.</p>
+</DemoCard>
 
-<h3>Open the DevTools' console and start pressing F5 or Ctrl+Alt+F10</h3>
-
-<hr />
-<br />
+<DemoConsole @ref="output" Title="keyboard output" Placeholder="Press F5 or Ctrl+Alt+F10..." />
 
 @code {
+    private DemoConsole output = default!;
+    private Guid _f5Id;
+    private Guid _f10Id;
+
     protected override async Task OnInitializedAsync()
     {
-        await keyboard.Add(ButilKeyCodes.F5, () => _ = console.Log("F5 is pressed!"));
-        await keyboard.Add(ButilKeyCodes.F10, () => _ = console.Log("Ctrl+Alt+F10 is pressed!"), ButilModifiers.Alt | ButilModifiers.Ctrl);
+        _f5Id = await keyboard.Add(ButilKeyCodes.F5, () => _ = output.Success("F5 was pressed!"));
+        _f10Id = await keyboard.Add(ButilKeyCodes.F10, () => _ = output.Success("Ctrl+Alt+F10 was pressed!"), ButilModifiers.Alt | ButilModifiers.Ctrl);
 
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
-        await keyboard.DisposeAsync();
+        await keyboard.Remove(_f5Id);
+        await keyboard.Remove(_f10Id);
     }
 }

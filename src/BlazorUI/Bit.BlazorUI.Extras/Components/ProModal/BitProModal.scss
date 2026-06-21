@@ -5,11 +5,21 @@
         display: flex;
         flex-direction: column;
     }
+
+    .bit-mdl-ovl {
+        background-color: transparent;
+    }
 }
 
-.bit-pmd-tbr {
+.bit-pmd-nbr {
     .bit-mdl-ctn {
         border-top: spacing(0.5) solid $clr-pri;
+    }
+}
+
+.bit-pmd-mfl {
+    .bit-mdl-ovl {
+        background-color: $clr-bg-overlay;
     }
 }
 

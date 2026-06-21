@@ -1,132 +1,87 @@
 ﻿@page "/console"
 @inject Bit.Butil.Console console
 
-<PageTitle>Console Samples</PageTitle>
+<PageTitle>Butil - Console Samples</PageTitle>
 
-<h1>Console</h1>
+<PageHeader Category="Utilities"
+            Title="Console"
+            Lead="A full C# mirror of the browser console: log levels, assertions, counters, timers, groups, tables and profiling. Open your DevTools console (F12) to see the output."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/console" />
 
-<pre style="font-family:Consolas; overflow: auto;">
+<pre>
 @@inject Bit.Butil.Console console
 
-@@code {
-    ...
-    console.Log("This is a test log");
-    ...
-}
+await console.Log("This is a test log");
+await console.Table(new { Name = "Value", Value = value });
 </pre>
 
-<br />
-<hr />
+<DemoCard Title="Shared value" Api="value"
+          Description="Most buttons below send this value to the console. Edit it and watch how each console method renders it in DevTools.">
+    <div class="field">
+        <span class="field-label">Value</span>
+        <input @bind-value="value" @ref="inputRef" />
+    </div>
+</DemoCard>
 
-<h3>Open the DevTools' console and start clicking on buttons</h3>
+<div class="stack">
+    <DemoCard Title="Log levels" Api="Log / Info / Warn / Error / Debug"
+              Description="The five standard severity levels, each styled differently in DevTools.">
+        <div class="controls">
+            <button @onclick="@(() => console.Log("This is a test log:", value))">Log</button>
+            <button @onclick="@(() => console.Info("This is a test info:", value))">Info</button>
+            <button @onclick="@(() => console.Warn("This is a test warn:", value))">Warn</button>
+            <button @onclick="@(() => console.Error("This is a test error:", value))">Error</button>
+            <button @onclick="@(() => console.Debug(value))">Debug</button>
+        </div>
+    </DemoCard>
 
-<hr />
-<br />
+    <DemoCard Title="Inspect & assert" Api="Dir / Dirxml / Assert / Table"
+              Description="Inspect DOM nodes, assert conditions and render objects as a table.">
+        <div class="controls">
+            <button @onclick="@(() => console.Dir(inputRef))">Dir</button>
+            <button @onclick="@(() => console.Dirxml(inputRef))">Dirxml</button>
+            <button @onclick="@(() => console.Assert(false, "This is a test assert:", value))">Assert</button>
+            <button @onclick="@(() => console.Table(new { Name = "Value", Value = value }))">Table</button>
+        </div>
+    </DemoCard>
 
-<span>Value:</span>
-<input @bind-value="value" @ref="inputRef" />
+    <DemoCard Title="Counters" Api="Count / CountReset"
+              Description="Count how many times a label has been logged, then reset it.">
+        <div class="controls">
+            <button @onclick="@(() => console.Count(value))">Count</button>
+            <button class="secondary" @onclick="@(() => console.CountReset(value))">CountReset</button>
+        </div>
+    </DemoCard>
 
-<br />
-<br />
-<hr />
-<br />
+    <DemoCard Title="Timers" Api="Time / TimeLog / TimeEnd / TimeStamp"
+              Description="Start a timer, log elapsed time, then end it.">
+        <div class="controls">
+            <button @onclick="@(() => console.Time(value))">Time</button>
+            <button @onclick="@(() => console.TimeLog(value))">TimeLog</button>
+            <button @onclick="@(() => console.TimeEnd(value))">TimeEnd</button>
+            <button @onclick="@(() => console.TimeStamp(value))">TimeStamp</button>
+        </div>
+    </DemoCard>
 
-<button @onclick="@(() => console.Debug(value))">Debug</button>
+    <DemoCard Title="Groups" Api="Group / GroupCollapsed / GroupEnd"
+              Description="Create nested, collapsible groups of log entries.">
+        <button @onclick="CreateGroupLogs">Create grouped logs</button>
+    </DemoCard>
 
-<br />
-<br />
-<hr />
-<br />
+    <DemoCard Title="Profiling & trace" Api="Profile / Trace"
+              Description="Start/stop a performance profile and print a stack trace.">
+        <div class="controls">
+            <button @onclick="@(() => console.Profile(value))">Profile</button>
+            <button @onclick="@(() => console.ProfileEnd(value))">ProfileEnd</button>
+            <button class="secondary" @onclick="@(() => console.Trace(value))">Trace</button>
+        </div>
+    </DemoCard>
 
-<button @onclick="@(() => console.Dir(inputRef))">Dir</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => console.Dirxml(inputRef))">Dirxml</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => console.Assert(false, "This is a test assert:", value))">Assert</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => console.Count(value))">Count</button>
-&nbsp;
-<button @onclick="@(() => console.CountReset(value))">CountReset</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => console.Error("This is a test error:", value))">Error</button>
-<br />
-<br />
-<button @onclick="@(() => console.Info("This is a test info:", value))">Info</button>
-<br />
-<br />
-<button @onclick="@(() => console.Log("This is a test log:", value))">Log</button>
-<br />
-<br />
-<button @onclick="@(() => console.Warn("This is a test warn:", value))">Warn</button>
-<br />
-<br />
-<button @onclick="@(() => console.Table(new { Name = "Value", Value = value }))">Table</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="CreateGroupLogs">Create group logs</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => console.Profile(value))">Profile</button>
-&nbsp;
-<button @onclick="@(() => console.ProfileEnd(value))">ProfileEnd</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => console.Time(value))">Time</button>
-&nbsp;
-<button @onclick="@(() => console.TimeLog(value))">TimeLog</button>
-&nbsp;
-<button @onclick="@(() => console.TimeEnd(value))">TimeEnd</button>
-&nbsp;
-<button @onclick="@(() => console.TimeStamp(value))">TimeStamp</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => console.Trace(value))">ConsoleTrace</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="@(() => console.Clear())">Clear</button>
-
-<br />
-<br />
+    <DemoCard Title="Clear" Api="Clear"
+              Description="Wipe the DevTools console.">
+        <button class="danger" @onclick="@(() => console.Clear())">Clear console</button>
+    </DemoCard>
+</div>
 
 @code {
     private string value = "Test";

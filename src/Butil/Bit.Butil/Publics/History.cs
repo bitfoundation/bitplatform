@@ -12,9 +12,32 @@ namespace Bit.Butil;
 /// <br/>
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/History">https://developer.mozilla.org/en-US/docs/Web/API/History</see>
 /// </summary>
+// DotNetObjectReference.Create demands every public method of this type be preserved for trimming, and
+// this type's public surface includes [RequiresUnreferencedCode] JSON APIs (GetState<T>), so holding a
+// DotNetObjectReference<History> field/property raises IL2026. The interop ref only ever dispatches the
+// [JSInvokable] callbacks, never the JSON generics, and those generics keep their own RUC/RDC attributes
+// so a trimming/AOT consumer is still warned at the real call site. Scoped to this type (not assembly-wide).
+[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DotNetObjectReference.Create preserves all public methods; the RUC JSON APIs it pulls in are never invoked through this ref and stay annotated for consumers.")]
 public class History(IJSRuntime js) : IAsyncDisposable
 {
+    internal const string InvokeMethodName = nameof(InvokeHistoryPopState);
+
     private readonly ConcurrentDictionary<Guid, Action<object>> _handlers = new();
+
+    // Per-instance callback reference (see Keyboard/Geolocation): listeners are isolated per
+    // circuit / WASM app and released on disposal - no static state, no cross-circuit leak.
+    private DotNetObjectReference<History>? _dotNetRef;
+    private DotNetObjectReference<History> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
+
+    /// <summary>
+    /// Invoked from JS on <c>popstate</c>. Public + <see cref="JSInvokableAttribute"/> so it can be
+    /// dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(InvokeMethodName)]
+    public void InvokeHistoryPopState(Guid id, object state)
+    {
+        if (_handlers.TryGetValue(id, out var handler)) handler.Invoke(state);
+    }
 
     /// <summary>
     /// Returns an Integer representing the number of elements in the session history, including the currently loaded page.
@@ -22,17 +45,27 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/length">https://developer.mozilla.org/en-US/docs/Web/API/History/length</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<int> GetLength()
-        => await js.Invoke<int>("BitButil.history.length");
+        => await js.InvokeFast<int>("BitButil.history.length");
 
     /// <summary>
     /// Gets default scroll restoration behavior on history navigation. This property can be either auto or manual.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration">https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<ScrollRestoration> GetScrollRestoration()
     {
-        var value = await js.Invoke<string>("BitButil.history.scrollRestoration");
+        var value = await js.InvokeFast<string>("BitButil.history.scrollRestoration");
         return value == "auto" ? ScrollRestoration.Auto : ScrollRestoration.Manual;
     }
 
@@ -51,7 +84,15 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/state">https://developer.mozilla.org/en-US/docs/Web/API/History/state</see>
     /// </summary>
     public async Task<object> GetState()
-        => await js.Invoke<object>("BitButil.history.state");
+        => await js.InvokeFast<object>("BitButil.history.state");
+
+    /// <summary>
+    /// Strongly-typed accessor for <see cref="GetState"/>.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("JSON deserialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
+    public async Task<T?> GetState<[System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T>()
+        => await js.InvokeFast<T?>("BitButil.history.state");
 
     /// <summary>
     /// This asynchronous method goes to the previous page in session history, the same action as 
@@ -112,15 +153,24 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event</see>
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HistoryListenersManager))]
     public async ValueTask<Guid> AddPopState(Action<object> handler)
     {
-        var listenerId = HistoryListenersManager.AddListener(handler);
+        var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoid("BitButil.history.addPopState", HistoryListenersManager.InvokeMethodName, listenerId);
+        await js.InvokeVoid("BitButil.history.addPopState", DotNetRef, listenerId);
 
         return listenerId;
+    }
+
+    /// <summary>
+    /// Subscribes to <c>popstate</c> and returns an <see cref="IAsyncDisposable"/> handle that
+    /// detaches the listener when disposed. Pair with <c>await using</c>.
+    /// </summary>
+    public async ValueTask<ButilSubscription> SubscribePopState(Action<object> handler)
+    {
+        var id = await AddPopState(handler);
+        return new ButilSubscription(id, () => RemovePopState(id));
     }
 
     /// <summary>
@@ -129,9 +179,16 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event</see>
     /// </summary>
+    /// <remarks>
+    /// Listeners are matched by delegate identity, so you must pass the very same
+    /// <paramref name="handler"/> instance that was registered. A newly-created lambda will not
+    /// match and the returned array will be empty. To avoid this, keep the <see cref="Guid"/>
+    /// returned by <see cref="AddPopState"/> and remove by id, or use <see cref="SubscribePopState"/>
+    /// which returns a disposable <see cref="ButilSubscription"/>.
+    /// </remarks>
     public async ValueTask<Guid[]> RemovePopState(Action<object> handler)
     {
-        var ids = HistoryListenersManager.RemoveListener(handler);
+        var ids = _handlers.Where(h => Equals(h.Value, handler)).Select(h => h.Key).ToArray();
 
         await RemovePopState(ids);
 
@@ -146,8 +203,6 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask RemovePopState(Guid id)
     {
-        HistoryListenersManager.RemoveListeners([id]);
-
         await RemovePopState([id]);
     }
 
@@ -171,15 +226,11 @@ public class History(IJSRuntime js) : IAsyncDisposable
 
         _handlers.Clear();
 
-        HistoryListenersManager.RemoveListeners(ids);
-
         await RemoveFromJs(ids);
     }
 
     private async ValueTask RemoveFromJs(Guid[] ids)
     {
-        if (OperatingSystem.IsBrowser() is false) return;
-
         await js.InvokeVoid("BitButil.history.removePopState", ids);
     }
 
@@ -198,6 +249,11 @@ public class History(IJSRuntime js) : IAsyncDisposable
         {
             await RemoveAllPopStates();
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
     }
 }

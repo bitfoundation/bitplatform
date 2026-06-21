@@ -1,0 +1,65 @@
+# Ready-to-merge GitHub Actions workflow for the Bit.Butil E2E suite.
+#
+# This file lives inside the test project because the repo's `.github/workflows`
+# folder is outside this package's tree. To enable it, copy this file to
+#   .github/workflows/bit.ci.Butil.e2e.yml
+# (it's self-contained and won't clash with the existing bit.ci.Butil.yml build job).
+
+name: bit platform CI - Butil E2E
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/Butil/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+jobs:
+  e2e-Butil:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: Bit.Butil E2E (Playwright)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v6
+
+      - name: Setup .NET 10.0
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: src/global.json
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: dotnet workload restore
+        run: cd src/Butil && dotnet workload restore
+
+      # Build the Butil library first so the static web asset (bit-butil.js) is generated
+      # and the Node/TypeScript pipeline runs once before the demo references it.
+      - name: Build Bit.Butil (net10.0)
+        run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -f net10.0
+
+      - name: Build E2E test project
+        run: dotnet build src/Butil/tests/Bit.Butil.E2ETests/Bit.Butil.E2ETests.csproj -c Release
+
+      - name: Install Playwright browsers (Chromium)
+        run: pwsh src/Butil/tests/Bit.Butil.E2ETests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run E2E tests
+        run: >
+          dotnet test src/Butil/tests/Bit.Butil.E2ETests/Bit.Butil.E2ETests.csproj
+          -c Release
+          --no-build
+          --report-trx --report-trx-filename butil-e2e.trx
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: butil-e2e-results
+          path: '**/butil-e2e.trx'
+          if-no-files-found: ignore

@@ -804,32 +804,32 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     private string JsObject => _activeProvider!.JsObjectName;
 
-    private static object ToMarkerPayload(BitMapMarker m) => new
+    private static object ToMarkerPayload(BitMapMarker m) => new Dictionary<string, object?>
     {
-        lat = m.Position.Latitude,
-        lng = m.Position.Longitude,
-        title = m.Title,
-        popupHtml = m.PopupHtml?.Value,
-        popupText = m.PopupText,
-        tooltipHtml = m.TooltipHtml?.Value,
-        tooltipText = m.TooltipText,
-        tooltipPermanent = m.TooltipPermanent,
-        tooltipDirection = m.TooltipDirection.ToString().ToLowerInvariant(),
-        draggable = m.Draggable,
-        iconUrl = m.IconUrl,
-        iconWidth = m.IconWidth,
-        iconHeight = m.IconHeight,
-        zIndexOffset = m.ZIndexOffset,
+        ["lat"] = m.Position.Latitude,
+        ["lng"] = m.Position.Longitude,
+        ["title"] = m.Title,
+        ["popupHtml"] = m.PopupHtml?.Value,
+        ["popupText"] = m.PopupText,
+        ["tooltipHtml"] = m.TooltipHtml?.Value,
+        ["tooltipText"] = m.TooltipText,
+        ["tooltipPermanent"] = m.TooltipPermanent,
+        ["tooltipDirection"] = m.TooltipDirection.ToString().ToLowerInvariant(),
+        ["draggable"] = m.Draggable,
+        ["iconUrl"] = m.IconUrl,
+        ["iconWidth"] = m.IconWidth,
+        ["iconHeight"] = m.IconHeight,
+        ["zIndexOffset"] = m.ZIndexOffset,
     };
 
-    private static object ToTileOverlayPayload(BitMapTileOverlay o) => new
+    private static object ToTileOverlayPayload(BitMapTileOverlay o) => new Dictionary<string, object?>
     {
-        id = o.Id,
-        urlTemplate = o.UrlTemplate,
-        attribution = o.Attribution,
-        opacity = o.Opacity,
-        zIndex = o.ZIndex,
-        maxZoom = o.MaxZoom,
+        ["id"] = o.Id,
+        ["urlTemplate"] = o.UrlTemplate,
+        ["attribution"] = o.Attribution,
+        ["opacity"] = o.Opacity,
+        ["zIndex"] = o.ZIndex,
+        ["maxZoom"] = o.MaxZoom,
     };
 
     private static BitMapMarker CloneWithPosition(BitMapMarker prev, BitMapLatLng position) => new()
@@ -855,21 +855,21 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         var arr = new object[pts.Count];
         for (var i = 0; i < pts.Count; i++)
         {
-            arr[i] = new { lat = pts[i].Latitude, lng = pts[i].Longitude };
+            arr[i] = new Dictionary<string, object?> { ["lat"] = pts[i].Latitude, ["lng"] = pts[i].Longitude };
         }
         return arr;
     }
 
     private static object? ToStylePayload(BitMapVectorPathStyle? s) => s is null
         ? null
-        : new
+        : new Dictionary<string, object?>
         {
-            color = s.Color,
-            weight = s.Weight,
-            opacity = s.Opacity,
-            fillColor = s.FillColor,
-            fillOpacity = s.FillOpacity,
-            dashArray = s.DashArray,
+            ["color"] = s.Color,
+            ["weight"] = s.Weight,
+            ["opacity"] = s.Opacity,
+            ["fillColor"] = s.FillColor,
+            ["fillOpacity"] = s.FillOpacity,
+            ["dashArray"] = s.DashArray,
         };
 
     private static BitMapLatLng ReadLatLng(JsonElement e) =>

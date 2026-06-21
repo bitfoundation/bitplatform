@@ -59,7 +59,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         {
             await userController.SignOut(cancellationToken);
         }
-        catch (Exception exp) when (exp is ServerConnectionException or UnauthorizedException or ResourceNotFoundException or ClientNotSupportedException)
+        catch (Exception exp) when (exp is TransientException or UnauthorizedException or ResourceNotFoundException or ClientNotSupportedException)
         {
             // If the client's access token is expired, the client would attempt to refresh it,
             // but if the client is offline or outdated, the refresh token request will fail.
@@ -109,7 +109,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                 }
                 catch (Exception exp)
                 {
-                    if (exp is not ServerConnectionException || ignoreServerConnectionException is false)
+                    if (exp is not TransientException || ignoreServerConnectionException is false)
                     {
                         exceptionHandler.Handle(exp, parameters: new()
                         {

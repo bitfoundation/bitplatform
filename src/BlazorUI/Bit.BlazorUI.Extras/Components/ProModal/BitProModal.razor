@@ -1,75 +1,75 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<BitModal AriaLabel="@AriaLabel"
-          AriaModal="Modeless is false"
+<BitModal AriaLabel="@_params.AriaLabel"
+          AriaModal="(_params.Modeless ?? false) is false"
           Class="@ClassBuilder.Value"
-          Dir="Dir"
-          @attributes="HtmlAttributes"
+          Dir="_params.Dir"
+          @attributes="_params.HtmlAttributes"
           Id="@_modalId"
-          IsEnabled="IsEnabled"
+          IsEnabled="_params.IsEnabled ?? true"
           Style="@StyleBuilder.Value"
-          Visibility="Visibility"
-          Blocking="Blocking"
-          Classes="Classes"
-          FullHeight="FullHeight || FullSize"
-          FullWidth="FullWidth || FullSize"
-          IsAlert="@(IsAlert ?? (Blocking && Modeless is false))"
+          Visibility="_params.Visibility ?? BitVisibility.Visible"
+          Blocking="_params.Blocking ?? false"
+          Classes="_classes"
+          FullHeight="(_params.FullHeight ?? false) || (_params.FullSize ?? false)"
+          FullWidth="(_params.FullWidth ?? false) || (_params.FullSize ?? false)"
+          IsAlert="@(_params.IsAlert ?? ((_params.Blocking ?? false) && (_params.Modeless ?? false) is false))"
           IsOpen="IsOpen"
           IsOpenChanged="HandleInnerIsOpenChanged"
-          OnDismiss="OnDismiss"
-          OnOverlayClick="OnOverlayClick"
-          ShowOverlay="Modeless is false"
-          SubtitleAriaId="@SubtitleAriaId"
-          TitleAriaId="@TitleAriaId"
-          Styles="Styles">
-    @if (Header is not null || HeaderText is not null || ShowCloseButton)
+          OnDismiss="_params.OnDismiss"
+          OnOverlayClick="_params.OnOverlayClick"
+          ShowOverlay="(_params.Modeless ?? false) is false"
+          SubtitleAriaId="@_params.SubtitleAriaId"
+          TitleAriaId="@_params.TitleAriaId"
+          Styles="_styles">
+    @if (_params.Header is not null || _params.HeaderText is not null || (_params.ShowCloseButton ?? false))
     {
-        <div style="@Styles?.HeaderContainer" class="bit-pmd-hcn @Classes?.HeaderContainer">
-            @if (Header is not null)
+        <div style="@_styles?.HeaderContainer" class="bit-pmd-hcn @_classes?.HeaderContainer">
+            @if (_params.Header is not null)
             {
-                <div style="@Styles?.Header" class="bit-pmd-hdr @Classes?.Header">
-                    @Header
+                <div style="@_styles?.Header" class="bit-pmd-hdr @_classes?.Header">
+                    @_params.Header
                 </div>
             }
-            else if (HeaderText is not null)
+            else if (_params.HeaderText is not null)
             {
-                <div style="@Styles?.Header" class="bit-pmd-hdr @Classes?.Header">
-                    @HeaderText
+                <div style="@_styles?.Header" class="bit-pmd-hdr @_classes?.Header">
+                    @_params.HeaderText
                 </div>
             }
 
-            @if (ShowCloseButton)
+            @if (_params.ShowCloseButton ?? false)
             {
-                var closeIcon = BitIconInfo.From(CloseIcon, CloseIconName ?? "Cancel");
+                var closeIcon = BitIconInfo.From(_params.CloseIcon, _params.CloseIconName ?? "Cancel");
 
                 <button @onclick="CloseModal"
                         type="button"
-                        title="@CloseButtonTitle"
-                        aria-label="@CloseButtonTitle"
-                        style="@Styles?.CloseButton"
-                        class="bit-pmd-cls @Classes?.CloseButton">
-                    <i style="@Styles?.CloseIcon"
-                       class="@closeIcon?.GetCssClasses() @Classes?.CloseIcon" />
+                        title="@(_params.CloseButtonTitle ?? DefaultCloseButtonTitle)"
+                        aria-label="@(_params.CloseButtonTitle ?? DefaultCloseButtonTitle)"
+                        style="@_styles?.CloseButton"
+                        class="bit-pmd-cls @_classes?.CloseButton">
+                    <i style="@_styles?.CloseIcon"
+                       class="@closeIcon?.GetCssClasses() @_classes?.CloseIcon" />
                 </button>
             }
         </div>
     }
 
-    <div style="@Styles?.Body" class="bit-pmd-bdy @Classes?.Body">
+    <div style="@_styles?.Body" class="bit-pmd-bdy @_classes?.Body">
         @(Body ?? ChildContent)
     </div>
 
-    @if (Footer is not null)
+    @if (_params.Footer is not null)
     {
-        <div style="@Styles?.Footer" class="bit-pmd-fcn @Classes?.Footer">
-            @Footer
+        <div style="@_styles?.Footer" class="bit-pmd-fcn @_classes?.Footer">
+            @_params.Footer
         </div>
     }
-    else if (FooterText is not null)
+    else if (_params.FooterText is not null)
     {
-        <div style="@Styles?.Footer" class="bit-pmd-fcn @Classes?.Footer">
-            @FooterText
+        <div style="@_styles?.Footer" class="bit-pmd-fcn @_classes?.Footer">
+            @_params.FooterText
         </div>
     }
 </BitModal>

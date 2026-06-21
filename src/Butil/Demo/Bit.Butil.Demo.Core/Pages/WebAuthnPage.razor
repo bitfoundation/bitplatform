@@ -1,69 +1,78 @@
 ﻿@page "/webauthn"
-@inject Bit.Butil.Console console
 @inject Bit.Butil.WebAuthn webAuthn
 
-<PageTitle>WebAuthn Samples</PageTitle>
+<PageTitle>Butil - WebAuthn Samples</PageTitle>
 
-<h1>WebAuthn</h1>
+<PageHeader Category="Utilities"
+            Title="WebAuthn"
+            Lead="Create and retrieve passkey / public-key credentials using the Web Authentication API. Your device may prompt for biometrics or a security key."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API" />
 
-<pre style="font-family:Consolas; overflow: auto;">
+<pre>
 @@inject Bit.Butil.WebAuthn webAuthn
 
-@@code {
-    ...
-    webAuthn.CreateCredential({ ... });
-    ...
-    webAuthn.GetCredential({ ... });
-    ...
-}
+var created = await webAuthn.CreateCredential(new { challenge = "...", rp = ..., user = ... });
+var got     = await webAuthn.GetCredential(new { challenge = "..." });
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Create a credential" Api="CreateCredential"
+              Description="Register a new public-key credential. The browser will ask you to verify with a passkey, biometric or security key.">
+        <button @onclick="Create">Create</button>
+    </DemoCard>
 
-<h3>Open the DevTools' console and start clicking on buttons</h3>
+    <DemoCard Title="Get a credential" Api="GetCredential"
+              Description="Authenticate with an existing credential for this site.">
+        <button @onclick="Get">Get</button>
+    </DemoCard>
 
-<hr />
-<br />
+    <DemoCard Title="Verify support" Api="Verify"
+              Description="Check whether a user-verifying platform authenticator is available.">
+        <button class="secondary" @onclick="Verify">Verify</button>
+    </DemoCard>
+</div>
 
-<button @onclick="Create">Create</button>
-
-<hr />
-<br />
-
-<button @onclick="Get">Get</button>
-
-<hr />
-<br />
-
-<button @onclick="Verify">Verify</button>
+<DemoConsole @ref="output" Title="webauthn output" />
 
 @code {
+    private DemoConsole output = default!;
+
     private async Task Create()
     {
-        var result = await webAuthn.CreateCredential(new
+        try
         {
-            challenge = "testChallenge",
-            rp = new { name = "testRp" },
-            user = new { id = "userId", name = "testUser", displayName = "testUser" },
-            pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
-        });
+            var result = await webAuthn.CreateCredential(new
+            {
+                challenge = "testChallenge",
+                rp = new { name = "testRp" },
+                user = new { id = "userId", name = "testUser", displayName = "testUser" },
+                pubKeyCredParams = new object[] { new { alg = -7, type = "public-key" } }
+            });
 
-        await console.Log("id:", result.GetProperty("id"));
-        await console.Log("Create result:", result);
+            await output.Success("Created credential id →", result.GetProperty("id"));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Create failed →", ex.Message);
+        }
     }
 
     private async Task Get()
     {
-        var result = await webAuthn.GetCredential(new { challenge = "test" });
-
-        await console.Log("id:", result.GetProperty("id"));
-        await console.Log("Get result:", result);
+        try
+        {
+            var result = await webAuthn.GetCredential(new { challenge = "test" });
+            await output.Success("Got credential id →", result.GetProperty("id"));
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Get failed →", ex.Message);
+        }
     }
 
     private async Task Verify()
     {
         var result = await webAuthn.Verify();
-        await console.Log("Verify result:", result);
+        await output.Success("Verify result →", result);
     }
 }

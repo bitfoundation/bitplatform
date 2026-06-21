@@ -1,0 +1,340 @@
+@page "/e2e-observers"
+@implements IAsyncDisposable
+@inject Bit.Butil.Performance performance
+@inject Bit.Butil.StorageManager storageManager
+@inject Bit.Butil.NetworkInformation networkInformation
+@inject Bit.Butil.BroadcastChannel broadcastChannel
+@inject Bit.Butil.IndexedDb indexedDb
+@inject Bit.Butil.CacheStorage cacheStorage
+@inject Bit.Butil.WebLocks webLocks
+@inject Bit.Butil.ObjectUrls objectUrls
+@inject Bit.Butil.CookieStore cookieStore
+@inject Bit.Butil.Navigator navigator
+@inject Bit.Butil.UserAgent userAgent
+@inject Bit.Butil.Screen screen
+@inject IJSRuntime js
+
+@*
+    Second deterministic harness, focused on async/observer-based APIs. Same contract as /e2e:
+    every control has a stable id and results land in #status.
+*@
+
+<PageTitle>Butil - E2E Observers</PageTitle>
+
+<h1>Butil E2E Observers</h1>
+
+<div data-testid="status" id="status">@_status</div>
+
+<section>
+    <h3>Performance</h3>
+    <button id="perf-mark-measure" @onclick="PerfMarkMeasure">mark + measure</button>
+    <button id="perf-observer" @onclick="PerfObserver">PerformanceObserver(mark)</button>
+</section>
+
+<section>
+    <h3>Storage Manager + Network</h3>
+    <button id="storage-estimate" @onclick="StorageEstimate">storage.estimate</button>
+    <button id="network-status" @onclick="NetworkStatus">connection status</button>
+</section>
+
+<section>
+    <h3>Observers</h3>
+    <div id="observed-target" @ref="_target" style="width:120px;height:40px;border:1px solid #888;">target</div>
+    <button id="intersection-observe" @onclick="ObserveIntersection">observe intersection</button>
+    <button id="resize-observe" @onclick="ObserveResize">observe resize</button>
+    <button id="resize-trigger" @onclick="TriggerResize">resize target</button>
+    <button id="mutation-observe" @onclick="ObserveMutation">observe mutation</button>
+</section>
+
+<section>
+    <h3>BroadcastChannel</h3>
+    <button id="broadcast-subscribe" @onclick="BroadcastSubscribe">subscribe</button>
+    <button id="broadcast-post" @onclick="BroadcastPost">post</button>
+</section>
+
+<section>
+    <h3>IndexedDB</h3>
+    <button id="idb-roundtrip" @onclick="IndexedDbRoundTrip">open + put + get</button>
+</section>
+
+<section>
+    <h3>CacheStorage</h3>
+    <button id="cache-roundtrip" @onclick="CacheRoundTrip">putText + match + delete</button>
+</section>
+
+<section>
+    <h3>Web Locks</h3>
+    <button id="lock-run" @onclick="LockRun">acquire + run + release</button>
+</section>
+
+<section>
+    <h3>Object URLs</h3>
+    <button id="objurl-create" @onclick="ObjectUrlCreate">createObjectURL</button>
+</section>
+
+<section>
+    <h3>CookieStore</h3>
+    <button id="cookiestore-roundtrip" @onclick="CookieStoreRoundTrip">set + get + delete</button>
+</section>
+
+<section>
+    <h3>Performance entries</h3>
+    <button id="perf-entries" @onclick="PerfEntries">mark + getEntries + clear</button>
+</section>
+
+<section>
+    <h3>Platform</h3>
+    <button id="nav-info" @onclick="NavInfo">navigator info</button>
+    <button id="ua-extract" @onclick="UaExtract">userAgent.extract</button>
+    <button id="screen-metrics" @onclick="ScreenMetrics">screen metrics</button>
+</section>
+
+@code {
+    private string _status = "ready";
+    private ElementReference _target;
+
+    private ButilSubscription? _intersectionSub;
+    private ButilSubscription? _resizeSub;
+    private ButilSubscription? _mutationSub;
+    private ButilSubscription? _perfObserverSub;
+    private ButilSubscription? _broadcastSub;
+
+    private int _resizeWidth = 120;
+
+    private void Set(string value) { _status = value; StateHasChanged(); }
+
+    // ─── Performance ─────────────────────────────────────────────────────────────
+    private async Task PerfMarkMeasure()
+    {
+        await performance.Mark("butil-e2e-a");
+        await performance.Mark("butil-e2e-b");
+        await performance.Measure("butil-e2e-measure", "butil-e2e-a", "butil-e2e-b");
+        var entries = await performance.GetEntries("butil-e2e-measure", "measure");
+        Set($"perf:measure:{entries.Length > 0}");
+    }
+
+    private async Task PerfObserver()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        _perfObserverSub = await performance.SubscribeObserver(["mark"], entries =>
+        {
+            if (entries.Length > 0) tcs.TrySetResult(true);
+        }, buffered: false);
+
+        await performance.Mark("butil-e2e-observed-mark");
+
+        var fired = await WaitFor(tcs, 5000);
+        Set($"perf:observer:{fired}");
+    }
+
+    // ─── Storage Manager + Network ───────────────────────────────────────────────
+    private async Task StorageEstimate()
+    {
+        var est = await storageManager.Estimate();
+        // Quota is reported on every evergreen browser; usage may be 0 on a clean origin.
+        Set($"storage:estimate:{est.Quota.HasValue}");
+    }
+
+    private async Task NetworkStatus()
+    {
+        var status = await networkInformation.GetStatus();
+        Set($"network:online:{status.Online}");
+    }
+
+    // ─── Observers ───────────────────────────────────────────────────────────────
+    private async Task ObserveIntersection()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        _intersectionSub = await _target.ObserveIntersection(js, entries =>
+        {
+            if (entries.Length > 0) tcs.TrySetResult(true);
+        });
+        // The target is on-screen, so the observer fires an initial entry immediately.
+        var fired = await WaitFor(tcs, 5000);
+        Set($"intersection:{fired}");
+    }
+
+    private async Task ObserveResize()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        _resizeSub = await _target.ObserveResize(js, entries =>
+        {
+            if (entries.Length > 0) tcs.TrySetResult(true);
+        });
+        var fired = await WaitFor(tcs, 5000);
+        Set($"resize:observed:{fired}");
+    }
+
+    private async Task TriggerResize()
+    {
+        _resizeWidth += 40;
+        await _target.SetAttribute("style", $"width:{_resizeWidth}px;height:40px;border:1px solid #888;");
+        Set($"resize:triggered:{_resizeWidth}");
+    }
+
+    private async Task ObserveMutation()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        _mutationSub = await _target.ObserveMutations(js, records =>
+        {
+            if (records.Length > 0) tcs.TrySetResult(true);
+        }, new MutationObserverOptions { Attributes = true });
+
+        // Mutate an attribute to trigger the observer.
+        await _target.SetAttribute("data-butil", Guid.NewGuid().ToString("N"));
+
+        var fired = await WaitFor(tcs, 5000);
+        Set($"mutation:{fired}");
+    }
+
+    // ─── BroadcastChannel ────────────────────────────────────────────────────────
+    private async Task BroadcastSubscribe()
+    {
+        _broadcastReceived = new TaskCompletionSource<string>();
+        _broadcastSub = await broadcastChannel.Subscribe("butil-e2e-channel", msg =>
+        {
+            _broadcastReceived?.TrySetResult(msg.GetProperty("text").GetString() ?? "");
+        });
+        Set("broadcast:subscribed");
+    }
+
+    private TaskCompletionSource<string>? _broadcastReceived;
+
+    private async Task BroadcastPost()
+    {
+        // Post from a second BroadcastChannel in JS land so the subscriber (which doesn't receive
+        // its own messages) actually fires.
+        await js.InvokeVoidAsync("eval",
+            "(function(){const c=new BroadcastChannel('butil-e2e-channel');c.postMessage({text:'pong'});c.close();})()");
+
+        var received = _broadcastReceived is null ? "" : await WaitForValue(_broadcastReceived, 5000);
+        Set($"broadcast:received:{received}");
+    }
+
+    // ─── IndexedDB ───────────────────────────────────────────────────────────────
+    private async Task IndexedDbRoundTrip()
+    {
+        await using var db = await indexedDb.Open("butil-e2e-db", 1,
+        [
+            new IndexedDbStoreSchema { Name = "items", KeyPath = "id" }
+        ]);
+
+        await db.Put("items", new IdbItem { Id = "k1", Value = "stored" });
+        var item = await db.Get<IdbItem>("items", "k1");
+        Set($"idb:get:{item?.Value}");
+    }
+
+    // ─── CacheStorage ────────────────────────────────────────────────────────────
+    private async Task CacheRoundTrip()
+    {
+        const string cacheName = "butil-e2e-cache";
+        const string url = "https://butil.e2e/cached-resource";
+        await cacheStorage.PutText(cacheName, url, "hello-cache");
+        var match = await cacheStorage.Match(cacheName, url);
+        var body = match.Found ? System.Text.Encoding.UTF8.GetString(match.Body) : "";
+        var deleted = await cacheStorage.DeleteEntry(cacheName, url);
+        await cacheStorage.Delete(cacheName);
+        Set($"cache:roundtrip:{match.Found}/{body}/{deleted}");
+    }
+
+    // ─── Web Locks ─────────────────────────────────────────────────────────────
+    private async Task LockRun()
+    {
+        var ran = false;
+        var heldExclusively = false;
+        await webLocks.Run("butil-e2e-lock", async () =>
+        {
+            ran = true;
+            var snapshot = await webLocks.Query();
+            heldExclusively = snapshot.Held.Any(l => l.Name == "butil-e2e-lock");
+        });
+        Set($"lock:run:{ran}/{heldExclusively}");
+    }
+
+    // ─── Object URLs ─────────────────────────────────────────────────────────────
+    private async Task ObjectUrlCreate()
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes("blob-bytes");
+        var url = await objectUrls.Create(bytes, "text/plain");
+        var ok = url.StartsWith("blob:", StringComparison.Ordinal);
+        await objectUrls.Revoke(url);
+        Set($"objurl:create:{ok}");
+    }
+
+    // ─── CookieStore ─────────────────────────────────────────────────────────────
+    private async Task CookieStoreRoundTrip()
+    {
+        if (!await cookieStore.IsSupported())
+        {
+            Set("cookiestore:unsupported");
+            return;
+        }
+
+        await cookieStore.Set(new CookieStoreItem { Name = "butil-e2e-cs", Value = "csval", Path = "/" });
+        var item = await cookieStore.Get("butil-e2e-cs");
+        await cookieStore.Delete("butil-e2e-cs");
+        Set($"cookiestore:get:{item?.Value}");
+    }
+
+    // ─── Performance entries ───────────────────────────────────────────────────
+    private async Task PerfEntries()
+    {
+        await performance.ClearMarks();
+        await performance.Mark("butil-e2e-entry");
+        var entries = await performance.GetEntries("butil-e2e-entry", "mark");
+        await performance.ClearMarks();
+        var cleared = await performance.GetEntries("butil-e2e-entry", "mark");
+        Set($"perf:entries:{entries.Length > 0}/{cleared.Length == 0}");
+    }
+
+    // ─── Platform ─────────────────────────────────────────────────────────────
+    private async Task NavInfo()
+    {
+        var language = await navigator.GetLanguage();
+        var cores = await navigator.GetHardwareConcurrency();
+        var online = await navigator.IsOnLine();
+        Set($"nav:info:{language.Length > 0 && cores > 0 && online}");
+    }
+
+    private async Task UaExtract()
+    {
+        var props = await userAgent.Extract();
+        var ok = props is not null && !string.IsNullOrEmpty(props.UserAgentValue);
+        Set($"ua:extract:{ok}");
+    }
+
+    private async Task ScreenMetrics()
+    {
+        var width = await screen.GetWidth();
+        var height = await screen.GetHeight();
+        var depth = await screen.GetColorDepth();
+        Set($"screen:metrics:{width > 0 && height > 0 && depth > 0}");
+    }
+
+    private static async Task<bool> WaitFor(TaskCompletionSource<bool> tcs, int timeoutMs)
+    {
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs));
+        return completed == tcs.Task && tcs.Task.Result;
+    }
+
+    private static async Task<string> WaitForValue(TaskCompletionSource<string> tcs, int timeoutMs)
+    {
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs));
+        return completed == tcs.Task ? tcs.Task.Result : "";
+    }
+
+    public class IdbItem
+    {
+        public string Id { get; set; } = "";
+        public string Value { get; set; } = "";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_intersectionSub is not null) await _intersectionSub.DisposeAsync();
+        if (_resizeSub is not null) await _resizeSub.DisposeAsync();
+        if (_mutationSub is not null) await _mutationSub.DisposeAsync();
+        if (_perfObserverSub is not null) await _perfObserverSub.DisposeAsync();
+        if (_broadcastSub is not null) await _broadcastSub.DisposeAsync();
+    }
+}

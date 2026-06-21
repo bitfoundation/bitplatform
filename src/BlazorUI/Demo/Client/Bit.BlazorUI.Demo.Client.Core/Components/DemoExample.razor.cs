@@ -9,6 +9,7 @@ public partial class DemoExample
     [Parameter] public string RazorCode { get; set; } = default!;
     [Parameter] public string CsharpCode { get; set; } = default!;
     [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    [Parameter, CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
 
 
 

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.AI;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 namespace Bit.BlazorUI.Demo.Server.Startup;
 
@@ -52,10 +53,10 @@ public static class Services
             .WithToolsFromAssembly();
 
         services.AddScoped<HtmlRenderer>();
-        services.AddCascadingValue(nameof(AppComponentBase.RenderForMcpClient), sp =>
+        services.AddCascadingValue("RenderForMcpClient", sp =>
         {
             var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-            return httpContext?.Items?.ContainsKey(nameof(AppComponentBase.RenderForMcpClient)) is true
+            return httpContext?.Items?.ContainsKey("RenderForMcpClient") is true
                 || httpContext?.Request?.Query?.ContainsKey("showallcodes") is true;
         });
 
@@ -97,6 +98,20 @@ public static class Services
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
 
         services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+
+        // Add Azure Application Insights using OpenTelemetry if connection string is configured in appsettings.json
+        var appInsightsConnectionString = configuration["ApplicationInsights:ConnectionString"];
+        if (string.IsNullOrWhiteSpace(appInsightsConnectionString) is false)
+        {
+            services.AddOpenTelemetry().UseAzureMonitor(options =>
+            {
+                options.ConnectionString = appInsightsConnectionString;
+            }).WithLogging(configureBuilder: null, configureOptions: options =>
+            {
+                options.IncludeScopes = true;
+                options.IncludeFormattedMessage = true;
+            });
+        }
 
         services.AddEndpointsApiExplorer();
 

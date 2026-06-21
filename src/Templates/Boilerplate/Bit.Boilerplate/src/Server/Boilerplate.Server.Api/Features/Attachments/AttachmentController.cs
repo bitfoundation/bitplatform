@@ -218,32 +218,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             if (attachment.Kind is AttachmentKind.ProductPrimaryImageMedium)
             {
                 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
-                if (serviceProvider.GetService<IChatClient>() is IChatClient chatClient)
+                if (serviceProvider.GetKeyedService<Microsoft.Agents.AI.AIAgent>("AnalyzeProductImageAgent") is Microsoft.Agents.AI.AIAgent analyzeProductImageAgent)
                 {
-                    var imageAnalysisAgent = chatClient.AsAIAgent(
-                        instructions: """
-                        You are a Product Image Specialist Agent. Your role is to analyze product images for an e-commerce catalog.
-
-                        ANALYSIS PROCESS:
-                        1. First, examine the image contents carefully
-                        2. Determine if the primary subject is a car (vehicle)
-                        3. If it is a car, provide a detailed, SEO-friendly description
-                        4. If it is NOT a car, explain why it doesn't meet catalog requirements
-
-                        RESPONSE FORMAT:
-                        Return ONLY a JSON object with:
-                        - "isCar": boolean (true if image shows a car, false otherwise)
-                        - "confidence": number between 0-1 indicating certainty of classification
-                        - "alt": string with detailed description for accessibility and SEO
-                        - "reasoning": string briefly explaining your analysis decision
-
-                        VALIDATION RULES:
-                        - Image quality must be acceptable for catalog use
-                        - Car must be clearly visible as the main subject
-                        """,
-                        name: "ProductImageAnalystAgent",
-                        description: "Analyzes product images to ensure they meet catalog standards for car products");
-
                     ChatOptions chatOptions = new()
                     {
                         ResponseFormat = ChatResponseFormat.Json,
@@ -255,7 +231,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
                     configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
 
-                    var response = await imageAnalysisAgent.RunAsync<AIImageReviewResponse>(
+                    var response = await analyzeProductImageAgent.RunAsync<AIImageReviewResponse>(
                         messages: [
                             new ChatMessage(ChatRole.User, 
                                 "Analyze this product image for our car catalog. Is this a valid car product image that meets our quality and content standards?")

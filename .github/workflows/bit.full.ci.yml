@@ -7,6 +7,9 @@ env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
   ConnectionStrings__mssqldb: 'Data Source=localhost; Initial Catalog=BoilerplateTestDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
 
+permissions:
+  contents: read
+
 jobs:
 
 # Bit.BlazorUI solution is being built in bit.ci.yml
@@ -17,7 +20,9 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -45,7 +50,9 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -114,7 +121,9 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -186,7 +195,9 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -252,7 +263,9 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -290,7 +303,9 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -388,6 +403,11 @@ jobs:
         dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Brouter
+      run: |
+        dotnet build src/Brouter/Bit.Brouter/Bit.Brouter.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Brouter/Bit.Brouter/Bit.Brouter.csproj --output ./packages --configuration Release
+
     - name: Build and pack Besql
       run: |
         dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -427,7 +447,9 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -455,7 +477,9 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -477,13 +501,45 @@ jobs:
 
 
 
+  build-brouter-solution:
+    name: Build Brouter solution
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v7
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: Install wasm and maui
+      run: cd src && dotnet workload install maui-android wasm-tools
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Build Brouter solution in Release mode
+      run: dotnet build src/Brouter/Bit.Brouter.slnx -c Release
+
+
+
   build-tooling-solutions:
     name: Build tooling solutions
     runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5
@@ -507,7 +563,9 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET 10
       uses: actions/setup-dotnet@v5

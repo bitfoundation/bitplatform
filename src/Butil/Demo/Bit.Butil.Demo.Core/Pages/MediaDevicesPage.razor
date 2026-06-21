@@ -1,0 +1,127 @@
+@page "/mediaDevices"
+@implements IAsyncDisposable
+@inject Bit.Butil.MediaDevices mediaDevices
+
+<PageTitle>Butil - MediaDevices Samples</PageTitle>
+
+<PageHeader Category="Browser & Device"
+            Title="MediaDevices"
+            Lead="Enumerate cameras and microphones, then request a live stream and attach it to a video element - all from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices" />
+
+<pre>
+@@inject Bit.Butil.MediaDevices mediaDevices
+
+var devices = await mediaDevices.EnumerateDevices();
+var stream  = await mediaDevices.GetUserMedia(video: true);
+await stream.AttachTo(videoElement);
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Support & enumeration" Api="IsSupported / EnumerateDevices"
+              Description="List input/output devices. Labels may be blank until permission is granted.">
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="Enumerate">EnumerateDevices</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="GetUserMedia" Api="GetUserMedia / AttachTo / SetEnabled"
+              Description="Request camera and/or microphone access. The stream is attached to the preview below.">
+        <div class="controls">
+            <label><input type="checkbox" @bind="_requestAudio" /> Audio</label>
+            <label><input type="checkbox" @bind="_requestVideo" /> Video</label>
+        </div>
+        <div class="controls" style="margin-top:0.75rem">
+            <button @onclick="StartStream">Start stream</button>
+            <button class="secondary" @onclick="ToggleEnabled">Toggle enabled</button>
+            <button class="danger" @onclick="StopStream">Stop stream</button>
+        </div>
+        <video @ref="_preview" autoplay playsinline muted
+               style="margin-top:1rem;max-width:100%;border-radius:8px;background:#111;min-height:120px"></video>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="mediaDevices output" />
+
+@code {
+    private DemoConsole output = default!;
+    private ElementReference _preview;
+    private MediaStreamHandle? _stream;
+    private bool _requestAudio = true;
+    private bool _requestVideo = true;
+    private bool _enabled = true;
+
+    private async Task CheckSupported()
+    {
+        await output.Success("IsSupported →", await mediaDevices.IsSupported());
+    }
+
+    private async Task Enumerate()
+    {
+        var devices = await mediaDevices.EnumerateDevices();
+        if (devices.Length == 0)
+        {
+            await output.Warn("No media devices reported.");
+            return;
+        }
+
+        foreach (var device in devices)
+        {
+            var label = string.IsNullOrEmpty(device.Label)
+                ? device.DeviceId[..Math.Min(8, device.DeviceId.Length)] + "…"
+                : device.Label;
+            await output.Log($"{device.Kind}: {label}");
+        }
+    }
+
+    private async Task StartStream()
+    {
+        await StopStream();
+
+        if (!_requestAudio && !_requestVideo)
+        {
+            await output.Warn("Enable at least audio or video.");
+            return;
+        }
+
+        _stream = await mediaDevices.GetUserMedia(_requestAudio, _requestVideo);
+        if (_stream is null)
+        {
+            await output.Warn("GetUserMedia returned null - permission denied or no device available.");
+            return;
+        }
+
+        await _stream.AttachTo(_preview);
+        _enabled = true;
+        await output.Success("Stream started →", _stream.Id);
+        await Enumerate();
+    }
+
+    private async Task ToggleEnabled()
+    {
+        if (_stream is null)
+        {
+            await output.Warn("Start a stream first.");
+            return;
+        }
+
+        _enabled = !_enabled;
+        await _stream.SetEnabled(_enabled);
+        await output.Log($"Tracks enabled → {_enabled}");
+    }
+
+    private async Task StopStream()
+    {
+        if (_stream is null) return;
+        await _stream.DisposeAsync();
+        _stream = null;
+        await output.Log("Stream stopped.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_stream is not null)
+            await _stream.DisposeAsync();
+    }
+}

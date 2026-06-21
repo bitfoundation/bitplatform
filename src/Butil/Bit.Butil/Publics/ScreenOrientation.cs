@@ -14,13 +14,35 @@ namespace Bit.Butil;
 /// </summary>
 public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 {
+    internal const string InvokeMethodName = nameof(InvokeScreenOrientationChange);
+
     private readonly ConcurrentDictionary<Guid, Action<OrientationState>> _handlers = new();
+
+    // Per-instance callback reference (see Keyboard): listeners are isolated per circuit / WASM app
+    // and released on disposal - no static state, no cross-circuit leak.
+    private DotNetObjectReference<ScreenOrientation>? _dotNetRef;
+    private DotNetObjectReference<ScreenOrientation> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
+
+    /// <summary>
+    /// Invoked from JS on the orientation <c>change</c> event. Public + <see cref="JSInvokableAttribute"/>
+    /// so it can be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
+    /// </summary>
+    [JSInvokable(InvokeMethodName)]
+    public void InvokeScreenOrientationChange(Guid id, OrientationState state)
+    {
+        if (_handlers.TryGetValue(id, out var handler)) handler.Invoke(state);
+    }
 
     /// <summary>
     /// Returns the document's current orientation type.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/type">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/type</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<ScreenOrientationType> GetOrientationType()
     {
         var type = await js.Invoke<string>("BitButil.screenOrientation.type");
@@ -40,6 +62,11 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle</see>
     /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
     public async Task<ushort> GetAngle()
         => await js.Invoke<ushort>("BitButil.screenOrientation.angle");
 
@@ -81,15 +108,25 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/change_event">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/change_event</see>
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScreenOrientationListenersManager))]
+    [DynamicDependency(nameof(InvokeScreenOrientationChange), typeof(ScreenOrientation))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(OrientationState))]
     public async ValueTask<Guid> AddChange(Action<OrientationState> handler)
     {
-        var listenerId = ScreenOrientationListenersManager.AddListener(handler);
+        var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoid("BitButil.screenOrientation.addChange", ScreenOrientationListenersManager.InvokeMethodName, listenerId);
+        await js.InvokeVoid("BitButil.screenOrientation.addChange", DotNetRef, listenerId);
 
         return listenerId;
+    }
+
+    /// <summary>
+    /// Subscribe variant returning an <see cref="IAsyncDisposable"/> handle.
+    /// </summary>
+    public async ValueTask<ButilSubscription> SubscribeChange(Action<OrientationState> handler)
+    {
+        var id = await AddChange(handler);
+        return new ButilSubscription(id, () => RemoveChange(id));
     }
 
     /// <summary>
@@ -98,9 +135,16 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/change_event">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/change_event</see>
     /// </summary>
+    /// <remarks>
+    /// Listeners are matched by delegate identity, so you must pass the very same
+    /// <paramref name="handler"/> instance that was registered. A newly-created lambda will not
+    /// match and the returned array will be empty. To avoid this, keep the <see cref="Guid"/>
+    /// returned by <c>AddChange</c> and remove by id, or use <c>SubscribeChange</c> which returns a
+    /// disposable <see cref="ButilSubscription"/>.
+    /// </remarks>
     public async ValueTask<Guid[]> RemoveChange(Action<OrientationState> handler)
     {
-        var ids = ScreenOrientationListenersManager.RemoveListener(handler);
+        var ids = _handlers.Where(h => h.Value == handler).Select(h => h.Key).ToArray();
 
         await RemoveChange(ids);
 
@@ -115,8 +159,6 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask RemoveChange(Guid id)
     {
-        ScreenOrientationListenersManager.RemoveListeners([id]);
-
         await RemoveChange([id]);
     }
 
@@ -140,15 +182,11 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 
         _handlers.Clear();
 
-        ScreenOrientationListenersManager.RemoveListeners(ids);
-
         await RemoveFromJs(ids);
     }
 
     private async ValueTask RemoveFromJs(Guid[] ids)
     {
-        if (OperatingSystem.IsBrowser() is false) return;
-
         await js.InvokeVoid("BitButil.screenOrientation.removeChange", ids);
     }
 
@@ -167,6 +205,11 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
         {
             await RemoveAllChanges();
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        finally
+        {
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
     }
 }

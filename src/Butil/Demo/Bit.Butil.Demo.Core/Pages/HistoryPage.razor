@@ -1,87 +1,72 @@
 ﻿@page "/history"
 @implements IAsyncDisposable
-@inject Bit.Butil.Console console
 @inject Bit.Butil.History history
 
-<PageTitle>History Samples</PageTitle>
+<PageTitle>Butil - History Samples</PageTitle>
 
-<h1>History</h1>
+<PageHeader Category="Navigation"
+            Title="History"
+            Lead="Drive the browser's session history: go back and forward, push and replace entries, and react to popstate - all without leaving C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/History" />
 
-<pre style="font-family:Consolas; overflow: auto;">
+<pre>
 @@inject Bit.Butil.History history
 
-@@code {
-    ...
-    await history.GoBack();
-    ...
-}
+await history.GoBack();
+await history.PushState(url: "/window");
+await history.AddPopState(state => { ... });
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Navigate" Api="GoBack / GoForward / Go"
+              Description="Move through the session history. A popstate listener is registered, so navigations log the popped state below.">
+        <div class="controls">
+            <button @onclick="GoBack">&lt; Back</button>
+            <button @onclick="GoForward">Forward &gt;</button>
+            <button class="secondary" @onclick="() => Go(-1)">Go(-1)</button>
+            <button class="secondary" @onclick="() => Go(0)">Go(0)</button>
+            <button class="secondary" @onclick="() => Go(1)">Go(1)</button>
+        </div>
+    </DemoCard>
 
-<h3>Open the DevTools' console and start clicking on buttons</h3>
+    <DemoCard Title="Length & state" Api="GetLength / GetState"
+              Description="Read how many entries are in the history stack and the current state object.">
+        <div class="controls">
+            <button @onclick="GetLength">GetLength</button>
+            <button @onclick="GetState">GetState</button>
+        </div>
+    </DemoCard>
 
-<hr />
-<br />
+    <DemoCard Title="Scroll restoration" Api="SetScrollRestoration / GetScrollRestoration"
+              Description="Control whether the browser restores scroll position on navigation.">
+        <div class="check-row">
+            <input type="checkbox" @bind="@isScrollRestorationManual" id="sr" />
+            <label for="sr">@(isScrollRestorationManual ? "Manual" : "Auto")</label>
+        </div>
+        <div class="controls">
+            <button @onclick=SetScrollRestoration>Set</button>
+            <button class="secondary" @onclick=GetScrollRestoration>Get</button>
+        </div>
+    </DemoCard>
 
-<button @onclick="GoBack">&lt; Back</button>
-&nbsp;
-<button @onclick="GoForward">Forward &gt;</button>
-<br />
-<br />
-<button @onclick="() => Go(-1)">Go (-1)</button>
-&nbsp;
-<button @onclick="() => Go(0)">Go (0)</button>
-&nbsp;
-<button @onclick="() => Go(1)">Go (1)</button>
+    <DemoCard Title="Push & replace" Api="PushState / ReplaceState"
+              Description="Add a new entry (PushState → /window) or swap the current one (ReplaceState → /document) without a full reload.">
+        <div class="controls">
+            <button @onclick="PushState">PushState</button>
+            <button class="secondary" @onclick="ReplaceState">ReplaceState</button>
+        </div>
+    </DemoCard>
+</div>
 
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetLength">GetLength</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input type="checkbox" @bind="@isScrollRestorationManual" />
-<label>@(isScrollRestorationManual ? "Manual" : "Auto")</label>
-<br />
-<br />
-<button @onclick=SetScrollRestoration>SetScrollRestoration</button>
-<br />
-<br />
-<button @onclick=GetScrollRestoration>GetScrollRestoration</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetState">GetState</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="PushState">PushState</button>
-&nbsp;
-<button @onclick="ReplaceState">ReplaceState</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="history output" />
 
 @code {
+    private DemoConsole output = default!;
     private bool isScrollRestorationManual;
 
     protected override async Task OnInitializedAsync()
     {
-        await history.AddPopState(obj => _ = console.Log("Popped state:", obj));
+        await history.AddPopState(obj => _ = output.Info("Popped state →", obj));
 
         await base.OnInitializedAsync();
     }
@@ -103,34 +88,35 @@
 
     private async Task GetLength()
     {
-        var length = await history.GetLength();
-        await console.Log("History length", length);
+        await output.Success("History length →", await history.GetLength());
     }
 
     private async Task SetScrollRestoration()
     {
         await history.SetScrollRestoration(isScrollRestorationManual ? ScrollRestoration.Manual : ScrollRestoration.Auto);
+        await output.Log("ScrollRestoration set to", isScrollRestorationManual ? "Manual" : "Auto");
     }
 
     private async Task GetScrollRestoration()
     {
-        await console.Log("history.scrollRestoration =", (await history.GetScrollRestoration()).ToString());
+        await output.Success("history.scrollRestoration →", (await history.GetScrollRestoration()).ToString());
     }
 
     private async Task GetState()
     {
-        var state = await history.GetState();
-        await console.Log("History state", state);
+        await output.Success("History state →", await history.GetState());
     }
 
     private async Task PushState()
     {
         await history.PushState(url: "/window");
+        await output.Log("PushState → /window");
     }
 
     private async Task ReplaceState()
     {
         await history.ReplaceState(url: "/document");
+        await output.Log("ReplaceState → /document");
     }
 
     public async ValueTask DisposeAsync()
