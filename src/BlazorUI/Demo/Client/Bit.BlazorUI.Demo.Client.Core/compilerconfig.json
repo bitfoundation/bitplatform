@@ -66,6 +66,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/QuickGrid/BitQuickGridDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/QuickGrid/BitQuickGridDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/DataGrid/BitDataGridDemo.razor.css",
         "inputFile": "Pages/Components/Extras/DataGrid/BitDataGridDemo.razor.scss",
         "minify": { "enabled": false },

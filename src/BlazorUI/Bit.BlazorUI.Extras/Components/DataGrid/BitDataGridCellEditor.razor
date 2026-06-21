@@ -1,0 +1,61 @@
+@typeparam TItem
+@namespace Bit.BlazorUI
+
+@switch (Column.EffectiveDataType)
+{
+    case BitDataGridColumnDataType.Boolean:
+        <input type="checkbox" class="bit-dtg-editor bit-dtg-editor-check"
+               checked="@(GetBool())"
+               @onchange="e => Set(e.Value)" />
+        break;
+
+    case BitDataGridColumnDataType.Number:
+        <input type="number" class="bit-dtg-editor" step="any"
+               value="@(GetString())"
+               @oninput="e => Set(e.Value)" />
+        break;
+
+    case BitDataGridColumnDataType.Date:
+        <input type="date" class="bit-dtg-editor"
+               value="@(GetDate())"
+               @onchange="e => Set(e.Value)" />
+        break;
+
+    case BitDataGridColumnDataType.Enum:
+        <select class="bit-dtg-editor" value="@(GetString())" @onchange="e => Set(e.Value)">
+            @foreach (var name in Enum.GetNames(Column.Accessor!.UnderlyingType))
+            {
+                <option value="@name" selected="@(name == GetString())">@name</option>
+            }
+        </select>
+        break;
+
+    default:
+        <input type="text" class="bit-dtg-editor"
+               value="@(GetString())"
+               @oninput="e => Set(e.Value)" />
+        break;
+}
+
+@code {
+    [Parameter, EditorRequired] public BitDataGrid<TItem> Grid { get; set; } = default!;
+    [Parameter, EditorRequired] public BitDataGridColumn<TItem> Column { get; set; } = default!;
+    [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
+
+    private object? Value => Column.GetValue(Item);
+    private string GetString() => Value?.ToString() ?? string.Empty;
+    private bool GetBool() => Value is bool b && b;
+
+    private string GetDate()
+    {
+        return Value switch
+        {
+            DateTime dt => dt.ToString("yyyy-MM-dd"),
+            DateOnly d => d.ToString("yyyy-MM-dd"),
+            DateTimeOffset dto => dto.ToString("yyyy-MM-dd"),
+            _ => string.Empty
+        };
+    }
+
+    private void Set(object? raw) => Grid.SetEditValue(Column, raw);
+}

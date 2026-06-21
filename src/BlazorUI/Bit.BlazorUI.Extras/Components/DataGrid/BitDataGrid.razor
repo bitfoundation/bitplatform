@@ -1,138 +1,418 @@
+@typeparam TItem
 @namespace Bit.BlazorUI
-@typeparam TGridItem
 
-<CascadingValue TValue="InternalGridContext<TGridItem>" IsFixed="true" Value="@_internalGridContext">
-    @{
-        StartCollectingColumns();
-    }
-    @(Columns ?? ChildContent)
-    <BitDataGridDefer>
-        @{
-            FinishCollectingColumns();
-        }
-        <BitDataGridColumnsCollectedNotifier TGridItem="TGridItem" />
+@* Collect column definitions (these render no visible markup) *@
+<CascadingValue Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
 
-        <table class="@GridClass()" theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="CloseColumnOptions">
-            <thead>
-                <tr>
-                    @_renderColumnHeaders
-                </tr>
-            </thead>
-            <tbody>
-                @if (Virtualize)
+<div class="@RootClasses()" style="@Style" dir="@(Direction == BitDataGridDirection.Rtl ? "rtl" : "ltr")">
+
+    @* ---------------------------------------------------------- Toolbar *@
+    @if (ShowToolbar || ToolbarTemplate is not null || ShowColumnChooser || ShowCsvExport || (Editable && NewItemFactory is not null))
+    {
+        <div class="bit-dtg-toolbar">
+            <div class="bit-dtg-toolbar-start">
+                @ToolbarTemplate
+                @if (Editable && NewItemFactory is not null)
                 {
-                    <Virtualize @ref="@_virtualizeComponent"
-                                ItemSize="@ItemSize"
-                                TItem="(int RowIndex, TGridItem Data)"
-                                ItemsProvider="@ProvideVirtualizedItems"
-                                ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
-                                Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
+                    <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" @onclick="AddNewRowAsync">+ Add</button>
                 }
-                else
+            </div>
+            <div class="bit-dtg-toolbar-end">
+                @if (_filters.Count > 0)
                 {
-                    if (IsLoading && LoadingTemplate is not null)
+                    <button type="button" class="bit-dtg-btn" @onclick="ClearFiltersAsync">Clear filters</button>
+                }
+                @if (ShowCsvExport)
+                {
+                    <a class="bit-dtg-btn" download="export.csv"
+                       href="data:text/csv;charset=utf-8,@Uri.EscapeDataString(ToCsv())">Export CSV</a>
+                }
+                @if (ShowColumnChooser)
+                {
+                    <button type="button" class="bit-dtg-btn" @onclick="ToggleColumnChooser">Columns ▾</button>
+                }
+            </div>
+        </div>
+    }
+
+    @if (_showColumnChooserPanel)
+    {
+        <div class="bit-dtg-column-chooser">
+            @foreach (var col in AllColumns)
+            {
+                <label class="bit-dtg-chooser-item">
+                    <input type="checkbox" checked="@col.Visible"
+                           @onchange="e => SetColumnVisibilityAsync(col, (bool)e.Value!)" />
+                    @col.DisplayTitle
+                </label>
+            }
+        </div>
+    }
+
+    @if (Pageable && (PagerPosition is BitDataGridPagerPosition.Top or BitDataGridPagerPosition.TopAndBottom))
+    {
+        @RenderPager
+    }
+
+    @* ------------------------------------------------------- Grid viewport *@
+    <div class="bit-dtg-viewport" style="@ViewportStyle" @ref="_infiniteViewport">
+        <div class="bit-dtg-table" role="grid" aria-rowcount="@TotalCount" style="--bit-dtg-template:@BuildGridTemplate();">
+
+            @if (ShowHeader)
+            {
+                <div class="bit-dtg-header" role="rowgroup">
+                    @if (HasColumnGroups)
                     {
-                        <tr>
-                            <td colspan="100">
-                                @LoadingTemplate
-                            </td>
-                        </tr>
+                        <div class="bit-dtg-row bit-dtg-group-header-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                            @if (HasReorderColumn)
+                            {
+                                <div class="bit-dtg-hcell bit-dtg-sticky" style="@ReorderStickyStyle" role="columnheader"></div>
+                            }
+                            @if (HasDetailColumn)
+                            {
+                                <div class="bit-dtg-hcell bit-dtg-sticky" style="@DetailStickyStyle" role="columnheader"></div>
+                            }
+                            @if (HasSelectColumn)
+                            {
+                                <div class="bit-dtg-hcell bit-dtg-sticky" style="@SelectStickyStyle" role="columnheader"></div>
+                            }
+                            @foreach (var span in ColumnGroupSpans())
+                            {
+                                <div class="bit-dtg-hcell bit-dtg-center bit-dtg-group-header@(span.Name is null ? " bit-dtg-group-header-empty" : "")"
+                                     role="columnheader" style="grid-column:span @span.Span;">
+                                    @span.Name
+                                </div>
+                            }
+                            @if (HasCommandColumn)
+                            {
+                                <div class="bit-dtg-hcell" role="columnheader"></div>
+                            }
+                        </div>
+                    }
+                    <div class="bit-dtg-row bit-dtg-header-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                        @if (HasReorderColumn)
+                        {
+                            <div class="bit-dtg-hcell bit-dtg-sticky" style="@ReorderStickyStyle" role="columnheader"></div>
+                        }
+                        @if (HasDetailColumn)
+                        {
+                            <div class="bit-dtg-hcell bit-dtg-sticky" style="@DetailStickyStyle" role="columnheader"></div>
+                        }
+                        @if (HasSelectColumn)
+                        {
+                            <div class="bit-dtg-hcell bit-dtg-sticky bit-dtg-center" style="@SelectStickyStyle" role="columnheader">
+                                <input type="checkbox" checked="@AllPageSelected"
+                                       @onchange="e => ToggleSelectAllAsync((bool)e.Value!)" aria-label="Select all" />
+                            </div>
+                        }
+
+                        @foreach (var column in VisibleColumns)
+                        {
+                            var sort = GetSort(column);
+                            var hcellClass = HeaderCellClass(column);
+                            var draggable = ColumnReorderable(column) ? "true" : "false";
+                            <div class="@hcellClass"
+                                 role="columnheader"
+                                 style="@FrozenStyle(column)"
+                                 draggable="@draggable"
+                                 @ondragstart="() => StartColumnDrag(column)"
+                                 @ondragover:preventDefault="true"
+                                 @ondrop="() => DropColumn(column)">
+
+                                <span class="bit-dtg-htext" @onclick="e => OnHeaderClick(column, e)">
+                                    @if (column.HeaderTemplate is not null)
+                                    {
+                                        @column.HeaderTemplate
+                                    }
+                                    else
+                                    {
+                                        @column.DisplayTitle
+                                    }
+                                    @if (sort is not null)
+                                    {
+                                        <span class="bit-dtg-sort-icon">@(sort.Direction == BitDataGridSortDirection.Ascending ? "▲" : "▼")</span>
+                                        @if (MultiSort && _sorts.Count > 1)
+                                        {
+                                            <span class="bit-dtg-sort-priority">@sort.Priority</span>
+                                        }
+                                    }
+                                </span>
+
+                                @if (ColumnGroupable(column))
+                                {
+                                    var groupClass = IsGrouped(column) ? "bit-dtg-icon-btn bit-dtg-group-btn bit-dtg-active" : "bit-dtg-icon-btn bit-dtg-group-btn";
+                                    <button type="button" class="@groupClass"
+                                            title="@($"Group by {column.DisplayTitle}")"
+                                            @onclick="() => ToggleGroupAsync(column)" @onclick:stopPropagation="true">⊞</button>
+                                }
+
+                                @if (ColumnResizable(column))
+                                {
+                                    <span class="bit-dtg-resizer"
+                                          @onpointerdown="e => StartResize(column, e.ClientX)"
+                                          @onpointerdown:stopPropagation="true"></span>
+                                }
+                            </div>
+                        }
+
+                        @if (HasCommandColumn)
+                        {
+                            <div class="bit-dtg-hcell" role="columnheader">Actions</div>
+                        }
+                    </div>
+
+                    @if (Filterable || VisibleColumns.Any(ColumnFilterable))
+                    {
+                        <div class="bit-dtg-row bit-dtg-filter-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                            @if (HasReorderColumn)
+                            {
+                                <div class="bit-dtg-hcell bit-dtg-sticky" style="@ReorderStickyStyle"></div>
+                            }
+                            @if (HasDetailColumn)
+                            {
+                                <div class="bit-dtg-hcell bit-dtg-sticky" style="@DetailStickyStyle"></div>
+                            }
+                            @if (HasSelectColumn)
+                            {
+                                <div class="bit-dtg-hcell bit-dtg-sticky" style="@SelectStickyStyle"></div>
+                            }
+                            @foreach (var column in VisibleColumns)
+                            {
+                                <div class="bit-dtg-hcell@(column.Frozen ? " bit-dtg-sticky" : "")" style="@FrozenStyle(column)">
+                                    @if (ColumnFilterable(column))
+                                    {
+                                        <input class="bit-dtg-filter-input" placeholder="Filter…"
+                                               value="@(GetFilter(column)?.Value)"
+                                               @onchange="e => SetFilterAsync(column, BitDataGridFilterOperator.Contains, e.Value)" />
+                                    }
+                                </div>
+                            }
+                            @if (HasCommandColumn)
+                            {
+                                <div class="bit-dtg-hcell"></div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="bit-dtg-body" role="rowgroup">
+                @if (PendingNewItem is not null)
+                {
+                    <BitDataGridRow TItem="TItem" Grid="this" Item="PendingNewItem" />
+                }
+                @if (Loading)
+                {
+                    <div class="bit-dtg-loading"><span class="bit-dtg-spinner"></span> Loading…</div>
+                }
+                else if (TotalCount == 0 && PendingNewItem is null && !IsInfiniteMode)
+                {
+                    <div class="bit-dtg-empty">
+                        @if (EmptyTemplate is not null)
+                        {
+                            @EmptyTemplate
+                        }
+                        else
+                        {
+                            <span>No records to display.</span>
+                        }
+                    </div>
+                }
+                else if (_viewGroups is not null)
+                {
+                    @RenderGroupList(_viewGroups)
+                }
+                else if (IsInfiniteMode)
+                {
+                    @if (InfiniteItems.Count == 0 && !InfiniteLoading)
+                    {
+                        <div class="bit-dtg-empty">
+                            @if (EmptyTemplate is not null)
+                            {
+                                @EmptyTemplate
+                            }
+                            else
+                            {
+                                <span>No records to display.</span>
+                            }
+                        </div>
                     }
                     else
                     {
-                        @_renderNonVirtualizedRows
+                        @foreach (var item in InfiniteItems)
+                        {
+                            <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="item" />
+                        }
+                        @if (InfiniteLoading)
+                        {
+                            <div class="bit-dtg-row bit-dtg-placeholder-row" role="row"
+                                 style="grid-template-columns:var(--bit-dtg-template);min-height:@RowHeight.ToString(System.Globalization.CultureInfo.InvariantCulture)px;">
+                                <div class="bit-dtg-cell bit-dtg-placeholder-cell" style="grid-column:1 / -1;">
+                                    <span class="bit-dtg-skeleton"></span>
+                                </div>
+                            </div>
+                        }
+                        else if (!InfiniteHasMore)
+                        {
+                            <div class="bit-dtg-infinite-end" role="row">
+                                <span>— End of results —</span>
+                            </div>
+                        }
                     }
                 }
-            </tbody>
-        </table>
-    </BitDataGridDefer>
-</CascadingValue>
+                else if (UseVirtualization)
+                {
+                    <Virtualize Items="VirtualRows" ItemSize="RowHeight" Context="item" TItem="TItem">
+                        <BitDataGridRow TItem="TItem" Grid="this" Item="item" />
+                    </Virtualize>
+                }
+                else
+                {
+                    @foreach (var item in _pageItems)
+                    {
+                        <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="item" />
+                    }
+                }
+            </div>
+
+            @if (ShowFooter && _footerAggregates.Count > 0)
+            {
+                <div class="bit-dtg-footer" role="rowgroup">
+                    <div class="bit-dtg-row bit-dtg-footer-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                        @if (HasReorderColumn)
+                        {
+                            <div class="bit-dtg-cell"></div>
+                        }
+                        @if (HasDetailColumn)
+                        {
+                            <div class="bit-dtg-cell"></div>
+                        }
+                        @if (HasSelectColumn)
+                        {
+                            <div class="bit-dtg-cell"></div>
+                        }
+                        @foreach (var column in VisibleColumns)
+                        {
+                            var agg = _footerAggregates.FirstOrDefault(a => a.ColumnId == column.Id);
+                            <div class="bit-dtg-cell @AlignClass(column.Align)">
+                                @if (column.FooterTemplate is not null && agg is not null)
+                                {
+                                    @column.FooterTemplate(agg)
+                                }
+                                else if (agg is not null)
+                                {
+                                    @AggregateLabel(agg)
+                                }
+                            </div>
+                        }
+                        @if (HasCommandColumn)
+                        {
+                            <div class="bit-dtg-cell"></div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (Pageable && (PagerPosition is BitDataGridPagerPosition.Bottom or BitDataGridPagerPosition.TopAndBottom))
+    {
+        @RenderPager
+    }
+</div>
+
+@* --------------------------------------------- Resize tracking overlay (zero-JS) *@
+@if (IsResizing)
+{
+    <div class="bit-dtg-resize-overlay"
+         @onpointermove="e => OnResizeMove(e.ClientX)"
+         @onpointerup="EndResize"
+         @onpointerleave="EndResize"></div>
+}
 
 @code {
-    private void RenderNonVirtualizedRows(RenderTreeBuilder __builder)
+    private bool UseVirtualization => Virtualize && _viewGroups is null && !IsServerMode;
+    private ICollection<TItem> VirtualRows => _view as ICollection<TItem> ?? _view.ToList();
+
+    private RenderFragment RenderGroupList(IReadOnlyList<BitDataGridGroup<TItem>> groups) => __builder =>
     {
-        var initialRowIndex = 2; // aria-rowindex is 1-based, plus the first row is the header
-        var rowIndex = initialRowIndex;
-        foreach (var item in _currentNonVirtualizedViewItems)
+        foreach (var group in groups)
         {
-            RenderRow(__builder, rowIndex++, item);
+            <text>@RenderGroup(group)</text>
         }
+    };
 
-        // When pagination is enabled, by default ensure we render the exact number of expected rows per page,
-        // even if there aren't enough data items. This avoids the layout jumping on the last page.
-        // Consider making this optional.
-        if (Pagination is not null)
-        {
-            while (rowIndex++ < initialRowIndex + Pagination.ItemsPerPage)
-            {
-                <tr></tr>
-            }
-        }
-    }
-
-    private void RenderRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
+    private RenderFragment RenderGroup(BitDataGridGroup<TItem> group) => __builder =>
     {
-        if (RowTemplate is null)
-        {
-            RenderOriginalRow(__builder, rowIndex, item);
-        }
-        else
-        {
-            var args = new BitDataGridRowTemplateArgs<TGridItem>
-            {
-                RowIndex = rowIndex,
-                RowItem = item,
-                OriginalRow = (builder) => RenderOriginalRow(builder, rowIndex, item)
-            };
-            __builder.AddContent(0, RowTemplate(args));
-        }
-    }
-
-    private void RenderOriginalRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
-    {
-        <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex" class="@GetRowClass(item)" style="@GetRowStyle(item)">
-            @foreach (var col in _columns)
-            {
-                <td class="@ColumnClass(col)" @key="@col" data-title="@col.Title">
-                    @{
-                        col.CellContent(__builder, item);
-                    }
-                </td>
-            }
-        </tr>
-    }
-
-    private void RenderPlaceholderRow(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)
-    {
-        <tr aria-rowindex="@(placeholderContext.Index + 1)">
-            @foreach (var col in _columns)
-            {
-                <td class="bit-dtg-plh @ColumnClass(col)" @key="@col">
-                    @{
-                        col.RenderPlaceholderContent(__builder, placeholderContext);
-                    }
-                </td>
-            }
-        </tr>
-    }
-
-    private void RenderColumnHeaders(RenderTreeBuilder __builder)
-    {
-        foreach (var col in _columns)
-        {
-            <th class="@ColumnHeaderClass(col)" aria-sort="@AriaSortValue(col)" @key="@col" scope="col">
-                <div class="bit-dtg-hct">@col.HeaderContent</div>
-
-                @if (col == _displayOptionsForColumn)
+        var groupCol = _columnsById.GetValueOrDefault(group.ColumnId);
+        var collapsed = IsGroupCollapsed(group);
+        <div class="bit-dtg-group-row" role="row" style="--bit-dtg-group-level:@group.Level;">
+            <div class="bit-dtg-group-cell" style="padding-inline-start:@(8 + group.Level * 20)px;">
+                <button type="button" class="bit-dtg-icon-btn" @onclick="() => ToggleGroup(group)">
+                    @(collapsed ? "▸" : "▾")
+                </button>
+                <strong>@(groupCol?.DisplayTitle): @group.KeyText</strong>
+                <span class="bit-dtg-group-count">(@group.Count)</span>
+                @foreach (var agg in group.Aggregates)
                 {
-                    <div class="bit-dtg-cop">@col.ColumnOptions</div>
+                    <span class="bit-dtg-group-agg">@(_columnsById.GetValueOrDefault(agg.ColumnId)?.DisplayTitle): @AggregateLabel(agg)</span>
                 }
-
-                @if (ResizableColumns)
+            </div>
+        </div>
+        @if (!collapsed)
+        {
+            if (group.HasSubGroups)
+            {
+                @RenderGroupList(group.SubGroups)
+            }
+            else
+            {
+                foreach (var item in group.Items)
                 {
-                    <div class="bit-dtg-drg"></div>
+                    <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="item" />
                 }
-            </th>
+            }
+        }
+    };
+
+    private string ViewportStyle
+    {
+        get
+        {
+            var s = "";
+            if (!string.IsNullOrEmpty(Height)) s += $"height:{Height};";
+            return s;
         }
     }
+
+    private async Task OnHeaderClick(BitDataGridColumn<TItem> column, MouseEventArgs e)
+    {
+        if (!ColumnSortable(column)) return;
+        await ToggleSortAsync(column, MultiSort && (e.CtrlKey || e.MetaKey));
+    }
+
+    private RenderFragment RenderPager => @<div class="bit-dtg-pager">
+        <div class="bit-dtg-pager-info">
+            @{
+                var from = TotalCount == 0 ? 0 : (CurrentPage - 1) * _effectivePageSize + 1;
+                var to = Math.Min(CurrentPage * _effectivePageSize, TotalCount);
+            }
+            <span>@from–@to of @TotalCount</span>
+            <select class="bit-dtg-page-size" @onchange="e => SetPageSizeAsync(int.Parse((string)e.Value!))">
+                @foreach (var size in PageSizeOptions)
+                {
+                    <option value="@size" selected="@(size == PageSize)">@size / page</option>
+                }
+            </select>
+        </div>
+        <div class="bit-dtg-pager-buttons">
+            <button type="button" class="bit-dtg-btn" disabled="@(CurrentPage <= 1)" @onclick="() => GoToPageAsync(1)">«</button>
+            <button type="button" class="bit-dtg-btn" disabled="@(CurrentPage <= 1)" @onclick="() => GoToPageAsync(CurrentPage - 1)">‹</button>
+            <span class="bit-dtg-pager-current">Page @CurrentPage of @TotalPages</span>
+            <button type="button" class="bit-dtg-btn" disabled="@(CurrentPage >= TotalPages)" @onclick="() => GoToPageAsync(CurrentPage + 1)">›</button>
+            <button type="button" class="bit-dtg-btn" disabled="@(CurrentPage >= TotalPages)" @onclick="() => GoToPageAsync(TotalPages)">»</button>
+        </div>
+    </div>;
 }
