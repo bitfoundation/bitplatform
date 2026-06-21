@@ -80,7 +80,7 @@ public partial class SyncService : IAsyncDisposable
             if (pushResult.CompletedOperations > 0)
                 snackBarService.Success(localizer[nameof(AppStrings.SyncPushSuccess), pushResult.CompletedOperations]);
         }
-        catch (ServerConnectionException)
+        catch (TransientException)
         {
             // Simply ignore connection exceptions during sync
         }

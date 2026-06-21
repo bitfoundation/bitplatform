@@ -109,7 +109,21 @@
                 </BitProModal>
             </DemoExample>
 
-            <DemoExample Title="Advanced options" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <DemoExample Title="NoBorder" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+                <div>By default, the BitProModal has a top border. Use the NoBorder parameter to remove it.</div><br />
+                <BitButton OnClick="() => isNoBorderProModalOpen = true">Open ProModal with NoBorder</BitButton>
+                <BitProModal @bind-IsOpen="isNoBorderProModalOpen"
+                             NoBorder
+                             ShowCloseButton
+                             HeaderText="NoBorder">
+                    <div style="max-width:40rem">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
+                    </div>
+                </BitProModal>
+            </DemoExample>
+
+            <DemoExample Title="Advanced options" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
                 <div>BitProModal has some advanced options to be customized.</div><br />
                 <BitButton OnClick="() => bitProModalRef.Open()">Open ProModal with ShowCloseButton</BitButton>
                 <BitProModal @ref="bitProModalRef"
@@ -173,22 +187,9 @@
                         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
                     </div>
                 </BitProModal>
-
-                <br /><br />
-
-                <BitButton OnClick="() => isNoBorderProModalOpen = true">Open ProModal with NoBorder</BitButton>
-                <BitProModal @bind-IsOpen="isNoBorderProModalOpen"
-                             NoBorder
-                             ShowCloseButton
-                             HeaderText="NoBorder">
-                    <div style="max-width:40rem">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
-                    </div>
-                </BitProModal>
             </DemoExample>
 
-            <DemoExample Title="Size" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <DemoExample Title="Size" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
                 <div>BitProModal has size related parameters to make it occupy available screen width/height or both.</div>
                 <br /><br />
                 <BitButton OnClick="() => isOpenFullSize = true">Open ProModal with FullSize</BitButton>
@@ -235,7 +236,7 @@
                 </BitProModal>
             </DemoExample>
 
-            <DemoExample Title="AbsolutePosition" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <DemoExample Title="AbsolutePosition" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
                 <div>BitProModal has an absolute position option to further customize its location.</div><br />
                 <BitButton OnClick="() => isOpenAbsolutePosition = true">Open ProModal</BitButton>
                 <br /><br />
@@ -310,7 +311,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Position" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <DemoExample Title="Position" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
                 <div>To set the ProModal position on the page you can use the Position parameter.</div><br />
                 <div class="position-btn">
                     <div>
@@ -342,7 +343,7 @@
                 </BitProModal>
             </DemoExample>
 
-            <DemoExample Title="Draggable" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <DemoExample Title="Draggable" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
                 <div>The Draggable parameter of the BitProModal allows users to move the modal around the screen.</div><br />
                 <BitButton OnClick="() => isOpenDraggable = true">Open ProModal</BitButton>
                 <BitProModal @bind-IsOpen="isOpenDraggable"
@@ -371,7 +372,7 @@
                 </BitProModal>
             </DemoExample>
 
-            <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
                 <div>Explore different events available in the BitProModal component:</div>
                 <br /><br />
                 <div>OnOpen:</div><br />
@@ -402,7 +403,7 @@
                 </BitProModal>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
                 <div>Using css related parameters users can further customize the modal based on their needs.</div>
                 <br /><br />
                 <div>Component's Style & Class:</div><br />
@@ -467,7 +468,7 @@
                 </BitProModal>
             </DemoExample>
 
-            <DemoExample Title="External Icon" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <DemoExample Title="External Icon" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
                 <div>Use icons from external libraries like FontAwesome to customize the close button icon with the <b>CloseIcon</b> parameter.</div>
                 <br /><br />
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
@@ -483,7 +484,7 @@
                 </BitProModal>
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
                 <div>Use BitProModal in right-to-left (RTL).</div><br />
                 <div dir="rtl">
                     <BitButton Dir="BitDir.Rtl" OnClick="() => isOpenRtl = true">باز کردن مُدال</BitButton>

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.ProModal;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.ProModal;
 
 public partial class BitProModalDemo
 {
@@ -514,6 +514,21 @@ private bool isProModalWithFooterTextOpen;
 private bool isProModalWithFooterOpen;";
 
     private readonly string example3RazorCode = @"
+<BitButton OnClick=""() => isNoBorderProModalOpen = true"">Open ProModal with NoBorder</BitButton>
+
+<BitProModal @bind-IsOpen=""isNoBorderProModalOpen""
+             NoBorder
+             ShowCloseButton
+             HeaderText=""NoBorder"">
+    <div style=""max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
+    </div>
+</BitProModal>";
+    private readonly string example3CsharpCode = @"
+private bool isNoBorderProModalOpen;";
+
+    private readonly string example4RazorCode = @"
 <BitButton OnClick=""() => bitProModalRef.Open()"">Open ProModal with ShowCloseButton</BitButton>
 
 <BitProModal @ref=""bitProModalRef"" 
@@ -576,30 +591,16 @@ private bool isProModalWithFooterOpen;";
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
     </div>
-</BitProModal>
-
-
-<BitButton OnClick=""() => isNoBorderProModalOpen = true"">Open ProModal with NoBorder</BitButton>
-
-<BitProModal @bind-IsOpen=""isNoBorderProModalOpen""
-             NoBorder
-             ShowCloseButton
-             HeaderText=""NoBorder"">
-    <div style=""max-width:40rem"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt.
-    </div>
 </BitProModal>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private bool isBlockingProModalOpen;
 private bool isModelessProModalOpen;
 private bool isModeFullProModalOpen;
 private bool isAutoToggleScrollProModalOpen;
-private bool isNoBorderProModalOpen;
 private BitProModal bitProModalRef = default!;
 private ElementReference appShellContainer = default!;";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitButton OnClick=""() => isOpenFullSize = true"">Open ProModal with FullSize</BitButton>
 
 <BitProModal @bind-IsOpen=""isOpenFullSize""
@@ -643,7 +644,7 @@ private ElementReference appShellContainer = default!;";
         <BitToggleButton @bind-IsChecked=""isFullHeight"" OnText=""Restore"" OffText=""FullHeight"" />
     </div>
 </BitProModal>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool isOpenFullSize;
 private bool isFullSize;
 private bool isOpenFullWidth;
@@ -651,7 +652,7 @@ private bool isFullWidth;
 private bool isOpenFullHeight;
 private bool isFullHeight;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitButton OnClick=""() => isOpenAbsolutePosition = true"">Open ProModal</BitButton>
 <BitButton OnClick=""() => isOpenScrollerSelector = true"">Open ProModal (AutoToggleScroll & ScrollerSelector)</BitButton>
 
@@ -720,11 +721,11 @@ private bool isFullHeight;";
         ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
     </div>
 </div>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool isOpenAbsolutePosition;
 private bool isOpenScrollerSelector;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.TopLeft)"">Top Left</BitButton>
 <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.TopCenter)"">Top Center</BitButton>
 <BitButton Class=""position-button"" OnClick=""() => OpenModalInPosition(BitPosition.TopRight)"">Top Right</BitButton>
@@ -749,7 +750,7 @@ private bool isOpenScrollerSelector;";
         </div>
     </Body>
 </BitProModal>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool isOpenPosition;
 private BitPosition position;
 
@@ -759,7 +760,7 @@ private void OpenModalInPosition(BitPosition positionValue)
     position = positionValue;
 }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitButton OnClick=""() => isOpenDraggable = true"">Open ProModal</BitButton>
 
 <BitProModal @bind-IsOpen=""isOpenDraggable""
@@ -787,11 +788,11 @@ private void OpenModalInPosition(BitPosition positionValue)
         amet, vulputate in leo.
     </div>
 </BitProModal>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool isOpenDraggable;
 private bool isOpenDraggableSelector;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitButton OnClick=""() => isOnOpenProModalOpen = true"">Open OnOpen ProModal</BitButton>
 
 <BitProModal @bind-IsOpen=""isOnOpenProModalOpen""
@@ -818,13 +819,13 @@ private bool isOpenDraggableSelector;";
         amet, vulputate in leo.
     </div>
 </BitProModal>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool isOnOpenProModalOpen;
 private bool isOnDismissProModalOpen;
 private BitTextField onOpenTextFieldRef = default!;
 private BitTextField onDismissTextFieldRef = default!;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitButton OnClick=""() => isOpenStyle = true"">Open styled ProModal</BitButton>
 
 <BitProModal @bind-IsOpen=""isOpenStyle""
@@ -885,13 +886,13 @@ private BitTextField onDismissTextFieldRef = default!;";
         BitProModal with <b>Classes</b> to customize its elements.
     </div>
 </BitProModal>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool isOpenStyle;
 private bool isOpenClass;
 private bool isOpenStyles;
 private bool isOpenClasses;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 
@@ -906,10 +907,10 @@ private bool isOpenClasses;";
         amet, vulputate in leo.
     </div>
 </BitProModal>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool isExternalIconProModalOpen;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" OnClick=""() => isOpenRtl = true"">باز کردن مُدال</BitButton>
 
 <BitProModal @bind-IsOpen=""isOpenRtl""
@@ -921,7 +922,7 @@ private bool isExternalIconProModalOpen;";
         چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
     </div>
 </BitProModal>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private bool isOpenRtl;";
 
 }

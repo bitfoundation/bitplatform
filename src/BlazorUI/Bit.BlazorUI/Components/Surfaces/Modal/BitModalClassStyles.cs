@@ -18,8 +18,10 @@ public class BitModalClassStyles
     public string? Content { get; set; }
 
 
-    public static BitModalClassStyles Merge(BitModalClassStyles? classStyles1, BitModalClassStyles? classStyles2)
+    public static BitModalClassStyles? Merge(BitModalClassStyles? classStyles1, BitModalClassStyles? classStyles2)
     {
+        if (classStyles1 is null && classStyles2 is null) return null;
+
         return new BitModalClassStyles
         {
             Root = classStyles1?.Root ?? classStyles2?.Root,

@@ -1,0 +1,18 @@
+@page "/components/modalservice"
+
+<PageOutlet Url="components/modalservice"
+            Title="ModalService"
+            Description="modalservice component of the bit BlazorUI components" />
+
+<DemoPage Name="ModalService"
+          Description="BitModalService is a service to globally handle modals with any content."
+          Parameters="componentParameters"
+          GitHubUrl="Surfaces/Modal/BitModalService.cs"
+          GitHubDemoUrl="Surfaces/Modal/BitModalServiceDemo.razor">
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>Show a FullWidth modal using the BitModalService:</div><br/>
+            <BitButton OnClick="ShowModal">Show</BitButton>
+        </DemoExample>
+    </Examples>
+</DemoPage>

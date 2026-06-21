@@ -5,6 +5,7 @@ using Bit.Websites.Platform.Server.Services;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.Extensions.AI;
 using System.ClientModel.Primitives;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 namespace Bit.Websites.Platform.Server.Startup;
 
@@ -73,6 +74,20 @@ public static class Services
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
 
         services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+
+        // Add Azure Application Insights using OpenTelemetry if connection string is configured in appsettings.json
+        var appInsightsConnectionString = configuration["ApplicationInsights:ConnectionString"];
+        if (string.IsNullOrWhiteSpace(appInsightsConnectionString) is false)
+        {
+            services.AddOpenTelemetry().UseAzureMonitor(options =>
+            {
+                options.ConnectionString = appInsightsConnectionString;
+            }).WithLogging(configureBuilder: null, configureOptions: options =>
+            {
+                options.IncludeScopes = true;
+                options.IncludeFormattedMessage = true;
+            });
+        }
 
         services.AddEndpointsApiExplorer();
 

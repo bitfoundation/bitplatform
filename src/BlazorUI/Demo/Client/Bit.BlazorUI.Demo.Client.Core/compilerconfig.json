@@ -102,8 +102,14 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Extras/ModalService/BitModalServiceDemo.razor.css",
-        "inputFile": "Pages/Components/Extras/ModalService/BitModalServiceDemo.razor.scss",
+        "outputFile": "Pages/Components/Surfaces/Modal/BitModalServiceDemo.razor.css",
+        "inputFile": "Pages/Components/Surfaces/Modal/BitModalServiceDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/ProModalService/BitProModalServiceDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/ProModalService/BitProModalServiceDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

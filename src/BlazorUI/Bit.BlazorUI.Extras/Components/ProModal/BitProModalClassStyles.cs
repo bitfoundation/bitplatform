@@ -31,4 +31,23 @@ public class BitProModalClassStyles : BitModalClassStyles
     /// Custom CSS classes/styles for the footer of the BitProModal.
     /// </summary>
     public string? Footer { get; set; }
+
+
+    public static BitProModalClassStyles? Merge(BitProModalClassStyles? classStyles1, BitProModalClassStyles? classStyles2)
+    {
+        if (classStyles1 is null && classStyles2 is null) return null;
+
+        return new BitProModalClassStyles
+        {
+            Root = classStyles1?.Root ?? classStyles2?.Root,
+            Overlay = classStyles1?.Overlay ?? classStyles2?.Overlay,
+            Content = classStyles1?.Content ?? classStyles2?.Content,
+            HeaderContainer = classStyles1?.HeaderContainer ?? classStyles2?.HeaderContainer,
+            Header = classStyles1?.Header ?? classStyles2?.Header,
+            CloseButton = classStyles1?.CloseButton ?? classStyles2?.CloseButton,
+            CloseIcon = classStyles1?.CloseIcon ?? classStyles2?.CloseIcon,
+            Body = classStyles1?.Body ?? classStyles2?.Body,
+            Footer = classStyles1?.Footer ?? classStyles2?.Footer,
+        };
+    }
 }

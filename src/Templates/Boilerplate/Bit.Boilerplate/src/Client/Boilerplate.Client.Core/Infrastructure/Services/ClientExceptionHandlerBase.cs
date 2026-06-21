@@ -77,7 +77,7 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 
     private ExceptionDisplayKind GetDisplayKind(Exception exception)
     {
-        if (exception is ServerConnectionException)
+        if (exception is TransientException)
             return ExceptionDisplayKind.NonInterrupting;
 
         if (exception is UnauthorizedException)
