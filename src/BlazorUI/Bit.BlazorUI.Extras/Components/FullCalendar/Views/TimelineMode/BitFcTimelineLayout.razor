@@ -22,7 +22,7 @@
 }
 
 <div class="bit-bfc-tl-layout">
-    @if (!hasResources)
+    @if (!hasResources && !HasUnassignedRow)
     {
         <div class="bit-bfc-tl-empty">@Texts.NoResourcesMessage</div>
     }

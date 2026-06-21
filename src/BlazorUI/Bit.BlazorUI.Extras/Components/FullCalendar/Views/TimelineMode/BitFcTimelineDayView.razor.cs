@@ -96,6 +96,8 @@ public partial class BitFcTimelineDayView
 
     private async Task OnDrop(string resourceId, int hour, int minute)
     {
+        if (!State.IsDragging) return;
+
         _dragResourceId = null;
         _dragHour = null;
         _dragMinute = null;

@@ -88,6 +88,12 @@ public partial class BitFcTimelineWeekView
         _showAddDialog = true;
     }
 
+    private async Task OnSlotKeyDownAsync(KeyboardEventArgs e, string resourceId, DateTime day, int hour, int minute)
+    {
+        if (e.Key is "Enter" or " " or "Spacebar")
+            await OnSlotClickAsync(resourceId, day, hour, minute);
+    }
+
     private void OnDragEnter(string resourceId, DateTime day, int hour, int minute)
     {
         if (!State.IsDragging) return;

@@ -1,7 +1,7 @@
 @namespace Bit.BlazorUI
 
 <div class="bit-bfc-dropdown">
-    <button class="bit-bfc-btn bit-bfc-btn-icon bit-bfc-btn-sm" @onclick="() => _open = !_open" title="@Texts.SettingsButtonTitle" aria-expanded="@_open" aria-controls="@_menuId">
+    <button type="button" class="bit-bfc-btn bit-bfc-btn-icon bit-bfc-btn-sm" @onclick="() => _open = !_open" title="@Texts.SettingsButtonTitle" aria-expanded="@_open" aria-controls="@_menuId">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
     @if (_open)
@@ -9,32 +9,32 @@
         <div class="bit-bfc-dropdown-menu" id="@_menuId">
             <div class="bit-bfc-dropdown-label">@Texts.CalendarSettingsLabel</div>
 
-            <div class="bit-bfc-dropdown-item" @onclick="() => State.SetBadgeVariant(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? BitFullCalendarBadgeVariant.Colored : BitFullCalendarBadgeVariant.Dot)">
+            <button type="button" class="bit-bfc-dropdown-item" @onclick="() => State.SetBadgeVariant(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? BitFullCalendarBadgeVariant.Colored : BitFullCalendarBadgeVariant.Dot)">
                 <span>@Texts.DotBadgeLabel</span>
                 <label class="bit-bfc-toggle">
                     <input type="checkbox" checked="@(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot)" aria-label="@Texts.DotBadgeLabel" />
                     <span class="bit-bfc-toggle-track"></span>
                     <span class="bit-bfc-toggle-thumb"></span>
                 </label>
-            </div>
+            </button>
 
-            <div class="bit-bfc-dropdown-item" @onclick="State.ToggleTimeFormat">
+            <button type="button" class="bit-bfc-dropdown-item" @onclick="State.ToggleTimeFormat">
                 <span>@Texts.TwentyFourHourFormatLabel</span>
                 <label class="bit-bfc-toggle">
                     <input type="checkbox" checked="@State.Use24HourFormat" aria-label="@Texts.TwentyFourHourFormatLabel" />
                     <span class="bit-bfc-toggle-track"></span>
                     <span class="bit-bfc-toggle-thumb"></span>
                 </label>
-            </div>
+            </button>
 
-            <div class="bit-bfc-dropdown-item" @onclick="State.ToggleEventLayout">
+            <button type="button" class="bit-bfc-dropdown-item" @onclick="State.ToggleEventLayout">
                 <span>@Texts.StackedEventsLabel</span>
                 <label class="bit-bfc-toggle">
                     <input type="checkbox" checked="@(State.EventLayout == BitFullCalendarEventLayout.Stack)" aria-label="@Texts.StackedEventsLabel" />
                     <span class="bit-bfc-toggle-track"></span>
                     <span class="bit-bfc-toggle-thumb"></span>
                 </label>
-            </div>
+            </button>
 
             <div class="bit-bfc-dropdown-sep"></div>
 

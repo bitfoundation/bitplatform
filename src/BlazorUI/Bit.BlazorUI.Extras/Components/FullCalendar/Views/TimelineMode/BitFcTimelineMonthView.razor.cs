@@ -110,6 +110,8 @@ public partial class BitFcTimelineMonthView
 
     private async Task OnDrop(string resourceId, DateTime day)
     {
+        if (!State.IsDragging) return;
+
         _dragResourceId = null;
         _dragDay = null;
         var newResourceId = resourceId == _unassignedKey ? null : resourceId;
