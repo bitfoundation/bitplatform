@@ -11,7 +11,7 @@ public sealed class BitFullCalendarResource
     /// <summary>
     /// Stable identifier matched against <see cref="BitFullCalendarEvent.Resource"/>.
     /// </summary>
-    public string Id { get; set; } = string.Empty;
+    public required string Id { get; set; }
 
     /// <summary>
     /// Display name for the resource (for example "Bay Wing", "Alice Johnson", "Meeting Room 3B").

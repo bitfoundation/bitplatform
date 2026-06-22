@@ -43,7 +43,7 @@
                 <div>
                     <div class="bit-bfc-event-detail-label">@Texts.StartDateLabel</div>
                     <div class="bit-bfc-event-detail-value">
-                        @Event.StartDate.ToString("dddd dd MMMM", State.Culture) @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat)
+                        @Event.StartDate.ToString("dddd dd MMMM", State.Culture) @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)
                     </div>
                 </div>
             </div>
@@ -52,7 +52,7 @@
                 <div>
                     <div class="bit-bfc-event-detail-label">@Texts.EndDateLabel</div>
                     <div class="bit-bfc-event-detail-value">
-                        @Event.EndDate.ToString("dddd dd MMMM", State.Culture) @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.EndDate, State.Use24HourFormat)
+                        @Event.EndDate.ToString("dddd dd MMMM", State.Culture) @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.EndDate, State.Use24HourFormat, State.Culture)
                     </div>
                 </div>
             </div>

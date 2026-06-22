@@ -15,7 +15,7 @@ public partial class BitFcTimelineLayout
     [Parameter] public int ResourceColumnWidthPx { get; set; } = 200;
 
     /// <summary>DOM id assigned to the horizontal scroll container so views can scroll it via JS interop.</summary>
-    [Parameter] public string ScrollContainerId { get; set; } = "bit-bfc-tl-scroll";
+    [Parameter] public string ScrollContainerId { get; set; } = "bit-bfc-tl-scroll-" + Guid.NewGuid().ToString("N");
 
     /// <summary>Time-axis header(s) rendered in the top-right cell. Total width must equal <c>ColumnCount * ColumnWidthPx</c>.</summary>
     [Parameter] public RenderFragment? HeaderContent { get; set; }

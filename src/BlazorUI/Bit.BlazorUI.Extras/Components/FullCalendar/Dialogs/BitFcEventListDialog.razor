@@ -18,7 +18,7 @@
                         <div class="bit-bfc-agenda-desc">@ev.Description</div>
                     </div>
                     <div class="bit-bfc-agenda-time">
-                        @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat)
+                        @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
                     </div>
                 </div>
             }
