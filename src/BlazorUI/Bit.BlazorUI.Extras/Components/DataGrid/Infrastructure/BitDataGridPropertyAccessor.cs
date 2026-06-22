@@ -119,7 +119,13 @@ public sealed class BitDataGridPropertyAccessor<TItem>
         {
             var valueParam = Expression.Parameter(typeof(object), "v");
             var convertedValue = Expression.Convert(valueParam, propertyType);
-            var assign = Expression.Assign(body, convertedValue);
+            Expression assign = Expression.Assign(body, convertedValue);
+            // Mirror the getter's null handling: if any intermediate property in the chain is null,
+            // skip the assignment instead of throwing a NullReferenceException.
+            if (nullGuard is not null)
+            {
+                assign = Expression.IfThen(Expression.Not(nullGuard), assign);
+            }
             setter = Expression.Lambda<Action<TItem, object?>>(assign, param, valueParam).Compile();
         }
 

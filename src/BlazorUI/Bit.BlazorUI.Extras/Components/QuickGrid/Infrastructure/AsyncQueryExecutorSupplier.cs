@@ -33,7 +33,11 @@ internal static class AsyncQueryExecutorSupplier
                 var providerType = queryable.Provider?.GetType();
                 if (providerType is not null && IsEntityFrameworkProviderTypeCache.GetOrAdd(providerType, IsEntityFrameworkProviderType))
                 {
-                    throw new InvalidOperationException($"The supplied {nameof(IQueryable)} is provided by Entity Framework. To query it efficiently, you must reference the package Microsoft.AspNetCore.Components.BitQuickGrid.EntityFrameworkAdapter and call AddBitQuickGridEntityFrameworkAdapter on your service collection.");
+                    throw new InvalidOperationException(
+                        $"The supplied {nameof(IQueryable)} is provided by Entity Framework. To query it efficiently without blocking threads, " +
+                        $"register an implementation of {nameof(IAsyncQueryExecutor)} in your service collection that wraps EF Core's async query APIs " +
+                        $"(for example ToArrayAsync/CountAsync) and reports IsSupported(queryable) == true for EF queryables. " +
+                        $"Alternatively, supply non-EF data via the Items or ItemsProvider parameters.");
                 }
             }
             else if (executor.IsSupported(queryable))

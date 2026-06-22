@@ -6,10 +6,11 @@ namespace BitBlazorUI {
         public static initInfiniteScroll(viewport: HTMLElement, dotNetRef: DotNetObject, threshold: number) {
             const distance = threshold ?? 200;
             let ticking = false;
+            let disposed = false;
 
             const check = () => {
                 ticking = false;
-                if (!viewport) return;
+                if (disposed || !viewport) return;
                 const remaining = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
                 if (remaining <= distance) {
                     dotNetRef.invokeMethodAsync('OnInfiniteScrollNearEndAsync');
@@ -30,7 +31,7 @@ namespace BitBlazorUI {
             return {
                 check: () => check(),
                 scrollToTop: () => { if (viewport) viewport.scrollTop = 0; },
-                dispose: () => viewport.removeEventListener('scroll', onScroll)
+                dispose: () => { disposed = true; viewport.removeEventListener('scroll', onScroll); }
             };
         }
     }

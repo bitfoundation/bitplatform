@@ -265,7 +265,7 @@
                 else if (UseVirtualization)
                 {
                     <Virtualize Items="VirtualRows" ItemSize="RowHeight" Context="item" TItem="TItem">
-                        <BitDataGridRow TItem="TItem" Grid="this" Item="item" />
+                        <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="item" />
                     </Virtualize>
                 }
                 else

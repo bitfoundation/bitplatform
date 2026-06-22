@@ -331,16 +331,28 @@ private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadReque
     foreach (var f in request.Filters)
     {
         var term = f.Value?.ToString() ?? """";
-        query = query.Where(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase));
+        query = f.ColumnId switch
+        {
+            nameof(Product.Name) => query.Where(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase)),
+            nameof(Product.Price) => query.Where(p => p.Price.ToString().Contains(term)),
+            nameof(Product.Id) => query.Where(p => p.Id.ToString().Contains(term)),
+            _ => query
+        };
     }
 
     // sorting
     var sort = request.Sorts.FirstOrDefault();
     if (sort is not null)
     {
+        Func<Product, object> key = sort.ColumnId switch
+        {
+            nameof(Product.Name) => p => p.Name,
+            nameof(Product.Price) => p => p.Price,
+            _ => p => p.Id
+        };
         query = sort.Direction == BitDataGridSortDirection.Descending
-            ? query.OrderByDescending(p => p.Name)
-            : query.OrderBy(p => p.Name);
+            ? query.OrderByDescending(key)
+            : query.OrderBy(key);
     }
 
     // paging

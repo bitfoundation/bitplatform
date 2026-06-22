@@ -65,7 +65,7 @@ public partial class BitQuickGridDemo : AppComponentBase
             Name = "ItemsProvider",
             Type = "BitQuickGridItemsProvider<TGridItem>?",
             DefaultValue = "null",
-            Description = @"A callback that supplies data for the rid.
+            Description = @"A callback that supplies data for the grid.
                             You should supply either Items or ItemsProvider, but not both.",
          },
         new()
@@ -157,7 +157,7 @@ public partial class BitQuickGridDemo : AppComponentBase
         {
             Id = "BitQuickGridColumnBase",
             Title = "BitQuickGridColumnBase",
-            Description = "BitQuickGrid has two built-in column types, BitQuickGridPropertyColumn and BitQuickGridTemplateColumn. You can also create your own column types by subclassing ColumnBase he BitQuickGridColumnBase type, which all column must derive from, offers some common parameters",
+            Description = "BitQuickGrid has two built-in column types, BitQuickGridPropertyColumn and BitQuickGridTemplateColumn. You can also create your own column types by subclassing the BitQuickGridColumnBase type, which all columns must derive from. It offers some common parameters.",
             Parameters=
             [
                 new()
@@ -251,7 +251,7 @@ public partial class BitQuickGridDemo : AppComponentBase
         {
             Id = "BitQuickGridTemplateColumn",
             Title = "BitQuickGridTemplateColumn",
-            Description = @"It uses arbitrary Razor fragments to supply contents for its cells. It can't infer the column's title or sort order automatically. also it's possible to add arbitrary Blazor components to your table cells. Remember that rendering many components, or many event handlers, can impact the performance of your grid. One way to mitigate this issue is by paginating or virtualizing your grid",
+            Description = @"It uses arbitrary Razor fragments to supply contents for its cells. It can't infer the column's title or sort order automatically. Also, it's possible to add arbitrary Blazor components to your table cells. Remember that rendering many components, or many event handlers, can impact the performance of your grid. One way to mitigate this issue is by paginating or virtualizing your grid.",
             Parameters =
             [
                  new()

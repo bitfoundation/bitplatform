@@ -86,7 +86,9 @@ public static class BitDataGridDataProcessor
             {
                 var keyText = column.FormatValue(g.Key);
                 var items = g.ToList();
-                var path = $"{parentPath}/{level}:{keyText}";
+                // Use the raw key (not the formatted display text) for the path identifier so that
+                // distinct keys producing identical display values don't collide and share collapse/expand state.
+                var path = $"{parentPath}/{level}:{g.Key}";
                 var group = new BitDataGridGroup<TItem>
                 {
                     ColumnId = descriptor.ColumnId,

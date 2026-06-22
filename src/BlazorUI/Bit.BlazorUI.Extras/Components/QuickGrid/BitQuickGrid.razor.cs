@@ -323,8 +323,13 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     // because in that case there's going to be a re-render anyway.
     private async Task RefreshDataCoreAsync()
     {
-        // Move into a "loading" state, cancelling any earlier-but-still-pending load
-        _pendingDataLoadCancellationTokenSource?.Cancel();
+        // Move into a "loading" state, cancelling and disposing any earlier-but-still-pending load
+        var previousCts = _pendingDataLoadCancellationTokenSource;
+        if (previousCts is not null)
+        {
+            previousCts.Cancel();
+            previousCts.Dispose();
+        }
         var thisLoadCts = _pendingDataLoadCancellationTokenSource = new CancellationTokenSource();
 
         if (_virtualizeComponent is not null)
@@ -333,7 +338,11 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
             // (1) It won't know to update its own internal state if the provider output has changed
             // (2) We won't know what slice of data to query for
             await _virtualizeComponent.RefreshDataAsync();
-            _pendingDataLoadCancellationTokenSource = null;
+            if (ReferenceEquals(_pendingDataLoadCancellationTokenSource, thisLoadCts))
+            {
+                thisLoadCts.Dispose();
+                _pendingDataLoadCancellationTokenSource = null;
+            }
         }
         else
         {
@@ -348,7 +357,11 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
                 _currentNonVirtualizedViewItems = result.Items;
                 _ariaBodyRowCount = _currentNonVirtualizedViewItems.Count;
                 await (Pagination?.SetTotalItemCountAsync(result.TotalItemCount) ?? Task.CompletedTask);
-                _pendingDataLoadCancellationTokenSource = null;
+                if (ReferenceEquals(_pendingDataLoadCancellationTokenSource, thisLoadCts))
+                {
+                    thisLoadCts.Dispose();
+                    _pendingDataLoadCancellationTokenSource = null;
+                }
             }
         }
     }
@@ -373,7 +386,7 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         if (Pagination is not null)
         {
             startIndex += Pagination.CurrentPageIndex * Pagination.ItemsPerPage;
-            count = Math.Min(request.Count, Pagination.ItemsPerPage - request.StartIndex);
+            count = Math.Max(0, Math.Min(request.Count, Pagination.ItemsPerPage - request.StartIndex));
         }
 
         var providerRequest = new BitQuickGridItemsProviderRequest<TGridItem>(

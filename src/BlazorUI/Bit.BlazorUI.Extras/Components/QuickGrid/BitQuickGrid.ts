@@ -42,6 +42,9 @@ namespace BitBlazorUI {
                     // In the unlikely event that it overhangs both sides, we'll center it
                     const applyOffset = leftOverhang && rightOverhang ? (leftOverhang - rightOverhang) / 2 : (leftOverhang - rightOverhang);
                     colOptions.style.transform = `translateX(${applyOffset}px)`;
+                } else {
+                    // Clear any offset left over from a previous opening so the popup isn't misaligned.
+                    colOptions.style.transform = '';
                 }
 
                 if (typeof colOptions.scrollIntoViewIfNeeded === 'function') {

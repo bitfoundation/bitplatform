@@ -10,6 +10,9 @@ namespace Bit.BlazorUI;
 public sealed class BitDataGridCellEventArgs<TItem>
 {
     public required TItem Item { get; init; }
+    // Note: this holds a live reference to the column rather than an immutable snapshot. The grid assumes
+    // column instances remain stable for its lifetime, so this is safe today. If columns ever become
+    // dynamically mutated, capture immutable metadata (e.g. Id and DisplayTitle) here instead of the whole column.
     public required BitDataGridColumn<TItem> Column { get; init; }
 
     /// <summary>The column field/identifier for convenience.</summary>

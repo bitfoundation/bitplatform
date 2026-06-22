@@ -725,7 +725,7 @@ protected override async Task OnInitializedAsync()
 
             if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
             {
-                query.Add(""$filter"", $""contains(Name,'{_odataSampleNameFilter}')"");
+                query.Add(""$filter"", $""contains(Name,'{_odataSampleNameFilter.Replace(""'"", ""''"")}')"");
             }
 
             if (req.GetSortByProperties().Any())
@@ -735,7 +735,7 @@ protected override async Task OnInitializedAsync()
 
             var url = NavManager.GetUriWithQueryParameters(""api/Products/GetProducts"", query);
 
-            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, req.CancellationToken);
 
             return BitQuickGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
         }
@@ -903,7 +903,7 @@ protected override async Task OnInitializedAsync()
 
             var url = NavManager.GetUriWithQueryParameters(""api/Products/GetProducts"", query);
 
-            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, req.CancellationToken);
 
             return BitQuickGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
         }
