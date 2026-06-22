@@ -1,5 +1,6 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownViewer;
 
@@ -66,9 +67,13 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Markdown, "[click](javascript:alert(1))");
         });
 
-        var root = component.Find(".bit-mdv");
-
-        Assert.DoesNotContain("javascript:", root.InnerHtml);
+        // Validate the rendered link's actual href rather than a substring of the HTML:
+        // an unsafe scheme must be stripped, leaving no href (or a safe one).
+        var link = component.Find(".bit-mdv a");
+        var href = link.GetAttribute("href") ?? string.Empty;
+        Assert.IsTrue(
+            href.Length == 0 || !href.Contains("javascript:", StringComparison.OrdinalIgnoreCase),
+            $"Unsafe link href was not sanitized: '{href}'.");
     }
 
     [TestMethod]

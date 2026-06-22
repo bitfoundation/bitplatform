@@ -12,24 +12,30 @@ public static class AstHelper
     /// </summary>
     public static void VisitChildLists(MarkdownNode node, Action<IList<MarkdownNode>> action)
     {
-        // Iterative depth-first traversal to avoid stack overflow on deeply nested input.
-        var stack = new Stack<MarkdownNode>();
-        stack.Push(node);
+        // Iterative depth-first traversal (over child lists) to avoid stack overflow
+        // on deeply nested input. A list stack is used instead of a node stack so that
+        // each list and its descendants are fully visited before the next sibling list,
+        // preserving depth-first order even when a node exposes multiple child lists.
+        var stack = new Stack<IList<MarkdownNode>>();
+        PushListsReversed(node, stack);
         while (stack.Count > 0)
         {
-            var current = stack.Pop();
-            // Collect children after invoking the action, since the action may
-            // replace entries in the list (e.g. splitting a text node).
-            var children = new List<MarkdownNode>();
-            foreach (var list in current.ChildLists)
-            {
-                action(list);
-                children.AddRange(list);
-            }
-            // Push in reverse so children are processed in document order.
-            for (int i = children.Count - 1; i >= 0; i--)
-                stack.Push(children[i]);
+            var list = stack.Pop();
+            // Invoke before reading children, since the action may replace entries
+            // in the list (e.g. splitting a text node into several nodes).
+            action(list);
+            // Push the child lists of this list's nodes in reverse document order so
+            // they pop (and are processed) in document order, ahead of any sibling list.
+            for (int i = list.Count - 1; i >= 0; i--)
+                PushListsReversed(list[i], stack);
         }
+    }
+
+    private static void PushListsReversed(MarkdownNode node, Stack<IList<MarkdownNode>> stack)
+    {
+        var lists = node.ChildLists as IList<IList<MarkdownNode>> ?? node.ChildLists.ToList();
+        for (int i = lists.Count - 1; i >= 0; i--)
+            stack.Push(lists[i]);
     }
 
     /// <summary>Enumerates every node in the tree (excluding the root).</summary>
