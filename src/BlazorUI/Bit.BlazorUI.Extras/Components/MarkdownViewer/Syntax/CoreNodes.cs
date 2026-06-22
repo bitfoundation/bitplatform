@@ -54,9 +54,10 @@ public sealed class ListNode : MarkdownNode
     public bool Tight { get; set; } = true;
     public List<ListItemNode> Items { get; } = new();
 
-    // Surface items for generic traversal.
+    // Surface the list items themselves so generic traversal can visit each
+    // ListItemNode (their inner blocks are reached via ListItemNode.ChildNodes).
     public override IEnumerable<IList<MarkdownNode>> ChildLists
-        => Items.Select(i => (IList<MarkdownNode>)i.Children);
+        => new[] { (IList<MarkdownNode>)Items.Cast<MarkdownNode>().ToList() };
 }
 
 /// <summary>A single list item containing nested blocks.</summary>

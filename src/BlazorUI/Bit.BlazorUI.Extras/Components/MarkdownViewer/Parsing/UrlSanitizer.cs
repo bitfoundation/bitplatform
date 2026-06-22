@@ -40,7 +40,10 @@ internal static class UrlSanitizer
             return trimmed; // ':' belongs to the path, not a scheme
 
         // Compare scheme case-insensitively, ignoring embedded control chars.
-        string scheme = trimmed[..(colon + 1)].Replace("\t", "").Replace("\n", "").ToLowerInvariant();
+        string scheme = trimmed[..(colon + 1)]
+            .Replace("\t", "").Replace("\n", "").Replace("\r", "")
+            .Replace("\f", "").Replace("\v", "").Replace("\0", "")
+            .ToLowerInvariant();
         var allowed = isImage ? AllowedImageSchemes : AllowedLinkSchemes;
         foreach (var s in allowed)
         {
