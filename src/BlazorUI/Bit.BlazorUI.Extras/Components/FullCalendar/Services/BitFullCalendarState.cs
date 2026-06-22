@@ -328,7 +328,7 @@ public class BitFullCalendarState
         }
 
         return map
-            .OrderBy(kv => kv.Value, StringComparer.CurrentCultureIgnoreCase)
+            .OrderBy(kv => kv.Value, StringComparer.Create(Culture, ignoreCase: true))
             .Select(kv => (kv.Key, kv.Value))
             .ToList();
     }

@@ -173,6 +173,11 @@ public partial class BitFullCalendar : IDisposable
 
     protected override void OnInitialized()
     {
+        // Options/Texts have default instances but can be set to null when bound externally.
+        // Normalize before any downstream use (ApplyOptions, cascaded Texts) to avoid NREs.
+        Options ??= new();
+        Texts ??= new();
+
         State.Initialize(Events ?? [], ResolveCulture());
         ApplyOptions();
         _changeNotifier = new BitFullCalendarChangeNotifier(State, args => OnChange.InvokeAsync(args));
@@ -182,6 +187,11 @@ public partial class BitFullCalendar : IDisposable
 
     protected override void OnParametersSet()
     {
+        // A null Options/Texts can arrive from external binding, overriding the default instances;
+        // restore valid defaults before ApplyOptions and the cascaded Texts are consumed downstream.
+        Options ??= new();
+        Texts ??= new();
+
         _colorScheme = new BitFullCalendarColorScheme(EventColorOptions);
         var resolved = ResolveCulture();
         if (!string.Equals(resolved.Name, State.Culture.Name, StringComparison.Ordinal))

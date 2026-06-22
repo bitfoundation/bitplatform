@@ -24,8 +24,31 @@ public partial class BitFcAddEditEventDialog
     private string _newId = "";
     private Dictionary<string, string> _errors = new();
 
-    protected override void OnInitialized()
+    private bool _initialized;
+    private BitFullCalendarEvent? _lastExistingEvent;
+    private DateTime? _lastStartDate;
+    private int? _lastStartHour;
+    private int? _lastStartMinute;
+
+    protected override void OnParametersSet()
     {
+        // Re-run initialization whenever the parameters that drive the form change, so a reused
+        // dialog instance reflects the new ExistingEvent / start parameters instead of stale values.
+        var parametersChanged = !_initialized
+            || !ReferenceEquals(_lastExistingEvent, ExistingEvent)
+            || _lastStartDate != StartDate
+            || _lastStartHour != StartHour
+            || _lastStartMinute != StartMinute;
+
+        if (!parametersChanged)
+            return;
+
+        _initialized = true;
+        _lastExistingEvent = ExistingEvent;
+        _lastStartDate = StartDate;
+        _lastStartHour = StartHour;
+        _lastStartMinute = StartMinute;
+
         _isEditing = ExistingEvent != null;
         var defaultColor = ColorScheme.Options.Count > 0
             ? ColorScheme.Options[0].Id
@@ -42,7 +65,10 @@ public partial class BitFcAddEditEventDialog
         }
         else
         {
+            _title = "";
+            _description = "";
             _color = defaultColor;
+            _attendees = [];
             var baseDate = StartDate ?? State.SelectedDate;
             _startDate = baseDate.Date.AddHours(StartHour ?? DateTime.Now.Hour).AddMinutes(StartMinute ?? 0);
             _endDate = _startDate.AddMinutes(30);

@@ -125,7 +125,7 @@ public partial class BitFcEventBlock
             if (newStart > maxStart)
                 newStart = maxStart;
         }
-        else
+        else if (direction == "bottom")
         {
             var minEnd = baseEvent.StartDate.AddMinutes(slotMinutes);
             var candidateEnd = baseEvent.EndDate.AddMinutes(effectiveDelta);
@@ -134,6 +134,11 @@ public partial class BitFcEventBlock
                 : BitFullCalendarHelpers.FloorToMinuteInterval(candidateEnd, slotMinutes);
             if (newEnd < minEnd)
                 newEnd = minEnd;
+        }
+        else
+        {
+            // Unknown direction from JS interop: ignore rather than silently mutating the end-time.
+            return Task.CompletedTask;
         }
 
         // Snapped range matches drag-start range → treat as restored original (clear preview).

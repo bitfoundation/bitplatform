@@ -13,6 +13,9 @@ public sealed class BitFullCalendarChangeNotifier
 
     public BitFullCalendarChangeNotifier(BitFullCalendarState state, Func<BitFullCalendarChangeEventArgs, Task> dispatch)
     {
+        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(dispatch);
+
         _state = state;
         _dispatch = dispatch;
     }
