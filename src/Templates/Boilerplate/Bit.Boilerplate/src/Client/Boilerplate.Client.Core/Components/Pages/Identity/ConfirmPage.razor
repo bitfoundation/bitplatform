@@ -99,7 +99,7 @@
 
                                     <BitStack FillContent>
                                         <BitPhoneInput @bind-Value="phoneModel.PhoneNumber"
-                                                      AutoFocus TabIndex="1"
+                                                       AutoFocus TabIndex="1" FullWidth
                                                       DefaultCountry="@BitCountries.Current"
                                                       Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                                       IsEnabled="string.IsNullOrEmpty(PhoneNumberQueryString)"

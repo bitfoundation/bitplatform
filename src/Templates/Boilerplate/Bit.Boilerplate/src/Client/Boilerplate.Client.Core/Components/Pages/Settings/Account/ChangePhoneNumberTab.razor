@@ -14,7 +14,7 @@
                     }
 
                     <BitPhoneInput @bind-Value="sendModel.PhoneNumber"
-                                   DefaultCountry="@BitCountries.Current"
+                                   DefaultCountry="@BitCountries.Current" FullWidth
                                    Label="@Localizer[nameof(AppStrings.NewPhoneNumber)]"
                                    Placeholder="@Localizer[nameof(AppStrings.NewPhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => sendModel.PhoneNumber)" />
@@ -49,7 +49,7 @@
                 <BitStack FillContent>
                     <BitPhoneInput @bind-Value="changeModel.PhoneNumber"
                                    IsEnabled="isPhoneNumberUnavailable"
-                                   DefaultCountry="@BitCountries.Current"
+                                   DefaultCountry="@BitCountries.Current" FullWidth
                                    Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                    Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.PhoneNumber)" />

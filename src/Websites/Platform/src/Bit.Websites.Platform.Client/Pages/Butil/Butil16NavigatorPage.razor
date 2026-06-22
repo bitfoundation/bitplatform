@@ -276,7 +276,7 @@
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
-                        <BitButton OnClick="@(() => navigator.SendBeacon())">SendBeacon</BitButton>
+                        <BitButton OnClick="@(() => navigator.SendBeacon(NavigationManager.BaseUri))">SendBeacon</BitButton>
                         <br />
                     </BitPivotItem>
                 </BitPivot>

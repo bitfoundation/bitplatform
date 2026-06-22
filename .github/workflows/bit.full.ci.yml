@@ -395,9 +395,6 @@ jobs:
         dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output ./packages --configuration Release
 
-    - name: Generate CSS/JS files Butil
-      run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
-
     - name: Build and pack Butil
       run: |
         dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
