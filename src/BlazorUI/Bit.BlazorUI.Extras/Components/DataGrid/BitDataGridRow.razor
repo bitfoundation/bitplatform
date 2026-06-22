@@ -9,7 +9,7 @@
 
     @if (Grid.RowReorderable)
     {
-        <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="left:0;" role="gridcell" @onclick:stopPropagation="true">
+        <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="gridcell" @onclick:stopPropagation="true">
             <span class="bit-dtg-drag-handle" title="Drag to reorder">⠿</span>
         </div>
     }

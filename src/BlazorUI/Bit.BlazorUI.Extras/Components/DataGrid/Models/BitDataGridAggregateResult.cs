@@ -6,5 +6,5 @@ public sealed class BitDataGridAggregateResult
     public required string ColumnId { get; init; }
     public BitDataGridAggregateType Type { get; init; }
     public object? Value { get; init; }
-    public string FormattedValue { get; init; } = string.Empty;
+    public required string FormattedValue { get; init; }
 }

@@ -21,9 +21,15 @@
     box-sizing: border-box;
 }
 
-.bit-dtg *, .bit-dtg *::before, .bit-dtg *::after { box-sizing: border-box; }
+.bit-dtg *,
+.bit-dtg *::before,
+.bit-dtg *::after {
+    box-sizing: border-box;
+}
 
-.bit-dtg.bit-dtg-bordered { border: 1px solid var(--bit-clr-brd-ter); }
+.bit-dtg.bit-dtg-bordered {
+    border: 1px solid var(--bit-clr-brd-ter);
+}
 
 /* ---------------------------------------------------------- Toolbar */
 .bit-dtg-toolbar {
@@ -35,7 +41,14 @@
     border-bottom: 1px solid var(--bit-clr-brd-ter);
     flex-wrap: wrap;
 }
-.bit-dtg-toolbar-start, .bit-dtg-toolbar-end { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.bit-dtg-toolbar-start,
+.bit-dtg-toolbar-end {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
 
 .bit-dtg-column-chooser {
     display: flex;
@@ -45,12 +58,24 @@
     border-bottom: 1px solid var(--bit-clr-brd-ter);
     background: var(--bit-clr-bg-sec);
 }
-.bit-dtg-chooser-item { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+
+.bit-dtg-chooser-item {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    cursor: pointer;
+}
 
 /* ---------------------------------------------------------- Viewport */
-.bit-dtg-viewport { overflow: auto; position: relative; }
+.bit-dtg-viewport {
+    overflow: auto;
+    position: relative;
+}
 
-.bit-dtg-table { display: block; min-width: 100%; }
+.bit-dtg-table {
+    display: block;
+    min-width: 100%;
+}
 
 /* ---------------------------------------------------------- Rows */
 .bit-dtg-row {
@@ -66,8 +91,14 @@
     z-index: 3;
 }
 
-.bit-dtg-header-row, .bit-dtg-filter-row { background: var(--bit-clr-bg-sec); }
-.bit-dtg-filter-row { border-bottom: 1px solid var(--bit-clr-brd-ter); }
+.bit-dtg-header-row,
+.bit-dtg-filter-row {
+    background: var(--bit-clr-bg-sec);
+}
+
+.bit-dtg-filter-row {
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+}
 
 .bit-dtg-hcell {
     display: flex;
@@ -92,34 +123,83 @@
     background: var(--bit-clr-bg-pri);
 }
 
-.bit-dtg-bordered .bit-dtg-cell, .bit-dtg-bordered .bit-dtg-hcell { border-right: 1px solid var(--bit-clr-brd-ter); }
+.bit-dtg-bordered .bit-dtg-cell,
+.bit-dtg-bordered .bit-dtg-hcell {
+    border-right: 1px solid var(--bit-clr-brd-ter);
+}
 
-.bit-dtg-center { justify-content: center; text-align: center; }
-.bit-dtg-right { justify-content: flex-end; text-align: right; }
+.bit-dtg-center {
+    justify-content: center;
+    text-align: center;
+}
+
+.bit-dtg-right {
+    justify-content: flex-end;
+    text-align: right;
+}
 
 /* Striping & hover */
-.bit-dtg-striped .bit-dtg-body .bit-dtg-row:nth-child(even) .bit-dtg-cell { background: var(--bit-clr-bg-sec); }
-.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row:hover .bit-dtg-cell { background: var(--bit-clr-bg-pri-hover); }
+.bit-dtg-striped .bit-dtg-body .bit-dtg-row:nth-child(even) .bit-dtg-cell {
+    background: var(--bit-clr-bg-sec);
+}
+
+.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row:hover .bit-dtg-cell {
+    background: var(--bit-clr-bg-pri-hover);
+}
 
 /* Selection & editing must win over both striping and hover (in every row position) */
 .bit-dtg-row.bit-dtg-selected .bit-dtg-cell,
 .bit-dtg-striped .bit-dtg-body .bit-dtg-row.bit-dtg-selected:nth-child(even) .bit-dtg-cell,
-.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row.bit-dtg-selected:hover .bit-dtg-cell { background: var(--bit-clr-pri-light); }
+.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row.bit-dtg-selected:hover .bit-dtg-cell {
+    color: var(--bit-clr-pri-text);
+    background: var(--bit-clr-pri);
+}
+
 .bit-dtg-row.bit-dtg-editing .bit-dtg-cell,
 .bit-dtg-striped .bit-dtg-body .bit-dtg-row.bit-dtg-editing:nth-child(even) .bit-dtg-cell,
-.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row.bit-dtg-editing:hover .bit-dtg-cell { background: var(--bit-clr-wrn-light); }
+.bit-dtg-hoverable .bit-dtg-body .bit-dtg-row.bit-dtg-editing:hover .bit-dtg-cell {
+    background: var(--bit-clr-wrn-light);
+}
 
 /* Sticky / frozen columns */
-.bit-dtg-sticky { position: sticky; z-index: 2; }
-.bit-dtg-header .bit-dtg-sticky { z-index: 4; }
-.bit-dtg-rtl .bit-dtg-sticky { right: auto; }
+.bit-dtg-sticky {
+    position: sticky;
+    z-index: 2;
+}
 
-.bit-dtg-cell-detail, .bit-dtg-cell-select { justify-content: center; }
+.bit-dtg-header .bit-dtg-sticky {
+    z-index: 4;
+}
+
+.bit-dtg-rtl .bit-dtg-sticky {
+    right: auto;
+}
+
+.bit-dtg-cell-detail,
+.bit-dtg-cell-select {
+    justify-content: center;
+}
 
 /* ---------------------------------------------------------- Header sorting */
-.bit-dtg-sortable .bit-dtg-htext { cursor: pointer; }
-.bit-dtg-htext { display: inline-flex; align-items: center; gap: 4px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bit-dtg-sort-icon { font-size: 10px; color: var(--bit-clr-pri); }
+.bit-dtg-sortable .bit-dtg-htext {
+    cursor: pointer;
+}
+
+.bit-dtg-htext {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bit-dtg-sort-icon {
+    font-size: 10px;
+    color: var(--bit-clr-pri);
+}
+
 .bit-dtg-sort-priority {
     font-size: 9px;
     background: var(--bit-clr-pri);
@@ -139,8 +219,16 @@
     cursor: col-resize;
     touch-action: none;
 }
-.bit-dtg-rtl .bit-dtg-resizer { right: auto; left: 0; }
-.bit-dtg-resizer:hover { background: var(--bit-clr-pri); opacity: .5; }
+
+.bit-dtg-rtl .bit-dtg-resizer {
+    right: auto;
+    left: 0;
+}
+
+.bit-dtg-resizer:hover {
+    background: var(--bit-clr-pri);
+    opacity: .5;
+}
 
 .bit-dtg-resize-overlay {
     position: fixed;
@@ -151,7 +239,10 @@
 }
 
 /* ---------------------------------------------------------- Group rows */
-.bit-dtg-group-row { border-bottom: 1px solid var(--bit-clr-brd-ter); }
+.bit-dtg-group-row {
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+}
+
 .bit-dtg-group-cell {
     grid-column: 1 / -1;
     display: flex;
@@ -160,15 +251,31 @@
     padding: var(--bit-dtg-cell-pad);
     background: var(--bit-clr-bg-ter);
 }
-.bit-dtg-group-count { color: var(--bit-clr-fg-sec); }
-.bit-dtg-group-agg { color: var(--bit-clr-fg-sec); font-size: 12px; }
+
+.bit-dtg-group-count {
+    color: var(--bit-clr-fg-sec);
+}
+
+.bit-dtg-group-agg {
+    color: var(--bit-clr-fg-sec);
+    font-size: 12px;
+}
 
 /* Nested groups: subtle indentation shading by level */
-.bit-dtg-group-row .bit-dtg-group-cell { border-left: 3px solid transparent; }
-.bit-dtg-group-row[style*="--bit-dtg-group-level:0"] .bit-dtg-group-cell { border-left-color: var(--bit-clr-pri); }
+.bit-dtg-group-row .bit-dtg-group-cell {
+    border-left: 3px solid transparent;
+}
+
+.bit-dtg-group-row[style*="--bit-dtg-group-level:0"] .bit-dtg-group-cell {
+    border-left-color: var(--bit-clr-pri);
+}
 
 /* ----------------------------------------------- Grouped column headers */
-.bit-dtg-group-header-row { background: var(--bit-clr-bg-sec); border-bottom: 1px solid var(--bit-clr-brd-ter); }
+.bit-dtg-group-header-row {
+    background: var(--bit-clr-bg-sec);
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+}
+
 .bit-dtg-group-header {
     font-weight: 700;
     background: var(--bit-clr-bg-sec);
@@ -178,31 +285,83 @@
     justify-content: center;
     padding: var(--bit-dtg-cell-pad);
 }
-.bit-dtg-group-header-empty { background: transparent; border-right: none; }
+
+.bit-dtg-group-header-empty {
+    background: transparent;
+    border-right: none;
+}
 
 /* ---------------------------------------------------------- Row reorder */
-.bit-dtg-cell-reorder { display: flex; align-items: center; justify-content: center; }
-.bit-dtg-drag-handle { cursor: grab; color: var(--bit-clr-fg-sec); user-select: none; }
-.bit-dtg-drag-handle:active { cursor: grabbing; }
-.bit-dtg-row[draggable="true"] { cursor: grab; }
+.bit-dtg-cell-reorder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-dtg-drag-handle {
+    cursor: grab;
+    color: var(--bit-clr-fg-sec);
+    user-select: none;
+}
+
+.bit-dtg-drag-handle:active {
+    cursor: grabbing;
+}
+
+.bit-dtg-row[draggable="true"] {
+    cursor: grab;
+}
 
 /* ---------------------------------------------------------- Detail rows */
-.bit-dtg-detail-row { border-bottom: 1px solid var(--bit-clr-brd-ter); }
-.bit-dtg-detail-content { padding: 12px 16px; background: var(--bit-clr-bg-sec); }
+.bit-dtg-detail-row {
+    border-bottom: 1px solid var(--bit-clr-brd-ter);
+}
+
+.bit-dtg-detail-content {
+    padding: 12px 16px;
+    background: var(--bit-clr-bg-sec);
+}
 
 /* ---------------------------------------------------------- Tree view */
-.bit-dtg-tree-indent { display: inline-block; flex: 0 0 auto; }
-.bit-dtg-tree-toggle { flex: 0 0 auto; width: 20px; text-align: center; }
-.bit-dtg-tree-leaf { display: inline-block; width: 20px; flex: 0 0 auto; }
+.bit-dtg-tree-indent {
+    display: inline-block;
+    flex: 0 0 auto;
+}
+
+.bit-dtg-tree-toggle {
+    flex: 0 0 auto;
+    width: 20px;
+    text-align: center;
+}
+
+.bit-dtg-tree-leaf {
+    display: inline-block;
+    width: 20px;
+    flex: 0 0 auto;
+}
 
 /* ---------------------------------------------------------- Cell navigation */
 /* The focus ring is driven solely by real DOM :focus so exactly one cell can
    ever be outlined (state and DOM focus are kept in sync via @key + FocusAsync). */
-.bit-dtg-cell[tabindex]:focus { outline: 2px solid var(--bit-clr-pri); outline-offset: -2px; z-index: 1; }
-.bit-dtg-cell[tabindex]:focus-visible { outline: 2px solid var(--bit-clr-pri); outline-offset: -2px; z-index: 1; }
+.bit-dtg-cell[tabindex]:focus {
+    outline: 2px solid var(--bit-clr-pri);
+    outline-offset: -2px;
+    z-index: 1;
+}
+
+.bit-dtg-cell[tabindex]:focus-visible {
+    outline: 2px solid var(--bit-clr-pri);
+    outline-offset: -2px;
+    z-index: 1;
+}
 
 /* ---------------------------------------------------------- Footer */
-.bit-dtg-footer { position: sticky; bottom: 0; z-index: 3; }
+.bit-dtg-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+}
+
 .bit-dtg-footer-row .bit-dtg-cell {
     background: var(--bit-clr-bg-sec);
     font-weight: 600;
@@ -210,45 +369,69 @@
 }
 
 /* ---------------------------------------------------------- Empty / loading */
-.bit-dtg-empty, .bit-dtg-loading {
+.bit-dtg-empty,
+.bit-dtg-loading {
     padding: 32px;
     text-align: center;
     color: var(--bit-clr-fg-sec);
 }
+
 .bit-dtg-spinner {
     display: inline-block;
-    width: 14px; height: 14px;
+    width: 14px;
+    height: 14px;
     border: 2px solid var(--bit-clr-fg-sec);
     border-top-color: transparent;
     border-radius: 50%;
     vertical-align: middle;
 }
+
 @media (prefers-reduced-motion: no-preference) {
     .bit-dtg-spinner {
         animation: bit-dtg-spin .7s linear infinite;
     }
 }
-@keyframes bit-dtg-spin { to { transform: rotate(360deg); } }
+
+@keyframes bit-dtg-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 /* ------------------------------------------ Infinite-scroll placeholder */
-.bit-dtg-placeholder-cell { display: flex; align-items: center; }
+.bit-dtg-placeholder-cell {
+    display: flex;
+    align-items: center;
+}
+
 .bit-dtg-skeleton {
     display: block;
     width: 60%;
     height: 10px;
     border-radius: 6px;
     background: linear-gradient(90deg,
-        var(--bit-clr-brd-ter) 25%,
-        var(--bit-clr-bg-sec) 37%,
-        var(--bit-clr-brd-ter) 63%);
+            var(--bit-clr-brd-ter) 25%,
+            var(--bit-clr-bg-sec) 37%,
+            var(--bit-clr-brd-ter) 63%);
     background-size: 400% 100%;
 }
+
 @media (prefers-reduced-motion: no-preference) {
     .bit-dtg-skeleton {
         animation: bit-dtg-shimmer 1.2s ease-in-out infinite;
     }
 }
-@keyframes bit-dtg-shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+@keyframes bit-dtg-shimmer {
+    0% {
+        background-position: 100% 0;
+    }
+
+    100% {
+        background-position: 0 0;
+    }
+}
+
 .bit-dtg-infinite-end {
     padding: 14px;
     text-align: center;
@@ -257,7 +440,8 @@
 }
 
 /* ---------------------------------------------------------- Editors */
-.bit-dtg-editor, .bit-dtg-filter-input {
+.bit-dtg-editor,
+.bit-dtg-filter-input {
     width: 100%;
     padding: 4px 6px;
     border: 1px solid var(--bit-clr-brd-ter);
@@ -266,8 +450,14 @@
     color: var(--bit-clr-fg-pri);
     font: inherit;
 }
-.bit-dtg-editor-check { width: auto; }
-.bit-dtg-filter-input { font-weight: 400; }
+
+.bit-dtg-editor-check {
+    width: auto;
+}
+
+.bit-dtg-filter-input {
+    font-weight: 400;
+}
 
 /* ---------------------------------------------------------- Buttons */
 .bit-dtg-btn {
@@ -284,11 +474,30 @@
     text-decoration: none;
     line-height: 1.2;
 }
-.bit-dtg-btn:hover:not(:disabled) { background: var(--bit-clr-bg-pri-hover); }
-.bit-dtg-btn:disabled { opacity: .45; cursor: default; }
-.bit-dtg-btn-primary { background: var(--bit-clr-pri); border-color: var(--bit-clr-pri); color: var(--bit-clr-pri-text); }
-.bit-dtg-btn-danger { color: var(--bit-clr-err); border-color: var(--bit-clr-err); }
-.bit-dtg-cell-command { gap: 6px; }
+
+.bit-dtg-btn:hover:not(:disabled) {
+    background: var(--bit-clr-bg-pri-hover);
+}
+
+.bit-dtg-btn:disabled {
+    opacity: .45;
+    cursor: default;
+}
+
+.bit-dtg-btn-primary {
+    background: var(--bit-clr-pri);
+    border-color: var(--bit-clr-pri);
+    color: var(--bit-clr-pri-text);
+}
+
+.bit-dtg-btn-danger {
+    color: var(--bit-clr-err);
+    border-color: var(--bit-clr-err);
+}
+
+.bit-dtg-cell-command {
+    gap: 6px;
+}
 
 .bit-dtg-icon-btn {
     background: none;
@@ -299,8 +508,14 @@
     padding: 2px 4px;
     border-radius: 4px;
 }
-.bit-dtg-icon-btn:hover { background: var(--bit-clr-bg-pri-hover); }
-.bit-dtg-group-btn.bit-dtg-active { color: var(--bit-clr-pri); }
+
+.bit-dtg-icon-btn:hover {
+    background: var(--bit-clr-bg-pri-hover);
+}
+
+.bit-dtg-group-btn.bit-dtg-active {
+    color: var(--bit-clr-pri);
+}
 
 /* ---------------------------------------------------------- Pager */
 .bit-dtg-pager {
@@ -312,9 +527,24 @@
     border-top: 1px solid var(--bit-clr-brd-ter);
     flex-wrap: wrap;
 }
-.bit-dtg-pager-info { display: flex; align-items: center; gap: 10px; color: var(--bit-clr-fg-sec); }
-.bit-dtg-pager-buttons { display: flex; align-items: center; gap: 4px; }
-.bit-dtg-pager-current { padding: 0 8px; }
+
+.bit-dtg-pager-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--bit-clr-fg-sec);
+}
+
+.bit-dtg-pager-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.bit-dtg-pager-current {
+    padding: 0 8px;
+}
+
 .bit-dtg-page-size {
     padding: 4px 6px;
     border: 1px solid var(--bit-clr-brd-ter);

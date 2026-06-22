@@ -351,12 +351,23 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
             var startIndex = Pagination is null ? 0 : (Pagination.CurrentPageIndex * Pagination.ItemsPerPage);
             var request = new BitQuickGridItemsProviderRequest<TGridItem>(
                 startIndex, Pagination?.ItemsPerPage, _sortByColumn, _sortByAscending, thisLoadCts.Token);
-            var result = await ResolveItemsRequestAsync(request);
-            if (!thisLoadCts.IsCancellationRequested)
+            try
             {
-                _currentNonVirtualizedViewItems = result.Items;
-                _ariaBodyRowCount = _currentNonVirtualizedViewItems.Count;
-                await (Pagination?.SetTotalItemCountAsync(result.TotalItemCount) ?? Task.CompletedTask);
+                var result = await ResolveItemsRequestAsync(request);
+                if (!thisLoadCts.IsCancellationRequested)
+                {
+                    _currentNonVirtualizedViewItems = result.Items;
+                    _ariaBodyRowCount = _currentNonVirtualizedViewItems.Count;
+                    await (Pagination?.SetTotalItemCountAsync(result.TotalItemCount) ?? Task.CompletedTask);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // This load was superseded by a newer request; swallow the cancellation and fall through
+                // to the cleanup below so the load-state remains consistent.
+            }
+            finally
+            {
                 if (ReferenceEquals(_pendingDataLoadCancellationTokenSource, thisLoadCts))
                 {
                     thisLoadCts.Dispose();
@@ -374,7 +385,15 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
         // TODO: Consider making this configurable, or smarter (e.g., doesn't delay on first call in a batch, then the amount
         // of delay increases if you rapidly issue repeated requests, such as when scrolling a long way)
-        await Task.Delay(100);
+        try
+        {
+            await Task.Delay(100, request.CancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // The request was superseded/cancelled during the debounce window; abandon it early.
+            return default;
+        }
         if (request.CancellationToken.IsCancellationRequested)
         {
             return default;

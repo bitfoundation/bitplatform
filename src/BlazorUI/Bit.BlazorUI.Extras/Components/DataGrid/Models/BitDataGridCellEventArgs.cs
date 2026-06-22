@@ -22,8 +22,8 @@ public sealed class BitDataGridCellEventArgs<TItem>
     public string ColumnTitle => Column.DisplayTitle;
 
     /// <summary>The raw value of the cell.</summary>
-    public object? Value { get; init; }
+    public required object? Value { get; init; }
 
     /// <summary>The underlying browser mouse event.</summary>
-    public MouseEventArgs Mouse { get; init; } = new();
+    public required MouseEventArgs Mouse { get; init; }
 }

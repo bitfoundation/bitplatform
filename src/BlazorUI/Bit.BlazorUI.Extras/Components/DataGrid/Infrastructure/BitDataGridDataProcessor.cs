@@ -86,9 +86,16 @@ public static class BitDataGridDataProcessor
             {
                 var keyText = column.FormatValue(g.Key);
                 var items = g.ToList();
-                // Use the raw key (not the formatted display text) for the path identifier so that
-                // distinct keys producing identical display values don't collide and share collapse/expand state.
-                var path = $"{parentPath}/{level}:{g.Key}";
+                // Use a culture-invariant, type-qualified identifier for the path so that distinct keys
+                // never collide in collapse/expand state regardless of the current culture's formatting
+                // (e.g. "1,5" vs "1.5") or display text shared across different key types.
+                var keyId = g.Key switch
+                {
+                    null => "∅",
+                    IFormattable f => $"{g.Key.GetType().Name}:{f.ToString(null, CultureInfo.InvariantCulture)}",
+                    _ => $"{g.Key.GetType().Name}:{g.Key}"
+                };
+                var path = $"{parentPath}/{level}:{keyId}";
                 var group = new BitDataGridGroup<TItem>
                 {
                     ColumnId = descriptor.ColumnId,

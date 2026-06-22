@@ -142,57 +142,66 @@ public partial class BitDataGridDemo : AppComponentBase
         await InvokeAsync(StateHasChanged);
         await Task.Delay(250);
 
-        IEnumerable<Product> query = serverAll;
-
-        foreach (var f in request.Filters)
+        int total = 0;
+        try
         {
-            var term = f.Value?.ToString() ?? "";
-            query = f.ColumnId switch
-            {
-                nameof(Product.Name) => query.Where(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase)),
-                nameof(Product.Category) => query.Where(p => p.Category.ToString().Contains(term, StringComparison.OrdinalIgnoreCase)),
-                nameof(Product.Supplier) => query.Where(p => p.Supplier.Contains(term, StringComparison.OrdinalIgnoreCase)),
-                nameof(Product.Price) => query.Where(p => p.Price.ToString().Contains(term)),
-                nameof(Product.Stock) => query.Where(p => p.Stock.ToString().Contains(term)),
-                _ => query
-            };
-        }
+            IEnumerable<Product> query = serverAll;
 
-        IOrderedEnumerable<Product>? ordered = null;
-        foreach (var sort in request.Sorts)
+            foreach (var f in request.Filters)
+            {
+                var term = f.Value?.ToString() ?? "";
+                query = f.ColumnId switch
+                {
+                    nameof(Product.Name) => query.Where(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase)),
+                    nameof(Product.Category) => query.Where(p => p.Category.ToString().Contains(term, StringComparison.OrdinalIgnoreCase)),
+                    nameof(Product.Supplier) => query.Where(p => p.Supplier.Contains(term, StringComparison.OrdinalIgnoreCase)),
+                    nameof(Product.Price) => query.Where(p => p.Price.ToString().Contains(term)),
+                    nameof(Product.Stock) => query.Where(p => p.Stock.ToString().Contains(term)),
+                    _ => query
+                };
+            }
+
+            IOrderedEnumerable<Product>? ordered = null;
+            foreach (var sort in request.Sorts)
+            {
+                Func<Product, object> key = sort.ColumnId switch
+                {
+                    nameof(Product.Name) => p => p.Name,
+                    nameof(Product.Category) => p => p.Category,
+                    nameof(Product.Supplier) => p => p.Supplier,
+                    nameof(Product.Price) => p => p.Price,
+                    nameof(Product.Stock) => p => p.Stock,
+                    _ => p => p.Id
+                };
+
+                if (ordered is null)
+                {
+                    ordered = sort.Direction == BitDataGridSortDirection.Descending
+                        ? query.OrderByDescending(key)
+                        : query.OrderBy(key);
+                }
+                else
+                {
+                    ordered = sort.Direction == BitDataGridSortDirection.Descending
+                        ? ordered.ThenByDescending(key)
+                        : ordered.ThenBy(key);
+                }
+            }
+            if (ordered is not null) query = ordered;
+
+            var filtered = query.ToList();
+            total = filtered.Count;
+            var items = filtered.Skip(request.Skip).Take(request.Take ?? total).ToList();
+
+            return new BitDataGridReadResult<Product>(items, total);
+        }
+        finally
         {
-            Func<Product, object> key = sort.ColumnId switch
-            {
-                nameof(Product.Name) => p => p.Name,
-                nameof(Product.Category) => p => p.Category,
-                nameof(Product.Supplier) => p => p.Supplier,
-                nameof(Product.Price) => p => p.Price,
-                nameof(Product.Stock) => p => p.Stock,
-                _ => p => p.Id
-            };
-
-            if (ordered is null)
-            {
-                ordered = sort.Direction == BitDataGridSortDirection.Descending
-                    ? query.OrderByDescending(key)
-                    : query.OrderBy(key);
-            }
-            else
-            {
-                ordered = sort.Direction == BitDataGridSortDirection.Descending
-                    ? ordered.ThenByDescending(key)
-                    : ordered.ThenBy(key);
-            }
+            serverLastRequest = $"Last request → skip {request.Skip}, take {request.Take}, sorts: {request.Sorts.Count}, filters: {request.Filters.Count}, total: {total}";
+            serverLoading = false;
+            // Ensure the parent re-renders after the load completes, since this runs as a callback.
+            await InvokeAsync(StateHasChanged);
         }
-        if (ordered is not null) query = ordered;
-
-        var filtered = query.ToList();
-        var total = filtered.Count;
-        var items = filtered.Skip(request.Skip).Take(request.Take ?? total).ToList();
-
-        serverLastRequest = $"Last request → skip {request.Skip}, take {request.Take}, sorts: {request.Sorts.Count}, filters: {request.Filters.Count}, total: {total}";
-        serverLoading = false;
-        return new BitDataGridReadResult<Product>(items, total);
     }
 
 

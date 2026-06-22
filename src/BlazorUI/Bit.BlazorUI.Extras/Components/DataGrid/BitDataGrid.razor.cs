@@ -158,7 +158,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private readonly List<BitDataGridSortDescriptor> _sorts = new();
     private readonly List<BitDataGridFilterDescriptor> _filters = new();
     private readonly List<BitDataGridGroupDescriptor> _groups = new();
-    private readonly HashSet<TItem> _selected = new();
+    // Tracks the selected rows by their key (via GetKey) rather than by object reference, so a
+    // selection survives data refreshes that produce new TItem instances with the same key.
+    private HashSet<TItem>? _selectedSet;
+    private HashSet<TItem> _selected => _selectedSet ??= new HashSet<TItem>(new KeySelectionComparer(GetKey));
     private readonly HashSet<object> _expandedDetails = new();
     private readonly HashSet<object> _collapsedGroups = new();
 
@@ -216,6 +219,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     // Cancels superseded in-flight OnRead/OnLoadMore requests.
     private CancellationTokenSource? _loadCts;
+    // Monotonic load version; bumped on every (re)load so a superseded response can detect it is stale.
+    private int _loadVersion;
 
     internal IReadOnlyList<BitDataGridColumn<TItem>> AllColumns => _columns;
     internal IReadOnlyList<BitDataGridColumn<TItem>> VisibleColumns => _columns.Where(c => c.Visible).ToList();
@@ -455,19 +460,23 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _infiniteLoading = true;
         StateHasChanged();
 
+        var batch = Math.Max(1, LoadMoreBatchSize);
+        var read = new BitDataGridReadRequest
+        {
+            Skip = _infiniteItems.Count,
+            Take = batch,
+            Sorts = _sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList(),
+            Filters = _filters.ToList(),
+            CancellationToken = ResetLoadCancellation()
+        };
+        var version = _loadVersion;
+
         try
         {
-            var batch = Math.Max(1, LoadMoreBatchSize);
-            var read = new BitDataGridReadRequest
-            {
-                Skip = _infiniteItems.Count,
-                Take = batch,
-                Sorts = _sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList(),
-                Filters = _filters.ToList(),
-                CancellationToken = ResetLoadCancellation()
-            };
-
             var result = await OnLoadMore(read);
+            // A newer request superseded this one (e.g. sort/filter changed mid-flight); drop the stale response.
+            if (version != _loadVersion) return;
+
             var loaded = result.Items;
             _infiniteItems.AddRange(loaded);
             if (loaded.Count < batch) _infiniteHasMore = false;
@@ -478,8 +487,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         }
         finally
         {
-            _infiniteLoading = false;
-            StateHasChanged();
+            // Only clear the loading flag if we are still the current request; a superseding request
+            // owns the loading state otherwise.
+            if (version == _loadVersion)
+            {
+                _infiniteLoading = false;
+                StateHasChanged();
+            }
         }
     }
 
@@ -537,6 +551,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _loadCts?.Cancel();
         _loadCts?.Dispose();
         _loadCts = new CancellationTokenSource();
+        _loadVersion++;
         return _loadCts.Token;
     }
 
@@ -550,7 +565,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             Filters = _filters.ToList(),
             CancellationToken = ResetLoadCancellation()
         };
+        // Capture this request's version right after ResetLoadCancellation; bail out below if a newer
+        // request has since superseded it so a stale response can't overwrite fresher state.
+        var version = _loadVersion;
         var result = await OnRead!(request);
+        if (version != _loadVersion) return;
         _pageItems = result.Items;
         _view = result.Items;
         _totalCount = result.TotalCount;
@@ -578,9 +597,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         if (!ColumnSortable(column)) return;
         var existing = GetSort(column);
 
-        if (!additive && !MultiSort)
+        if (!additive)
         {
-            // Single sort: clear others unless additive
+            // Non-additive action (plain click): clear all prior sorts regardless of MultiSort,
+            // keeping only this column. Additive (Ctrl/⌘+click) preserves existing sorts.
             var keep = existing;
             _sorts.Clear();
             if (keep is not null) _sorts.Add(keep);
@@ -995,15 +1015,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         int row = rowIdx, col = colIndex;
         var rtl = Direction == BitDir.Rtl;
         var handled = true;
+        // Horizontal travel direction in column-index space (used to skip over spanned-away columns).
+        int colDir = 0;
 
         switch (e.Key)
         {
-            case "ArrowRight": col += rtl ? -1 : 1; break;
-            case "ArrowLeft": col += rtl ? 1 : -1; break;
+            case "ArrowRight": col += rtl ? -1 : 1; colDir = rtl ? -1 : 1; break;
+            case "ArrowLeft": col += rtl ? 1 : -1; colDir = rtl ? 1 : -1; break;
             case "ArrowDown": row += 1; break;
             case "ArrowUp": row -= 1; break;
             case "Home": if (e.CtrlKey) { row = 0; col = 0; } else col = 0; break;
-            case "End": if (e.CtrlKey) { row = rows.Count - 1; col = colCount - 1; } else col = colCount - 1; break;
+            case "End": if (e.CtrlKey) { row = rows.Count - 1; col = colCount - 1; } else col = colCount - 1; colDir = -1; break;
             case "PageDown": row += 10; break;
             case "PageUp": row -= 10; break;
             case "Enter":
@@ -1020,6 +1042,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
         row = Math.Clamp(row, 0, rows.Count - 1);
         col = Math.Clamp(col, 0, colCount - 1);
+        // The target row may span columns; snap focus to the actually-rendered cell so it always
+        // lands on a real BitDataGridCell with tabindex=0 instead of a spanned-away column index.
+        col = SnapToRenderedColumn(rows[row], col, colDir);
         _focusedRow = rows[row];
         _focusedCol = col;
         _focusPending = true;
@@ -1044,6 +1069,43 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         var idx = cols.ToList().IndexOf(column);
         if (idx < 0) return 1;
         return Math.Min(span, cols.Count - idx);
+    }
+
+    /// <summary>
+    /// Maps a desired visible-column index to the index of the cell actually rendered in the given
+    /// row, accounting for column spanning (columns covered by a preceding span are not rendered).
+    /// When travelling horizontally (<paramref name="dir"/> ≠ 0) the focus advances past the span in
+    /// the travel direction so keyboard navigation never stalls inside a spanned-over column.
+    /// </summary>
+    private int SnapToRenderedColumn(TItem item, int target, int dir)
+    {
+        var cols = VisibleColumns;
+        var count = cols.Count;
+        if (count == 0) return 0;
+        target = Math.Clamp(target, 0, count - 1);
+
+        // For every column position compute the index of the rendered (span-start) cell that covers it
+        // and the last column the span covers.
+        var starts = new int[count];
+        var ends = new int[count];
+        int i = 0;
+        while (i < count)
+        {
+            var span = Math.Max(1, ResolveColSpan(cols[i], item));
+            var end = Math.Min(count - 1, i + span - 1);
+            for (int j = i; j <= end; j++) { starts[j] = i; ends[j] = end; }
+            i = end + 1;
+        }
+
+        var start = starts[target];
+        // Moving right but the target fell inside a span that starts earlier: jump to the next span start.
+        if (dir > 0 && start < target)
+        {
+            var next = ends[target] + 1;
+            return next <= count - 1 ? starts[next] : start;
+        }
+        // Moving left (or stationary): the span start is the rendered cell to focus.
+        return start;
     }
 
     // ------------------------------------------------- Column header groups
@@ -1103,6 +1165,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private bool KeyEquals(TItem a, TItem b)
         => KeyField is not null ? Equals(KeyField(a), KeyField(b)) : EqualityComparer<TItem>.Default.Equals(a, b);
 
+    /// <summary>Compares rows by their key (via <see cref="GetKey"/>) so selection tracks key identity
+    /// rather than object reference, surviving refreshes that yield new instances with the same key.</summary>
+    private sealed class KeySelectionComparer : IEqualityComparer<TItem>
+    {
+        private readonly Func<TItem, object> _keyOf;
+        public KeySelectionComparer(Func<TItem, object> keyOf) => _keyOf = keyOf;
+        public bool Equals(TItem? x, TItem? y)
+            => (x is null || y is null) ? ReferenceEquals(x, y) : object.Equals(_keyOf(x), _keyOf(y));
+        public int GetHashCode(TItem obj) => _keyOf(obj)?.GetHashCode() ?? 0;
+    }
+
     // ----------------------------------------------------------- CSV export
     /// <summary>Builds a CSV string of the current (filtered/sorted) data.</summary>
     public string ToCsv()
@@ -1134,9 +1207,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private double DetailOffset => HasReorderColumn ? ReorderColWidth : 0;
     private double SelectOffset => DetailOffset + (HasDetailColumn ? DetailColWidth : 0);
 
-    internal string ReorderStickyStyle => "left:0;";
-    internal string DetailStickyStyle => $"left:{DetailOffset.ToString(CultureInfo.InvariantCulture)}px;";
-    internal string SelectStickyStyle => $"left:{SelectOffset.ToString(CultureInfo.InvariantCulture)}px;";
+    /// <summary>The inline-start CSS edge for sticky special columns, flipped to "right" in RTL.</summary>
+    private string StickyEdge => Direction == BitDir.Rtl ? "right" : "left";
+
+    internal string ReorderStickyStyle => $"{StickyEdge}:0;";
+    internal string DetailStickyStyle => $"{StickyEdge}:{DetailOffset.ToString(CultureInfo.InvariantCulture)}px;";
+    internal string SelectStickyStyle => $"{StickyEdge}:{SelectOffset.ToString(CultureInfo.InvariantCulture)}px;";
 
     private string ColumnWidthToken(BitDataGridColumn<TItem> column)
     {

@@ -381,7 +381,7 @@ public class MedalsModel
     </BitQuickGrid>
 </div>
 <div class=""search-panel"">
-    <BitSearchBox @bind-Value=""virtualSampleNameFilter"" 
+    <BitSearchBox @bind-Value=""VirtualSampleNameFilter"" 
                   Immediate DebounceTime=""300""
                   Placeholder=""Search...""/>
 </div>";
@@ -1089,6 +1089,8 @@ public class MedalsModel
             <BitQuickGridTemplateColumn Class=""row-template-expand-col"">
                 <BitButton Variant=""BitVariant.Text"" Size=""BitSize.Small""
                             IconName=""@(expandedRowTemplateCodes.Contains(context.Code) ? BitIconName.ChevronDown : BitIconName.ChevronRight)""
+                            AriaLabel=""@(expandedRowTemplateCodes.Contains(context.Code) ? ""Collapse row details"" : ""Expand row details"")""
+                            Title=""@(expandedRowTemplateCodes.Contains(context.Code) ? ""Collapse row details"" : ""Expand row details"")""
                             OnClick=""@(() => ToggleRowRendererExpand(context.Code))"" />
             </BitQuickGridTemplateColumn>
             <BitQuickGridPropertyColumn Property=""@(c => c.Name)"" />
