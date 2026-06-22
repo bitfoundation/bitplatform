@@ -43,6 +43,7 @@
                             <div class="bit-bfc-hour-row bit-bfc-droppable @GetWeekDropClass(d, hour, 0)"
                                  role="button"
                                  tabindex="0"
+                                 aria-label="@HourSlotAriaLabel(d, hour)"
                                  @ondragenter="() => OnDragEnterSlot(d, hour, 0)"
                                  @ondragover:preventDefault="true"
                                  @ondrop="() => OnDrop(d, hour, 0)"

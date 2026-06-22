@@ -55,6 +55,12 @@ public partial class BitFcCalendarWeekView
             await OnHourClickAsync(day, hour);
     }
 
+    private string HourSlotAriaLabel(DateTime day, int hour)
+    {
+        var start = day.Date.AddHours(hour);
+        return $"{Texts.AddEventHoverHint}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
+    }
+
     private async Task OnDrop(DateTime day, int hour, int minute)
     {
         _dragDate = null;

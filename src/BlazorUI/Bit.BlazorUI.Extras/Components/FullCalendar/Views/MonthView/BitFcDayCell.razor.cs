@@ -57,7 +57,10 @@ public partial class BitFcDayCell
     {
         if (ev.IsSingleDay) return "none";
         if (ev.StartDate.Date == cellDate.Date) return "first";
-        if (ev.EndDate.Date == cellDate.Date) return "last";
+        // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with
+        // GetMonthCellEvents, so the badge on the true last day is marked "last" rather than "middle".
+        var lastDate = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+        if (lastDate == cellDate.Date) return "last";
         return "middle";
     }
 

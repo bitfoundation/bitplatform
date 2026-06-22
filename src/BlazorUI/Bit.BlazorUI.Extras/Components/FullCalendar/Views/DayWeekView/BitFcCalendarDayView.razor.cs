@@ -63,7 +63,7 @@ public partial class BitFcCalendarDayView : IDisposable
     private string HourSlotAriaLabel(int hour)
     {
         var start = State.SelectedDate.Date.AddHours(hour);
-        return $"{Texts.AddEventHoverHint}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat)}";
+        return $"{Texts.AddEventHoverHint}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
     }
 
     private async Task OnDropHour(int hour, int minute)

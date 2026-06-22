@@ -1,9 +1,9 @@
 @namespace Bit.BlazorUI
 
-<div class="bit-bfc-toast-container">
+<div class="bit-bfc-toast-container" aria-live="polite">
     @foreach (var toast in _toasts)
     {
-        <div class="bit-bfc-toast @(toast.IsError ? "error" : "success")">
+        <div class="bit-bfc-toast @(toast.IsError ? "error" : "success")" role="@(toast.IsError ? "alert" : "status")">
             @toast.Message
         </div>
     }
