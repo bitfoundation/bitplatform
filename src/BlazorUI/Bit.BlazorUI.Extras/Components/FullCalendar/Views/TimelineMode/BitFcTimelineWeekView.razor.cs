@@ -94,10 +94,10 @@ public partial class BitFcTimelineWeekView
             await OnSlotClickAsync(resourceId, day, hour, minute);
     }
 
-    private string SlotAriaLabel(DateTime day, int hour, int minute)
+    private string SlotAriaLabel(string rowLabel, DateTime day, int hour, int minute)
     {
         var start = day.Date.AddHours(hour).AddMinutes(minute);
-        return $"{Texts.AddEventHoverHint}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat)}";
+        return $"{Texts.AddEventHoverHint}, {rowLabel}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat)}";
     }
 
     private void OnDragEnter(string resourceId, DateTime day, int hour, int minute)

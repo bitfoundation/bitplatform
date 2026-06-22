@@ -16,6 +16,9 @@ public partial class BitFcFilterEvents
         State.SetColorFilter(string.IsNullOrWhiteSpace(value) ? null : value);
     }
 
-    private void HandleAttendeeChange(ChangeEventArgs e) =>
-        State.SetAttendeeFilter(e.Value?.ToString());
+    private void HandleAttendeeChange(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        State.SetAttendeeFilter(string.IsNullOrWhiteSpace(value) ? null : value);
+    }
 }

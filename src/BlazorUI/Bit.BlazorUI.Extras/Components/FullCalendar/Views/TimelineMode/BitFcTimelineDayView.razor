@@ -52,7 +52,7 @@
     </HeaderContent>
 
     <RowContent Context="resource">
-        @{ var rowKey = resource.Id; }
+        @{ var rowKey = resource.Id; var rowLabel = resource.Title; }
         @* Drop targets *@
         @for (var h = 0; h < 24; h++)
         {
@@ -63,7 +63,7 @@
                  style="left:@(hour * hourWidth)px;width:@(hourWidth)px;"
                  role="button"
                  tabindex="0"
-                 aria-label="@SlotAriaLabel(hour, 0)"
+                 aria-label="@SlotAriaLabel(rowLabel, hour, 0)"
                  @ondragenter="() => OnDragEnter(rowKey, hour, 0)"
                  @ondragover:preventDefault="true"
                  @ondrop="() => OnDrop(rowKey, hour, 0)"
@@ -73,7 +73,7 @@
                 <div class="bit-bfc-tl-cell-half @(isPreviewHalf ? "bit-bfc-tl-drop-preview" : "")"
                      role="button"
                      tabindex="0"
-                     aria-label="@SlotAriaLabel(hour, 30)"
+                     aria-label="@SlotAriaLabel(rowLabel, hour, 30)"
                      @ondragenter="() => OnDragEnter(rowKey, hour, 30)"
                      @ondragenter:stopPropagation="true"
                      @ondragover:preventDefault="true"
@@ -99,7 +99,7 @@
     </RowContent>
 
     <UnassignedRowContent>
-        @{ var rowKey = _unassignedKey; }
+        @{ var rowKey = _unassignedKey; var rowLabel = Texts.NoResourceLabel; }
         @for (var h = 0; h < 24; h++)
         {
             var hour = h;
@@ -109,7 +109,7 @@
                  style="left:@(hour * hourWidth)px;width:@(hourWidth)px;"
                  role="button"
                  tabindex="0"
-                 aria-label="@SlotAriaLabel(hour, 0)"
+                 aria-label="@SlotAriaLabel(rowLabel, hour, 0)"
                  @ondragenter="() => OnDragEnter(rowKey, hour, 0)"
                  @ondragover:preventDefault="true"
                  @ondrop="() => OnDrop(rowKey, hour, 0)"
@@ -119,7 +119,7 @@
                 <div class="bit-bfc-tl-cell-half @(isPreviewHalf ? "bit-bfc-tl-drop-preview" : "")"
                      role="button"
                      tabindex="0"
-                     aria-label="@SlotAriaLabel(hour, 30)"
+                     aria-label="@SlotAriaLabel(rowLabel, hour, 30)"
                      @ondragenter="() => OnDragEnter(rowKey, hour, 30)"
                      @ondragenter:stopPropagation="true"
                      @ondragover:preventDefault="true"

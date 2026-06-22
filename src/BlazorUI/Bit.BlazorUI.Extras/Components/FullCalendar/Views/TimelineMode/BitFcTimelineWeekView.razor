@@ -91,7 +91,7 @@
     </HeaderContent>
 
     <RowContent Context="resource">
-        @{ var rowKey = resource.Id; }
+        @{ var rowKey = resource.Id; var rowLabel = resource.Title; }
         @for (var di = 0; di < 7; di++)
         {
             var dayIndex = di;
@@ -103,13 +103,13 @@
             {
                 var hour = h;
                 var leftPx = dayOffsetPx + (hour * hourWidth);
-                var isPreviewHour = _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 0;
-                var isPreviewHalf = _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 30;
+                var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 0;
+                var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 30;
                 <div class="bit-bfc-tl-cell @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
                      style="left:@(leftPx)px;width:@(hourWidth)px;"
                      role="button"
                      tabindex="0"
-                     aria-label="@SlotAriaLabel(day, hour, 0)"
+                     aria-label="@SlotAriaLabel(rowLabel, day, hour, 0)"
                      @ondragenter="() => OnDragEnter(rowKey, day, hour, 0)"
                      @ondragover:preventDefault="true"
                      @ondrop="() => OnDrop(rowKey, day, hour, 0)"
@@ -118,7 +118,7 @@
                     <div class="bit-bfc-tl-cell-half @(isPreviewHalf ? "bit-bfc-tl-drop-preview" : "")"
                          role="button"
                          tabindex="0"
-                         aria-label="@SlotAriaLabel(day, hour, 30)"
+                         aria-label="@SlotAriaLabel(rowLabel, day, hour, 30)"
                          @ondragenter="() => OnDragEnter(rowKey, day, hour, 30)"
                          @ondragenter:stopPropagation="true"
                          @ondragover:preventDefault="true"
@@ -143,7 +143,7 @@
     </RowContent>
 
     <UnassignedRowContent>
-        @{ var rowKey = _unassignedKey; }
+        @{ var rowKey = _unassignedKey; var rowLabel = Texts.NoResourceLabel; }
         @for (var di = 0; di < 7; di++)
         {
             var dayIndex = di;
@@ -155,13 +155,13 @@
             {
                 var hour = h;
                 var leftPx = dayOffsetPx + (hour * hourWidth);
-                var isPreviewHour = _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 0;
-                var isPreviewHalf = _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 30;
+                var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 0;
+                var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 30;
                 <div class="bit-bfc-tl-cell @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
                      style="left:@(leftPx)px;width:@(hourWidth)px;"
                      role="button"
                      tabindex="0"
-                     aria-label="@SlotAriaLabel(day, hour, 0)"
+                     aria-label="@SlotAriaLabel(rowLabel, day, hour, 0)"
                      @ondragenter="() => OnDragEnter(rowKey, day, hour, 0)"
                      @ondragover:preventDefault="true"
                      @ondrop="() => OnDrop(rowKey, day, hour, 0)"
@@ -170,7 +170,7 @@
                     <div class="bit-bfc-tl-cell-half @(isPreviewHalf ? "bit-bfc-tl-drop-preview" : "")"
                          role="button"
                          tabindex="0"
-                         aria-label="@SlotAriaLabel(day, hour, 30)"
+                         aria-label="@SlotAriaLabel(rowLabel, day, hour, 30)"
                          @ondragenter="() => OnDragEnter(rowKey, day, hour, 30)"
                          @ondragenter:stopPropagation="true"
                          @ondragover:preventDefault="true"

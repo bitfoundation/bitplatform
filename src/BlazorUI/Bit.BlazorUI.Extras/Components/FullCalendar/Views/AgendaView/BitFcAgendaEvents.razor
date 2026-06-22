@@ -73,15 +73,15 @@
                         <div class="bit-bfc-agenda-time">
                             @if (State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)
                             {
-                                @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat)
+                                @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
                                 <span> - </span>
-                                @BitFullCalendarHelpers.FormatTime(ev.EndDate, State.Use24HourFormat)
+                                @BitFullCalendarHelpers.FormatTime(ev.EndDate, State.Use24HourFormat, State.Culture)
                             }
                             else
                             {
                                 @BitFullCalendarHelpers.FormatCultureDate(ev.StartDate, State.Culture)
                                 <span> · </span>
-                                @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat)
+                                @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
                             }
                         </div>
                     </div>

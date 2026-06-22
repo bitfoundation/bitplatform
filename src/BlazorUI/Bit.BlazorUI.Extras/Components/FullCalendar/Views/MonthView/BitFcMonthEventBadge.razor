@@ -27,6 +27,7 @@
      @ondragend="OnDragEnd"
      @onclick="() => OnSelected.InvokeAsync(Event)"
      @onkeydown="OnKeyDown"
+     @onkeydown:preventDefault="true"
      @onclick:stopPropagation="true">
 
     @if (EventTemplate != null)

@@ -29,8 +29,9 @@ public partial class BitFcWeekViewMultiDayEventsRow
 
         foreach (var ev in _weekEvents)
         {
+            var evEndInclusive = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
             var evDays = _weekDays
-                .Where(d => ev.StartDate.Date <= d.Date && ev.EndDate.Date >= d.Date)
+                .Where(d => ev.StartDate.Date <= d.Date && evEndInclusive >= d.Date)
                 .ToList();
 
             for (int row = 0; ; row++)
@@ -53,9 +54,10 @@ public partial class BitFcWeekViewMultiDayEventsRow
         foreach (var ev in _weekEvents)
         {
             var row = _eventRows[ev.Id];
+            var evEndInclusive = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
             foreach (var d in _weekDays)
             {
-                if (ev.StartDate.Date <= d.Date && ev.EndDate.Date >= d.Date)
+                if (ev.StartDate.Date <= d.Date && evEndInclusive >= d.Date)
                     _cellLookup[(d.Date, row)] = ev;
             }
         }
