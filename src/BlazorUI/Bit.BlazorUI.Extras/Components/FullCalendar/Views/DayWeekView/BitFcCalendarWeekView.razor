@@ -32,8 +32,13 @@
                 @foreach (var day in weekDays)
                 {
                     var d = day;
+                    // Interval-overlap against the day's half-open window [dayStart, dayEnd) so events
+                    // that span day boundaries are included once, and a 00:00 end (exclusive midnight)
+                    // does not bleed onto the next day.
+                    var dayStart = d.Date;
+                    var dayEnd = d.Date.AddDays(1);
                     var dayEvents = SingleDayEvents.Where(e =>
-                        e.StartDate.Date == d.Date || e.EndDate.Date == d.Date).ToList();
+                        e.StartDate < dayEnd && e.EndDate > dayStart).ToList();
                     var grouped = BitFullCalendarHelpers.GroupEvents(dayEvents);
 
                     <div class="bit-bfc-week-day-col">

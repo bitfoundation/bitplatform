@@ -67,8 +67,7 @@
                          role="@(hasEvents ? "button" : null)"
                          tabindex="@(hasEvents ? "0" : null)"
                          @onclick="() => { if (hasEvents) ShowEventsForDay(cell.Date, dayEvents); }"
-                         @onkeydown="e => OnDayKeyDown(e, hasEvents, cell.Date, dayEvents)"
-                         @onkeydown:preventDefault="true">
+                         @onkeydown="e => OnDayKeyDown(e, hasEvents, cell.Date, dayEvents)">
                         <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
                         @if (hasEvents)
                         {

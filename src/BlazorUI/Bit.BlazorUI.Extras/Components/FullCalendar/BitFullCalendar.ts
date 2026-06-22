@@ -77,6 +77,11 @@ namespace BitBlazorUI {
             const el = document.getElementById(elementId);
             if (!el) return;
 
+            // Guard against duplicate handlers when init is invoked more than once on the same element.
+            const boundKey = "__bitFcResizeBound";
+            if ((el as any)[boundKey]) return;
+            (el as any)[boundKey] = true;
+
             const pixelsPerHour = 96;
             const minPerPixel = 60 / pixelsPerHour;
 
@@ -182,6 +187,11 @@ namespace BitBlazorUI {
         public static initResizeHorizontal(dotNetRef: DotNetObject, elementId: string, direction: string) {
             const el = document.getElementById(elementId);
             if (!el) return;
+
+            // Guard against duplicate handlers when init is invoked more than once on the same element.
+            const boundKey = "__bitFcResizeHorizontalBound";
+            if ((el as any)[boundKey]) return;
+            (el as any)[boundKey] = true;
 
             el.addEventListener("pointerdown", async (e: PointerEvent) => {
                 if (e.button !== 0) return;
