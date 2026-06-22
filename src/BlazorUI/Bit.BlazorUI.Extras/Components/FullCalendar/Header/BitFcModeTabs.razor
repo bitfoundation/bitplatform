@@ -1,21 +1,21 @@
 @namespace Bit.BlazorUI
 
 @*
-  Top-level mode switch (Event ⇄ Timeline). The Timeline tab is hidden when no resources are
-  supplied because the timeline mode is meaningless without resources, but the Event tab stays
-  visible so users are never stranded in a mode they can no longer switch out of.
+  Top-level mode switch (Event ⇄ Timeline). The whole switch is rendered only when at least one
+  resource is supplied, because the Timeline mode is meaningless without resources and a lone
+  Event tab adds no value.
 *@
 
-<div class="bit-bfc-mode-tabs">
-    @foreach (var mode in _modes)
-    {
-        if (mode == BitFullCalendarMode.Timeline && State.Resources.Count == 0)
-            continue;
-
-        <button class="bit-bfc-mode-tab @(State.Mode == mode ? "active" : "")"
-                type="button"
-                @onclick="() => State.SetMode(mode)">
-            @Texts.GetModeLabel(mode)
-        </button>
-    }
-</div>
+@if (State.Resources.Count > 0)
+{
+    <div class="bit-bfc-mode-tabs">
+        @foreach (var mode in _modes)
+        {
+            <button class="bit-bfc-mode-tab @(State.Mode == mode ? "active" : "")"
+                    type="button"
+                    @onclick="() => State.SetMode(mode)">
+                @Texts.GetModeLabel(mode)
+            </button>
+        }
+    </div>
+}

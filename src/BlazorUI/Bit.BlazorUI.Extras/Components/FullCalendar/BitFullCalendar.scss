@@ -349,7 +349,7 @@
 
 .bit-bfc-event-badge.position-middle {
     border-radius: 0;
-    margin: 0;
+    margin: 0 !important;
     border-left: none;
     border-right: none;
 }
@@ -1537,6 +1537,7 @@
 }
 
 .bit-bfc-dropdown-item {
+    gap: 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1545,10 +1546,7 @@
     font-size: 13px;
     cursor: pointer;
     transition: background 0.1s;
-}
-
-.bit-bfc-dropdown-item:hover {
-    background: var(--bit-bfc-bg-hover);
+    background: transparent;
 }
 
 .bit-bfc-dropdown-sep {
@@ -2033,11 +2031,6 @@
     border-radius: 0 4px 4px 0;
     border-left: none;
     border-right: 1px solid transparent;
-}
-
-[dir="rtl"] .bit-bfc-event-badge.position-middle {
-    border-left: none;
-    border-right: none;
 }
 
 [dir="rtl"] .bit-bfc-event-badge.position-last {

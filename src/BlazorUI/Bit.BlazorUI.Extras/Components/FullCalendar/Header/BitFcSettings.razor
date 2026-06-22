@@ -33,6 +33,14 @@
                 </span>
             </button>
 
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@State.ShowDayViewCalendar" @onclick="State.ToggleShowDayViewCalendar">
+                <span>@Texts.ShowDayViewCalendarLabel</span>
+                <span class="bit-bfc-toggle @(State.ShowDayViewCalendar ? "checked" : "")" aria-hidden="true">
+                    <span class="bit-bfc-toggle-track"></span>
+                    <span class="bit-bfc-toggle-thumb"></span>
+                </span>
+            </button>
+
             <div class="bit-bfc-dropdown-sep"></div>
 
             <div class="bit-bfc-dropdown-item">

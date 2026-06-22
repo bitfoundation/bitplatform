@@ -6,15 +6,6 @@ public partial class BitFullCalendarDemo
     [
         new()
         {
-            Name = "Events",
-            Type = "List<BitFullCalendarEvent>?",
-            DefaultValue = "null",
-            Description = "List of calendar events to display.",
-            LinkType = LinkType.Link,
-            Href = "#event-class",
-        },
-        new()
-        {
             Name = "Culture",
             Type = "CultureInfo?",
             DefaultValue = "CultureInfo.CurrentUICulture",
@@ -29,12 +20,44 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
-            Name = "Texts",
-            Type = "BitFullCalendarTexts",
-            DefaultValue = "new()",
-            Description = "Custom UI strings for labels, placeholders, action buttons, aria labels, and validation messages.",
+            Name = "Date",
+            Type = "DateTime",
+            DefaultValue = "DateTime.Today",
+            Description = "The currently selected (anchor) date of the calendar that determines the visible date range. (two-way bound)",
+        },
+        new()
+        {
+            Name = "DayEventTemplate",
+            Type = "RenderFragment<BitFullCalendarEvent>?",
+            DefaultValue = "null",
+            Description = "Replaces the default event card content inside day-view time-grid blocks.",
             LinkType = LinkType.Link,
-            Href = "#texts-class",
+            Href = "#event-class",
+        },
+        new()
+        {
+            Name = "DefaultDate",
+            Type = "DateTime?",
+            DefaultValue = "null",
+            Description = "The default selected date used initially when the Date parameter is not set. Determines the date range shown on first render.",
+        },
+        new()
+        {
+            Name = "DefaultMode",
+            Type = "BitFullCalendarMode?",
+            DefaultValue = "null",
+            Description = "The default layout mode used initially when the Mode parameter is not set. Event shows day/week/month/year/agenda views. Timeline shows resources × time grid and requires Resources to be non-empty.",
+            LinkType = LinkType.Link,
+            Href = "#mode-enum",
+        },
+        new()
+        {
+            Name = "DefaultView",
+            Type = "BitFullCalendarView?",
+            DefaultValue = "null",
+            Description = "The default view used initially when the View parameter is not set (Day, Week, Month, Year, Agenda).",
+            LinkType = LinkType.Link,
+            Href = "#view-enum",
         },
         new()
         {
@@ -47,57 +70,12 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
-            Name = "Resources",
-            Type = "IReadOnlyList<BitFullCalendarResource>?",
+            Name = "Events",
+            Type = "List<BitFullCalendarEvent>?",
             DefaultValue = "null",
-            Description = "Resources displayed as rows in Timeline mode. Each event's Resource property is matched against the resource Id. The Timeline mode tab is hidden when null or empty.",
-            LinkType = LinkType.Link,
-            Href = "#resource-class",
-        },
-        new()
-        {
-            Name = "InitialMode",
-            Type = "BitFullCalendarMode?",
-            DefaultValue = "null",
-            Description = "Initial layout mode. Event shows day/week/month/year/agenda views. Timeline shows resources × time grid and requires Resources to be non-empty.",
-            LinkType = LinkType.Link,
-            Href = "#mode-enum",
-        },
-        new()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<BitFullCalendarChangeEventArgs>",
-            DefaultValue = "",
-            Description = "Raised when a user adds, edits, or deletes an event (Kind: Add, Edit, Delete; Source: Dialog, Drag, Resize, Delete).",
-            LinkType = LinkType.Link,
-            Href = "#change-args-class",
-        },
-        new()
-        {
-            Name = "OnAddClick",
-            Type = "EventCallback<BitFullCalendarEvent?>",
-            DefaultValue = "",
-            Description = "When assigned, the built-in add dialog is suppressed. Receives a draft event with pre-filled dates from the clicked slot.",
+            Description = "List of calendar events to display.",
             LinkType = LinkType.Link,
             Href = "#event-class",
-        },
-        new()
-        {
-            Name = "OnEventClick",
-            Type = "EventCallback<BitFullCalendarEvent>",
-            DefaultValue = "",
-            Description = "When assigned, the built-in event details dialog is suppressed when an event is clicked. Receives the clicked event.",
-            LinkType = LinkType.Link,
-            Href = "#event-class",
-        },
-        new()
-        {
-            Name = "OnDateChange",
-            Type = "EventCallback<BitFullCalendarDateChangeEventArgs>",
-            DefaultValue = "",
-            Description = "Raised when the visible date range changes after prev/next/today navigation or a view switch. Payload includes inclusive Start/End and the active View.",
-            LinkType = LinkType.Link,
-            Href = "#date-change-args-class",
         },
         new()
         {
@@ -111,34 +89,16 @@ public partial class BitFullCalendarDemo
             Name = "HideSettings",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When true, hides the built-in settings gear button. Settings can still be driven programmatically through Options.",
+            Description = "When true, hides the built-in settings gear button. Settings can still be driven programmatically through the Settings parameter.",
         },
         new()
         {
-            Name = "Options",
-            Type = "BitFullCalendarOptions",
-            DefaultValue = "new()",
-            Description = "Initial preferences - 12/24-hour time format, badge variant, day start hour, agenda grouping, and event card layout.",
+            Name = "Mode",
+            Type = "BitFullCalendarMode",
+            DefaultValue = "BitFullCalendarMode.Event",
+            Description = "The currently active layout mode of the calendar (Event or Timeline). Timeline requires Resources to be non-empty. (two-way bound)",
             LinkType = LinkType.Link,
-            Href = "#options-class",
-        },
-        new()
-        {
-            Name = "DayEventTemplate",
-            Type = "RenderFragment<BitFullCalendarEvent>?",
-            DefaultValue = "null",
-            Description = "Replaces the default event card content inside day-view time-grid blocks.",
-            LinkType = LinkType.Link,
-            Href = "#event-class",
-        },
-        new()
-        {
-            Name = "WeekEventTemplate",
-            Type = "RenderFragment<BitFullCalendarEvent>?",
-            DefaultValue = "null",
-            Description = "Replaces the default event card content inside week-view time-grid blocks.",
-            LinkType = LinkType.Link,
-            Href = "#event-class",
+            Href = "#mode-enum",
         },
         new()
         {
@@ -151,10 +111,109 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
+            Name = "OnAddClick",
+            Type = "EventCallback<BitFullCalendarEvent?>",
+            DefaultValue = "",
+            Description = "When assigned, the built-in add dialog is suppressed. Receives a draft event with pre-filled dates from the clicked slot.",
+            LinkType = LinkType.Link,
+            Href = "#event-class",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<BitFullCalendarChangeEventArgs>",
+            DefaultValue = "",
+            Description = "Raised when a user adds, edits, or deletes an event (Kind: Add, Edit, Delete; Source: Dialog, Drag, Resize, Delete).",
+            LinkType = LinkType.Link,
+            Href = "#change-args-class",
+        },
+        new()
+        {
+            Name = "OnDateChange",
+            Type = "EventCallback<BitFullCalendarDateChangeEventArgs>",
+            DefaultValue = "",
+            Description = "Raised when the visible date range changes after prev/next/today navigation or a view switch. Payload includes inclusive Start/End and the active View.",
+            LinkType = LinkType.Link,
+            Href = "#date-change-args-class",
+        },
+        new()
+        {
+            Name = "OnEventClick",
+            Type = "EventCallback<BitFullCalendarEvent>",
+            DefaultValue = "",
+            Description = "When assigned, the built-in event details dialog is suppressed when an event is clicked. Receives the clicked event.",
+            LinkType = LinkType.Link,
+            Href = "#event-class",
+        },
+        new()
+        {
+            Name = "OnModeChange",
+            Type = "EventCallback<BitFullCalendarMode>",
+            DefaultValue = "",
+            Description = "Raised when the active layout mode changes (switching between the Event and Timeline tabs).",
+            LinkType = LinkType.Link,
+            Href = "#mode-enum",
+        },
+        new()
+        {
+            Name = "OnViewChange",
+            Type = "EventCallback<BitFullCalendarView>",
+            DefaultValue = "",
+            Description = "Raised when the active view changes (selecting a view tab or navigating from the year overview into a month).",
+            LinkType = LinkType.Link,
+            Href = "#view-enum",
+        },
+        new()
+        {
+            Name = "Resources",
+            Type = "IReadOnlyList<BitFullCalendarResource>?",
+            DefaultValue = "null",
+            Description = "Resources displayed as rows in Timeline mode. Each event's Resource property is matched against the resource Id. The Timeline mode tab is hidden when null or empty.",
+            LinkType = LinkType.Link,
+            Href = "#resource-class",
+        },
+        new()
+        {
+            Name = "Settings",
+            Type = "BitFullCalendarSettings",
+            DefaultValue = "new()",
+            Description = "Initial preferences - 12/24-hour time format, badge variant, day start hour, agenda grouping, and event card layout.",
+            LinkType = LinkType.Link,
+            Href = "#settings-class",
+        },
+        new()
+        {
+            Name = "Texts",
+            Type = "BitFullCalendarTexts",
+            DefaultValue = "new()",
+            Description = "Custom UI strings for labels, placeholders, action buttons, aria labels, and validation messages.",
+            LinkType = LinkType.Link,
+            Href = "#texts-class",
+        },
+        new()
+        {
             Name = "TimelineEventTemplate",
             Type = "RenderFragment<BitFullCalendarEvent>?",
             DefaultValue = "null",
             Description = "Replaces the default event card content inside Timeline mode blocks.",
+            LinkType = LinkType.Link,
+            Href = "#event-class",
+        },
+        new()
+        {
+            Name = "View",
+            Type = "BitFullCalendarView",
+            DefaultValue = "BitFullCalendarView.Month",
+            Description = "The currently active view of the calendar (Day, Week, Month, Year, Agenda). (two-way bound)",
+            LinkType = LinkType.Link,
+            Href = "#view-enum",
+        },
+        new()
+        {
+            Name = "WeekEventTemplate",
+            Type = "RenderFragment<BitFullCalendarEvent>?",
+            DefaultValue = "null",
+            Description = "Replaces the default event card content inside week-view time-grid blocks.",
             LinkType = LinkType.Link,
             Href = "#event-class",
         },
@@ -314,9 +373,9 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
-            Id = "options-class",
-            Title = "BitFullCalendarOptions",
-            Description = "Configuration options applied as initial defaults when the component mounts, or whenever a new instance is assigned to the Options parameter.",
+            Id = "settings-class",
+            Title = "BitFullCalendarSettings",
+            Description = "Configuration settings applied as initial defaults when the component mounts, or whenever a new instance is assigned to the Settings parameter.",
             Parameters =
             [
                 new() { Name = "Use24HourFormat", Type = "bool", DefaultValue = "true", Description = "Uses 24-hour time format instead of 12-hour (AM/PM)." },
@@ -324,6 +383,7 @@ public partial class BitFullCalendarDemo
                 new() { Name = "StartOfDayHour", Type = "int", DefaultValue = "8", Description = "Hour (0–16) at which the day/week time grid begins." },
                 new() { Name = "AgendaModeGroupBy", Type = "BitFullCalendarAgendaGroupBy", DefaultValue = "BitFullCalendarAgendaGroupBy.Date", Description = "How events are grouped in the agenda view.", LinkType = LinkType.Link, Href = "#agenda-group-by-enum" },
                 new() { Name = "EventLayout", Type = "BitFullCalendarEventLayout", DefaultValue = "BitFullCalendarEventLayout.Overlap", Description = "How overlapping event cards are positioned in the day and week views.", LinkType = LinkType.Link, Href = "#event-layout-enum" },
+                new() { Name = "ShowDayViewCalendar", Type = "bool", DefaultValue = "true", Description = "Renders the mini calendar shown in the day view sidebar." },
             ]
         },
         new()
@@ -387,6 +447,7 @@ public partial class BitFullCalendarDemo
                 new() { Name = "AgendaGroupByDate", Type = "string", DefaultValue = "\"Date\"", Description = "Option text for grouping the agenda by date." },
                 new() { Name = "AgendaGroupByColor", Type = "string", DefaultValue = "\"Color\"", Description = "Option text for grouping the agenda by color." },
                 new() { Name = "StackedEventsLabel", Type = "string", DefaultValue = "\"Stack overlapping events\"", Description = "Label for the overlapping events layout toggle." },
+                new() { Name = "ShowDayViewCalendarLabel", Type = "string", DefaultValue = "\"Show calendar in day view\"", Description = "Label for the day view mini calendar toggle." },
                 new() { Name = "WeekMobileWarning", Type = "string", DefaultValue = "\"Weekly view is not recommended...\"", Description = "Warning shown when using the week view on small devices." },
                 new() { Name = "HappeningNowTitle", Type = "string", DefaultValue = "\"Happening now\"", Description = "Title for the happening-now indicator." },
                 new() { Name = "NoAppointmentsNow", Type = "string", DefaultValue = "\"No appointments at the moment\"", Description = "Text shown when there are no current appointments." },
@@ -443,14 +504,14 @@ public partial class BitFullCalendarDemo
 
 
     private readonly List<BitFullCalendarEvent> basicEvents = CreateEvents();
-    private readonly List<BitFullCalendarEvent> optionsEvents = CreateEvents();
+    private readonly List<BitFullCalendarEvent> settingsEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> templateEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> changeEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> localizationEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> layoutEvents = CreateEvents();
 
     private BitFullCalendarEventLayout layoutMode = BitFullCalendarEventLayout.Stack;
-    private BitFullCalendarOptions layoutOptions = new()
+    private BitFullCalendarSettings layoutSettings = new()
     {
         EventLayout = BitFullCalendarEventLayout.Stack
     };
@@ -458,12 +519,12 @@ public partial class BitFullCalendarDemo
     private void HandleLayoutChange(BitFullCalendarEventLayout layout)
     {
         layoutMode = layout;
-        // Assign a new options instance so the calendar re-applies the layout (the
-        // Options parameter is re-applied only when a new reference is supplied).
-        layoutOptions = new() { EventLayout = layout };
+        // Assign a new settings instance so the calendar re-applies the layout (the
+        // Settings parameter is re-applied only when a new reference is supplied).
+        layoutSettings = new() { EventLayout = layout };
     }
 
-    private readonly BitFullCalendarOptions options = new()
+    private readonly BitFullCalendarSettings settings = new()
     {
         Use24HourFormat = false,
         StartOfDayHour = 7,
@@ -506,6 +567,7 @@ public partial class BitFullCalendarDemo
         AgendaGroupByDate = "تاریخ",
         AgendaGroupByColor = "رنگ",
         StackedEventsLabel = "چیدمان رویدادهای هم‌پوشان",
+        ShowDayViewCalendarLabel = "نمایش تقویم در نمای روزانه",
 
         // Messages
         WeekMobileWarning = "نمای هفتگی برای دستگاه‌های کوچک توصیه نمی‌شود. لطفاً از رایانه استفاده کنید یا نمای روزانه را انتخاب کنید.",
@@ -578,6 +640,19 @@ public partial class BitFullCalendarDemo
     ];
 
     private readonly List<BitFullCalendarEvent> resourceEvents = CreateResourceEvents();
+
+    private readonly List<BitFullCalendarEvent> bindingEvents = CreateResourceEvents();
+    private BitFullCalendarView bindingView = BitFullCalendarView.Week;
+    private BitFullCalendarMode bindingMode = BitFullCalendarMode.Event;
+    private DateTime bindingDate = DateTime.Today;
+    private string? bindingLog;
+
+    private void HandleViewChange(BitFullCalendarView view) => bindingLog = $"View changed to {view}";
+
+    private void HandleModeChange(BitFullCalendarMode mode) => bindingLog = $"Mode changed to {mode}";
+
+    private void HandleDateChange(BitFullCalendarDateChangeEventArgs args)
+        => bindingLog = $"Range {args.Start:yyyy-MM-dd} → {args.End:yyyy-MM-dd} ({args.View})";
 
     private string? lastChange;
 
@@ -652,10 +727,10 @@ public partial class BitFullCalendarDemo
 @code {" + eventsCode + @"
 }";
 
-    private readonly string example2RazorCode = @"<BitFullCalendar Events=""events"" Options=""options"" />
+    private readonly string example2RazorCode = @"<BitFullCalendar Events=""events"" Settings=""settings"" />
 
 @code {
-    private readonly BitFullCalendarOptions options = new()
+    private readonly BitFullCalendarSettings settings = new()
     {
         Use24HourFormat = false,
         StartOfDayHour = 7,
@@ -685,7 +760,7 @@ public partial class BitFullCalendarDemo
 
     private readonly string example5RazorCode = @"<BitFullCalendar Events=""events""
                  Resources=""resources""
-                 InitialMode=""BitFullCalendarMode.Timeline"" />
+                 DefaultMode=""BitFullCalendarMode.Timeline"" />
 
 @code {
     private readonly List<BitFullCalendarResource> resources =
@@ -726,7 +801,7 @@ public partial class BitFullCalendarDemo
 " + eventsCode + @"
 }";
 
-    private readonly string example7RazorCode = @"<BitFullCalendar Events=""events"" CultureName=""fa-IR"" Texts=""persianTexts"" />
+    private readonly string example8RazorCode = @"<BitFullCalendar Events=""events"" CultureName=""fa-IR"" Texts=""persianTexts"" />
 
 @code {
     private readonly BitFullCalendarTexts persianTexts = new()
@@ -765,6 +840,7 @@ public partial class BitFullCalendarDemo
         AgendaGroupByDate = ""تاریخ"",
         AgendaGroupByColor = ""رنگ"",
         StackedEventsLabel = ""چیدمان رویدادهای هم‌پوشان"",
+        ShowDayViewCalendarLabel = ""نمایش تقویم در نمای روزانه"",
 
         // Messages
         WeekMobileWarning = ""نمای هفتگی برای دستگاه‌های کوچک توصیه نمی‌شود. لطفاً از رایانه استفاده کنید یا نمای روزانه را انتخاب کنید."",
@@ -831,9 +907,81 @@ public partial class BitFullCalendarDemo
 " + eventsCode + @"
 }";
 
-    private readonly string example8RazorCode = @"<BitFullCalendar Events=""events"" HideFilters HideSettings />
+    private readonly string example9RazorCode = @"<BitFullCalendar Events=""events"" HideFilters HideSettings />
 
 @code {" + eventsCode + @"
+}";
+
+    private readonly string example7RazorCode = @"<BitChoiceGroup Horizontal Label=""View""
+                TItem=""BitChoiceGroupOption<BitFullCalendarView>""
+                TValue=""BitFullCalendarView""
+                @bind-Value=""bindingView"">
+    <BitChoiceGroupOption Text=""Day"" Value=""BitFullCalendarView.Day"" />
+    <BitChoiceGroupOption Text=""Week"" Value=""BitFullCalendarView.Week"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""BitFullCalendarView.Month"" />
+    <BitChoiceGroupOption Text=""Year"" Value=""BitFullCalendarView.Year"" />
+    <BitChoiceGroupOption Text=""Agenda"" Value=""BitFullCalendarView.Agenda"" />
+</BitChoiceGroup>
+<BitChoiceGroup Horizontal Label=""Mode""
+                TItem=""BitChoiceGroupOption<BitFullCalendarMode>""
+                TValue=""BitFullCalendarMode""
+                @bind-Value=""bindingMode"">
+    <BitChoiceGroupOption Text=""Event"" Value=""BitFullCalendarMode.Event"" />
+    <BitChoiceGroupOption Text=""Timeline"" Value=""BitFullCalendarMode.Timeline"" />
+</BitChoiceGroup>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => bindingDate = bindingDate.AddDays(-1)"">Prev day</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => bindingDate = DateTime.Today"">Today</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => bindingDate = bindingDate.AddDays(1)"">Next day</BitButton>
+
+<BitFullCalendar Events=""events""
+                 Resources=""resources""
+                 DefaultView=""BitFullCalendarView.Week""
+                 DefaultMode=""BitFullCalendarMode.Event""
+                 DefaultDate=""DateTime.Today""
+                 @bind-View=""bindingView""
+                 @bind-Mode=""bindingMode""
+                 @bind-Date=""bindingDate""
+                 OnViewChange=""HandleViewChange""
+                 OnModeChange=""HandleModeChange""
+                 OnDateChange=""HandleDateChange"" />
+
+<BitText>View: <b>@bindingView</b> | Mode: <b>@bindingMode</b> | Date: <b>@bindingDate.ToString(""yyyy-MM-dd"")</b></BitText>
+<BitText>Last calendar event: <b>@(bindingLog ?? ""-"")</b></BitText>
+
+@code {
+    private BitFullCalendarView bindingView = BitFullCalendarView.Week;
+    private BitFullCalendarMode bindingMode = BitFullCalendarMode.Event;
+    private DateTime bindingDate = DateTime.Today;
+    private string? bindingLog;
+
+    private void HandleViewChange(BitFullCalendarView view) => bindingLog = $""View changed to {view}"";
+
+    private void HandleModeChange(BitFullCalendarMode mode) => bindingLog = $""Mode changed to {mode}"";
+
+    private void HandleDateChange(BitFullCalendarDateChangeEventArgs args)
+        => bindingLog = $""Range {args.Start:yyyy-MM-dd} → {args.End:yyyy-MM-dd} ({args.View})"";
+
+    private readonly List<BitFullCalendarResource> resources =
+    [
+        new() { Id = ""room-bay"", Title = ""HQ - Bay Wing"", Subtitle = ""Headquarters"" },
+        new() { Id = ""room-garden"", Title = ""The Garden"", Subtitle = ""Headquarters"" },
+        new() { Id = ""room-war"", Title = ""War Room (B1)"", Subtitle = ""Basement"" },
+    ];
+
+    private readonly List<BitFullCalendarEvent> events = CreateResourceEvents();
+
+    private static List<BitFullCalendarEvent> CreateResourceEvents()
+    {
+        var today = DateTime.Today;
+        var id = 100;
+        return
+        [
+            new() { Id = (++id).ToString(), Title = ""Design Review"", StartDate = today.AddHours(10), EndDate = today.AddHours(11), Resource = ""room-bay"", Color = ""purple"" },
+            new() { Id = (++id).ToString(), Title = ""Standup"", StartDate = today.AddHours(9), EndDate = today.AddHours(9).AddMinutes(30), Resource = ""room-garden"", Color = ""blue"" },
+            new() { Id = (++id).ToString(), Title = ""Incident Bridge"", StartDate = today.AddHours(13), EndDate = today.AddHours(15), Resource = ""room-war"", Color = ""red"" },
+            new() { Id = (++id).ToString(), Title = ""Workshop"", StartDate = today.AddHours(14), EndDate = today.AddHours(16), Resource = ""room-bay"", Color = ""orange"" },
+        ];
+    }
 }";
 
     private readonly string example3RazorCode = @"<BitChoiceGroup Horizontal
@@ -846,11 +994,11 @@ public partial class BitFullCalendarDemo
     <BitChoiceGroupOption Text=""Stack"" Value=""BitFullCalendarEventLayout.Stack"" />
 </BitChoiceGroup>
 <br />
-<BitFullCalendar Events=""events"" Options=""layoutOptions"" />
+<BitFullCalendar Events=""events"" Settings=""layoutSettings"" />
 
 @code {
     private BitFullCalendarEventLayout layoutMode = BitFullCalendarEventLayout.Stack;
-    private BitFullCalendarOptions layoutOptions = new()
+    private BitFullCalendarSettings layoutSettings = new()
     {
         EventLayout = BitFullCalendarEventLayout.Stack
     };
@@ -858,9 +1006,9 @@ public partial class BitFullCalendarDemo
     private void HandleLayoutChange(BitFullCalendarEventLayout layout)
     {
         layoutMode = layout;
-        // Assign a new options instance so the calendar re-applies the layout (the
-        // Options parameter is re-applied only when a new reference is supplied).
-        layoutOptions = new() { EventLayout = layout };
+        // Assign a new settings instance so the calendar re-applies the layout (the
+        // Settings parameter is re-applied only when a new reference is supplied).
+        layoutSettings = new() { EventLayout = layout };
     }
 " + eventsCode + @"
 }";

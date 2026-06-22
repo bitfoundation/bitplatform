@@ -1,11 +1,11 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Configuration options for the <see cref="BitFullCalendar"/> component.
+/// Configuration settings for the <see cref="BitFullCalendar"/> component.
 /// These values are applied as initial defaults when the component mounts,
-/// or whenever a new <see cref="BitFullCalendarOptions"/> instance is assigned.
+/// or whenever a new <see cref="BitFullCalendarSettings"/> instance is assigned.
 /// </summary>
-public class BitFullCalendarOptions
+public class BitFullCalendarSettings
 {
     /// <summary>Uses 24-hour time format instead of 12-hour (AM/PM).</summary>
     public bool Use24HourFormat { get; set; } = true;
@@ -26,4 +26,7 @@ public class BitFullCalendarOptions
 
     /// <summary>How overlapping event cards are positioned in the day and week views.</summary>
     public BitFullCalendarEventLayout EventLayout { get; set; } = BitFullCalendarEventLayout.Overlap;
+
+    /// <summary>Renders the mini calendar shown in the day view sidebar.</summary>
+    public bool ShowDayViewCalendar { get; set; } = true;
 }

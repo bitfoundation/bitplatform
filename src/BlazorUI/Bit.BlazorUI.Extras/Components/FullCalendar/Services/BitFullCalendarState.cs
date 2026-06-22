@@ -20,6 +20,8 @@ public class BitFullCalendarState
     public int StartOfDayHour { get; private set; } = 8;
     public BitFullCalendarAgendaGroupBy AgendaModeGroupBy { get; private set; } = BitFullCalendarAgendaGroupBy.Date;
     public BitFullCalendarEventLayout EventLayout { get; private set; } = BitFullCalendarEventLayout.Overlap;
+    /// <summary>Whether the mini calendar is rendered in the day view sidebar.</summary>
+    public bool ShowDayViewCalendar { get; private set; } = true;
     /// <summary>Incremented when <see cref="GoToToday"/> is invoked in agenda view so the list can scroll to today.</summary>
     public ulong AgendaScrollToTodayNonce { get; private set; }
 
@@ -147,6 +149,20 @@ public class BitFullCalendarState
         if (EventLayout == layout)
             return;
         EventLayout = layout;
+        NotifyStateChanged();
+    }
+
+    public void SetShowDayViewCalendar(bool value)
+    {
+        if (ShowDayViewCalendar == value)
+            return;
+        ShowDayViewCalendar = value;
+        NotifyStateChanged();
+    }
+
+    public void ToggleShowDayViewCalendar()
+    {
+        ShowDayViewCalendar = !ShowDayViewCalendar;
         NotifyStateChanged();
     }
 
