@@ -69,7 +69,7 @@ public sealed class BlockProcessor
         foreach (char c in line)
         {
             if (c == ' ') indent++;
-            else if (c == '\t') indent += 4;
+            else if (c == '\t') indent += 4 - (indent % 4); // advance to next tab stop
             else break;
         }
         return indent;
@@ -81,7 +81,7 @@ public sealed class BlockProcessor
         while (idx < line.Length && removed < count)
         {
             if (line[idx] == ' ') { removed++; idx++; }
-            else if (line[idx] == '\t') { removed += 4; idx++; }
+            else if (line[idx] == '\t') { removed += 4 - (removed % 4); idx++; } // advance to next tab stop
             else break;
         }
         return line[idx..];

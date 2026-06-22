@@ -45,7 +45,7 @@
                 <div class="mdv-hint">@playgroundHint</div>
 
                 <div class="mdv-split">
-                    <textarea class="mdv-editor" spellcheck="false" @bind="playgroundMarkdown" @bind:event="oninput"></textarea>
+                    <textarea class="mdv-editor" spellcheck="false" aria-label="Markdown editor" @bind="playgroundMarkdown" @bind:event="oninput"></textarea>
                     <div class="mdv-preview">
                         <BitMarkdownViewer Markdown="@playgroundMarkdown" Pipeline="@playgroundPipeline" />
                     </div>

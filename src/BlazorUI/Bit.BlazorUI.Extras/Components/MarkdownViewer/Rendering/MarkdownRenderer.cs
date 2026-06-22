@@ -48,5 +48,9 @@ public sealed class MarkdownRenderer
                 return;
             }
         }
+
+        throw new InvalidOperationException(
+            $"No renderer registered for node type '{node.GetType().Name}'. " +
+            "Register a NodeRenderer for it via the pipeline builder.");
     }
 }

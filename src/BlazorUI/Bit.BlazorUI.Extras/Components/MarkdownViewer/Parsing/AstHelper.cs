@@ -12,26 +12,48 @@ public static class AstHelper
     /// </summary>
     public static void VisitChildLists(MarkdownNode node, Action<IList<MarkdownNode>> action)
     {
-        foreach (var list in node.ChildLists)
+        // Iterative depth-first traversal to avoid stack overflow on deeply nested input.
+        var stack = new Stack<MarkdownNode>();
+        stack.Push(node);
+        while (stack.Count > 0)
         {
-            action(list);
-            // Snapshot because the action may have replaced entries.
-            foreach (var child in list.ToArray())
-                VisitChildLists(child, action);
+            var current = stack.Pop();
+            // Collect children after invoking the action, since the action may
+            // replace entries in the list (e.g. splitting a text node).
+            var children = new List<MarkdownNode>();
+            foreach (var list in current.ChildLists)
+            {
+                action(list);
+                children.AddRange(list);
+            }
+            // Push in reverse so children are processed in document order.
+            for (int i = children.Count - 1; i >= 0; i--)
+                stack.Push(children[i]);
         }
     }
 
     /// <summary>Enumerates every node in the tree (excluding the root).</summary>
     public static IEnumerable<MarkdownNode> Descendants(MarkdownNode node)
     {
-        foreach (var list in node.ChildLists)
+        // Iterative pre-order traversal to avoid stack overflow on deeply nested input.
+        var stack = new Stack<MarkdownNode>();
+        PushChildrenReversed(node, stack);
+        while (stack.Count > 0)
         {
-            foreach (var child in list)
-            {
-                yield return child;
-                foreach (var d in Descendants(child))
-                    yield return d;
-            }
+            var current = stack.Pop();
+            yield return current;
+            PushChildrenReversed(current, stack);
         }
+    }
+
+    private static void PushChildrenReversed(MarkdownNode node, Stack<MarkdownNode> stack)
+    {
+        // Flatten children across all child lists (in order), then push them
+        // reversed so they pop in document (pre-order) order.
+        var children = new List<MarkdownNode>();
+        foreach (var list in node.ChildLists)
+            children.AddRange(list);
+        for (int i = children.Count - 1; i >= 0; i--)
+            stack.Push(children[i]);
     }
 }

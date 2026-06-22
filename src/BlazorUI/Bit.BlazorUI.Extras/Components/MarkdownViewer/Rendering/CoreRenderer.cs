@@ -79,14 +79,16 @@ public sealed class CoreRenderer : NodeRenderer
             case LinkNode link:
                 b.OpenElement(r.NextSeq(), "a");
                 if (!string.IsNullOrEmpty(link.Url))
+                {
                     b.AddAttribute(r.NextSeq(), "href", link.Url);
+                    if (IsExternal(link.Url))
+                    {
+                        b.AddAttribute(r.NextSeq(), "target", "_blank");
+                        b.AddAttribute(r.NextSeq(), "rel", "noopener noreferrer");
+                    }
+                }
                 if (!string.IsNullOrEmpty(link.Title))
                     b.AddAttribute(r.NextSeq(), "title", link.Title);
-                if (IsExternal(link.Url))
-                {
-                    b.AddAttribute(r.NextSeq(), "target", "_blank");
-                    b.AddAttribute(r.NextSeq(), "rel", "noopener noreferrer");
-                }
                 r.WriteNodes(b, link.Children);
                 b.CloseElement();
                 break;

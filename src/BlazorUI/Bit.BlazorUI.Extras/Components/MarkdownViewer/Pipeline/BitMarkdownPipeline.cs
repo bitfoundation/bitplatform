@@ -43,7 +43,7 @@ public sealed class BitMarkdownPipeline
     internal IReadOnlyList<NodeRenderer> Renderers { get; }
     internal IReadOnlyDictionary<char, IReadOnlyList<InlineParser>> InlineParsersByChar { get; }
     internal IReadOnlyDictionary<char, DelimiterProcessor> DelimiterByChar { get; }
-    internal HashSet<char> DelimiterChars { get; }
+    internal IReadOnlySet<char> DelimiterChars { get; }
 
     /// <summary>Parses Markdown source into an AST, applying all AST processors.</summary>
     public DocumentNode Parse(string? markdown)

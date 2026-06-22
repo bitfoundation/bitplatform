@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using Bit.BlazorUI.Markdown.Parsing;
 using Bit.BlazorUI.Markdown.Syntax;
@@ -13,8 +14,8 @@ public sealed partial class EmojiAstProcessor : AstProcessor
     [GeneratedRegex(@":([a-z0-9_+\-]+):", RegexOptions.IgnoreCase)]
     private static partial Regex Shortcode();
 
-    /// <summary>The shortcode-to-glyph map. Mutable so callers can add their own.</summary>
-    public static readonly Dictionary<string, string> Emoji = new(StringComparer.OrdinalIgnoreCase)
+    /// <summary>The shortcode-to-glyph map. Thread-safe so callers can add their own.</summary>
+    public static readonly ConcurrentDictionary<string, string> Emoji = new(StringComparer.OrdinalIgnoreCase)
     {
         ["smile"] = "😄", ["grin"] = "😁", ["laughing"] = "😆", ["wink"] = "😉",
         ["blush"] = "😊", ["heart"] = "❤️", ["thumbsup"] = "👍", ["+1"] = "👍",

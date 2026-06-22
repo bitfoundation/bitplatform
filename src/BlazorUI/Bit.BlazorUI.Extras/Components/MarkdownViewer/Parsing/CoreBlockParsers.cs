@@ -145,7 +145,14 @@ public sealed class BlockquoteParser : BlockParser
         return true;
     }
 
-    internal static bool IsQuote(string line) => line.TrimStart(' ').StartsWith('>');
+    internal static bool IsQuote(string line)
+    {
+        // A blockquote marker may be preceded by at most 3 spaces; 4+ spaces
+        // make it an indented code block instead.
+        int spaces = 0;
+        while (spaces < line.Length && line[spaces] == ' ') spaces++;
+        return spaces <= 3 && spaces < line.Length && line[spaces] == '>';
+    }
 
     private static string StripMarker(string line)
     {
@@ -193,8 +200,13 @@ public sealed class ListParser : BlockParser
     public override int Order => 60;
 
     public override bool CanInterruptParagraph(BlockProcessor state, int lineIndex)
-        => BlockGrammar.Bullet().IsMatch(state.Lines[lineIndex])
-           || BlockGrammar.Ordered().IsMatch(state.Lines[lineIndex]);
+    {
+        var line = state.Lines[lineIndex];
+        if (BlockGrammar.Bullet().IsMatch(line)) return true;
+        // An ordered list may only interrupt a paragraph when it starts with "1".
+        var m = BlockGrammar.Ordered().Match(line);
+        return m.Success && m.Groups[1].Value == "1";
+    }
 
     public override bool TryParse(BlockProcessor state, List<MarkdownNode> output)
     {

@@ -115,7 +115,7 @@ public sealed class AutolinkInlineParser : InlineParser
 
     private static void Emit(InlineProcessor state, string href, string label, int close)
     {
-        var link = new LinkNode { Url = href };
+        var link = new LinkNode { Url = UrlSanitizer.Sanitize(href, isImage: false) };
         link.Children.Add(new TextNode(label));
         state.AppendNode(link);
         state.Pos = close + 1;
