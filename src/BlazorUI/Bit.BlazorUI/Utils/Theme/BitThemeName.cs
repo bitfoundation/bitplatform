@@ -48,12 +48,37 @@ public readonly struct BitThemeName : IEquatable<BitThemeName>
     /// <summary>Special pseudo-preset that follows OS <c>prefers-color-scheme</c> (<c>"system"</c>).</summary>
     public static BitThemeName System { get; } = new(BitThemePresets.System);
 
-    /// <summary>Wraps a custom theme name. Whitespace is trimmed and the result is lower-cased.</summary>
-    /// <exception cref="ArgumentException">When <paramref name="name"/> is null, empty, or whitespace.</exception>
+    /// <summary>
+    /// Wraps a custom theme name. Whitespace is trimmed and the result is lower-cased. The normalized
+    /// value must be a safe <c>[a-z0-9-]</c> token of at most 64 characters so it matches the SSR
+    /// theme-token parsing rules (see <c>BitThemeSsr.NormalizeThemeToken</c>) and keeps runtime and
+    /// first-paint validation consistent for persisted custom themes.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// When <paramref name="name"/> is null, empty, whitespace, longer than 64 characters, or contains
+    /// characters outside <c>[a-z0-9-]</c> after normalization.
+    /// </exception>
     public static BitThemeName Custom(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        return new BitThemeName(name.Trim().ToLowerInvariant());
+
+        var token = name.Trim().ToLowerInvariant();
+
+        if (token.Length > 64)
+        {
+            throw new ArgumentException("Theme name must be at most 64 characters.", nameof(name));
+        }
+
+        foreach (var ch in token)
+        {
+            var allowed = (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '-';
+            if (allowed is false)
+            {
+                throw new ArgumentException("Theme name may only contain lower-case letters, digits, and hyphens.", nameof(name));
+            }
+        }
+
+        return new BitThemeName(token);
     }
 
     /// <summary>Implicitly converts to the underlying string so existing string-typed APIs accept the wrapper unchanged.</summary>
