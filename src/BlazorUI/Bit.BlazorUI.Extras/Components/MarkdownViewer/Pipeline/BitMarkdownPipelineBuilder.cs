@@ -59,8 +59,8 @@ public sealed class BitMarkdownPipelineBuilder
         ArgumentNullException.ThrowIfNull(extension);
         if (_extensions.Any(e => e.GetType() == extension.GetType()))
             return this;
-        _extensions.Add(extension);
         extension.Setup(this);
+        _extensions.Add(extension);
         return this;
     }
 

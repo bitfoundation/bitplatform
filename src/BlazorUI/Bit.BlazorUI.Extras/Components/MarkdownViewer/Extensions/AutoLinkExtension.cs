@@ -11,9 +11,11 @@ namespace Bit.BlazorUI.Markdown.Extensions;
 public sealed partial class AutoLinkAstProcessor : AstProcessor
 {
     [GeneratedRegex(
+        @"\b(?:" +
         @"(?<url>https?://[^\s<]+[^\s<.,:;""')\]\}])" +
         @"|(?<www>www\.[^\s<]+[^\s<.,:;""')\]\}])" +
-        @"|(?<email>[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})",
+        @"|(?<email>[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})" +
+        @")",
         RegexOptions.IgnoreCase)]
     private static partial Regex LinkPattern();
 

@@ -95,7 +95,8 @@ public sealed class CoreRenderer : NodeRenderer
 
             case ImageNode img:
                 b.OpenElement(r.NextSeq(), "img");
-                b.AddAttribute(r.NextSeq(), "src", img.Url);
+                if (!string.IsNullOrEmpty(img.Url))
+                    b.AddAttribute(r.NextSeq(), "src", img.Url);
                 b.AddAttribute(r.NextSeq(), "alt", img.Alt);
                 if (!string.IsNullOrEmpty(img.Title))
                     b.AddAttribute(r.NextSeq(), "title", img.Title);

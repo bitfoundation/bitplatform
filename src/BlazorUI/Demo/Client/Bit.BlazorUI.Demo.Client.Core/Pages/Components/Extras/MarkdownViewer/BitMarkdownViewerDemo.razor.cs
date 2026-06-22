@@ -215,7 +215,7 @@ Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
                OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Advanced))"">Advanced</BitButton>
 </div>
 <div class=""mdv-split"">
-    <textarea class=""mdv-editor"" @bind=""playgroundMarkdown"" @bind:event=""oninput""></textarea>
+    <textarea class=""mdv-editor"" aria-label=""Markdown editor"" @bind=""playgroundMarkdown"" @bind:event=""oninput""></textarea>
     <div class=""mdv-preview"">
         <BitMarkdownViewer Markdown=""@playgroundMarkdown"" Pipeline=""@playgroundPipeline"" />
     </div>

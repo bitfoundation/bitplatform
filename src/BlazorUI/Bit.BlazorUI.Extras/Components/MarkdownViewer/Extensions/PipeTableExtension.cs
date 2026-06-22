@@ -98,10 +98,20 @@ public sealed partial class PipeTableBlockParser : BlockParser
 
         var cells = new List<string>();
         var sb = new StringBuilder();
+        int backtickRun = 0; // length of the backtick run that opened the current code span; 0 when outside.
         for (int i = 0; i < s.Length; i++)
         {
-            if (s[i] == '\\' && i + 1 < s.Length && s[i + 1] == '|') { sb.Append('|'); i++; }
-            else if (s[i] == '|') { cells.Add(sb.ToString()); sb.Clear(); }
+            if (s[i] == '\\' && i + 1 < s.Length && s[i + 1] == '|' && backtickRun == 0) { sb.Append('|'); i++; }
+            else if (s[i] == '`')
+            {
+                int runStart = i;
+                while (i + 1 < s.Length && s[i + 1] == '`') i++;
+                int runLength = i - runStart + 1;
+                if (backtickRun == 0) backtickRun = runLength;
+                else if (runLength == backtickRun) backtickRun = 0;
+                sb.Append(s, runStart, runLength);
+            }
+            else if (s[i] == '|' && backtickRun == 0) { cells.Add(sb.ToString()); sb.Clear(); }
             else sb.Append(s[i]);
         }
         cells.Add(sb.ToString());

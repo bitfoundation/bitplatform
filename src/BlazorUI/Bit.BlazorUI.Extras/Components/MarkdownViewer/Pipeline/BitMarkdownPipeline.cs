@@ -75,17 +75,16 @@ public sealed class BitMarkdownPipeline
         int start = 0;
         for (int i = 0; i < text.Length; i++)
         {
-            if (text[i] == '\n')
+            char ch = text[i];
+            if (ch == '\n' || ch == '\r')
             {
-                int end = i;
-                if (end > start && text[end - 1] == '\r') end--;
-                lines.Add(text.Substring(start, end - start));
+                lines.Add(text.Substring(start, i - start));
+                // Treat "\r\n" as a single line boundary.
+                if (ch == '\r' && i + 1 < text.Length && text[i + 1] == '\n') i++;
                 start = i + 1;
             }
         }
-        string last = text[start..];
-        if (last.EndsWith('\r')) last = last[..^1];
-        lines.Add(last);
+        lines.Add(text[start..]);
         return lines;
     }
 }
