@@ -32,7 +32,12 @@ public partial class BitFcCalendarDayView : IDisposable
         {
             if (_isDisposed)
                 return;
-            InvokeAsync(StateHasChanged);
+            InvokeAsync(() =>
+            {
+                if (_isDisposed)
+                    return;
+                StateHasChanged();
+            });
         }, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
     }
 

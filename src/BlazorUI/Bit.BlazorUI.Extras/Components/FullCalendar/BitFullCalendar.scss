@@ -1599,7 +1599,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 /* ===== Filter Select ===== */
@@ -1706,6 +1706,7 @@
     font-size: 12px;
     cursor: pointer;
     transition: background 0.1s;
+    background: transparent;
 }
 
 .bit-bfc-mini-calendar-day:hover {

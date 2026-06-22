@@ -83,6 +83,9 @@ public partial class BitFcTimelineEventBlock
     [JSInvokable]
     public void OnResizeStart(string direction)
     {
+        if (direction is not ("start" or "end"))
+            return;
+
         _isResizing = true;
         _resizeDirection = direction;
         _resizeBaseEvent = Event;
@@ -96,6 +99,9 @@ public partial class BitFcTimelineEventBlock
     [JSInvokable]
     public Task OnResizeMove(string direction, double deltaPx)
     {
+        if (direction is not ("start" or "end"))
+            return Task.CompletedTask;
+
         if (!_isResizing || _resizeBaseEvent == null || PixelsPerMinute <= 0)
             return Task.CompletedTask;
 

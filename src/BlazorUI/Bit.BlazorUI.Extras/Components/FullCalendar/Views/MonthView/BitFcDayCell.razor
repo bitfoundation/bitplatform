@@ -12,8 +12,7 @@
      @ondragover:preventDefault="true"
      @ondrop="OnDrop"
      @onclick="() => OnCellClick()"
-     @onkeydown="OnCellKeyDown"
-     @onkeydown:preventDefault="true">
+     @onkeydown="OnCellKeyDown">
 
     <div class="bit-bfc-month-cell-day @(isToday ? "today" : "")">@Cell.Day</div>
     <div class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-month" aria-hidden="true">
@@ -45,7 +44,7 @@
     }
     @if (Cell.CurrentMonth && moreCount > 0)
     {
-        <div class="bit-bfc-month-more" tabindex="0" role="button" @onclick="() => _showEventList = true" @onclick:stopPropagation="true" @onkeydown="OnMoreKeyDown" @onkeydown:preventDefault="true" @onkeydown:stopPropagation="true">
+        <div class="bit-bfc-month-more" tabindex="0" role="button" @onclick="() => _showEventList = true" @onclick:stopPropagation="true" @onkeydown="OnMoreKeyDown" @onkeydown:stopPropagation="true">
             +@moreCount @Texts.MoreEventsSuffix
         </div>
     }

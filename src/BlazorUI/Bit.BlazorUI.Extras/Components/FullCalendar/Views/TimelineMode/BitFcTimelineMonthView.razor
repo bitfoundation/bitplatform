@@ -128,7 +128,7 @@
 
 @if (_showAddDialog)
 {
-    <BitFcAddEditEventDialog StartDate="_addStartDate" StartHour="_addStartHour" OnClose="() => _showAddDialog = false" />
+    <BitFcAddEditEventDialog StartDate="_addStartDate" StartHour="_addStartHour" Resource="_addResourceId" OnClose="() => _showAddDialog = false" />
 }
 
 @if (_selectedEvent != null)

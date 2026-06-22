@@ -24,6 +24,7 @@ public partial class BitFcTimelineDayView
     private DateTime _addStartDate;
     private int _addStartHour;
     private int _addStartMinute;
+    private string? _addResourceId;
 
     private string? _dragResourceId;
     private int? _dragHour;
@@ -83,6 +84,7 @@ public partial class BitFcTimelineDayView
         _addStartDate = State.SelectedDate;
         _addStartHour = hour;
         _addStartMinute = minute;
+        _addResourceId = resourceId == _unassignedKey ? null : resourceId;
         _showAddDialog = true;
     }
 

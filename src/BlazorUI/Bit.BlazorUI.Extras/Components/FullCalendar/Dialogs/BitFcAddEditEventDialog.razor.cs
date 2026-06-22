@@ -10,6 +10,7 @@ public partial class BitFcAddEditEventDialog
     [Parameter] public DateTime? StartDate { get; set; }
     [Parameter] public int? StartHour { get; set; }
     [Parameter] public int? StartMinute { get; set; }
+    [Parameter] public string? Resource { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
     private bool _isEditing;
@@ -135,7 +136,7 @@ public partial class BitFcAddEditEventDialog
             StartDate = _startDate,
             EndDate = _endDate,
             Color = _color,
-            Resource = _isEditing ? ExistingEvent!.Resource : null,
+            Resource = _isEditing ? ExistingEvent!.Resource : Resource,
             Data = _isEditing ? ExistingEvent!.Data : null,
             Attendees = [.. _attendees]
         };

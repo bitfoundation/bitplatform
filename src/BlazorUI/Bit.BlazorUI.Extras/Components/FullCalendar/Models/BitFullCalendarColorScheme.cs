@@ -96,7 +96,7 @@ public sealed class BitFullCalendarColorScheme
         var trimmed = colorId.Trim();
         for (var i = 0; i < Options.Count; i++)
         {
-            if (string.Equals(Options[i].Id, trimmed, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(Options[i].Id?.Trim(), trimmed, StringComparison.OrdinalIgnoreCase))
                 return i;
         }
         // Deterministic: all unknown ids share the same key and are ordered lexically by a secondary sort.

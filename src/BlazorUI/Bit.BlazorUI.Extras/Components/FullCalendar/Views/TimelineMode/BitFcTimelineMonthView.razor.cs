@@ -23,6 +23,7 @@ public partial class BitFcTimelineMonthView
     private bool _showAddDialog;
     private DateTime _addStartDate;
     private int _addStartHour;
+    private string? _addResourceId;
 
     private string? _dragResourceId;
     private DateTime? _dragDay;
@@ -92,6 +93,7 @@ public partial class BitFcTimelineMonthView
 
         _addStartDate = day;
         _addStartHour = DateTime.Now.Hour;
+        _addResourceId = resourceId == _unassignedKey ? null : resourceId;
         _showAddDialog = true;
     }
 
