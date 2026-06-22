@@ -197,12 +197,18 @@ public partial class BitFullCalendar : IDisposable
         State.SyncResources(Resources);
 
         // Apply InitialMode after resources are synced: Timeline mode requires Resources to be
-        // populated to take effect. Guarded so it only runs on the initial parameter set.
-        if (!_initialModeApplied)
+        // populated to take effect. Only mark it as applied once the prerequisites are actually
+        // met, otherwise a Resources assignment that arrives on a later parameter set would be
+        // permanently ignored.
+        if (!_initialModeApplied && InitialMode.HasValue)
         {
-            _initialModeApplied = true;
-            if (InitialMode.HasValue)
+            var canApplyInitialMode = InitialMode.Value != BitFullCalendarMode.Timeline
+                || Resources is { Count: > 0 };
+            if (canApplyInitialMode)
+            {
+                _initialModeApplied = true;
                 State.SetMode(InitialMode.Value);
+            }
         }
 
         ApplyOptions();

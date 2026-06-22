@@ -8,8 +8,8 @@
     {
         var q = _search.ToLowerInvariant();
         monthEvents = monthEvents.Where(e =>
-            e.Title.Contains(q, StringComparison.OrdinalIgnoreCase) ||
-            e.Description.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
+            (e.Title ?? "").Contains(q, StringComparison.OrdinalIgnoreCase) ||
+            (e.Description ?? "").Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
     List<(string? DateKey, string GroupTitle, List<BitFullCalendarEvent> Items)> agendaGroups;

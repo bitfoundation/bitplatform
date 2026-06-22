@@ -61,7 +61,11 @@ public class BitFullCalendarState
 
     public void SetView(BitFullCalendarView view)
     {
-        View = ClampViewForMode(view, Mode);
+        var clamped = ClampViewForMode(view, Mode);
+        if (clamped == View)
+            return;
+
+        View = clamped;
         UpdateUI();
         NotifyDateRangeChanged();
     }

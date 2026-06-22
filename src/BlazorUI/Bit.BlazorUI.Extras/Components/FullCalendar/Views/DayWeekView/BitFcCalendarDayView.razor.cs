@@ -13,6 +13,7 @@ public partial class BitFcCalendarDayView : IDisposable
 
     private string? _timeGridScrollSignature;
     private Timer? _nowTimer;
+    private bool _isDisposed;
 
     private bool _showAddDialog;
     private DateTime _addStartDate;
@@ -25,8 +26,14 @@ public partial class BitFcCalendarDayView : IDisposable
     protected override void OnInitialized()
     {
         // The "Happening now" panel is derived from DateTime.Now; refresh once a minute so it
-        // doesn't go stale during long sessions.
-        _nowTimer = new Timer(_ => InvokeAsync(StateHasChanged), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+        // doesn't go stale during long sessions. The callback can fire after disposal, so guard
+        // against re-rendering a disposed component.
+        _nowTimer = new Timer(_ =>
+        {
+            if (_isDisposed)
+                return;
+            InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
     }
 
     private async Task SelectEvent(BitFullCalendarEvent ev)
@@ -108,5 +115,9 @@ public partial class BitFcCalendarDayView : IDisposable
             _timeGridScrollSignature = sig;
     }
 
-    public void Dispose() => _nowTimer?.Dispose();
+    public void Dispose()
+    {
+        _isDisposed = true;
+        _nowTimer?.Dispose();
+    }
 }

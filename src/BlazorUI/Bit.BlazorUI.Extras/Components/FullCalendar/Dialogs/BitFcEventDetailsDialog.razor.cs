@@ -11,7 +11,7 @@ public partial class BitFcEventDetailsDialog
 
     private bool _showEdit;
 
-    private void EditAsync()
+    private void Edit()
     {
         _showEdit = true;
     }
