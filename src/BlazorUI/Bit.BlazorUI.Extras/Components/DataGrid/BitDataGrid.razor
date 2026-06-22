@@ -6,7 +6,7 @@
     @ChildContent
 </CascadingValue>
 
-<div class="@RootClasses()" style="@Style" dir="@(Direction == BitDataGridDirection.Rtl ? "rtl" : "ltr")">
+<div class="@RootClasses()" style="@Style" dir="@(Direction == BitDir.Rtl ? "rtl" : "ltr")">
 
     @* ---------------------------------------------------------- Toolbar *@
     @if (ShowToolbar || ToolbarTemplate is not null || ShowColumnChooser || ShowCsvExport || (Editable && NewItemFactory is not null))

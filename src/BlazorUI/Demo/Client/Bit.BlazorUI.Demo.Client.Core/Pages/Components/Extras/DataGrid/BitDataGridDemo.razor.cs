@@ -75,12 +75,25 @@ public partial class BitDataGridDemo : AppComponentBase
     private bool emptyHasData;
     private List<Product> EmptyCurrent => emptyHasData ? emptyData : emptyNone;
 
-    // example 20 - theming
-    private readonly List<Product> themeProducts = SampleData.Generate(60);
-    private string theme = "";
-    private bool rtl;
+    // example 20 - borders & striping
+    private readonly List<Product> borderStripeProducts = SampleData.Generate(60);
     private bool bordered = true;
     private bool striped = true;
+
+    // example 21 - RTL
+    private readonly List<Product> rtlProducts = SampleData.GeneratePersian(60);
+
+    private static string CategoryFa(Category category) => category switch
+    {
+        Category.Electronics => "الکترونیک",
+        Category.Books => "کتاب",
+        Category.Clothing => "پوشاک",
+        Category.Home => "خانه",
+        Category.Toys => "اسباب‌بازی",
+        Category.Sports => "ورزش",
+        Category.Grocery => "خواربار",
+        _ => category.ToString()
+    };
 
 
     protected override Task OnInitAsync()

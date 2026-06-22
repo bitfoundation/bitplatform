@@ -5,15 +5,15 @@ public partial class BitDataGridDemo
     private readonly List<ComponentParameter> componentParameters =
     [
         new() { Name = "Items", Type = "IEnumerable<TItem>?", DefaultValue = "null", Description = "The data source bound to the grid for client-side processing." },
-        new() { Name = "OnRead", Type = "Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>?", DefaultValue = "null", Description = "Server-side data callback. When set, the grid delegates sort/filter/page to the caller." },
-        new() { Name = "OnLoadMore", Type = "Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>?", DefaultValue = "null", Description = "Infinite-scrolling data callback. Loads rows in batches and appends the next batch as the user scrolls toward the end." },
+        new() { Name = "OnRead", Type = "Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>?", DefaultValue = "null", Description = "Server-side data callback. When set, the grid delegates sort/filter/page to the caller.", LinkType = LinkType.Link, Href = "#BitDataGridReadRequest" },
+        new() { Name = "OnLoadMore", Type = "Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>?", DefaultValue = "null", Description = "Infinite-scrolling data callback. Loads rows in batches and appends the next batch as the user scrolls toward the end.", LinkType = LinkType.Link, Href = "#BitDataGridReadRequest" },
         new() { Name = "LoadMoreBatchSize", Type = "int", DefaultValue = "50", Description = "Number of rows fetched per batch in infinite-scrolling mode." },
         new() { Name = "ChildContent", Type = "RenderFragment?", DefaultValue = "null", Description = "Column definitions and other declarative children." },
         new() { Name = "Loading", Type = "bool", DefaultValue = "false", Description = "Shows a loading overlay while data is being fetched." },
         new() { Name = "KeyField", Type = "Func<TItem, object>?", DefaultValue = "null", Description = "Optional key selector used for selection/edit identity. Defaults to reference equality." },
         new() { Name = "ChildrenSelector", Type = "Func<TItem, IEnumerable<TItem>?>?", DefaultValue = "null", Description = "Child selector that turns the grid into a hierarchical tree grid." },
         new() { Name = "TreeInitiallyExpanded", Type = "bool", DefaultValue = "false", Description = "When tree mode is active, controls whether nodes start expanded." },
-        new() { Name = "Class", Type = "string?", DefaultValue = "null", Description = "Custom CSS class for the root element. Use it to apply theme tokens." },
+        new() { Name = "Class", Type = "string?", DefaultValue = "null", Description = "Custom CSS class for the root element." },
         new() { Name = "Style", Type = "string?", DefaultValue = "null", Description = "Custom inline style for the root element." },
         new() { Name = "Height", Type = "string?", DefaultValue = "null", Description = "Height of the scroll viewport, e.g. \"480px\". Required for virtualization and infinite scrolling." },
         new() { Name = "Striped", Type = "bool", DefaultValue = "true", Description = "Renders alternate-row striping." },
@@ -21,7 +21,7 @@ public partial class BitDataGridDemo
         new() { Name = "Bordered", Type = "bool", DefaultValue = "true", Description = "Renders cell borders." },
         new() { Name = "ShowHeader", Type = "bool", DefaultValue = "true", Description = "Renders the header row." },
         new() { Name = "ShowFooter", Type = "bool", DefaultValue = "false", Description = "Renders the footer/aggregate row." },
-        new() { Name = "Direction", Type = "BitDataGridDirection", DefaultValue = "BitDataGridDirection.Ltr", Description = "Text direction (LTR/RTL)." },
+        new() { Name = "Direction", Type = "BitDir", DefaultValue = "BitDir.Ltr", Description = "Text direction (LTR/RTL).", LinkType = LinkType.Link, Href = "#BitDir" },
         new() { Name = "Sortable", Type = "bool", DefaultValue = "true", Description = "Enables column sorting by clicking headers." },
         new() { Name = "MultiSort", Type = "bool", DefaultValue = "true", Description = "Enables multi-column sorting via Ctrl/⌘+click with priority badges." },
         new() { Name = "Filterable", Type = "bool", DefaultValue = "false", Description = "Renders a per-column quick-filter row." },
@@ -33,19 +33,19 @@ public partial class BitDataGridDemo
         new() { Name = "ShowCsvExport", Type = "bool", DefaultValue = "false", Description = "Renders a CSV export link of the current view." },
         new() { Name = "CellNavigation", Type = "bool", DefaultValue = "false", Description = "Enables keyboard cell navigation with a roving tabindex." },
         new() { Name = "RowReorderable", Type = "bool", DefaultValue = "false", Description = "Enables drag-and-drop row reordering." },
-        new() { Name = "OnRowReorder", Type = "EventCallback<BitDataGridRowReorderEventArgs<TItem>>", DefaultValue = "", Description = "Raised when a row is dropped onto another row during reordering." },
-        new() { Name = "SelectionMode", Type = "BitDataGridSelectionMode", DefaultValue = "BitDataGridSelectionMode.None", Description = "How rows can be selected (None/Single/Multiple)." },
+        new() { Name = "OnRowReorder", Type = "EventCallback<BitDataGridRowReorderEventArgs<TItem>>", DefaultValue = "", Description = "Raised when a row is dropped onto another row during reordering.", LinkType = LinkType.Link, Href = "#BitDataGridRowReorderEventArgs" },
+        new() { Name = "SelectionMode", Type = "BitDataGridSelectionMode", DefaultValue = "BitDataGridSelectionMode.None", Description = "How rows can be selected (None/Single/Multiple).", LinkType = LinkType.Link, Href = "#BitDataGridSelectionMode" },
         new() { Name = "SelectedItems", Type = "IReadOnlyList<TItem>?", DefaultValue = "null", Description = "The selected items (supports two-way binding)." },
         new() { Name = "SelectedItemsChanged", Type = "EventCallback<IReadOnlyList<TItem>>", DefaultValue = "", Description = "Raised when the selection changes." },
         new() { Name = "OnRowClick", Type = "EventCallback<TItem>", DefaultValue = "", Description = "Raised when a row is clicked." },
-        new() { Name = "OnCellClick", Type = "EventCallback<BitDataGridCellEventArgs<TItem>>", DefaultValue = "", Description = "Raised when a data cell is clicked." },
-        new() { Name = "OnCellDoubleClick", Type = "EventCallback<BitDataGridCellEventArgs<TItem>>", DefaultValue = "", Description = "Raised when a data cell is double-clicked." },
-        new() { Name = "OnCellContextMenu", Type = "EventCallback<BitDataGridCellEventArgs<TItem>>", DefaultValue = "", Description = "Raised when a data cell is right-clicked." },
+        new() { Name = "OnCellClick", Type = "EventCallback<BitDataGridCellEventArgs<TItem>>", DefaultValue = "", Description = "Raised when a data cell is clicked.", LinkType = LinkType.Link, Href = "#BitDataGridCellEventArgs" },
+        new() { Name = "OnCellDoubleClick", Type = "EventCallback<BitDataGridCellEventArgs<TItem>>", DefaultValue = "", Description = "Raised when a data cell is double-clicked.", LinkType = LinkType.Link, Href = "#BitDataGridCellEventArgs" },
+        new() { Name = "OnCellContextMenu", Type = "EventCallback<BitDataGridCellEventArgs<TItem>>", DefaultValue = "", Description = "Raised when a data cell is right-clicked.", LinkType = LinkType.Link, Href = "#BitDataGridCellEventArgs" },
         new() { Name = "IsRowSelectionDisabled", Type = "Func<TItem, bool>?", DefaultValue = "null", Description = "Predicate returning true when a given row may not be selected." },
         new() { Name = "Pageable", Type = "bool", DefaultValue = "false", Description = "Enables paging with a pager UI." },
         new() { Name = "PageSize", Type = "int", DefaultValue = "20", Description = "The number of rows per page." },
         new() { Name = "PageSizeOptions", Type = "int[]", DefaultValue = "{ 10, 20, 50, 100 }", Description = "The page-size options offered in the pager dropdown." },
-        new() { Name = "PagerPosition", Type = "BitDataGridPagerPosition", DefaultValue = "BitDataGridPagerPosition.Bottom", Description = "Where the pager renders relative to the grid." },
+        new() { Name = "PagerPosition", Type = "BitDataGridPagerPosition", DefaultValue = "BitDataGridPagerPosition.Bottom", Description = "Where the pager renders relative to the grid.", LinkType = LinkType.Link, Href = "#BitDataGridPagerPosition" },
         new() { Name = "Virtualize", Type = "bool", DefaultValue = "false", Description = "Renders only the visible rows for large datasets. Requires a fixed Height and RowHeight." },
         new() { Name = "RowHeight", Type = "float", DefaultValue = "36", Description = "Uniform row height in pixels (required when virtualizing)." },
         new() { Name = "RowHeightSelector", Type = "Func<TItem, float>?", DefaultValue = "null", Description = "Optional per-row height selector (ignored while virtualizing)." },
@@ -58,6 +58,15 @@ public partial class BitDataGridDemo
         new() { Name = "EmptyTemplate", Type = "RenderFragment?", DefaultValue = "null", Description = "Custom content rendered when there is no data." },
         new() { Name = "ToolbarTemplate", Type = "RenderFragment?", DefaultValue = "null", Description = "Custom content rendered in the toolbar's start area." },
         new() { Name = "DetailTemplate", Type = "RenderFragment<TItem>?", DefaultValue = "null", Description = "Expandable master-detail content rendered under a row." },
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new() { Name = "RefreshAsync", Type = "Task", DefaultValue = "", Description = "Recomputes the data view (filter → sort → group → page) and re-renders the grid." },
+        new() { Name = "ClearFiltersAsync", Type = "Task", DefaultValue = "", Description = "Clears all active column filters and refreshes." },
+        new() { Name = "ClearGroupsAsync", Type = "Task", DefaultValue = "", Description = "Removes all active groupings and refreshes." },
+        new() { Name = "ExpandAllAsync", Type = "Task", DefaultValue = "", Description = "Expands every node in the tree. No-op outside tree mode." },
+        new() { Name = "CollapseAllAsync", Type = "Task", DefaultValue = "", Description = "Collapses every node in the tree. No-op outside tree mode." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -86,15 +95,17 @@ public partial class BitDataGridDemo
                 new() { Name = "Group", Type = "string?", DefaultValue = "null", Description = "Optional header group name. Consecutive columns sharing the same value render under a single spanning header cell." },
                 new() { Name = "ColSpan", Type = "Func<TItem, int?>?", DefaultValue = "null", Description = "Optional per-row column span." },
                 new() { Name = "Visible", Type = "bool", DefaultValue = "true", Description = "Whether the column is visible." },
-                new() { Name = "Align", Type = "BitDataGridColumnAlign", DefaultValue = "BitDataGridColumnAlign.Left", Description = "Horizontal alignment of cell content." },
+                new() { Name = "Align", Type = "BitDataGridColumnAlign", DefaultValue = "BitDataGridColumnAlign.Left", Description = "Horizontal alignment of cell content.", LinkType = LinkType.Link, Href = "#BitDataGridColumnAlign" },
                 new() { Name = "Format", Type = "string?", DefaultValue = "null", Description = "A .NET format string applied to the value (e.g. \"C2\", \"yyyy-MM-dd\")." },
-                new() { Name = "DataType", Type = "BitDataGridColumnDataType", DefaultValue = "BitDataGridColumnDataType.Auto", Description = "The data type used to pick the editor/filter." },
-                new() { Name = "Aggregate", Type = "BitDataGridAggregateType", DefaultValue = "BitDataGridAggregateType.None", Description = "The footer/group aggregate function." },
+                new() { Name = "DataType", Type = "BitDataGridColumnDataType", DefaultValue = "BitDataGridColumnDataType.Auto", Description = "The data type used to pick the editor/filter.", LinkType = LinkType.Link, Href = "#BitDataGridColumnDataType" },
+                new() { Name = "Aggregate", Type = "BitDataGridAggregateType", DefaultValue = "BitDataGridAggregateType.None", Description = "The footer/group aggregate function.", LinkType = LinkType.Link, Href = "#BitDataGridAggregateType" },
                 new() { Name = "AggregateFormat", Type = "string?", DefaultValue = "null", Description = "Format string for the aggregate value. Falls back to Format." },
+                new() { Name = "HeaderClass", Type = "string?", DefaultValue = "null", Description = "Custom CSS class applied to the header cell." },
+                new() { Name = "CellClass", Type = "string?", DefaultValue = "null", Description = "Custom CSS class applied to each data cell." },
                 new() { Name = "Template", Type = "RenderFragment<TItem>?", DefaultValue = "null", Description = "Custom rendering for a data cell." },
                 new() { Name = "HeaderTemplate", Type = "RenderFragment?", DefaultValue = "null", Description = "Custom rendering for the header cell content." },
                 new() { Name = "EditTemplate", Type = "RenderFragment<TItem>?", DefaultValue = "null", Description = "Custom editor rendered when the row/cell is in edit mode." },
-                new() { Name = "FooterTemplate", Type = "RenderFragment<BitDataGridAggregateResult>?", DefaultValue = "null", Description = "Custom rendering for the footer/aggregate cell." },
+                new() { Name = "FooterTemplate", Type = "RenderFragment<BitDataGridAggregateResult>?", DefaultValue = "null", Description = "Custom rendering for the footer/aggregate cell.", LinkType = LinkType.Link, Href = "#BitDataGridAggregateResult" },
             ],
         },
         new()
@@ -106,8 +117,9 @@ public partial class BitDataGridDemo
             [
                 new() { Name = "Skip", Type = "int", DefaultValue = "0", Description = "Zero-based number of items to skip." },
                 new() { Name = "Take", Type = "int?", DefaultValue = "null", Description = "Maximum number of items to return (null means all)." },
-                new() { Name = "Sorts", Type = "IReadOnlyList<BitDataGridSortDescriptor>", DefaultValue = "[]", Description = "The active sort descriptors ordered by priority." },
-                new() { Name = "Filters", Type = "IReadOnlyList<BitDataGridFilterDescriptor>", DefaultValue = "[]", Description = "The active filter descriptors." },
+                new() { Name = "Sorts", Type = "IReadOnlyList<BitDataGridSortDescriptor>", DefaultValue = "[]", Description = "The active sort descriptors ordered by priority.", LinkType = LinkType.Link, Href = "#BitDataGridSortDescriptor" },
+                new() { Name = "Filters", Type = "IReadOnlyList<BitDataGridFilterDescriptor>", DefaultValue = "[]", Description = "The active filter descriptors.", LinkType = LinkType.Link, Href = "#BitDataGridFilterDescriptor" },
+                new() { Name = "CancellationToken", Type = "CancellationToken", DefaultValue = "", Description = "A token that is cancelled when the request is superseded by a newer one." },
             ],
         },
         new()
@@ -129,7 +141,7 @@ public partial class BitDataGridDemo
             Parameters =
             [
                 new() { Name = "Item", Type = "TItem", DefaultValue = "", Description = "The row item." },
-                new() { Name = "Column", Type = "BitDataGridColumn<TItem>", DefaultValue = "", Description = "The column the cell belongs to." },
+                new() { Name = "Column", Type = "BitDataGridColumn<TItem>", DefaultValue = "", Description = "The column the cell belongs to.", LinkType = LinkType.Link, Href = "#BitDataGridColumn" },
                 new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The column field/identifier." },
                 new() { Name = "ColumnTitle", Type = "string", DefaultValue = "", Description = "The column's display title." },
                 new() { Name = "Value", Type = "object?", DefaultValue = "null", Description = "The raw value of the cell." },
@@ -147,6 +159,54 @@ public partial class BitDataGridDemo
                 new() { Name = "TargetItem", Type = "TItem", DefaultValue = "", Description = "The drop-target row item." },
                 new() { Name = "FromIndex", Type = "int", DefaultValue = "", Description = "The original index of the dragged item." },
                 new() { Name = "ToIndex", Type = "int", DefaultValue = "", Description = "The destination index." },
+            ],
+        },
+        new()
+        {
+            Id = "BitDataGridSortDescriptor",
+            Title = "BitDataGridSortDescriptor",
+            Description = "Describes the sort state applied to a single column (found on BitDataGridReadRequest.Sorts).",
+            Parameters =
+            [
+                new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The identifier of the column being sorted." },
+                new() { Name = "Direction", Type = "BitDataGridSortDirection", DefaultValue = "BitDataGridSortDirection.Ascending", Description = "The sort direction.", LinkType = LinkType.Link, Href = "#BitDataGridSortDirection" },
+                new() { Name = "Priority", Type = "int", DefaultValue = "0", Description = "Priority for multi-column sorting (1 = primary)." },
+            ],
+        },
+        new()
+        {
+            Id = "BitDataGridFilterDescriptor",
+            Title = "BitDataGridFilterDescriptor",
+            Description = "Describes a filter applied to a single column (found on BitDataGridReadRequest.Filters).",
+            Parameters =
+            [
+                new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The identifier of the column being filtered." },
+                new() { Name = "Operator", Type = "BitDataGridFilterOperator", DefaultValue = "BitDataGridFilterOperator.Contains", Description = "The comparison operator applied to the value.", LinkType = LinkType.Link, Href = "#BitDataGridFilterOperator" },
+                new() { Name = "Value", Type = "object?", DefaultValue = "null", Description = "The value compared against the column's cell value." },
+            ],
+        },
+        new()
+        {
+            Id = "BitDataGridGroupDescriptor",
+            Title = "BitDataGridGroupDescriptor",
+            Description = "Describes a grouping applied to a column.",
+            Parameters =
+            [
+                new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The identifier of the column being grouped." },
+                new() { Name = "Direction", Type = "BitDataGridSortDirection", DefaultValue = "BitDataGridSortDirection.Ascending", Description = "The sort direction applied to the group keys.", LinkType = LinkType.Link, Href = "#BitDataGridSortDirection" },
+            ],
+        },
+        new()
+        {
+            Id = "BitDataGridAggregateResult",
+            Title = "BitDataGridAggregateResult",
+            Description = "Holds the computed aggregate value for a column footer or group (passed to a column's FooterTemplate).",
+            Parameters =
+            [
+                new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The identifier of the aggregated column." },
+                new() { Name = "Type", Type = "BitDataGridAggregateType", DefaultValue = "BitDataGridAggregateType.None", Description = "The aggregate function that produced the value.", LinkType = LinkType.Link, Href = "#BitDataGridAggregateType" },
+                new() { Name = "Value", Type = "object?", DefaultValue = "null", Description = "The raw aggregate value." },
+                new() { Name = "FormattedValue", Type = "string", DefaultValue = "string.Empty", Description = "The aggregate value formatted using the column's AggregateFormat/Format." },
             ],
         },
     ];
@@ -218,13 +278,14 @@ public partial class BitDataGridDemo
         },
         new()
         {
-            Id = "BitDataGridDirection",
-            Name = "BitDataGridDirection",
-            Description = "Text direction for the grid.",
+            Id = "BitDir",
+            Name = "BitDir",
+            Description = "Determines the component's direction (Ltr/Rtl/Auto).",
             Items =
             [
                 new() { Name = "Ltr", Value = "0" },
                 new() { Name = "Rtl", Value = "1" },
+                new() { Name = "Auto", Value = "2" },
             ]
         },
         new()

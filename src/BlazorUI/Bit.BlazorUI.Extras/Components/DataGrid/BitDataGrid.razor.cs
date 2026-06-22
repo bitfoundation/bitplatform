@@ -65,7 +65,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [Parameter] public bool Bordered { get; set; } = true;
     [Parameter] public bool ShowHeader { get; set; } = true;
     [Parameter] public bool ShowFooter { get; set; }
-    [Parameter] public BitDataGridDirection Direction { get; set; } = BitDataGridDirection.Ltr;
+    [Parameter] public BitDir Direction { get; set; } = BitDir.Ltr;
 
     // -------------------------------------------------------- Feature toggles
     [Parameter] public bool Sortable { get; set; } = true;
@@ -834,7 +834,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         if (_resizingColumn is null) return;
         var delta = clientX - _resizeStartX;
-        if (Direction == BitDataGridDirection.Rtl) delta = -delta;
+        if (Direction == BitDir.Rtl) delta = -delta;
         var newWidth = Math.Max(_resizingColumn.MinWidth, _resizeStartWidth + delta);
         if (_resizingColumn.MaxWidth is { } max) newWidth = Math.Min(max, newWidth);
         _resizingColumn.ResizedWidth = newWidth;
@@ -993,7 +993,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         if (rowIdx < 0) rowIdx = 0;
 
         int row = rowIdx, col = colIndex;
-        var rtl = Direction == BitDataGridDirection.Rtl;
+        var rtl = Direction == BitDir.Rtl;
         var handled = true;
 
         switch (e.Key)
@@ -1183,7 +1183,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         if (Bordered) c += " bit-dtg-bordered";
         if (Striped) c += " bit-dtg-striped";
         if (Hoverable) c += " bit-dtg-hoverable";
-        if (Direction == BitDataGridDirection.Rtl) c += " bit-dtg-rtl";
+        if (Direction == BitDir.Rtl) c += " bit-dtg-rtl";
         if (!string.IsNullOrEmpty(Class)) c += " " + Class;
         return c;
     }
@@ -1218,7 +1218,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal string FrozenStyle(BitDataGridColumn<TItem> column)
     {
         if (!column.Frozen) return string.Empty;
-        var edge = Direction == BitDataGridDirection.Rtl ? "right" : "left";
+        var edge = Direction == BitDir.Rtl ? "right" : "left";
         return $"{edge}:{FrozenOffset(column).ToString(CultureInfo.InvariantCulture)}px;";
     }
 

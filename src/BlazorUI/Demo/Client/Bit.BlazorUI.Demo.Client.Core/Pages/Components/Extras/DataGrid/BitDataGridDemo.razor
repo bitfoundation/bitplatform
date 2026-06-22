@@ -9,6 +9,7 @@
 <DemoPage Name="DataGrid"
           Description="BitDataGrid is a feature-rich, native Blazor data grid: sorting, filtering, paging, virtualization, selection, inline editing, grouping, aggregates, tree-view, master-detail and theming."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubExtrasUrl="DataGrid/BitDataGrid.razor"
@@ -475,24 +476,18 @@
             </BitDataGrid>
         </DemoExample>
 
-        <DemoExample Title="Theming &amp; RTL" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+        <DemoExample Title="Borders &amp; Striping" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
             <div>
-                The grid is themed through CSS custom properties and the <code>light-dark()</code> function.
-                Override any <code>--bit-dtg-*</code> token to create your own theme, toggle borders/striping, or switch to RTL.
+                Toggle column/row borders and alternate-row striping using the <code>Bordered</code> and <code>Striped</code> parameters.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
-                <BitButton Variant="@(theme == "" ? BitVariant.Fill : BitVariant.Outline)" OnClick='() => theme = ""'>Default</BitButton>
-                <BitButton Variant="@(theme == "theme-emerald" ? BitVariant.Fill : BitVariant.Outline)" OnClick='() => theme = "theme-emerald"'>Emerald</BitButton>
-                <BitButton Variant="@(theme == "theme-grape" ? BitVariant.Fill : BitVariant.Outline)" OnClick='() => theme = "theme-grape"'>Grape</BitButton>
-                <BitButton OnClick="() => rtl = !rtl">@(rtl ? "LTR" : "RTL")</BitButton>
                 <BitButton OnClick="() => bordered = !bordered">Borders: @(bordered ? "on" : "off")</BitButton>
                 <BitButton OnClick="() => striped = !striped">Striping: @(striped ? "on" : "off")</BitButton>
             </BitStack>
             <br />
-            <BitDataGrid TItem="Product" Items="@themeProducts" Height="420px"
-                         Class="@theme" Bordered="bordered" Striped="striped"
-                         Direction="@(rtl ? BitDataGridDirection.Rtl : BitDataGridDirection.Ltr)"
+            <BitDataGrid TItem="Product" Items="@borderStripeProducts" Height="420px"
+                         Bordered="bordered" Striped="striped"
                          Sortable="true" Pageable="true" PageSize="8">
                 <BitDataGridColumn TItem="Product" Field="Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
                 <BitDataGridColumn TItem="Product" Field="Name" Width="220px" />
@@ -502,21 +497,24 @@
             </BitDataGrid>
         </DemoExample>
 
+        <DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+            <div>
+                Render the grid in a right-to-left layout by setting the <code>Direction</code> parameter to <code>BitDir.Rtl</code>.
+            </div>
+            <br />
+            <BitDataGrid TItem="Product" Items="@rtlProducts" Height="420px"
+                         Direction="BitDir.Rtl"
+                         Sortable="true" Pageable="true" PageSize="8">
+                <BitDataGridColumn TItem="Product" Field="Id" Title="شناسه" Width="90px" Align="BitDataGridColumnAlign.Right" Frozen="true" />
+                <BitDataGridColumn TItem="Product" Field="Name" Title="نام" Width="220px" />
+                <BitDataGridColumn TItem="Product" Field="Category" Title="دسته‌بندی">
+                    <Template Context="product">@CategoryFa(product.Category)</Template>
+                </BitDataGridColumn>
+                <BitDataGridColumn TItem="Product" Field="Price" Title="قیمت" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                <BitDataGridColumn TItem="Product" Field="Stock" Title="موجودی" Align="BitDataGridColumnAlign.Right" />
+            </BitDataGrid>
+        </DemoExample>
+
     </Examples>
 </DemoPage>
 
-
-@* Theme tokens must be global: Class="@theme" is applied to the grid root rendered by the Extras component. *@
-<style>
-    .theme-emerald {
-        --bit-dtg-accent: #0f9d58;
-        --bit-dtg-header-bg: light-dark(#e7f6ee, #10241a);
-        --bit-dtg-row-selected: light-dark(#c9efda, #14402a);
-    }
-
-    .theme-grape {
-        --bit-dtg-accent: #8e44ad;
-        --bit-dtg-header-bg: light-dark(#f3e9f8, #241027);
-        --bit-dtg-row-selected: light-dark(#e7d2f0, #3a1a45);
-    }
-</style>
