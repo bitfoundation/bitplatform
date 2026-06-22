@@ -18,7 +18,7 @@ public sealed class TaskCheckboxNode : MarkdownNode
 /// </summary>
 public sealed partial class TaskListAstProcessor : AstProcessor
 {
-    [GeneratedRegex(@"^\[([ xX])\]\s*(.*)$")]
+    [GeneratedRegex(@"^\[([ xX])\](?:\s+(.*))?$")]
     private static partial Regex TaskMarker();
 
     public override void Process(DocumentNode document, BitMarkdownPipeline pipeline)

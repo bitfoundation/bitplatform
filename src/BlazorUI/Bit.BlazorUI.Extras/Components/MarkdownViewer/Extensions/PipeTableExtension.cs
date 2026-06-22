@@ -102,6 +102,9 @@ public sealed partial class PipeTableBlockParser : BlockParser
         for (int i = 0; i < s.Length; i++)
         {
             if (s[i] == '\\' && i + 1 < s.Length && s[i + 1] == '|' && backtickRun == 0) { sb.Append('|'); i++; }
+            // An escaped backtick outside a code span is a literal character and must not
+            // open/close a code span; preserve the escape so inline parsing handles it.
+            else if (s[i] == '\\' && i + 1 < s.Length && s[i + 1] == '`' && backtickRun == 0) { sb.Append('\\'); sb.Append('`'); i++; }
             else if (s[i] == '`')
             {
                 int runStart = i;

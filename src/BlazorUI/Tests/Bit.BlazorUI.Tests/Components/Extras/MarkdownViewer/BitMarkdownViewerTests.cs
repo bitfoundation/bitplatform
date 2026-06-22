@@ -77,6 +77,23 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMarkdownViewerShouldSanitizeUnsafeImages()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![alt](javascript:alert(1))");
+        });
+
+        // Validate the rendered image's actual src rather than a substring of the HTML:
+        // an unsafe scheme must be stripped, leaving no src (or a safe one).
+        var img = component.Find(".bit-mdv img");
+        var src = img.GetAttribute("src") ?? string.Empty;
+        Assert.IsTrue(
+            src.Length == 0 || !src.Contains("javascript:", StringComparison.OrdinalIgnoreCase),
+            $"Unsafe image src was not sanitized: '{src}'.");
+    }
+
+    [TestMethod]
     public void BitMarkdownViewerShouldReparseWhenMarkdownChanges()
     {
         var component = RenderComponent<BitMarkdownViewer>(parameters =>

@@ -56,8 +56,41 @@ public sealed class ListNode : MarkdownNode
 
     // Surface the list items themselves so generic traversal can visit each
     // ListItemNode (their inner blocks are reached via ListItemNode.ChildNodes).
+    // A live view over Items (rather than a detached snapshot) keeps generic AST
+    // rewrites of the item collection reflected on this node.
     public override IEnumerable<IList<MarkdownNode>> ChildLists
-        => new[] { (IList<MarkdownNode>)Items.Cast<MarkdownNode>().ToList() };
+        => new IList<MarkdownNode>[] { new ListItemListView(Items) };
+}
+
+/// <summary>
+/// A live <see cref="IList{MarkdownNode}"/> view over a <see cref="ListNode"/>'s strongly
+/// typed <see cref="ListNode.Items"/>. Exposing the real collection (instead of a copy)
+/// lets generic AST processors add, remove, or replace list items and have those edits
+/// reflected on the source. Non-<see cref="ListItemNode"/> insertions are rejected.
+/// </summary>
+internal sealed class ListItemListView(List<ListItemNode> items) : IList<MarkdownNode>
+{
+    private static ListItemNode AsItem(MarkdownNode node)
+        => node as ListItemNode ?? throw new ArgumentException($"A {nameof(ListNode)} can only contain {nameof(ListItemNode)} children.", nameof(node));
+
+    public MarkdownNode this[int index]
+    {
+        get => items[index];
+        set => items[index] = AsItem(value);
+    }
+
+    public int Count => items.Count;
+    public bool IsReadOnly => false;
+    public void Add(MarkdownNode item) => items.Add(AsItem(item));
+    public void Clear() => items.Clear();
+    public bool Contains(MarkdownNode item) => item is ListItemNode li && items.Contains(li);
+    public void CopyTo(MarkdownNode[] array, int arrayIndex) { foreach (var i in items) array[arrayIndex++] = i; }
+    public int IndexOf(MarkdownNode item) => item is ListItemNode li ? items.IndexOf(li) : -1;
+    public void Insert(int index, MarkdownNode item) => items.Insert(index, AsItem(item));
+    public bool Remove(MarkdownNode item) => item is ListItemNode li && items.Remove(li);
+    public void RemoveAt(int index) => items.RemoveAt(index);
+    public IEnumerator<MarkdownNode> GetEnumerator() { foreach (var i in items) yield return i; }
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
 /// <summary>A single list item containing nested blocks.</summary>
