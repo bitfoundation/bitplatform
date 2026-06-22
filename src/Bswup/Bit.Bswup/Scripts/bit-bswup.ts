@@ -271,7 +271,13 @@ if (!BitBswup.initialized) {
                     };
 
                     if (startPromise) {
-                        startPromise.then(onStarted);
+                        // Handle rejection too: if Blazor.start() rejects, onStarted would
+                        // never run, leaving blazorStartResolver unresolved and the first-install
+                        // reload() promise pending forever. Release it on failure as well.
+                        startPromise.then(onStarted, (err) => {
+                            error('Blazor.start() rejected', err);
+                            onStarted();
+                        });
                     } else {
                         // Blazor couldn't be started (missing/misconfigured script, or the
                         // global isn't available). Still resolve the reload() promise so the

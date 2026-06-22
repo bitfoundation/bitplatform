@@ -957,10 +957,18 @@ function prepareRegExpArray(value: any) {
 // handleFetch. Without this a pattern like /admin/ would not match /ADMIN/ even with
 // caseInsensitiveUrl set - a surprising gap for the security-relevant prohibitedUrls list.
 // Patterns that already carry the `i` flag (including RegExp instances the app built with it)
-// are returned unchanged.
+// keep it. The global (g) and sticky (y) flags are always stripped: both make RegExp.test()
+// stateful by advancing lastIndex between calls, so a pattern reused across requests (the
+// PROHIBITED_URLS / SERVER_*_URLS lists are compiled once and tested on every fetch) returns
+// alternating true/false results - an intermittent security bypass. Removing them is a
+// security-critical normalization that runs regardless of caseInsensitiveUrl; the `i` flag is
+// then added only when case-insensitive matching is requested.
 function applyUrlCaseSensitivity(re: RegExp): RegExp {
-    if (!self.caseInsensitiveUrl || re.flags.indexOf('i') !== -1) return re;
-    return new RegExp(re.source, re.flags + 'i');
+    const safeFlags = re.flags.replace(/[gy]/g, '');
+    const needsI = self.caseInsensitiveUrl && safeFlags.indexOf('i') === -1;
+    const flags = needsI ? safeFlags + 'i' : safeFlags;
+    if (flags === re.flags) return re;
+    return new RegExp(re.source, flags);
 }
 
 // Strips trailing occurrences of `char` from the end of `str`. Used to drop base64 `=`

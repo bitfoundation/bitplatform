@@ -82,7 +82,7 @@
                         //bswupEl && (bswupEl.style.display = 'block');
                         return showLogs_ ? console.log('downloading assets started:', data?.version) : undefined;
 
-                    case BswupMessage.downloadProgress:
+                    case BswupMessage.downloadProgress: {
                         hideApp_ && appEl && (appEl.style.display = 'none');
                         bswupEl && (bswupEl.style.display = 'block');
 
@@ -109,6 +109,7 @@
                         progressEl && progressEl.setAttribute('aria-valuenow', String(percent));
                         percentEl && (percentEl.textContent = `${percent}%`);
                         return showLogs_ ? console.log('asset downloaded:', data) : undefined;
+                    }
 
                     case BswupMessage.downloadFinished:
                         if (autoHide_) {
