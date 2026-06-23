@@ -387,7 +387,7 @@ private readonly List<Product> all = SampleData.Generate(2_000);
 
 private async Task<BitDataGridReadResult<Product>> LoadMore(BitDataGridReadRequest request)
 {
-    await Task.Delay(350); // simulate a backend round-trip
+    await Task.Delay(350, request.CancellationToken); // simulate a backend round-trip
 
     IEnumerable<Product> query = all;
 

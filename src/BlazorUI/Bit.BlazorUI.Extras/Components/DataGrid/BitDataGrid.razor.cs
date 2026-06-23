@@ -280,7 +280,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // Only (re)load data when an external input that affects it actually changes.
         // Refreshing on every parameter set would cause an infinite loop in server mode:
         // OnRead -> caller StateHasChanged -> parent re-render -> OnParametersSetAsync -> OnRead...
-        var inputsChanged = !ReferenceEquals(Items, _lastItems) || PageSize != _lastPageSize;
+        // In client mode there is no such loop, and the parent may mutate the same Items instance
+        // in place (so the reference is unchanged); force a refresh there so the view never goes stale.
+        var inputsChanged = !ReferenceEquals(Items, _lastItems)
+            || PageSize != _lastPageSize
+            || (!IsServerMode && !IsInfiniteMode);
         if (!_dataInitialized || inputsChanged)
         {
             _lastItems = Items;
@@ -438,6 +442,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _view = _infiniteItems;
         _pageItems = _infiniteItems;
 
+        // Bump the load version up-front so any batch still in flight from before this reset is
+        // recognised as stale (by the version check in LoadNextBatchAsync) and won't append rows to
+        // the freshly cleared list while we await scrollToTop below.
+        _loadVersion++;
+
         if (_infiniteHandle is not null)
         {
             try { await _infiniteHandle.InvokeVoidAsync("scrollToTop"); }
@@ -485,11 +494,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             _pageItems = _infiniteItems;
             _footerAggregates = BitDataGridDataProcessor.Aggregate(_infiniteItems, _columns);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex) when (ex.CancellationToken == read.CancellationToken)
         {
             // The in-flight batch was superseded by a newer load (sort/filter change or reset) whose
-            // cancellation token fired. Cancellation is expected here, so drop this batch and let the
-            // newer load own the loading state.
+            // cancellation token fired. Cancellation from our own token is expected here, so drop this
+            // batch and let the newer load own the loading state. Any other cancellation (e.g. a
+            // provider-side timeout) is a real error and propagates.
             return;
         }
         finally
@@ -580,10 +590,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         {
             result = await OnRead!(request);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex) when (ex.CancellationToken == request.CancellationToken)
         {
-            // Superseded by a newer request whose cancellation token fired; cancellation is expected,
-            // so keep the existing state and let the newer load complete.
+            // Superseded by a newer request whose cancellation token fired; cancellation from our own
+            // token is expected, so keep the existing state and let the newer load complete. Any other
+            // cancellation (e.g. a provider-side timeout) is a real error and propagates.
             return;
         }
         if (version != _loadVersion) return;
@@ -1230,7 +1241,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             if (v.Length > 0 && (v[0] is '=' or '+' or '-' or '@'))
                 v = "'" + v;
 
-            return v.Contains(',') || v.Contains('"') || v.Contains('\n')
+            return v.Contains(',') || v.Contains('"') || v.Contains('\n') || v.Contains('\r')
                 ? "\"" + v.Replace("\"", "\"\"") + "\""
                 : v;
         }

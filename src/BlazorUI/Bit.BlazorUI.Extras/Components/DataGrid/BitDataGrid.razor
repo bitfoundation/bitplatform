@@ -121,7 +121,11 @@
                                  @ondragover:preventDefault="true"
                                  @ondrop="() => DropColumn(column)">
 
-                                <span class="bit-dtg-htext" @onclick="e => OnHeaderClick(column, e)">
+                                <span class="bit-dtg-htext"
+                                      role="@(ColumnSortable(column) ? "button" : null)"
+                                      tabindex="@(ColumnSortable(column) ? 0 : -1)"
+                                      @onclick="e => OnHeaderClick(column, e)"
+                                      @onkeydown="e => OnHeaderKeyDown(column, e)">
                                     @if (column.HeaderTemplate is not null)
                                     {
                                         @column.HeaderTemplate
@@ -391,6 +395,16 @@
     {
         if (!ColumnSortable(column)) return;
         await ToggleSortAsync(column, MultiSort && (e.CtrlKey || e.MetaKey));
+    }
+
+    private async Task OnHeaderKeyDown(BitDataGridColumn<TItem> column, KeyboardEventArgs e)
+    {
+        if (!ColumnSortable(column)) return;
+        // Activate sorting from the keyboard so the header is usable without a pointer.
+        if (e.Key is "Enter" or " " or "Spacebar")
+        {
+            await ToggleSortAsync(column, MultiSort && (e.CtrlKey || e.MetaKey));
+        }
     }
 
     private RenderFragment RenderPager => @<div class="bit-dtg-pager">

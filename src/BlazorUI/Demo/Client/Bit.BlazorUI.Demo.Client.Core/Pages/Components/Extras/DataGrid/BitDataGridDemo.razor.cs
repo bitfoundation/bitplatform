@@ -140,11 +140,12 @@ public partial class BitDataGridDemo : AppComponentBase
     {
         serverLoading = true;
         await InvokeAsync(StateHasChanged);
-        await Task.Delay(250, request.CancellationToken);
 
         int total = 0;
         try
         {
+            await Task.Delay(250, request.CancellationToken);
+
             IEnumerable<Product> query = serverAll;
 
             foreach (var f in request.Filters)
