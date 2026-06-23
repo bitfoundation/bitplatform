@@ -367,9 +367,12 @@ public partial class BitFullCalendar : IDisposable
 
     private void HandleStateChanged()
     {
+        // Capture the flag now: the queued callback may run after OnParametersSet's finally block
+        // has reset _applyingParameters to false, which would otherwise wrongly raise events.
+        var applyingParameters = _applyingParameters;
         InvokeAsync(async () =>
         {
-            await ReconcileBoundState(raiseEvents: !_applyingParameters);
+            await ReconcileBoundState(raiseEvents: !applyingParameters);
             StateHasChanged();
         });
     }

@@ -20,10 +20,4 @@ public partial class BitFcSettings
             StateHasChanged();
         }
     }
-
-    private void OnGroupByKeyDown(KeyboardEventArgs e, BitFullCalendarAgendaGroupBy groupBy)
-    {
-        if (e.Key is "Enter" or " " or "Spacebar")
-            State.SetAgendaModeGroupBy(groupBy);
-    }
 }

@@ -50,6 +50,13 @@ public partial class BitFcAddEditEventDialog
         _lastStartHour = StartHour;
         _lastStartMinute = StartMinute;
 
+        // Clear transient editing state so a reused dialog instance doesn't carry over stale
+        // validation errors or half-typed attendee draft inputs from a previous open.
+        _errors = new();
+        _newFirstName = "";
+        _newLastName = "";
+        _newId = "";
+
         _isEditing = ExistingEvent != null;
         var defaultColor = ColorScheme.Options.Count > 0
             ? ColorScheme.Options[0].Id

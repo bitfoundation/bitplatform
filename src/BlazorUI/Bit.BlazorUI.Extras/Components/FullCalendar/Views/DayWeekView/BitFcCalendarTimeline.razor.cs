@@ -6,6 +6,7 @@ public partial class BitFcCalendarTimeline
 
     private double _positionPx;
     private Timer? _timer;
+    private bool _isDisposed;
 
     protected override void OnInitialized()
     {
@@ -19,10 +20,18 @@ public partial class BitFcCalendarTimeline
 
         _timer = new Timer(_ =>
         {
+            // The timer can fire after disposal; skip queuing work so StateHasChanged isn't called
+            // on a disposed component (which throws ObjectDisposedException).
+            if (_isDisposed)
+                return;
+
             // Run both the state mutation and the re-render on the renderer's dispatcher so
             // _positionPx is never modified outside the synchronization context.
             InvokeAsync(() =>
             {
+                if (_isDisposed)
+                    return;
+
                 UpdatePosition();
                 StateHasChanged();
             });
@@ -34,5 +43,9 @@ public partial class BitFcCalendarTimeline
         _positionPx = BitFullCalendarHelpers.GetCurrentTimeLineTopPx();
     }
 
-    public void Dispose() => _timer?.Dispose();
+    public void Dispose()
+    {
+        _isDisposed = true;
+        _timer?.Dispose();
+    }
 }
