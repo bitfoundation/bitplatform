@@ -11,29 +11,7 @@ public static class SampleData
 
     /// <summary>Deterministic generator so demos are reproducible.</summary>
     public static List<Product> Generate(int count, int seed = 42)
-    {
-        var rng = new Random(seed);
-        var categories = Enum.GetValues<Category>();
-        var list = new List<Product>(count);
-        // Fixed reference date keeps the generated data deterministic regardless of when it runs.
-        var referenceDate = new DateTime(2024, 1, 1);
-        for (int i = 1; i <= count; i++)
-        {
-            list.Add(new Product
-            {
-                Id = i,
-                Name = $"{Adjectives[rng.Next(Adjectives.Length)]} {Nouns[rng.Next(Nouns.Length)]} {rng.Next(100, 999)}",
-                Category = categories[rng.Next(categories.Length)],
-                Price = Math.Round((decimal)(rng.NextDouble() * 990 + 5), 2),
-                Stock = rng.Next(0, 500),
-                Rating = Math.Round(rng.NextDouble() * 4 + 1, 1),
-                Discontinued = rng.Next(0, 5) == 0,
-                ReleaseDate = referenceDate.AddDays(-rng.Next(0, 2000)),
-                Supplier = Suppliers[rng.Next(Suppliers.Length)]
-            });
-        }
-        return list;
-    }
+        => GenerateCore(count, seed, Adjectives, Nouns, Suppliers);
 
     private static readonly string[] PersianAdjectives =
         { "فوق‌العاده", "ممتاز", "اقتصادی", "هوشمند", "کلاسیک", "حرفه‌ای", "کوچک", "بزرگ", "قدیمی", "مدرن", "لوکس", "فشرده" };
@@ -44,6 +22,13 @@ public static class SampleData
 
     /// <summary>Deterministic generator that produces Persian sample data for RTL demos.</summary>
     public static List<Product> GeneratePersian(int count, int seed = 42)
+        => GenerateCore(count, seed, PersianAdjectives, PersianNouns, PersianSuppliers);
+
+    /// <summary>
+    /// Shared, deterministic product generator. The fixed reference date and seeded RNG keep the
+    /// generated data reproducible regardless of when (or in which locale) it runs.
+    /// </summary>
+    private static List<Product> GenerateCore(int count, int seed, string[] adjectives, string[] nouns, string[] suppliers)
     {
         var rng = new Random(seed);
         var categories = Enum.GetValues<Category>();
@@ -54,14 +39,14 @@ public static class SampleData
             list.Add(new Product
             {
                 Id = i,
-                Name = $"{PersianAdjectives[rng.Next(PersianAdjectives.Length)]} {PersianNouns[rng.Next(PersianNouns.Length)]} {rng.Next(100, 999)}",
+                Name = $"{adjectives[rng.Next(adjectives.Length)]} {nouns[rng.Next(nouns.Length)]} {rng.Next(100, 999)}",
                 Category = categories[rng.Next(categories.Length)],
                 Price = Math.Round((decimal)(rng.NextDouble() * 990 + 5), 2),
                 Stock = rng.Next(0, 500),
                 Rating = Math.Round(rng.NextDouble() * 4 + 1, 1),
                 Discontinued = rng.Next(0, 5) == 0,
                 ReleaseDate = referenceDate.AddDays(-rng.Next(0, 2000)),
-                Supplier = PersianSuppliers[rng.Next(PersianSuppliers.Length)]
+                Supplier = suppliers[rng.Next(suppliers.Length)]
             });
         }
         return list;

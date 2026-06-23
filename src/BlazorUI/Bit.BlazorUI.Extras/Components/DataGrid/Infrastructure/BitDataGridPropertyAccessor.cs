@@ -36,40 +36,61 @@ public sealed class BitDataGridPropertyAccessor<TItem>
     public void SetValue(TItem item, object? value)
     {
         if (_setter is null) return;
-        _setter(item, ConvertValue(value));
+        // Only write when the value can actually be coerced to the property's type. Silently
+        // substituting the type's default (e.g. 0) for unparseable input would discard the user's
+        // entry without any feedback, so reject the conversion failure instead.
+        if (TryConvertValue(value, out var converted))
+            _setter(item, converted);
     }
 
-    /// <summary>Coerces an arbitrary value into the property's type.</summary>
+    /// <summary>Coerces an arbitrary value into the property's type, falling back to the type's default on failure.</summary>
     public object? ConvertValue(object? value)
+        => TryConvertValue(value, out var result) ? result : DefaultValue();
+
+    /// <summary>
+    /// Attempts to coerce an arbitrary value into the property's type. Returns <c>false</c> when the
+    /// value cannot be converted, letting callers reject invalid input rather than overwrite it.
+    /// </summary>
+    public bool TryConvertValue(object? value, out object? result)
     {
         if (value is null)
-            return PropertyType.IsValueType && Nullable.GetUnderlyingType(PropertyType) is null
-                ? Activator.CreateInstance(PropertyType)
-                : null;
+        {
+            result = DefaultValue();
+            return true;
+        }
 
         if (PropertyType.IsInstanceOfType(value))
-            return value;
+        {
+            result = value;
+            return true;
+        }
 
         var target = UnderlyingType;
         try
         {
             if (target.IsEnum)
-                return value is string s ? Enum.Parse(target, s, true) : Enum.ToObject(target, value);
-            if (target == typeof(Guid))
-                return value is Guid g ? g : Guid.Parse(value.ToString()!);
-            if (target == typeof(DateOnly))
-                return value is DateOnly d ? d : DateOnly.Parse(value.ToString()!);
-            if (target == typeof(TimeOnly))
-                return value is TimeOnly t ? t : TimeOnly.Parse(value.ToString()!);
-            return Convert.ChangeType(value, target);
+                result = value is string s ? Enum.Parse(target, s, true) : Enum.ToObject(target, value);
+            else if (target == typeof(Guid))
+                result = value is Guid g ? g : Guid.Parse(value.ToString()!);
+            else if (target == typeof(DateOnly))
+                result = value is DateOnly d ? d : DateOnly.Parse(value.ToString()!);
+            else if (target == typeof(TimeOnly))
+                result = value is TimeOnly t ? t : TimeOnly.Parse(value.ToString()!);
+            else
+                result = Convert.ChangeType(value, target);
+            return true;
         }
         catch
         {
-            return PropertyType.IsValueType && Nullable.GetUnderlyingType(PropertyType) is null
-                ? Activator.CreateInstance(PropertyType)
-                : null;
+            result = null;
+            return false;
         }
     }
+
+    private object? DefaultValue()
+        => PropertyType.IsValueType && Nullable.GetUnderlyingType(PropertyType) is null
+            ? Activator.CreateInstance(PropertyType)
+            : null;
 
     public static BitDataGridPropertyAccessor<TItem> For(string path)
     {

@@ -342,9 +342,9 @@ private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadReque
             };
         }
 
-        // sorting
-        var sort = request.Sorts.FirstOrDefault();
-        if (sort is not null)
+        // sorting (honor every active sort descriptor, not just the first)
+        IOrderedEnumerable<Product>? ordered = null;
+        foreach (var sort in request.Sorts)
         {
             Func<Product, object> key = sort.ColumnId switch
             {
@@ -352,10 +352,16 @@ private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadReque
                 nameof(Product.Price) => p => p.Price,
                 _ => p => p.Id
             };
-            query = sort.Direction == BitDataGridSortDirection.Descending
-                ? query.OrderByDescending(key)
-                : query.OrderBy(key);
+            if (ordered is null)
+                ordered = sort.Direction == BitDataGridSortDirection.Descending
+                    ? query.OrderByDescending(key)
+                    : query.OrderBy(key);
+            else
+                ordered = sort.Direction == BitDataGridSortDirection.Descending
+                    ? ordered.ThenByDescending(key)
+                    : ordered.ThenBy(key);
         }
+        if (ordered is not null) query = ordered;
 
         // paging
         var filtered = query.ToList();
@@ -382,7 +388,31 @@ private readonly List<Product> all = SampleData.Generate(2_000);
 private async Task<BitDataGridReadResult<Product>> LoadMore(BitDataGridReadRequest request)
 {
     await Task.Delay(350); // simulate a backend round-trip
-    var batch = all.Skip(request.Skip).Take(request.Take ?? 40).ToList();
+
+    IEnumerable<Product> query = all;
+
+    // Apply every active sort descriptor before paging out the batch.
+    IOrderedEnumerable<Product>? ordered = null;
+    foreach (var sort in request.Sorts)
+    {
+        Func<Product, object> key = sort.ColumnId switch
+        {
+            nameof(Product.Name) => p => p.Name,
+            nameof(Product.Price) => p => p.Price,
+            _ => p => p.Id
+        };
+        if (ordered is null)
+            ordered = sort.Direction == BitDataGridSortDirection.Descending
+                ? query.OrderByDescending(key)
+                : query.OrderBy(key);
+        else
+            ordered = sort.Direction == BitDataGridSortDirection.Descending
+                ? ordered.ThenByDescending(key)
+                : ordered.ThenBy(key);
+    }
+    if (ordered is not null) query = ordered;
+
+    var batch = query.Skip(request.Skip).Take(request.Take ?? 40).ToList();
     // Pass 0 as the total count to signal there is no known total (infinite scrolling).
     return new BitDataGridReadResult<Product>(batch, 0);
 }" + ProductModelCode + SampleDataCode;

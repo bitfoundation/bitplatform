@@ -140,7 +140,7 @@ public partial class BitDataGridDemo : AppComponentBase
     {
         serverLoading = true;
         await InvokeAsync(StateHasChanged);
-        await Task.Delay(250);
+        await Task.Delay(250, request.CancellationToken);
 
         int total = 0;
         try
@@ -197,10 +197,15 @@ public partial class BitDataGridDemo : AppComponentBase
         }
         finally
         {
-            serverLastRequest = $"Last request → skip {request.Skip}, take {request.Take}, sorts: {request.Sorts.Count}, filters: {request.Filters.Count}, total: {total}";
-            serverLoading = false;
-            // Ensure the parent re-renders after the load completes, since this runs as a callback.
-            await InvokeAsync(StateHasChanged);
+            // A superseded request observes a cancelled token; skip writing UI state so a stale load
+            // can't overwrite the fresher request's status. The newer load owns serverLoading.
+            if (!request.CancellationToken.IsCancellationRequested)
+            {
+                serverLastRequest = $"Last request → skip {request.Skip}, take {request.Take}, sorts: {request.Sorts.Count}, filters: {request.Filters.Count}, total: {total}";
+                serverLoading = false;
+                // Ensure the parent re-renders after the load completes, since this runs as a callback.
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 
@@ -208,7 +213,7 @@ public partial class BitDataGridDemo : AppComponentBase
     // ---- infinite scrolling ----
     private async Task<BitDataGridReadResult<Product>> LoadMore(BitDataGridReadRequest request)
     {
-        await Task.Delay(350);
+        await Task.Delay(350, request.CancellationToken);
 
         IEnumerable<Product> query = infiniteAll;
 
@@ -242,6 +247,9 @@ public partial class BitDataGridDemo : AppComponentBase
         if (ordered is not null) query = ordered;
 
         var batch = query.Skip(request.Skip).Take(request.Take ?? 40).ToList();
+
+        // Drop a superseded batch before mutating shared demo state so stale rows aren't logged.
+        request.CancellationToken.ThrowIfCancellationRequested();
 
         infiniteRequests++;
         var end = request.Skip + batch.Count;

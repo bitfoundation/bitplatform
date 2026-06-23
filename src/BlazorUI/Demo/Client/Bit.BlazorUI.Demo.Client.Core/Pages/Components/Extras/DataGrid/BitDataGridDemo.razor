@@ -157,7 +157,7 @@
                             <span title="@p.Rating">
                                 @for (var i = 0; i < 5; i++)
                                 {
-                                    <span style="color:@(i < Math.Round(p.Rating) ? "#f5a623" : "#ccc")">★</span>
+                                    <span style="color:@(i < Math.Round(p.Rating, MidpointRounding.AwayFromZero) ? "#f5a623" : "#ccc")">★</span>
                                 }
                             </span>
                         </Template>

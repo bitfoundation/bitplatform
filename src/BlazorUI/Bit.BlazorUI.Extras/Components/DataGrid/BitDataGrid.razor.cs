@@ -485,6 +485,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             _pageItems = _infiniteItems;
             _footerAggregates = BitDataGridDataProcessor.Aggregate(_infiniteItems, _columns);
         }
+        catch (OperationCanceledException)
+        {
+            // The in-flight batch was superseded by a newer load (sort/filter change or reset) whose
+            // cancellation token fired. Cancellation is expected here, so drop this batch and let the
+            // newer load own the loading state.
+            return;
+        }
         finally
         {
             // Only clear the loading flag if we are still the current request; a superseding request
@@ -568,7 +575,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // Capture this request's version right after ResetLoadCancellation; bail out below if a newer
         // request has since superseded it so a stale response can't overwrite fresher state.
         var version = _loadVersion;
-        var result = await OnRead!(request);
+        BitDataGridReadResult<TItem> result;
+        try
+        {
+            result = await OnRead!(request);
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer request whose cancellation token fired; cancellation is expected,
+            // so keep the existing state and let the newer load complete.
+            return;
+        }
         if (version != _loadVersion) return;
         _pageItems = result.Items;
         _view = result.Items;
@@ -1207,9 +1224,16 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         return sb.ToString();
 
         static string Escape(string v)
-            => v.Contains(',') || v.Contains('"') || v.Contains('\n')
+        {
+            // Neutralise CSV formula injection: spreadsheet apps may execute a cell whose text begins
+            // with =, +, - or @ as a formula. Prefixing with a single quote forces it to be read as text.
+            if (v.Length > 0 && (v[0] is '=' or '+' or '-' or '@'))
+                v = "'" + v;
+
+            return v.Contains(',') || v.Contains('"') || v.Contains('\n')
                 ? "\"" + v.Replace("\"", "\"\"") + "\""
                 : v;
+        }
     }
 
     // ----------------------------------------------------- Layout helpers

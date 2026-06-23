@@ -21,9 +21,9 @@
                @onchange="e => Set(e.Value)" />
         break;
 
-    case BitDataGridColumnDataType.Enum:
+    case BitDataGridColumnDataType.Enum when Column.Accessor is not null && Column.Accessor.UnderlyingType.IsEnum:
         <select class="bit-dtg-editor" value="@(GetString())" @onchange="e => Set(e.Value)">
-            @foreach (var name in Enum.GetNames(Column.Accessor!.UnderlyingType))
+            @foreach (var name in Enum.GetNames(Column.Accessor.UnderlyingType))
             {
                 <option value="@name">@name</option>
             }

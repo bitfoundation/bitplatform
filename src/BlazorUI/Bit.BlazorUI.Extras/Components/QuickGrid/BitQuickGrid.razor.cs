@@ -302,7 +302,7 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         if (_checkColumnOptionsPosition && _displayOptionsForColumn is not null)
         {
             _checkColumnOptionsPosition = false;
-            _ = _js.BitQuickGridCheckColumnOptionsPosition(_tableReference);
+            await _js.BitQuickGridCheckColumnOptionsPosition(_tableReference);
         }
     }
 

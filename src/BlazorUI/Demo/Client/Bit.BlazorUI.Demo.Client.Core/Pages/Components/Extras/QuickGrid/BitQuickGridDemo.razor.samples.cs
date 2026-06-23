@@ -626,7 +626,7 @@ public class Openfda
 // Note that this need Microsoft.AspNetCore.OData nuget package to be installed
 
 [ApiController]
-[Route(""[controller]/[action]"")]
+[Route(""api/[controller]/[action]"")]
 public class ProductsController : ControllerBase
 {
     private static readonly Random _random = new Random();
@@ -807,7 +807,7 @@ protected override async Task OnInitializedAsync()
 // Note that this need Microsoft.AspNetCore.OData nuget package to be installed
 
 [ApiController]
-[Route(""[controller]/[action]"")]
+[Route(""api/[controller]/[action]"")]
 public class ProductsController : ControllerBase
 {
     private static readonly Random _random = new Random();
