@@ -212,8 +212,8 @@ public partial class BitDataGridDemo : AppComponentBase
 
         IEnumerable<Product> query = infiniteAll;
 
-        var sort = request.Sorts.FirstOrDefault();
-        if (sort is not null)
+        IOrderedEnumerable<Product>? ordered = null;
+        foreach (var sort in request.Sorts)
         {
             Func<Product, object> key = sort.ColumnId switch
             {
@@ -225,10 +225,21 @@ public partial class BitDataGridDemo : AppComponentBase
                 nameof(Product.Rating) => p => p.Rating,
                 _ => p => p.Id
             };
-            query = sort.Direction == BitDataGridSortDirection.Descending
-                ? query.OrderByDescending(key)
-                : query.OrderBy(key);
+
+            if (ordered is null)
+            {
+                ordered = sort.Direction == BitDataGridSortDirection.Descending
+                    ? query.OrderByDescending(key)
+                    : query.OrderBy(key);
+            }
+            else
+            {
+                ordered = sort.Direction == BitDataGridSortDirection.Descending
+                    ? ordered.ThenByDescending(key)
+                    : ordered.ThenBy(key);
+            }
         }
+        if (ordered is not null) query = ordered;
 
         var batch = query.Skip(request.Skip).Take(request.Take ?? 40).ToList();
 

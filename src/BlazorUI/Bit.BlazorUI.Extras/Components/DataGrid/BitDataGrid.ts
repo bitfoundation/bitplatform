@@ -13,7 +13,9 @@ namespace BitBlazorUI {
                 if (disposed || !viewport) return;
                 const remaining = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
                 if (remaining <= distance) {
-                    dotNetRef.invokeMethodAsync('OnInfiniteScrollNearEndAsync');
+                    // The circuit may disconnect (navigation, refresh) between the disposed check and
+                    // this async call, so swallow the resulting rejection to avoid unhandled console errors.
+                    dotNetRef.invokeMethodAsync('OnInfiniteScrollNearEndAsync').catch(() => { });
                 }
             };
 

@@ -400,7 +400,7 @@
                 var to = Math.Min(CurrentPage * _effectivePageSize, TotalCount);
             }
             <span>@from–@to of @TotalCount</span>
-            <select class="bit-dtg-page-size" @onchange="e => SetPageSizeAsync(int.Parse((string)e.Value!))">
+            <select class="bit-dtg-page-size" @onchange="e => { if (int.TryParse((string?)e.Value, out var ps)) return SetPageSizeAsync(ps); return Task.CompletedTask; }">
                 @foreach (var size in PageSizeOptions)
                 {
                     <option value="@size" selected="@(size == PageSize)">@size / page</option>

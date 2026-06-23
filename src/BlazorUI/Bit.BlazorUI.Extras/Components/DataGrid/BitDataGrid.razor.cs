@@ -731,8 +731,22 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         await NotifySelectionAsync();
     }
 
-    internal bool AllPageSelected => _pageItems.Where(CanSelectRow).Any() && _pageItems.Where(CanSelectRow).All(_selected.Contains);
-    internal bool SomePageSelected => _pageItems.Where(CanSelectRow).Any(_selected.Contains) && !AllPageSelected;
+    internal bool AllPageSelected
+    {
+        get
+        {
+            var selectable = _pageItems.Where(CanSelectRow).ToList();
+            return selectable.Count > 0 && selectable.All(_selected.Contains);
+        }
+    }
+    internal bool SomePageSelected
+    {
+        get
+        {
+            var selectable = _pageItems.Where(CanSelectRow).ToList();
+            return selectable.Any(_selected.Contains) && !(selectable.Count > 0 && selectable.All(_selected.Contains));
+        }
+    }
 
     internal async Task ToggleSelectAllAsync(bool value)
     {
@@ -1066,7 +1080,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         var span = column.ColSpan(item) ?? 1;
         if (span < 1) span = 1;
         var cols = VisibleColumns;
-        var idx = cols.ToList().IndexOf(column);
+        var idx = -1;
+        for (int i = 0; i < cols.Count; i++)
+        {
+            if (cols[i] == column) { idx = i; break; }
+        }
         if (idx < 0) return 1;
         return Math.Min(span, cols.Count - idx);
     }

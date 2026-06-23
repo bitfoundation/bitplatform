@@ -323,44 +323,50 @@ private readonly List<Product> all = SampleData.Generate(523);
 private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadRequest request)
 {
     loading = true;
-    await Task.Delay(250); // simulate a backend round-trip
-
-    IEnumerable<Product> query = all;
-
-    // filtering
-    foreach (var f in request.Filters)
+    try
     {
-        var term = f.Value?.ToString() ?? """";
-        query = f.ColumnId switch
-        {
-            nameof(Product.Name) => query.Where(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase)),
-            nameof(Product.Price) => query.Where(p => p.Price.ToString().Contains(term)),
-            nameof(Product.Id) => query.Where(p => p.Id.ToString().Contains(term)),
-            _ => query
-        };
-    }
+        await Task.Delay(250, request.CancellationToken); // simulate a backend round-trip
 
-    // sorting
-    var sort = request.Sorts.FirstOrDefault();
-    if (sort is not null)
+        IEnumerable<Product> query = all;
+
+        // filtering
+        foreach (var f in request.Filters)
+        {
+            var term = f.Value?.ToString() ?? """";
+            query = f.ColumnId switch
+            {
+                nameof(Product.Name) => query.Where(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase)),
+                nameof(Product.Price) => query.Where(p => p.Price.ToString().Contains(term)),
+                nameof(Product.Id) => query.Where(p => p.Id.ToString().Contains(term)),
+                _ => query
+            };
+        }
+
+        // sorting
+        var sort = request.Sorts.FirstOrDefault();
+        if (sort is not null)
+        {
+            Func<Product, object> key = sort.ColumnId switch
+            {
+                nameof(Product.Name) => p => p.Name,
+                nameof(Product.Price) => p => p.Price,
+                _ => p => p.Id
+            };
+            query = sort.Direction == BitDataGridSortDirection.Descending
+                ? query.OrderByDescending(key)
+                : query.OrderBy(key);
+        }
+
+        // paging
+        var filtered = query.ToList();
+        var items = filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList();
+
+        return new BitDataGridReadResult<Product>(items, filtered.Count);
+    }
+    finally
     {
-        Func<Product, object> key = sort.ColumnId switch
-        {
-            nameof(Product.Name) => p => p.Name,
-            nameof(Product.Price) => p => p.Price,
-            _ => p => p.Id
-        };
-        query = sort.Direction == BitDataGridSortDirection.Descending
-            ? query.OrderByDescending(key)
-            : query.OrderBy(key);
+        loading = false;
     }
-
-    // paging
-    var filtered = query.ToList();
-    var items = filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList();
-
-    loading = false;
-    return new BitDataGridReadResult<Product>(items, filtered.Count);
 }" + ProductModelCode + SampleDataCode;
 
     private readonly string example12RazorCode = @"

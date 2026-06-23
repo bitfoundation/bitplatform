@@ -86,8 +86,11 @@ public sealed class BitDataGridPropertyAccessor<TItem>
         PropertyInfo? lastProp = null;
         Expression? nullGuard = null;
 
-        foreach (var segment in path.Split('.', StringSplitOptions.RemoveEmptyEntries))
+        foreach (var segment in path.Split('.'))
         {
+            if (string.IsNullOrWhiteSpace(segment))
+                throw new ArgumentException($"Property path '{path}' contains an empty or whitespace segment.", nameof(path));
+
             // If the owner of this segment is an intermediate (nullable) value, guard against it being null.
             if (!ReferenceEquals(body, param) && CanBeNull(body.Type))
             {

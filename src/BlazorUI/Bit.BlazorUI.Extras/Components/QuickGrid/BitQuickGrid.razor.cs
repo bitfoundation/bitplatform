@@ -337,11 +337,19 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
             // If we're using Virtualize, we have to go through its RefreshDataAsync API otherwise:
             // (1) It won't know to update its own internal state if the provider output has changed
             // (2) We won't know what slice of data to query for
-            await _virtualizeComponent.RefreshDataAsync();
-            if (ReferenceEquals(_pendingDataLoadCancellationTokenSource, thisLoadCts))
+            try
             {
-                thisLoadCts.Dispose();
-                _pendingDataLoadCancellationTokenSource = null;
+                await _virtualizeComponent.RefreshDataAsync();
+            }
+            finally
+            {
+                // Always reconcile the load-state, even if RefreshDataAsync threw, so we don't leak the
+                // CTS or leave _pendingDataLoadCancellationTokenSource pointing at a disposed instance.
+                if (ReferenceEquals(_pendingDataLoadCancellationTokenSource, thisLoadCts))
+                {
+                    thisLoadCts.Dispose();
+                    _pendingDataLoadCancellationTokenSource = null;
+                }
             }
         }
         else
@@ -410,7 +418,18 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
 
         var providerRequest = new BitQuickGridItemsProviderRequest<TGridItem>(
             startIndex, count, _sortByColumn, _sortByAscending, request.CancellationToken);
-        var providerResult = await ResolveItemsRequestAsync(providerRequest);
+        BitQuickGridItemsProviderResult<TGridItem> providerResult;
+        try
+        {
+            providerResult = await ResolveItemsRequestAsync(providerRequest);
+        }
+        catch (OperationCanceledException)
+        {
+            // The request was superseded by a newer one after the debounce window; the items provider
+            // observed the cancellation token and bailed out. Return an empty result the virtualization
+            // system can handle rather than letting the cancellation propagate out of here.
+            return default;
+        }
 
         if (!request.CancellationToken.IsCancellationRequested)
         {

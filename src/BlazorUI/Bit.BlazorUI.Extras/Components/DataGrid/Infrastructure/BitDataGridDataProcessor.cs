@@ -198,14 +198,35 @@ public static class BitDataGridDataProcessor
                 return value is not null && !string.IsNullOrEmpty(value.ToString());
         }
 
-        if (filter.Value is null)
-            return true;
-
         // Numeric / comparable operators
         if (filter.Operator is BitDataGridFilterOperator.GreaterThan or BitDataGridFilterOperator.GreaterThanOrEqual
             or BitDataGridFilterOperator.LessThan or BitDataGridFilterOperator.LessThanOrEqual
             or BitDataGridFilterOperator.Equals or BitDataGridFilterOperator.NotEquals)
         {
+            // Handle nulls explicitly rather than letting the comparer order nulls-first, which would
+            // otherwise make a null row value spuriously match LessThan/LessThanOrEqual filters.
+            if (value is null)
+            {
+                return filter.Operator switch
+                {
+                    BitDataGridFilterOperator.Equals => filter.Value is null,
+                    BitDataGridFilterOperator.NotEquals => filter.Value is not null,
+                    _ => false
+                };
+            }
+
+            if (filter.Value is null)
+            {
+                // Row value is non-null here, so equality against a null filter value is deterministic;
+                // ordering operators have no meaningful null operand, so they don't match.
+                return filter.Operator switch
+                {
+                    BitDataGridFilterOperator.Equals => false,
+                    BitDataGridFilterOperator.NotEquals => true,
+                    _ => false
+                };
+            }
+
             var cmp = BitDataGridValueComparer.Instance.Compare(value, CoerceToValueType(value, filter.Value));
             return filter.Operator switch
             {
@@ -218,6 +239,9 @@ public static class BitDataGridDataProcessor
                 _ => true
             };
         }
+
+        if (filter.Value is null)
+            return true;
 
         // String operators
         var text = value?.ToString() ?? string.Empty;

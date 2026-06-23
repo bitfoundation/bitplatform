@@ -25,7 +25,7 @@
         <select class="bit-dtg-editor" value="@(GetString())" @onchange="e => Set(e.Value)">
             @foreach (var name in Enum.GetNames(Column.Accessor!.UnderlyingType))
             {
-                <option value="@name" selected="@(name == GetString())">@name</option>
+                <option value="@name">@name</option>
             }
         </select>
         break;
