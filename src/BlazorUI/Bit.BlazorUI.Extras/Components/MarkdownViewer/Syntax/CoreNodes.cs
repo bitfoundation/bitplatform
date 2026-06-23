@@ -57,9 +57,11 @@ public sealed class ListNode : MarkdownNode
     // Surface the list items themselves so generic traversal can visit each
     // ListItemNode (their inner blocks are reached via ListItemNode.ChildNodes).
     // A live view over Items (rather than a detached snapshot) keeps generic AST
-    // rewrites of the item collection reflected on this node.
+    // rewrites of the item collection reflected on this node. The wrapper is cached
+    // so repeated traversals don't allocate a new array/view on every access.
+    private IList<MarkdownNode>[]? _childLists;
     public override IEnumerable<IList<MarkdownNode>> ChildLists
-        => new IList<MarkdownNode>[] { new ListItemListView(Items) };
+        => _childLists ??= new IList<MarkdownNode>[] { new ListItemListView(Items) };
 }
 
 /// <summary>
@@ -84,7 +86,12 @@ internal sealed class ListItemListView(List<ListItemNode> items) : IList<Markdow
     public void Add(MarkdownNode item) => items.Add(AsItem(item));
     public void Clear() => items.Clear();
     public bool Contains(MarkdownNode item) => item is ListItemNode li && items.Contains(li);
-    public void CopyTo(MarkdownNode[] array, int arrayIndex) { foreach (var i in items) array[arrayIndex++] = i; }
+    public void CopyTo(MarkdownNode[] array, int arrayIndex)
+    {
+        if (array.Length - arrayIndex < items.Count)
+            throw new ArgumentException("The destination array has insufficient space to copy the list items.", nameof(array));
+        foreach (var i in items) array[arrayIndex++] = i;
+    }
     public int IndexOf(MarkdownNode item) => item is ListItemNode li ? items.IndexOf(li) : -1;
     public void Insert(int index, MarkdownNode item) => items.Insert(index, AsItem(item));
     public bool Remove(MarkdownNode item) => item is ListItemNode li && items.Remove(li);

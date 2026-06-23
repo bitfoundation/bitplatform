@@ -19,6 +19,7 @@ public abstract class MarkdownNode
     /// <see cref="ChildNodes"/> collection; nodes with several (e.g. a table's cells)
     /// override this to expose each one.
     /// </summary>
+    private IList<MarkdownNode>[]? _childLists;
     public virtual IEnumerable<IList<MarkdownNode>> ChildLists
-        => ChildNodes is { } c ? new[] { c } : Array.Empty<IList<MarkdownNode>>();
+        => ChildNodes is { } c ? (_childLists ??= new[] { c }) : Array.Empty<IList<MarkdownNode>>();
 }

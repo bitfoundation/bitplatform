@@ -1,11 +1,17 @@
+using System.Text.RegularExpressions;
+
 namespace Bit.BlazorUI.Markdown.Parsing;
 
 /// <summary>
 /// Sanitizes link and image URLs so untrusted Markdown cannot inject active
 /// content (e.g. <c>javascript:</c> URIs) into the rendered output.
 /// </summary>
-internal static class UrlSanitizer
+internal static partial class UrlSanitizer
 {
+    // All ASCII C0 control characters (0x00-0x1F) plus DEL (0x7F).
+    [GeneratedRegex("[\u0000-\u001F\u007F]")]
+    private static partial Regex ControlChars();
+
     // Schemes that are safe to allow for links.
     private static readonly string[] AllowedLinkSchemes =
         { "http:", "https:", "mailto:", "tel:", "ftp:", "ftps:" };
@@ -40,9 +46,11 @@ internal static class UrlSanitizer
             return trimmed; // ':' belongs to the path, not a scheme
 
         // Compare scheme case-insensitively, ignoring embedded control chars.
-        string scheme = trimmed[..(colon + 1)]
-            .Replace("\t", "").Replace("\n", "").Replace("\r", "")
-            .Replace("\f", "").Replace("\v", "").Replace("\0", "")
+        // Browsers normalize away all ASCII C0 control characters (0x00-0x1F) and
+        // DEL (0x7F) when resolving a URL, so strip them all to avoid scheme-based
+        // XSS bypasses (per the WHATWG URL Standard).
+        string scheme = ControlChars()
+            .Replace(trimmed[..(colon + 1)], string.Empty)
             .ToLowerInvariant();
         var allowed = isImage ? AllowedImageSchemes : AllowedLinkSchemes;
         foreach (var s in allowed)

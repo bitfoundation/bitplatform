@@ -101,10 +101,17 @@ public sealed partial class PipeTableBlockParser : BlockParser
         int backtickRun = 0; // length of the backtick run that opened the current code span; 0 when outside.
         for (int i = 0; i < s.Length; i++)
         {
-            if (s[i] == '\\' && i + 1 < s.Length && s[i + 1] == '|' && backtickRun == 0) { sb.Append('|'); i++; }
-            // An escaped backtick outside a code span is a literal character and must not
-            // open/close a code span; preserve the escape so inline parsing handles it.
-            else if (s[i] == '\\' && i + 1 < s.Length && s[i + 1] == '`' && backtickRun == 0) { sb.Append('\\'); sb.Append('`'); i++; }
+            // Handle backslash escapes as pairs so backslash parity is respected:
+            // e.g. in "\\|" the first backslash escapes the second, leaving the pipe
+            // as a real cell delimiter, whereas in "\|" the pipe is escaped.
+            if (s[i] == '\\' && i + 1 < s.Length && backtickRun == 0)
+            {
+                char next = s[i + 1];
+                if (next == '|') sb.Append('|');                            // escaped pipe -> literal '|'
+                else if (next == '`') { sb.Append('\\'); sb.Append('`'); }  // preserve escape so inline parsing handles it
+                else { sb.Append('\\'); sb.Append(next); }                  // consume the pair (e.g. "\\")
+                i++;
+            }
             else if (s[i] == '`')
             {
                 int runStart = i;

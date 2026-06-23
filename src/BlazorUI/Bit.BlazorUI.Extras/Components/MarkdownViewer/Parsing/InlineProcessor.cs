@@ -88,7 +88,7 @@ public sealed class InlineProcessor
             // Delimiter runs (emphasis-like) are collected for later resolution.
             if (Pipeline.DelimiterChars.Contains(c))
             {
-                int run = CountRun(Text, Pos, c);
+                int run = InlineHelpers.CountRun(Text, Pos, c);
                 char prev = Pos > 0 ? Text[Pos - 1] : '\0';
                 char next = Pos + run < n ? Text[Pos + run] : '\0';
                 ComputeFlanking(prev, next, out bool left, out bool right);
@@ -128,13 +128,6 @@ public sealed class InlineProcessor
             Pos++;
         }
         Flush();
-    }
-
-    private static int CountRun(string s, int start, char c)
-    {
-        int j = start;
-        while (j < s.Length && s[j] == c) j++;
-        return j - start;
     }
 
     private static void ComputeFlanking(char prev, char next, out bool leftFlanking, out bool rightFlanking)
