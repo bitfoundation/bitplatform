@@ -1,8 +1,8 @@
-namespace Bit.BlazorUI.Markdown.Syntax;
+namespace Bit.BlazorUI;
 
 // ---------------------------------------------------------------------------
 // Core (basic CommonMark) node types. Flavor-specific nodes live alongside their
-// extensions in the Bit.BlazorUI.Markdown.Extensions namespace.
+// extensions in the Bit.BlazorUI namespace.
 // ---------------------------------------------------------------------------
 
 /// <summary>Root of a parsed document.</summary>

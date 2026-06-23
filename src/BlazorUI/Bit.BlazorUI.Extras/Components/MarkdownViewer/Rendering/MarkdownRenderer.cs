@@ -1,7 +1,6 @@
-using Bit.BlazorUI.Markdown.Syntax;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Bit.BlazorUI.Markdown.Rendering;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Renders a node into the Blazor render tree. Plugins provide renderers for the

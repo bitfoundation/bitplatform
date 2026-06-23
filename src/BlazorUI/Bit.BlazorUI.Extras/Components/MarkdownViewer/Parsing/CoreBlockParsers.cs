@@ -1,8 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using Bit.BlazorUI.Markdown.Syntax;
 
-namespace Bit.BlazorUI.Markdown.Parsing;
+namespace Bit.BlazorUI;
 
 /// <summary>Shared regular expressions for the core block grammar.</summary>
 internal static partial class BlockGrammar

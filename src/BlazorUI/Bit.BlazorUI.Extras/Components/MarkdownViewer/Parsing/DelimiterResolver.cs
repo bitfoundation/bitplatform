@@ -1,7 +1,6 @@
-using Bit.BlazorUI.Markdown.Syntax;
-using static Bit.BlazorUI.Markdown.Parsing.InlineProcessor;
+using static Bit.BlazorUI.InlineProcessor;
 
-namespace Bit.BlazorUI.Markdown.Parsing;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Resolves delimiter-run tokens (emphasis, strong, strikethrough, ...) into nodes

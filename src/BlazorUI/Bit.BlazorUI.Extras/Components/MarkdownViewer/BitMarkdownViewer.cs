@@ -1,6 +1,3 @@
-using Bit.BlazorUI.Markdown.Rendering;
-using Bit.BlazorUI.Markdown.Syntax;
-
 namespace Bit.BlazorUI;
 
 /// <summary>

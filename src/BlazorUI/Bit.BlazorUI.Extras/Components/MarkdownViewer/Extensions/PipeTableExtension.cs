@@ -1,11 +1,8 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using Bit.BlazorUI.Markdown.Parsing;
-using Bit.BlazorUI.Markdown.Rendering;
-using Bit.BlazorUI.Markdown.Syntax;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Bit.BlazorUI.Markdown.Extensions;
+namespace Bit.BlazorUI;
 
 public enum ColumnAlignment { None, Left, Center, Right }
 

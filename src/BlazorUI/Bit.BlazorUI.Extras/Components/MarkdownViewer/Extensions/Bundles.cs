@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Markdown.Extensions;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The GitHub Flavored Markdown bundle: pipe tables, strikethrough, task lists and

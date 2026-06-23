@@ -1,7 +1,6 @@
 using System.Text;
-using Bit.BlazorUI.Markdown.Syntax;
 
-namespace Bit.BlazorUI.Markdown.Parsing;
+namespace Bit.BlazorUI;
 
 /// <summary>Handles backslash escapes and backslash hard line breaks.</summary>
 public sealed class EscapeInlineParser : InlineParser

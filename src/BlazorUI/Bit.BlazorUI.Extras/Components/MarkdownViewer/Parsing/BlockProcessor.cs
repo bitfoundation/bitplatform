@@ -1,6 +1,4 @@
-using Bit.BlazorUI.Markdown.Syntax;
-
-namespace Bit.BlazorUI.Markdown.Parsing;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Drives block-level parsing: iterates source lines and lets the pipeline's

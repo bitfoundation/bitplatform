@@ -1,6 +1,4 @@
-using Bit.BlazorUI.Markdown.Syntax;
-
-namespace Bit.BlazorUI.Markdown.Parsing;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Parses a block-level construct. Block parsers are tried in ascending

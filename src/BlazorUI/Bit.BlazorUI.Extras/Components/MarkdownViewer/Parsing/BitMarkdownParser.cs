@@ -1,5 +1,3 @@
-using Bit.BlazorUI.Markdown.Syntax;
-
 namespace Bit.BlazorUI;
 
 /// <summary>Convenience entry point for parsing Markdown into an AST.</summary>

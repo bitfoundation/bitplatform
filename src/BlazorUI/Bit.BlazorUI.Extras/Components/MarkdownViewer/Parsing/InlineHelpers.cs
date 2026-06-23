@@ -1,7 +1,6 @@
 using System.Text;
-using Bit.BlazorUI.Markdown.Syntax;
 
-namespace Bit.BlazorUI.Markdown.Parsing;
+namespace Bit.BlazorUI;
 
 /// <summary>Shared utilities used by the core inline parsers.</summary>
 public static class InlineHelpers

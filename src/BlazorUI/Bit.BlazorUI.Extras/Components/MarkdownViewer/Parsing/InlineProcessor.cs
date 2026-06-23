@@ -1,7 +1,6 @@
 using System.Text;
-using Bit.BlazorUI.Markdown.Syntax;
 
-namespace Bit.BlazorUI.Markdown.Parsing;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Drives inline parsing for a single block of text. It scans the text, delegating

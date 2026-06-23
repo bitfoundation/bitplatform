@@ -1,8 +1,6 @@
 using System.Text.RegularExpressions;
-using Bit.BlazorUI.Markdown.Parsing;
-using Bit.BlazorUI.Markdown.Syntax;
 
-namespace Bit.BlazorUI.Markdown.Extensions;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Turns bare URLs, <c>www.</c> hosts and email addresses appearing in plain text

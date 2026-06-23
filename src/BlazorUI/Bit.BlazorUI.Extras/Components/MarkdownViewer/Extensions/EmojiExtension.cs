@@ -1,9 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
-using Bit.BlazorUI.Markdown.Parsing;
-using Bit.BlazorUI.Markdown.Syntax;
 
-namespace Bit.BlazorUI.Markdown.Extensions;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Replaces <c>:shortcode:</c> emoji in text with the corresponding Unicode glyph.

@@ -1,9 +1,6 @@
-using Bit.BlazorUI.Markdown.Parsing;
-using Bit.BlazorUI.Markdown.Rendering;
-using Bit.BlazorUI.Markdown.Syntax;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Bit.BlazorUI.Markdown.Extensions;
+namespace Bit.BlazorUI;
 
 /// <summary>Strikethrough text (GFM), rendered as <c>&lt;del&gt;</c>.</summary>
 public sealed class StrikethroughNode : MarkdownNode

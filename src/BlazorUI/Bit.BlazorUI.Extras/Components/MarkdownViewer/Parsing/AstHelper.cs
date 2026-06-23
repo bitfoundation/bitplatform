@@ -1,6 +1,4 @@
-using Bit.BlazorUI.Markdown.Syntax;
-
-namespace Bit.BlazorUI.Markdown.Parsing;
+namespace Bit.BlazorUI;
 
 /// <summary>Helpers for traversing and rewriting the AST, used by AST processors.</summary>
 public static class AstHelper

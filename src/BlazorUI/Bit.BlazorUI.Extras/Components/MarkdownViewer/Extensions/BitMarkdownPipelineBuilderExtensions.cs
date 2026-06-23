@@ -1,5 +1,3 @@
-using Bit.BlazorUI.Markdown.Extensions;
-
 namespace Bit.BlazorUI;
 
 /// <summary>Fluent helpers for enabling the built-in Markdown flavors.</summary>

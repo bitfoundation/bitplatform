@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Bit.BlazorUI.Markdown.Parsing;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Sanitizes link and image URLs so untrusted Markdown cannot inject active

@@ -1,8 +1,6 @@
 using System.Text;
-using Bit.BlazorUI.Markdown.Parsing;
-using Bit.BlazorUI.Markdown.Syntax;
 
-namespace Bit.BlazorUI.Markdown.Extensions;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Assigns a URL-friendly <c>id</c> (GitHub-style slug) to every heading, ensuring
