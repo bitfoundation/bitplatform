@@ -45,7 +45,7 @@
 
                             <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]">
                                 <BitPhoneInput @bind-Value="signUpModel.PhoneNumber"
-                                              AutoFocus TabIndex="1"
+                                               AutoFocus TabIndex="1" FullWidth
                                               DefaultCountry="@BitCountries.Current"
                                               Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                               Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
