@@ -247,7 +247,7 @@
                     {
                         @foreach (var item in InfiniteItems)
                         {
-                            <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="item" />
+                            <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
                         }
                         @if (InfiniteLoading)
                         {
@@ -269,14 +269,14 @@
                 else if (UseVirtualization)
                 {
                     <Virtualize Items="VirtualRows" ItemSize="RowHeight" Context="item" TItem="TItem">
-                        <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="item" />
+                        <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
                     </Virtualize>
                 }
                 else
                 {
                     @foreach (var item in _pageItems)
                     {
-                        <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="item" />
+                        <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
                     }
                 }
             </div>
@@ -375,7 +375,7 @@
             {
                 foreach (var item in group.Items)
                 {
-                    <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="item" />
+                    <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
                 }
             }
         }

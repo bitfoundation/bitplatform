@@ -10,6 +10,7 @@ namespace Bit.BlazorUI;
 public class BitQuickGridPropertyColumn<TGridItem, TProp> : BitQuickGridColumnBase<TGridItem>, IBitQuickGridSortBuilderColumn<TGridItem>
 {
     private Expression<Func<TGridItem, TProp>>? _lastAssignedProperty;
+    private string? _lastAssignedFormat;
     private Func<TGridItem, string?>? _cellTextFunc;
     private BitQuickGridSort<TGridItem>? _sortBuilder;
 
@@ -31,10 +32,12 @@ public class BitQuickGridPropertyColumn<TGridItem, TProp> : BitQuickGridColumnBa
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        // We have to do a bit of pre-processing on the lambda expression. Only do that if it's new or changed.
-        if (_lastAssignedProperty != Property)
+        // We have to do a bit of pre-processing on the lambda expression. Only do that if the Property
+        // or the Format has changed, so a Format-only change still rebuilds the cell formatter.
+        if (_lastAssignedProperty != Property || _lastAssignedFormat != Format)
         {
             _lastAssignedProperty = Property;
+            _lastAssignedFormat = Format;
             var compiledPropertyExpression = Property.Compile();
 
             if (Format.HasValue())

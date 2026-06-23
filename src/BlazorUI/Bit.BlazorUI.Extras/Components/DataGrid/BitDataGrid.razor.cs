@@ -242,7 +242,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         if (_columns.Contains(column)) return;
         _columns.Add(column);
         _columnsById[column.Id] = column;
-        InvokeAsync(StateHasChanged);
+        // Recompute the data view (not just re-render) so footer/aggregate columns registered after the
+        // initial data load have their values calculated. RefreshAsync is cheap in client mode and any
+        // superseded server-mode load is cancelled by the load-cancellation token.
+        InvokeAsync(RefreshAsync);
     }
 
     internal void RemoveColumn(BitDataGridColumn<TItem> column)
@@ -494,7 +497,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             _pageItems = _infiniteItems;
             _footerAggregates = BitDataGridDataProcessor.Aggregate(_infiniteItems, _columns);
         }
-        catch (OperationCanceledException ex) when (ex.CancellationToken == read.CancellationToken)
+        catch (OperationCanceledException) when (read.CancellationToken.IsCancellationRequested)
         {
             // The in-flight batch was superseded by a newer load (sort/filter change or reset) whose
             // cancellation token fired. Cancellation from our own token is expected here, so drop this
@@ -590,7 +593,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         {
             result = await OnRead!(request);
         }
-        catch (OperationCanceledException ex) when (ex.CancellationToken == request.CancellationToken)
+        catch (OperationCanceledException) when (request.CancellationToken.IsCancellationRequested)
         {
             // Superseded by a newer request whose cancellation token fired; cancellation from our own
             // token is expected, so keep the existing state and let the newer load complete. Any other
@@ -925,6 +928,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal void DropColumn(BitDataGridColumn<TItem> target)
     {
         if (_dragColumn is null || _dragColumn == target) { _dragColumn = null; return; }
+        if (!ColumnReorderable(_dragColumn) || !ColumnReorderable(target)) { _dragColumn = null; return; }
         var from = _columns.IndexOf(_dragColumn);
         var to = _columns.IndexOf(target);
         if (from < 0 || to < 0) { _dragColumn = null; return; }
@@ -1237,8 +1241,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         static string Escape(string v)
         {
             // Neutralise CSV formula injection: spreadsheet apps may execute a cell whose text begins
-            // with =, +, - or @ as a formula. Prefixing with a single quote forces it to be read as text.
-            if (v.Length > 0 && (v[0] is '=' or '+' or '-' or '@'))
+            // with =, +, - or @ as a formula. Leading whitespace can be used to bypass a naive first-char
+            // check (the app trims it before evaluating), so test the trimmed value but keep the original
+            // (whitespace included) when prefixing with a single quote to force it to be read as text.
+            var trimmed = v.TrimStart(' ', '\t', '\n', '\r');
+            if (trimmed.Length > 0 && (trimmed[0] is '=' or '+' or '-' or '@'))
                 v = "'" + v;
 
             return v.Contains(',') || v.Contains('"') || v.Contains('\n') || v.Contains('\r')

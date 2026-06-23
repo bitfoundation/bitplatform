@@ -369,10 +369,11 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
                     await (Pagination?.SetTotalItemCountAsync(result.TotalItemCount) ?? Task.CompletedTask);
                 }
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (thisLoadCts.IsCancellationRequested)
             {
-                // This load was superseded by a newer request; swallow the cancellation and fall through
-                // to the cleanup below so the load-state remains consistent.
+                // This load was superseded by a newer request (our own cancellation token fired); swallow
+                // the cancellation and fall through to the cleanup below so the load-state remains
+                // consistent. Cancellations from any other source (e.g. a provider-side timeout) propagate.
             }
             finally
             {
@@ -423,11 +424,12 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         {
             providerResult = await ResolveItemsRequestAsync(providerRequest);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (request.CancellationToken.IsCancellationRequested)
         {
-            // The request was superseded by a newer one after the debounce window; the items provider
-            // observed the cancellation token and bailed out. Return an empty result the virtualization
-            // system can handle rather than letting the cancellation propagate out of here.
+            // The request was superseded by a newer one after the debounce window (our own cancellation
+            // token fired); the items provider observed the cancellation token and bailed out. Return an
+            // empty result the virtualization system can handle rather than letting the cancellation
+            // propagate out of here. Cancellations from any other source propagate as real errors.
             return default;
         }
 

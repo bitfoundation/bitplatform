@@ -17,7 +17,7 @@
     @if (Grid.HasDetailColumn)
     {
         <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="gridcell" @onclick:stopPropagation="true">
-            <button type="button" class="bit-dtg-icon-btn" @onclick="() => Grid.ToggleDetail(Item)" aria-label="Toggle details">
+            <button type="button" class="bit-dtg-icon-btn" @onclick="() => Grid.ToggleDetail(Item)" aria-label="Toggle details" aria-expanded="@Grid.IsDetailExpanded(Item)">
                 @(Grid.IsDetailExpanded(Item) ? "▾" : "▸")
             </button>
         </div>
@@ -91,7 +91,7 @@
             {
                 <button type="button" class="bit-dtg-icon-btn bit-dtg-tree-toggle"
                         @onclick="() => Grid.ToggleTreeNodeAsync(Item)" @onclick:stopPropagation="true"
-                        aria-label="Toggle children">
+                        aria-label="Toggle children" aria-expanded="@Grid.IsTreeExpanded(Item)">
                     @(Grid.IsTreeExpanded(Item) ? "▾" : "▸")
                 </button>
             }
