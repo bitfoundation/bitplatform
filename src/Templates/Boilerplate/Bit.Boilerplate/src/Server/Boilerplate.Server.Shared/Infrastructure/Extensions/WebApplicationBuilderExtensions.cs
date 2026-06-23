@@ -161,6 +161,8 @@ public static class WebApplicationBuilderExtensions
             logging.IncludeScopes = true;
         });
 
+        builder.AddOpenTelemetryExporters();
+
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
@@ -205,13 +207,7 @@ public static class WebApplicationBuilderExtensions
             })
             .ConfigureResource(resource =>
             {
-                var resourceAttributes = new Dictionary<string, object>
-                {
-                    { "service.name", "Boilerplate" }
-                };
-
                 resource
-                    .AddAttributes(resourceAttributes)
                     .AddAzureAppServiceDetector()
                     .AddAzureContainerAppsDetector()
                     .AddAzureVMDetector()
@@ -219,10 +215,9 @@ public static class WebApplicationBuilderExtensions
                     .AddHostDetector()
                     .AddOperatingSystemDetector()
                     .AddProcessDetector()
-                    .AddProcessRuntimeDetector();
+                    .AddProcessRuntimeDetector()
+                    .AddService(builder.Environment.ApplicationName);
             });
-
-        builder.AddOpenTelemetryExporters();
 
         return builder;
     }
