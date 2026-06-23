@@ -8,6 +8,7 @@
      @ondragend="OnDragEnd"
      @onclick="OnClick"
      @onkeydown="OnKeyDown"
+     @onkeydown:preventDefault="_preventKeyDefault"
      @onclick:stopPropagation="true">
     @ChildContent
 </div>

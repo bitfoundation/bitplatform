@@ -15,7 +15,7 @@
 @{
     // Resources with empty Ids are treated as "unassigned" by the event grouping logic
     // (BitFullCalendarEvent.Resource contract), so they must not get their own rows here either.
-    var resources = State.Resources.Where(r => !string.IsNullOrEmpty(r.Id)).ToList();
+    var resources = State.Resources.Where(r => !string.IsNullOrWhiteSpace(r.Id)).ToList();
     var hasResources = resources.Count > 0;
     var totalContentWidth = ColumnCount * ColumnWidthPx;
     var totalGridWidth = ResourceColumnWidthPx + totalContentWidth;

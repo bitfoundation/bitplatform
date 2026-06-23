@@ -10,12 +10,17 @@ public partial class BitFcDraggableEvent
 
     private bool _isDragged => State.IsDragging && State.DraggedEvent?.Id == Event.Id;
 
+    // Drives @onkeydown:preventDefault so Space/Enter activation doesn't also scroll the page,
+    // while leaving Tab/arrow keys with their native behaviour (no keyboard trap).
+    private bool _preventKeyDefault;
+
     private void OnDragStart() => State.StartDrag(Event);
     private void OnDragEnd() => State.EndDrag();
 
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key is "Enter" or " " or "Spacebar")
+        _preventKeyDefault = e.Key is "Enter" or " " or "Spacebar";
+        if (_preventKeyDefault)
             await OnClick.InvokeAsync();
     }
 }

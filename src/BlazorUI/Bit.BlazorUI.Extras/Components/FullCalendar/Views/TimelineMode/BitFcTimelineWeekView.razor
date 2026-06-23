@@ -48,7 +48,7 @@
     // Render the unassigned lane when there are unassigned events, OR when there are no resources at
     // all so the user always has at least one row to add the first event to.
     var hasUnassignedEvents = perDay.Any(m => m.TryGetValue(_unassignedKey, out var l) && l.Count > 0);
-    var hasUnassigned = hasUnassignedEvents || resources.Count == 0;
+    var hasUnassigned = hasUnassignedEvents || resourceIds.Count == 0;
     var unassignedLaneCount = hasUnassigned ? LaneCountFor(_unassignedKey) : 1;
     var totalColumns = 7 * 24;
 

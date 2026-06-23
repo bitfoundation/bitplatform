@@ -12,6 +12,9 @@ public partial class BitFcEventListDialog
 
     private bool _showDetails;
     private BitFullCalendarEvent? _selectedEvent;
+    // Drives @onkeydown:preventDefault so Space/Enter activation doesn't also scroll the dialog,
+    // while leaving Tab/arrow keys with their native behaviour (no keyboard trap).
+    private bool _preventKeyDefault;
 
     private async Task SelectEvent(BitFullCalendarEvent ev)
     {
@@ -26,7 +29,8 @@ public partial class BitFcEventListDialog
 
     private async Task OnEventKeyDown(KeyboardEventArgs e, BitFullCalendarEvent ev)
     {
-        if (e.Key is "Enter" or " " or "Spacebar")
+        _preventKeyDefault = e.Key is "Enter" or " " or "Spacebar";
+        if (_preventKeyDefault)
         {
             await SelectEvent(ev);
         }

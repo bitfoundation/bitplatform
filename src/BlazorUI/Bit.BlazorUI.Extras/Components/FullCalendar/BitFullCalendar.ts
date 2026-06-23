@@ -123,7 +123,9 @@ namespace BitBlazorUI {
                 const endResize = async (ev?: PointerEvent) => {
                     if (ev && activePointerId != null && ev.pointerId !== activePointerId) return;
                     // A pointer release before resize-start completes is deferred and replayed afterwards.
-                    if (!startSucceeded) { pendingEnd = true; return; }
+                    // Capture the release coordinate now so the replayed delta reflects where the pointer
+                    // actually was, even when no move event fired between deferral and replay.
+                    if (!startSucceeded) { if (ev) latestY = ev.clientY; pendingEnd = true; return; }
                     if (ended) return;
                     ended = true;
                     document.removeEventListener("pointermove", onPointerMove);
@@ -227,7 +229,9 @@ namespace BitBlazorUI {
                 const endResize = async (ev?: PointerEvent) => {
                     if (ev && activePointerId != null && ev.pointerId !== activePointerId) return;
                     // A pointer release before resize-start completes is deferred and replayed afterwards.
-                    if (!startSucceeded) { pendingEnd = true; return; }
+                    // Capture the release coordinate now so the replayed delta reflects where the pointer
+                    // actually was, even when no move event fired between deferral and replay.
+                    if (!startSucceeded) { if (ev) latestX = ev.clientX; pendingEnd = true; return; }
                     if (ended) return;
                     ended = true;
                     document.removeEventListener("pointermove", onPointerMove);
