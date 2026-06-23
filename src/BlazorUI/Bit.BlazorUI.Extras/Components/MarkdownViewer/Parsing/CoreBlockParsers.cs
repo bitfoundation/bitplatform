@@ -214,7 +214,22 @@ public sealed class ListParser : BlockParser
         bool ordered = BlockGrammar.Ordered().IsMatch(first);
         if (!ordered && !BlockGrammar.Bullet().IsMatch(first)) return false;
 
-        int startNum = ordered ? int.Parse(BlockGrammar.Ordered().Match(first).Groups[1].Value) : 1;
+        // Track the specific marker character so that a change of marker
+        // (e.g. "- a" followed by "* b", or "1." followed by "1)") starts a
+        // new list, as required by CommonMark.
+        int startNum;
+        char markerChar;
+        if (ordered)
+        {
+            var fm = BlockGrammar.Ordered().Match(first);
+            startNum = int.Parse(fm.Groups[1].Value);
+            markerChar = fm.Groups[2].Value[0];
+        }
+        else
+        {
+            startNum = 1;
+            markerChar = BlockGrammar.Bullet().Match(first).Groups[1].Value[0];
+        }
         var list = new ListNode { Ordered = ordered, Start = startNum };
         int i = state.Line;
         bool loose = false;
@@ -224,6 +239,9 @@ public sealed class ListParser : BlockParser
             string line = lines[i];
             Match m = ordered ? BlockGrammar.Ordered().Match(line) : BlockGrammar.Bullet().Match(line);
             if (!m.Success) break;
+            // A different marker character begins a new list.
+            char curMarker = ordered ? m.Groups[2].Value[0] : m.Groups[1].Value[0];
+            if (curMarker != markerChar) break;
 
             int markerIndent;
             string firstContent;
@@ -257,7 +275,7 @@ public sealed class ListParser : BlockParser
                         i++;
                         continue;
                     }
-                    if (j < lines.Count && IsSameMarker(lines[j], ordered)) loose = true;
+                    if (j < lines.Count && IsSameMarker(lines[j], ordered, markerChar)) loose = true;
                     break;
                 }
 
@@ -268,7 +286,7 @@ public sealed class ListParser : BlockParser
                     continue;
                 }
 
-                if (IsSameMarker(l, ordered)
+                if (IsSameMarker(l, ordered, markerChar)
                     || BlockGrammar.Bullet().IsMatch(l) || BlockGrammar.Ordered().IsMatch(l))
                     break;
 
@@ -293,8 +311,13 @@ public sealed class ListParser : BlockParser
         return true;
     }
 
-    private static bool IsSameMarker(string line, bool ordered)
-        => ordered ? BlockGrammar.Ordered().IsMatch(line) : BlockGrammar.Bullet().IsMatch(line);
+    private static bool IsSameMarker(string line, bool ordered, char markerChar)
+    {
+        var m = ordered ? BlockGrammar.Ordered().Match(line) : BlockGrammar.Bullet().Match(line);
+        if (!m.Success) return false;
+        char c = ordered ? m.Groups[2].Value[0] : m.Groups[1].Value[0];
+        return c == markerChar;
+    }
 }
 
 /// <summary>The fallback parser: gathers a paragraph and detects setext headings.</summary>

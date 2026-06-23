@@ -11,7 +11,11 @@ internal static class DelimiterResolver
 {
     public static void Process(List<Tok> tokens, BitMarkdownPipeline pipeline)
     {
-        var openersBottom = new Dictionary<(char, int), int>();
+        // Cache the "bottom" delimiter (per char + length-mod-3) below which no
+        // matching opener exists. We store Tok *references* rather than indices
+        // because the tokens list is mutated (RemoveRange/Insert/RemoveAt) while
+        // resolving, which would invalidate cached integer indices.
+        var openersBottom = new Dictionary<(char, int), Tok?>();
 
         int closerIdx = 0;
         while (closerIdx < tokens.Count)
@@ -27,14 +31,16 @@ internal static class DelimiterResolver
             var processor = pipeline.DelimiterByChar[dc];
 
             var key = (dc, closer.Count % 3);
-            int bottom = openersBottom.TryGetValue(key, out var b) ? b : -1;
+            Tok? bottom = openersBottom.TryGetValue(key, out var b) ? b : null;
 
-            // Find a matching opener walking backwards.
+            // Find a matching opener walking backwards (stopping just above the
+            // cached bottom token, if any).
             int openerIdx = closerIdx - 1;
             bool found = false;
-            while (openerIdx > bottom && openerIdx >= 0)
+            while (openerIdx >= 0)
             {
                 var opener = tokens[openerIdx];
+                if (bottom is not null && ReferenceEquals(opener, bottom)) break;
                 if (opener.Kind == TokKind.Delim && opener.Active && opener.CanOpen
                     && opener.DelimChar == dc)
                 {
@@ -53,7 +59,7 @@ internal static class DelimiterResolver
 
             if (!found)
             {
-                openersBottom[key] = closerIdx - 1;
+                openersBottom[key] = closerIdx > 0 ? tokens[closerIdx - 1] : null;
                 if (!closer.CanOpen) closer.Active = false;
                 closerIdx++;
                 continue;
@@ -67,7 +73,7 @@ internal static class DelimiterResolver
             if (used <= 0 || node is null)
             {
                 // This processor can't form a node for these lengths; skip this closer.
-                openersBottom[key] = closerIdx - 1;
+                openersBottom[key] = closerIdx > 0 ? tokens[closerIdx - 1] : null;
                 if (!closer.CanOpen) closer.Active = false;
                 closerIdx++;
                 continue;

@@ -120,7 +120,11 @@ public sealed class InlineProcessor
                     }
                     Pos = save; // parser must not have advanced on failure, but be safe
                 }
-                if (handled) continue;
+                // Guard against a (possibly third-party) parser that reports success
+                // without consuming input: only honor it when Pos actually advanced,
+                // otherwise fall through so this character is consumed normally.
+                if (handled && Pos > save) continue;
+                Pos = save;
             }
 
             _literal.Append(c);
