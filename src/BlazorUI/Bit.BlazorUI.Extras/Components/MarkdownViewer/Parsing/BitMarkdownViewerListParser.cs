@@ -1,0 +1,130 @@
+using System.Text.RegularExpressions;
+
+namespace Bit.BlazorUI;
+
+/// <summary>Parses ordered and unordered lists, including nesting and looseness.</summary>
+public sealed class BitMarkdownViewerListParser : BitMarkdownViewerBlockParser
+{
+    public override int Order => 60;
+
+    public override bool CanInterruptParagraph(BitMarkdownViewerBlockProcessor state, int lineIndex)
+    {
+        var line = state.Lines[lineIndex];
+        if (BitMarkdownViewerBlockGrammar.Bullet().IsMatch(line)) return true;
+        // An ordered list may only interrupt a paragraph when it starts with "1".
+        var m = BitMarkdownViewerBlockGrammar.Ordered().Match(line);
+        return m.Success && m.Groups[1].Value == "1";
+    }
+
+    public override bool TryParse(BitMarkdownViewerBlockProcessor state, List<BitMarkdownViewerMarkdownNode> output)
+    {
+        var lines = state.Lines;
+        string first = lines[state.Line];
+        bool ordered = BitMarkdownViewerBlockGrammar.Ordered().IsMatch(first);
+        if (!ordered && !BitMarkdownViewerBlockGrammar.Bullet().IsMatch(first)) return false;
+
+        // Track the specific marker character so that a change of marker
+        // (e.g. "- a" followed by "* b", or "1." followed by "1)") starts a
+        // new list, as required by CommonMark.
+        int startNum;
+        char markerChar;
+        if (ordered)
+        {
+            var fm = BitMarkdownViewerBlockGrammar.Ordered().Match(first);
+            startNum = int.Parse(fm.Groups[1].Value);
+            markerChar = fm.Groups[2].Value[0];
+        }
+        else
+        {
+            startNum = 1;
+            markerChar = BitMarkdownViewerBlockGrammar.Bullet().Match(first).Groups[1].Value[0];
+        }
+        var list = new BitMarkdownViewerListNode { Ordered = ordered, Start = startNum };
+        int i = state.Line;
+        bool loose = false;
+
+        while (i < lines.Count)
+        {
+            string line = lines[i];
+            Match m = ordered ? BitMarkdownViewerBlockGrammar.Ordered().Match(line) : BitMarkdownViewerBlockGrammar.Bullet().Match(line);
+            if (!m.Success) break;
+            // A different marker character begins a new list.
+            char curMarker = ordered ? m.Groups[2].Value[0] : m.Groups[1].Value[0];
+            if (curMarker != markerChar) break;
+
+            int markerIndent;
+            string firstContent;
+            if (ordered)
+            {
+                markerIndent = BitMarkdownViewerBlockProcessor.GetIndent(line)
+                    + m.Groups[1].Value.Length + 1 + m.Groups[3].Value.Length;
+                firstContent = m.Groups[4].Value;
+            }
+            else
+            {
+                markerIndent = BitMarkdownViewerBlockProcessor.GetIndent(line) + 1 + m.Groups[2].Value.Length;
+                firstContent = m.Groups[3].Value;
+            }
+
+            var itemLines = new List<string> { firstContent };
+            i++;
+
+            bool itemHadBlank = false;
+            while (i < lines.Count)
+            {
+                string l = lines[i];
+                if (BitMarkdownViewerBlockProcessor.IsBlank(l))
+                {
+                    int j = i + 1;
+                    while (j < lines.Count && BitMarkdownViewerBlockProcessor.IsBlank(lines[j])) j++;
+                    if (j < lines.Count && BitMarkdownViewerBlockProcessor.GetIndent(lines[j]) >= markerIndent)
+                    {
+                        itemLines.Add(string.Empty);
+                        itemHadBlank = true;
+                        i++;
+                        continue;
+                    }
+                    if (j < lines.Count && IsSameMarker(lines[j], ordered, markerChar)) loose = true;
+                    break;
+                }
+
+                if (BitMarkdownViewerBlockProcessor.GetIndent(l) >= markerIndent)
+                {
+                    itemLines.Add(BitMarkdownViewerBlockProcessor.StripIndent(l, markerIndent));
+                    i++;
+                    continue;
+                }
+
+                if (IsSameMarker(l, ordered, markerChar)
+                    || BitMarkdownViewerBlockGrammar.Bullet().IsMatch(l) || BitMarkdownViewerBlockGrammar.Ordered().IsMatch(l))
+                    break;
+
+                if (!state.StartsBlock(i))
+                {
+                    itemLines.Add(l.TrimStart());
+                    i++;
+                    continue;
+                }
+                break;
+            }
+
+            var item = new BitMarkdownViewerListItemNode();
+            item.Children.AddRange(state.ParseBlocks(itemLines));
+            if (itemHadBlank) loose = true;
+            list.Items.Add(item);
+        }
+
+        list.Tight = !loose;
+        output.Add(list);
+        state.Line = i;
+        return true;
+    }
+
+    private static bool IsSameMarker(string line, bool ordered, char markerChar)
+    {
+        var m = ordered ? BitMarkdownViewerBlockGrammar.Ordered().Match(line) : BitMarkdownViewerBlockGrammar.Bullet().Match(line);
+        if (!m.Success) return false;
+        char c = ordered ? m.Groups[2].Value[0] : m.Groups[1].Value[0];
+        return c == markerChar;
+    }
+}

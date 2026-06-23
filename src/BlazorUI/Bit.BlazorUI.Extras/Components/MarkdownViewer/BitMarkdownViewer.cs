@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// By default the component understands only the basic CommonMark core. Richer flavors
 /// (GitHub tables, strikethrough, task lists, autolinks, emoji, ...) are opt-in: supply
 /// a <see cref="Pipeline"/> built with the desired extensions (for example
-/// <see cref="BitMarkdownPipelines.GitHub"/>).
+/// <see cref="BitMarkdownViewerPipelines.GitHub"/>).
 /// </para>
 /// <para>
 /// Parsing produces an AST which is walked with a <see cref="Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder"/>,
@@ -20,9 +20,9 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitMarkdownViewer : BitComponentBase
 {
-    private DocumentNode _document = new();
+    private BitMarkdownViewerDocumentNode _document = new();
     private string? _parsedSource;
-    private BitMarkdownPipeline? _parsedWith;
+    private BitMarkdownViewerPipeline? _parsedWith;
 
 
 
@@ -32,16 +32,16 @@ public partial class BitMarkdownViewer : BitComponentBase
     [Parameter] public string? Markdown { get; set; }
 
     /// <summary>
-    /// The processing pipeline (flavor set). Defaults to <see cref="BitMarkdownPipeline.Basic"/>,
+    /// The processing pipeline (flavor set). Defaults to <see cref="BitMarkdownViewerPipeline.Basic"/>,
     /// i.e. the basic CommonMark core with no extensions.
     /// </summary>
-    [Parameter] public BitMarkdownPipeline? Pipeline { get; set; }
+    [Parameter] public BitMarkdownViewerPipeline? Pipeline { get; set; }
 
 
 
     protected override string RootElementClass => "bit-mdv";
 
-    private BitMarkdownPipeline EffectivePipeline => Pipeline ?? BitMarkdownPipeline.Basic;
+    private BitMarkdownViewerPipeline EffectivePipeline => Pipeline ?? BitMarkdownViewerPipeline.Basic;
 
     protected override void OnParametersSet()
     {

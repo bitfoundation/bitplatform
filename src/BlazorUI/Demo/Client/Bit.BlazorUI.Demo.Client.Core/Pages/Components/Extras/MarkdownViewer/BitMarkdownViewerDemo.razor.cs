@@ -16,11 +16,11 @@ public partial class BitMarkdownViewerDemo
         new()
         {
            Name = "Pipeline",
-           Type = "BitMarkdownPipeline?",
+           Type = "BitMarkdownViewerPipeline?",
            DefaultValue = "null",
            Description = @"The processing pipeline (flavor set). Defaults to the basic CommonMark core with no extensions.
-                           Use one of the ready-made pipelines on BitMarkdownPipelines (Basic, GitHub, Advanced)
-                           or build a custom one with BitMarkdownPipelineBuilder.",
+                           Use one of the ready-made pipelines on BitMarkdownViewerPipelines (Basic, GitHub, Advanced)
+                           or build a custom one with BitMarkdownViewerPipelineBuilder.",
         },
     ];
 
@@ -29,7 +29,7 @@ public partial class BitMarkdownViewerDemo
     // -- Advanced (live editor) example --------------------------------------
 
     private MarkdownFlavor playgroundFlavor = MarkdownFlavor.Advanced;
-    private BitMarkdownPipeline playgroundPipeline = BitMarkdownPipelines.Advanced;
+    private BitMarkdownViewerPipeline playgroundPipeline = BitMarkdownViewerPipelines.Advanced;
     private string playgroundMarkdown = SampleMarkdown;
 
     private void SetPlaygroundFlavor(MarkdownFlavor flavor)
@@ -37,9 +37,9 @@ public partial class BitMarkdownViewerDemo
         playgroundFlavor = flavor;
         playgroundPipeline = flavor switch
         {
-            MarkdownFlavor.Basic => BitMarkdownPipelines.Basic,
-            MarkdownFlavor.GitHub => BitMarkdownPipelines.GitHub,
-            _ => BitMarkdownPipelines.Advanced
+            MarkdownFlavor.Basic => BitMarkdownViewerPipelines.Basic,
+            MarkdownFlavor.GitHub => BitMarkdownViewerPipelines.GitHub,
+            _ => BitMarkdownViewerPipelines.Advanced
         };
     }
 
@@ -86,9 +86,9 @@ public partial class BitMarkdownViewerDemo
         Inline: `var viewer = new BitMarkdownViewer();`
 
         ```csharp
-        public static DocumentNode Parse(string? markdown)
+        public static BitMarkdownViewerDocumentNode Parse(string? markdown)
         {
-            var document = new DocumentNode();
+            var document = new BitMarkdownViewerDocumentNode();
             if (string.IsNullOrEmpty(markdown))
                 return document;
             return document;
@@ -157,7 +157,7 @@ Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
 
     // -- Custom pipeline example ---------------------------------------------
 
-    private readonly BitMarkdownPipeline customPipeline = new BitMarkdownPipelineBuilder()
+    private readonly BitMarkdownViewerPipeline customPipeline = new BitMarkdownViewerPipelineBuilder()
         .UsePipeTables()
         .UseStrikethrough()
         .UseTaskLists()
@@ -180,7 +180,7 @@ pipe tables, strikethrough, task lists, emoji and auto identifiers.
 <BitMarkdownViewer Markdown=""@(""# Native Markdown in Blazor\n\nRendered entirely in **C#** with no JavaScript and no third-party packages.\n\n- Real DOM output\n- Safe by default\n- Zero interop"")"" />";
 
     private readonly string example2RazorCode = @"
-<BitMarkdownViewer Markdown=""@gitHubMarkdown"" Pipeline=""BitMarkdownPipelines.GitHub"" />";
+<BitMarkdownViewer Markdown=""@gitHubMarkdown"" Pipeline=""BitMarkdownViewerPipelines.GitHub"" />";
     private readonly string example2CsharpCode = @"
 private readonly string gitHubMarkdown = @""# GitHub Flavored Markdown
 
@@ -224,7 +224,7 @@ Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
 private enum MarkdownFlavor { Basic, GitHub, Advanced }
 
 private MarkdownFlavor playgroundFlavor = MarkdownFlavor.Advanced;
-private BitMarkdownPipeline playgroundPipeline = BitMarkdownPipelines.Advanced;
+private BitMarkdownViewerPipeline playgroundPipeline = BitMarkdownViewerPipelines.Advanced;
 private string playgroundMarkdown = SampleMarkdown; // a feature-rich sample document
 
 private void SetPlaygroundFlavor(MarkdownFlavor flavor)
@@ -232,16 +232,16 @@ private void SetPlaygroundFlavor(MarkdownFlavor flavor)
     playgroundFlavor = flavor;
     playgroundPipeline = flavor switch
     {
-        MarkdownFlavor.Basic => BitMarkdownPipelines.Basic,
-        MarkdownFlavor.GitHub => BitMarkdownPipelines.GitHub,
-        _ => BitMarkdownPipelines.Advanced
+        MarkdownFlavor.Basic => BitMarkdownViewerPipelines.Basic,
+        MarkdownFlavor.GitHub => BitMarkdownViewerPipelines.GitHub,
+        _ => BitMarkdownViewerPipelines.Advanced
     };
 }";
 
     private readonly string example4RazorCode = @"
 <BitMarkdownViewer Markdown=""@customMarkdown"" Pipeline=""customPipeline"" />";
     private readonly string example4CsharpCode = @"
-private readonly BitMarkdownPipeline customPipeline = new BitMarkdownPipelineBuilder()
+private readonly BitMarkdownViewerPipeline customPipeline = new BitMarkdownViewerPipelineBuilder()
     .UsePipeTables()
     .UseStrikethrough()
     .UseTaskLists()
