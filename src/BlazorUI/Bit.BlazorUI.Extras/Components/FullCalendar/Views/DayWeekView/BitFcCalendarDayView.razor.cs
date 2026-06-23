@@ -12,6 +12,7 @@ public partial class BitFcCalendarDayView : IDisposable
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
 
     private string? _timeGridScrollSignature;
+    private readonly string _scrollContainerId = "bit-bfc-day-timegrid-scroll-" + Guid.NewGuid().ToString("N");
     private Timer? _nowTimer;
     private bool _isDisposed;
 
@@ -115,7 +116,7 @@ public partial class BitFcCalendarDayView : IDisposable
 
         if (await BitFcTimeGridScrollInterop.TryScrollToStartOfDayAsync(
                 JS,
-                "bit-bfc-day-timegrid-scroll",
+                _scrollContainerId,
                 State.StartOfDayHour))
             _timeGridScrollSignature = sig;
     }

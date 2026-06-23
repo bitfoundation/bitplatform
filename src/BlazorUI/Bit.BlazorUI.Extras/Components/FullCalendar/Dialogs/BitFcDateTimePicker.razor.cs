@@ -24,8 +24,12 @@ public partial class BitFcDateTimePicker : IDisposable
         // Re-anchor the visible month when the value changes, and also when the culture/calendar
         // system changes - the same DateTime maps to a different month label across calendars.
         // Compare by culture name (not reference) so a change carried on a different CultureInfo
-        // instance is still detected.
-        var cultureChanged = !string.Equals(_lastSyncedCulture?.Name, Culture.Name, StringComparison.Ordinal);
+        // instance is still detected, and also by calendar system so reusing the same culture name
+        // with a different calendar is detected too.
+        var calendarChanged = _lastSyncedCulture is null
+            || _lastSyncedCulture.DateTimeFormat.Calendar.GetType() != Culture.DateTimeFormat.Calendar.GetType();
+        var cultureChanged = calendarChanged
+            || !string.Equals(_lastSyncedCulture?.Name, Culture.Name, StringComparison.Ordinal);
 
         if (_lastSyncedDate != Value || cultureChanged)
         {

@@ -7,11 +7,12 @@ public class BitFullCalendarState
     private List<BitFullCalendarEvent> _allEvents = [];
     private List<BitFullCalendarEvent> _filteredEvents = [];
     private List<BitFullCalendarResource> _resources = [];
+    private readonly List<string> _selectedColors = [];
 
     public DateTime SelectedDate { get; private set; } = DateTime.Today;
     public BitFullCalendarView View { get; private set; } = BitFullCalendarView.Month;
     public BitFullCalendarMode Mode { get; private set; } = BitFullCalendarMode.Event;
-    public List<string> SelectedColors { get; private set; } = [];
+    public IReadOnlyList<string> SelectedColors => _selectedColors;
 
     /// <summary>When set, only events that include this attendee (by <see cref="BitFullCalendarHelpers.AttendeeFilterKey"/>) are shown.</summary>
     public string? SelectedAttendeeKey { get; private set; }
@@ -293,19 +294,19 @@ public class BitFullCalendarState
             return;
 
         var trimmed = colorId.Trim();
-        var existing = SelectedColors.FindIndex(c => string.Equals(c, trimmed, StringComparison.OrdinalIgnoreCase));
+        var existing = _selectedColors.FindIndex(c => string.Equals(c, trimmed, StringComparison.OrdinalIgnoreCase));
         if (existing >= 0)
-            SelectedColors.RemoveAt(existing);
+            _selectedColors.RemoveAt(existing);
         else
-            SelectedColors.Add(trimmed);
+            _selectedColors.Add(trimmed);
         UpdateUI();
     }
 
     public void SetColorFilter(string? colorId)
     {
-        SelectedColors.Clear();
+        _selectedColors.Clear();
         if (!string.IsNullOrWhiteSpace(colorId))
-            SelectedColors.Add(colorId.Trim());
+            _selectedColors.Add(colorId.Trim());
 
         UpdateUI();
     }
@@ -351,7 +352,7 @@ public class BitFullCalendarState
 
     public void ClearFilter()
     {
-        SelectedColors.Clear();
+        _selectedColors.Clear();
         SelectedAttendeeKey = null;
         _filteredEvents = [.. _allEvents];
         NotifyStateChanged();
@@ -363,8 +364,8 @@ public class BitFullCalendarState
 
         var result = _allEvents.AsEnumerable();
 
-        if (SelectedColors.Count > 0)
-            result = result.Where(e => SelectedColors.Any(c => string.Equals(c, e.Color, StringComparison.OrdinalIgnoreCase)));
+        if (_selectedColors.Count > 0)
+            result = result.Where(e => _selectedColors.Any(c => string.Equals(c, e.Color, StringComparison.OrdinalIgnoreCase)));
 
         if (SelectedAttendeeKey is not null)
             result = result.Where(e => e.Attendees.Any(a => BitFullCalendarHelpers.AttendeeFilterKey(a) == SelectedAttendeeKey));

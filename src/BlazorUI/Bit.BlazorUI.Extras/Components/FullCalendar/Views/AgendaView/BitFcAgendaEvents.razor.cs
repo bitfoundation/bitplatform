@@ -11,6 +11,7 @@ public partial class BitFcAgendaEvents
     private bool _showDetails;
     private BitFullCalendarEvent? _selectedEvent;
     private ulong _lastAgendaScrollNonce;
+    private readonly string _scrollContainerId = "bit-bfc-agenda-scroll-" + Guid.NewGuid().ToString("N");
 
     protected override void OnInitialized() => State.OnStateChanged += Refresh;
     private void Refresh() => InvokeAsync(StateHasChanged);
@@ -22,7 +23,7 @@ public partial class BitFcAgendaEvents
         if (nonce == _lastAgendaScrollNonce)
             return;
 
-        await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, "bit-bfc-agenda-scroll", DateTime.Today);
+        await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, _scrollContainerId, DateTime.Today);
         _lastAgendaScrollNonce = nonce;
     }
 

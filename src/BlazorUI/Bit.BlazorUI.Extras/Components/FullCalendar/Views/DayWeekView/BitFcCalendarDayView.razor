@@ -25,7 +25,7 @@
 
         <BitFcDayViewMultiDayEventsRow MultiDayEvents="MultiDayEvents" Date="State.SelectedDate" EventTemplate="EventTemplate" />
 
-        <div id="bit-bfc-day-timegrid-scroll" class="bit-bfc-timegrid-wrapper">
+        <div id="@_scrollContainerId" class="bit-bfc-timegrid-wrapper">
             <BitFcTimeColumn />
             <div class="bit-bfc-timegrid">
                 @for (int h = 0; h < 24; h++)

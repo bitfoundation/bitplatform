@@ -10,7 +10,7 @@ public partial class BitFcWeekViewMultiDayEventsRow
 
     private DateTime[] _weekDays = [];
     private List<BitFullCalendarEvent> _weekEvents = [];
-    private Dictionary<string, int> _eventRows = new();
+    private Dictionary<BitFullCalendarEvent, int> _eventRows = new();
     private Dictionary<(DateTime Day, int Row), BitFullCalendarEvent> _cellLookup = new();
     private int _rowCount;
     private BitFullCalendarEvent? _selectedEvent;
@@ -24,7 +24,7 @@ public partial class BitFcWeekViewMultiDayEventsRow
             .ThenBy(e => e.StartDate)
             .ToList();
 
-        _eventRows = new Dictionary<string, int>();
+        _eventRows = new Dictionary<BitFullCalendarEvent, int>();
         var rowUsageByDay = _weekDays.ToDictionary(d => d.Date, _ => new HashSet<int>());
 
         foreach (var ev in _weekEvents)
@@ -38,7 +38,7 @@ public partial class BitFcWeekViewMultiDayEventsRow
             {
                 if (evDays.All(d => !rowUsageByDay[d.Date].Contains(row)))
                 {
-                    _eventRows[ev.Id] = row;
+                    _eventRows[ev] = row;
                     foreach (var d in evDays)
                         rowUsageByDay[d.Date].Add(row);
                     break;
@@ -53,7 +53,7 @@ public partial class BitFcWeekViewMultiDayEventsRow
         _cellLookup = new Dictionary<(DateTime, int), BitFullCalendarEvent>();
         foreach (var ev in _weekEvents)
         {
-            var row = _eventRows[ev.Id];
+            var row = _eventRows[ev];
             var evEndInclusive = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
             foreach (var d in _weekDays)
             {
