@@ -88,6 +88,8 @@ internal sealed class ListItemListView(List<ListItemNode> items) : IList<Markdow
     public bool Contains(MarkdownNode item) => item is ListItemNode li && items.Contains(li);
     public void CopyTo(MarkdownNode[] array, int arrayIndex)
     {
+        ArgumentNullException.ThrowIfNull(array);
+        ArgumentOutOfRangeException.ThrowIfNegative(arrayIndex);
         if (array.Length - arrayIndex < items.Count)
             throw new ArgumentException("The destination array has insufficient space to copy the list items.", nameof(array));
         foreach (var i in items) array[arrayIndex++] = i;

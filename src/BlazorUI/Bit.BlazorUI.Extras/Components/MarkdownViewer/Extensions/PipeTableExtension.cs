@@ -91,7 +91,7 @@ public sealed partial class PipeTableBlockParser : BlockParser
     {
         string s = line.Trim();
         if (s.StartsWith('|')) s = s[1..];
-        if (s.EndsWith('|') && !s.EndsWith("\\|")) s = s[..^1];
+        if (s.EndsWith('|') && !IsTrailingPipeEscaped(s)) s = s[..^1];
 
         var cells = new List<string>();
         var sb = new StringBuilder();
@@ -123,6 +123,17 @@ public sealed partial class PipeTableBlockParser : BlockParser
         }
         cells.Add(sb.ToString());
         return cells;
+    }
+
+    // Determines whether the final '|' of a row is backslash-escaped by counting
+    // the consecutive backslashes immediately preceding it. An odd count means the
+    // pipe is escaped (and must be kept); an even count (including zero) means it is
+    // a real trailing delimiter that should be trimmed.
+    private static bool IsTrailingPipeEscaped(string s)
+    {
+        int backslashes = 0;
+        for (int i = s.Length - 2; i >= 0 && s[i] == '\\'; i--) backslashes++;
+        return (backslashes & 1) == 1;
     }
 }
 

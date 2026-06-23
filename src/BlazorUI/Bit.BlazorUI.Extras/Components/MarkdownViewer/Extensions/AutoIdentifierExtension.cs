@@ -19,13 +19,14 @@ public sealed class AutoIdentifierAstProcessor : AstProcessor
             string slug = baseSlug;
             if (used.TryGetValue(baseSlug, out int count))
             {
-                used[baseSlug] = ++count;
-                slug = $"{baseSlug}-{count}";
+                do
+                {
+                    slug = $"{baseSlug}-{++count}";
+                }
+                while (used.ContainsKey(slug));
+                used[baseSlug] = count;
             }
-            else
-            {
-                used[baseSlug] = 0;
-            }
+            used[slug] = 0;
             heading.Id = slug;
         }
     }
