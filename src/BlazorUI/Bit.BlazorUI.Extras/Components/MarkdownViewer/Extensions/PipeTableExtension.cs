@@ -114,7 +114,13 @@ public sealed partial class PipeTableBlockParser : BlockParser
                 int runStart = i;
                 while (i + 1 < s.Length && s[i + 1] == '`') i++;
                 int runLength = i - runStart + 1;
-                if (backtickRun == 0) backtickRun = runLength;
+                // Only enter code-span mode if a matching closing run of the same length
+                // exists ahead. An unmatched backtick run is literal text (CommonMark), so
+                // later pipes must still be treated as cell delimiters rather than content.
+                if (backtickRun == 0)
+                {
+                    if (HasMatchingBacktickRun(s, i + 1, runLength)) backtickRun = runLength;
+                }
                 else if (runLength == backtickRun) backtickRun = 0;
                 sb.Append(s, runStart, runLength);
             }
@@ -123,6 +129,21 @@ public sealed partial class PipeTableBlockParser : BlockParser
         }
         cells.Add(sb.ToString());
         return cells;
+    }
+
+    // Scans from startIndex for a backtick run of exactly the given length, used to
+    // decide whether an opening backtick run has a valid closing run (a code span's
+    // closing run must contain the same number of backticks as the opening run).
+    private static bool HasMatchingBacktickRun(string s, int startIndex, int runLength)
+    {
+        for (int i = startIndex; i < s.Length; i++)
+        {
+            if (s[i] != '`') continue;
+            int runStart = i;
+            while (i + 1 < s.Length && s[i + 1] == '`') i++;
+            if (i - runStart + 1 == runLength) return true;
+        }
+        return false;
     }
 
     // Determines whether the final '|' of a row is backslash-escaped by counting
