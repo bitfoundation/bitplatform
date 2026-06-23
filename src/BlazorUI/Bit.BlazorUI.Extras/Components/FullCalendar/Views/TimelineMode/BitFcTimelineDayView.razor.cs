@@ -97,7 +97,7 @@ public partial class BitFcTimelineDayView
     private string SlotAriaLabel(string rowLabel, int hour, int minute)
     {
         var start = State.SelectedDate.Date.AddHours(hour).AddMinutes(minute);
-        return $"{Texts.AddEventHoverHint}, {rowLabel}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat)}";
+        return $"{Texts.AddEventHoverHint}, {rowLabel}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
     }
 
     private void OnDragEnter(string resourceId, int hour, int minute)

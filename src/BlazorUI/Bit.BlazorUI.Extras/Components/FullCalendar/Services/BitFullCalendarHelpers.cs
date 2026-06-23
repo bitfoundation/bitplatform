@@ -637,9 +637,10 @@ public static class BitFullCalendarHelpers
     }
 
     /// <summary>
-    /// Smallest time t' &gt;= <paramref name="dt"/> on the same calendar day where
-    /// (t' - t'.Date) is a whole multiple of <paramref name="intervalMinutes"/>.
-    /// If <paramref name="dt"/> is already on such a boundary, returns <paramref name="dt"/> unchanged.
+    /// Smallest time t' &gt;= <paramref name="dt"/> where (t' - t'.Date) is a whole multiple of
+    /// <paramref name="intervalMinutes"/>. If <paramref name="dt"/> is already on such a boundary,
+    /// returns <paramref name="dt"/> unchanged. Note: when the ceiling crosses midnight (for example
+    /// 23:59 with a 30-minute interval), the result rolls over to 00:00 of the next calendar day.
     /// </summary>
     public static DateTime CeilToMinuteInterval(DateTime dt, int intervalMinutes)
     {
@@ -693,6 +694,13 @@ public static class BitFullCalendarHelpers
         int startMinute = 0,
         int durationMinutes = 30)
     {
+        if (hour is < 0 or > 23)
+            throw new ArgumentOutOfRangeException(nameof(hour), hour, "Hour must be between 0 and 23.");
+        if (startMinute is < 0 or > 59)
+            throw new ArgumentOutOfRangeException(nameof(startMinute), startMinute, "Start minute must be between 0 and 59.");
+        if (durationMinutes <= 0)
+            throw new ArgumentOutOfRangeException(nameof(durationMinutes), durationMinutes, "Duration must be greater than zero.");
+
         var start = day.Date.AddHours(hour).AddMinutes(startMinute);
         return new BitFullCalendarEvent
         {

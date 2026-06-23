@@ -12,6 +12,7 @@ public partial class BitFcCalendarWeekView
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
 
     private string? _timeGridScrollSignature;
+    private readonly string _timeGridScrollElementId = "bit-bfc-week-timegrid-scroll-" + Guid.NewGuid().ToString("N");
 
     private bool _showAddDialog;
     private DateTime _addDate;
@@ -100,7 +101,7 @@ public partial class BitFcCalendarWeekView
 
         if (await BitFcTimeGridScrollInterop.TryScrollToStartOfDayAsync(
                 JS,
-                "bit-bfc-week-timegrid-scroll",
+                _timeGridScrollElementId,
                 State.StartOfDayHour))
             _timeGridScrollSignature = sig;
     }

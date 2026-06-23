@@ -13,7 +13,7 @@
 
     <BitFcWeekViewMultiDayEventsRow MultiDayEvents="MultiDayEvents" Date="State.SelectedDate" EventTemplate="EventTemplate" />
 
-    <div id="bit-bfc-week-timegrid-scroll" class="bit-bfc-week-scroll">
+    <div id="@_timeGridScrollElementId" class="bit-bfc-week-scroll">
         <div class="bit-bfc-week-header">
             <div class="bit-bfc-week-header-time"></div>
             @foreach (var day in weekDays)

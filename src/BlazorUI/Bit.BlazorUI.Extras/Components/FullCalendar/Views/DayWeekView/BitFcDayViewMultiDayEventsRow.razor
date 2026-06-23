@@ -6,7 +6,7 @@
         @foreach (var ev in _multiDayForDay)
         {
             var position = GetPosition(ev);
-            <BitFcMonthEventBadge Event="ev" CellDate="Date" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
+            <BitFcMonthEventBadge @key="ev.Id" Event="ev" CellDate="Date" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
         }
     </div>
 }

@@ -137,7 +137,12 @@ public partial class BitFcTimelineMonthView
         var today = DateTime.Today;
         if (cal.GetYear(State.SelectedDate) != cal.GetYear(today) ||
             cal.GetMonth(State.SelectedDate) != cal.GetMonth(today))
+        {
+            // Reset the signature so that navigating back to the current month later re-triggers
+            // the scroll-to-today interop instead of being skipped by a stale matching signature.
+            _scrollSignature = "";
             return;
+        }
 
         var sig = $"{State.SelectedDate:yyyy-MM}|{today:yyyy-MM-dd}";
         if (sig == _scrollSignature) return;

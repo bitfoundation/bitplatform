@@ -30,6 +30,7 @@ public partial class BitFcAddEditEventDialog
     private DateTime? _lastStartDate;
     private int? _lastStartHour;
     private int? _lastStartMinute;
+    private string? _lastResource;
 
     protected override void OnParametersSet()
     {
@@ -39,7 +40,8 @@ public partial class BitFcAddEditEventDialog
             || !ReferenceEquals(_lastExistingEvent, ExistingEvent)
             || _lastStartDate != StartDate
             || _lastStartHour != StartHour
-            || _lastStartMinute != StartMinute;
+            || _lastStartMinute != StartMinute
+            || _lastResource != Resource;
 
         if (!parametersChanged)
             return;
@@ -49,6 +51,7 @@ public partial class BitFcAddEditEventDialog
         _lastStartDate = StartDate;
         _lastStartHour = StartHour;
         _lastStartMinute = StartMinute;
+        _lastResource = Resource;
 
         // Clear transient editing state so a reused dialog instance doesn't carry over stale
         // validation errors or half-typed attendee draft inputs from a previous open.

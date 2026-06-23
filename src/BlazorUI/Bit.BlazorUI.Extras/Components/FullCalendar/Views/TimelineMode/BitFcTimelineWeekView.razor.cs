@@ -99,7 +99,7 @@ public partial class BitFcTimelineWeekView
     private string SlotAriaLabel(string rowLabel, DateTime day, int hour, int minute)
     {
         var start = day.Date.AddHours(hour).AddMinutes(minute);
-        return $"{Texts.AddEventHoverHint}, {rowLabel}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat)}";
+        return $"{Texts.AddEventHoverHint}, {rowLabel}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
     }
 
     private void OnDragEnter(string resourceId, DateTime day, int hour, int minute)
