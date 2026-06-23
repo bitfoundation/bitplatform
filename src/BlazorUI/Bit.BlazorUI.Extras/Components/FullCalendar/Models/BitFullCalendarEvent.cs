@@ -13,7 +13,16 @@ public class BitFullCalendarEvent
     /// so that out-of-the-box rendering keeps working with the built-in palette.
     /// </summary>
     public string Color { get; set; } = BitFullCalendarColorScheme.FallbackColorId;
-    public List<BitFullCalendarAttendee> Attendees { get; set; } = [];
+    private List<BitFullCalendarAttendee> _attendees = [];
+    /// <summary>
+    /// Attendees of the event. Never <c>null</c>: assigning <c>null</c> coalesces to an empty list
+    /// so downstream code can safely iterate without null checks.
+    /// </summary>
+    public List<BitFullCalendarAttendee> Attendees
+    {
+        get => _attendees;
+        set => _attendees = value ?? [];
+    }
 
     /// <summary>
     /// Optional resource identifier linking this event to a <see cref="BitFullCalendarResource"/>

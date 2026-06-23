@@ -38,8 +38,11 @@
         return Math.Max(minRowHeight, content);
     }
 
-    var hasUnassigned = perResource.TryGetValue(_unassignedKey, out var u) && u.Count > 0;
-    var unassignedLaneCount = hasUnassigned ? perResource[_unassignedKey].Count : 1;
+    // Render the unassigned row when there are unassigned events, OR when there are no resources at
+    // all so the user always has at least one row to create the first event in.
+    var hasUnassignedEvents = perResource.TryGetValue(_unassignedKey, out var u) && u.Count > 0;
+    var hasUnassigned = hasUnassignedEvents || resources.Count == 0;
+    var unassignedLaneCount = hasUnassignedEvents ? perResource[_unassignedKey].Count : 1;
 
     // If today falls inside the active month, scroll horizontally to today's day cell.
     var todayIdx = Array.FindIndex(monthDays, d => d.Date == DateTime.Today);
@@ -119,7 +122,7 @@
                  @onclick="() => OnSlotClickAsync(rowKey, day)"
                  @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day)"></div>
         }
-        @if (hasUnassigned)
+        @if (hasUnassignedEvents)
         {
             @RenderLanes(perResource[_unassignedKey], monthStart, daysInMonth)
         }

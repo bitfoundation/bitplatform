@@ -28,6 +28,7 @@ public partial class BitFcAddEditEventDialog
     private bool _initialized;
     private BitFullCalendarEvent? _lastExistingEvent;
     private DateTime? _lastStartDate;
+    private DateTime _lastSelectedDate;
     private int? _lastStartHour;
     private int? _lastStartMinute;
     private string? _lastResource;
@@ -36,9 +37,12 @@ public partial class BitFcAddEditEventDialog
     {
         // Re-run initialization whenever the parameters that drive the form change, so a reused
         // dialog instance reflects the new ExistingEvent / start parameters instead of stale values.
+        // State.SelectedDate is tracked too because it is the fallback base date for a new event
+        // when StartDate is null (see the non-editing branch below).
         var parametersChanged = !_initialized
             || !ReferenceEquals(_lastExistingEvent, ExistingEvent)
             || _lastStartDate != StartDate
+            || _lastSelectedDate != State.SelectedDate
             || _lastStartHour != StartHour
             || _lastStartMinute != StartMinute
             || _lastResource != Resource;
@@ -49,6 +53,7 @@ public partial class BitFcAddEditEventDialog
         _initialized = true;
         _lastExistingEvent = ExistingEvent;
         _lastStartDate = StartDate;
+        _lastSelectedDate = State.SelectedDate;
         _lastStartHour = StartHour;
         _lastStartMinute = StartMinute;
         _lastResource = Resource;
