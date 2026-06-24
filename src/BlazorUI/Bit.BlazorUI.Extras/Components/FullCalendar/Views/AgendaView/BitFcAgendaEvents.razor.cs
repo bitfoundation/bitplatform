@@ -23,8 +23,9 @@ public partial class BitFcAgendaEvents
         if (nonce == _lastAgendaScrollNonce)
             return;
 
-        await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, _scrollContainerId, DateTime.Today);
-        _lastAgendaScrollNonce = nonce;
+        var scrolled = await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, _scrollContainerId, DateTime.Today);
+        if (scrolled)
+            _lastAgendaScrollNonce = nonce;
     }
 
     private async Task ShowDetails(BitFullCalendarEvent ev)

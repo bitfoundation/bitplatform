@@ -144,7 +144,7 @@ public partial class BitFcTimelineMonthView
             return;
         }
 
-        var sig = $"{State.SelectedDate:yyyy-MM}|{today:yyyy-MM-dd}";
+        var sig = $"{cal.GetYear(State.SelectedDate)}-{cal.GetMonth(State.SelectedDate)}|{cal.GetYear(today)}-{cal.GetMonth(today)}-{cal.GetDayOfMonth(today)}";
         if (sig == _scrollSignature) return;
 
         if (await BitFcTimelineScrollInterop.TryScrollToTargetAsync(JS, _scrollContainerId))

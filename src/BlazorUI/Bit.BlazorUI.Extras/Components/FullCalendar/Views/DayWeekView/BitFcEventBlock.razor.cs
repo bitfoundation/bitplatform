@@ -79,6 +79,11 @@ public partial class BitFcEventBlock
     [JSInvokable]
     public void OnResizeStart(string direction)
     {
+        // Guard against unrecognized directions from JS interop so the block can't enter resize
+        // mode with a direction that OnResizeMove would later ignore (leaving it stuck "resizing").
+        if (direction is not ("top" or "bottom"))
+            return;
+
         _isResizing = true;
         _resizeDirection = direction;
         _resizeBaseEvent = Event;

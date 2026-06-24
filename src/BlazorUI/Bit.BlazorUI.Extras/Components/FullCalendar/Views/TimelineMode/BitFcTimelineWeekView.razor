@@ -18,7 +18,7 @@
     var weekDays = Enumerable.Range(0, 7).Select(i => weekStart.AddDays(i)).ToArray();
 
     var resources = State.Resources;
-    var resourceIds = resources.Select(r => r.Id).Where(id => !string.IsNullOrEmpty(id)).ToList();
+    var resourceIds = resources.Select(r => r.Id).Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
 
     // Lanes per (resourceId, dayIndex)
     var perDay = weekDays.Select(d =>

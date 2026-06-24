@@ -85,11 +85,18 @@ namespace BitBlazorUI {
             const pixelsPerHour = 96;
             const minPerPixel = 60 / pixelsPerHour;
 
+            // Tracks the pointer that owns the in-progress resize. While set, additional pointers
+            // (e.g. a second touch contact on the same handle) are ignored so they can't start a
+            // concurrent resize on the same element. Cleared when the resize completes or aborts.
+            let activeResizePointerId: number | null = null;
+
             el.addEventListener("pointerdown", async (e: PointerEvent) => {
                 if (e.button !== 0) return;
+                if (activeResizePointerId !== null) return;
                 e.preventDefault();
                 e.stopPropagation();
 
+                activeResizePointerId = e.pointerId;
                 const startY = e.clientY;
                 let latestY = startY;
                 let rafId: number | null = null;
@@ -147,6 +154,7 @@ namespace BitBlazorUI {
                         } catch { }
 
                         activePointerId = null;
+                        activeResizePointerId = null;
                         await dotNetRef.invokeMethodAsync("OnResizeEnd");
                     }
                 };
@@ -169,6 +177,7 @@ namespace BitBlazorUI {
                             el.releasePointerCapture(activePointerId);
                     } catch { }
                     activePointerId = null;
+                    activeResizePointerId = null;
                     return;
                 }
                 startSucceeded = true;
@@ -195,11 +204,17 @@ namespace BitBlazorUI {
             if ((el as any)[boundKey]) return;
             (el as any)[boundKey] = true;
 
+            // Tracks the pointer that owns the in-progress resize so a second concurrent pointer
+            // (e.g. a second touch contact) can't start an overlapping resize on the same element.
+            let activeResizePointerId: number | null = null;
+
             el.addEventListener("pointerdown", async (e: PointerEvent) => {
                 if (e.button !== 0) return;
+                if (activeResizePointerId !== null) return;
                 e.preventDefault();
                 e.stopPropagation();
 
+                activeResizePointerId = e.pointerId;
                 const startX = e.clientX;
                 let latestX = startX;
                 let rafId: number | null = null;
@@ -253,6 +268,7 @@ namespace BitBlazorUI {
                         } catch { }
 
                         activePointerId = null;
+                        activeResizePointerId = null;
                         await dotNetRef.invokeMethodAsync("OnResizeEnd");
                     }
                 };
@@ -275,6 +291,7 @@ namespace BitBlazorUI {
                             el.releasePointerCapture(activePointerId);
                     } catch { }
                     activePointerId = null;
+                    activeResizePointerId = null;
                     return;
                 }
                 startSucceeded = true;

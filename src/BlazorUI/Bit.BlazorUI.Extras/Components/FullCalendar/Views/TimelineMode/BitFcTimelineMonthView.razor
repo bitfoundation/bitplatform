@@ -23,7 +23,7 @@
     var monthDays = Enumerable.Range(0, daysInMonth).Select(i => monthStart.AddDays(i)).ToArray();
 
     var resources = State.Resources;
-    var resourceIds = resources.Select(r => r.Id).Where(id => !string.IsNullOrEmpty(id)).ToList();
+    var resourceIds = resources.Select(r => r.Id).Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
 
     // Group every event that touches the month into resource-keyed lists.
     var perResource = BitFullCalendarHelpers.GroupEventsByResourceForMonth(
