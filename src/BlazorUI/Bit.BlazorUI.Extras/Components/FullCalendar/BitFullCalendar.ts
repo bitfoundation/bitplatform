@@ -122,7 +122,7 @@ namespace BitBlazorUI {
                     if (!startSucceeded) return;
                     if (rafId == null) {
                         rafId = requestAnimationFrame(() => {
-                            void flushMove();
+                            flushMove().catch(() => { /* transient interop failure while reporting resize move; safe to ignore */ });
                         });
                     }
                 };
@@ -237,7 +237,7 @@ namespace BitBlazorUI {
                     // Don't emit move events until resize-start has been acknowledged by Blazor.
                     if (!startSucceeded) return;
                     if (rafId == null) {
-                        rafId = requestAnimationFrame(() => { void flushMove(); });
+                        rafId = requestAnimationFrame(() => { flushMove().catch(() => { /* transient interop failure while reporting resize move; safe to ignore */ }); });
                     }
                 };
 

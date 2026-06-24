@@ -22,10 +22,4 @@ public partial class BitFcCalendarYearView
         _eventListEvents = events;
         _showEventList = true;
     }
-
-    private void OnDayKeyDown(KeyboardEventArgs e, bool hasEvents, DateTime date, List<BitFullCalendarEvent> events)
-    {
-        if (hasEvents && e.Key is "Enter" or " " or "Spacebar")
-            ShowEventsForDay(date, events);
-    }
 }

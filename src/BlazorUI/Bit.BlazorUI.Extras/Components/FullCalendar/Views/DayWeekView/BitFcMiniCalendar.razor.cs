@@ -7,10 +7,12 @@ public partial class BitFcMiniCalendar
 
     private DateTime _displayMonth;
     private DateTime _lastSyncedSelectedDate;
+    private string? _lastSyncedCultureName;
 
     protected override void OnInitialized()
     {
         _lastSyncedSelectedDate = State.SelectedDate;
+        _lastSyncedCultureName = State.Culture.Name;
         _displayMonth = StartOfDisplayMonth(State.SelectedDate);
     }
 
@@ -18,9 +20,13 @@ public partial class BitFcMiniCalendar
     {
         // Keep _displayMonth aligned with external SelectedDate changes without clobbering the
         // user's in-component month browsing (PrevMonth/NextMonth leave SelectedDate untouched).
-        if (_lastSyncedSelectedDate != State.SelectedDate)
+        // A culture/calendar switch also requires re-normalizing the display month so the header
+        // and grid reflect the new calendar system.
+        if (_lastSyncedSelectedDate != State.SelectedDate
+            || !string.Equals(_lastSyncedCultureName, State.Culture.Name, StringComparison.Ordinal))
         {
             _lastSyncedSelectedDate = State.SelectedDate;
+            _lastSyncedCultureName = State.Culture.Name;
             _displayMonth = StartOfDisplayMonth(State.SelectedDate);
         }
     }

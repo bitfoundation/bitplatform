@@ -13,6 +13,13 @@ public partial class BitFcAddEditEventDialog
     [Parameter] public string? Resource { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
+    // Per-instance unique ids so multiple open dialogs don't collide on element ids, which would
+    // break label-to-control association and the dialog's aria-labelledby reference.
+    private readonly string _dialogTitleId = $"bfc-dlg-title-{Guid.NewGuid():N}";
+    private readonly string _titleInputId = $"bfc-title-{Guid.NewGuid():N}";
+    private readonly string _colorSelectId = $"bfc-color-{Guid.NewGuid():N}";
+    private readonly string _descriptionInputId = $"bfc-desc-{Guid.NewGuid():N}";
+
     private bool _isEditing;
     private string _title = "";
     private string _description = "";

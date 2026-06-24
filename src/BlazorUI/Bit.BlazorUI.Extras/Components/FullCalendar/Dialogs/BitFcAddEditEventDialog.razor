@@ -1,10 +1,10 @@
 @namespace Bit.BlazorUI
 
 <div class="bit-bfc-overlay" @onclick="OnClose">
-    <div class="bit-bfc-dialog" @onclick:stopPropagation="true">
+    <div class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" @onclick:stopPropagation="true">
         <div class="bit-bfc-dialog-header bit-bfc-dialog-header-row">
             <div>
-                <h3>@(_isEditing ? Texts.EditEventDialogTitle : Texts.AddEventDialogTitle)</h3>
+                <h3 id="@_dialogTitleId">@(_isEditing ? Texts.EditEventDialogTitle : Texts.AddEventDialogTitle)</h3>
                 <p>@(_isEditing ? Texts.EditEventDialogSubtitle : Texts.AddEventDialogSubtitle)</p>
             </div>
             <button type="button" class="bit-bfc-dialog-close-btn" @onclick="OnClose" aria-label="@Texts.CloseAriaLabel">
@@ -13,8 +13,8 @@
         </div>
         <div class="bit-bfc-dialog-body">
             <div class="bit-bfc-field">
-                <label for="_bfcTitleInput">@Texts.TitleLabel</label>
-                <input id="_bfcTitleInput" type="text" @bind="_title" placeholder="@Texts.EventTitlePlaceholder" />
+                <label for="@_titleInputId">@Texts.TitleLabel</label>
+                <input id="@_titleInputId" type="text" @bind="_title" placeholder="@Texts.EventTitlePlaceholder" />
                 @if (_errors.ContainsKey("title"))
                 {
                     <div class="bit-bfc-field-error">@_errors["title"]</div>
@@ -36,8 +36,8 @@
             </div>
 
             <div class="bit-bfc-field">
-                <label for="_bfcColorSelect">@Texts.ColorLabel</label>
-                <select id="_bfcColorSelect" @bind="_color" aria-label="@Texts.EventColorAriaLabel">
+                <label for="@_colorSelectId">@Texts.ColorLabel</label>
+                <select id="@_colorSelectId" @bind="_color" aria-label="@Texts.EventColorAriaLabel">
                     @foreach (var opt in ColorScheme.GetEditorOptions(_isEditing ? _color : null))
                     {
                         <option value="@opt.Id">@opt.Title</option>
@@ -46,8 +46,8 @@
             </div>
 
             <div class="bit-bfc-field">
-                <label for="_bfcDescriptionInput">@Texts.DescriptionLabel</label>
-                <textarea id="_bfcDescriptionInput" @bind="_description" placeholder="@Texts.EventDescriptionPlaceholder"></textarea>
+                <label for="@_descriptionInputId">@Texts.DescriptionLabel</label>
+                <textarea id="@_descriptionInputId" @bind="_description" placeholder="@Texts.EventDescriptionPlaceholder"></textarea>
                 @if (_errors.ContainsKey("description"))
                 {
                     <div class="bit-bfc-field-error">@_errors["description"]</div>

@@ -85,14 +85,14 @@ public partial class BitFcTimelineMonthView
     {
         if (OnAddClick.HasDelegate)
         {
-            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(day, DateTime.Now.Hour);
+            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(day, State.StartOfDayHour);
             draft.Resource = resourceId == _unassignedKey ? null : resourceId;
             await OnAddClick.InvokeAsync(draft);
             return;
         }
 
         _addStartDate = day;
-        _addStartHour = DateTime.Now.Hour;
+        _addStartHour = State.StartOfDayHour;
         _addResourceId = resourceId == _unassignedKey ? null : resourceId;
         _showAddDialog = true;
     }

@@ -9,6 +9,9 @@ public partial class BitFcDateTimePicker : IDisposable
     [Parameter] public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
     [Parameter] public string PreviousMonthAriaLabel { get; set; } = "Previous month";
     [Parameter] public string NextMonthAriaLabel { get; set; } = "Next month";
+    [Parameter] public string HourAriaLabel { get; set; } = "Hour";
+    [Parameter] public string MinuteAriaLabel { get; set; } = "Minute";
+    [Parameter] public string SelectedDayAriaLabel { get; set; } = "selected";
 
     private DateTime _visibleMonthAnchor;
     private int _hour;
@@ -164,6 +167,12 @@ public partial class BitFcDateTimePicker : IDisposable
         if (day.IsSelected)
             classes += " bit-bfc-dtp-day-selected";
         return classes;
+    }
+
+    private string GetDayAriaLabel(CalendarDay day)
+    {
+        var fullDate = day.Date.ToString("D", Culture);
+        return day.IsSelected ? $"{fullDate}, {SelectedDayAriaLabel}" : fullDate;
     }
 
     private string GetDisplayText()

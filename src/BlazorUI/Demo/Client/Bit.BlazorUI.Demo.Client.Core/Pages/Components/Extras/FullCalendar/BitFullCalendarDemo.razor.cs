@@ -548,6 +548,8 @@ public partial class BitFullCalendarDemo
         AddEventHoverHint = "افزودن رویداد",
         PreviousButtonTitle = "قبلی",
         NextButtonTitle = "بعدی",
+        PreviousMonthAriaLabel = "ماه قبل",
+        NextMonthAriaLabel = "ماه بعد",
         SettingsButtonTitle = "تنظیمات",
 
         // Filters
@@ -611,6 +613,7 @@ public partial class BitFullCalendarDemo
         LastNamePlaceholder = "نام خانوادگی",
         IdOptionalPlaceholder = "شناسه (اختیاری)",
         AddButton = "افزودن",
+        RemoveAttendeeAriaLabel = "حذف شرکت‌کننده",
 
         // Event details
         StartDateLabel = "تاریخ شروع",
@@ -821,6 +824,8 @@ public partial class BitFullCalendarDemo
         AddEventHoverHint = ""افزودن رویداد"",
         PreviousButtonTitle = ""قبلی"",
         NextButtonTitle = ""بعدی"",
+        PreviousMonthAriaLabel = ""ماه قبل"",
+        NextMonthAriaLabel = ""ماه بعد"",
         SettingsButtonTitle = ""تنظیمات"",
 
         // Filters
@@ -884,6 +889,7 @@ public partial class BitFullCalendarDemo
         LastNamePlaceholder = ""نام خانوادگی"",
         IdOptionalPlaceholder = ""شناسه (اختیاری)"",
         AddButton = ""افزودن"",
+        RemoveAttendeeAriaLabel = ""حذف شرکت‌کننده"",
 
         // Event details
         StartDateLabel = ""تاریخ شروع"",

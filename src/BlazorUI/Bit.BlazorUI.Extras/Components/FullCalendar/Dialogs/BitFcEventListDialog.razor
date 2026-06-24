@@ -1,15 +1,15 @@
 @namespace Bit.BlazorUI
 
 <div class="bit-bfc-overlay" @onclick="OnClose">
-    <div class="bit-bfc-dialog" @onclick:stopPropagation="true">
+    <div class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" @onclick:stopPropagation="true">
         <div class="bit-bfc-dialog-header">
-            <h3>@Texts.EventListTitlePrefix @Date.ToString("dddd, MMM d, yyyy", State.Culture)</h3>
+            <h3 id="@_dialogTitleId">@Texts.EventListTitlePrefix @Date.ToString("dddd, MMM d, yyyy", State.Culture)</h3>
             <p>@Events.Count @Texts.EventListCountSuffix</p>
         </div>
         <div class="bit-bfc-dialog-body" style="max-height:400px;overflow-y:auto;">
             @foreach (var ev in Events)
             {
-                <div class="bit-bfc-agenda-item" tabindex="0" role="button" @onclick="() => SelectEvent(ev)" @onkeydown="@(e => OnEventKeyDown(e, ev))" @onkeydown:preventDefault="_preventKeyDefault">
+                <button type="button" class="bit-bfc-agenda-item" style="width:100%;border:none;background:none;font:inherit;color:inherit;text-align:start;" @onclick="() => SelectEvent(ev)">
                     <div class="bit-bfc-agenda-avatar bit-bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)">
                         @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
                     </div>
@@ -20,7 +20,7 @@
                     <div class="bit-bfc-agenda-time">
                         @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
                     </div>
-                </div>
+                </button>
             }
         </div>
         <div class="bit-bfc-dialog-footer">

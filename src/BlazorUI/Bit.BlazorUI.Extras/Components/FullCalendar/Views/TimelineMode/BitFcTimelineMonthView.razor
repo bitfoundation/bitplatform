@@ -38,10 +38,11 @@
         return Math.Max(minRowHeight, content);
     }
 
-    // Render the unassigned row when there are unassigned events, OR when there are no resources at
-    // all so the user always has at least one row to create the first event in.
+    // Render the unassigned row when there are unassigned events, OR when there are no persistable
+    // resources at all (resourceIds is the set of valid, non-blank ids) so the user always has at
+    // least one row to create the first event in - blank-id resources still fall back here.
     var hasUnassignedEvents = perResource.TryGetValue(_unassignedKey, out var u) && u.Count > 0;
-    var hasUnassigned = hasUnassignedEvents || resources.Count == 0;
+    var hasUnassigned = hasUnassignedEvents || resourceIds.Count == 0;
     var unassignedLaneCount = hasUnassignedEvents ? perResource[_unassignedKey].Count : 1;
 
     // If today falls inside the active month, scroll horizontally to today's day cell.

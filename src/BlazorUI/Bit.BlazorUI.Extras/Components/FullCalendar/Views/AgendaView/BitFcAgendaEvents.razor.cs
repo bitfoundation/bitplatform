@@ -38,10 +38,4 @@ public partial class BitFcAgendaEvents
         _selectedEvent = ev;
         _showDetails = true;
     }
-
-    private async Task OnItemKeyDown(KeyboardEventArgs e, BitFullCalendarEvent ev)
-    {
-        if (e.Key is "Enter" or " " or "Spacebar")
-            await ShowDetails(ev);
-    }
 }

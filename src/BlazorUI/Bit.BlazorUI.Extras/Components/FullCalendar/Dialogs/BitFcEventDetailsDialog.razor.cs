@@ -10,6 +10,7 @@ public partial class BitFcEventDetailsDialog
     [Parameter] public EventCallback OnClose { get; set; }
 
     private bool _showEdit;
+    private readonly string _dialogTitleId = $"bfc-details-title-{Guid.NewGuid():N}";
 
     private void Edit()
     {

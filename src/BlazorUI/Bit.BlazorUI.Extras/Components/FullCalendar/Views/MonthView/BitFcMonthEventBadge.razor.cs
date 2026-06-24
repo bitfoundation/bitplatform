@@ -30,7 +30,7 @@ public partial class BitFcMonthEventBadge
 
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key is "Enter" or " " or "Spacebar")
+        if (e.Key is "Enter" or " " or "Spacebar" && !e.Repeat)
             await OnSelected.InvokeAsync(Event);
     }
 }

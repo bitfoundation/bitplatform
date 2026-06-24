@@ -17,7 +17,7 @@ public partial class BitFcCalendarHeader
         {
             var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(
                 State.SelectedDate,
-                DateTime.Now.Hour);
+                State.StartOfDayHour);
             await OnAddClick.InvokeAsync(draft);
         }
         else

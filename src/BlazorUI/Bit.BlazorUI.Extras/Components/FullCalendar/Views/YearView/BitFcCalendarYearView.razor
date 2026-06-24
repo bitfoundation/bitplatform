@@ -63,22 +63,26 @@
                     var dayEvents = eventsByDay.TryGetValue(cell.Date.Date, out var evs) ? evs : [];
                     var hasEvents = isCurrentMonth && dayEvents.Count > 0;
 
-                    <div class="bit-bfc-year-day @(!isCurrentMonth ? "other-month" : "") @(hasEvents ? "has-events" : "")"
-                         role="@(hasEvents ? "button" : null)"
-                         tabindex="@(hasEvents ? "0" : null)"
-                         @onclick="() => { if (hasEvents) ShowEventsForDay(cell.Date, dayEvents); }"
-                         @onkeydown="e => OnDayKeyDown(e, hasEvents, cell.Date, dayEvents)">
-                        <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
-                        @if (hasEvents)
-                        {
+                    @if (hasEvents)
+                    {
+                        <button type="button" class="bit-bfc-year-day has-events"
+                                style="appearance:none;border:none;background:none;font:inherit;color:inherit;padding:0;text-align:inherit;cursor:pointer;"
+                                @onclick="() => ShowEventsForDay(cell.Date, dayEvents)">
+                            <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
                             <div class="bit-bfc-year-day-bullets">
                                 @foreach (var ev in dayEvents.Take(3))
                                 {
                                     <BitFcEventBullet Color="ev.Color" />
                                 }
                             </div>
-                        }
-                    </div>
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="bit-bfc-year-day @(!isCurrentMonth ? "other-month" : "")">
+                            <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
+                        </div>
+                    }
                 }
             </div>
         </div>

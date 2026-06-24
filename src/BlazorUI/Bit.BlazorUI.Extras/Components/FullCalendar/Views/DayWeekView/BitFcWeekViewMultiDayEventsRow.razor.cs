@@ -34,6 +34,11 @@ public partial class BitFcWeekViewMultiDayEventsRow
                 .Where(d => ev.StartDate.Date <= d.Date && evEndInclusive >= d.Date)
                 .ToList();
 
+            // An event whose adjusted range maps to no visible week day must not be assigned a
+            // row: All(...) over an empty set is vacuously true and would allocate a phantom row.
+            if (evDays.Count == 0)
+                continue;
+
             for (int row = 0; ; row++)
             {
                 if (evDays.All(d => !rowUsageByDay[d.Date].Contains(row)))
@@ -53,7 +58,10 @@ public partial class BitFcWeekViewMultiDayEventsRow
         _cellLookup = new Dictionary<(DateTime, int), BitFullCalendarEvent>();
         foreach (var ev in _weekEvents)
         {
-            var row = _eventRows[ev];
+            // Only events that were actually assigned a row participate in the cell lookup;
+            // events skipped above (no visible week day) have no entry in _eventRows.
+            if (!_eventRows.TryGetValue(ev, out var row))
+                continue;
             var evEndInclusive = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
             foreach (var d in _weekDays)
             {

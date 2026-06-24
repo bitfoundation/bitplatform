@@ -1,14 +1,12 @@
 @namespace Bit.BlazorUI
 
-<div draggable="true"
-     class="@(_isDragged ? "bit-bfc-dragging" : "") @Class"
-     role="button"
-     tabindex="0"
-     @ondragstart="OnDragStart"
-     @ondragend="OnDragEnd"
-     @onclick="OnClick"
-     @onkeydown="OnKeyDown"
-     @onkeydown:preventDefault="_preventKeyDefault"
-     @onclick:stopPropagation="true">
+<button type="button"
+        draggable="true"
+        class="@(_isDragged ? "bit-bfc-dragging" : "") @Class"
+        style="appearance:none;border:none;background:none;font:inherit;color:inherit;padding:0;text-align:inherit;cursor:pointer;"
+        @ondragstart="OnDragStart"
+        @ondragend="OnDragEnd"
+        @onclick="OnClick"
+        @onclick:stopPropagation="true">
     @ChildContent
-</div>
+</button>

@@ -38,7 +38,9 @@
                         var cell = cells[row * 7 + col];
                         var isToday = cell.Date.Date == DateTime.Today;
                         var isSelected = cell.Date.Date == State.SelectedDate.Date;
-                        var cls = !cell.CurrentMonth ? "other-month" : isToday ? "today" : isSelected ? "selected" : "";
+                        var cls = !cell.CurrentMonth
+                            ? "other-month"
+                            : $"{(isToday ? "today" : "")} {(isSelected ? "selected" : "")}".Trim();
                         <td>
                             <button type="button" class="bit-bfc-mini-calendar-day @cls" @onclick="() => SelectDate(cell.Date)">
                                 @cell.Day

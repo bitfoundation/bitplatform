@@ -59,10 +59,8 @@
                 <div class="bit-bfc-agenda-group-title">@groupTitle</div>
                 @foreach (var ev in items)
                 {
-                    <div class="bit-bfc-agenda-item" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)"
-                         role="button" tabindex="0"
-                         @onclick="() => ShowDetails(ev)"
-                         @onkeydown="e => OnItemKeyDown(e, ev)">
+                    <button type="button" class="bit-bfc-agenda-item" style="width:100%;border:none;background:none;font:inherit;color:inherit;text-align:start;" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)"
+                            @onclick="() => ShowDetails(ev)">
                         <div class="bit-bfc-agenda-avatar bit-bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)">
                             @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
                         </div>
@@ -84,7 +82,7 @@
                                 @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
                             }
                         </div>
-                    </div>
+                    </button>
                 }
             </div>
         }
