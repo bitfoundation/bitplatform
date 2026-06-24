@@ -29,8 +29,9 @@ public class BitFullCalendarState
     public CultureInfo Culture { get; private set; } = CultureInfo.CurrentUICulture;
     public bool IsRtl => Culture.TextInfo.IsRightToLeft;
 
-    // Drag state
-    public BitFullCalendarEvent? DraggedEvent { get; set; }
+    // Drag state. The setter is private so all drag mutations go through StartDrag/EndDrag,
+    // which keeps the OnStateChanged notification consistent.
+    public BitFullCalendarEvent? DraggedEvent { get; private set; }
     public bool IsDragging => DraggedEvent != null;
 
     public IReadOnlyList<BitFullCalendarEvent> Events => _filteredEvents;
@@ -89,11 +90,16 @@ public class BitFullCalendarState
 
         Mode = mode;
         var clamped = ClampViewForMode(View, mode);
-        if (clamped != View)
+        var viewChanged = clamped != View;
+        if (viewChanged)
             View = clamped;
 
         UpdateUI();
-        NotifyDateRangeChanged();
+        // The visible date range is a function of View + SelectedDate (+ Culture); none of those
+        // change here unless the View was clamped. Only surface OnDateChange when the range really
+        // changed, matching the BitFullCalendar.razor.cs visible-range contract.
+        if (viewChanged)
+            NotifyDateRangeChanged();
     }
 
     private static BitFullCalendarView ClampViewForMode(BitFullCalendarView view, BitFullCalendarMode mode)

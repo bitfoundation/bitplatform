@@ -23,7 +23,7 @@
         var from = ev.StartDate.Date < lookupStart ? lookupStart : ev.StartDate.Date;
         // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with the
         // rest of the calendar, so an event ending at midnight isn't indexed onto the next day.
-        var endInclusive = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+        var endInclusive = BitFullCalendarHelpers.GetInclusiveEndDate(ev);
         var to = endInclusive > lookupEnd ? lookupEnd : endInclusive;
         for (var d = from; d <= to; d = d.AddDays(1))
         {
@@ -69,12 +69,12 @@
                                 style="appearance:none;border:none;background:none;font:inherit;color:inherit;padding:0;text-align:inherit;cursor:pointer;"
                                 @onclick="() => ShowEventsForDay(cell.Date, dayEvents)">
                             <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
-                            <div class="bit-bfc-year-day-bullets">
+                            <span class="bit-bfc-year-day-bullets">
                                 @foreach (var ev in dayEvents.Take(3))
                                 {
                                     <BitFcEventBullet Color="ev.Color" />
                                 }
-                            </div>
+                            </span>
                         </button>
                     }
                     else

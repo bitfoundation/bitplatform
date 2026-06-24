@@ -86,7 +86,7 @@
         </div>
         <div class="bit-bfc-dialog-footer">
             <button type="button" class="bit-bfc-btn" @onclick="OnClose">@Texts.CancelButton</button>
-            <button type="button" class="bit-bfc-btn bit-bfc-btn-primary" @onclick="Submit">
+            <button type="button" class="bit-bfc-btn bit-bfc-btn-primary" @onclick="Submit" disabled="@_isSubmitting">
                 @(_isEditing ? Texts.SaveChangesButton : Texts.CreateEventButton)
             </button>
         </div>

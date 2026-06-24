@@ -31,7 +31,7 @@ public class BitFullCalendarEvent
     /// </summary>
     public string? Resource { get; set; }
 
-    public bool IsSingleDay => StartDate.Date == (EndDate > StartDate ? EndDate.AddTicks(-1) : EndDate).Date;
+    public bool IsSingleDay => StartDate.Date == BitFullCalendarHelpers.GetInclusiveEndDate(this);
     public bool IsMultiDay => !IsSingleDay;
     public TimeSpan Duration => EndDate - StartDate;
 

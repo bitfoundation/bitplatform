@@ -1943,6 +1943,24 @@
     opacity: 1;
 }
 
+/* When the month add hint is a real <button>, strip the default button chrome, re-enable pointer
+   events (the base class disables them for the decorative variants), and reveal it on keyboard
+   focus so it stays accessible without relying on hover. */
+button.bit-bfc-cell-add-hint {
+    appearance: none;
+    border: none;
+    background: none;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.bit-bfc-month-cell:focus-within .bit-bfc-cell-add-hint,
+button.bit-bfc-cell-add-hint:focus-visible {
+    opacity: 1;
+}
+
 .bit-bfc-cell-add-hint-month {
     position: absolute;
     top: 5px;

@@ -41,12 +41,6 @@ public partial class BitFcDayCell
             _showAddDialog = true;
     }
 
-    private async Task OnCellKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Key is "Enter" or " " or "Spacebar")
-            await OnCellClick();
-    }
-
     private void OnMoreKeyDown(KeyboardEventArgs e)
     {
         if (e.Key is "Enter" or " " or "Spacebar")
@@ -59,7 +53,7 @@ public partial class BitFcDayCell
         if (ev.StartDate.Date == cellDate.Date) return "first";
         // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with
         // GetMonthCellEvents, so the badge on the true last day is marked "last" rather than "middle".
-        var lastDate = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+        var lastDate = BitFullCalendarHelpers.GetInclusiveEndDate(ev);
         if (lastDate == cellDate.Date) return "last";
         return "middle";
     }

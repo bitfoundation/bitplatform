@@ -14,7 +14,11 @@
     var colorStyleVar = ColorScheme.GetColorStyle(Event.Color);
     var showTitle = Position is "first" or "none";
     var showTime = Position is "last" or "none";
-    var badgeAriaLabel = $"{Event.Title}, {BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)} - {BitFullCalendarHelpers.FormatTime(Event.EndDate, State.Use24HourFormat, State.Culture)}";
+    // Include both the start and end dates (not just the times) so multi-day and overnight events
+    // are announced unambiguously to assistive technology.
+    var startLabel = $"{Event.StartDate.ToString("d", State.Culture)} {BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)}";
+    var endLabel = $"{Event.EndDate.ToString("d", State.Culture)} {BitFullCalendarHelpers.FormatTime(Event.EndDate, State.Use24HourFormat, State.Culture)}";
+    var badgeAriaLabel = $"{Event.Title}, {startLabel} - {endLabel}";
 }
 
 <div class="bit-bfc-event-badge @colorClass @positionClass"

@@ -22,6 +22,7 @@ public partial class BitFcAddEditEventDialog
     private readonly string _descriptionInputId = $"bfc-desc-{Guid.NewGuid():N}";
 
     private bool _isEditing;
+    private bool _isSubmitting;
     private string _title = "";
     private string _description = "";
     private DateTime _startDate;
@@ -137,6 +138,10 @@ public partial class BitFcAddEditEventDialog
 
     private async Task Submit()
     {
+        // Guard against re-entrancy: a second click or Enter press while the first save is still
+        // in flight would otherwise add/update the event twice before the dialog closes.
+        if (_isSubmitting) return;
+
         _errors.Clear();
         if (string.IsNullOrWhiteSpace(_title))
             _errors["title"] = Texts.ValidationTitleRequired;
@@ -147,41 +152,49 @@ public partial class BitFcAddEditEventDialog
 
         if (_errors.Count > 0) return;
 
-        var oldSnapshot = _isEditing && ExistingEvent is not null
-            ? BitFullCalendarChangeNotifier.CloneEvent(ExistingEvent)
-            : null;
-
-        var ev = new BitFullCalendarEvent
+        _isSubmitting = true;
+        try
         {
-            Id = _isEditing ? ExistingEvent!.Id : Guid.NewGuid().ToString("N"),
-            Title = _title,
-            Description = _description,
-            StartDate = _startDate,
-            EndDate = _endDate,
-            Color = _color,
-            Resource = _isEditing ? ExistingEvent!.Resource : Resource,
-            Data = _isEditing ? ExistingEvent!.Data : null,
-            Attendees = [.. _attendees]
-        };
+            var oldSnapshot = _isEditing && ExistingEvent is not null
+                ? BitFullCalendarChangeNotifier.CloneEvent(ExistingEvent)
+                : null;
 
-        if (_isEditing)
-            State.UpdateEvent(ev);
-        else
-            State.AddEvent(ev);
+            var ev = new BitFullCalendarEvent
+            {
+                Id = _isEditing ? ExistingEvent!.Id : Guid.NewGuid().ToString("N"),
+                Title = _title,
+                Description = _description,
+                StartDate = _startDate,
+                EndDate = _endDate,
+                Color = _color,
+                Resource = _isEditing ? ExistingEvent!.Resource : Resource,
+                Data = _isEditing ? ExistingEvent!.Data : null,
+                Attendees = [.. _attendees]
+            };
 
-        await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+            if (_isEditing)
+                State.UpdateEvent(ev);
+            else
+                State.AddEvent(ev);
+
+            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+            {
+                Event = BitFullCalendarChangeNotifier.CloneEvent(ev),
+                OldEvent = oldSnapshot,
+                Kind = _isEditing ? BitFullCalendarChangeKind.Edit : BitFullCalendarChangeKind.Add,
+                Source = BitFullCalendarChangeSource.Dialog
+            });
+
+            // Prefer the dedicated success path when provided (e.g. the details dialog closes itself
+            // only on a real save), otherwise fall back to OnClose for standalone add/edit usages.
+            if (OnSaved.HasDelegate)
+                await OnSaved.InvokeAsync();
+            else
+                await OnClose.InvokeAsync();
+        }
+        finally
         {
-            Event = BitFullCalendarChangeNotifier.CloneEvent(ev),
-            OldEvent = oldSnapshot,
-            Kind = _isEditing ? BitFullCalendarChangeKind.Edit : BitFullCalendarChangeKind.Add,
-            Source = BitFullCalendarChangeSource.Dialog
-        });
-
-        // Prefer the dedicated success path when provided (e.g. the details dialog closes itself
-        // only on a real save), otherwise fall back to OnClose for standalone add/edit usages.
-        if (OnSaved.HasDelegate)
-            await OnSaved.InvokeAsync();
-        else
-            await OnClose.InvokeAsync();
+            _isSubmitting = false;
+        }
     }
 }

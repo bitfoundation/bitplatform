@@ -29,7 +29,7 @@ public partial class BitFcWeekViewMultiDayEventsRow
 
         foreach (var ev in _weekEvents)
         {
-            var evEndInclusive = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+            var evEndInclusive = BitFullCalendarHelpers.GetInclusiveEndDate(ev);
             var evDays = _weekDays
                 .Where(d => ev.StartDate.Date <= d.Date && evEndInclusive >= d.Date)
                 .ToList();
@@ -62,7 +62,7 @@ public partial class BitFcWeekViewMultiDayEventsRow
             // events skipped above (no visible week day) have no entry in _eventRows.
             if (!_eventRows.TryGetValue(ev, out var row))
                 continue;
-            var evEndInclusive = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+            var evEndInclusive = BitFullCalendarHelpers.GetInclusiveEndDate(ev);
             foreach (var d in _weekDays)
             {
                 if (ev.StartDate.Date <= d.Date && evEndInclusive >= d.Date)

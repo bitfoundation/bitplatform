@@ -5,7 +5,9 @@
     var dayEvents = SingleDayEvents.Where(e =>
         e.StartDate.Date == State.SelectedDate.Date).ToList();
     var groupedEvents = BitFullCalendarHelpers.GroupEvents(dayEvents);
-    var currentEvents = SingleDayEvents.Where(e =>
+    // Include in-progress multi-day events too, not just single-day ones, so the sidebar shows
+    // every event currently happening (e.g. a multi-day conference active right now).
+    var currentEvents = SingleDayEvents.Concat(MultiDayEvents).Where(e =>
         DateTime.Now >= e.StartDate && DateTime.Now <= e.EndDate).ToList();
 }
 

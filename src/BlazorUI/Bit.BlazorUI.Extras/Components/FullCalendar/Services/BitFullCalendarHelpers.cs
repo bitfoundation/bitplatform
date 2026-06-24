@@ -11,6 +11,15 @@ public static class BitFullCalendarHelpers
     public const int TimelineDayWidthPx = 56;
     private const string FormatString = "MMM d, yyyy";
 
+    /// <summary>
+    /// Returns the inclusive end <em>date</em> of an event, treating a 00:00 end as ending the
+    /// previous day (exclusive midnight). Centralizes the <c>AddTicks(-1)</c> normalization used by
+    /// the overlap/placement helpers and the model's <see cref="BitFullCalendarEvent.IsSingleDay"/>
+    /// so an event ending at midnight is never counted on the following day.
+    /// </summary>
+    public static DateTime GetInclusiveEndDate(BitFullCalendarEvent ev)
+        => (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+
     // -- Culture-aware: Range text ------------------------------
 
     public static string RangeText(BitFullCalendarView view, DateTime date, CultureInfo? culture = null)
@@ -470,7 +479,7 @@ public static class BitFullCalendarHelpers
             var evStart = ev.StartDate.Date;
             // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with
             // IsSingleDay and GroupEventsByDayRange.
-            var evEnd = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+            var evEnd = GetInclusiveEndDate(ev);
             var rangeStart = evStart < monthStart ? monthStart : evStart;
             var rangeEnd = evEnd > monthEnd ? monthEnd : evEnd;
 
@@ -517,7 +526,7 @@ public static class BitFullCalendarHelpers
             // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with
             // IsSingleDay and GroupEventsByDayRange, so an event ending at midnight doesn't show
             // up as a carry-over in the next day's cell.
-            var e = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+            var e = GetInclusiveEndDate(ev);
             return (dayStart >= s && dayStart <= e) || s == dayStart || e == dayStart;
         }).ToList();
 
@@ -587,7 +596,7 @@ public static class BitFullCalendarHelpers
             var s = ev.StartDate.Date;
             // Treat a 00:00 end as ending the previous day (exclusive midnight), consistent with
             // IsSingleDay and GroupEventsByDayRange.
-            var e = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+            var e = GetInclusiveEndDate(ev);
             if (weekOnly)
                 return ev.IsMultiDay && s <= target && e >= target;
             return s <= target && e >= target;

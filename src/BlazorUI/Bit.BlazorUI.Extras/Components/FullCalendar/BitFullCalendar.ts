@@ -85,18 +85,18 @@ namespace BitBlazorUI {
             const pixelsPerHour = 96;
             const minPerPixel = 60 / pixelsPerHour;
 
-            // Tracks the pointer that owns the in-progress resize. While set, additional pointers
-            // (e.g. a second touch contact on the same handle) are ignored so they can't start a
-            // concurrent resize on the same element. Cleared when the resize completes or aborts.
-            let activeResizePointerId: number | null = null;
+            // A resize is serialized per event (per dotNetRef), not per handle: the C# event block
+            // wires both resize handles (top/bottom) to the same dotNetRef, so this shared flag
+            // ensures only one resize runs at a time across both handles. Cleared on end/cancel/abort.
+            const activeKey = "__bitFcResizeActive";
 
-            el.addEventListener("pointerdown", async (e: PointerEvent) => {
+            el.addEventListener("pointerdown", (e: PointerEvent) => {
                 if (e.button !== 0) return;
-                if (activeResizePointerId !== null) return;
+                if ((dotNetRef as any)[activeKey]) return;
                 e.preventDefault();
                 e.stopPropagation();
 
-                activeResizePointerId = e.pointerId;
+                (dotNetRef as any)[activeKey] = true;
                 const startY = e.clientY;
                 let latestY = startY;
                 let rafId: number | null = null;
@@ -127,7 +127,7 @@ namespace BitBlazorUI {
                     }
                 };
 
-                const endResize = async (ev?: PointerEvent) => {
+                const endResizeAsync = async (ev?: PointerEvent) => {
                     if (ev && activePointerId != null && ev.pointerId !== activePointerId) return;
                     // A pointer release before resize-start completes is deferred and replayed afterwards.
                     // Capture the release coordinate now so the replayed delta reflects where the pointer
@@ -154,35 +154,42 @@ namespace BitBlazorUI {
                         } catch { }
 
                         activePointerId = null;
-                        activeResizePointerId = null;
+                        (dotNetRef as any)[activeKey] = false;
                         await dotNetRef.invokeMethodAsync("OnResizeEnd");
                     }
                 };
+
+                // Non-async wrapper so the DOM listeners can't surface unhandled promise rejections.
+                const endResize = (ev?: PointerEvent) => { void endResizeAsync(ev).catch(() => { /* ignore transient interop failure on resize end */ }); };
 
                 // Attach listeners before awaiting OnResizeStart so a fast pointer release is not missed.
                 document.addEventListener("pointermove", onPointerMove);
                 document.addEventListener("pointerup", endResize);
                 document.addEventListener("pointercancel", endResize);
 
-                try {
-                    await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
-                } catch {
-                    // Resize-start failed: detach the listeners we just attached so they don't
-                    // dangle and release any captured pointer.
-                    document.removeEventListener("pointermove", onPointerMove);
-                    document.removeEventListener("pointerup", endResize);
-                    document.removeEventListener("pointercancel", endResize);
+                // Run the async start handshake without making the pointerdown listener itself async,
+                // wrapping it so any rejection is swallowed rather than becoming an unhandled rejection.
+                void (async () => {
                     try {
-                        if (activePointerId != null && typeof el.releasePointerCapture === "function")
-                            el.releasePointerCapture(activePointerId);
-                    } catch { }
-                    activePointerId = null;
-                    activeResizePointerId = null;
-                    return;
-                }
-                startSucceeded = true;
-                // Replay a pointer release that happened before start completed.
-                if (pendingEnd) await endResize();
+                        await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
+                    } catch {
+                        // Resize-start failed: detach the listeners we just attached so they don't
+                        // dangle and release any captured pointer.
+                        document.removeEventListener("pointermove", onPointerMove);
+                        document.removeEventListener("pointerup", endResize);
+                        document.removeEventListener("pointercancel", endResize);
+                        try {
+                            if (activePointerId != null && typeof el.releasePointerCapture === "function")
+                                el.releasePointerCapture(activePointerId);
+                        } catch { }
+                        activePointerId = null;
+                        (dotNetRef as any)[activeKey] = false;
+                        return;
+                    }
+                    startSucceeded = true;
+                    // Replay a pointer release that happened before start completed.
+                    if (pendingEnd) await endResizeAsync();
+                })().catch(() => { /* defensive: never surface an unhandled rejection from resize start */ });
             });
         }
 
@@ -204,17 +211,18 @@ namespace BitBlazorUI {
             if ((el as any)[boundKey]) return;
             (el as any)[boundKey] = true;
 
-            // Tracks the pointer that owns the in-progress resize so a second concurrent pointer
-            // (e.g. a second touch contact) can't start an overlapping resize on the same element.
-            let activeResizePointerId: number | null = null;
+            // A resize is serialized per event (per dotNetRef), not per handle: BitFcTimelineEventBlock
+            // wires both resize handles (start/end) to the same dotNetRef, so this shared flag ensures
+            // only one resize runs at a time across both handles. Cleared on end/cancel/abort.
+            const activeKey = "__bitFcResizeActive";
 
-            el.addEventListener("pointerdown", async (e: PointerEvent) => {
+            el.addEventListener("pointerdown", (e: PointerEvent) => {
                 if (e.button !== 0) return;
-                if (activeResizePointerId !== null) return;
+                if ((dotNetRef as any)[activeKey]) return;
                 e.preventDefault();
                 e.stopPropagation();
 
-                activeResizePointerId = e.pointerId;
+                (dotNetRef as any)[activeKey] = true;
                 const startX = e.clientX;
                 let latestX = startX;
                 let rafId: number | null = null;
@@ -241,7 +249,7 @@ namespace BitBlazorUI {
                     }
                 };
 
-                const endResize = async (ev?: PointerEvent) => {
+                const endResizeAsync = async (ev?: PointerEvent) => {
                     if (ev && activePointerId != null && ev.pointerId !== activePointerId) return;
                     // A pointer release before resize-start completes is deferred and replayed afterwards.
                     // Capture the release coordinate now so the replayed delta reflects where the pointer
@@ -268,35 +276,42 @@ namespace BitBlazorUI {
                         } catch { }
 
                         activePointerId = null;
-                        activeResizePointerId = null;
+                        (dotNetRef as any)[activeKey] = false;
                         await dotNetRef.invokeMethodAsync("OnResizeEnd");
                     }
                 };
+
+                // Non-async wrapper so the DOM listeners can't surface unhandled promise rejections.
+                const endResize = (ev?: PointerEvent) => { void endResizeAsync(ev).catch(() => { /* ignore transient interop failure on resize end */ }); };
 
                 // Attach listeners before awaiting OnResizeStart so a fast pointer release is not missed.
                 document.addEventListener("pointermove", onPointerMove);
                 document.addEventListener("pointerup", endResize);
                 document.addEventListener("pointercancel", endResize);
 
-                try {
-                    await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
-                } catch {
-                    // Resize-start failed: detach the listeners we just attached so they don't
-                    // dangle and release any captured pointer.
-                    document.removeEventListener("pointermove", onPointerMove);
-                    document.removeEventListener("pointerup", endResize);
-                    document.removeEventListener("pointercancel", endResize);
+                // Run the async start handshake without making the pointerdown listener itself async,
+                // wrapping it so any rejection is swallowed rather than becoming an unhandled rejection.
+                void (async () => {
                     try {
-                        if (activePointerId != null && typeof el.releasePointerCapture === "function")
-                            el.releasePointerCapture(activePointerId);
-                    } catch { }
-                    activePointerId = null;
-                    activeResizePointerId = null;
-                    return;
-                }
-                startSucceeded = true;
-                // Replay a pointer release that happened before start completed.
-                if (pendingEnd) await endResize();
+                        await dotNetRef.invokeMethodAsync("OnResizeStart", direction);
+                    } catch {
+                        // Resize-start failed: detach the listeners we just attached so they don't
+                        // dangle and release any captured pointer.
+                        document.removeEventListener("pointermove", onPointerMove);
+                        document.removeEventListener("pointerup", endResize);
+                        document.removeEventListener("pointercancel", endResize);
+                        try {
+                            if (activePointerId != null && typeof el.releasePointerCapture === "function")
+                                el.releasePointerCapture(activePointerId);
+                        } catch { }
+                        activePointerId = null;
+                        (dotNetRef as any)[activeKey] = false;
+                        return;
+                    }
+                    startSucceeded = true;
+                    // Replay a pointer release that happened before start completed.
+                    if (pendingEnd) await endResizeAsync();
+                })().catch(() => { /* defensive: never surface an unhandled rejection from resize start */ });
             });
         }
 
@@ -305,11 +320,21 @@ namespace BitBlazorUI {
         }
 
         public static getLocalStorage(key: string): string | null {
-            return localStorage.getItem(key);
+            // localStorage access can throw a DOMException when storage is disabled or unavailable
+            // (private mode, blocked third-party storage, quota policies). Degrade gracefully.
+            try {
+                return localStorage.getItem(key);
+            } catch {
+                return null;
+            }
         }
 
         public static setLocalStorage(key: string, value: string) {
-            localStorage.setItem(key, value);
+            try {
+                localStorage.setItem(key, value);
+            } catch {
+                /* storage unavailable/blocked: no-op so preference persistence fails silently */
+            }
         }
     }
 }
