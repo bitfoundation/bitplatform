@@ -47,9 +47,9 @@
                                         }
                                         else
                                         {
-                                            <BitTextField @bind-Value="model.PhoneNumber"
+                                            <BitPhoneInput @bind-Value="model.PhoneNumber"
                                                           AutoFocus TabIndex="1"
-                                                          Type="BitInputType.Tel"
+                                                          DefaultCountry="@BitCountries.Current"
                                                           Immediate DebounceTime="500"
                                                           Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                                           Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />

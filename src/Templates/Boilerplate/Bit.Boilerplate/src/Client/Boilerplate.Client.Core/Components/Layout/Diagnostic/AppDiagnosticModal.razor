@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <div>
-    <BitModal @bind-IsOpen="isOpen"
+    <BitProModal @bind-IsOpen="isOpen"
               FullSize
               Class="modal"
               OnDismiss="() => searchText = null"
@@ -163,7 +163,7 @@
                    Class="go-top-button"
                    Variant="BitVariant.Text"
                    IconName="@BitIconName.Up" />
-    </BitModal>
+    </BitProModal>
 
     <DiagnosticLogModal @bind-IsLogModalOpen="isLogModalOpen" 
                         OnNav="NavLog"
