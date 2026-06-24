@@ -733,7 +733,7 @@
 
 .bit-bfc-day-sidebar {
     width: 280px;
-    border-left: 1px solid var(--bit-bfc-border);
+    border-inline-start: 1px solid var(--bit-bfc-border);
     padding: 16px;
     overflow-y: auto;
     display: flex;
@@ -1332,7 +1332,7 @@
 
 .bit-bfc-dtp-day-selected {
     background: var(--bit-bfc-primary);
-    color: #fff;
+    color: var(--bit-bfc-primary-text);
 }
 
 .bit-bfc-dtp-day-selected:hover {
@@ -2107,6 +2107,12 @@
 
 /* Settings dropdown should open toward the viewport in RTL */
 [dir="rtl"] .bit-bfc-dropdown-menu {
+    right: auto;
+    left: 0;
+}
+
+/* User-select dropdown should mirror like the settings dropdown in RTL */
+[dir="rtl"] .bit-bfc-user-select-menu {
     right: auto;
     left: 0;
 }

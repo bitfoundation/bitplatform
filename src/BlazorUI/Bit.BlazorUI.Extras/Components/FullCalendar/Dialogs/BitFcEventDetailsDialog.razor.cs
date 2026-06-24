@@ -17,7 +17,14 @@ public partial class BitFcEventDetailsDialog
         _showEdit = true;
     }
 
-    private async Task OnEditClose()
+    private void OnEditClose()
+    {
+        // Cancelling the edit overlay must only dismiss the edit dialog, not the parent
+        // details dialog. The details dialog is closed via OnEditSaved on a real save.
+        _showEdit = false;
+    }
+
+    private async Task OnEditSaved()
     {
         _showEdit = false;
         await OnClose.InvokeAsync();

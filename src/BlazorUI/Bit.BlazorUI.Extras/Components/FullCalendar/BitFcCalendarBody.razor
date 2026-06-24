@@ -4,20 +4,19 @@
 <div class="bit-bfc-body" @key="(State.Mode, State.View)">
     @if (State.Mode == BitFullCalendarMode.Timeline)
     {
-        var timelineEvents = State.Events.ToList();
         switch (State.View)
         {
             case BitFullCalendarView.Day:
-                <BitFcTimelineDayView Events="timelineEvents" EventTemplate="TimelineEventTemplate" />
+                <BitFcTimelineDayView Events="_timelineEvents" EventTemplate="TimelineEventTemplate" />
                 break;
             case BitFullCalendarView.Week:
-                <BitFcTimelineWeekView Events="timelineEvents" EventTemplate="TimelineEventTemplate" />
+                <BitFcTimelineWeekView Events="_timelineEvents" EventTemplate="TimelineEventTemplate" />
                 break;
             case BitFullCalendarView.Month:
-                <BitFcTimelineMonthView Events="timelineEvents" EventTemplate="TimelineEventTemplate" />
+                <BitFcTimelineMonthView Events="_timelineEvents" EventTemplate="TimelineEventTemplate" />
                 break;
             default:
-                <BitFcTimelineWeekView Events="timelineEvents" EventTemplate="TimelineEventTemplate" />
+                <BitFcTimelineWeekView Events="_timelineEvents" EventTemplate="TimelineEventTemplate" />
                 break;
         }
     }

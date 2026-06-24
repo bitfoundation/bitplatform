@@ -11,6 +11,7 @@ public partial class BitFcCalendarBody
 
     private List<BitFullCalendarEvent> _singleDayEvents = [];
     private List<BitFullCalendarEvent> _multiDayEvents = [];
+    private List<BitFullCalendarEvent> _timelineEvents = [];
 
     protected override void OnInitialized()
     {
@@ -28,6 +29,7 @@ public partial class BitFcCalendarBody
     {
         _singleDayEvents = State.Events.Where(e => e.IsSingleDay).ToList();
         _multiDayEvents = State.Events.Where(e => e.IsMultiDay).ToList();
+        _timelineEvents = State.Events.ToList();
     }
 
     public void Dispose() => State.OnStateChanged -= Refresh;

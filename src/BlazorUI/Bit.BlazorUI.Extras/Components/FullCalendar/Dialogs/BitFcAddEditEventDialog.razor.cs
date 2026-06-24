@@ -12,6 +12,7 @@ public partial class BitFcAddEditEventDialog
     [Parameter] public int? StartMinute { get; set; }
     [Parameter] public string? Resource { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
 
     // Per-instance unique ids so multiple open dialogs don't collide on element ids, which would
     // break label-to-control association and the dialog's aria-labelledby reference.
@@ -176,6 +177,11 @@ public partial class BitFcAddEditEventDialog
             Source = BitFullCalendarChangeSource.Dialog
         });
 
-        await OnClose.InvokeAsync();
+        // Prefer the dedicated success path when provided (e.g. the details dialog closes itself
+        // only on a real save), otherwise fall back to OnClose for standalone add/edit usages.
+        if (OnSaved.HasDelegate)
+            await OnSaved.InvokeAsync();
+        else
+            await OnClose.InvokeAsync();
     }
 }

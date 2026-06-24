@@ -132,9 +132,10 @@ public class BitFullCalendarState
 
     public void SetStartOfDayHour(int hour)
     {
-        if (hour < 0 || hour > 16 || StartOfDayHour == hour)
+        var clamped = Math.Clamp(hour, 0, 16);
+        if (StartOfDayHour == clamped)
             return;
-        StartOfDayHour = hour;
+        StartOfDayHour = clamped;
         NotifyStateChanged();
     }
 
@@ -231,11 +232,11 @@ public class BitFullCalendarState
         _resources = next;
 
         // If resources were emptied while Timeline mode is active, fall back to Event mode so the
-        // calendar never stays in the unsupported timeline-without-resources state.
+        // calendar never stays in the unsupported timeline-without-resources state. Event mode
+        // supports every view, so no view clamp is needed here (ClampViewForMode is a no-op).
         if (Mode == BitFullCalendarMode.Timeline && _resources.Count == 0)
         {
             Mode = BitFullCalendarMode.Event;
-            View = ClampViewForMode(View, Mode);
         }
 
         NotifyStateChanged();
