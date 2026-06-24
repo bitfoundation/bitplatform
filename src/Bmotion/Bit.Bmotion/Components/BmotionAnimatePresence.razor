@@ -1,0 +1,11 @@
+@namespace Bit.Bmotion
+
+@* BmotionAnimatePresence keeps its children alive while they play exit animations,
+   then stops rendering them once every child reports completion. *@
+
+@if (_shouldRender)
+{
+    <CascadingValue Value="_presenceCtx" IsFixed="false">
+        @ChildContent
+    </CascadingValue>
+}

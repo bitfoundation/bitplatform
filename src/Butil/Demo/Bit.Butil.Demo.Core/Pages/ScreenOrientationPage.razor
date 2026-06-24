@@ -1,87 +1,83 @@
 ﻿@page "/screenOrientation"
 @implements IAsyncDisposable
-@inject Bit.Butil.Console console
 @inject Bit.Butil.ScreenOrientation screenOrientation
 
-<PageTitle>ScreenOrientation Samples</PageTitle>
+<PageTitle>Butil - ScreenOrientation Samples</PageTitle>
 
-<h1>ScreenOrientation</h1>
+<PageHeader Category="Browser & Device"
+            Title="ScreenOrientation"
+            Lead="Read the current screen orientation and angle, and lock or unlock the device to a specific orientation (best tried on a mobile device)."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation" />
 
-<pre style="font-family:Consolas">
+<pre>
 @@inject Bit.Butil.ScreenOrientation screenOrientation
 
-@@code {
-    ...
-    var angle = await screenOrientation.GetAngle();
-    ...
-}
+var angle = await screenOrientation.GetAngle();
+await screenOrientation.Lock(OrientationLockType.Portrait);
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Read orientation" Api="GetOrientationType / GetAngle"
+              Description="Read the current orientation type and rotation angle in degrees.">
+        <div class="controls">
+            <button @onclick="GetOrientationType">GetOrientationType</button>
+            <button @onclick="GetAngle">GetAngle</button>
+        </div>
+    </DemoCard>
 
-<h3>Open the DevTools' console and start clicking</h3>
+    <DemoCard Title="Lock & unlock" Api="Lock / Unlock"
+              Description="Force the screen into a chosen orientation, then release the lock.">
+        <div class="field">
+            <span class="field-label">Lock type</span>
+            <select @bind="selectedOrientationLockType">
+                @foreach (var option in Enum.GetValues(typeof(OrientationLockType)))
+                {
+                    <option value="@option">@option.ToString()</option>
+                }
+            </select>
+        </div>
+        <div class="controls">
+            <button @onclick="SetOrientationLockType">Lock</button>
+            <button class="secondary" @onclick="UnlockOrientation">Unlock</button>
+        </div>
+    </DemoCard>
+</div>
 
-<hr />
-<br />
-
-<button @onclick="GetOrientationType">GetOrientationType</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetAngle">GetAngle</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<select @bind="selectedOrientationLockType">
-    @foreach (var option in Enum.GetValues(typeof(OrientationLockType)))
-    {
-        <option value="@option">@option.ToString()</option>
-    }
-</select>
-<br />
-<br />
-<button @onclick="SetOrientationLockType">SetOrientationLockType</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="UnlockOrientation">UnlockOrientation</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="orientation output" />
 
 @code {
+    private DemoConsole output = default!;
     private OrientationLockType selectedOrientationLockType;
 
     private async Task GetOrientationType()
     {
         var type = await screenOrientation.GetOrientationType();
-        await console.Log("OrientationType:", type.ToString());
+        await output.Success("OrientationType →", type.ToString());
     }
 
     private async Task GetAngle()
     {
         var angle = await screenOrientation.GetAngle();
-        await console.Log("Angle:", angle);
+        await output.Success("Angle →", angle);
     }
 
     private async Task SetOrientationLockType()
     {
-        await screenOrientation.Lock(selectedOrientationLockType);
+        try
+        {
+            await screenOrientation.Lock(selectedOrientationLockType);
+            await output.Log("Locked to", selectedOrientationLockType.ToString());
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Lock failed →", ex.Message);
+        }
     }
 
     private async Task UnlockOrientation()
     {
         await screenOrientation.Unlock();
+        await output.Log("Orientation unlocked");
     }
 
     public async ValueTask DisposeAsync()

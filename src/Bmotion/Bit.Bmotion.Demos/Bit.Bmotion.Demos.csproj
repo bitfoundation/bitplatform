@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+  </PropertyGroup>
+
+  <!--
+    Disable static web asset fingerprinting only for Debug (dev) builds so the running
+    dev server and the browser's cached boot manifest can't drift and trigger SRI
+    integrity 404s on fingerprinted _framework assets. Release builds keep fingerprinting
+    enabled to avoid stale-cache issues in published deployments.
+  -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <WasmFingerprintAssets>false</WasmFingerprintAssets>
+    <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.8" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bit.Bmotion\Bit.Bmotion.csproj" />
+  </ItemGroup>
+
+</Project>

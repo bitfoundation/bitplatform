@@ -25,6 +25,8 @@ jobs:
     
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -76,6 +78,8 @@ jobs:
     
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -141,6 +145,8 @@ jobs:
     
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -188,6 +194,8 @@ jobs:
     
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -240,6 +248,8 @@ jobs:
     
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -287,6 +297,8 @@ jobs:
      
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -345,6 +357,8 @@ jobs:
      
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -440,6 +454,8 @@ jobs:
      
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v5

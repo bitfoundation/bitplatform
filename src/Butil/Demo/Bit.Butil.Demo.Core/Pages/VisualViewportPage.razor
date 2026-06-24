@@ -1,122 +1,146 @@
 ﻿@page "/visualViewport"
 @implements IAsyncDisposable
-@inject Bit.Butil.Console console
 @inject Bit.Butil.VisualViewport visualViewport
 
-<PageTitle>VisualViewport Samples</PageTitle>
+<PageTitle>Butil - VisualViewport Samples</PageTitle>
 
-<h1>VisualViewport</h1>
+<PageHeader Category="Browser & Device"
+            Title="VisualViewport"
+            Lead="Inspect the visual viewport - the part of the page actually visible - including its offset, size and pinch-zoom scale. Especially useful on mobile with the on-screen keyboard."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport" />
 
-<pre style="font-family:Consolas">
+<pre>
 @@inject Bit.Butil.VisualViewport visualViewport
 
-@@code {
-    ...
-    var offsetTop = await visualViewport.GetOffsetTop();
-    ...
-}
+var scale     = await visualViewport.GetScale();
+var offsetTop = await visualViewport.GetOffsetTop();
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Offset" Api="GetOffsetLeft / GetOffsetTop"
+              Description="The viewport's offset from the layout viewport.">
+        <div class="controls">
+            <button @onclick="GetOffsetLeft">OffsetLeft</button>
+            <button @onclick="GetOffsetTop">OffsetTop</button>
+        </div>
+    </DemoCard>
 
-<h3>Open the DevTools' console and start clicking</h3>
+    <DemoCard Title="Page position" Api="GetPageLeft / GetPageTop"
+              Description="The viewport's position relative to the document.">
+        <div class="controls">
+            <button @onclick="GetPageLeft">PageLeft</button>
+            <button @onclick="GetPageTop">PageTop</button>
+        </div>
+    </DemoCard>
 
-<hr />
-<br />
+    <DemoCard Title="Size & scale" Api="GetWidth / GetHeight / GetScale"
+              Description="The viewport's dimensions and the current pinch-zoom scale.">
+        <div class="controls">
+            <button @onclick="GetWidth">Width</button>
+            <button @onclick="GetHeight">Height</button>
+            <button @onclick="GetScale">Scale</button>
+        </div>
+    </DemoCard>
 
-<button @onclick="GetOffsetLeft">GetOffsetLeft</button>
+    <DemoCard Title="Live events" Api="SubscribeResize / SubscribeScroll"
+              Description="Subscribe to resize and scroll events - pinch-zoom or scroll the page to see updates.">
+        <div class="controls">
+            <button @onclick="SubscribeResize">Subscribe resize</button>
+            <button @onclick="SubscribeScroll">Subscribe scroll</button>
+            <button class="danger" @onclick="UnsubscribeAll">Unsubscribe all</button>
+        </div>
+    </DemoCard>
+</div>
 
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetOffsetTop">GetOffsetTop</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetPageLeft">GetPageLeft</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetPageTop">GetPageTop</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetWidth">GetWidth</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetHeight">GetHeight</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetScale">GetScale</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="visualViewport output" />
 
 @code {
+    private DemoConsole output = default!;
+    private ButilSubscription? _resizeSub;
+    private ButilSubscription? _scrollSub;
+
     private async Task GetOffsetLeft()
     {
-        var offsetLeft = await visualViewport.GetOffsetLeft();
-        await console.Log("OffsetLeft:", offsetLeft);
+        await output.Success("OffsetLeft →", await visualViewport.GetOffsetLeft());
     }
 
     private async Task GetOffsetTop()
     {
-        var offsetTop = await visualViewport.GetOffsetTop();
-        await console.Log("OffsetTop:", offsetTop);
+        await output.Success("OffsetTop →", await visualViewport.GetOffsetTop());
     }
 
     private async Task GetPageLeft()
     {
-        var pageLeft = await visualViewport.GetPageLeft();
-        await console.Log("PageLeft:", pageLeft);
+        await output.Success("PageLeft →", await visualViewport.GetPageLeft());
     }
 
     private async Task GetPageTop()
     {
-        var pageTop = await visualViewport.GetPageTop();
-        await console.Log("PageTop:", pageTop);
+        await output.Success("PageTop →", await visualViewport.GetPageTop());
     }
 
     private async Task GetWidth()
     {
-        var width = await visualViewport.GetWidth();
-        await console.Log("Width:", width);
+        await output.Success("Width →", await visualViewport.GetWidth());
     }
 
     private async Task GetHeight()
     {
-        var height = await visualViewport.GetHeight();
-        await console.Log("Height:", height);
+        await output.Success("Height →", await visualViewport.GetHeight());
     }
 
     private async Task GetScale()
     {
-        var scale = await visualViewport.GetScale();
-        await console.Log("Scale:", scale);
+        await output.Success("Scale →", await visualViewport.GetScale());
+    }
+
+    private async Task SubscribeResize()
+    {
+        await UnsubscribeResize();
+        _resizeSub = await visualViewport.SubscribeResize(async () =>
+        {
+            var w = await visualViewport.GetWidth();
+            var h = await visualViewport.GetHeight();
+            await output.Log($"Resize → {w:F0}×{h:F0}, scale={await visualViewport.GetScale():F2}");
+        });
+        await output.Log("Subscribed to resize.");
+    }
+
+    private async Task SubscribeScroll()
+    {
+        await UnsubscribeScroll();
+        _scrollSub = await visualViewport.SubscribeScroll(async () =>
+        {
+            await output.Log($"Scroll → offset=({await visualViewport.GetOffsetLeft():F0}, {await visualViewport.GetOffsetTop():F0})");
+        });
+        await output.Log("Subscribed to scroll.");
+    }
+
+    private async Task UnsubscribeAll()
+    {
+        await UnsubscribeResize();
+        await UnsubscribeScroll();
+        await output.Log("All subscriptions removed.");
+    }
+
+    private async Task UnsubscribeResize()
+    {
+        if (_resizeSub is null) return;
+        await _resizeSub.DisposeAsync();
+        _resizeSub = null;
+    }
+
+    private async Task UnsubscribeScroll()
+    {
+        if (_scrollSub is null) return;
+        await _scrollSub.DisposeAsync();
+        _scrollSub = null;
     }
 
     public async ValueTask DisposeAsync()
     {
+        await UnsubscribeResize();
+        await UnsubscribeScroll();
         await visualViewport.DisposeAsync();
     }
 }

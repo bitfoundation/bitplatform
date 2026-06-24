@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -15,15 +16,36 @@ public class Cookie(IJSRuntime js)
     /// <summary>
     /// Gets all cookies registered on the current document.
     /// </summary>
+    /// <remarks>
+    /// The browser's <c>document.cookie</c> API exposes only <c>name=value</c> pairs, so each
+    /// returned <see cref="ButilCookie"/> has only its <see cref="ButilCookie.Name"/> and
+    /// <see cref="ButilCookie.Value"/> populated. Attributes such as <see cref="ButilCookie.Domain"/>,
+    /// <see cref="ButilCookie.Expires"/>, <see cref="ButilCookie.MaxAge"/>, <see cref="ButilCookie.Path"/>,
+    /// <see cref="ButilCookie.SameSite"/>, <see cref="ButilCookie.Secure"/> and
+    /// <see cref="ButilCookie.Partitioned"/> are never returned by the browser and will be at their
+    /// default values regardless of how the cookie was originally set. <c>HttpOnly</c> cookies are not
+    /// visible at all.
+    /// </remarks>
     public async Task<ButilCookie[]> GetAll()
     {
-        var cookie = await js.Invoke<string>("BitButil.cookie.get");
-        return cookie.Split(';').Select(ButilCookie.Parse).ToArray();
+        var raw = await js.InvokeFast<string>("BitButil.cookie.get");
+
+        if (string.IsNullOrWhiteSpace(raw)) return [];
+
+        return raw.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                  .Select(ButilCookie.Parse)
+                  .Where(c => c is not null)
+                  .Select(c => c!)
+                  .ToArray();
     }
 
     /// <summary>
     /// Returns a cookie by providing the cookie name.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="ButilCookie.Name"/> and <see cref="ButilCookie.Value"/> are populated; see
+    /// <see cref="GetAll"/> for why the other attributes can't be read back from the browser.
+    /// </remarks>
     public async Task<ButilCookie?> Get(string name)
     {
         var allCookies = await GetAll();
@@ -62,5 +84,5 @@ public class Cookie(IJSRuntime js)
     /// Sets a cookie.
     /// </summary>
     public async Task Set(ButilCookie cookie)
-        => await js.InvokeVoid("BitButil.cookie.set", cookie.ToString());
+        => await js.InvokeVoidFast("BitButil.cookie.set", cookie.ToString());
 }

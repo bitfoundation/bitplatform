@@ -1,0 +1,21 @@
+<div class="page-header">
+    <span class="eyebrow">@Category</span>
+    <h1>@Title</h1>
+    @if (!string.IsNullOrWhiteSpace(Lead))
+    {
+        <p class="lead">@Lead</p>
+    }
+    @if (!string.IsNullOrWhiteSpace(MdnUrl))
+    {
+        <a class="mdn-link" href="@MdnUrl" target="_blank" rel="noopener noreferrer">
+            📖 Read the MDN reference
+        </a>
+    }
+</div>
+
+@code {
+    [Parameter] public string Category { get; set; } = "Bit.Butil";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Lead { get; set; }
+    [Parameter] public string? MdnUrl { get; set; }
+}

@@ -1,0 +1,284 @@
+/* Bit.Bmotion Demos - demo styles */
+:root {
+    --bm-primary: #6c47ff;
+    --bm-secondary: #ff4785;
+    --bm-dark: #0a0a0f;
+    --bm-surface: #141420;
+    --bm-card: #1e1e2e;
+    --bm-text: #e8e8f0;
+    --bm-muted: #888;
+    --bm-radius: 12px;
+}
+
+body {
+    background: var(--bm-dark);
+    color: var(--bm-text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── Layout ────────────────────────────────────────────────────────────────── */
+
+.bm-nav {
+    background: var(--bm-surface);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: .75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.bm-nav .logo {
+    font-weight: 800;
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.bm-nav a {
+    color: var(--bm-muted);
+    text-decoration: none;
+    font-size: .9rem;
+    transition: color .2s;
+}
+.bm-nav a:hover, .bm-nav a.active { color: var(--bm-text); }
+.bm-nav a:focus-visible {
+    color: var(--bm-text);
+    outline: 2px solid var(--bm-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.bm-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+}
+
+/* ── Demo cards ────────────────────────────────────────────────────────────── */
+
+.demo-section {
+    margin-bottom: 3rem;
+}
+.demo-section h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: .5rem;
+}
+.demo-section p {
+    color: var(--bm-muted);
+    margin-bottom: 1.5rem;
+    font-size: .95rem;
+    line-height: 1.6;
+}
+.demo-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+}
+.demo-card {
+    background: var(--bm-card);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: var(--bm-radius);
+    padding: 2rem;
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 220px;
+}
+
+/* ── Motion boxes ──────────────────────────────────────────────────────────── */
+
+.box {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    user-select: none;
+}
+.box-sm { width: 50px; height: 50px; border-radius: 8px; }
+
+/* ── Buttons ───────────────────────────────────────────────────────────────── */
+
+.btn-bm {
+    background: var(--bm-primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: .6rem 1.4rem;
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s;
+}
+.btn-bm:hover { opacity: .85; }
+.btn-bm:focus-visible {
+    opacity: .85;
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* ── Code snippets ─────────────────────────────────────────────────────────── */
+
+.code-block {
+    background: #0d0d1a;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: .82rem;
+    color: #c8c8e0;
+    overflow-x: auto;
+    margin-top: 1rem;
+    white-space: pre;
+}
+
+/* ── Code snippet toggle ───────────────────────────────────────────────────── */
+
+.code-snippet {
+    margin-top: 1rem;
+}
+.code-snippet-bar {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.code-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 6px;
+    color: var(--bm-muted);
+    font-size: .8rem;
+    font-weight: 600;
+    padding: .4rem .8rem;
+    cursor: pointer;
+    transition: color .2s, border-color .2s, background .2s;
+}
+.code-toggle:hover {
+    color: #fff;
+    border-color: var(--bm-primary);
+    background: rgba(108,71,255,.12);
+}
+.code-toggle:focus-visible {
+    color: #fff;
+    border-color: var(--bm-primary);
+    background: rgba(108,71,255,.12);
+    outline: 2px solid var(--bm-primary);
+    outline-offset: 2px;
+}
+.code-toggle-icon {
+    font-size: .7rem;
+    line-height: 1;
+}
+.code-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 6px;
+    color: var(--bm-muted);
+    font-size: .8rem;
+    font-weight: 600;
+    padding: .4rem .8rem;
+    cursor: pointer;
+    transition: color .2s, border-color .2s, background .2s;
+}
+.code-copy:hover {
+    color: #fff;
+    border-color: var(--bm-primary);
+    background: rgba(108,71,255,.12);
+}
+.code-copy:focus-visible {
+    color: #fff;
+    border-color: var(--bm-primary);
+    background: rgba(108,71,255,.12);
+    outline: 2px solid var(--bm-primary);
+    outline-offset: 2px;
+}
+.code-snippet .code-block {
+    margin-top: .75rem;
+}
+.code-snippet .code-block code {
+    display: block;
+    color: inherit;
+    background: none;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* ── Syntax highlighting tokens ────────────────────────────────────────────── */
+
+.code-block .tok-com  { color: #6a9955; font-style: italic; }
+.code-block .tok-tag  { color: #569cd6; }
+.code-block .tok-attr { color: #9cdcfe; }
+.code-block .tok-str  { color: #ce9178; }
+.code-block .tok-key  { color: #569cd6; }
+.code-block .tok-type { color: #4ec9b0; }
+.code-block .tok-num  { color: #b5cea8; }
+.code-block .tok-raz  { color: #c586c0; }
+
+/* Each source line is its own block so highlighted and plain lines share uniform spacing. */
+.code-block .code-line {
+    display: block;
+}
+
+/* Lines where a Bmotion component is used, so they stand out from the markup. */
+.code-block .hl-line {
+    display: block;
+    background: rgba(108,71,255,.16);
+    box-shadow: inset 3px 0 0 var(--bm-primary);
+    margin: 0 -1.25rem;
+    padding: 0 1.25rem;
+}
+
+/* ── Page hero ─────────────────────────────────────────────────────────────── */
+
+.page-hero {
+    text-align: center;
+    padding: 4rem 0 3rem;
+}
+.page-hero h1 {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #fff 30%, var(--bm-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.page-hero p {
+    color: var(--bm-muted);
+    font-size: 1.15rem;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+}
+.badge-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    justify-content: center;
+}
+.badge {
+    background: rgba(108,71,255,.2);
+    border: 1px solid rgba(108,71,255,.4);
+    color: #a88cff;
+    padding: .3rem .8rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 600;
+}

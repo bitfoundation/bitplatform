@@ -13,10 +13,8 @@ namespace Bit.BlazorUI;
 /// selected <see cref="Country"/>.
 /// </para>
 /// </summary>
-public partial class BitPhoneInput : BitInputBase<string?>
+public partial class BitPhoneInput : BitTextInputBase<string?>
 {
-    private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
-
     private bool _isOpen;
     private bool _hasFocus;
     private string? _searchText;
@@ -61,11 +59,6 @@ public partial class BitPhoneInput : BitInputBase<string?>
 
 
     /// <summary>
-    /// Determines if the number input is auto focused on first render.
-    /// </summary>
-    [Parameter] public bool AutoFocus { get; set; }
-
-    /// <summary>
     /// Custom CSS classes for different parts of the BitPhoneInput.
     /// </summary>
     [Parameter] public BitPhoneInputClassStyles? Classes { get; set; }
@@ -88,12 +81,6 @@ public partial class BitPhoneInput : BitInputBase<string?>
     public BitCountry? Country { get; set; }
 
     /// <summary>
-    /// The debounce time in milliseconds for the number input (applied when Immediate is enabled).
-    /// When both DebounceTime and ThrottleTime are greater than zero, debounce takes precedence and throttle is ignored.
-    /// </summary>
-    [Parameter] public int DebounceTime { get; set; }
-
-    /// <summary>
     /// The default selected country to be initially used when the Country parameter is not set.
     /// </summary>
     [Parameter] public BitCountry? DefaultCountry { get; set; }
@@ -113,11 +100,6 @@ public partial class BitPhoneInput : BitInputBase<string?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }
-
-    /// <summary>
-    /// Updates the number input value as the user types (based on the 'oninput' HTML event).
-    /// </summary>
-    [Parameter] public bool Immediate { get; set; }
 
     /// <summary>
     /// The label of the phone input shown above the field.
@@ -179,12 +161,6 @@ public partial class BitPhoneInput : BitInputBase<string?>
     /// Custom CSS styles for different parts of the BitPhoneInput.
     /// </summary>
     [Parameter] public BitPhoneInputClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// The throttle time in milliseconds for the number input (applied when Immediate is enabled).
-    /// Throttle is ignored when both DebounceTime and ThrottleTime are set, as debounce takes precedence.
-    /// </summary>
-    [Parameter] public int ThrottleTime { get; set; }
 
 
 
@@ -383,13 +359,6 @@ public partial class BitPhoneInput : BitInputBase<string?>
             if (NoSearchBox is false)
             {
                 await _js.BitExtrasSetPreventKeys(_searchInputRef, _searchBoxKeys);
-            }
-
-            // Apply AutoFocus after the first render completes so focus lands on the number
-            // input once its element exists, following the BitTextInputBase pattern.
-            if (AutoFocus && IsEnabled)
-            {
-                await InputElement.FocusAsync();
             }
         }
 
@@ -611,7 +580,7 @@ public partial class BitPhoneInput : BitInputBase<string?>
         }
     }
 
-    private async Task HandleOnNumberChange(ChangeEventArgs e)
+    protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
     {
         if (IsEnabled is false || ReadOnly) return;
 
@@ -631,16 +600,6 @@ public partial class BitPhoneInput : BitInputBase<string?>
         _lastCountryIso = Country?.Iso2;
 
         await SetCurrentValueAsStringAsync(composed);
-    }
-
-    private async Task HandleOnNumberInput(ChangeEventArgs e)
-    {
-        if (IsEnabled is false || ReadOnly) return;
-
-        if (Immediate is false) return;
-
-        await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
-            await InvokeAsync(async () => await HandleOnNumberChange(args)));
     }
 
     private void HandleOnInputFocusIn()
@@ -668,8 +627,6 @@ public partial class BitPhoneInput : BitInputBase<string?>
         await base.DisposeAsync(disposing);
 
         _dotnetObj?.Dispose();
-
-        _rateLimiter.Reset();
 
         try
         {

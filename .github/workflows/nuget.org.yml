@@ -7,11 +7,16 @@ on:
       - 'main'
     paths:
       - 'src/BlazorUI/**'
+      - 'src/Bmotion/**'
+      - 'src/Brouter/**'
       - 'src/Bswup/**'
       - 'src/Butil/**'
       - 'src/CodeAnalyzers/**'
       - 'src/SourceGenerators/**'
       - 'src/Templates/**'
+
+permissions:
+  contents: read
 
 jobs:
   build-publish:
@@ -22,6 +27,8 @@ jobs:
 
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+          persist-credentials: false
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -117,17 +124,25 @@ jobs:
     - name: dotnet pack Bswup
       run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
 
-    - name: Generate CSS/JS files Butil
-      run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
     - name: dotnet build Butil
       run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Butil
       run: dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output . --configuration Release
-            
+
+    - name: dotnet build Brouter
+      run: dotnet build src/Brouter/Bit.Brouter/Bit.Brouter.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Brouter
+      run: dotnet pack src/Brouter/Bit.Brouter/Bit.Brouter.csproj --output . --configuration Release
+
     - name: dotnet build Besql
       run: dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Besql
       run: dotnet pack src/Besql/Bit.Besql/Bit.Besql.csproj --output . --configuration Release
+
+    - name: dotnet build Bmotion
+      run: dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bmotion
+      run: dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output . --configuration Release
 
     - name: dotnet build CodeAnalyzers
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

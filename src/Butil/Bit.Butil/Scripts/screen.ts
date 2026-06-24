@@ -1,7 +1,7 @@
 var BitButil = BitButil || {};
 
 (function (butil: any) {
-    const _handlers = {};
+    const _handlers: { [id: string]: EventListener } = {};
 
     butil.screen = {
         availHeight() { return window.screen.availHeight },
@@ -15,16 +15,16 @@ var BitButil = BitButil || {};
         removeChange
     };
 
-    function addChange(methodName, listenerId) {
-        const handler = e => {
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId);
+    function addChange(dotNetRef: DotNet.DotNetObject, listenerId: string) {
+        const handler: EventListener = () => {
+            butil.utils.dispatch(dotNetRef, 'InvokeScreenChange', listenerId);
         };
 
         _handlers[listenerId] = handler;
         (window.screen as any).addEventListener('change', handler);
     }
 
-    function removeChange(ids) {
+    function removeChange(ids: string[]) {
         ids.forEach(id => {
             const handler = _handlers[id];
             delete _handlers[id];

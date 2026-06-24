@@ -89,7 +89,10 @@ public class ButilMouseEventArgs : EventArgs
     public double PageY { get; set; }
 
     /// <summary>
-    /// The secondary target for the event, if there is one.
+    /// The <c>id</c> of the secondary target for the event (for example the element the pointer
+    /// is entering/leaving), or an empty string when there is no related target <em>or</em> the
+    /// related element has no <c>id</c>. The underlying DOM node can't be marshaled across JS
+    /// interop, so only its <c>id</c> is surfaced here.
     /// </summary>
     public string RelatedTarget { get; set; } = string.Empty;
 

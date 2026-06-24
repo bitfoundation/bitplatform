@@ -1,6 +1,9 @@
 var BitButil = BitButil || {};
 
 (function (butil: any) {
+    // Element-scoped event handlers, indexed by listenerId so element teardown can find them.
+    const _elementHandlers: { [listenerId: string]: { element: HTMLElement, eventName: string, handler: any, options: any } } = {};
+
     butil.element = {
         blur(element: HTMLElement) { element.blur() },
         getAttribute(element: HTMLElement, name: string) { return element.getAttribute(name) },
@@ -61,6 +64,8 @@ var BitButil = BitButil || {};
         offsetWidth(element: HTMLElement) { return element.offsetWidth },
         getTabIndex(element: HTMLElement) { return element.tabIndex },
         setTabIndex(element: HTMLElement, value: number) { element.tabIndex = value },
+        subscribeEvent,
+        unsubscribeEvent,
     };
 
     function scroll(element: HTMLElement, options?: ScrollToOptions, x?: number, y?: number) {
@@ -80,6 +85,39 @@ var BitButil = BitButil || {};
     }
 
     function scrollIntoView(element: HTMLElement, alignToTop?: boolean, options?: ScrollIntoViewOptions) {
+        // No args from .NET means the no-argument C# overload: call the native no-arg form so the
+        // browser applies its default (align-to-top) behavior. Passing null would instead be read
+        // as an empty options object and change the alignment.
+        if (alignToTop == null && options == null) {
+            element.scrollIntoView();
+            return;
+        }
         element.scrollIntoView(alignToTop ?? options);
+    }
+
+    function subscribeEvent(element: HTMLElement, elementId: string, eventName: string, methodName: string,
+        dotNetRef: any, listenerId: string, argsMembers: string[], options: AddEventListenerOptions | boolean,
+        preventDefault: boolean, stopPropagation: boolean) {
+        if (!element) return;
+        // When { once: true } is set the browser auto-detaches after the first call; mirror that by
+        // dropping our tracking entry so the listenerId doesn't linger after it fires.
+        const once = typeof options === 'object' && options.once === true;
+        const handler = (e: any) => {
+            preventDefault && e.preventDefault();
+            stopPropagation && e.stopPropagation();
+            if (once) delete _elementHandlers[listenerId];
+            butil.utils.dispatch(dotNetRef, methodName, listenerId, butil.events.mapEvent(e, argsMembers));
+        };
+        _elementHandlers[listenerId] = { element, eventName, handler, options };
+        element.addEventListener(eventName, handler, options);
+    }
+
+    function unsubscribeEvent(elementId: string, eventName: string, listenerId: string, options: AddEventListenerOptions | boolean) {
+        const entry = _elementHandlers[listenerId];
+        if (!entry) return;
+        delete _elementHandlers[listenerId];
+        try {
+            entry.element.removeEventListener(entry.eventName, entry.handler, entry.options);
+        } catch { /* element may already be detached */ }
     }
 }(BitButil));

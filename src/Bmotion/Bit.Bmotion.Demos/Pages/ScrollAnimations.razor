@@ -1,0 +1,142 @@
+@page "/scroll"
+@inject BmotionScrollTracker Scroll
+@implements IAsyncDisposable
+
+<h1>Scroll Animations</h1>
+
+<div style="position:sticky;top:3.25rem;z-index:50;background:var(--bm-card);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.35)">
+    <div style="font-size:.9rem;color:#888;margin-bottom:.5rem">Window scroll progress</div>
+    <div style="background:#111;border-radius:6px;height:8px;overflow:hidden;width:100%">
+        <div style="@($"height:100%;border-radius:6px;background:linear-gradient(90deg,#6c47ff,#ff4785);width:{(_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}%;transition:width .05s")" />
+    </div>
+    <div style="font-size:.85rem;color:#aaa;margin-top:.4rem">
+        Y: @((_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%  |  X: @((_progressX * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Scroll Tracking</h2>
+    <p>
+        Inject <strong>BmotionScrollTracker</strong> and call <c>ObserveAsync</c> to get live scroll
+        progress. Use the progress value to drive animations via <c>MotionValue</c>.
+        The progress bar above stays pinned to the top while you scroll.
+    </p>
+
+    <CodeSnippet Code="@_scrollTrackCode" />
+</div>
+
+<div class="demo-section">
+    <h2>whileInView</h2>
+    <p>
+        Use <strong>WhileInView</strong> to animate when the element enters the viewport.
+        Set <c>Once="true"</c> to animate only on first entry.
+    </p>
+
+    @for (int i = 0; i < 16; i++)
+    {
+        var color = i % 2 == 0 ? "#6c47ff" : "#ff4785";
+        var idx   = i;
+        <Bmotion Tag="div"
+                Style="@($"background:{color};border-radius:12px;height:80px;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:center;font-weight:700;")"
+                Initial="@(new BmotionAnimationProps { Opacity = 0, X = idx % 2 == 0 ? -60 : 60 })"
+                WhileInView="@(new BmotionAnimationProps { Opacity = 1, X = 0 })"
+                Transition="@(new BmotionTransitionConfig { Duration = 0.5, Ease = BmotionEasing.BackOut })"
+                Once="true">
+            Section @(idx + 1)
+        </Bmotion>
+    }
+
+    <CodeSnippet Code="@_inViewCode" />
+</div>
+
+@code {
+    private double _progressX;
+    private double _progressY;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Scroll.ObserveAsync(null, info =>
+            {
+                _progressX = info.ProgressX;
+                _progressY = info.ProgressY;
+                return InvokeAsync(StateHasChanged);
+            });
+        }
+    }
+
+    public async ValueTask DisposeAsync() => await Scroll.DisposeAsync();
+
+    private const string _scrollTrackCode = """
+        @using Bit.Bmotion
+        @inject BmotionScrollTracker Scroll
+        @implements IAsyncDisposable
+
+        <style>
+            .scroll-progress {
+                position: sticky; top: 0; z-index: 50; background: #1e1e2e;
+                border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+                box-shadow: 0 4px 20px rgba(0,0,0,.35);
+            }
+            .scroll-track { background: #111; border-radius: 6px; height: 8px; overflow: hidden; width: 100%; }
+        </style>
+
+        <div class="scroll-progress">
+            <div style="font-size:.9rem;color:#888;margin-bottom:.5rem">Window scroll progress</div>
+            <div class="scroll-track">
+                <div style="@($"height:100%;border-radius:6px;background:linear-gradient(90deg,#6c47ff,#ff4785);width:{(_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}%;transition:width .05s")" />
+            </div>
+            <div style="font-size:.85rem;color:#aaa;margin-top:.4rem">
+                Y: @((_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%  |  X: @((_progressX * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%
+            </div>
+        </div>
+
+        @code {
+            private double _progressX;
+            private double _progressY;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender)
+                {
+                    await Scroll.ObserveAsync(null, info =>
+                    {
+                        _progressX = info.ProgressX;
+                        _progressY = info.ProgressY;
+                        return InvokeAsync(StateHasChanged);
+                    });
+                }
+            }
+
+            public async ValueTask DisposeAsync() => await Scroll.DisposeAsync();
+        }
+        """;
+
+    private const string _inViewCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+        </style>
+
+        <div class="demo-section">
+            <h2>whileInView</h2>
+
+            @for (int i = 0; i < 16; i++)
+            {
+                var color = i % 2 == 0 ? "#6c47ff" : "#ff4785";
+                var idx   = i;
+                <Bmotion Tag="div"
+                        Style="@($"background:{color};border-radius:12px;height:80px;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:center;font-weight:700;")"
+                        Initial="@(new BmotionAnimationProps { Opacity = 0, X = idx % 2 == 0 ? -60 : 60 })"
+                        WhileInView="@(new BmotionAnimationProps { Opacity = 1, X = 0 })"
+                        Transition="@(new BmotionTransitionConfig { Duration = 0.5, Ease = BmotionEasing.BackOut })"
+                        Once="true">
+                    Section @(idx + 1)
+                </Bmotion>
+            }
+        </div>
+        """;
+}

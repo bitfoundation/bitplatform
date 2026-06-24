@@ -1,0 +1,265 @@
+@page "/observers"
+@implements IAsyncDisposable
+@inject Bit.Butil.Performance performance
+@inject Bit.Butil.StorageManager storageManager
+@inject Bit.Butil.NetworkInformation networkInformation
+@inject Bit.Butil.BroadcastChannel broadcastChannel
+@inject Bit.Butil.IndexedDb indexedDb
+@inject IJSRuntime js
+
+<PageTitle>Butil - Observers & Async APIs Samples</PageTitle>
+
+<PageHeader Category="DOM"
+            Title="Observers"
+            Lead="Intersection, resize and mutation observers plus performance marks, storage estimates, broadcast channels and IndexedDB - reactive browser APIs in one place."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API" />
+
+<pre>
+await using var sub = await element.ObserveIntersection(js, entries => { /* … */ });
+await using var db  = await indexedDb.Open("my-db", stores: [ … ]);
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Intersection observer" Api="ObserveIntersection"
+              Description="Fires when the target enters or leaves the viewport.">
+        <div id="obs-target" @ref="_target"
+             style="width:120px;height:48px;border:2px solid var(--accent,#6366f1);border-radius:6px;display:flex;align-items:center;justify-content:center">
+            target
+        </div>
+        <div class="controls" style="margin-top:0.75rem">
+            <button @onclick="StartIntersection">Observe</button>
+            <button class="danger" @onclick="StopIntersection">Stop</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Resize observer" Api="ObserveResize"
+              Description="Reports size changes when the target is resized.">
+        <div class="controls">
+            <button @onclick="StartResize">Observe</button>
+            <button @onclick="TriggerResize">Grow target</button>
+            <button class="danger" @onclick="StopResize">Stop</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Mutation observer" Api="ObserveMutations"
+              Description="Logs attribute changes on the target element.">
+        <div class="controls">
+            <button @onclick="StartMutation">Observe</button>
+            <button @onclick="MutateTarget">Mutate attribute</button>
+            <button class="danger" @onclick="StopMutation">Stop</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Performance" Api="Mark / Measure / SubscribeObserver"
+              Description="Create marks and measure elapsed time, or subscribe to performance entries.">
+        <div class="controls">
+            <button @onclick="PerfMarkMeasure">Mark + measure</button>
+            <button @onclick="PerfObserver">PerformanceObserver</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Storage & network" Api="StorageManager / NetworkInformation"
+              Description="Estimate quota usage and read connection metadata.">
+        <div class="controls">
+            <button @onclick="StorageEstimate">Storage estimate</button>
+            <button @onclick="NetworkStatus">Network status</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="BroadcastChannel" Api="Subscribe / PostMessage"
+              Description="Cross-tab messaging. Open a second tab to see messages arrive.">
+        <div class="controls">
+            <button @onclick="BroadcastSubscribe">Subscribe</button>
+            <button @onclick="BroadcastPostLocal">Post (this tab)</button>
+            <button @onclick="BroadcastPostExternal">Post (simulated other tab)</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="IndexedDB" Api="Open / Put / Get"
+              Description="Open a demo database, store a record and read it back.">
+        <button @onclick="IndexedDbRoundTrip">Round-trip</button>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="observers output" />
+
+@code {
+    private DemoConsole output = default!;
+    private ElementReference _target;
+    private int _targetWidth = 120;
+
+    private ButilSubscription? _intersectionSub;
+    private ButilSubscription? _resizeSub;
+    private ButilSubscription? _mutationSub;
+    private ButilSubscription? _perfObserverSub;
+    private ButilSubscription? _broadcastSub;
+
+    private async Task StartIntersection()
+    {
+        await StopIntersection();
+        _intersectionSub = await _target.ObserveIntersection(js, entries =>
+        {
+            if (entries.Length > 0)
+                _ = output.Log($"Intersection → ratio={entries[0].IntersectionRatio:F2}, visible={entries[0].IsIntersecting}");
+        });
+        await output.Log("Intersection observer started.");
+    }
+
+    private async Task StopIntersection()
+    {
+        if (_intersectionSub is null) return;
+        await _intersectionSub.DisposeAsync();
+        _intersectionSub = null;
+    }
+
+    private async Task StartResize()
+    {
+        await StopResize();
+        _resizeSub = await _target.ObserveResize(js, entries =>
+        {
+            if (entries.Length > 0)
+            {
+                var rect = entries[0].ContentRect;
+                _ = output.Log($"Resize → {rect.Width:F0}×{rect.Height:F0}");
+            }
+        });
+        await output.Log("Resize observer started.");
+    }
+
+    private async Task TriggerResize()
+    {
+        _targetWidth += 40;
+        await _target.SetAttribute("style",
+            $"width:{_targetWidth}px;height:48px;border:2px solid var(--accent,#6366f1);border-radius:6px;display:flex;align-items:center;justify-content:center");
+        await output.Log($"Target width → {_targetWidth}px");
+    }
+
+    private async Task StopResize()
+    {
+        if (_resizeSub is null) return;
+        await _resizeSub.DisposeAsync();
+        _resizeSub = null;
+    }
+
+    private async Task StartMutation()
+    {
+        await StopMutation();
+        _mutationSub = await _target.ObserveMutations(js, records =>
+        {
+            foreach (var record in records)
+                _ = output.Log($"Mutation → {record.Type} on {record.TargetId ?? "target"}");
+        }, new MutationObserverOptions { Attributes = true });
+        await output.Log("Mutation observer started.");
+    }
+
+    private async Task MutateTarget()
+    {
+        await _target.SetAttribute("data-butil", Guid.NewGuid().ToString("N")[..8]);
+    }
+
+    private async Task StopMutation()
+    {
+        if (_mutationSub is null) return;
+        await _mutationSub.DisposeAsync();
+        _mutationSub = null;
+    }
+
+    private async Task PerfMarkMeasure()
+    {
+        await performance.Mark("butil-demo-a");
+        await Task.Delay(50);
+        await performance.Mark("butil-demo-b");
+        await performance.Measure("butil-demo-measure", "butil-demo-a", "butil-demo-b");
+        var entries = await performance.GetEntries("butil-demo-measure", "measure");
+        await output.Success("Measure →", entries.Length > 0 ? entries[0].ToString() : "(no entry)");
+    }
+
+    private async Task PerfObserver()
+    {
+        await StopPerfObserver();
+        _perfObserverSub = await performance.SubscribeObserver(["mark"], entries =>
+        {
+            if (entries.Length > 0)
+                _ = output.Log($"PerfObserver → {entries[0]}");
+        }, buffered: false);
+
+        await performance.Mark("butil-demo-observed");
+        await output.Log("PerformanceObserver subscribed - mark created.");
+    }
+
+    private async Task StopPerfObserver()
+    {
+        if (_perfObserverSub is null) return;
+        await _perfObserverSub.DisposeAsync();
+        _perfObserverSub = null;
+    }
+
+    private async Task StorageEstimate()
+    {
+        var est = await storageManager.Estimate();
+        await output.Success("Storage estimate →",
+            $"quota={est.Quota}, usage={est.Usage}");
+    }
+
+    private async Task NetworkStatus()
+    {
+        var status = await networkInformation.GetStatus();
+        await output.Success("Network →", status);
+    }
+
+    private async Task BroadcastSubscribe()
+    {
+        await StopBroadcast();
+        _broadcastSub = await broadcastChannel.Subscribe("butil-demo-channel", msg =>
+            _ = output.Success("Broadcast received →", msg.ToString()));
+        await output.Log("Subscribed to butil-demo-channel.");
+    }
+
+    private async Task BroadcastPostLocal()
+    {
+        await broadcastChannel.Post("butil-demo-channel", new { text = "hello from this tab", at = DateTime.Now });
+        await output.Log("Posted (same tab won't receive its own message).");
+    }
+
+    private async Task BroadcastPostExternal()
+    {
+        await js.InvokeVoidAsync("eval",
+            "(function(){const c=new BroadcastChannel('butil-demo-channel');c.postMessage({text:'hello from simulated tab'});c.close();})()");
+        await output.Log("Posted via simulated second channel.");
+    }
+
+    private async Task StopBroadcast()
+    {
+        if (_broadcastSub is null) return;
+        await _broadcastSub.DisposeAsync();
+        _broadcastSub = null;
+    }
+
+    private async Task IndexedDbRoundTrip()
+    {
+        await using var db = await indexedDb.Open("butil-demo-db", 1,
+        [
+            new IndexedDbStoreSchema { Name = "items", KeyPath = "id" }
+        ]);
+
+        var item = new DemoIdbItem { Id = "demo-1", Value = "stored at " + DateTime.Now.ToString("HH:mm:ss") };
+        await db.Put("items", item);
+        var read = await db.Get<DemoIdbItem>("items", "demo-1");
+        await output.Success("IndexedDB round-trip →", read?.Value ?? "(null)");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_intersectionSub is not null) await _intersectionSub.DisposeAsync();
+        if (_resizeSub is not null) await _resizeSub.DisposeAsync();
+        if (_mutationSub is not null) await _mutationSub.DisposeAsync();
+        if (_perfObserverSub is not null) await _perfObserverSub.DisposeAsync();
+        if (_broadcastSub is not null) await _broadcastSub.DisposeAsync();
+    }
+
+    private class DemoIdbItem
+    {
+        public string Id { get; set; } = "";
+        public string Value { get; set; } = "";
+    }
+}

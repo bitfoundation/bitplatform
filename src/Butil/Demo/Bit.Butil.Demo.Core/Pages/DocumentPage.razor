@@ -1,101 +1,84 @@
 ﻿@page "/document"
 @implements IDisposable
-@inject Bit.Butil.Console console
 @inject Bit.Butil.Document document
 
-<PageTitle>Document Samples</PageTitle>
+<PageTitle>Butil - Document Samples</PageTitle>
 
-<h1>Document</h1>
+<PageHeader Category="DOM"
+            Title="Document"
+            Lead="Inspect and control the current document: read metadata, toggle design mode and direction, attach DOM event listeners and change the page title."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Document" />
 
-<pre style="font-family:Consolas; overflow: auto;">
+<pre>
 @@inject Bit.Butil.Document document
 
-@@code {
-    ...
-    await document.AddEventListener(ButilEvents.Click, args => { ... });
-    ...
-    await document.SetTitle("New shinny title");
-    ...
-}
+await document.AddEventListener(ButilEvents.Click, args => { ... });
+await document.SetTitle("New shiny title");
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Document click listener" Api="AddEventListener / RemoveEventListener"
+              Description="Register a C# handler for document clicks. While registered, every click anywhere logs its coordinates below.">
+        <div class="controls">
+            <button @onclick=AddEventListener disabled="@isRegistered">Add listener</button>
+            <button class="secondary" @onclick=RemoveEventListener disabled="@(!isRegistered)">Remove listener</button>
+            <span class="result-pill">Registered: <b>@isRegistered</b></span>
+        </div>
+    </DemoCard>
 
-<h3>Open the DevTools' console and start clicking</h3>
+    <DemoCard Title="Document metadata" Api="GetCharacterSet / GetContentType / ..."
+              Description="Read read-only properties of the document.">
+        <div class="controls">
+            <button @onclick=GetCharacterSet>Character set</button>
+            <button @onclick=GetContentType>Content type</button>
+            <button @onclick=GetCompatMode>Compat mode</button>
+            <button @onclick=GetReferrer>Referrer</button>
+            <button @onclick=GetDocumentURI>Document URI</button>
+            <button @onclick=GetUrl>URL</button>
+        </div>
+    </DemoCard>
 
-<hr />
-<br />
+    <DemoCard Title="Design mode" Api="SetDesignMode / GetDesignMode"
+              Description="When design mode is on, the whole page becomes editable.">
+        <div class="check-row">
+            <input type="checkbox" @bind="@isDesignModeOn" id="dm" />
+            <label for="dm">@(isDesignModeOn ? "On" : "Off")</label>
+        </div>
+        <div class="controls">
+            <button @onclick=SetDesignMode>Set design mode</button>
+            <button class="secondary" @onclick=GetDesignMode>Get design mode</button>
+        </div>
+    </DemoCard>
 
-<button @onclick=AddEventListener>AddEventListener</button>
-&nbsp;
-<button @onclick=RemoveEventListener>RemoveEventListener</button>
-<br />
-<br />
-<div>Is Registered: @isRegistered</div>
+    <DemoCard Title="Text direction" Api="SetDir / GetDir"
+              Description="Switch the document between left-to-right and right-to-left.">
+        <div class="check-row">
+            <input type="checkbox" @bind="@isDocumentDirRtl" id="dir" />
+            <label for="dir">@(isDocumentDirRtl ? "Rtl" : "Ltr")</label>
+        </div>
+        <div class="controls">
+            <button @onclick=SetDocumentDir>Set dir</button>
+            <button class="secondary" @onclick=GetDocumentDir>Get dir</button>
+        </div>
+    </DemoCard>
 
-<br />
-<hr />
-<br />
+    <DemoCard Title="Document title" Api="SetTitle / GetTitle"
+              Description="Change the browser tab title and read it back.">
+        <div class="field">
+            <span class="field-label">Title</span>
+            <input @bind-value="documentTitle" placeholder="New document title" />
+        </div>
+        <div class="controls">
+            <button @onclick=SetTitle>Set title</button>
+            <button class="secondary" @onclick=GetTitle>Get title</button>
+        </div>
+    </DemoCard>
+</div>
 
-<button @onclick=GetCharacterSet>Document character set</button>
-&nbsp;
-<button @onclick=GetContentType>Document content type</button>
-<br />
-<br />
-<button @onclick=GetCompatMode>Document compat mode</button>
-&nbsp;
-<button @onclick=GetReferrer>Document referrer</button>
-<br />
-<br />
-<button @onclick=GetDocumentURI>Document URI</button>
-&nbsp;
-<button @onclick=GetUrl>Document URL</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input type="checkbox" @bind="@isDesignModeOn" />
-<label>@(isDesignModeOn ? "On" : "Off")</label>
-<br />
-<br />
-<button @onclick=SetDesignMode>SetDesignMode</button>
-<br />
-<br />
-<button @onclick=GetDesignMode>GetDesignMode</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input type="checkbox" @bind="@isDocumentDirRtl" />
-<label>@(isDocumentDirRtl ? "Rtl" : "Ltr")</label>
-<br />
-<br />
-<button @onclick=SetDocumentDir>SetDocumentDir</button>
-<br />
-<br />
-<button @onclick=GetDocumentDir>GetDocumentDir</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind-value="documentTitle" placeholder="Document title" />
-<br />
-<br />
-<button @onclick=SetTitle>SetTitle</button>
-&nbsp;
-<button @onclick=GetTitle>GetTitle</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="document output" />
 
 @code {
+    private DemoConsole output = default!;
     private bool isRegistered = false;
 
     private Action<ButilMouseEventArgs> _handler = default!;
@@ -108,7 +91,7 @@
 
     protected override void OnInitialized()
     {
-        _handler = (ButilMouseEventArgs arg) => _ = console.Log("Click from C# = X:", arg.ClientX, "Y:", arg.ClientY);
+        _handler = (ButilMouseEventArgs arg) => _ = output.Info("Click from C# → X:", arg.ClientX, "Y:", arg.ClientY);
 
         base.OnInitialized();
     }
@@ -127,17 +110,17 @@
 
     private async Task GetCharacterSet()
     {
-        await console.Log("document.characterSet =", await document.GetCharacterSet());
+        await output.Success("document.characterSet →", await document.GetCharacterSet());
     }
 
     private async Task GetCompatMode()
     {
-        await console.Log("document.compatMode =", await document.GetCompatMode());
+        await output.Success("document.compatMode →", await document.GetCompatMode());
     }
 
     private async Task GetContentType()
     {
-        await console.Log("document.contentType =", await document.GetContentType());
+        await output.Success("document.contentType →", await document.GetContentType());
     }
 
     private async Task GetReferrer()
@@ -146,52 +129,55 @@
 
         if (string.IsNullOrWhiteSpace(res) is false)
         {
-            await console.Log("The user came from:", await document.GetReferrer());
+            await output.Success("The user came from →", res);
         }
         else
         {
-           await console.Log("The user landed directly on this page");
+            await output.Info("The user landed directly on this page");
         }
     }
 
     private async Task GetUrl()
     {
-        await console.Log("document.URL =", await document.GetUrl());
+        await output.Success("document.URL →", await document.GetUrl());
     }
 
     private async Task GetDocumentURI()
     {
-        await console.Log("document.documentURI =", await document.GetDocumentURI());
+        await output.Success("document.documentURI →", await document.GetDocumentURI());
     }
 
     private async Task SetDesignMode()
     {
         await document.SetDesignMode(isDesignModeOn ? DesignMode.On : DesignMode.Off);
+        await output.Log("document.designMode set to", isDesignModeOn ? "On" : "Off");
     }
 
     private async Task GetDesignMode()
     {
-        await console.Log("document.designMode =", await document.GetDesignMode());
+        await output.Success("document.designMode →", await document.GetDesignMode());
     }
 
     private async Task SetDocumentDir()
     {
         await document.SetDir(isDocumentDirRtl ? DocumentDir.Rtl : DocumentDir.Ltr);
+        await output.Log("document.dir set to", isDocumentDirRtl ? "Rtl" : "Ltr");
     }
 
     private async Task GetDocumentDir()
     {
-        await console.Log("document.dir =", await document.GetDir());
+        await output.Success("document.dir →", await document.GetDir());
     }
 
     private async Task SetTitle()
     {
         await document.SetTitle(documentTitle);
+        await output.Log("document.title set to", $"\"{documentTitle}\"");
     }
 
     private async Task GetTitle()
     {
-        await console.Log("document.title =", await document.GetTitle());
+        await output.Success("document.title →", await document.GetTitle());
     }
 
     public void Dispose()

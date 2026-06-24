@@ -1,442 +1,290 @@
 ﻿@page "/element"
-@inject Bit.Butil.Console console
 
-<PageTitle>Element Samples</PageTitle>
+<PageTitle>Butil - Element Samples</PageTitle>
 
-<h1>Element</h1>
+<PageHeader Category="DOM"
+            Title="Element"
+            Lead="Work with a real DOM element from C#: attributes, scrolling, layout metrics, pointer capture, fullscreen, content editing and more. All operations below act on the blue target element."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Element" />
 
-<pre style="font-family:Consolas; overflow: auto;">
+<pre>
 @@code {
-    ...
     var rect = await elementRef.GetBoundingClientRect();
-    ...
+    await elementRef.ScrollIntoView();
 }
 </pre>
 
-<br />
-<hr />
-
-<h3>Open the DevTools' console and start clicking on buttons</h3>
-
-<hr />
-<br />
-
-<div style="background:white; padding:1rem 0; position:sticky; top:10px; border-bottom:1px solid;">
+<div style="background:var(--bit-surface); padding:1rem; border:1px solid var(--bit-border); border-radius:var(--bit-radius); position:sticky; top:10px; z-index:10; margin:1.5rem 0; box-shadow:var(--bit-shadow);">
+    <div class="muted" style="margin-bottom:.5rem">Target element (click it to capture a pointer id):</div>
     <div @ref="elementRef" @onpointerdown="HandleOnPointerDown"
          id="target"
          style="max-width:6rem;
             max-height:6rem;
             color: white;
             overflow: auto;
+            border-radius: 10px;
             background: dodgerblue;">
-        <div style="height: 100rem">Element</div>
+        <div style="height: 100rem; padding:.5rem;">Element</div>
     </div>
 </div>
 
-<br />
-<hr />
-<br />
+<div class="stack">
+    <DemoCard Title="Attributes" Api="HasAttribute / GetAttribute / ToggleAttribute / RemoveAttribute"
+              Description="Inspect and modify the target element's attributes.">
+        <div class="field">
+            <span class="field-label">Attribute name</span>
+            <input @bind-value="attributeName" />
+        </div>
+        <div class="controls">
+            <button @onclick="HasAttribute">HasAttribute</button>
+            <button @onclick="HasAttributes">HasAttributes</button>
+            <button @onclick="GetAttribute">GetAttribute</button>
+            <button @onclick="GetAttributeNames">GetAttributeNames</button>
+            <button class="secondary" @onclick="ToggleAttribute">ToggleAttribute</button>
+            <button class="danger" @onclick="RemoveAttribute">RemoveAttribute</button>
+        </div>
+    </DemoCard>
 
-<input @bind-value="attributeName" />
-<br />
-<br />
-<button @onclick="HasAttribute">HasAttribute</button>
-&nbsp;
-<button @onclick="HasAttributes">HasAttributes</button>
-<br />
-<br />
-<button @onclick="GetAttribute">GetAttribute</button>
-&nbsp;
-<button @onclick="GetAttributeNames">GetAttributeNames</button>
-<br />
-<br />
-<button @onclick="ToggleAttribute">ToggleAttribute</button>
-&nbsp;
-<button @onclick="RemoveAttribute">RemoveAttribute</button>
+    <DemoCard Title="Scrolling" Api="Scroll / ScrollBy / ScrollIntoView"
+              Description="The target is taller than it looks (it has an inner 100rem block). Scroll within it or bring it into view.">
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <label>X</label><input type="number" @bind-value="scrollX" />
+            <label>Y</label><input type="number" @bind-value="scrollY" />
+            <button @onclick="Scroll">Scroll</button>
+        </div>
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <label>X</label><input type="number" @bind-value="scrollByX" />
+            <label>Y</label><input type="number" @bind-value="scrollByY" />
+            <button @onclick="ScrollBy">ScrollBy</button>
+        </div>
+        <button class="secondary" @onclick="ScrollIntoView">ScrollIntoView</button>
+    </DemoCard>
 
-<br />
-<br />
-<hr />
-<br />
+    <DemoCard Title="Pointer & fullscreen" Api="SetPointerCapture / RequestFullScreen / Matches"
+              Description="Capture pointer events, lock the pointer, go fullscreen, or test a CSS selector.">
+        @if (pointerId != 0)
+        {
+            <div class="controls" style="margin-bottom:.7rem">
+                <button @onclick="SetPointerCapture">SetPointerCapture</button>
+                <button @onclick="HasPointerCapture">HasPointerCapture</button>
+                <button class="secondary" @onclick="ReleasePointerCapture">ReleasePointerCapture</button>
+                <button class="secondary" @onclick="RequestPointerLock">RequestPointerLock</button>
+            </div>
+        }
+        else
+        {
+            <p class="muted">👆 Click/tap the target element above first to capture a pointer id.</p>
+        }
+        <div class="controls">
+            <button @onclick="Matches">Matches "#target"</button>
+            <button @onclick="RequestFullScreen">RequestFullScreen</button>
+        </div>
+    </DemoCard>
 
-X: <input type="number" @bind-value="scrollX" />
-<br />
-<br />
-Y: <input type="number" @bind-value="scrollY" />
-<br />
-<br />
-<button @onclick="Scroll">Scroll</button>
+    <DemoCard Title="Identity & content" Api="AccessKey / ClassName / Id / InnerHtml / OuterHtml / InnerText"
+              Description="Read and write the element's identity and content properties.">
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <input @bind-value="accessKey" placeholder="access key" />
+            <button @onclick="SetAccessKey">Set</button>
+            <button class="secondary" @onclick="GetAccessKey">Get</button>
+            <span class="muted">AccessKey</span>
+        </div>
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <input @bind-value="className" placeholder="class name" />
+            <button @onclick="SetClassName">Set</button>
+            <button class="secondary" @onclick="GetClassName">Get</button>
+            <span class="muted">ClassName</span>
+        </div>
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <input @bind-value="idName" placeholder="id" />
+            <button @onclick="SetId">Set</button>
+            <button class="secondary" @onclick="GetId">Get</button>
+            <span class="muted">Id</span>
+        </div>
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <input @bind-value="innerHtml" placeholder="inner HTML" />
+            <button @onclick="SetInnerHtml">Set</button>
+            <button class="secondary" @onclick="GetInnerHtml">Get</button>
+            <span class="muted">InnerHtml</span>
+        </div>
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <input @bind-value="outerHtml" placeholder="outer HTML" />
+            <button @onclick="SetOuterHtml">Set</button>
+            <button class="secondary" @onclick="GetOuterHtml">Get</button>
+            <span class="muted">OuterHtml</span>
+        </div>
+        <div class="inline-field">
+            <input @bind-value="innerText" placeholder="inner text" />
+            <button @onclick="SetInnerText">Set</button>
+            <button class="secondary" @onclick="GetInnerText">Get</button>
+            <span class="muted">InnerText</span>
+        </div>
+    </DemoCard>
 
-<br />
-<br />
-<hr />
-<br />
+    <DemoCard Title="Layout metrics" Api="Client* / Scroll* / Offset* / TagName"
+              Description="Read the element's box-model dimensions and tag name.">
+        <h5>Client</h5>
+        <div class="controls" style="margin-bottom:.7rem">
+            <button @onclick="GetClientHeight">ClientHeight</button>
+            <button @onclick="GetClientWidth">ClientWidth</button>
+            <button @onclick="GetClientTop">ClientTop</button>
+            <button @onclick="GetClientLeft">ClientLeft</button>
+        </div>
+        <h5>Scroll</h5>
+        <div class="controls" style="margin-bottom:.7rem">
+            <button @onclick="GetScrollHeight">ScrollHeight</button>
+            <button @onclick="GetScrollWidth">ScrollWidth</button>
+            <button @onclick="GetScrollTop">ScrollTop</button>
+            <button @onclick="GetScrollLeft">ScrollLeft</button>
+        </div>
+        <h5>Offset</h5>
+        <div class="controls" style="margin-bottom:.7rem">
+            <button @onclick="GetOffsetHeight">OffsetHeight</button>
+            <button @onclick="GetOffsetWidth">OffsetWidth</button>
+            <button @onclick="GetOffsetTop">OffsetTop</button>
+            <button @onclick="GetOffsetLeft">OffsetLeft</button>
+        </div>
+        <div class="controls">
+            <button @onclick="GetBoundingClientRect">GetBoundingClientRect</button>
+            <button @onclick="GetTagName">GetTagName</button>
+        </div>
+    </DemoCard>
 
-X: <input type="number" @bind-value="scrollByX" />
-<br />
-<br />
-Y: <input type="number" @bind-value="scrollByY" />
-<br />
-<br />
-<button @onclick="ScrollBy">ScrollBy</button>
+    <DemoCard Title="Editing & accessibility" Api="ContentEditable / EnterKeyHint / Hidden / Dir / Inert / TabIndex"
+              Description="Toggle editing behavior and accessibility-related properties.">
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <select @bind="selectedContentEditable">
+                @foreach (var option in Enum.GetValues(typeof(ContentEditable)))
+                {
+                    <option value="@option">@option.ToString()</option>
+                }
+            </select>
+            <button @onclick="SetContentEditable">Set</button>
+            <button class="secondary" @onclick="GetContentEditable">Get</button>
+            <button class="secondary" @onclick="IsContentEditable">IsEditable</button>
+            <span class="muted">ContentEditable</span>
+        </div>
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <select @bind="selectedEnterKeyHint">
+                @foreach (var option in Enum.GetValues(typeof(EnterKeyHint)))
+                {
+                    <option value="@option">@option.ToString()</option>
+                }
+            </select>
+            <button @onclick="SetEnterKeyHint">Set</button>
+            <button class="secondary" @onclick="GetEnterKeyHint">Get</button>
+            <span class="muted">EnterKeyHint</span>
+        </div>
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <select @bind="selectedHidden">
+                @foreach (var option in Enum.GetValues(typeof(Hidden)))
+                {
+                    <option value="@option">@option.ToString()</option>
+                }
+            </select>
+            <button @onclick="SetHidden">Set</button>
+            <button class="secondary" @onclick="GetHidden">Get</button>
+            <span class="muted">Hidden</span>
+        </div>
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <input type="checkbox" id="rtl" @bind="@isDirRtl" />
+            <label for="rtl">@(isDirRtl ? "Rtl" : "Ltr")</label>
+            <button @onclick=SetDir>Set</button>
+            <button class="secondary" @onclick=GetDir>Get</button>
+            <span class="muted">Dir</span>
+        </div>
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <input type="checkbox" id="inert" @bind="@isInert" />
+            <label for="inert">@(isInert ? "true" : "false")</label>
+            <button @onclick=SetInert>Set</button>
+            <button class="secondary" @onclick=GetInert>Get</button>
+            <span class="muted">Inert</span>
+        </div>
+        <div class="inline-field">
+            <input @bind-value="tabIndex" type="number" />
+            <button @onclick="SetTabIndex">Set</button>
+            <button class="secondary" @onclick="GetTabIndex">Get</button>
+            <span class="muted">TabIndex</span>
+        </div>
+    </DemoCard>
 
-<br />
-<br />
-<hr />
-<br />
+    <DemoCard Title="Remove" Api="Remove"
+              Description="Remove the target element from the DOM. Reload the page to bring it back.">
+        <button class="danger" @onclick="Remove">Remove element</button>
+    </DemoCard>
+</div>
 
-<button @onclick="ScrollIntoView">ScrollIntoView</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetBoundingClientRect">GetBoundingClientRect</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-@if (pointerId != 0)
-{
-    <button @onclick="SetPointerCapture">SetPointerCapture</button>
-    <span style="margin-right: 0.5rem;"></span>
-    <button @onclick="HasPointerCapture">HasPointerCapture</button>
-    <br />
-    <br />
-    <button @onclick="ReleasePointerCapture">ReleasePointerCapture</button>
-    <span style="margin-right: 0.5rem;"></span>
-    <button @onclick="RequestPointerLock">RequestPointerLock</button>
-    <br />
-}
-else
-{
-    <div>*Click/Tap on the element first*</div>
-}
-
-<br />
-<hr />
-<br />
-
-<button @onclick="Matches">Matches (id: target)</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="RequestFullScreen">RequestFullScreen</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind-value="accessKey" />
-<br />
-<br />
-<button @onclick="SetAccessKey">SetAccessKey</button>
-&nbsp;
-<button @onclick="GetAccessKey">GetAccessKey</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind-value="className" />
-<br />
-<br />
-<button @onclick="SetClassName">SetClassName</button>
-&nbsp;
-<button @onclick="GetClassName">GetClassName</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetClientHeight">GetClientHeight</button>
-&nbsp;
-<button @onclick="GetClientLeft">GetClientLeft</button>
-<br />
-<br />
-<button @onclick="GetClientTop">GetClientTop</button>
-&nbsp;
-<button @onclick="GetClientWidth">GetClientWidth</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind-value="idName" />
-<br />
-<br />
-<button @onclick="SetId">SetId</button>
-&nbsp;
-<button @onclick="GetId">GetId</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind-value="innerHtml" />
-<br />
-<br />
-<button @onclick="SetInnerHtml">SetInnerHtml</button>
-&nbsp;
-<button @onclick="GetInnerHtml">GetInnerHtml</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind-value="outerHtml" />
-<br />
-<br />
-<button @onclick="SetOuterHtml">SetOuterHtml</button>
-&nbsp;
-<button @onclick="GetOuterHtml">GetOuterHtml</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind-value="innerText" />
-<br />
-<br />
-<button @onclick="SetInnerText">SetInnerText</button>
-&nbsp;
-<button @onclick="GetInnerText">GetInnerText</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetScrollHeight">GetScrollHeight</button>
-&nbsp;
-<button @onclick="GetScrollLeft">GetScrollLeft</button>
-<br />
-<br />
-<button @onclick="GetScrollTop">GetScrollTop</button>
-&nbsp;
-<button @onclick="GetScrollWidth">GetScrollWidth</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetTagName">GetTagName</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="IsContentEditable">IsContentEditable</button>
-<br />
-<br />
-<select @bind="selectedContentEditable">
-    @foreach (var option in Enum.GetValues(typeof(ContentEditable)))
-    {
-        <option value="@option">@option.ToString()</option>
-    }
-</select>
-<br />
-<br />
-<button @onclick="SetContentEditable">SetContentEditable</button>
-&nbsp;
-<button @onclick="GetContentEditable">GetContentEditable</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<select @bind="selectedEnterKeyHint">
-    @foreach (var option in Enum.GetValues(typeof(EnterKeyHint)))
-    {
-        <option value="@option">@option.ToString()</option>
-    }
-</select>
-<br />
-<br />
-<button @onclick="SetEnterKeyHint">SetEnterKeyHint</button>
-&nbsp;
-<button @onclick="GetEnterKeyHint">GetEnterKeyHint</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-
-<select @bind="selectedHidden">
-    @foreach (var option in Enum.GetValues(typeof(Hidden)))
-    {
-        <option value="@option">@option.ToString()</option>
-    }
-</select>
-<br />
-<br />
-<button @onclick="SetHidden">SetHidden</button>
-&nbsp;
-<button @onclick="GetHidden">GetHidden</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input type="checkbox" @bind="@isDirRtl" />
-<label>@(isDirRtl ? "Rtl" : "Ltr")</label>
-<br />
-<br />
-<button @onclick=SetDir>SetDir</button>
-<br />
-<br />
-<button @onclick=GetDir>GetDir</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input type="checkbox" @bind="@isInert" />
-<label>@(isInert ? "true" : "false")</label>
-<br />
-<br />
-<button @onclick=SetInert>SetInert</button>
-&nbsp;
-<button @onclick=GetInert>GetInert</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="GetOffsetHeight">GetOffsetHeight</button>
-&nbsp;
-<button @onclick="GetOffsetLeft">GetOffsetLeft</button>
-<br />
-<br />
-<button @onclick="GetOffsetTop">GetOffsetTop</button>
-&nbsp;
-<button @onclick="GetOffsetWidth">GetOffsetWidth</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind-value="tabIndex" />
-<br />
-<br />
-<button @onclick="SetTabIndex">SetTabIndex</button>
-&nbsp;
-<button @onclick="GetTabIndex">GetTabIndex</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick="Remove">Remove</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="element output" />
 
 @code {
+    private DemoConsole output = default!;
+
     private ElementReference elementRef = default!;
 
     private bool isDirRtl;
-
     private bool isInert;
-
     private int tabIndex;
-
     private int pointerId;
 
     private float scrollX = 0;
     private float scrollY = 100;
-
     private float scrollByX = 0;
     private float scrollByY = -156;
 
     private string attributeName = "style";
-
     private string accessKey = "TestKey";
-
     private string className = "element-class";
-
     private string idName = "target";
-
     private string innerHtml = "<div style=\"height: 10rem\">Element</div>";
-
     private string outerHtml = "<div style=\"max-width:6rem; max-height:6rem; color: white; overflow: auto; background: dodgerblue;\"><div style=\"height: 10rem\">Element</div></div>";
-
     private string innerText = "Element";
 
     private ContentEditable selectedContentEditable = ContentEditable.True;
-
     private EnterKeyHint selectedEnterKeyHint = EnterKeyHint.Done;
-
     private Hidden selectedHidden = Hidden.True;
-
 
     private async Task GetAttribute()
     {
-        await console.Log("Element Attribute:", await elementRef.GetAttribute(attributeName));
+        await output.Success("GetAttribute →", await elementRef.GetAttribute(attributeName));
     }
 
     private async Task GetAttributeNames()
     {
         var attributeNames = await elementRef.GetAttributeNames();
-
         foreach (var name in attributeNames)
         {
             var value = await elementRef.GetAttribute(name);
-            await console.Log(name, value);
+            await output.Success(name, "→", value);
         }
     }
 
     private async Task GetBoundingClientRect()
     {
-        await console.Log("Element BoundingClientRect:", await elementRef.GetBoundingClientRect());
+        await output.Success("BoundingClientRect →", await elementRef.GetBoundingClientRect());
     }
 
     private async Task HasAttribute()
     {
-        await console.Log($"Element HasAttribute ({attributeName}):", await elementRef.HasAttribute(attributeName));
+        await output.Success($"HasAttribute(\"{attributeName}\") →", await elementRef.HasAttribute(attributeName));
     }
 
     private async Task HasAttributes()
     {
-        await console.Log("Element HasAttributes:", await elementRef.HasAttributes());
+        await output.Success("HasAttributes →", await elementRef.HasAttributes());
     }
 
     private async Task ToggleAttribute()
     {
-        await console.Log($"Element ToggleAttribute ({attributeName}):", await elementRef.ToggleAttribute(attributeName, true));
+        await output.Success($"ToggleAttribute(\"{attributeName}\") →", await elementRef.ToggleAttribute(attributeName, true));
     }
 
     private async Task RemoveAttribute()
     {
         var hasAttribute = await elementRef.HasAttribute(attributeName);
-
         await elementRef.RemoveAttribute(attributeName);
-
         if (hasAttribute)
         {
-            await console.Log($"Element {attributeName} attribute has been removed");
+            await output.Log($"Attribute \"{attributeName}\" removed");
         }
     }
 
@@ -447,48 +295,43 @@ else
 
     private async Task HasPointerCapture()
     {
-        var isPointerCaptured = await elementRef.HasPointerCapture(pointerId);
-        await console.Log($"Element HasPointerCapture (id: {pointerId}):", isPointerCaptured);
+        await output.Success($"HasPointerCapture({pointerId}) →", await elementRef.HasPointerCapture(pointerId));
     }
 
     private async Task SetPointerCapture()
     {
         await elementRef.SetPointerCapture(pointerId);
-        var isPointerCaptured = await elementRef.HasPointerCapture(pointerId);
-
-        if (isPointerCaptured)
+        if (await elementRef.HasPointerCapture(pointerId))
         {
-            await console.Log($"Element Pointer (id: {pointerId}) has been captured");
+            await output.Log($"Pointer {pointerId} captured");
         }
     }
 
     private async Task ReleasePointerCapture()
     {
         await elementRef.ReleasePointerCapture(pointerId);
-        var isPointerCaptured = await elementRef.HasPointerCapture(pointerId);
-
-        if (isPointerCaptured)
+        if (await elementRef.HasPointerCapture(pointerId) is false)
         {
-            await console.Log($"Element Pointer with (id: {pointerId}) capture has been released");
+            await output.Log($"Pointer {pointerId} capture released");
         }
     }
 
     private async Task RequestPointerLock()
     {
         await elementRef.RequestPointerLock();
-        await console.Log("Pointer has been locked");
+        await output.Log("Pointer locked");
     }
 
     private async Task Matches()
     {
-        await console.Log("Element matches id=\"target\"?", await elementRef.Matches("#target"));
+        await output.Success("Matches(\"#target\") →", await elementRef.Matches("#target"));
     }
 
     private async Task RequestFullScreen()
     {
         var options = new FullScreenOptions() { NavigationUI = FullScreenNavigationUI.Show };
         await elementRef.RequestFullScreen(options);
-        await console.Log("Element has been fullscreened");
+        await output.Log("Element is fullscreen");
     }
 
     private async Task Scroll()
@@ -511,215 +354,127 @@ else
             Block = ScrollLogicalPosition.Center,
             Behavior = ScrollBehavior.Smooth
         };
-
         await elementRef.ScrollIntoView(scrollOptions);
     }
 
     private async Task SetAccessKey()
     {
         await elementRef.SetAccessKey(accessKey);
-        await console.Log($"Element AccessKey has been successfuly set to \"{accessKey}\"");
+        await output.Log($"AccessKey set to \"{accessKey}\"");
     }
 
-    private async Task GetAccessKey()
-    {
-        await console.Log("Element AccessKey:", await elementRef.GetAccessKey());
-    }
+    private async Task GetAccessKey() => await output.Success("AccessKey →", await elementRef.GetAccessKey());
 
     private async Task SetClassName()
     {
         await elementRef.SetClassName(className);
-        await console.Log($"Element class name has been successfuly set to \"{className}\"");
+        await output.Log($"ClassName set to \"{className}\"");
     }
 
-    private async Task GetClassName()
-    {
-        await console.Log("Element AccessKey:", await elementRef.GetClassName());
-    }
+    private async Task GetClassName() => await output.Success("ClassName →", await elementRef.GetClassName());
 
-    private async Task GetClientHeight()
-    {
-        await console.Log("Element ClientHeight:", await elementRef.GetClientHeight());
-    }
-
-    private async Task GetClientLeft()
-    {
-        await console.Log("Element ClientLeft:", await elementRef.GetClientLeft());
-    }
-
-    private async Task GetClientTop()
-    {
-        await console.Log("Element ClientTop:", await elementRef.GetClientTop());
-    }
-
-    private async Task GetClientWidth()
-    {
-        await console.Log("Element ClientWidth:", await elementRef.GetClientWidth());
-    }
+    private async Task GetClientHeight() => await output.Success("ClientHeight →", await elementRef.GetClientHeight());
+    private async Task GetClientLeft() => await output.Success("ClientLeft →", await elementRef.GetClientLeft());
+    private async Task GetClientTop() => await output.Success("ClientTop →", await elementRef.GetClientTop());
+    private async Task GetClientWidth() => await output.Success("ClientWidth →", await elementRef.GetClientWidth());
 
     private async Task SetId()
     {
         await elementRef.SetId(idName);
-        await console.Log($"Element Id has been successfuly set to \"{idName}\"");
+        await output.Log($"Id set to \"{idName}\"");
     }
 
-    private async Task GetId()
-    {
-        await console.Log("Element Id:", await elementRef.GetId());
-    }
+    private async Task GetId() => await output.Success("Id →", await elementRef.GetId());
 
     private async Task SetInnerHtml()
     {
         await elementRef.SetInnerHtml(innerHtml);
-        await console.Log($"Element InnerHtml has been successfuly set to \"{innerHtml}\"");
+        await output.Log("InnerHtml set");
     }
 
-    private async Task GetInnerHtml()
-    {
-        await console.Log("Element InnerHtml:", await elementRef.GetInnerHtml());
-    }
+    private async Task GetInnerHtml() => await output.Success("InnerHtml →", await elementRef.GetInnerHtml());
 
     private async Task SetOuterHtml()
     {
         await elementRef.SetOuterHtml(outerHtml);
-        await console.Log($"Element OuterHtml has been successfuly set to \"{outerHtml}\"");
+        await output.Log("OuterHtml set");
     }
 
-    private async Task GetOuterHtml()
-    {
-        await console.Log("Element OuterHtml:", await elementRef.GetOuterHtml());
-    }
+    private async Task GetOuterHtml() => await output.Success("OuterHtml →", await elementRef.GetOuterHtml());
 
     private async Task SetInnerText()
     {
         await elementRef.SetInnerText(innerText);
-        await console.Log("Element InnerText has been successfuly set");
+        await output.Log("InnerText set");
     }
 
-    private async Task GetInnerText()
-    {
-        await console.Log("Element InnerText:", await elementRef.GetInnerText());
-    }
+    private async Task GetInnerText() => await output.Success("InnerText →", await elementRef.GetInnerText());
 
-    private async Task GetScrollHeight()
-    {
-        await console.Log("Element ScrollHeight:", await elementRef.GetScrollHeight());
-    }
+    private async Task GetScrollHeight() => await output.Success("ScrollHeight →", await elementRef.GetScrollHeight());
+    private async Task GetScrollLeft() => await output.Success("ScrollLeft →", await elementRef.GetScrollLeft());
+    private async Task GetScrollTop() => await output.Success("ScrollTop →", await elementRef.GetScrollTop());
+    private async Task GetScrollWidth() => await output.Success("ScrollWidth →", await elementRef.GetScrollWidth());
 
-    private async Task GetScrollLeft()
-    {
-        await console.Log("Element ScrollLeft:", await elementRef.GetScrollLeft());
-    }
+    private async Task GetTagName() => await output.Success("TagName →", await elementRef.GetTagName());
 
-    private async Task GetScrollTop()
-    {
-        await console.Log("Element ScrollTop:", await elementRef.GetScrollTop());
-    }
-
-    private async Task GetScrollWidth()
-    {
-        await console.Log("Element ScrollWidth:", await elementRef.GetScrollWidth());
-    }
-
-    private async Task GetTagName()
-    {
-        await console.Log("Element TagName:", await elementRef.GetTagName());
-    }
-
-    private async Task IsContentEditable()
-    {
-        await console.Log("Element IsContentEditable:", await elementRef.IsContentEditable());
-    }
+    private async Task IsContentEditable() => await output.Success("IsContentEditable →", await elementRef.IsContentEditable());
 
     private async Task SetContentEditable()
     {
         await elementRef.SetContentEditable(selectedContentEditable);
-        await console.Log($"Element ContentEditable has been successfuly set to \"{selectedContentEditable}\"");
+        await output.Log($"ContentEditable set to \"{selectedContentEditable}\"");
     }
 
-    private async Task GetContentEditable()
-    {
-        await console.Log("Element ContentEditable:", await elementRef.GetContentEditable());
-    }
+    private async Task GetContentEditable() => await output.Success("ContentEditable →", await elementRef.GetContentEditable());
 
     private async Task SetEnterKeyHint()
     {
         await elementRef.SetEnterKeyHint(selectedEnterKeyHint);
-        await console.Log($"Element EnterKeyHint has been successfuly set to \"{selectedEnterKeyHint}\"");
+        await output.Log($"EnterKeyHint set to \"{selectedEnterKeyHint}\"");
     }
 
-    private async Task GetEnterKeyHint()
-    {
-        await console.Log("Element EnterKeyHint:", await elementRef.GetEnterKeyHint());
-    }
+    private async Task GetEnterKeyHint() => await output.Success("EnterKeyHint →", await elementRef.GetEnterKeyHint());
 
     private async Task SetHidden()
     {
         await elementRef.SetHidden(selectedHidden);
-        await console.Log($"Element Hidden has been successfuly set to \"{selectedHidden}\"");
+        await output.Log($"Hidden set to \"{selectedHidden}\"");
     }
 
-    private async Task GetHidden()
-    {
-        await console.Log("Element Hidden:", (await elementRef.GetHidden()).ToString());
-    }
+    private async Task GetHidden() => await output.Success("Hidden →", (await elementRef.GetHidden()).ToString());
 
     private async Task SetDir()
     {
         await elementRef.SetDir(isDirRtl ? ElementDir.Rtl : ElementDir.Ltr);
-        await console.Log($"Element Dir has been successfuly set to \"{(isDirRtl ? "Rtl" : "Ltr")}\"");
+        await output.Log($"Dir set to \"{(isDirRtl ? "Rtl" : "Ltr")}\"");
     }
 
-    private async Task GetDir()
-    {
-        await console.Log("Element Dir:", await elementRef.GetDir());
-    }
+    private async Task GetDir() => await output.Success("Dir →", await elementRef.GetDir());
 
     private async Task SetInert()
     {
         await elementRef.SetInert(isInert);
-        await console.Log($"Element Inert has been successfuly set to \"{isInert}\"");
+        await output.Log($"Inert set to \"{isInert}\"");
     }
 
-    private async Task GetInert()
-    {
-        await console.Log("Element Inert:", await elementRef.GetInert());
-    }
+    private async Task GetInert() => await output.Success("Inert →", await elementRef.GetInert());
 
-    private async Task GetOffsetHeight()
-    {
-        await console.Log("Element OffsetHeight:", await elementRef.GetOffsetHeight());
-    }
-
-    private async Task GetOffsetLeft()
-    {
-        await console.Log("Element OffsetLeft:", await elementRef.GetOffsetLeft());
-    }
-
-    private async Task GetOffsetTop()
-    {
-        await console.Log("Element OffsetTop:", await elementRef.GetOffsetTop());
-    }
-
-    private async Task GetOffsetWidth()
-    {
-        await console.Log("Element OffsetWidth:", await elementRef.GetOffsetWidth());
-    }
+    private async Task GetOffsetHeight() => await output.Success("OffsetHeight →", await elementRef.GetOffsetHeight());
+    private async Task GetOffsetLeft() => await output.Success("OffsetLeft →", await elementRef.GetOffsetLeft());
+    private async Task GetOffsetTop() => await output.Success("OffsetTop →", await elementRef.GetOffsetTop());
+    private async Task GetOffsetWidth() => await output.Success("OffsetWidth →", await elementRef.GetOffsetWidth());
 
     private async Task SetTabIndex()
     {
         await elementRef.SetTabIndex(tabIndex);
-        await console.Log($"Element TabIndex has been successfuly set to \"{tabIndex}\"");
+        await output.Log($"TabIndex set to \"{tabIndex}\"");
     }
 
-    private async Task GetTabIndex()
-    {
-        await console.Log("Element TabIndex:", await elementRef.GetTabIndex());
-    }
+    private async Task GetTabIndex() => await output.Success("TabIndex →", await elementRef.GetTabIndex());
 
     private async Task Remove()
     {
         await elementRef.Remove();
-        await console.Log("Element has been Removed");
+        await output.Warn("Element removed from the DOM");
     }
 }

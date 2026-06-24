@@ -15,6 +15,12 @@ var BitButil = BitButil || {};
         URL() { return document.URL },
         setTitle(value: string) { document.title = value },
         exitFullscreen() { return document.exitFullscreen() },
-        exitPointerLock() { return document.exitPointerLock() }
+        exitPointerLock() { return document.exitPointerLock() },
+        visibilityState() { return document.visibilityState },
+        hidden() { return document.hidden },
+        hasFocus() { return document.hasFocus() },
+        hasFullscreenElement() { return !!document.fullscreenElement; },
+        hasPointerLockElement() { return !!document.pointerLockElement; },
+        wasDiscarded() { return !!(document as any).wasDiscarded; }
     };
 }(BitButil));
