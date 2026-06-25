@@ -13,6 +13,12 @@ public partial class BitFcDateTimePicker : IDisposable
     [Parameter] public string MinuteAriaLabel { get; set; } = "Minute";
     [Parameter] public string SelectedDayAriaLabel { get; set; } = "selected";
 
+    /// <summary>
+    /// Accessible name for the picker's trigger button. When set, assistive tech announces this
+    /// field name together with the current value (e.g. "Start date and time: 5/1/2025 09:00").
+    /// </summary>
+    [Parameter] public string? TriggerAriaLabel { get; set; }
+
     private DateTime _visibleMonthAnchor;
     private int _hour;
     private int _minute;
@@ -74,6 +80,10 @@ public partial class BitFcDateTimePicker : IDisposable
         var selected = new DateTime(date.Year, date.Month, date.Day, _hour, _minute, 0, Value.Kind);
         Value = selected;
         _lastSyncedDate = selected;
+        // Re-anchor the visible month to the selected date so picking a muted overflow day from a
+        // neighboring month doesn't leave the grid on the old month (OnParametersSet won't re-anchor
+        // because _lastSyncedDate now matches Value).
+        _visibleMonthAnchor = GetFirstDayOfMonth(selected);
         _isOpen = false;
         await ValueChanged.InvokeAsync(selected);
     }
@@ -181,6 +191,9 @@ public partial class BitFcDateTimePicker : IDisposable
         var timePart = Value.ToString("HH:mm", CultureInfo.InvariantCulture);
         return $"{datePart} {timePart}";
     }
+
+    private string? GetTriggerAriaLabel()
+        => string.IsNullOrEmpty(TriggerAriaLabel) ? null : $"{TriggerAriaLabel}: {GetDisplayText()}";
 
     private sealed record CalendarDay(DateTime Date, string Label, bool IsCurrentMonth, bool IsSelected);
 

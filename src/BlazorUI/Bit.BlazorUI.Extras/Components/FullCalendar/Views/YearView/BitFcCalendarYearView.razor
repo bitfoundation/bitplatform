@@ -67,6 +67,7 @@
                     {
                         <button type="button" class="bit-bfc-year-day has-events"
                                 style="appearance:none;border:none;background:none;font:inherit;color:inherit;padding:0;text-align:inherit;cursor:pointer;"
+                                aria-label="@cell.Date.ToString("D", State.Culture)"
                                 @onclick="() => ShowEventsForDay(cell.Date, dayEvents)">
                             <span class="bit-bfc-year-day-number @(isToday ? "today" : "")">@cell.Day</span>
                             <span class="bit-bfc-year-day-bullets">

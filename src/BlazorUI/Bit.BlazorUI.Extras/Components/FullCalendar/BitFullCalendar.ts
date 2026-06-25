@@ -153,9 +153,11 @@ namespace BitBlazorUI {
                                 el.releasePointerCapture(activePointerId);
                         } catch { }
 
+                        // Keep the per-event resize guard held until finalization completes so a new
+                        // resize can't start before OnResizeEnd has finished committing the change.
+                        await dotNetRef.invokeMethodAsync("OnResizeEnd");
                         activePointerId = null;
                         (dotNetRef as any)[activeKey] = false;
-                        await dotNetRef.invokeMethodAsync("OnResizeEnd");
                     }
                 };
 
@@ -275,9 +277,11 @@ namespace BitBlazorUI {
                                 el.releasePointerCapture(activePointerId);
                         } catch { }
 
+                        // Keep the per-event resize guard held until finalization completes so a new
+                        // resize can't start before OnResizeEnd has finished committing the change.
+                        await dotNetRef.invokeMethodAsync("OnResizeEnd");
                         activePointerId = null;
                         (dotNetRef as any)[activeKey] = false;
-                        await dotNetRef.invokeMethodAsync("OnResizeEnd");
                     }
                 };
 

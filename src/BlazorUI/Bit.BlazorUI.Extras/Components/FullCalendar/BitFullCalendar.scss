@@ -144,11 +144,11 @@
 .bit-bfc-btn-group .bit-bfc-btn {
     border: none;
     border-radius: 0;
-    border-right: 1px solid var(--bit-bfc-border);
+    border-inline-end: 1px solid var(--bit-bfc-border);
 }
 
 .bit-bfc-btn-group .bit-bfc-btn:last-child {
-    border-right: none;
+    border-inline-end: none;
 }
 
 .bit-bfc-btn-group .bit-bfc-btn.active {
@@ -679,8 +679,8 @@
 /* When resizing a timeline event from the start edge, anchor the floating preview to the
    start side so it stays visible for short events. */
 .bit-bfc-timeline-event-resizing.bit-bfc-resize-dir-start .bit-bfc-resize-preview {
-    left: 6px;
-    right: auto;
+    inset-inline-start: 6px;
+    inset-inline-end: auto;
 }
 
 /* ===== Timeline (current time indicator) ===== */

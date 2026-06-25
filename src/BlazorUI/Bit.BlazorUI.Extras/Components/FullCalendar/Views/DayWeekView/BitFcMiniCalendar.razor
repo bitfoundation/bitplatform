@@ -42,7 +42,7 @@
                             ? "other-month"
                             : $"{(isToday ? "today" : "")} {(isSelected ? "selected" : "")}".Trim();
                         <td>
-                            <button type="button" class="bit-bfc-mini-calendar-day @cls" @onclick="() => SelectDate(cell.Date)">
+                            <button type="button" class="bit-bfc-mini-calendar-day @cls" aria-label="@cell.Date.ToString("D", State.Culture)" @onclick="() => SelectDate(cell.Date)">
                                 @cell.Day
                             </button>
                         </td>

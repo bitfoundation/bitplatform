@@ -39,7 +39,9 @@ public partial class BitFcMiniCalendar
     private DateTime StartOfDisplayMonth(DateTime date)
     {
         var cal = State.Culture.Calendar;
-        return cal.ToDateTime(cal.GetYear(date), cal.GetMonth(date), 1, 0, 0, 0, 0);
+        // Preserve the source era so era-based calendars (e.g. Japanese) rebuild the month in the
+        // same era; the era-less ToDateTime overload can otherwise select the wrong era or throw.
+        return cal.ToDateTime(cal.GetYear(date), cal.GetMonth(date), 1, 0, 0, 0, 0, cal.GetEra(date));
     }
 
     private void PrevMonth() => _displayMonth = State.Culture.Calendar.AddMonths(_displayMonth, -1);

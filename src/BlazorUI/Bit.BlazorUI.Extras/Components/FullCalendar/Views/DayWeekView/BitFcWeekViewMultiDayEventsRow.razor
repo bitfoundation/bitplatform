@@ -20,7 +20,7 @@
                             var evEndInclusive = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
                             var position = ev.StartDate.Date == d.Date ? "first"
                                 : evEndInclusive == d.Date ? "last" : "middle";
-                            <BitFcMonthEventBadge @key="ev.Id" Event="ev" CellDate="d" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
+                            <BitFcMonthEventBadge @key="ev" Event="ev" CellDate="d" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
                         }
                         else
                         {

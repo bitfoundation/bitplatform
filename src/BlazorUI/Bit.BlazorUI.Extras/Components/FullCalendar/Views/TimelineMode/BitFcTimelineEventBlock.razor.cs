@@ -25,7 +25,8 @@ public partial class BitFcTimelineEventBlock
 
     private readonly string _instanceId = Guid.NewGuid().ToString("N");
     private DotNetObjectReference<BitFcTimelineEventBlock>? _dotNetRef;
-    private bool _resizeInitialized;
+    private bool _startResizeInitialized;
+    private bool _endResizeInitialized;
     private bool _isResizing;
     private string? _resizeDirection;
     private BitFullCalendarEvent? _resizeBaseEvent;
@@ -65,14 +66,24 @@ public partial class BitFcTimelineEventBlock
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_resizeInitialized || PixelsPerMinute <= 0) return;
+        if (PixelsPerMinute <= 0) return;
+        if (_startResizeInitialized && _endResizeInitialized) return;
 
         try
         {
             _dotNetRef ??= DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsync("BitBlazorUI.FullCalendar.initResizeHorizontal", _dotNetRef, _startHandleId, "start");
-            await JS.InvokeVoidAsync("BitBlazorUI.FullCalendar.initResizeHorizontal", _dotNetRef, _endHandleId, "end");
-            _resizeInitialized = true;
+            // Track each handle independently so a failure registering one handle doesn't force a
+            // re-registration of the already-bound handle on the next render.
+            if (!_startResizeInitialized)
+            {
+                await JS.InvokeVoidAsync("BitBlazorUI.FullCalendar.initResizeHorizontal", _dotNetRef, _startHandleId, "start");
+                _startResizeInitialized = true;
+            }
+            if (!_endResizeInitialized)
+            {
+                await JS.InvokeVoidAsync("BitBlazorUI.FullCalendar.initResizeHorizontal", _dotNetRef, _endHandleId, "end");
+                _endResizeInitialized = true;
+            }
         }
         catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException or OperationCanceledException)
         {

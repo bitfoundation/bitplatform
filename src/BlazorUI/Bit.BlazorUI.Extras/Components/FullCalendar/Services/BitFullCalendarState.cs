@@ -44,6 +44,7 @@ public class BitFullCalendarState
     public void Initialize(List<BitFullCalendarEvent> events, CultureInfo? culture = null)
     {
         _allEvents = [.. events];
+        NormalizeEventIds();
         if (culture != null)
             Culture = culture;
         UpdateUI();
@@ -221,6 +222,7 @@ public class BitFullCalendarState
         }
 
         _allEvents = [.. events];
+        NormalizeEventIds();
         ApplyFilters();
         NotifyStateChanged();
     }
@@ -279,6 +281,7 @@ public class BitFullCalendarState
     public void AddEvent(BitFullCalendarEvent ev)
     {
         _allEvents.Add(ev);
+        NormalizeEventIds();
         UpdateUI();
     }
 
@@ -461,6 +464,34 @@ public class BitFullCalendarState
 
         UpdateEvent(updated);
         EndDrag();
+    }
+
+    private void NormalizeEventIds() => NormalizeEventIds(_allEvents);
+
+    /// <summary>
+    /// Ensures every event carries a non-blank, unique <see cref="BitFullCalendarEvent.Id"/> before
+    /// layout state is built. Month positioning keys its slot dictionaries by event id
+    /// (see <see cref="BitFullCalendarHelpers.CalculateMonthEventPositions"/> /
+    /// <see cref="BitFullCalendarHelpers.GetMonthCellEvents"/>), so blank or duplicate ids would
+    /// overwrite each other and drop events from the grid. Blank or colliding ids are remapped to a
+    /// generated stable key; already-unique ids are left untouched.
+    /// </summary>
+    private static void NormalizeEventIds(List<BitFullCalendarEvent> events)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var ev in events)
+        {
+            if (!string.IsNullOrWhiteSpace(ev.Id) && seen.Add(ev.Id))
+                continue;
+
+            string generated;
+            do
+            {
+                generated = Guid.NewGuid().ToString("n");
+            }
+            while (!seen.Add(generated));
+            ev.Id = generated;
+        }
     }
 
     private void NotifyStateChanged() => OnStateChanged?.Invoke();

@@ -14,7 +14,7 @@
     const int minRowHeight = 60;
 
     var resources = State.Resources;
-    var resourceIds = resources.Select(r => r.Id).Where(id => !string.IsNullOrEmpty(id)).ToList();
+    var resourceIds = resources.Select(r => r.Id).Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
     var grouped = BitFullCalendarHelpers.GroupEventsByResourceForDay(
         Events, State.SelectedDate, resourceIds, _unassignedKey);
 
