@@ -206,12 +206,15 @@ Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
     <div class=""mdv-toolbar"">
         <span class=""mdv-label"">Flavor:</span>
         <BitButton Size=""BitSize.Small""
+                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.Basic)""
                    Variant=""@(playgroundFlavor == MarkdownFlavor.Basic ? BitVariant.Fill : BitVariant.Outline)""
                    OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Basic))"">Basic</BitButton>
         <BitButton Size=""BitSize.Small""
+                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.GitHub)""
                    Variant=""@(playgroundFlavor == MarkdownFlavor.GitHub ? BitVariant.Fill : BitVariant.Outline)""
                    OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.GitHub))"">GitHub</BitButton>
         <BitButton Size=""BitSize.Small""
+                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.Advanced)""
                    Variant=""@(playgroundFlavor == MarkdownFlavor.Advanced ? BitVariant.Fill : BitVariant.Outline)""
                    OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Advanced))"">Advanced</BitButton>
         <span class=""mdv-spacer""></span>
@@ -253,7 +256,9 @@ private string playgroundHint => playgroundFlavor switch
     MarkdownFlavor.Basic => ""Basic CommonMark only. Tables, strikethrough, task lists, emoji and bare URLs render as plain text."",
     MarkdownFlavor.GitHub => ""GitHub Flavored Markdown: pipe tables, ~~strikethrough~~, task lists and autolink literals."",
     _ => ""Advanced: GitHub Flavored Markdown plus :sparkles: emoji and automatic heading ids.""
-};";
+};
+
+private const string SampleMarkdown = ""# BitMarkdownViewer\n\nA **native Blazor** Markdown viewer written in _pure C#_ - no JavaScript.\n\n- Headings, **bold**, *italic*, ~~strikethrough~~\n- `inline code` and fenced code blocks\n- [Links](https://bitplatform.dev) and task lists:\n    - [x] Parse blocks\n    - [ ] Conquer the world\n\n> Switch the Flavor above to compare rendering."";";
 
     private readonly string example4RazorCode = @"
 <BitMarkdownViewer Markdown=""@customMarkdown"" Pipeline=""customPipeline"" />";

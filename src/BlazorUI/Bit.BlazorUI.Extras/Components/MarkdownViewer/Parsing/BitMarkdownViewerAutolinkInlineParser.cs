@@ -22,7 +22,7 @@ public sealed partial class BitMarkdownViewerAutolinkInlineParser : BitMarkdownV
         if (inner.Length == 0 || inner.Any(char.IsWhiteSpace) || inner.Contains('<')) return false;
 
         int colon = inner.IndexOf(':');
-        if (colon > 0)
+        if (colon > 1)
         {
             string scheme = inner[..colon];
             if (char.IsLetter(scheme[0])

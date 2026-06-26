@@ -31,7 +31,7 @@ public sealed class BitMarkdownViewerCoreRenderer : BitMarkdownViewerNodeRendere
             case BitMarkdownViewerCodeBlockNode code:
                 b.OpenElement(r.NextSeq(), "pre");
                 b.OpenElement(r.NextSeq(), "code");
-                if (!string.IsNullOrEmpty(code.Info))
+                if (!string.IsNullOrWhiteSpace(code.Info))
                     b.AddAttribute(r.NextSeq(), "class", "language-"
                         + code.Info.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)[0]);
                 b.AddContent(r.NextSeq(), code.Content);

@@ -29,12 +29,15 @@
                 <div class="mdv-toolbar">
                     <span class="mdv-label">Flavor:</span>
                     <BitButton Size="BitSize.Small"
+                               aria-pressed="@(playgroundFlavor == MarkdownFlavor.Basic)"
                                Variant="@(playgroundFlavor == MarkdownFlavor.Basic ? BitVariant.Fill : BitVariant.Outline)"
                                OnClick="@(() => SetPlaygroundFlavor(MarkdownFlavor.Basic))">Basic</BitButton>
                     <BitButton Size="BitSize.Small"
+                               aria-pressed="@(playgroundFlavor == MarkdownFlavor.GitHub)"
                                Variant="@(playgroundFlavor == MarkdownFlavor.GitHub ? BitVariant.Fill : BitVariant.Outline)"
                                OnClick="@(() => SetPlaygroundFlavor(MarkdownFlavor.GitHub))">GitHub</BitButton>
                     <BitButton Size="BitSize.Small"
+                               aria-pressed="@(playgroundFlavor == MarkdownFlavor.Advanced)"
                                Variant="@(playgroundFlavor == MarkdownFlavor.Advanced ? BitVariant.Fill : BitVariant.Outline)"
                                OnClick="@(() => SetPlaygroundFlavor(MarkdownFlavor.Advanced))">Advanced</BitButton>
                     <span class="mdv-spacer"></span>
