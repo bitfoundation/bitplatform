@@ -9,5 +9,6 @@ public enum BitDataGridColumnDataType
     Boolean,
     Date,
     DateTime,
+    DateTimeOffset,
     Enum
 }

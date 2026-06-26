@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -77,13 +78,14 @@ public sealed class BitDataGridPropertyAccessor<TItem>
             else if (target == typeof(Guid))
                 result = value is Guid g ? g : Guid.Parse(value.ToString()!);
             else if (target == typeof(DateOnly))
-                result = value is DateOnly d ? d : DateOnly.Parse(value.ToString()!);
+                result = value is DateOnly d ? d : DateOnly.Parse(value.ToString()!, CultureInfo.InvariantCulture);
             else if (target == typeof(TimeOnly))
-                result = value is TimeOnly t ? t : TimeOnly.Parse(value.ToString()!);
+                result = value is TimeOnly t ? t : TimeOnly.Parse(value.ToString()!, CultureInfo.InvariantCulture);
             else if (target == typeof(DateTimeOffset))
                 // DateTimeOffset is not IConvertible, so Convert.ChangeType below would throw for it;
-                // handle it explicitly like the other date/time types above.
-                result = value is DateTimeOffset dto ? dto : DateTimeOffset.Parse(value.ToString()!);
+                // handle it explicitly like the other date/time types above. Parse with the invariant
+                // culture to match the ISO 8601 string the editors emit, so conversion is locale-stable.
+                result = value is DateTimeOffset dto ? dto : DateTimeOffset.Parse(value.ToString()!, CultureInfo.InvariantCulture);
             else
                 result = Convert.ChangeType(value, target);
             return true;

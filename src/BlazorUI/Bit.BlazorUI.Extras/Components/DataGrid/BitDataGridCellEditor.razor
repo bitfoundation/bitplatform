@@ -27,6 +27,12 @@
                @onchange="e => Set(e.Value)" />
         break;
 
+    case BitDataGridColumnDataType.DateTimeOffset:
+        <input type="datetime-local" class="bit-dtg-editor"
+               value="@(GetDateTime())"
+               @onchange="e => SetDateTimeOffset(e.Value)" />
+        break;
+
     case BitDataGridColumnDataType.Enum when Column.Accessor is not null && Column.Accessor.UnderlyingType.IsEnum:
         <select class="bit-dtg-editor" value="@(GetString())"
                 @onchange="e => Set(string.IsNullOrEmpty(e.Value as string) ? null : e.Value)">
@@ -101,4 +107,23 @@
         && Column.Accessor.UnderlyingType.IsEnum;
 
     private void Set(object? raw) => Grid.SetEditValue(Column, raw);
+
+    // <input type="datetime-local"> has no UTC offset, so a naive parse back through the property
+    // accessor would discard the original offset. Combine the edited local date/time with the offset
+    // of the current value (falling back to the system local offset for a new/empty value) and pass a
+    // real DateTimeOffset so the accessor stores it without losing the offset.
+    private void SetDateTimeOffset(object? raw)
+    {
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        if (raw is string s && !string.IsNullOrEmpty(s)
+            && DateTime.TryParse(s, inv, System.Globalization.DateTimeStyles.None, out var local))
+        {
+            var offset = Value is DateTimeOffset current ? current.Offset : DateTimeOffset.Now.Offset;
+            Grid.SetEditValue(Column, new DateTimeOffset(local, offset));
+        }
+        else
+        {
+            Grid.SetEditValue(Column, raw);
+        }
+    }
 }

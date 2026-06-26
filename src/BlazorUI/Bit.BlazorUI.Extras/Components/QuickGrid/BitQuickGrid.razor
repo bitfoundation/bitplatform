@@ -24,6 +24,7 @@
                     <Virtualize @ref="@_virtualizeComponent"
                                 ItemSize="@ItemSize"
                                 TItem="(int RowIndex, TGridItem Data)"
+                                SpacerElement="tr"
                                 ItemsProvider="@ProvideVirtualizedItems"
                                 ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
                                 Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />

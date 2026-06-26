@@ -50,14 +50,14 @@
         </div>
     }
 
-    @if (Pageable && (PagerPosition is BitDataGridPagerPosition.Top or BitDataGridPagerPosition.TopAndBottom))
+    @if (PagingActive && (PagerPosition is BitDataGridPagerPosition.Top or BitDataGridPagerPosition.TopAndBottom))
     {
         @RenderPager
     }
 
     @* ------------------------------------------------------- Grid viewport *@
     <div class="bit-dtg-viewport" style="@ViewportStyle" @ref="_infiniteViewport">
-        <div class="bit-dtg-table" role="grid" aria-rowcount="@TotalCount" style="--bit-dtg-template:@BuildGridTemplate();">
+        <div class="bit-dtg-table" role="grid" aria-rowcount="@(IsInfiniteMode ? -1 : TotalCount)" style="--bit-dtg-template:@BuildGridTemplate();">
 
             @if (ShowHeader)
             {
@@ -320,7 +320,7 @@
         </div>
     </div>
 
-    @if (Pageable && (PagerPosition is BitDataGridPagerPosition.Bottom or BitDataGridPagerPosition.TopAndBottom))
+    @if (PagingActive && (PagerPosition is BitDataGridPagerPosition.Bottom or BitDataGridPagerPosition.TopAndBottom))
     {
         @RenderPager
     }

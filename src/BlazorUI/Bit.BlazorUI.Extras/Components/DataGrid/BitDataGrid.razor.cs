@@ -237,7 +237,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal bool IsEditing(TItem item) => _editItem is not null && KeyEquals(_editItem, item);
     internal bool IsRowSelected(TItem item) => _selected.Contains(item);
     internal int TotalCount => IsServerMode ? _totalCount : _view.Count;
-    internal int TotalPages => _effectivePageSize <= 0 ? 1 : Math.Max(1, (int)Math.Ceiling(TotalCount / (double)_effectivePageSize));
+    // Paging is suppressed while grouping is active: the grouped view renders every row, so a pager
+    // would misrepresent the data and leave page math out of sync with what is displayed. Treat paging
+    // as off in that case so the pager UI, TotalPages and GoToPageAsync all agree with the rendered rows.
+    internal bool PagingActive => Pageable && _groups.Count == 0;
+    internal int TotalPages => (!PagingActive || _effectivePageSize <= 0) ? 1 : Math.Max(1, (int)Math.Ceiling(TotalCount / (double)_effectivePageSize));
     internal int CurrentPage => _currentPage;
     internal IReadOnlyList<BitDataGridAggregateResult> FooterAggregates => _footerAggregates;
     internal TItem? PendingNewItem => _pendingNew;
@@ -413,8 +417,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
                 : siblings.ToList();
             foreach (var item in sorted)
             {
-                var children = ChildrenSelector!(item);
-                var hasChildren = children is not null && children.Any();
+                // Materialize the children once: ChildrenSelector may return a lazy or single-pass
+                // sequence, and enumerating it twice (for the has-children check and the recursive
+                // walk) could yield different results or throw. Cache the snapshot and reuse it.
+                var children = ChildrenSelector!(item) is { } c ? c as IReadOnlyList<TItem> ?? c.ToList() : null;
+                var hasChildren = children is not null && children.Count > 0;
                 _treeMeta[GetKey(item)] = (level, hasChildren);
                 flat.Add(item);
                 if (hasChildren && IsTreeExpanded(item))
@@ -427,8 +434,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         foreach (var item in siblings)
         {
-            var children = ChildrenSelector!(item);
-            if (children is not null && children.Any())
+            // Snapshot the children once to avoid re-enumerating a lazy/single-pass sequence.
+            var children = ChildrenSelector!(item) is { } c ? c as IReadOnlyList<TItem> ?? c.ToList() : null;
+            if (children is not null && children.Count > 0)
             {
                 _expandedTree.Add(GetKey(item));
                 ExpandTreeRecursive(children);
@@ -749,7 +757,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     // ----------------------------------------------------------- Grouping
     internal bool ColumnGroupable(BitDataGridColumn<TItem> column)
-        => column.HasField && (column.Groupable ?? Groupable);
+        // Grouping is a client-side operation: it reshapes the locally-held _view into _viewGroups.
+        // Server mode (OnRead) and infinite-scrolling mode (OnLoadMore) only forward sorts and filters
+        // to the data callback and render the returned rows flat, so exposing a group toggle there would
+        // appear active without affecting the list. Disable it until the remote flow carries grouping.
+        => column.HasField && !IsServerMode && !IsInfiniteMode && (column.Groupable ?? Groupable);
 
     internal bool IsGrouped(BitDataGridColumn<TItem> column) => _groups.Any(g => g.ColumnId == column.Id);
 

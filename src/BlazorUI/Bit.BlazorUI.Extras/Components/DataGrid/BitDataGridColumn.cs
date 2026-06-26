@@ -109,9 +109,11 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
             if (t == typeof(bool)) return BitDataGridColumnDataType.Boolean;
             if (t.IsEnum) return BitDataGridColumnDataType.Enum;
             if (t == typeof(DateOnly)) return BitDataGridColumnDataType.Date;
-            // DateTime/DateTimeOffset carry a time (and offset) component, so keep them on a distinct
-            // type with a time-aware editor rather than the date-only control DateOnly uses.
-            if (t == typeof(DateTime) || t == typeof(DateTimeOffset)) return BitDataGridColumnDataType.DateTime;
+            // DateTime carries a time component, so use a time-aware editor rather than the date-only
+            // control DateOnly uses. DateTimeOffset additionally carries a UTC offset that a plain
+            // datetime-local control cannot represent, so it gets its own offset-preserving path.
+            if (t == typeof(DateTime)) return BitDataGridColumnDataType.DateTime;
+            if (t == typeof(DateTimeOffset)) return BitDataGridColumnDataType.DateTimeOffset;
             if (t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte)
                 || t == typeof(sbyte) || t == typeof(ushort) || t == typeof(uint) || t == typeof(ulong)
                 || t == typeof(double) || t == typeof(float) || t == typeof(decimal))

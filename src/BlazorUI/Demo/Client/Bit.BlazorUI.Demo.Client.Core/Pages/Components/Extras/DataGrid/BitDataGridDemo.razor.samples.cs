@@ -195,7 +195,6 @@ private List<Product> products = SampleData.Generate(200);" + ProductModelCode +
 </BitDataGrid>";
     private readonly string example3CsharpCode = @"
 private List<Product> products = SampleData.Generate(60);
-private BitDataGridSelectionMode selectionMode = BitDataGridSelectionMode.Multiple;
 private IReadOnlyList<Product> selected = new List<Product>();" + ProductModelCode + SampleDataCode;
 
     private readonly string example4RazorCode = @"
