@@ -11,7 +11,7 @@
      @oncontextmenu:preventDefault="Grid.OnCellContextMenu.HasDelegate"
      @onfocusin="HandleFocusIn"
      @onkeydown="HandleKeyDown"
-     @onkeydown:preventDefault="PreventKeyDefault">
+     @onkeydown:preventDefault="ShouldPreventKeyDefault">
     @ChildContent
 </div>
 
@@ -30,9 +30,10 @@
     private bool Editing => Grid.IsEditing(Item);
 
     // Suppress native browser key handling (e.g. scrolling on arrows/Page keys) only while cell
-    // navigation is active and the cell is not being inline-edited, so editor inputs keep their
-    // default typing/caret behavior.
-    private bool PreventKeyDefault => Grid.CellNavigation && !Editing;
+    // navigation is active, the cell is not being inline-edited, and the grid is currently expecting a
+    // key it handles. This deliberately lets Tab/Shift+Tab through so keyboard users can move focus out
+    // of the grid (no keyboard trap); the grid flips PreventCellKeyDefault off after any unhandled key.
+    private bool ShouldPreventKeyDefault => Grid.CellNavigation && !Editing && Grid.PreventCellKeyDefault;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

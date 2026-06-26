@@ -11,7 +11,7 @@
 
     case BitDataGridColumnDataType.Number:
         <input type="number" class="bit-dtg-editor" step="any"
-               value="@(GetString())"
+               value="@(GetNumberString())"
                @oninput="e => Set(e.Value)" />
         break;
 
@@ -44,6 +44,15 @@
 
     private object? Value => Column.GetValue(Item);
     private string GetString() => Value?.ToString() ?? string.Empty;
+
+    // HTML <input type="number"> always expects a period as the decimal separator regardless of the
+    // browser locale, so format numeric values with the invariant culture to avoid emitting a comma
+    // (which the input would reject) in comma-decimal cultures.
+    private string GetNumberString()
+        => Value is IFormattable f
+            ? f.ToString(null, System.Globalization.CultureInfo.InvariantCulture)
+            : (Value?.ToString() ?? string.Empty);
+
     private bool GetBool() => Value is bool b && b;
 
     private string GetDate()

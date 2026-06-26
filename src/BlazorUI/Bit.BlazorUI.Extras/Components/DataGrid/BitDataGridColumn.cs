@@ -110,6 +110,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
             if (t.IsEnum) return BitDataGridColumnDataType.Enum;
             if (t == typeof(DateTime) || t == typeof(DateOnly) || t == typeof(DateTimeOffset)) return BitDataGridColumnDataType.Date;
             if (t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte)
+                || t == typeof(sbyte) || t == typeof(ushort) || t == typeof(uint) || t == typeof(ulong)
                 || t == typeof(double) || t == typeof(float) || t == typeof(decimal))
                 return BitDataGridColumnDataType.Number;
             return BitDataGridColumnDataType.Text;

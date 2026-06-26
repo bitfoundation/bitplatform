@@ -36,5 +36,21 @@ namespace BitBlazorUI {
                 dispose: () => { disposed = true; viewport.removeEventListener('scroll', onScroll); }
             };
         }
+
+        // Triggers a client-side file download for the given text content. Used by CSV export so the
+        // (potentially large) CSV is generated only on demand instead of living in a DOM attribute and
+        // being regenerated on every render. Uses a Blob + object URL to avoid data-URI length limits.
+        public static download(fileName: string, content: string, mimeType: string) {
+            const blob = new Blob([content], { type: mimeType || 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = fileName || 'download';
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            // Revoke after the click has been dispatched so the download isn't cancelled prematurely.
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+        }
     }
 }

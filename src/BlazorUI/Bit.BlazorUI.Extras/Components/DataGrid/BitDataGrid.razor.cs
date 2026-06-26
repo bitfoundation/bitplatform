@@ -175,6 +175,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private TItem? _focusedRow;
     private int _focusedCol;
     private bool _focusPending;
+    // Drives the cells' @onkeydown:preventDefault. Only the keys the grid navigation actually acts on
+    // should suppress native behavior (e.g. page scrolling); Tab/Shift+Tab and printable keys must keep
+    // their default so keyboard users are never trapped inside the grid. Starts true so arrow keys don't
+    // scroll the page on the first press in a freshly focused cell.
+    private bool _preventCellKeyDefault = true;
+    internal bool PreventCellKeyDefault => _preventCellKeyDefault;
 
     private IReadOnlyList<TItem> _view = Array.Empty<TItem>();      // filtered + sorted (full)
     private IReadOnlyList<TItem> _pageItems = Array.Empty<TItem>(); // current page slice
@@ -271,6 +277,15 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             {
                 _selected.Clear();
                 await NotifySelectionAsync();
+            }
+
+            // A parent may change SelectionMode and provide SelectedItems in the same render cycle.
+            // Apply the incoming selection here too so the internal state reflects the new values
+            // instead of being left empty after the mode-change reset.
+            if (SelectedItems is not null)
+            {
+                _selected.Clear();
+                foreach (var i in SelectedItems) _selected.Add(i);
             }
         }
         else if (SelectedItems is not null)
@@ -568,8 +583,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// </summary>
     private CancellationToken ResetLoadCancellation()
     {
+        // Cancel but do NOT dispose the previous source: an OnRead/OnLoadMore call may still be holding
+        // its token and disposing it now would surface an ObjectDisposedException (e.g. on token
+        // registration) instead of the expected OperationCanceledException. The orphaned source has no
+        // timer or registrations of its own, so it is cheap to let the GC reclaim it once the in-flight
+        // operation observes cancellation and completes.
         _loadCts?.Cancel();
-        _loadCts?.Dispose();
         _loadCts = new CancellationTokenSource();
         _loadVersion++;
         return _loadCts.Token;
@@ -606,7 +625,18 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _totalCount = result.TotalCount;
         _footerAggregates = BitDataGridDataProcessor.Aggregate(_pageItems, _columns);
         _viewGroups = null;
+
+        // If the server reported fewer rows than the requested page range implies, the page we just
+        // fetched is out of range and produced an empty/short slice. Clamp to the last valid page and,
+        // when that actually moved us, re-fetch so the UI shows the clamped page's data instead of the
+        // stale out-of-range result. The clamped page is valid for the new TotalCount, so this recurses
+        // at most once.
+        var pageBeforeClamp = _currentPage;
         ClampPage();
+        if (Pageable && _currentPage != pageBeforeClamp)
+        {
+            await LoadServerDataAsync();
+        }
     }
 
     private void ClampPage()
@@ -1055,6 +1085,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         var colCount = VisibleColumns.Count;
         if (colCount == 0) return;
 
+        // Suppress native key behavior only for the keys the grid itself handles. Tab/Shift+Tab and
+        // printable keys keep their default so focus can leave the grid normally (no keyboard trap).
+        // The value is consumed on the next render, so update it (and re-render) whenever it changes.
+        var prevent = e.Key is "ArrowRight" or "ArrowLeft" or "ArrowDown" or "ArrowUp"
+            or "Home" or "End" or "PageDown" or "PageUp" or "Enter" or "F2" or "Escape";
+        if (_preventCellKeyDefault != prevent)
+        {
+            _preventCellKeyDefault = prevent;
+            StateHasChanged();
+        }
+
         var rowIdx = IndexOfRow(rows, item);
         if (rowIdx < 0) rowIdx = 0;
 
@@ -1227,6 +1268,22 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     }
 
     // ----------------------------------------------------------- CSV export
+    /// <summary>
+    /// Generates the current (filtered/sorted) data as CSV and triggers a client-side download.
+    /// Invoked on demand from the toolbar button so the CSV is built only when the user asks for it,
+    /// rather than being regenerated into a DOM attribute on every render.
+    /// </summary>
+    public async Task ExportCsvAsync()
+    {
+        var csv = ToCsv();
+        try
+        {
+            await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.download", "export.csv", csv, "text/csv;charset=utf-8");
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
+    }
+
     /// <summary>Builds a CSV string of the current (filtered/sorted) data.</summary>
     public string ToCsv()
     {

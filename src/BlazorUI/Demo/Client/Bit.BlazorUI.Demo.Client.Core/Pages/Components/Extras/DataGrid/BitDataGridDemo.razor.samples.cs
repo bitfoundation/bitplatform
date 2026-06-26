@@ -323,6 +323,7 @@ private readonly List<Product> all = SampleData.Generate(523);
 private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadRequest request)
 {
     loading = true;
+    await InvokeAsync(StateHasChanged); // re-render so the loading indicator shows
     try
     {
         await Task.Delay(250, request.CancellationToken); // simulate a backend round-trip
@@ -372,6 +373,7 @@ private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadReque
     finally
     {
         loading = false;
+        await InvokeAsync(StateHasChanged); // re-render after the load completes (runs as a callback)
     }
 }" + ProductModelCode + SampleDataCode;
 

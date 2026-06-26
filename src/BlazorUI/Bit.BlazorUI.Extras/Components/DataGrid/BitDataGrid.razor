@@ -26,8 +26,7 @@
                 }
                 @if (ShowCsvExport)
                 {
-                    <a class="bit-dtg-btn" download="export.csv"
-                       href="data:text/csv;charset=utf-8,@Uri.EscapeDataString(ToCsv())">Export CSV</a>
+                    <button type="button" class="bit-dtg-btn" @onclick="ExportCsvAsync">Export CSV</button>
                 }
                 @if (ShowColumnChooser)
                 {
