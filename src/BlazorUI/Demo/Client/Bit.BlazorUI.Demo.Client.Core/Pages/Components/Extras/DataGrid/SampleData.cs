@@ -30,6 +30,9 @@ public static class SampleData
     /// </summary>
     private static List<Product> GenerateCore(int count, int seed, string[] adjectives, string[] nouns, string[] suppliers)
     {
+        if (count < 0)
+            throw new ArgumentOutOfRangeException(nameof(count), count, "Count must not be negative.");
+
         var rng = new Random(seed);
         var categories = Enum.GetValues<Category>();
         var list = new List<Product>(count);

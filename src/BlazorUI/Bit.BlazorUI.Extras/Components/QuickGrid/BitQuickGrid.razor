@@ -65,7 +65,9 @@
         {
             while (rowIndex++ < initialRowIndex + Pagination.ItemsPerPage)
             {
-                <tr></tr>
+                <tr class="bit-qkg-empty-row" aria-hidden="true">
+                    <td colspan="@_columns.Count"></td>
+                </tr>
             }
         }
     }

@@ -76,6 +76,10 @@ public sealed class BitDataGridPropertyAccessor<TItem>
                 result = value is DateOnly d ? d : DateOnly.Parse(value.ToString()!);
             else if (target == typeof(TimeOnly))
                 result = value is TimeOnly t ? t : TimeOnly.Parse(value.ToString()!);
+            else if (target == typeof(DateTimeOffset))
+                // DateTimeOffset is not IConvertible, so Convert.ChangeType below would throw for it;
+                // handle it explicitly like the other date/time types above.
+                result = value is DateTimeOffset dto ? dto : DateTimeOffset.Parse(value.ToString()!);
             else
                 result = Convert.ChangeType(value, target);
             return true;

@@ -337,7 +337,9 @@
 
 @code {
     private bool UseVirtualization => Virtualize && _viewGroups is null && !IsServerMode;
-    private ICollection<TItem> VirtualRows => _view as ICollection<TItem> ?? _view.ToList();
+    // Virtualize the current page slice so paging is honored when Pageable and Virtualize are both on.
+    // When paging is off, _pageItems is the full view, so this still virtualizes everything.
+    private ICollection<TItem> VirtualRows => _pageItems as ICollection<TItem> ?? _pageItems.ToList();
 
     private RenderFragment RenderGroupList(IReadOnlyList<BitDataGridGroup<TItem>> groups) => __builder =>
     {

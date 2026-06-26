@@ -46,6 +46,9 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     private int? _lastRefreshedPaginationStateHash;
     private object? _lastAssignedItemsOrProvider;
     private CancellationTokenSource? _pendingDataLoadCancellationTokenSource;
+    // Hash of the collected column set the resize handles were last bound against, so we only rebind
+    // when the columns actually change rather than on every render.
+    private int? _lastInitColumnsHash;
 
     // If the PaginationState mutates, it raises this event. We use it to trigger a re-render.
     private readonly EventCallbackSubscriber<BitQuickGridPaginationState> _currentPageItemsChanged;
@@ -297,6 +300,21 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         if (firstRender)
         {
             _jsEventDisposable = await _js.BitQuickGridInit(_tableReference);
+            _lastInitColumnsHash = ComputeColumnsHash();
+        }
+        else if (ResizableColumns)
+        {
+            // The resize handles (.bit-qkg-drg) are bound per-element by init. When the column set
+            // changes, the header re-renders with fresh handles that have no listeners, so rebind them.
+            // Re-running init also re-adds the document-level listeners, so stop the previous
+            // registration first to avoid leaking duplicate handlers. Unchanged renders are skipped.
+            var hash = ComputeColumnsHash();
+            if (hash != _lastInitColumnsHash)
+            {
+                _lastInitColumnsHash = hash;
+                await StopJsEventsAsync();
+                _jsEventDisposable = await _js.BitQuickGridInit(_tableReference);
+            }
         }
 
         if (_checkColumnOptionsPosition && _displayOptionsForColumn is not null)
@@ -304,6 +322,28 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
             _checkColumnOptionsPosition = false;
             await _js.BitQuickGridCheckColumnOptionsPosition(_tableReference);
         }
+    }
+
+    private int ComputeColumnsHash()
+    {
+        var hash = new HashCode();
+        foreach (var col in _columns) hash.Add(col);
+        return hash.ToHashCode();
+    }
+
+    private async Task StopJsEventsAsync()
+    {
+        try
+        {
+            if (_jsEventDisposable is not null)
+            {
+                await _jsEventDisposable.InvokeVoidAsync("stop");
+                await _jsEventDisposable.DisposeAsync();
+                _jsEventDisposable = null;
+            }
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
     }
 
 

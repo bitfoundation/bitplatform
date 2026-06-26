@@ -57,11 +57,14 @@
 
     private string GetDate()
     {
+        // <input type="date"> requires a strict ISO 8601 yyyy-MM-dd value; format with the invariant
+        // culture so non-Gregorian thread cultures don't emit an invalid (e.g. localized) date string.
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
         return Value switch
         {
-            DateTime dt => dt.ToString("yyyy-MM-dd"),
-            DateOnly d => d.ToString("yyyy-MM-dd"),
-            DateTimeOffset dto => dto.ToString("yyyy-MM-dd"),
+            DateTime dt => dt.ToString("yyyy-MM-dd", inv),
+            DateOnly d => d.ToString("yyyy-MM-dd", inv),
+            DateTimeOffset dto => dto.ToString("yyyy-MM-dd", inv),
             _ => string.Empty
         };
     }

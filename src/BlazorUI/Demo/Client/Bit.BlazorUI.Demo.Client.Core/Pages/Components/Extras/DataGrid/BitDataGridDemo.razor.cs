@@ -44,7 +44,9 @@ public partial class BitDataGridDemo : AppComponentBase
     private string serverLastRequest = "";
 
     // example 12 - infinite scrolling
-    private readonly List<Product> infiniteAll = SampleData.Generate(2_000);
+    // Use a count that is not a multiple of the 40-row batch size so the final batch is short,
+    // letting the grid detect the end without an extra empty fetch.
+    private readonly List<Product> infiniteAll = SampleData.Generate(2_017);
     private string infiniteLog = "Scroll down to load more…";
     private int infiniteRequests;
 

@@ -434,6 +434,10 @@ protected override async Task OnInitializedAsync()
                                             items: data!.Results,
                                             totalItemCount: data!.Meta.Results.Total);
         }
+        catch (OperationCanceledException) when (req.CancellationToken.IsCancellationRequested)
+        {
+            throw; // a rapid refresh superseded this request; let cancellation flow through
+        }
         catch
         {
             return BitQuickGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
@@ -739,6 +743,10 @@ protected override async Task OnInitializedAsync()
 
             return BitQuickGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
         }
+        catch (OperationCanceledException) when (req.CancellationToken.IsCancellationRequested)
+        {
+            throw; // a rapid refresh superseded this request; let cancellation flow through
+        }
         catch
         {
             return BitQuickGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
@@ -906,6 +914,10 @@ protected override async Task OnInitializedAsync()
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, req.CancellationToken);
 
             return BitQuickGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+        }
+        catch (OperationCanceledException) when (req.CancellationToken.IsCancellationRequested)
+        {
+            throw; // a rapid refresh superseded this request; let cancellation flow through
         }
         catch
         {

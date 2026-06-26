@@ -248,10 +248,21 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         if (_columns.Contains(column)) return;
         _columns.Add(column);
         _columnsById[column.Id] = column;
-        // Recompute the data view (not just re-render) so footer/aggregate columns registered after the
-        // initial data load have their values calculated. RefreshAsync is cheap in client mode and any
-        // superseded server-mode load is cancelled by the load-cancellation token.
-        InvokeAsync(RefreshAsync);
+
+        // A column registering itself must not trigger a fresh data fetch in server/infinite modes —
+        // doing so once per column re-queries the backend (or resets the infinite list) repeatedly.
+        // Instead recompute footer/aggregate values from the rows already loaded and just re-render so
+        // late-registered footer columns still get their values. In client mode RefreshAsync only
+        // reprocesses the in-memory view (and recomputes aggregates), so it is cheap and used as-is.
+        if (IsServerMode || IsInfiniteMode)
+        {
+            _footerAggregates = BitDataGridDataProcessor.Aggregate(_pageItems, _columns);
+            InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            InvokeAsync(RefreshAsync);
+        }
     }
 
     internal void RemoveColumn(BitDataGridColumn<TItem> column)

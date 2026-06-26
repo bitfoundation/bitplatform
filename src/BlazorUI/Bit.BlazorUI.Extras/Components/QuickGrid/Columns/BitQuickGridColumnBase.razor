@@ -97,6 +97,9 @@
         HeaderContent = RenderDefaultHeaderContent;
     }
 
+    private string SortButtonLabel()
+        => string.IsNullOrEmpty(Title) ? "Sort" : $"Sort by {Title}";
+
     private void RenderDefaultHeaderContent(RenderTreeBuilder __builder)
     {
         @if (HeaderTemplate is not null)
@@ -112,7 +115,7 @@
 
             if (Sortable.HasValue ? Sortable.Value : IsSortableByDefault())
             {
-                <button type="button" class="bit-qkg-ctl" @onclick="@(() => Grid.SortByColumnAsync(this))">
+                <button type="button" class="bit-qkg-ctl" aria-label="@SortButtonLabel()" @onclick="@(() => Grid.SortByColumnAsync(this))">
                     <div class="bit-qkg-ctt">@Title</div>
                     <div class="bit-qkg-srt" aria-hidden="true"></div>
                 </button>

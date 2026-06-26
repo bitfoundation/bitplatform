@@ -372,8 +372,13 @@ private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadReque
     }
     finally
     {
-        loading = false;
-        await InvokeAsync(StateHasChanged); // re-render after the load completes (runs as a callback)
+        // Only the active request should clear the loading state; a superseded request observes a
+        // cancelled token, so skip the reset and let the newer in-flight load own the indicator.
+        if (!request.CancellationToken.IsCancellationRequested)
+        {
+            loading = false;
+            await InvokeAsync(StateHasChanged); // re-render after the load completes (runs as a callback)
+        }
     }
 }" + ProductModelCode + SampleDataCode;
 
@@ -385,7 +390,7 @@ private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadReque
     <BitDataGridColumn TItem=""Product"" Field=""Price"" Format=""C2"" />
 </BitDataGrid>";
     private readonly string example12CsharpCode = @"
-private readonly List<Product> all = SampleData.Generate(2_000);
+private readonly List<Product> all = SampleData.Generate(2_017);
 
 private async Task<BitDataGridReadResult<Product>> LoadMore(BitDataGridReadRequest request)
 {

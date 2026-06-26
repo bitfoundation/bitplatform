@@ -637,6 +637,12 @@ public partial class BitQuickGridDemo : AppComponentBase
 
                 return BitQuickGridItemsProviderResult.From(data!.Results!, data!.Meta!.Results!.Total);
             }
+            catch (OperationCanceledException) when (req.CancellationToken.IsCancellationRequested)
+            {
+                // A rapid refresh superseded this request; let the cancellation propagate so the grid
+                // treats it as a cancelled load rather than a genuine zero-item result.
+                throw;
+            }
             catch
             {
                 return BitQuickGridItemsProviderResult.From<FoodRecall>([], 0);
@@ -671,6 +677,12 @@ public partial class BitQuickGridDemo : AppComponentBase
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, req.CancellationToken);
 
                 return BitQuickGridItemsProviderResult.From(data!.Items!, data!.TotalCount);
+            }
+            catch (OperationCanceledException) when (req.CancellationToken.IsCancellationRequested)
+            {
+                // A rapid refresh superseded this request; let the cancellation propagate so the grid
+                // treats it as a cancelled load rather than a genuine zero-item result.
+                throw;
             }
             catch
             {
