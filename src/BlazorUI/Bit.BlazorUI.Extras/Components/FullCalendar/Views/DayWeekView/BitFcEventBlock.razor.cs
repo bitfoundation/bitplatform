@@ -54,7 +54,9 @@ public partial class BitFcEventBlock
         if (_isResizing)
             return;
 
-        if (e.Key is "Enter" or " " or "Spacebar")
+        // Ignore auto-repeat keydown events (matching the month badge logic) so holding
+        // Enter/Space cannot fire OnSelected repeatedly for the same event.
+        if (e.Key is "Enter" or " " or "Spacebar" && !e.Repeat)
             await OnSelected.InvokeAsync(Event);
     }
 

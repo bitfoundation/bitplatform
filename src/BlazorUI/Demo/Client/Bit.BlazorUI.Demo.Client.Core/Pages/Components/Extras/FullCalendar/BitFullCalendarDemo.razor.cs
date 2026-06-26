@@ -941,9 +941,6 @@ public partial class BitFullCalendarDemo
 
 <BitFullCalendar Events=""events""
                  Resources=""resources""
-                 DefaultView=""BitFullCalendarView.Week""
-                 DefaultMode=""BitFullCalendarMode.Event""
-                 DefaultDate=""DateTime.Today""
                  @bind-View=""bindingView""
                  @bind-Mode=""bindingMode""
                  @bind-Date=""bindingDate""

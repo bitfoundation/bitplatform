@@ -16,6 +16,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
 
     private bool _showEdit;
     private bool _isDeleting;
+    private bool _deleteCommitted;
     private ElementReference _dialogRef;
     private readonly string _dialogTitleId = $"bfc-details-title-{Guid.NewGuid():N}";
 
@@ -53,17 +54,26 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
             return;
         _isDeleting = true;
 
-        var snapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
-        State.RemoveEvent(Event.Id);
         try
         {
-            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+            // Once the local removal has been committed and the Delete notification dispatched,
+            // never send it again. A notifier/close that throws resets _isDeleting (below) so the
+            // user can retry closing the dialog, but _deleteCommitted prevents that retry from
+            // emitting a second Delete for an event that was already removed.
+            if (!_deleteCommitted)
             {
-                Event = snapshot,
-                OldEvent = snapshot,
-                Kind = BitFullCalendarChangeKind.Delete,
-                Source = BitFullCalendarChangeSource.Delete
-            });
+                var snapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
+                State.RemoveEvent(Event.Id);
+                _deleteCommitted = true;
+                await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                {
+                    Event = snapshot,
+                    OldEvent = snapshot,
+                    Kind = BitFullCalendarChangeKind.Delete,
+                    Source = BitFullCalendarChangeSource.Delete
+                });
+            }
+
             await OnClose.InvokeAsync();
         }
         finally

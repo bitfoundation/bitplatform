@@ -29,8 +29,13 @@ public sealed class BitFullCalendarColorScheme
             var id = o.Id?.Trim();
             if (string.IsNullOrEmpty(id) || _byId.ContainsKey(id))
                 continue;
-            _byId[id] = o;
-            canonical.Add(o);
+            // Store a normalized copy (trimmed id) in BOTH collections so Options never exposes an
+            // untrimmed id that Find would otherwise silently resolve through its trimmed key.
+            var normalized = string.Equals(o.Id, id, StringComparison.Ordinal)
+                ? o
+                : new BitFullCalendarColorOption { Id = id, Title = o.Title, Value = o.Value };
+            _byId[id] = normalized;
+            canonical.Add(normalized);
         }
         Options = canonical;
     }

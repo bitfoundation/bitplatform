@@ -14,10 +14,10 @@
                         var ev = _cellLookup.GetValueOrDefault((d.Date, r));
                         if (ev != null)
                         {
-                            // Normalize a 00:00 end as ending the previous day (exclusive midnight),
-                            // matching the row-placement logic so the badge on the true last day is
-                            // tagged "last" rather than "middle".
-                            var evEndInclusive = (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
+                            // Normalize a 00:00 end as ending the previous day (exclusive midnight)
+                            // via the shared helper, matching the row-placement logic so the badge on
+                            // the true last day is tagged "last" rather than "middle".
+                            var evEndInclusive = BitFullCalendarHelpers.GetInclusiveEndDate(ev);
                             var position = ev.StartDate.Date == d.Date ? "first"
                                 : evEndInclusive == d.Date ? "last" : "middle";
                             <BitFcMonthEventBadge @key="ev" Event="ev" CellDate="d" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />

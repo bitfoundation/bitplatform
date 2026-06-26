@@ -23,9 +23,18 @@ public partial class BitFcAgendaEvents
         if (nonce == _lastAgendaScrollNonce)
             return;
 
-        var scrolled = await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, _scrollContainerId, DateTime.Today);
-        if (scrolled)
-            _lastAgendaScrollNonce = nonce;
+        try
+        {
+            var scrolled = await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, _scrollContainerId, DateTime.Today);
+            if (scrolled)
+                _lastAgendaScrollNonce = nonce;
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException)
+        {
+            // The circuit/render is mid-teardown or the JS side isn't reachable; the scroll is a
+            // best-effort convenience, so swallow the transient failure and retry on a later render
+            // (the nonce is intentionally left unchanged so the scroll is re-attempted).
+        }
     }
 
     private async Task ShowDetails(BitFullCalendarEvent ev)
