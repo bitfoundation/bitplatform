@@ -69,7 +69,8 @@ public partial class BitFcCalendarDayView : IDisposable
 
     private async Task OnHourKeyDownAsync(KeyboardEventArgs e, int hour)
     {
-        if (e.Key is "Enter" or " " or "Spacebar")
+        // Ignore auto-repeat keydown events so a held Enter/Space only creates a single draft event.
+        if (e.Key is "Enter" or " " or "Spacebar" && !e.Repeat)
             await OnHourClickAsync(hour);
     }
 

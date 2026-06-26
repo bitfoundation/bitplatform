@@ -67,7 +67,7 @@
         <div class="bit-bfc-dialog-footer" style="justify-content:space-between;">
             <div style="display:flex;gap:8px;">
                 <button type="button" class="bit-bfc-btn" @onclick="Edit">@Texts.EditButton</button>
-                <button type="button" class="bit-bfc-btn bit-bfc-btn-danger" @onclick="Delete">@Texts.DeleteButton</button>
+                <button type="button" class="bit-bfc-btn bit-bfc-btn-danger" @onclick="Delete" disabled="@_isDeleting">@Texts.DeleteButton</button>
             </div>
             <button type="button" class="bit-bfc-btn" @onclick="OnClose">@Texts.CloseButton</button>
         </div>

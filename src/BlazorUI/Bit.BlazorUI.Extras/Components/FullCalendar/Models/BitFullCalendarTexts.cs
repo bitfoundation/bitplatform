@@ -44,9 +44,11 @@ public class BitFullCalendarTexts
     public string SearchEventsPlaceholder { get; set; } = "Search events...";
     public string NoEventsFound { get; set; } = "No events found.";
 
-    public string EventListTitlePrefix { get; set; } = "Events on";
-    public string EventListCountSuffix { get; set; } = "event(s)";
-    public string MoreEventsSuffix { get; set; } = "more";
+    // Full format templates ({0} = the relevant value) so localized strings control word order and
+    // placement rather than concatenating fixed English fragments at the call site.
+    public string EventListTitlePrefix { get; set; } = "Events on {0}";
+    public string EventListCountSuffix { get; set; } = "{0} event(s)";
+    public string MoreEventsSuffix { get; set; } = "+{0} more";
 
     public string AddEventDialogTitle { get; set; } = "Add New Event";
     public string EditEventDialogTitle { get; set; } = "Edit Event";

@@ -10,14 +10,21 @@ public partial class BitFcCalendarToast : IAsyncDisposable
     public void Show(string message, bool isError = false)
     {
         var item = new ToastItem { Id = _nextId++, Message = message, IsError = isError };
-        _toasts.Add(item);
-        StateHasChanged();
 
         var cts = new CancellationTokenSource();
         lock (_removalTokensLock)
         {
             _removalTokens.Add(cts);
         }
+
+        // Marshal the list mutation and render onto the renderer's dispatcher so the whole toast
+        // lifecycle (add here, remove in RemoveAfterDelay) stays dispatcher-safe even when Show is
+        // invoked from a non-renderer thread.
+        _ = InvokeAsync(() =>
+        {
+            _toasts.Add(item);
+            StateHasChanged();
+        });
         _ = RemoveAfterDelay(item.Id, cts);
     }
 

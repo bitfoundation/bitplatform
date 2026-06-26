@@ -155,9 +155,14 @@ namespace BitBlazorUI {
 
                         // Keep the per-event resize guard held until finalization completes so a new
                         // resize can't start before OnResizeEnd has finished committing the change.
-                        await dotNetRef.invokeMethodAsync("OnResizeEnd");
-                        activePointerId = null;
-                        (dotNetRef as any)[activeKey] = false;
+                        // Reset the guard in a finally so a thrown OnResizeEnd can't leave the event
+                        // permanently blocked from starting a new resize.
+                        try {
+                            await dotNetRef.invokeMethodAsync("OnResizeEnd");
+                        } finally {
+                            activePointerId = null;
+                            (dotNetRef as any)[activeKey] = false;
+                        }
                     }
                 };
 
@@ -279,9 +284,14 @@ namespace BitBlazorUI {
 
                         // Keep the per-event resize guard held until finalization completes so a new
                         // resize can't start before OnResizeEnd has finished committing the change.
-                        await dotNetRef.invokeMethodAsync("OnResizeEnd");
-                        activePointerId = null;
-                        (dotNetRef as any)[activeKey] = false;
+                        // Reset the guard in a finally so a thrown OnResizeEnd can't leave the event
+                        // permanently blocked from starting a new resize.
+                        try {
+                            await dotNetRef.invokeMethodAsync("OnResizeEnd");
+                        } finally {
+                            activePointerId = null;
+                            (dotNetRef as any)[activeKey] = false;
+                        }
                     }
                 };
 

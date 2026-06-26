@@ -11,10 +11,17 @@ public partial class BitFcDroppableArea
     [Parameter] public string? Class { get; set; }
 
     private bool _isOver;
+    // Set when a dragover fires while already hovering: the hover state is unchanged, so the render
+    // it would otherwise trigger is suppressed to avoid re-rendering on every dragover callback.
+    private bool _skipRender;
 
     private void OnDragOver()
     {
-        if (_isOver) return;
+        if (_isOver)
+        {
+            _skipRender = true;
+            return;
+        }
         _isOver = true;
     }
     private void OnDragLeave() => _isOver = false;
@@ -23,5 +30,15 @@ public partial class BitFcDroppableArea
     {
         _isOver = false;
         await Notifier.HandleDropAsync(Date, Hour, Minute);
+    }
+
+    protected override bool ShouldRender()
+    {
+        if (_skipRender)
+        {
+            _skipRender = false;
+            return false;
+        }
+        return true;
     }
 }

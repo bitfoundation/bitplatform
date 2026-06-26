@@ -6,7 +6,8 @@ public class BitFullCalendarAttendee
     public string LastName { get; set; } = string.Empty;
     public string? Id { get; set; }
 
-    public string FullName => $"{FirstName} {LastName}".Trim();
+    public string FullName => string.Join(' ', new[] { FirstName?.Trim(), LastName?.Trim() }
+        .Where(part => !string.IsNullOrEmpty(part)));
 
     public string Initials
     {

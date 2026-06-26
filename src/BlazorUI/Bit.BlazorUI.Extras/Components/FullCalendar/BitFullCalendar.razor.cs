@@ -353,9 +353,10 @@ public partial class BitFullCalendar : IDisposable
 
     private void ApplySettings()
     {
-        if (ReferenceEquals(Settings, _appliedSettings))
-            return;
-
+        // Sync each individual value rather than short-circuiting on a reference comparison: the same
+        // BitFullCalendarSettings instance can be mutated in place by the consumer, so comparing the
+        // reference would silently ignore those updates. The State.Set* methods each guard against
+        // no-op changes, so re-applying unchanged values is cheap and raises no spurious notifications.
         _appliedSettings = Settings;
         State.SetUse24HourFormat(Settings.Use24HourFormat);
         State.SetBadgeVariant(Settings.BadgeVariant);

@@ -453,9 +453,9 @@ public partial class BitFullCalendarDemo
                 new() { Name = "NoAppointmentsNow", Type = "string", DefaultValue = "\"No appointments at the moment\"", Description = "Text shown when there are no current appointments." },
                 new() { Name = "SearchEventsPlaceholder", Type = "string", DefaultValue = "\"Search events...\"", Description = "Placeholder for the agenda search box." },
                 new() { Name = "NoEventsFound", Type = "string", DefaultValue = "\"No events found.\"", Description = "Text shown when a search returns no events." },
-                new() { Name = "EventListTitlePrefix", Type = "string", DefaultValue = "\"Events on\"", Description = "Prefix for the event list dialog title." },
-                new() { Name = "EventListCountSuffix", Type = "string", DefaultValue = "\"event(s)\"", Description = "Suffix for the event count in the event list dialog." },
-                new() { Name = "MoreEventsSuffix", Type = "string", DefaultValue = "\"more\"", Description = "Suffix used on the \"+N more\" affordance in month cells." },
+                new() { Name = "EventListTitlePrefix", Type = "string", DefaultValue = "\"Events on {0}\"", Description = "Format template for the event list dialog title; {0} is the formatted date." },
+                new() { Name = "EventListCountSuffix", Type = "string", DefaultValue = "\"{0} event(s)\"", Description = "Format template for the event count in the event list dialog; {0} is the count." },
+                new() { Name = "MoreEventsSuffix", Type = "string", DefaultValue = "\"+{0} more\"", Description = "Format template for the \"+N more\" affordance in month cells; {0} is the hidden-event count." },
                 new() { Name = "AddEventDialogTitle", Type = "string", DefaultValue = "\"Add New Event\"", Description = "Title for the add event dialog." },
                 new() { Name = "EditEventDialogTitle", Type = "string", DefaultValue = "\"Edit Event\"", Description = "Title for the edit event dialog." },
                 new() { Name = "AddEventDialogSubtitle", Type = "string", DefaultValue = "\"Create a new event for your calendar.\"", Description = "Subtitle for the add event dialog." },
@@ -579,9 +579,9 @@ public partial class BitFullCalendarDemo
         // Search & agenda
         SearchEventsPlaceholder = "جستجوی رویدادها...",
         NoEventsFound = "رویدادی یافت نشد.",
-        EventListTitlePrefix = "رویدادهای",
-        EventListCountSuffix = "رویداد",
-        MoreEventsSuffix = "بیشتر",
+        EventListTitlePrefix = "رویدادهای {0}",
+        EventListCountSuffix = "{0} رویداد",
+        MoreEventsSuffix = "+{0} بیشتر",
 
         // Dialogs
         AddEventDialogTitle = "افزودن رویداد جدید",
@@ -855,9 +855,9 @@ public partial class BitFullCalendarDemo
         // Search & agenda
         SearchEventsPlaceholder = ""جستجوی رویدادها..."",
         NoEventsFound = ""رویدادی یافت نشد."",
-        EventListTitlePrefix = ""رویدادهای"",
-        EventListCountSuffix = ""رویداد"",
-        MoreEventsSuffix = ""بیشتر"",
+        EventListTitlePrefix = ""رویدادهای {0}"",
+        EventListCountSuffix = ""{0} رویداد"",
+        MoreEventsSuffix = ""+{0} بیشتر"",
 
         // Dialogs
         AddEventDialogTitle = ""افزودن رویداد جدید"",

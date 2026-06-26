@@ -10,6 +10,7 @@ public partial class BitFcEventDetailsDialog
     [Parameter] public EventCallback OnClose { get; set; }
 
     private bool _showEdit;
+    private bool _isDeleting;
     private readonly string _dialogTitleId = $"bfc-details-title-{Guid.NewGuid():N}";
 
     private void Edit()
@@ -32,6 +33,12 @@ public partial class BitFcEventDetailsDialog
 
     private async Task Delete()
     {
+        // Guard against double invocation (rapid clicks / Enter while the async work is in flight):
+        // keep the flag set through the notifier and OnClose so the delete only runs once.
+        if (_isDeleting)
+            return;
+        _isDeleting = true;
+
         var snapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
         State.RemoveEvent(Event.Id);
         await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs

@@ -753,10 +753,13 @@ public static class BitFullCalendarHelpers
         };
     }
 
-    public static string Capitalize(string str)
+    public static string Capitalize(string str, CultureInfo? culture = null)
     {
         if (string.IsNullOrEmpty(str)) return "";
-        return char.ToUpperInvariant(str[0]) + str[1..];
+        // Use culture-aware casing (e.g. Turkish dotted/dotless I) so the first character is
+        // capitalized consistently with the other culture-sensitive formatting helpers.
+        var textInfo = (culture ?? CultureInfo.CurrentCulture).TextInfo;
+        return textInfo.ToUpper(str[0]) + str[1..];
     }
 }
 
