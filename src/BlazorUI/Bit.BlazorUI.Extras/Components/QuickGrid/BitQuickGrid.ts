@@ -112,11 +112,15 @@ namespace BitBlazorUI {
                         document.body.removeEventListener('mouseup', handleMouseUp);
                         document.body.removeEventListener('touchmove', handleMouseMove);
                         document.body.removeEventListener('touchend', handleMouseUp);
+                        document.body.removeEventListener('touchcancel', handleMouseUp);
                     }
 
                     if (window.TouchEvent && evt instanceof TouchEvent) {
                         document.body.addEventListener('touchmove', handleMouseMove, { passive: true });
                         document.body.addEventListener('touchend', handleMouseUp, { passive: true });
+                        // A touch gesture can be interrupted (e.g. by the system) without firing touchend,
+                        // which would leave the move/end listeners attached. Tear down on touchcancel too.
+                        document.body.addEventListener('touchcancel', handleMouseUp, { passive: true });
                     } else {
                         document.body.addEventListener('mousemove', handleMouseMove, { passive: true });
                         document.body.addEventListener('mouseup', handleMouseUp, { passive: true });

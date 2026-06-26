@@ -51,8 +51,9 @@ public struct BitQuickGridItemsProviderRequest<TGridItem>
     /// <summary>
     /// Applies the request's sorting rules to the supplied <see cref="IQueryable{TGridItem}"/>.
     ///
-    /// Note that this only works if the current <see cref="SortByColumn"/> implements <see cref="IBitQuickGridSortBuilderColumn{TGridItem}"/>,
-    /// otherwise it will throw.
+    /// Note that this only works if the current <see cref="SortByColumn"/> implements <see cref="IBitQuickGridSortBuilderColumn{TGridItem}"/>
+    /// and exposes a non-null sort builder. If the column does not implement that interface, or implements it
+    /// but its sort builder is null (as with <see cref="BitQuickGridTemplateColumn{TGridItem}"/>), it will throw.
     /// </summary>
     /// <param name="source">An <see cref="IQueryable{TGridItem}"/>.</param>
     /// <returns>A new <see cref="IQueryable{TGridItem}"/> representing the <paramref name="source"/> with sorting rules applied.</returns>
@@ -69,8 +70,9 @@ public struct BitQuickGridItemsProviderRequest<TGridItem>
     /// <summary>
     /// Produces a collection of (property name, direction) pairs representing the sorting rules.
     ///
-    /// Note that this only works if the current <see cref="SortByColumn"/> implements <see cref="IBitQuickGridSortBuilderColumn{TGridItem}"/>,
-    /// otherwise it will throw.
+    /// Note that this only works if the current <see cref="SortByColumn"/> implements <see cref="IBitQuickGridSortBuilderColumn{TGridItem}"/>
+    /// and exposes a non-null sort builder. If the column does not implement that interface, or implements it
+    /// but its sort builder is null (as with <see cref="BitQuickGridTemplateColumn{TGridItem}"/>), it will throw.
     /// </summary>
     /// <returns>A collection of (property name, direction) pairs representing the sorting rules</returns>
     public IReadOnlyCollection<(string PropertyName, BitQuickGridSortDirection Direction)> GetSortByProperties() => SortByColumn switch
@@ -83,5 +85,7 @@ public struct BitQuickGridItemsProviderRequest<TGridItem>
     };
 
     private static string ColumnNotSortableMessage<T>(BitQuickGridColumnBase<T> col)
-        => $"The current sort column is of type '{col.GetType().FullName}', which does not implement {nameof(IBitQuickGridSortBuilderColumn<TGridItem>)}, so its sorting rules cannot be applied automatically.";
+        => col is IBitQuickGridSortBuilderColumn<T>
+            ? $"The current sort column '{col.GetType().FullName}' implements {nameof(IBitQuickGridSortBuilderColumn<TGridItem>)} but its {nameof(IBitQuickGridSortBuilderColumn<TGridItem>.SortBuilder)} is null, so its sorting rules cannot be applied automatically."
+            : $"The current sort column is of type '{col.GetType().FullName}', which does not implement {nameof(IBitQuickGridSortBuilderColumn<TGridItem>)}, so its sorting rules cannot be applied automatically.";
 }

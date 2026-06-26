@@ -166,7 +166,7 @@
                         }
                     </div>
 
-                    @if (Filterable || VisibleColumns.Any(ColumnFilterable))
+                    @if (!IsTreeMode && (Filterable || VisibleColumns.Any(ColumnFilterable)))
                     {
                         <div class="bit-dtg-row bit-dtg-filter-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
                             @if (HasReorderColumn)
@@ -208,19 +208,23 @@
                 }
                 @if (Loading)
                 {
-                    <div class="bit-dtg-loading"><span class="bit-dtg-spinner"></span> Loading…</div>
+                    <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                        <div class="bit-dtg-cell bit-dtg-loading" role="gridcell" style="grid-column:1 / -1;"><span class="bit-dtg-spinner"></span> Loading…</div>
+                    </div>
                 }
                 else if (TotalCount == 0 && PendingNewItem is null && !IsInfiniteMode)
                 {
-                    <div class="bit-dtg-empty">
-                        @if (EmptyTemplate is not null)
-                        {
-                            @EmptyTemplate
-                        }
-                        else
-                        {
-                            <span>No records to display.</span>
-                        }
+                    <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                        <div class="bit-dtg-cell bit-dtg-empty" role="gridcell" style="grid-column:1 / -1;">
+                            @if (EmptyTemplate is not null)
+                            {
+                                @EmptyTemplate
+                            }
+                            else
+                            {
+                                <span>No records to display.</span>
+                            }
+                        </div>
                     </div>
                 }
                 else if (_viewGroups is not null)
@@ -231,15 +235,17 @@
                 {
                     @if (InfiniteItems.Count == 0 && !InfiniteLoading)
                     {
-                        <div class="bit-dtg-empty">
-                            @if (EmptyTemplate is not null)
-                            {
-                                @EmptyTemplate
-                            }
-                            else
-                            {
-                                <span>No records to display.</span>
-                            }
+                        <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                            <div class="bit-dtg-cell bit-dtg-empty" role="gridcell" style="grid-column:1 / -1;">
+                                @if (EmptyTemplate is not null)
+                                {
+                                    @EmptyTemplate
+                                }
+                                else
+                                {
+                                    <span>No records to display.</span>
+                                }
+                            </div>
                         </div>
                     }
                     else
@@ -259,8 +265,10 @@
                         }
                         else if (!InfiniteHasMore)
                         {
-                            <div class="bit-dtg-infinite-end" role="row">
-                                <span>— End of results —</span>
+                            <div class="bit-dtg-row bit-dtg-infinite-end" role="row" style="grid-template-columns:var(--bit-dtg-template);">
+                                <div class="bit-dtg-cell" role="gridcell" style="grid-column:1 / -1;">
+                                    <span>— End of results —</span>
+                                </div>
                             </div>
                         }
                     }
@@ -354,7 +362,7 @@
         var groupCol = _columnsById.GetValueOrDefault(group.ColumnId);
         var collapsed = IsGroupCollapsed(group);
         <div class="bit-dtg-group-row" role="row" style="--bit-dtg-group-level:@group.Level;">
-            <div class="bit-dtg-group-cell" style="padding-inline-start:@(8 + group.Level * 20)px;">
+            <div class="bit-dtg-group-cell" role="gridcell" style="padding-inline-start:@(8 + group.Level * 20)px;">
                 <button type="button" class="bit-dtg-icon-btn" @onclick="() => ToggleGroup(group)">
                     @(collapsed ? "▸" : "▾")
                 </button>

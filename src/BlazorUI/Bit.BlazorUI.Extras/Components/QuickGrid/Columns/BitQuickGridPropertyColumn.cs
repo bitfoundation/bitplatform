@@ -41,7 +41,11 @@ public class BitQuickGridPropertyColumn<TGridItem, TProp> : BitQuickGridColumnBa
 
             if (Format.HasValue())
             {
-                if (typeof(IFormattable).IsAssignableFrom(typeof(TProp)))
+                // For a nullable value type (e.g. int?, DateTime?) Nullable<T> itself does not implement
+                // IFormattable, but its underlying type does and a boxed non-null value formats correctly.
+                // Check the underlying type so Format is allowed on nullable columns too.
+                var formattableType = Nullable.GetUnderlyingType(typeof(TProp)) ?? typeof(TProp);
+                if (typeof(IFormattable).IsAssignableFrom(formattableType))
                 {
                     cellTextFunc = item => ((IFormattable?)compiledPropertyExpression!(item))?.ToString(Format, null);
                 }

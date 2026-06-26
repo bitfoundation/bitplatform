@@ -24,25 +24,28 @@ internal static class AsyncQueryExecutorSupplier
     {
         if (queryable is not null)
         {
-            var executor = services.GetService<IAsyncQueryExecutor>();
-
-            if (executor is null)
+            // Inspect every registered executor, not just the first one resolved: a registered executor
+            // that does not support this queryable must not shadow another that does, nor suppress the
+            // EF misconfiguration warning below. Use the first executor that reports support.
+            foreach (var executor in services.GetServices<IAsyncQueryExecutor>())
             {
-                // It's useful to detect if the developer is unaware that they should be using the EF adapter, otherwise
-                // they will likely never notice and simply deploy an inefficient app that blocks threads on each query.
-                var providerType = queryable.Provider?.GetType();
-                if (providerType is not null && IsEntityFrameworkProviderTypeCache.GetOrAdd(providerType, IsEntityFrameworkProviderType))
+                if (executor.IsSupported(queryable))
                 {
-                    throw new InvalidOperationException(
-                        $"The supplied {nameof(IQueryable)} is provided by Entity Framework. To query it efficiently without blocking threads, " +
-                        $"register an implementation of {nameof(IAsyncQueryExecutor)} in your service collection that wraps EF Core's async query APIs " +
-                        $"(for example ToArrayAsync/CountAsync) and reports IsSupported(queryable) == true for EF queryables. " +
-                        $"Alternatively, supply non-EF data via the Items or ItemsProvider parameters.");
+                    return executor;
                 }
             }
-            else if (executor.IsSupported(queryable))
+
+            // No registered executor supports this queryable. It's useful to detect if the developer is
+            // unaware that they should be using the EF adapter, otherwise they will likely never notice
+            // and simply deploy an inefficient app that blocks threads on each query.
+            var providerType = queryable.Provider?.GetType();
+            if (providerType is not null && IsEntityFrameworkProviderTypeCache.GetOrAdd(providerType, IsEntityFrameworkProviderType))
             {
-                return executor;
+                throw new InvalidOperationException(
+                    $"The supplied {nameof(IQueryable)} is provided by Entity Framework. To query it efficiently without blocking threads, " +
+                    $"register an implementation of {nameof(IAsyncQueryExecutor)} in your service collection that wraps EF Core's async query APIs " +
+                    $"(for example ToArrayAsync/CountAsync) and reports IsSupported(queryable) == true for EF queryables. " +
+                    $"Alternatively, supply non-EF data via the Items or ItemsProvider parameters.");
             }
         }
 

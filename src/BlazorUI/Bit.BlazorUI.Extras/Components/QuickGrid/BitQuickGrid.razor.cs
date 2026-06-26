@@ -30,6 +30,9 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     private BitQuickGridColumnBase<TGridItem>? _sortByColumn;
     private bool _sortByAscending;
     private bool _checkColumnOptionsPosition;
+    // Set when column recollection drops the active sort column; triggers a data refresh after render
+    // so the grid query stays in sync with the (now changed) header sort state.
+    private bool _queueSortReconciliationRefresh;
 
     // The associated ES6 module, which uses document-level event listeners
     //private IJSObjectReference? _jsModule;
@@ -336,6 +339,14 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
             _checkColumnOptionsPosition = false;
             await _js.BitQuickGridCheckColumnOptionsPosition(_tableReference);
         }
+
+        if (_queueSortReconciliationRefresh)
+        {
+            // Column recollection dropped the active sort column; re-query so the grid data matches
+            // the header state that no longer shows that sort.
+            _queueSortReconciliationRefresh = false;
+            await RefreshDataAsync();
+        }
     }
 
     private int ComputeColumnsHash()
@@ -371,6 +382,17 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     private void FinishCollectingColumns()
     {
         _collectingColumns = false;
+
+        // The column that drove the last data load may no longer be among the freshly collected
+        // columns (it was removed or replaced). Leaving _sortByColumn pointing at a dropped column
+        // desyncs the data query from the header, so drop it and queue a refresh so the grid
+        // re-queries without it. The refresh is run from OnAfterRenderAsync because this runs mid-render.
+        if (_sortByColumn is not null && _columns.Contains(_sortByColumn) is false)
+        {
+            _sortByColumn = null;
+            _sortByAscending = false;
+            _queueSortReconciliationRefresh = true;
+        }
     }
 
     // Same as RefreshDataAsync, except without forcing a re-render. We use this from OnParametersSetAsync

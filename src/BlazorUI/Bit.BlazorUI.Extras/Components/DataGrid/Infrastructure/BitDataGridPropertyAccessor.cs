@@ -60,7 +60,16 @@ public sealed class BitDataGridPropertyAccessor<TItem>
     {
         if (value is null)
         {
-            result = DefaultValue();
+            // A cleared edit (null) must not silently become the type's default (e.g. 0 / MinValue for
+            // a non-nullable value type), which would discard the user's intent. Only let null through
+            // for nullable value types and reference types; reject it for non-nullable value targets.
+            if (PropertyType.IsValueType && Nullable.GetUnderlyingType(PropertyType) is null)
+            {
+                result = null;
+                return false;
+            }
+
+            result = null;
             return true;
         }
 

@@ -240,7 +240,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // Paging is suppressed while grouping is active: the grouped view renders every row, so a pager
     // would misrepresent the data and leave page math out of sync with what is displayed. Treat paging
     // as off in that case so the pager UI, TotalPages and GoToPageAsync all agree with the rendered rows.
-    internal bool PagingActive => Pageable && _groups.Count == 0;
+    // Tree mode also flattens every visible node without paging (ProcessTreeData ignores paging), so the
+    // pager is suppressed there too to stay consistent with the rendered rows.
+    internal bool PagingActive => Pageable && _groups.Count == 0 && !IsTreeMode;
     internal int TotalPages => (!PagingActive || _effectivePageSize <= 0) ? 1 : Math.Max(1, (int)Math.Ceiling(TotalCount / (double)_effectivePageSize));
     internal int CurrentPage => _currentPage;
     internal IReadOnlyList<BitDataGridAggregateResult> FooterAggregates => _footerAggregates;
@@ -271,11 +273,61 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal void RemoveColumn(BitDataGridColumn<TItem> column)
     {
+        // Remove by the key the column is actually registered under: a column whose ColumnId/Field
+        // changed after registration is re-keyed via UpdateColumnRegistration, but guard against any
+        // stale key by also matching on the column instance.
+        var key = column.Id;
+        if (!(_columnsById.TryGetValue(key, out var byId) && ReferenceEquals(byId, column)))
+        {
+            var match = _columnsById.FirstOrDefault(kvp => ReferenceEquals(kvp.Value, column));
+            if (match.Key is not null) key = match.Key;
+        }
+
         if (_columns.Remove(column))
         {
-            _columnsById.Remove(column.Id);
+            _columnsById.Remove(key);
+            // Drop any sort/filter/group descriptors that referenced the removed column so later
+            // refreshes and remote reads no longer carry descriptors for a column that is gone.
+            _sorts.RemoveAll(s => s.ColumnId == key);
+            _filters.RemoveAll(f => f.ColumnId == key);
+            _groups.RemoveAll(g => g.ColumnId == key);
             InvokeAsync(StateHasChanged);
         }
+    }
+
+    /// <summary>
+    /// Re-keys a column in the registry after its <see cref="BitDataGridColumn{TItem}.Id"/> changes
+    /// (its <c>ColumnId</c>/<c>Field</c> parameters were mutated after the initial registration).
+    /// Without this the registry keeps the stale key and sort/filter/group lookups — which resolve
+    /// columns by id — would no longer find the column. Active descriptors are migrated to the new id.
+    /// </summary>
+    internal void UpdateColumnRegistration(BitDataGridColumn<TItem> column, string oldId)
+    {
+        if (oldId == column.Id) return;
+
+        if (_columnsById.TryGetValue(oldId, out var existing) && ReferenceEquals(existing, column))
+            _columnsById.Remove(oldId);
+        _columnsById[column.Id] = column;
+
+        // Descriptors are immutable on ColumnId, so rebuild the affected entries with the new id to
+        // preserve the column's active sort/filter/group state across the rename.
+        for (int i = 0; i < _sorts.Count; i++)
+        {
+            if (_sorts[i].ColumnId == oldId)
+                _sorts[i] = new BitDataGridSortDescriptor { ColumnId = column.Id, Direction = _sorts[i].Direction, Priority = _sorts[i].Priority };
+        }
+        for (int i = 0; i < _filters.Count; i++)
+        {
+            if (_filters[i].ColumnId == oldId)
+                _filters[i] = new BitDataGridFilterDescriptor { ColumnId = column.Id, Operator = _filters[i].Operator, Value = _filters[i].Value };
+        }
+        for (int i = 0; i < _groups.Count; i++)
+        {
+            if (_groups[i].ColumnId == oldId)
+                _groups[i] = new BitDataGridGroupDescriptor { ColumnId = column.Id, Direction = _groups[i].Direction };
+        }
+
+        InvokeAsync(RefreshAsync);
     }
 
     // ------------------------------------------------------- Lifecycle
@@ -723,7 +775,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     // ----------------------------------------------------------- Filtering
     internal bool ColumnFilterable(BitDataGridColumn<TItem> column)
-        => column.HasField && (column.Filterable ?? Filterable);
+        // Filtering is not applied in tree mode: ProcessTreeData flattens the hierarchy using only the
+        // sibling sort and never runs the filter pipeline, so a filter input there would appear active
+        // without affecting the rendered rows. Disable it until tree mode carries filtering.
+        => column.HasField && !IsTreeMode && (column.Filterable ?? Filterable);
 
     internal BitDataGridFilterDescriptor? GetFilter(BitDataGridColumn<TItem> column)
         => _filters.FirstOrDefault(f => f.ColumnId == column.Id);
@@ -760,8 +815,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // Grouping is a client-side operation: it reshapes the locally-held _view into _viewGroups.
         // Server mode (OnRead) and infinite-scrolling mode (OnLoadMore) only forward sorts and filters
         // to the data callback and render the returned rows flat, so exposing a group toggle there would
-        // appear active without affecting the list. Disable it until the remote flow carries grouping.
-        => column.HasField && !IsServerMode && !IsInfiniteMode && (column.Groupable ?? Groupable);
+        // appear active without affecting the list. Tree mode likewise flattens the hierarchy without
+        // grouping. Disable it until those flows carry grouping.
+        => column.HasField && !IsServerMode && !IsInfiniteMode && !IsTreeMode && (column.Groupable ?? Groupable);
 
     internal bool IsGrouped(BitDataGridColumn<TItem> column) => _groups.Any(g => g.ColumnId == column.Id);
 

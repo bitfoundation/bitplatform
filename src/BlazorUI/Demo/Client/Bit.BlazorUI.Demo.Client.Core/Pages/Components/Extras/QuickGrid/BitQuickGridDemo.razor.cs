@@ -597,7 +597,11 @@ public partial class BitQuickGridDemo : AppComponentBase
         set
         {
             _odataSampleNameFilter = value;
-            _ = productsDataGrid.RefreshDataAsync();
+            // The OData and LoadingTemplate demos share this filter and the same productsItemsProvider,
+            // so refresh both grids; otherwise the LoadingTemplate grid keeps showing data for the
+            // previous filter until it is independently re-queried.
+            _ = productsDataGrid?.RefreshDataAsync();
+            _ = loadingProductsDataGrid?.RefreshDataAsync();
         }
     }
 

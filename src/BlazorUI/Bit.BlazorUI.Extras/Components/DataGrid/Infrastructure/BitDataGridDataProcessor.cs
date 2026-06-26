@@ -95,7 +95,10 @@ public static class BitDataGridDataProcessor
                     IFormattable f => $"{g.Key.GetType().Name}:{f.ToString(null, CultureInfo.InvariantCulture)}",
                     _ => $"{g.Key.GetType().Name}:{g.Key}"
                 };
-                var path = $"{parentPath}/{level}:{keyId}";
+                // Include the grouping column id in the path so the collapse/expand state is scoped to
+                // the column that produced the group. Without it, changing the grouped column would let
+                // a same-valued key at the same level reuse another column's stale expansion state.
+                var path = $"{parentPath}/{level}:{descriptor.ColumnId}:{keyId}";
                 var group = new BitDataGridGroup<TItem>
                 {
                     ColumnId = descriptor.ColumnId,

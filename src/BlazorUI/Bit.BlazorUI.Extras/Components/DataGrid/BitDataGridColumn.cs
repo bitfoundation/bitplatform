@@ -95,6 +95,11 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     internal string Id => ColumnId ?? Field ?? $"col-{GetHashCode():x}";
 
+    // The id this column is currently registered under in the grid. Tracked separately from Id so a
+    // later change to ColumnId/Field can re-register the column under its new id (and the old entry
+    // can be removed) rather than leaving a stale registry key behind.
+    private string? _registeredId;
+
     internal string DisplayTitle => Title ?? Humanize(Field) ?? Id;
 
     internal bool HasField => !string.IsNullOrEmpty(Field);
@@ -134,6 +139,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
             Accessor = BitDataGridPropertyAccessor<TItem>.For(Field!);
 
         Grid.AddColumn(this);
+        _registeredId = Id;
     }
 
     protected override void OnParametersSet()
@@ -142,6 +148,15 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
             Accessor = BitDataGridPropertyAccessor<TItem>.For(Field!);
         else
             Accessor = null;
+
+        // ColumnId/Field are mutable parameters, so the resolved Id may have changed since the column
+        // was registered. Re-register under the new id (migrating any active descriptors) so grid
+        // lookups by id keep finding this column.
+        if (_registeredId is not null && _registeredId != Id)
+        {
+            Grid?.UpdateColumnRegistration(this, _registeredId);
+            _registeredId = Id;
+        }
     }
 
     public void Dispose() => Grid?.RemoveColumn(this);
