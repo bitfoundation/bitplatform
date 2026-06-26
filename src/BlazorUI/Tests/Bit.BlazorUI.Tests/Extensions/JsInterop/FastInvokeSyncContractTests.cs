@@ -25,9 +25,20 @@ namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
 [TestClass]
 public class FastInvokeSyncContractTests
 {
-    // Matches FastInvoke("id"... / FastInvokeVoid("id"... / FastInvoke<T>("id"... capturing the JS identifier.
+    // Matches FastInvoke(...) / FastInvokeVoid(...) / FastInvoke<T>(...) capturing the JS identifier passed
+    // as the first argument. The identifier can be either a quoted string literal (captured in 'id') or a
+    // bare variable reference (captured in 'var'), e.g. when a method does
+    // `const string identifier = "BitBlazorUI.X.y"; jsRuntime.FastInvoke<T>(identifier, ...)`. Variable
+    // references are resolved separately via ResolveConstStringIdentifier; anything that doesn't resolve to
+    // a const string (e.g. the 'this'/'jsRuntime' parameters in the extension definitions themselves) is
+    // dropped, so it never produces a false positive.
     private static readonly Regex FastInvokeCallRegex =
-        new(@"FastInvoke(?:Void)?\s*(?:<[^>]+>)?\s*\(\s*""(?<id>[^""]+)""", RegexOptions.Compiled);
+        new(@"FastInvoke(?:Void)?\s*(?:<[^>]+>)?\s*\(\s*(?:""(?<id>[^""]+)""|(?<var>[A-Za-z_]\w*))", RegexOptions.Compiled);
+
+    // Matches a local `const string <name> = "<value>";` declaration so a variable used as a FastInvoke
+    // identifier can be resolved back to its literal value.
+    private static readonly Regex ConstStringDeclRegex =
+        new(@"const\s+string\s+(?<name>[A-Za-z_]\w*)\s*=\s*""(?<value>[^""]+)""", RegexOptions.Compiled);
 
     [TestMethod]
     public void FastInvoke_CallSites_ShouldNotTargetAsyncJavaScriptFunctions()
@@ -58,7 +69,20 @@ public class FastInvokeSyncContractTests
                 var text = File.ReadAllText(file);
                 foreach (Match match in FastInvokeCallRegex.Matches(text))
                 {
-                    var identifier = match.Groups["id"].Value;
+                    string? identifier;
+                    if (match.Groups["id"].Success)
+                    {
+                        identifier = match.Groups["id"].Value;
+                    }
+                    else
+                    {
+                        // The identifier was passed as a variable (e.g. `const string identifier = "...";`).
+                        // Resolve it from the nearest preceding const string declaration in scope; skip the
+                        // call site when it can't be resolved (it's not a contract-relevant literal target).
+                        identifier = ResolveConstStringIdentifier(text, match.Groups["var"].Value, match.Index);
+                        if (identifier is null) continue;
+                    }
+
                     // Reduce "BitBlazorUI.Utils.getBodyWidth" to "Utils.getBodyWidth" for TS class.method lookup.
                     // This assumes TS class names are unique across the scanned sources: two classes with the
                     // same name in different namespaces would collapse to the same key and could produce a false
@@ -129,6 +153,25 @@ public class FastInvokeSyncContractTests
 
             yield return file;
         }
+    }
+
+    private static string? ResolveConstStringIdentifier(string text, string variableName, int callIndex)
+    {
+        // Resolve the variable to the nearest 'const string <variableName> = "...";' declaration that
+        // appears before the call site. Walking declarations in source order and keeping the last one
+        // before the call respects method/block scope: when several methods in the same file each declare
+        // their own `const string identifier`, the call resolves to the value declared in its own method
+        // rather than an unrelated one elsewhere in the file.
+        string? resolved = null;
+        foreach (Match m in ConstStringDeclRegex.Matches(text))
+        {
+            if (m.Index >= callIndex) break;
+            if (m.Groups["name"].Value != variableName) continue;
+
+            resolved = m.Groups["value"].Value;
+        }
+
+        return resolved;
     }
 
     private static string? LastTwoSegments(string identifier)

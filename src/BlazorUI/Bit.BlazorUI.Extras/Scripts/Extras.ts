@@ -169,7 +169,20 @@ namespace BitBlazorUI {
             }
 
             return new Promise<void>((res, rej) => {
+                const onError = () => {
+                    element.setAttribute('data-bit-load-failed', '');
+                    settle();
+                };
+                // Remove all three listeners as soon as one of them settles the Promise, so the closure
+                // isn't kept alive by the still-registered listeners (notably the window 'load' one, which
+                // may otherwise never fire). { once: true } only removes the listener that actually fired.
+                const cleanup = () => {
+                    element.removeEventListener('load', settle);
+                    element.removeEventListener('error', onError);
+                    window.removeEventListener('load', settle);
+                };
                 const settle = () => {
+                    cleanup();
                     if (kind === 'stylesheet' && !Extras.isHostStylesheetApplied(element as HTMLLinkElement)) {
                         rej(Extras.loadResourceError(kind, url));
                         return;
@@ -185,10 +198,7 @@ namespace BitBlazorUI {
                 // settle() reject. Rejecting keeps the cache from being poisoned with a broken resource and
                 // lets loadResource inject a fresh, working tag on retry. Scripts and stylesheets behave
                 // identically here, matching the readyState === 'complete' branch above.
-                element.addEventListener('error', () => {
-                    element.setAttribute('data-bit-load-failed', '');
-                    settle();
-                }, { once: true });
+                element.addEventListener('error', onError, { once: true });
                 // Final backstop: the window load event fires once all initial resources settle.
                 window.addEventListener('load', settle, { once: true });
             });
