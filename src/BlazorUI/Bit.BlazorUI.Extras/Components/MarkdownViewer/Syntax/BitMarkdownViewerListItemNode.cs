@@ -5,4 +5,10 @@ public sealed class BitMarkdownViewerListItemNode : BitMarkdownViewerMarkdownNod
 {
     public List<BitMarkdownViewerMarkdownNode> Children { get; } = new();
     public override IList<BitMarkdownViewerMarkdownNode> ChildNodes => Children;
+
+    /// <summary>
+    /// The raw (pre-inline) first content of the item, used to reliably detect
+    /// task markers before escaped literals are flattened during inline parsing.
+    /// </summary>
+    public string? Source { get; set; }
 }

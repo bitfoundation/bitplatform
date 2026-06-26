@@ -59,7 +59,17 @@ public sealed class BitMarkdownViewerPipelineBuilder
         // Register before Setup so a self-referential registration inside Setup is
         // caught by the duplicate check above instead of recursing infinitely.
         _extensions.Add(extension);
-        extension.Setup(this);
+        try
+        {
+            extension.Setup(this);
+        }
+        catch
+        {
+            // Setup failed: roll back the registration so the builder isn't left in
+            // a partially-registered state and the extension can be retried.
+            _extensions.Remove(extension);
+            throw;
+        }
         return this;
     }
 

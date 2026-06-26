@@ -10,7 +10,10 @@ public sealed class BitMarkdownViewerIndentedCodeBlockParser : BitMarkdownViewer
     public override bool TryParse(BitMarkdownViewerBlockProcessor state, List<BitMarkdownViewerMarkdownNode> output)
     {
         var lines = state.Lines;
-        if (BitMarkdownViewerBlockProcessor.GetIndent(lines[state.Line]) < 4) return false;
+        var first = lines[state.Line];
+        if (BitMarkdownViewerBlockProcessor.GetIndent(first) < 4) return false;
+        // A line that is blank after its indentation must not open a code block.
+        if (BitMarkdownViewerBlockProcessor.IsBlank(first)) return false;
 
         var sb = new StringBuilder();
         int i = state.Line;

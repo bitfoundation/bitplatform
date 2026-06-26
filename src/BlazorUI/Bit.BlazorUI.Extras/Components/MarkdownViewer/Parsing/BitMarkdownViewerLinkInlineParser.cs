@@ -78,18 +78,51 @@ public sealed class BitMarkdownViewerLinkInlineParser : BitMarkdownViewerInlineP
     private static int FindLabelEnd(string s, int openBracket)
     {
         int depth = 0;
-        for (int i = openBracket; i < s.Length; i++)
+        int i = openBracket;
+        while (i < s.Length)
         {
             char c = s[i];
-            if (c == '\\') { i++; continue; }
+            if (c == '\\') { i += 2; continue; }
+            if (c == '`')
+            {
+                // Skip an inline code span so that ']' enclosed by backticks does
+                // not prematurely terminate the link label.
+                i = SkipCodeSpan(s, i);
+                continue;
+            }
             if (c == '[') depth++;
             else if (c == ']')
             {
                 depth--;
                 if (depth == 0) return i;
             }
+            i++;
         }
         return -1;
+    }
+
+    // Given the index of a backtick, returns the index just past a matching
+    // closing code-span run. If no closing run of equal length exists, the
+    // backticks are treated as literal text and the index just past the opening
+    // run is returned.
+    private static int SkipCodeSpan(string s, int i)
+    {
+        int start = i;
+        int openLen = 0;
+        while (i < s.Length && s[i] == '`') { i++; openLen++; }
+
+        int j = i;
+        while (j < s.Length)
+        {
+            if (s[j] == '`')
+            {
+                int closeLen = 0;
+                while (j < s.Length && s[j] == '`') { j++; closeLen++; }
+                if (closeLen == openLen) return j;
+            }
+            else j++;
+        }
+        return start + openLen;
     }
 
     private static bool ParseDestination(string s, ref int i, out string url, out string? title)

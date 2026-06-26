@@ -79,7 +79,18 @@ public sealed class BitMarkdownViewerBlockProcessor
         while (idx < line.Length && removed < count)
         {
             if (line[idx] == ' ') { removed++; idx++; }
-            else if (line[idx] == '\t') { removed += 4 - (removed % 4); idx++; } // advance to next tab stop
+            else if (line[idx] == '\t')
+            {
+                int width = 4 - (removed % 4); // visual width of this tab
+                removed += width;
+                idx++;
+                if (removed > count)
+                {
+                    // The tab's width overshoots the requested column count; preserve
+                    // the unused portion as leading spaces instead of dropping it.
+                    return new string(' ', removed - count) + line[idx..];
+                }
+            }
             else break;
         }
         return line[idx..];

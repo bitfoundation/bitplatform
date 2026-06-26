@@ -112,7 +112,7 @@ public sealed class BitMarkdownViewerListParser : BitMarkdownViewerBlockParser
                 break;
             }
 
-            var item = new BitMarkdownViewerListItemNode();
+            var item = new BitMarkdownViewerListItemNode { Source = firstContent };
             item.Children.AddRange(state.ParseBlocks(itemLines));
             if (itemHadBlank) loose = true;
             list.Items.Add(item);

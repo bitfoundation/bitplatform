@@ -7,10 +7,11 @@ namespace Bit.BlazorUI;
 /// </summary>
 public sealed class BitMarkdownViewerPipeline
 {
-    private static BitMarkdownViewerPipeline? _basic;
+    private static readonly Lazy<BitMarkdownViewerPipeline> _basic =
+        new(() => new BitMarkdownViewerPipelineBuilder().Build());
 
     /// <summary>A pipeline with only the basic CommonMark core (no flavors).</summary>
-    public static BitMarkdownViewerPipeline Basic => _basic ??= new BitMarkdownViewerPipelineBuilder().Build();
+    public static BitMarkdownViewerPipeline Basic => _basic.Value;
 
     internal BitMarkdownViewerPipeline(BitMarkdownViewerPipelineBuilder builder)
     {

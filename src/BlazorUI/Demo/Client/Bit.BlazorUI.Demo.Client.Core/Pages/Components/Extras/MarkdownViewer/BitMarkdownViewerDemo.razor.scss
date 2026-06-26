@@ -35,7 +35,7 @@
         flex: 1 1 50%;
         height: 500px;
         padding: 12px;
-        border: 1px solid #8a8886;
+        border: 1px solid $bit-color-border-secondary;
         border-radius: 4px;
         background: transparent;
         color: inherit;
@@ -52,7 +52,7 @@
         height: 500px;
         overflow: auto;
         padding: 12px;
-        border: 1px solid #8a8886;
+        border: 1px solid $bit-color-border-secondary;
         border-radius: 4px;
         box-sizing: border-box;
     }

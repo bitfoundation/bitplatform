@@ -109,22 +109,27 @@ public sealed class BitMarkdownViewerInlineProcessor
             // Trigger-based inline parsers.
             if (Pipeline.InlineParsersByChar.TryGetValue(c, out var parsers))
             {
-                bool handled = false;
                 int save = Pos;
+                int tokenCount = _tokens.Count;
+                string literalSnapshot = _literal.ToString();
+                bool handled = false;
                 foreach (var p in parsers)
                 {
-                    if (p.TryParse(this))
+                    // Only honor a parser that both succeeds and consumes input.
+                    if (p.TryParse(this) && Pos > save)
                     {
                         handled = true;
                         break;
                     }
-                    Pos = save; // parser must not have advanced on failure, but be safe
+                    // Roll back every side effect (position, flushed tokens and pending
+                    // text), not just Pos, so a failed or no-op parser can't corrupt the
+                    // token stream for the parsers tried next or the normal scan.
+                    Pos = save;
+                    if (_tokens.Count > tokenCount) _tokens.RemoveRange(tokenCount, _tokens.Count - tokenCount);
+                    _literal.Clear();
+                    _literal.Append(literalSnapshot);
                 }
-                // Guard against a (possibly third-party) parser that reports success
-                // without consuming input: only honor it when Pos actually advanced,
-                // otherwise fall through so this character is consumed normally.
-                if (handled && Pos > save) continue;
-                Pos = save;
+                if (handled) continue;
             }
 
             _literal.Append(c);

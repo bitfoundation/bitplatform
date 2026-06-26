@@ -17,6 +17,12 @@ public sealed partial class BitMarkdownViewerTaskListAstProcessor : BitMarkdownV
         {
             foreach (var item in list.Items)
             {
+                // Detect task markers from the raw (pre-inline) item source so that
+                // escaped literals like "\[ \]" are not misread as real checkboxes.
+                if (item.Source is null) continue;
+                var raw = TaskMarker().Match(item.Source);
+                if (!raw.Success) continue;
+
                 if (item.Children.FirstOrDefault() is not BitMarkdownViewerParagraphNode para) continue;
                 if (para.Inlines.FirstOrDefault() is not BitMarkdownViewerTextNode text) continue;
 
@@ -24,7 +30,7 @@ public sealed partial class BitMarkdownViewerTaskListAstProcessor : BitMarkdownV
                 if (!m.Success) continue;
 
                 text.Text = m.Groups[2].Value;
-                para.Inlines.Insert(0, new BitMarkdownViewerTaskCheckboxNode { Checked = m.Groups[1].Value is "x" or "X" });
+                para.Inlines.Insert(0, new BitMarkdownViewerTaskCheckboxNode { Checked = raw.Groups[1].Value is "x" or "X" });
             }
         }
     }
