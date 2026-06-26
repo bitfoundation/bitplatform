@@ -8,5 +8,6 @@ public enum BitDataGridColumnDataType
     Number,
     Boolean,
     Date,
+    DateTime,
     Enum
 }

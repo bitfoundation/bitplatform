@@ -58,7 +58,10 @@ public struct BitQuickGridItemsProviderRequest<TGridItem>
     /// <returns>A new <see cref="IQueryable{TGridItem}"/> representing the <paramref name="source"/> with sorting rules applied.</returns>
     public IQueryable<TGridItem> ApplySorting(IQueryable<TGridItem> source) => SortByColumn switch
     {
-        IBitQuickGridSortBuilderColumn<TGridItem> sbc => sbc.SortBuilder?.Apply(source, SortByAscending) ?? source,
+        // A sort-builder column with a null SortBuilder cannot apply its sort; treat it as unsupported
+        // (like a non-sort-builder column) rather than silently returning the unsorted source, which
+        // would hide an active sort on e.g. BitQuickGridTemplateColumn.
+        IBitQuickGridSortBuilderColumn<TGridItem> { SortBuilder: { } sortBuilder } => sortBuilder.Apply(source, SortByAscending),
         null => source,
         _ => throw new NotSupportedException(ColumnNotSortableMessage(SortByColumn)),
     };
@@ -72,7 +75,9 @@ public struct BitQuickGridItemsProviderRequest<TGridItem>
     /// <returns>A collection of (property name, direction) pairs representing the sorting rules</returns>
     public IReadOnlyCollection<(string PropertyName, BitQuickGridSortDirection Direction)> GetSortByProperties() => SortByColumn switch
     {
-        IBitQuickGridSortBuilderColumn<TGridItem> sbc => sbc.SortBuilder?.ToPropertyList(SortByAscending) ?? Array.Empty<(string, BitQuickGridSortDirection)>(),
+        // Mirror ApplySorting: a null SortBuilder on a sort-builder column is unsupported rather than
+        // an empty (no-op) sort, so the caller isn't misled into thinking there is no active sort.
+        IBitQuickGridSortBuilderColumn<TGridItem> { SortBuilder: { } sortBuilder } => sortBuilder.ToPropertyList(SortByAscending),
         null => Array.Empty<(string, BitQuickGridSortDirection)>(),
         _ => throw new NotSupportedException(ColumnNotSortableMessage(SortByColumn)),
     };

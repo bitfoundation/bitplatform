@@ -3,7 +3,9 @@ namespace Bit.BlazorUI;
 /// <summary>Comparison operators available for column filtering.</summary>
 public enum BitDataGridFilterOperator
 {
-    Contains = 0,
+    /// <summary>No operator selected. The default value; such a filter is treated as omitted/invalid.</summary>
+    Unspecified = 0,
+    Contains,
     DoesNotContain,
     StartsWith,
     EndsWith,

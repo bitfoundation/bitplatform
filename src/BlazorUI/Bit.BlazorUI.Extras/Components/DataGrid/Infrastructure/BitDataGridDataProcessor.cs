@@ -192,6 +192,9 @@ public static class BitDataGridDataProcessor
     {
         switch (filter.Operator)
         {
+            case BitDataGridFilterOperator.Unspecified:
+                // No operator selected: treat the filter as omitted so it doesn't exclude any rows.
+                return true;
             case BitDataGridFilterOperator.IsEmpty:
                 return value is null || string.IsNullOrEmpty(value.ToString());
             case BitDataGridFilterOperator.IsNotEmpty:

@@ -43,8 +43,12 @@ public sealed class BitDataGridPropertyAccessor<TItem>
             _setter(item, converted);
     }
 
-    /// <summary>Coerces an arbitrary value into the property's type, falling back to the type's default on failure.</summary>
-    public object? ConvertValue(object? value)
+    /// <summary>
+    /// Coerces an arbitrary value into the property's type, falling back to the type's default on failure.
+    /// The name makes the silent-default behavior explicit; prefer <see cref="TryConvertValue"/> when a
+    /// conversion failure must be detected rather than masked.
+    /// </summary>
+    public object? ConvertOrDefault(object? value)
         => TryConvertValue(value, out var result) ? result : DefaultValue();
 
     /// <summary>

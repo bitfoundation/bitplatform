@@ -36,16 +36,14 @@ public class BitQuickGridPropertyColumn<TGridItem, TProp> : BitQuickGridColumnBa
         // or the Format has changed, so a Format-only change still rebuilds the cell formatter.
         if (_lastAssignedProperty != Property || _lastAssignedFormat != Format)
         {
-            _lastAssignedProperty = Property;
-            _lastAssignedFormat = Format;
             var compiledPropertyExpression = Property.Compile();
+            Func<TGridItem, string?> cellTextFunc;
 
             if (Format.HasValue())
             {
                 if (typeof(IFormattable).IsAssignableFrom(typeof(TProp)))
                 {
-                    _cellTextFunc = item => ((IFormattable?)compiledPropertyExpression!(item))?.ToString(Format, null);
-
+                    cellTextFunc = item => ((IFormattable?)compiledPropertyExpression!(item))?.ToString(Format, null);
                 }
                 else
                 {
@@ -54,10 +52,17 @@ public class BitQuickGridPropertyColumn<TGridItem, TProp> : BitQuickGridColumnBa
             }
             else
             {
-                _cellTextFunc = item => compiledPropertyExpression!(item)?.ToString();
+                cellTextFunc = item => compiledPropertyExpression!(item)?.ToString();
             }
 
+            _cellTextFunc = cellTextFunc;
             _sortBuilder = BitQuickGridSort<TGridItem>.ByAscending(Property);
+
+            // Only record the assignments after the formatter has been built and validated, so a failed
+            // Format/TProp validation above doesn't suppress a retry on the next parameters set (which
+            // would leave _cellTextFunc in a stale or null state).
+            _lastAssignedProperty = Property;
+            _lastAssignedFormat = Format;
         }
 
         if (Title is null && Property.Body is MemberExpression memberExpression)

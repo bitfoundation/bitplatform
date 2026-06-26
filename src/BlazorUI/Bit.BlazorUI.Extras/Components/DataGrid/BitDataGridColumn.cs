@@ -108,7 +108,10 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
             var t = Accessor.UnderlyingType;
             if (t == typeof(bool)) return BitDataGridColumnDataType.Boolean;
             if (t.IsEnum) return BitDataGridColumnDataType.Enum;
-            if (t == typeof(DateTime) || t == typeof(DateOnly) || t == typeof(DateTimeOffset)) return BitDataGridColumnDataType.Date;
+            if (t == typeof(DateOnly)) return BitDataGridColumnDataType.Date;
+            // DateTime/DateTimeOffset carry a time (and offset) component, so keep them on a distinct
+            // type with a time-aware editor rather than the date-only control DateOnly uses.
+            if (t == typeof(DateTime) || t == typeof(DateTimeOffset)) return BitDataGridColumnDataType.DateTime;
             if (t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte)
                 || t == typeof(sbyte) || t == typeof(ushort) || t == typeof(uint) || t == typeof(ulong)
                 || t == typeof(double) || t == typeof(float) || t == typeof(decimal))
@@ -121,6 +124,13 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     {
         if (Grid is null)
             throw new InvalidOperationException($"{nameof(BitDataGridColumn<TItem>)} must be used inside a {nameof(BitDataGrid<TItem>)}.");
+
+        // Resolve the accessor before registering with the grid. AddColumn recomputes footer/aggregate
+        // values immediately, so a field-bound aggregate column whose Accessor was still null at that
+        // point would be skipped on first registration.
+        if (HasField)
+            Accessor = BitDataGridPropertyAccessor<TItem>.For(Field!);
+
         Grid.AddColumn(this);
     }
 

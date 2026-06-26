@@ -1,7 +1,10 @@
 namespace BitBlazorUI {
     export class QuickGrid {
         public static init(tableElement: any) {
-            QuickGrid.enableColumnResizing(tableElement);
+            // Tracks the drag handles this init() bound so stop() can remove their listeners too,
+            // preventing handlers from accumulating across repeated init()/stop() cycles.
+            const boundDragHandles: { handle: any, listener: any }[] = [];
+            QuickGrid.enableColumnResizing(tableElement, boundDragHandles);
 
             const bodyClickHandler = (event: any) => {
                 const columnOptionsElement = tableElement.tHead.querySelector('.bit-qkg-cop');
@@ -25,6 +28,15 @@ namespace BitBlazorUI {
                     document.body.removeEventListener('click', bodyClickHandler);
                     document.body.removeEventListener('mousedown', bodyClickHandler);
                     document.body.removeEventListener('keydown', keyDownHandler);
+
+                    // Remove the per-handle drag listeners and clear the bound marker so a later
+                    // init() can rebind the same surviving elements without duplicating handlers.
+                    boundDragHandles.forEach(({ handle, listener }) => {
+                        handle.removeEventListener('mousedown', listener);
+                        handle.removeEventListener('touchstart', listener);
+                        delete handle.__bitQkgResizeBound;
+                    });
+                    boundDragHandles.length = 0;
                 }
             };
         }
@@ -60,12 +72,18 @@ namespace BitBlazorUI {
             }
         }
 
-        private static enableColumnResizing(tableElement: any) {
+        private static enableColumnResizing(tableElement: any, boundDragHandles: { handle: any, listener: any }[]) {
             tableElement.tHead.querySelectorAll('.bit-qkg-drg').forEach((handle: any) => {
+                // Bind each handle only once. A surviving handle (reused by Blazor's diffing across
+                // re-renders) would otherwise accumulate a fresh listener on every init() call.
+                if (handle.__bitQkgResizeBound) return;
+                handle.__bitQkgResizeBound = true;
+
                 handle.addEventListener('mousedown', handleMouseDown);
                 if ('ontouchstart' in window) {
                     handle.addEventListener('touchstart', handleMouseDown);
                 }
+                boundDragHandles.push({ handle, listener: handleMouseDown });
 
                 function handleMouseDown(evt: any) {
                     evt.preventDefault();

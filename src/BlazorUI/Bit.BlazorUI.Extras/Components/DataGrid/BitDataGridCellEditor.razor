@@ -21,8 +21,19 @@
                @onchange="e => Set(e.Value)" />
         break;
 
+    case BitDataGridColumnDataType.DateTime:
+        <input type="datetime-local" class="bit-dtg-editor"
+               value="@(GetDateTime())"
+               @onchange="e => Set(e.Value)" />
+        break;
+
     case BitDataGridColumnDataType.Enum when Column.Accessor is not null && Column.Accessor.UnderlyingType.IsEnum:
-        <select class="bit-dtg-editor" value="@(GetString())" @onchange="e => Set(e.Value)">
+        <select class="bit-dtg-editor" value="@(GetString())"
+                @onchange="e => Set(string.IsNullOrEmpty(e.Value as string) ? null : e.Value)">
+            @if (IsNullableEnum || Value is null)
+            {
+                <option value="">@string.Empty</option>
+            }
             @foreach (var name in Enum.GetNames(Column.Accessor.UnderlyingType))
             {
                 <option value="@name">@name</option>
@@ -68,6 +79,26 @@
             _ => string.Empty
         };
     }
+
+    private string GetDateTime()
+    {
+        // <input type="datetime-local"> requires a strict ISO 8601 yyyy-MM-ddTHH:mm value; format with
+        // the invariant culture and preserve the time (and the offset's local time) component.
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        return Value switch
+        {
+            DateTime dt => dt.ToString("yyyy-MM-ddTHH:mm", inv),
+            DateTimeOffset dto => dto.ToString("yyyy-MM-ddTHH:mm", inv),
+            _ => string.Empty
+        };
+    }
+
+    // True when the bound member is a nullable enum (e.g. MyEnum?), so the editor can offer an empty
+    // option that maps back to null rather than forcing a concrete enum member.
+    private bool IsNullableEnum
+        => Column.Accessor is not null
+        && Nullable.GetUnderlyingType(Column.Accessor.PropertyType) is not null
+        && Column.Accessor.UnderlyingType.IsEnum;
 
     private void Set(object? raw) => Grid.SetEditValue(Column, raw);
 }

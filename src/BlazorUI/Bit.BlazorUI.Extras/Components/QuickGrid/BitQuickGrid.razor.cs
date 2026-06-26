@@ -49,6 +49,9 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     // Hash of the collected column set the resize handles were last bound against, so we only rebind
     // when the columns actually change rather than on every render.
     private int? _lastInitColumnsHash;
+    // Tracks the ResizableColumns value the resize handles were last bound against, so toggling the
+    // feature on/off (without otherwise changing the columns) still rebinds the new/removed handles.
+    private bool _lastResizableColumns;
 
     // If the PaginationState mutates, it raises this event. We use it to trigger a re-render.
     private readonly EventCallbackSubscriber<BitQuickGridPaginationState> _currentPageItemsChanged;
@@ -301,20 +304,31 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         {
             _jsEventDisposable = await _js.BitQuickGridInit(_tableReference);
             _lastInitColumnsHash = ComputeColumnsHash();
+            _lastResizableColumns = ResizableColumns;
         }
         else if (ResizableColumns)
         {
             // The resize handles (.bit-qkg-drg) are bound per-element by init. When the column set
             // changes, the header re-renders with fresh handles that have no listeners, so rebind them.
-            // Re-running init also re-adds the document-level listeners, so stop the previous
-            // registration first to avoid leaking duplicate handlers. Unchanged renders are skipped.
+            // The handles also appear/disappear when ResizableColumns itself is toggled, so rebind on
+            // that transition too. Re-running init re-adds the document-level listeners, so stop the
+            // previous registration first to avoid leaking duplicate handlers. Unchanged renders are skipped.
             var hash = ComputeColumnsHash();
-            if (hash != _lastInitColumnsHash)
+            if (hash != _lastInitColumnsHash || !_lastResizableColumns)
             {
                 _lastInitColumnsHash = hash;
+                _lastResizableColumns = true;
                 await StopJsEventsAsync();
                 _jsEventDisposable = await _js.BitQuickGridInit(_tableReference);
             }
+        }
+        else if (_lastResizableColumns)
+        {
+            // ResizableColumns was just turned off; the drag handles are gone. Rebind so the
+            // document-level listeners are refreshed and the stale handle registration is dropped.
+            _lastResizableColumns = false;
+            await StopJsEventsAsync();
+            _jsEventDisposable = await _js.BitQuickGridInit(_tableReference);
         }
 
         if (_checkColumnOptionsPosition && _displayOptionsForColumn is not null)

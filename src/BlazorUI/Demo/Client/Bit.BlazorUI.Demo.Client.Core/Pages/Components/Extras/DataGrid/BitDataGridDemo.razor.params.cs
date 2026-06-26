@@ -157,8 +157,8 @@ public partial class BitDataGridDemo
             [
                 new() { Name = "DraggedItem", Type = "TItem", DefaultValue = "", Description = "The dragged row item." },
                 new() { Name = "TargetItem", Type = "TItem", DefaultValue = "", Description = "The drop-target row item." },
-                new() { Name = "FromIndex", Type = "int", DefaultValue = "", Description = "The original index of the dragged item." },
-                new() { Name = "ToIndex", Type = "int", DefaultValue = "", Description = "The destination index." },
+                new() { Name = "FromIndex", Type = "int?", DefaultValue = "", Description = "The original index of the dragged item, or null when the bound Items is not an indexable list." },
+                new() { Name = "ToIndex", Type = "int?", DefaultValue = "", Description = "The destination index, or null when the bound Items is not an indexable list." },
             ],
         },
         new()
@@ -300,7 +300,8 @@ public partial class BitDataGridDemo
                 new() { Name = "Number", Value = "2" },
                 new() { Name = "Boolean", Value = "3" },
                 new() { Name = "Date", Value = "4" },
-                new() { Name = "Enum", Value = "5" },
+                new() { Name = "DateTime", Value = "5" },
+                new() { Name = "Enum", Value = "6" },
             ]
         },
         new()
@@ -310,18 +311,19 @@ public partial class BitDataGridDemo
             Description = "Comparison operators available for column filtering.",
             Items =
             [
-                new() { Name = "Contains", Value = "0" },
-                new() { Name = "DoesNotContain", Value = "1" },
-                new() { Name = "StartsWith", Value = "2" },
-                new() { Name = "EndsWith", Value = "3" },
-                new() { Name = "Equals", Value = "4" },
-                new() { Name = "NotEquals", Value = "5" },
-                new() { Name = "GreaterThan", Value = "6" },
-                new() { Name = "GreaterThanOrEqual", Value = "7" },
-                new() { Name = "LessThan", Value = "8" },
-                new() { Name = "LessThanOrEqual", Value = "9" },
-                new() { Name = "IsEmpty", Value = "10" },
-                new() { Name = "IsNotEmpty", Value = "11" },
+                new() { Name = "Unspecified", Value = "0" },
+                new() { Name = "Contains", Value = "1" },
+                new() { Name = "DoesNotContain", Value = "2" },
+                new() { Name = "StartsWith", Value = "3" },
+                new() { Name = "EndsWith", Value = "4" },
+                new() { Name = "Equals", Value = "5" },
+                new() { Name = "NotEquals", Value = "6" },
+                new() { Name = "GreaterThan", Value = "7" },
+                new() { Name = "GreaterThanOrEqual", Value = "8" },
+                new() { Name = "LessThan", Value = "9" },
+                new() { Name = "LessThanOrEqual", Value = "10" },
+                new() { Name = "IsEmpty", Value = "11" },
+                new() { Name = "IsNotEmpty", Value = "12" },
             ]
         },
     ];

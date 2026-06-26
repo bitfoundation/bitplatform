@@ -277,6 +277,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // ------------------------------------------------------- Lifecycle
     protected override async Task OnParametersSetAsync()
     {
+        // Server mode (OnRead) and infinite-scrolling mode (OnLoadMore) drive paging, total count and
+        // ARIA state in mutually exclusive ways. Allowing both would let RefreshAsync behave like
+        // infinite loading while TotalCount/TotalPages still report server paging, so reject the
+        // ambiguous configuration up-front and force callers to pick a single data mode.
+        if (OnRead is not null && OnLoadMore is not null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(BitDataGrid<TItem>)} cannot use both {nameof(OnRead)} (server mode) and " +
+                $"{nameof(OnLoadMore)} (infinite-scrolling mode) at the same time. Provide only one data callback.");
+        }
+
         _effectivePageSize = Pageable ? Math.Max(1, PageSize) : int.MaxValue;
 
         // Reset the current selection whenever the selection mode changes
@@ -284,25 +295,23 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // selection no longer makes sense under the new semantics.
         if (_lastSelectionMode is not null && _lastSelectionMode != SelectionMode)
         {
-            if (_selected.Count > 0)
-            {
-                _selected.Clear();
-                await NotifySelectionAsync();
-            }
-
             // A parent may change SelectionMode and provide SelectedItems in the same render cycle.
-            // Apply the incoming selection here too so the internal state reflects the new values
-            // instead of being left empty after the mode-change reset.
+            // When selection is controlled, apply the (mode-normalized) incoming selection directly
+            // without first emitting a transient cleared selection back to the parent.
             if (SelectedItems is not null)
             {
+                ApplyControlledSelection();
+            }
+            else if (_selected.Count > 0)
+            {
+                // Uncontrolled: the previous selection no longer fits the new mode, so clear and notify.
                 _selected.Clear();
-                foreach (var i in SelectedItems) _selected.Add(i);
+                await NotifySelectionAsync();
             }
         }
         else if (SelectedItems is not null)
         {
-            _selected.Clear();
-            foreach (var i in SelectedItems) _selected.Add(i);
+            ApplyControlledSelection();
         }
         _lastSelectionMode = SelectionMode;
 
@@ -837,6 +846,22 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Applies the parent-controlled <see cref="SelectedItems"/> into the internal selection set,
+    /// normalized to the current <see cref="SelectionMode"/> (None selects nothing, Single keeps at
+    /// most one item). Does not notify the parent, since the selection is incoming rather than changed here.
+    /// </summary>
+    private void ApplyControlledSelection()
+    {
+        _selected.Clear();
+        if (SelectedItems is null || SelectionMode == BitDataGridSelectionMode.None) return;
+        foreach (var i in SelectedItems)
+        {
+            _selected.Add(i);
+            if (SelectionMode == BitDataGridSelectionMode.Single) break;
+        }
+    }
+
     internal async Task HandleRowClickAsync(TItem item)
     {
         if (OnRowClick.HasDelegate) await OnRowClick.InvokeAsync(item);
@@ -1022,8 +1047,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             {
                 DraggedItem = dragged,
                 TargetItem = target,
-                FromIndex = -1,
-                ToIndex = -1
+                FromIndex = null,
+                ToIndex = null
             });
         }
     }

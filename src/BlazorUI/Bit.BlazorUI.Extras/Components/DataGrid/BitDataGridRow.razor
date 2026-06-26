@@ -27,6 +27,7 @@
     {
         <div class="bit-dtg-cell bit-dtg-cell-select bit-dtg-sticky" style="@Grid.SelectStickyStyle" role="gridcell" @onclick:stopPropagation="true">
             <input type="checkbox" checked="@Selected" disabled="@(!Grid.CanSelectRow(Item))"
+                   aria-label="@SelectRowLabel"
                    @onchange="e => Grid.ToggleRowSelectionAsync(Item, (bool)e.Value!)" />
         </div>
     }
@@ -82,6 +83,18 @@
 
     private bool Selected => Grid.IsRowSelected(Item);
     private bool Editing => Grid.IsEditing(Item);
+
+    // Gives the row-selection checkbox an accessible name so screen readers can identify which row is
+    // being selected. Uses the first visible column's value as row-specific context when available.
+    private string SelectRowLabel
+    {
+        get
+        {
+            var cols = Grid.VisibleColumns;
+            var context = cols.Count > 0 ? cols[0].GetFormattedValue(Item) : null;
+            return string.IsNullOrWhiteSpace(context) ? "Select row" : $"Select row: {context}";
+        }
+    }
 
     private RenderFragment CellContent(BitDataGridColumn<TItem> column, int colIndex) => @<text>
         @if (Grid.IsTreeMode && colIndex == 0)
