@@ -707,7 +707,9 @@
     height: 10px;
     border-radius: 50%;
     background: var(--bit-bfc-timeline-color);
-    margin-left: -5px;
+    /* Logical offset so the dot stays centered on the leading edge of the timeline in both
+       LTR and RTL (the time grid flips to direction:rtl), matching the label's RTL handling. */
+    margin-inline-start: -5px;
     flex-shrink: 0;
 }
 

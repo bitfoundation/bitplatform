@@ -16,6 +16,10 @@ public partial class BitFcCalendarToast : IAsyncDisposable
         var item = new ToastItem { Id = Interlocked.Increment(ref _nextId), Message = message, IsError = isError };
 
         var cts = new CancellationTokenSource();
+        // Capture the token up front, before DisposeAsync (which can run concurrently and dispose
+        // the source) gets a chance to. Reading cts.Token later inside RemoveAfterDelay would risk
+        // an ObjectDisposedException if the component is torn down before the delay is queued.
+        var token = cts.Token;
         lock (_removalTokensLock)
         {
             _removalTokens.Add(cts);
@@ -31,17 +35,17 @@ public partial class BitFcCalendarToast : IAsyncDisposable
             // Start the expiration timer only after the toast has actually been queued into the UI,
             // so the 3s lifetime begins from when it becomes visible rather than from when Show was
             // scheduled (which may run on a non-renderer thread before the add is dispatched).
-            _ = RemoveAfterDelay(item.Id, cts);
+            _ = RemoveAfterDelay(item.Id, cts, token);
         });
     }
 
-    private async Task RemoveAfterDelay(int id, CancellationTokenSource cts)
+    private async Task RemoveAfterDelay(int id, CancellationTokenSource cts, CancellationToken token)
     {
         try
         {
             try
             {
-                await Task.Delay(3000, cts.Token);
+                await Task.Delay(3000, token);
             }
             catch (OperationCanceledException)
             {

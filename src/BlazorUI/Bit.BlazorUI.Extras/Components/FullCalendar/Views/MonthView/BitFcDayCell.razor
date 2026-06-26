@@ -45,7 +45,7 @@
     @if (Cell.CurrentMonth && moreCount > 0)
     {
         <button type="button" class="bit-bfc-month-more" @onclick="() => _showEventList = true" @onclick:stopPropagation="true">
-            @string.Format(State.Culture, Texts.MoreEventsSuffix, moreCount)
+            @string.Format(State.Culture, Texts.MoreEventsFormat, moreCount)
         </button>
     }
 </div>

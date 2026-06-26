@@ -195,6 +195,9 @@ public partial class BitFcTimelineEventBlock
                 if (s != _resizeBaseEvent.StartDate || e != _resizeBaseEvent.EndDate)
                 {
                     var b = _resizeBaseEvent;
+                    // Snapshot the previous state before UpdateEvent runs, so the OldEvent payload
+                    // is independent of whether the store mutates or replaces the existing instance.
+                    var oldSnapshot = BitFullCalendarChangeNotifier.CloneEvent(b);
                     var updated = new BitFullCalendarEvent
                     {
                         Id = b.Id,
@@ -213,7 +216,7 @@ public partial class BitFcTimelineEventBlock
                     await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
                     {
                         Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
-                        OldEvent = BitFullCalendarChangeNotifier.CloneEvent(b),
+                        OldEvent = oldSnapshot,
                         Kind = BitFullCalendarChangeKind.Edit,
                         Source = BitFullCalendarChangeSource.Resize
                     });

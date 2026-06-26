@@ -57,7 +57,9 @@ public sealed class BitFullCalendarColorScheme
         var opt = Find(colorId);
         if (opt is not null && !string.IsNullOrWhiteSpace(opt.Title))
             return opt.Title;
-        return colorId ?? string.Empty;
+        // Trim the raw fallback so whitespace-padded/unknown ids resolve to a cleaned label,
+        // consistent with the trimming applied everywhere else in the resolver.
+        return colorId?.Trim() ?? string.Empty;
     }
 
     /// <summary>CSS color value for the supplied id (falls back to the first configured color).</summary>
