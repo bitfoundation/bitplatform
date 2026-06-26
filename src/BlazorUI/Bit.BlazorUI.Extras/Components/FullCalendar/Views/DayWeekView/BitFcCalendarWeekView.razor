@@ -59,11 +59,18 @@
                                     <div style="position:absolute;top:0;left:0;right:0;border-top:1px solid var(--bit-bfc-border);"></div>
                                 }
                                 <div class="bit-bfc-hour-row-half bit-bfc-droppable @GetWeekDropClass(d, hour, 30)"
+                                     role="button"
+                                     tabindex="0"
+                                     aria-label="@HourSlotAriaLabel(d, hour, 30)"
                                      @ondragenter="() => OnDragEnterSlot(d, hour, 30)"
                                      @ondragenter:stopPropagation="true"
                                      @ondragover:preventDefault="true"
                                      @ondrop:stopPropagation="true"
-                                     @ondrop="() => OnDrop(d, hour, 30)"></div>
+                                     @ondrop="() => OnDrop(d, hour, 30)"
+                                     @onclick="() => OnHourClickAsync(d, hour, 30)"
+                                     @onclick:stopPropagation="true"
+                                     @onkeydown="e => OnHourKeyDownAsync(e, d, hour, 30)"
+                                     @onkeydown:stopPropagation="true"></div>
                                 <div class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-hour" aria-hidden="true">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                                     @Texts.AddEventHoverHint
@@ -86,7 +93,7 @@
 
 @if (_showAddDialog)
 {
-    <BitFcAddEditEventDialog StartDate="_addDate" StartHour="_addHour" OnClose="() => _showAddDialog = false" />
+    <BitFcAddEditEventDialog StartDate="_addDate" StartHour="_addHour" StartMinute="_addMinute" OnClose="() => _showAddDialog = false" />
 }
 
 @if (_selectedEvent != null)

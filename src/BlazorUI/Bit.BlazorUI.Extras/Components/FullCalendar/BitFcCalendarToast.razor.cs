@@ -28,8 +28,11 @@ public partial class BitFcCalendarToast : IAsyncDisposable
         {
             _toasts.Add(item);
             StateHasChanged();
+            // Start the expiration timer only after the toast has actually been queued into the UI,
+            // so the 3s lifetime begins from when it becomes visible rather than from when Show was
+            // scheduled (which may run on a non-renderer thread before the add is dispatched).
+            _ = RemoveAfterDelay(item.Id, cts);
         });
-        _ = RemoveAfterDelay(item.Id, cts);
     }
 
     private async Task RemoveAfterDelay(int id, CancellationTokenSource cts)

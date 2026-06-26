@@ -9,7 +9,7 @@
         <div class="bit-bfc-dropdown-menu" id="@_menuId">
             <div class="bit-bfc-dropdown-label">@Texts.CalendarSettingsLabel</div>
 
-            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot)" @onclick="() => State.SetBadgeVariant(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? BitFullCalendarBadgeVariant.Colored : BitFullCalendarBadgeVariant.Dot)">
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@((State.BadgeVariant == BitFullCalendarBadgeVariant.Dot) ? "true" : "false")" @onclick="() => State.SetBadgeVariant(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? BitFullCalendarBadgeVariant.Colored : BitFullCalendarBadgeVariant.Dot)">
                 <span>@Texts.DotBadgeLabel</span>
                 <span class="bit-bfc-toggle @(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? "checked" : "")" aria-hidden="true">
                     <span class="bit-bfc-toggle-track"></span>
@@ -17,7 +17,7 @@
                 </span>
             </button>
 
-            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@State.Use24HourFormat" @onclick="State.ToggleTimeFormat">
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@(State.Use24HourFormat ? "true" : "false")" @onclick="State.ToggleTimeFormat">
                 <span>@Texts.TwentyFourHourFormatLabel</span>
                 <span class="bit-bfc-toggle @(State.Use24HourFormat ? "checked" : "")" aria-hidden="true">
                     <span class="bit-bfc-toggle-track"></span>
@@ -25,7 +25,7 @@
                 </span>
             </button>
 
-            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@(State.EventLayout == BitFullCalendarEventLayout.Stack)" @onclick="State.ToggleEventLayout">
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@((State.EventLayout == BitFullCalendarEventLayout.Stack) ? "true" : "false")" @onclick="State.ToggleEventLayout">
                 <span>@Texts.StackedEventsLabel</span>
                 <span class="bit-bfc-toggle @(State.EventLayout == BitFullCalendarEventLayout.Stack ? "checked" : "")" aria-hidden="true">
                     <span class="bit-bfc-toggle-track"></span>
@@ -33,7 +33,7 @@
                 </span>
             </button>
 
-            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@State.ShowDayViewCalendar" @onclick="State.ToggleShowDayViewCalendar">
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@(State.ShowDayViewCalendar ? "true" : "false")" @onclick="State.ToggleShowDayViewCalendar">
                 <span>@Texts.ShowDayViewCalendarLabel</span>
                 <span class="bit-bfc-toggle @(State.ShowDayViewCalendar ? "checked" : "")" aria-hidden="true">
                     <span class="bit-bfc-toggle-track"></span>
@@ -57,13 +57,13 @@
             <div class="bit-bfc-dropdown-label">@Texts.AgendaGroupByLabel</div>
 
             <button type="button" class="bit-bfc-dropdown-item @(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "active" : "")"
-                 aria-pressed="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)"
+                 aria-pressed="@((State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date) ? "true" : "false")"
                  @onclick="() => State.SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy.Date)"
                  style="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "background:var(--bit-bfc-bg-hover);" : "")">
                 @Texts.AgendaGroupByDate
             </button>
             <button type="button" class="bit-bfc-dropdown-item @(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "active" : "")"
-                 aria-pressed="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color)"
+                 aria-pressed="@((State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color) ? "true" : "false")"
                  @onclick="() => State.SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy.Color)"
                  style="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "background:var(--bit-bfc-bg-hover);" : "")">
                 @Texts.AgendaGroupByColor

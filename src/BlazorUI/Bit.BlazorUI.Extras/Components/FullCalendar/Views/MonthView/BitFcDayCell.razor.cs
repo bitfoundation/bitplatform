@@ -27,8 +27,7 @@ public partial class BitFcDayCell
     }
     private void CloseEventDetails() => _selectedEvent = null;
 
-    private async Task OnCellClick()
-    {
+    private async Task OnCellClick()    {
         State.SetSelectedDate(Cell.Date);
         if (OnAddClick.HasDelegate)
         {
@@ -39,12 +38,6 @@ public partial class BitFcDayCell
         }
         else
             _showAddDialog = true;
-    }
-
-    private void OnMoreKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Key is "Enter" or " " or "Spacebar")
-            _showEventList = true;
     }
 
     private string GetBadgePosition(BitFullCalendarEvent ev, DateTime cellDate)

@@ -302,6 +302,14 @@
     padding: 2px 4px;
     cursor: pointer;
     font-weight: 500;
+    /* Rendered as a real <button> for native keyboard activation (Enter/Space without page scroll)
+       and focusability; strip the default button chrome so it keeps the plain inline-text look. */
+    display: block;
+    width: 100%;
+    border: none;
+    background: none;
+    font-family: inherit;
+    text-align: start;
 }
 
 .bit-bfc-month-more:hover {

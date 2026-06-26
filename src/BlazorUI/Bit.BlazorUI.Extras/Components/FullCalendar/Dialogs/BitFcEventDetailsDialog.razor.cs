@@ -1,7 +1,12 @@
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+
 namespace Bit.BlazorUI;
 
-public partial class BitFcEventDetailsDialog
+public partial class BitFcEventDetailsDialog : IAsyncDisposable
 {
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
@@ -11,7 +16,16 @@ public partial class BitFcEventDetailsDialog
 
     private bool _showEdit;
     private bool _isDeleting;
+    private ElementReference _dialogRef;
     private readonly string _dialogTitleId = $"bfc-details-title-{Guid.NewGuid():N}";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Move focus into the dialog and trap Tab navigation once it has rendered; teardown in
+        // DisposeAsync restores focus to the element that was focused before it opened.
+        if (firstRender)
+            await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+    }
 
     private void Edit()
     {
@@ -59,5 +73,10 @@ public partial class BitFcEventDetailsDialog
             // (e.g. close) instead of the delete button staying permanently inert.
             _isDeleting = false;
         }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
     }
 }

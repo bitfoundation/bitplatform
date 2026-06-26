@@ -333,6 +333,68 @@ namespace BitBlazorUI {
             return window.innerWidth <= 768;
         }
 
+        /**
+         * Focus management for the calendar's modal dialogs. Stores the element that was focused
+         * before the dialog opened, moves focus into the dialog, and keeps Tab/Shift+Tab navigation
+         * contained within it. Pair every setupDialog call with teardownDialog so focus is restored
+         * to the previously focused element when the dialog closes.
+         */
+        private static dialogFocusState = new WeakMap<HTMLElement, { previous: Element | null; handler: (e: KeyboardEvent) => void }>();
+
+        private static getDialogFocusable(container: HTMLElement): HTMLElement[] {
+            const selector = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+            return Array.from(container.querySelectorAll<HTMLElement>(selector))
+                .filter(el => !el.hasAttribute('disabled') && (el.offsetParent !== null || el.getClientRects().length > 0));
+        }
+
+        public static setupDialog(container: HTMLElement): void {
+            if (!container || FullCalendar.dialogFocusState.has(container)) return;
+
+            const previous = document.activeElement;
+
+            const handler = (e: KeyboardEvent) => {
+                if (e.key !== 'Tab') return;
+                const focusable = FullCalendar.getDialogFocusable(container);
+                if (focusable.length === 0) {
+                    e.preventDefault();
+                    container.focus();
+                    return;
+                }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                const active = document.activeElement as HTMLElement | null;
+                if (e.shiftKey) {
+                    if (active === first || active == null || !container.contains(active)) {
+                        e.preventDefault();
+                        last.focus();
+                    }
+                } else if (active === last || active == null || !container.contains(active)) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            };
+
+            container.addEventListener('keydown', handler);
+            FullCalendar.dialogFocusState.set(container, { previous, handler });
+
+            const focusable = FullCalendar.getDialogFocusable(container);
+            (focusable[0] ?? container).focus();
+        }
+
+        public static teardownDialog(container: HTMLElement): void {
+            if (!container) return;
+            const state = FullCalendar.dialogFocusState.get(container);
+            if (!state) return;
+
+            container.removeEventListener('keydown', state.handler);
+            FullCalendar.dialogFocusState.delete(container);
+
+            const previous = state.previous as HTMLElement | null;
+            if (previous && typeof previous.focus === 'function' && document.contains(previous)) {
+                previous.focus();
+            }
+        }
+
         public static getLocalStorage(key: string): string | null {
             // localStorage access can throw a DOMException when storage is disabled or unavailable
             // (private mode, blocked third-party storage, quota policies). Degrade gracefully.

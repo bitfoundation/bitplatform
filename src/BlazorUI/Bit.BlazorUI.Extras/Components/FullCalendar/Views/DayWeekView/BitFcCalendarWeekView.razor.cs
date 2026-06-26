@@ -17,6 +17,7 @@ public partial class BitFcCalendarWeekView
     private bool _showAddDialog;
     private DateTime _addDate;
     private int _addHour;
+    private int _addMinute;
 
     private BitFullCalendarEvent? _selectedEvent;
     private DateTime? _dragDate;
@@ -34,32 +35,33 @@ public partial class BitFcCalendarWeekView
     }
     private void CloseEventDetails() => _selectedEvent = null;
 
-    private async Task OnHourClickAsync(DateTime day, int hour)
+    private async Task OnHourClickAsync(DateTime day, int hour, int minute = 0)
     {
         State.SetSelectedDate(day);
 
         if (OnAddClick.HasDelegate)
         {
-            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(day, hour);
+            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(day, hour, minute);
             await OnAddClick.InvokeAsync(draft);
             return;
         }
 
         _addDate = day;
         _addHour = hour;
+        _addMinute = minute;
         _showAddDialog = true;
     }
 
-    private async Task OnHourKeyDownAsync(KeyboardEventArgs e, DateTime day, int hour)
+    private async Task OnHourKeyDownAsync(KeyboardEventArgs e, DateTime day, int hour, int minute = 0)
     {
         // Ignore auto-repeat keydown events so a held Enter/Space only creates a single draft event.
         if (e.Key is "Enter" or " " or "Spacebar" && !e.Repeat)
-            await OnHourClickAsync(day, hour);
+            await OnHourClickAsync(day, hour, minute);
     }
 
-    private string HourSlotAriaLabel(DateTime day, int hour)
+    private string HourSlotAriaLabel(DateTime day, int hour, int minute = 0)
     {
-        var start = day.Date.AddHours(hour);
+        var start = day.Date.AddHours(hour).AddMinutes(minute);
         return $"{Texts.AddEventHoverHint}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
     }
 
