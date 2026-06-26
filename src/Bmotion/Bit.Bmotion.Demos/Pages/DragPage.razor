@@ -1,0 +1,168 @@
+@page "/drag"
+
+<div class="demo-section">
+    <h2>Drag</h2>
+    <p>
+        Enable drag on any axis with <strong>Drag="true"</strong>.
+        Add <strong>DragOptions</strong> to constrain movement, tune elasticity, and momentum.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
+            <Bmotion Tag="div"
+                    Class="box"
+                    Style="position:absolute;top:50%;left:50%;margin:-40px 0 0 -40px;cursor:grab;"
+                    Animate="@(new BmotionAnimationProps { Scale = 1 })"
+                    WhileDrag="@(new BmotionAnimationProps { Scale = 1.1, BoxShadow = "0 15px 35px rgba(0,0,0,.5)" })"
+                    WhileHover="@(new BmotionAnimationProps { Scale = 1.05 })"
+                    Drag="true"
+                    DragOptions="@(new BmotionDragOptions { Elastic = 0.5, Momentum = true })"
+                    Transition="@BmotionTransitionConfig.Spring(stiffness:200, damping:20)" />
+        </div>
+
+        <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
+            <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:#888;white-space:nowrap">
+                X-axis only + constraints
+            </p>
+            <Bmotion Tag="div"
+                    Class="box box-sm"
+                    Style="position:absolute;top:50%;left:50%;margin:-25px 0 0 -25px;"
+                    Drag="true"
+                    DragOptions="@(new BmotionDragOptions
+                    {
+                        Axis        = BmotionDragAxis.X,
+                        Constraints = BmotionDragConstraints.Horizontal(-120, 120),
+                        Elastic     = 0.3
+                    })"
+                    WhileDrag="@(new BmotionAnimationProps { Scale = 1.15 })" />
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_dragCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Drag Events</h2>
+    <p>Listen to <c>OnDragStart</c>, <c>OnDragEnd</c> lifecycle callbacks to react to drag state transitions.</p>
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column;gap:1rem;position:relative;overflow:hidden;height:220px;">
+            <Bmotion Tag="div"
+                    Class="box box-sm"
+                    Style="cursor:grab"
+                    Drag="true"
+                    OnDragStart="@HandleDragStart"
+                    OnDragEnd="@HandleDragEnd" />
+            <div style="position:absolute;bottom:.75rem;left:50%;transform:translateX(-50%);font-size:.78rem;color:#888;white-space:nowrap">
+                @_dragInfo
+            </div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_dragEventsCode" />
+</div>
+
+@code {
+    private string _dragInfo = "Drag the box";
+
+    void HandleDragStart() => _dragInfo = "Dragging…";
+    void HandleDragEnd()   => _dragInfo = "Released";
+
+    private const string _dragCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box { width: 80px; height: 80px; border-radius: 10px;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
+            .box-sm { width: 50px; height: 50px; border-radius: 8px;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
+        </style>
+
+        <div class="demo-section">
+            <h2>Drag</h2>
+
+            <div class="demo-row">
+                <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
+                    <Bmotion Tag="div"
+                            Class="box"
+                            Style="position:absolute;top:50%;left:50%;margin:-40px 0 0 -40px;cursor:grab;"
+                            Animate="@(new BmotionAnimationProps { Scale = 1 })"
+                            WhileDrag="@(new BmotionAnimationProps { Scale = 1.1, BoxShadow = "0 15px 35px rgba(0,0,0,.5)" })"
+                            WhileHover="@(new BmotionAnimationProps { Scale = 1.05 })"
+                            Drag="true"
+                            DragOptions="@(new BmotionDragOptions { Elastic = 0.5, Momentum = true })"
+                            Transition="@BmotionTransitionConfig.Spring(stiffness:200, damping:20)" />
+                </div>
+
+                <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
+                    <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:#888;white-space:nowrap">
+                        X-axis only + constraints
+                    </p>
+                    <Bmotion Tag="div"
+                            Class="box box-sm"
+                            Style="position:absolute;top:50%;left:50%;margin:-25px 0 0 -25px;"
+                            Drag="true"
+                            DragOptions="@(new BmotionDragOptions
+                            {
+                                Axis        = BmotionDragAxis.X,
+                                Constraints = BmotionDragConstraints.Horizontal(-120, 120),
+                                Elastic     = 0.3
+                            })"
+                            WhileDrag="@(new BmotionAnimationProps { Scale = 1.15 })" />
+                </div>
+            </div>
+        </div>
+        """;
+
+    private const string _dragEventsCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-section p { color: #888; margin-bottom: 1.5rem; line-height: 1.6; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box-sm { width: 50px; height: 50px; border-radius: 8px;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
+        </style>
+
+        <div class="demo-section">
+            <h2>Drag Events</h2>
+            <p>Listen to <c>OnDragStart</c>, <c>OnDragEnd</c> lifecycle callbacks to react to drag state transitions.</p>
+            <div class="demo-row">
+                <div class="demo-card" style="flex-direction:column;gap:1rem;position:relative;overflow:hidden;height:220px;">
+                    <Bmotion Tag="div"
+                            Class="box box-sm"
+                            Style="cursor:grab"
+                            Drag="true"
+                            OnDragStart="@HandleDragStart"
+                            OnDragEnd="@HandleDragEnd" />
+                    <div style="position:absolute;bottom:.75rem;left:50%;transform:translateX(-50%);font-size:.78rem;color:#888;white-space:nowrap">
+                        @_dragInfo
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @code {
+            private string _dragInfo = "Drag the box";
+
+            void HandleDragStart() => _dragInfo = "Dragging…";
+            void HandleDragEnd()   => _dragInfo = "Released";
+        }
+        """;
+}

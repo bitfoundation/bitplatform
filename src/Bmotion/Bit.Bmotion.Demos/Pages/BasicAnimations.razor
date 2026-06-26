@@ -1,0 +1,166 @@
+@page "/basic"
+
+<div class="demo-section">
+    <h2>Basic Animations</h2>
+    <p>
+        Use <strong>Initial</strong> to set the starting state and <strong>Animate</strong>
+        for the target. Each property transitions automatically on mount and whenever
+        <c>Animate</c> changes.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <Bmotion Tag="div"
+                    Class="box"
+                    Initial="@(new BmotionAnimationProps { Opacity = 0, X = -60 })"
+                    Animate="@(new BmotionAnimationProps { Opacity = 1, X = 0 })"
+                    Transition="@(new BmotionTransitionConfig { Duration = 0.6, Ease = BmotionEasing.BackOut })" />
+        </div>
+        <div class="demo-card">
+            <Bmotion Tag="div"
+                    Class="box"
+                    Initial="@(new BmotionAnimationProps { Scale = 0 })"
+                    Animate="@(_toggled ? new BmotionAnimationProps { Scale = 1.3, Rotate = 45, BackgroundColor = "#ff4785" }
+                                        : new BmotionAnimationProps { Scale = 1, Rotate = 0, BackgroundColor = "#6c47ff" })"
+                    Transition="@(new BmotionTransitionConfig { Duration = 0.4 })"
+                    OnTap="@(() => _toggled = !_toggled)" />
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _toggled = !_toggled)">
+        Toggle animate
+    </button>
+
+    <CodeSnippet Code="@_basicCode" />
+</div>
+
+<div class="demo-section">
+    <h2>CSS Property Animations</h2>
+    <p>Animate any CSS property - colors, border-radius, box-shadow, and more.</p>
+    <div class="demo-row">
+        <div class="demo-card">
+            <Bmotion Tag="div"
+                    Class="box"
+                    Animate="@(_rounded
+                        ? new BmotionAnimationProps { BorderRadius = "50%", BackgroundColor = "#ff4785", Scale = 1.1 }
+                        : new BmotionAnimationProps { BorderRadius = "10px", BackgroundColor = "#6c47ff", Scale = 1 })"
+                    Transition="@(new BmotionTransitionConfig { Duration = 0.5, Ease = BmotionEasing.EaseInOut })"
+                    OnTap="@(() => _rounded = !_rounded)" />
+        </div>
+    </div>
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _rounded = !_rounded)">
+        Toggle shape
+    </button>
+
+    <CodeSnippet Code="@_cssCode" />
+</div>
+
+@code {
+    private bool _toggled;
+    private bool _rounded;
+
+    private const string _basicCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: #1e1e2e; border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box {
+                width: 80px; height: 80px; border-radius: 10px; color: #fff; font-weight: 700;
+                background: linear-gradient(135deg, #6c47ff, #ff4785);
+                cursor: pointer; user-select: none;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .btn-bm {
+                background: #6c47ff; color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>Basic Animations</h2>
+
+            <div class="demo-row">
+                <div class="demo-card">
+                    <Bmotion Tag="div"
+                            Class="box"
+                            Initial="@(new BmotionAnimationProps { Opacity = 0, X = -60 })"
+                            Animate="@(new BmotionAnimationProps { Opacity = 1, X = 0 })"
+                            Transition="@(new BmotionTransitionConfig { Duration = 0.6, Ease = BmotionEasing.BackOut })" />
+                </div>
+                <div class="demo-card">
+                    <Bmotion Tag="div"
+                            Class="box"
+                            Initial="@(new BmotionAnimationProps { Scale = 0 })"
+                            Animate="@(_toggled ? new BmotionAnimationProps { Scale = 1.3, Rotate = 45, BackgroundColor = "#ff4785" }
+                                                : new BmotionAnimationProps { Scale = 1, Rotate = 0, BackgroundColor = "#6c47ff" })"
+                            Transition="@(new BmotionTransitionConfig { Duration = 0.4 })"
+                            OnTap="@(() => _toggled = !_toggled)" />
+                </div>
+            </div>
+
+            <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _toggled = !_toggled)">
+                Toggle animate
+            </button>
+        </div>
+
+        @code {
+            private bool _toggled;
+        }
+        """;
+
+    private const string _cssCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-section p { color: #888; margin-bottom: 1.5rem; line-height: 1.6; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: #1e1e2e; border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box {
+                width: 80px; height: 80px; border-radius: 10px; color: #fff; font-weight: 700;
+                background: linear-gradient(135deg, #6c47ff, #ff4785);
+                cursor: pointer; user-select: none;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .btn-bm {
+                background: #6c47ff; color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>CSS Property Animations</h2>
+            <p>Animate any CSS property - colors, border-radius, box-shadow, and more.</p>
+            <div class="demo-row">
+                <div class="demo-card">
+                    <Bmotion Tag="div"
+                            Class="box"
+                            Animate="@(_rounded
+                                ? new BmotionAnimationProps { BorderRadius = "50%", BackgroundColor = "#ff4785", Scale = 1.1 }
+                                : new BmotionAnimationProps { BorderRadius = "10px", BackgroundColor = "#6c47ff", Scale = 1 })"
+                            Transition="@(new BmotionTransitionConfig { Duration = 0.5, Ease = BmotionEasing.EaseInOut })"
+                            OnTap="@(() => _rounded = !_rounded)" />
+                </div>
+            </div>
+            <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _rounded = !_rounded)">
+                Toggle shape
+            </button>
+        </div>
+
+        @code {
+            private bool _rounded;
+        }
+        """;
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bit.Bmotion.Demos</title>
+    <base href="/" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link href="Bit.Bmotion.Demos.styles.css" rel="stylesheet" />
+    <link href="css/motion-samples.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <button type="button" class="dismiss" aria-label="Dismiss error message">🗙</button>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        window.bmCopyToClipboard = async function (text) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                }
+            } catch { /* fall through to legacy path */ }
+            const ta = document.createElement('textarea');
+            try {
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                return document.execCommand('copy');
+            } catch {
+                return false;
+            } finally {
+                // Always remove the textarea, even if focus/select/execCommand throws.
+                if (ta.parentNode) document.body.removeChild(ta);
+            }
+        };
+    </script>
+</body>
+
+</html>
