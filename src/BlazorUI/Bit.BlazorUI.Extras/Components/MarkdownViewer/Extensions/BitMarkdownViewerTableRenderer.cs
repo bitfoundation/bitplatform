@@ -17,6 +17,7 @@ public sealed class BitMarkdownViewerTableRenderer : BitMarkdownViewerNodeRender
         for (int c = 0; c < table.Header.Count; c++)
         {
             b.OpenElement(r.NextSeq(), "th");
+            b.AddAttribute(r.NextSeq(), "scope", "col");
             AddAlignment(r, b, table, c);
             r.WriteNodes(b, table.Header[c]);
             b.CloseElement();

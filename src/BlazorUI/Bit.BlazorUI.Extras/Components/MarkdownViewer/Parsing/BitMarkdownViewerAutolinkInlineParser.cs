@@ -13,7 +13,7 @@ public sealed class BitMarkdownViewerAutolinkInlineParser : BitMarkdownViewerInl
         if (close < 0) return false;
 
         string inner = s.Substring(start + 1, close - start - 1);
-        if (inner.Length == 0 || inner.Contains(' ') || inner.Contains('<')) return false;
+        if (inner.Length == 0 || inner.Any(char.IsWhiteSpace) || inner.Contains('<')) return false;
 
         int colon = inner.IndexOf(':');
         if (colon > 0)

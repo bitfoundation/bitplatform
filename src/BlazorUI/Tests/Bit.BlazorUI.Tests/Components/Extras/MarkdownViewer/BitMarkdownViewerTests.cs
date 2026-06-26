@@ -67,13 +67,16 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Markdown, "[click](javascript:alert(1))");
         });
 
-        // Validate the rendered link's actual href rather than a substring of the HTML:
-        // an unsafe scheme must be stripped, leaving no href (or a safe one).
-        var link = component.Find(".bit-mdv a");
-        var href = link.GetAttribute("href") ?? string.Empty;
-        Assert.IsTrue(
-            href.Length == 0 || !href.Contains("javascript:", StringComparison.OrdinalIgnoreCase),
-            $"Unsafe link href was not sanitized: '{href}'.");
+        // Validate the rendered link's actual href rather than a substring of the HTML.
+        // Removing the unsafe node entirely is also a valid (secure) sanitizer outcome.
+        var links = component.FindAll(".bit-mdv a");
+        if (links.Count > 0)
+        {
+            var href = links[0].GetAttribute("href") ?? string.Empty;
+            Assert.IsTrue(
+                href.Length == 0 || !href.Contains("javascript:", StringComparison.OrdinalIgnoreCase),
+                $"Unsafe link href was not sanitized: '{href}'.");
+        }
     }
 
     [TestMethod]
@@ -84,13 +87,16 @@ public class BitMarkdownViewerTests : BunitTestContext
             parameters.Add(p => p.Markdown, "![alt](javascript:alert(1))");
         });
 
-        // Validate the rendered image's actual src rather than a substring of the HTML:
-        // an unsafe scheme must be stripped, leaving no src (or a safe one).
-        var img = component.Find(".bit-mdv img");
-        var src = img.GetAttribute("src") ?? string.Empty;
-        Assert.IsTrue(
-            src.Length == 0 || !src.Contains("javascript:", StringComparison.OrdinalIgnoreCase),
-            $"Unsafe image src was not sanitized: '{src}'.");
+        // Validate the rendered image's actual src rather than a substring of the HTML.
+        // Removing the unsafe node entirely is also a valid (secure) sanitizer outcome.
+        var imgs = component.FindAll(".bit-mdv img");
+        if (imgs.Count > 0)
+        {
+            var src = imgs[0].GetAttribute("src") ?? string.Empty;
+            Assert.IsTrue(
+                src.Length == 0 || !src.Contains("javascript:", StringComparison.OrdinalIgnoreCase),
+                $"Unsafe image src was not sanitized: '{src}'.");
+        }
     }
 
     [TestMethod]

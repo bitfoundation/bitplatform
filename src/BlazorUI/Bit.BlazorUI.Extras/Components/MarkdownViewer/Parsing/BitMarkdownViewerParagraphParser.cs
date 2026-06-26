@@ -19,7 +19,7 @@ public sealed class BitMarkdownViewerParagraphParser : BitMarkdownViewerBlockPar
             if (buffer.Count > 0)
             {
                 var setext = BitMarkdownViewerBlockGrammar.Setext().Match(l);
-                if (setext.Success && !BitMarkdownViewerBlockGrammar.ThematicBreak().IsMatch(l))
+                if (setext.Success)
                 {
                     int level = setext.Groups[1].Value[0] == '=' ? 1 : 2;
                     var heading = new BitMarkdownViewerHeadingNode { Level = level };

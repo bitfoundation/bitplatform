@@ -11,11 +11,13 @@ internal static class BitMarkdownViewerDelimiterResolver
 {
     public static void Process(List<Tok> tokens, BitMarkdownViewerPipeline pipeline)
     {
-        // Cache the "bottom" delimiter (per char + length-mod-3) below which no
-        // matching opener exists. We store Tok *references* rather than indices
-        // because the tokens list is mutated (RemoveRange/Insert/RemoveAt) while
-        // resolving, which would invalidate cached integer indices.
-        var openersBottom = new Dictionary<(char, int), Tok?>();
+        // Cache the "bottom" delimiter (per char + length-mod-3 + can-open) below
+        // which no matching opener exists. Closers that can also open must use a
+        // separate opener-bottom bucket from those that cannot, per CommonMark.
+        // We store Tok *references* rather than indices because the tokens list is
+        // mutated (RemoveRange/Insert/RemoveAt) while resolving, which would
+        // invalidate cached integer indices.
+        var openersBottom = new Dictionary<(char, int, bool), Tok?>();
 
         int closerIdx = 0;
         while (closerIdx < tokens.Count)
@@ -30,7 +32,7 @@ internal static class BitMarkdownViewerDelimiterResolver
             char dc = closer.DelimChar;
             var processor = pipeline.DelimiterByChar[dc];
 
-            var key = (dc, closer.Count % 3);
+            var key = (dc, closer.Count % 3, closer.CanOpen);
             Tok? bottom = openersBottom.TryGetValue(key, out var b) ? b : null;
 
             // Find a matching opener walking backwards (stopping just above the

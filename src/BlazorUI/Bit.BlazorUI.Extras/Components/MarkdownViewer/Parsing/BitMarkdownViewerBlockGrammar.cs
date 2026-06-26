@@ -8,19 +8,26 @@ internal static partial class BitMarkdownViewerBlockGrammar
     [GeneratedRegex(@"^ {0,3}(?:([-*_])\s*)(?:\1\s*){2,}$")]
     public static partial Regex ThematicBreak();
 
-    [GeneratedRegex(@"^ {0,3}(#{1,6})(?:\s+(.*?))?\s*#*\s*$")]
+    // The optional closing run of '#'s is stripped in the parser (only when preceded
+    // by whitespace), so the content group here captures the full text after the
+    // opening '#'s and is not responsible for removing trailing hashes.
+    [GeneratedRegex(@"^ {0,3}(#{1,6})(?:\s+(.*?))?\s*$")]
     public static partial Regex AtxHeading();
 
-    [GeneratedRegex(@"^ {0,3}(`{3,}|~{3,})\s*([^`]*)$")]
+    // Backtick fences may not contain backticks in their info string, but tilde
+    // fences may; handle the two fence types with separate alternatives.
+    [GeneratedRegex(@"^ {0,3}(?<fence>`{3,})\s*(?<info>[^`\n]*)$|^ {0,3}(?<fence>~{3,})\s*(?<info>[^\n]*)$")]
     public static partial Regex Fence();
 
     [GeneratedRegex(@"^ {0,3}(`{3,}|~{3,})\s*$")]
     public static partial Regex FenceClose();
 
-    [GeneratedRegex(@"^ {0,3}([-+*])(\s+)(.*)$")]
+    // The whitespace + content after the marker is optional so that a marker-only
+    // line (e.g. "-" or "1.") is recognised as an empty list item per CommonMark.
+    [GeneratedRegex(@"^ {0,3}([-+*])(?:(\s+)(.*))?$")]
     public static partial Regex Bullet();
 
-    [GeneratedRegex(@"^ {0,3}(\d{1,9})([.)])(\s+)(.*)$")]
+    [GeneratedRegex(@"^ {0,3}(\d{1,9})([.)])(?:(\s+)(.*))?$")]
     public static partial Regex Ordered();
 
     [GeneratedRegex(@"^ {0,3}(=+|-+)\s*$")]

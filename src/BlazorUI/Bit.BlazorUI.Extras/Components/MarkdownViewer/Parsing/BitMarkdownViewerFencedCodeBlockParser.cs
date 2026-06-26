@@ -16,10 +16,10 @@ public sealed class BitMarkdownViewerFencedCodeBlockParser : BitMarkdownViewerBl
         var fence = BitMarkdownViewerBlockGrammar.Fence().Match(lines[state.Line]);
         if (!fence.Success) return false;
 
-        string marker = fence.Groups[1].Value;
+        string marker = fence.Groups["fence"].Value;
         char fenceChar = marker[0];
         int fenceLen = marker.Length;
-        string info = fence.Groups[2].Value.Trim();
+        string info = fence.Groups["info"].Value.Trim();
         int indent = BitMarkdownViewerBlockProcessor.GetIndent(lines[state.Line]);
 
         var sb = new StringBuilder();

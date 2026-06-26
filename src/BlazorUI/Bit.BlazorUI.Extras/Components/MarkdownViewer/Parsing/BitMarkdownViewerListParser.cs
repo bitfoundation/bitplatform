@@ -10,10 +10,12 @@ public sealed class BitMarkdownViewerListParser : BitMarkdownViewerBlockParser
     public override bool CanInterruptParagraph(BitMarkdownViewerBlockProcessor state, int lineIndex)
     {
         var line = state.Lines[lineIndex];
-        if (BitMarkdownViewerBlockGrammar.Bullet().IsMatch(line)) return true;
+        // An empty list item (marker with no content) cannot interrupt a paragraph.
+        var bullet = BitMarkdownViewerBlockGrammar.Bullet().Match(line);
+        if (bullet.Success && bullet.Groups[3].Value.Length > 0) return true;
         // An ordered list may only interrupt a paragraph when it starts with "1".
         var m = BitMarkdownViewerBlockGrammar.Ordered().Match(line);
-        return m.Success && m.Groups[1].Value == "1";
+        return m.Success && m.Groups[1].Value == "1" && m.Groups[4].Value.Length > 0;
     }
 
     public override bool TryParse(BitMarkdownViewerBlockProcessor state, List<BitMarkdownViewerMarkdownNode> output)
@@ -56,13 +58,15 @@ public sealed class BitMarkdownViewerListParser : BitMarkdownViewerBlockParser
             string firstContent;
             if (ordered)
             {
+                // A marker-only item has no following whitespace; its content column
+                // still starts one space past the marker.
                 markerIndent = BitMarkdownViewerBlockProcessor.GetIndent(line)
-                    + m.Groups[1].Value.Length + 1 + m.Groups[3].Value.Length;
+                    + m.Groups[1].Value.Length + 1 + Math.Max(1, m.Groups[3].Value.Length);
                 firstContent = m.Groups[4].Value;
             }
             else
             {
-                markerIndent = BitMarkdownViewerBlockProcessor.GetIndent(line) + 1 + m.Groups[2].Value.Length;
+                markerIndent = BitMarkdownViewerBlockProcessor.GetIndent(line) + 1 + Math.Max(1, m.Groups[2].Value.Length);
                 firstContent = m.Groups[3].Value;
             }
 

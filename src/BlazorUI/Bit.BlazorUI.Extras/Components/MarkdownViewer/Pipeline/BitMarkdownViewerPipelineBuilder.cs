@@ -56,8 +56,10 @@ public sealed class BitMarkdownViewerPipelineBuilder
         ArgumentNullException.ThrowIfNull(extension);
         if (_extensions.Any(e => e.GetType() == extension.GetType()))
             return this;
-        extension.Setup(this);
+        // Register before Setup so a self-referential registration inside Setup is
+        // caught by the duplicate check above instead of recursing infinitely.
         _extensions.Add(extension);
+        extension.Setup(this);
         return this;
     }
 

@@ -43,11 +43,36 @@ public sealed class BitMarkdownViewerLinkInlineParser : BitMarkdownViewerInlineP
                 Url = BitMarkdownViewerUrlSanitizer.Sanitize(url, isImage: false),
                 Title = title
             };
-            link.Children.AddRange(state.ParseInlines(label));
+            // A link may not contain another link; unwrap any nested links so the
+            // inner link's content survives as plain inline text instead.
+            link.Children.AddRange(RemoveNestedLinks(state.ParseInlines(label)));
             state.AppendNode(link);
         }
         state.Pos = q + 1;
         return true;
+    }
+
+    // Recursively replaces any nested link node with its (also unwrapped) children,
+    // ensuring a link's label can never contain another link.
+    private static List<BitMarkdownViewerMarkdownNode> RemoveNestedLinks(IEnumerable<BitMarkdownViewerMarkdownNode> nodes)
+    {
+        var result = new List<BitMarkdownViewerMarkdownNode>();
+        foreach (var node in nodes)
+        {
+            if (node is BitMarkdownViewerLinkNode nested)
+            {
+                result.AddRange(RemoveNestedLinks(nested.Children));
+                continue;
+            }
+            foreach (var list in node.ChildLists)
+            {
+                var cleaned = RemoveNestedLinks(list);
+                list.Clear();
+                foreach (var child in cleaned) list.Add(child);
+            }
+            result.Add(node);
+        }
+        return result;
     }
 
     private static int FindLabelEnd(string s, int openBracket)

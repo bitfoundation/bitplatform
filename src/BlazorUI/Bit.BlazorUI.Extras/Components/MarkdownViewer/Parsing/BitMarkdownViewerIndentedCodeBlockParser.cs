@@ -27,7 +27,7 @@ public sealed class BitMarkdownViewerIndentedCodeBlockParser : BitMarkdownViewer
 
         output.Add(new BitMarkdownViewerCodeBlockNode
         {
-            Content = BitMarkdownViewerBlockProcessor.TrimTrailingNewline(sb.ToString()).TrimEnd('\n')
+            Content = BitMarkdownViewerBlockProcessor.TrimTrailingNewline(sb.ToString()).TrimEnd('\r', '\n')
         });
         state.Line = lastNonBlank + 1;
         return true;
