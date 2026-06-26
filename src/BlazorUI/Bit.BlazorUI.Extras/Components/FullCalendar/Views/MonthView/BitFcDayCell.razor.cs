@@ -14,6 +14,7 @@ public partial class BitFcDayCell
 
     private bool _showEventList;
     private bool _showAddDialog;
+    private DateTime _addDraftStart;
     private BitFullCalendarEvent? _selectedEvent;
 
     private async Task ShowEventDetails(BitFullCalendarEvent ev)
@@ -29,15 +30,21 @@ public partial class BitFcDayCell
 
     private async Task OnCellClick()    {
         State.SetSelectedDate(Cell.Date);
+
+        // Build the draft once and use it for both the external add handler and the built-in dialog
+        // fallback so they always agree on the start date/time. Seed from the calendar's start-of-day
+        // hour (matching the other month-view add entry points) instead of DateTime.Now.Hour.
+        var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(Cell.Date, State.StartOfDayHour);
+
         if (OnAddClick.HasDelegate)
         {
-            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(
-                Cell.Date,
-                DateTime.Now.Hour);
             await OnAddClick.InvokeAsync(draft);
         }
         else
+        {
+            _addDraftStart = draft.StartDate;
             _showAddDialog = true;
+        }
     }
 
     private string GetBadgePosition(BitFullCalendarEvent ev, DateTime cellDate)

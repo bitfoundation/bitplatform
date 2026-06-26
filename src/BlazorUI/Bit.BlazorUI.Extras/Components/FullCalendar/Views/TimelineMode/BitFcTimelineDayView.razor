@@ -28,6 +28,7 @@
     }
 
     var hasUnassigned = (grouped.TryGetValue(_unassignedKey, out var u) && u.Count > 0) || resourceIds.Count == 0;
+    var unassignedLaneCount = hasUnassigned ? LaneCountFor(_unassignedKey) : 1;
     var scrollHour = State.StartOfDayHour;
 }
 
@@ -36,7 +37,7 @@
                 ScrollContainerId="@_scrollContainerId"
                 HasUnassignedRow="hasUnassigned"
                 RowHeightFor="r => RowHeight(LaneCountFor(r.Id))"
-                UnassignedRowHeight="RowHeight(hasUnassigned ? grouped[_unassignedKey].Count : 1)">
+                UnassignedRowHeight="RowHeight(unassignedLaneCount)">
 
     <HeaderContent>
         <div class="bit-bfc-tl-time-row bit-bfc-tl-time-row-slots">
@@ -128,9 +129,9 @@
                 </div>
             </div>
         }
-        @if (hasUnassigned)
+        @if (hasUnassigned && grouped.TryGetValue(_unassignedKey, out var unassignedLanes))
         {
-            @RenderLanes(grouped[_unassignedKey])
+            @RenderLanes(unassignedLanes)
         }
     </UnassignedRowContent>
 </BitFcTimelineLayout>

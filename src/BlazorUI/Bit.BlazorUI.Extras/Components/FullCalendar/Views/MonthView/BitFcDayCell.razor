@@ -57,7 +57,7 @@
 
 @if (_showAddDialog)
 {
-    <BitFcAddEditEventDialog StartDate="Cell.Date" OnClose="() => _showAddDialog = false" />
+    <BitFcAddEditEventDialog StartDate="_addDraftStart" StartHour="_addDraftStart.Hour" StartMinute="_addDraftStart.Minute" OnClose="() => _showAddDialog = false" />
 }
 
 @if (_selectedEvent != null)

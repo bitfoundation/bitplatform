@@ -215,9 +215,11 @@ public partial class BitFcEventBlock
             _resizeBaseEvent = null;
             _resizeDirection = null;
             _suppressClickUntilUtc = DateTime.UtcNow.AddMilliseconds(300);
-        }
 
-        await InvokeAsync(StateHasChanged);
+            // Render from the finally path so the preview state is always cleared on screen, even if
+            // State.UpdateEvent or Notifier.NotifyAsync above threw.
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private void OnResizeTopStart() { }
