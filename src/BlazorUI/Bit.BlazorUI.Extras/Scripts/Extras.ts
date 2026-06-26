@@ -204,14 +204,44 @@ namespace BitBlazorUI {
             });
         }
 
+        // Classic <script> reuse must be limited to tags the browser actually executes as JavaScript.
+        // A bare (typeless) or JS-typed script runs; data blocks like type="application/json" do not, so
+        // they must never satisfy a classic-script lookup. The empty/absent type defaults to JavaScript.
+        // This is the HTML spec's set of JavaScript MIME types; 'module' is intentionally excluded since
+        // it's handled by the dedicated module branch.
+        private static isExecutableClassicScriptType(type: string): boolean {
+            const t = (type ?? '').trim().toLowerCase();
+            if (t === '') return true;
+            return [
+                'text/javascript',
+                'application/javascript',
+                'application/ecmascript',
+                'text/ecmascript',
+                'application/x-ecmascript',
+                'application/x-javascript',
+                'text/javascript1.0',
+                'text/javascript1.1',
+                'text/javascript1.2',
+                'text/javascript1.3',
+                'text/javascript1.4',
+                'text/javascript1.5',
+                'text/jscript',
+                'text/livescript',
+                'text/x-ecmascript',
+                'text/x-javascript',
+            ].indexOf(t) !== -1;
+        }
+
         private static findExistingResource(kind: 'script' | 'stylesheet', targetUrl: string, isModule?: boolean): HTMLElement | undefined {
             if (kind === 'script') {
                 // Match the script type too: a classic script must not be reused when a module script is
                 // requested (or vice versa), since they produce different <script> tags and execution semantics.
+                // For the classic case, only reuse tags whose type is an executable JavaScript type so
+                // non-executable tags (e.g. application/json) can never satisfy the lookup.
                 const wantModule = !!isModule;
                 return Array.from(document.scripts).find(s => !!s.src
                     && Extras.normalizeResourceUrl(s.src) === targetUrl
-                    && (s.type === 'module') === wantModule
+                    && (wantModule ? s.type === 'module' : Extras.isExecutableClassicScriptType(s.type))
                     && !s.hasAttribute('data-bit-load-failed')
                     && !(document.readyState === 'complete' && !Extras.isHostScriptLoaded(s)));
             }

@@ -43,6 +43,11 @@ internal static class TsPromiseMethodScanner
     private static readonly Regex TsStaticMethodHeaderRegex =
         new(@"\bstatic\s+(?<async>async\s+)?(?<method>\w+)\s*(?:<[^>]+>)?\s*\(", RegexOptions.Compiled);
 
+    // Matches "Promise" as a standalone token in a return annotation. A substring check would misclassify
+    // unrelated types like NotAPromise or PromiseState, so the word boundary keeps only true Promise types.
+    private static readonly Regex PromiseAnnotationRegex =
+        new(@"\bPromise\b", RegexOptions.Compiled);
+
     private sealed record TsStaticMethod(string Class, string Method, string Body, bool DeclaredAsync, bool AnnotatedPromise);
 
     /// <summary>
@@ -70,7 +75,7 @@ internal static class TsPromiseMethodScanner
             if (bodyCloseBrace < 0) continue;
 
             var declaredAsync = header.Groups["async"].Success;
-            var annotatedPromise = returnAnnotation.Contains("Promise", StringComparison.Ordinal);
+            var annotatedPromise = PromiseAnnotationRegex.IsMatch(returnAnnotation);
 
             var owningClass = classMatches.LastOrDefault(c => c.Index < header.Index);
             if (owningClass.Name is null) continue;

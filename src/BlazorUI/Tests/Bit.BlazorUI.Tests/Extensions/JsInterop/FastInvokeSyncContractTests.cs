@@ -157,21 +157,48 @@ public class FastInvokeSyncContractTests
 
     private static string? ResolveConstStringIdentifier(string text, string variableName, int callIndex)
     {
-        // Resolve the variable to the nearest 'const string <variableName> = "...";' declaration that
-        // appears before the call site. Walking declarations in source order and keeping the last one
-        // before the call respects method/block scope: when several methods in the same file each declare
-        // their own `const string identifier`, the call resolves to the value declared in its own method
-        // rather than an unrelated one elsewhere in the file.
+        // Resolve the variable to the 'const string <variableName> = "...";' declaration that is actually
+        // visible at the call site. A C# local const is in scope from its declaration to the end of its
+        // enclosing block, so a textually-earlier declaration in a sibling method/block must not be picked.
+        // Walk declarations in source order, keep the last matching one that precedes the call AND whose
+        // enclosing block still encloses the call (see IsDeclarationInScopeAt). This way a declaration in a
+        // nested block or a separate method does not override the correct enclosing declaration.
         string? resolved = null;
         foreach (Match m in ConstStringDeclRegex.Matches(text))
         {
             if (m.Index >= callIndex) break;
             if (m.Groups["name"].Value != variableName) continue;
+            if (!IsDeclarationInScopeAt(text, m.Index, callIndex)) continue;
 
             resolved = m.Groups["value"].Value;
         }
 
         return resolved;
+    }
+
+    private static bool IsDeclarationInScopeAt(string text, int declIndex, int callIndex)
+    {
+        // A local declaration is visible from its position to the end of its enclosing block. Scan forward
+        // from the declaration tracking brace depth (starting at 0): the first '}' that drops depth below 0
+        // closes the enclosing block and ends the declaration's scope. The declaration is in scope at the
+        // call site only when the call precedes that closing brace. Nested blocks opened after the
+        // declaration are balanced by their own '}', so they don't end the enclosing scope prematurely.
+        var depth = 0;
+        for (var i = declIndex; i < callIndex && i < text.Length; i++)
+        {
+            var c = text[i];
+            if (c == '{')
+            {
+                depth++;
+            }
+            else if (c == '}')
+            {
+                depth--;
+                if (depth < 0) return false;
+            }
+        }
+
+        return true;
     }
 
     private static string? LastTwoSegments(string identifier)

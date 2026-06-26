@@ -157,16 +157,34 @@ public partial class BitSplitter : BitComponentBase
 
     private async Task OnDraggingStart(double position)
     {
+        // Probe only the measurements needed for the active orientation and keep the nullable result.
+        // A null measurement means the JS size probe failed; defaulting it to 0 would create an invalid
+        // baseline for pane resizing, so abort the drag instead of starting from a bogus size.
+        if (Vertical)
+        {
+            var firstHeight = await _js.BitSplitterGetSplitterHeight(_firstPanelRef);
+            var secondHeight = await _js.BitSplitterGetSplitterHeight(_secondPanelRef);
+
+            if (firstHeight is null || secondHeight is null) return;
+
+            _initialFirstPanelHeight = firstHeight.Value;
+            _initialSecondPanelHeight = secondHeight.Value;
+        }
+        else
+        {
+            var firstWidth = await _js.BitSplitterGetSplitterWidth(_firstPanelRef);
+            var secondWidth = await _js.BitSplitterGetSplitterWidth(_secondPanelRef);
+
+            if (firstWidth is null || secondWidth is null) return;
+
+            _initialFirstPanelWidth = firstWidth.Value;
+            _initialSecondPanelWidth = secondWidth.Value;
+        }
+
         _isDragging = true;
         ClassBuilder.Reset();
 
         _initialPosition = position;
-
-        _initialFirstPanelWidth = await _js.BitSplitterGetSplitterWidth(_firstPanelRef) ?? 0;
-        _initialSecondPanelWidth = await _js.BitSplitterGetSplitterWidth(_secondPanelRef) ?? 0;
-
-        _initialFirstPanelHeight = await _js.BitSplitterGetSplitterHeight(_firstPanelRef) ?? 0;
-        _initialSecondPanelHeight = await _js.BitSplitterGetSplitterHeight(_secondPanelRef) ?? 0;
     }
 
     private async Task OnDragging(double position)

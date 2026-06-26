@@ -257,8 +257,9 @@ public partial class BitPanel : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
-        _dotnetObj?.Dispose();
-
+        // Ownership of _dotnetObj is single-sourced to the JS dispose path: BitSwipe.dispose() in Swipes.ts
+        // disposes the .NET reference. Disposing it here first would both double-dispose the object and risk
+        // BitSwipesDispose's handlers invoking an already-disposed reference.
         try
         {
             await _js.BitSwipesDispose(_containerId);

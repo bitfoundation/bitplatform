@@ -242,8 +242,8 @@ public partial class BitPullToRefresh : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
-        _dotnetObj?.Dispose();
-
+        // Ownership of _dotnetObj is single-sourced to the JS dispose path: BitPullToRefresh.ts disposes
+        // the .NET reference in its dispose(). Disposing it here too would double-dispose the same object.
         try
         {
             await _js.BitPullToRefreshDispose(UniqueId);
