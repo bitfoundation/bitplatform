@@ -60,14 +60,17 @@ public sealed class BitMarkdownViewerListParser : BitMarkdownViewerBlockParser
             {
                 // A marker-only item has no following whitespace; its content column
                 // still starts one space past the marker.
-                markerIndent = BitMarkdownViewerBlockProcessor.GetIndent(line)
-                    + m.Groups[1].Value.Length + 1 + Math.Max(1, m.Groups[3].Value.Length);
+                int baseIndent = BitMarkdownViewerBlockProcessor.GetIndent(line) + m.Groups[1].Value.Length + 1;
+                int afterMarker = m.Groups[3].Value.Length;
                 firstContent = m.Groups[4].Value;
+                (markerIndent, firstContent) = ResolveContentIndent(baseIndent, afterMarker, firstContent);
             }
             else
             {
-                markerIndent = BitMarkdownViewerBlockProcessor.GetIndent(line) + 1 + Math.Max(1, m.Groups[2].Value.Length);
+                int baseIndent = BitMarkdownViewerBlockProcessor.GetIndent(line) + 1;
+                int afterMarker = m.Groups[2].Value.Length;
                 firstContent = m.Groups[3].Value;
+                (markerIndent, firstContent) = ResolveContentIndent(baseIndent, afterMarker, firstContent);
             }
 
             var itemLines = new List<string> { firstContent };
@@ -130,5 +133,18 @@ public sealed class BitMarkdownViewerListParser : BitMarkdownViewerBlockParser
         if (!m.Success) return false;
         char c = ordered ? m.Groups[2].Value[0] : m.Groups[1].Value[0];
         return c == markerChar;
+    }
+
+    // Computes the content indentation column for a list item from the number of
+    // spaces following the marker. Per CommonMark, 1-4 spaces are consumed as
+    // indentation; 5+ spaces place the content one column past the marker and keep
+    // the surplus spaces as item content (an indented code block within the item).
+    private static (int markerIndent, string firstContent) ResolveContentIndent(
+        int baseIndent, int afterMarker, string firstContent)
+    {
+        if (afterMarker >= 5 && firstContent.Length > 0)
+            return (baseIndent + 1, new string(' ', afterMarker - 1) + firstContent);
+
+        return (baseIndent + Math.Max(1, afterMarker), firstContent);
     }
 }

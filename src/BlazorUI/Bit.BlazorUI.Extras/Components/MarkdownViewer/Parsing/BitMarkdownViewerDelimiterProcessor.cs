@@ -12,6 +12,14 @@ public abstract class BitMarkdownViewerDelimiterProcessor
     /// <summary>Minimum run length that can participate in matching.</summary>
     public virtual int MinRunLength => 1;
 
+    /// <summary>
+    /// Whether the CommonMark "rule of three" (a multiple-of-three length constraint on
+    /// opener/closer pairs) applies to this processor. It is specific to emphasis
+    /// (<c>*</c>/<c>_</c>); other delimiter syntaxes (e.g. <c>~~</c>) must leave it off so
+    /// their pairs are validated solely by <see cref="TryCreate"/>.
+    /// </summary>
+    public virtual bool AppliesRuleOfThree => false;
+
     /// <summary>Computes whether a delimiter run can open and/or close emphasis.</summary>
     public abstract (bool canOpen, bool canClose) GetFlanking(
         char c, bool leftFlanking, bool rightFlanking, char prev, char next);

@@ -202,22 +202,30 @@ Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
 "";";
 
     private readonly string example3RazorCode = @"
-<div class=""mdv-toolbar"">
-    <span class=""mdv-label"">Flavor:</span>
-    <BitButton Size=""BitSize.Small""
-               Variant=""@(playgroundFlavor == MarkdownFlavor.Basic ? BitVariant.Fill : BitVariant.Outline)""
-               OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Basic))"">Basic</BitButton>
-    <BitButton Size=""BitSize.Small""
-               Variant=""@(playgroundFlavor == MarkdownFlavor.GitHub ? BitVariant.Fill : BitVariant.Outline)""
-               OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.GitHub))"">GitHub</BitButton>
-    <BitButton Size=""BitSize.Small""
-               Variant=""@(playgroundFlavor == MarkdownFlavor.Advanced ? BitVariant.Fill : BitVariant.Outline)""
-               OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Advanced))"">Advanced</BitButton>
-</div>
-<div class=""mdv-split"">
-    <textarea class=""mdv-editor"" aria-label=""Markdown editor"" @bind=""playgroundMarkdown"" @bind:event=""oninput""></textarea>
-    <div class=""mdv-preview"">
-        <BitMarkdownViewer Markdown=""@playgroundMarkdown"" Pipeline=""@playgroundPipeline"" />
+<div class=""mdv-playground"">
+    <div class=""mdv-toolbar"">
+        <span class=""mdv-label"">Flavor:</span>
+        <BitButton Size=""BitSize.Small""
+                   Variant=""@(playgroundFlavor == MarkdownFlavor.Basic ? BitVariant.Fill : BitVariant.Outline)""
+                   OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Basic))"">Basic</BitButton>
+        <BitButton Size=""BitSize.Small""
+                   Variant=""@(playgroundFlavor == MarkdownFlavor.GitHub ? BitVariant.Fill : BitVariant.Outline)""
+                   OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.GitHub))"">GitHub</BitButton>
+        <BitButton Size=""BitSize.Small""
+                   Variant=""@(playgroundFlavor == MarkdownFlavor.Advanced ? BitVariant.Fill : BitVariant.Outline)""
+                   OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Advanced))"">Advanced</BitButton>
+        <span class=""mdv-spacer""></span>
+        <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""ResetPlaygroundSample"">Reset sample</BitButton>
+        <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""@(() => playgroundMarkdown = string.Empty)"">Clear</BitButton>
+    </div>
+
+    <div class=""mdv-hint"">@playgroundHint</div>
+
+    <div class=""mdv-split"">
+        <textarea class=""mdv-editor"" spellcheck=""false"" aria-label=""Markdown editor"" @bind=""playgroundMarkdown"" @bind:event=""oninput""></textarea>
+        <div class=""mdv-preview"">
+            <BitMarkdownViewer Markdown=""@playgroundMarkdown"" Pipeline=""@playgroundPipeline"" />
+        </div>
     </div>
 </div>";
     private readonly string example3CsharpCode = @"
@@ -236,7 +244,16 @@ private void SetPlaygroundFlavor(MarkdownFlavor flavor)
         MarkdownFlavor.GitHub => BitMarkdownViewerPipelines.GitHub,
         _ => BitMarkdownViewerPipelines.Advanced
     };
-}";
+}
+
+private void ResetPlaygroundSample() => playgroundMarkdown = SampleMarkdown;
+
+private string playgroundHint => playgroundFlavor switch
+{
+    MarkdownFlavor.Basic => ""Basic CommonMark only. Tables, strikethrough, task lists, emoji and bare URLs render as plain text."",
+    MarkdownFlavor.GitHub => ""GitHub Flavored Markdown: pipe tables, ~~strikethrough~~, task lists and autolink literals."",
+    _ => ""Advanced: GitHub Flavored Markdown plus :sparkles: emoji and automatic heading ids.""
+};";
 
     private readonly string example4RazorCode = @"
 <BitMarkdownViewer Markdown=""@customMarkdown"" Pipeline=""customPipeline"" />";

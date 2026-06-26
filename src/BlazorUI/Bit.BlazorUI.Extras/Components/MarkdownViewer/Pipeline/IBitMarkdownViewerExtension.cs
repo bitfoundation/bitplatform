@@ -7,12 +7,13 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// A built <see cref="BitMarkdownViewerPipeline"/> is immutable and is cached and shared
-/// across concurrent parses, components and (in Blazor Server) circuits. Therefore every
-/// component an extension registers — parsers, delimiter/AST processors and renderers —
-/// MUST be stateless and thread-safe: they must not retain mutable state between calls and
-/// must keep all per-parse/per-render state in the local <c>state</c>/<c>builder</c> objects
-/// passed to them. If statelessness cannot be guaranteed, the extension must register a fresh
-/// instance per registration rather than reusing a shared one.
+/// across concurrent parses, components and (in Blazor Server) circuits. The pipeline also
+/// caches and reuses every registration across parses and renders, so anything an extension
+/// registers — parsers, delimiter/AST processors and renderers — MUST be stateless and
+/// thread-safe: it must not retain mutable state between calls. All per-parse/per-render
+/// state must live solely in the <c>state</c>/<c>builder</c> objects passed to each call.
+/// Creating a new instance inside <see cref="Setup"/> does not make a stateful component safe,
+/// because that single instance is still reused concurrently.
 /// </remarks>
 public interface IBitMarkdownViewerExtension
 {

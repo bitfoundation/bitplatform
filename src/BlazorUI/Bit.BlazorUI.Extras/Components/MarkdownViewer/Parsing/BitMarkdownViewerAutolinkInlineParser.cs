@@ -1,9 +1,15 @@
 namespace Bit.BlazorUI;
 
 /// <summary>Handles CommonMark angle-bracket autolinks: <c>&lt;https://...&gt;</c>.</summary>
-public sealed class BitMarkdownViewerAutolinkInlineParser : BitMarkdownViewerInlineParser
+public sealed partial class BitMarkdownViewerAutolinkInlineParser : BitMarkdownViewerInlineParser
 {
     public override char[] TriggerChars => new[] { '<' };
+
+    // CommonMark email autolink grammar. Only a token matching this is turned into a
+    // mailto link; anything else inside <...> stays plain text.
+    [System.Text.RegularExpressions.GeneratedRegex(
+        @"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")]
+    private static partial System.Text.RegularExpressions.Regex EmailAutolink();
 
     public override bool TryParse(BitMarkdownViewerInlineProcessor state)
     {
@@ -27,7 +33,7 @@ public sealed class BitMarkdownViewerAutolinkInlineParser : BitMarkdownViewerInl
             }
         }
 
-        if (inner.Contains('@') && !inner.Contains(':'))
+        if (EmailAutolink().IsMatch(inner))
         {
             Emit(state, "mailto:" + inner, inner, close);
             return true;

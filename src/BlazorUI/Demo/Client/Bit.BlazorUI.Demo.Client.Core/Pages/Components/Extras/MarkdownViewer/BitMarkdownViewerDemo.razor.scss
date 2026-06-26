@@ -33,6 +33,7 @@
 
     .mdv-editor {
         flex: 1 1 50%;
+        min-width: 0;
         height: 500px;
         padding: 12px;
         border: 1px solid $bit-color-border-secondary;
@@ -49,6 +50,7 @@
 
     .mdv-preview {
         flex: 1 1 50%;
+        min-width: 0;
         height: 500px;
         overflow: auto;
         padding: 12px;

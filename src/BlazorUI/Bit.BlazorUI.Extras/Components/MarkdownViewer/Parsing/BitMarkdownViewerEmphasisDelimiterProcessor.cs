@@ -8,6 +8,9 @@ public sealed class BitMarkdownViewerEmphasisDelimiterProcessor : BitMarkdownVie
 {
     public override char[] Characters => new[] { '*', '_' };
 
+    // The rule of three is an emphasis-specific constraint.
+    public override bool AppliesRuleOfThree => true;
+
     public override (bool canOpen, bool canClose) GetFlanking(
         char c, bool leftFlanking, bool rightFlanking, char prev, char next)
     {

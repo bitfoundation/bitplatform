@@ -59,18 +59,37 @@ public sealed class BitMarkdownViewerPipelineBuilder
         // Register before Setup so a self-referential registration inside Setup is
         // caught by the duplicate check above instead of recursing infinitely.
         _extensions.Add(extension);
+
+        // Snapshot every registration list so a failed Setup can be fully reverted,
+        // not just the _extensions entry. This keeps the builder reusable afterwards.
+        int blockParsers = BlockParsers.Count;
+        int inlineParsers = InlineParsers.Count;
+        int delimiterProcessors = DelimiterProcessors.Count;
+        int astProcessors = AstProcessors.Count;
+        int renderers = Renderers.Count;
         try
         {
             extension.Setup(this);
         }
         catch
         {
-            // Setup failed: roll back the registration so the builder isn't left in
+            // Setup failed: undo every mutation it made so the builder isn't left in
             // a partially-registered state and the extension can be retried.
             _extensions.Remove(extension);
+            Rollback(BlockParsers, blockParsers);
+            Rollback(InlineParsers, inlineParsers);
+            Rollback(DelimiterProcessors, delimiterProcessors);
+            Rollback(AstProcessors, astProcessors);
+            Rollback(Renderers, renderers);
             throw;
         }
         return this;
+    }
+
+    private static void Rollback<T>(List<T> list, int originalCount)
+    {
+        if (list.Count > originalCount)
+            list.RemoveRange(originalCount, list.Count - originalCount);
     }
 
     /// <summary>Builds an immutable, reusable pipeline.</summary>

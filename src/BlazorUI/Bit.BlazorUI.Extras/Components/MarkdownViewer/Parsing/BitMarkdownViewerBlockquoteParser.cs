@@ -42,7 +42,9 @@ public sealed class BitMarkdownViewerBlockquoteParser : BitMarkdownViewerBlockPa
     private static string StripMarker(string line)
     {
         string t = line.TrimStart(' ')[1..];
-        if (t.StartsWith(' ')) t = t[1..];
+        // A single space or tab immediately after the '>' marker is part of the
+        // marker syntax and is stripped; the remaining inner text is preserved.
+        if (t.Length > 0 && (t[0] == ' ' || t[0] == '\t')) t = t[1..];
         return t;
     }
 }

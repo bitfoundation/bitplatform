@@ -44,7 +44,8 @@ public sealed partial class BitMarkdownViewerPipeTableBlockParser : BitMarkdownV
             table.Header.Add(state.ParseInlines(cell.Trim()));
 
         int j = i + 2;
-        while (j < lines.Count && !BitMarkdownViewerBlockProcessor.IsBlank(lines[j]) && lines[j].Contains('|'))
+        while (j < lines.Count && !BitMarkdownViewerBlockProcessor.IsBlank(lines[j])
+               && lines[j].Contains('|') && !state.StartsBlock(j))
         {
             var cells = SplitRow(lines[j]);
             var row = new List<List<BitMarkdownViewerMarkdownNode>>();

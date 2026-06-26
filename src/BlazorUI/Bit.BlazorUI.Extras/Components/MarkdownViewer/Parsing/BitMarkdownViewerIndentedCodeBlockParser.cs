@@ -21,9 +21,12 @@ public sealed class BitMarkdownViewerIndentedCodeBlockParser : BitMarkdownViewer
         while (i < lines.Count)
         {
             string l = lines[i];
-            if (BitMarkdownViewerBlockProcessor.IsBlank(l)) { sb.AppendLine(string.Empty); i++; continue; }
+            // Use an explicit '\n' (matching the fenced code block parser) so parsed
+            // content stays identical across platforms instead of depending on
+            // Environment.NewLine (which AppendLine would introduce).
+            if (BitMarkdownViewerBlockProcessor.IsBlank(l)) { sb.Append('\n'); i++; continue; }
             if (BitMarkdownViewerBlockProcessor.GetIndent(l) < 4) break;
-            sb.AppendLine(BitMarkdownViewerBlockProcessor.StripIndent(l, 4));
+            sb.Append(BitMarkdownViewerBlockProcessor.StripIndent(l, 4)).Append('\n');
             lastNonBlank = i;
             i++;
         }

@@ -50,8 +50,10 @@ internal static class BitMarkdownViewerDelimiterResolver
                 if (opener.Kind == TokKind.Delim && opener.Active && opener.CanOpen
                     && opener.DelimChar == dc)
                 {
-                    // CommonMark "rule of three".
-                    bool oddMatch = (closer.CanOpen || opener.CanClose)
+                    // CommonMark "rule of three" — scoped to emphasis processors only,
+                    // so non-emphasis pairs (e.g. ~~) aren't rejected before TryCreate runs.
+                    bool oddMatch = processor.AppliesRuleOfThree
+                        && (closer.CanOpen || opener.CanClose)
                         && (opener.Count + closer.Count) % 3 == 0
                         && !(opener.Count % 3 == 0 && closer.Count % 3 == 0);
                     if (!oddMatch)

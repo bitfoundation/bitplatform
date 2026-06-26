@@ -70,7 +70,9 @@ public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownV
                 : m.Groups["email"].Success ? "mailto:" + matched
                 : matched;
 
-            var link = new BitMarkdownViewerLinkNode { Url = href };
+            // Route through the shared sanitizer so autolinks get the same URL safety
+            // treatment as explicit links/images.
+            var link = new BitMarkdownViewerLinkNode { Url = BitMarkdownViewerUrlSanitizer.Sanitize(href, isImage: false) };
             link.Children.Add(new BitMarkdownViewerTextNode(matched));
             result.Add(link);
             last = m.Index + m.Length;
