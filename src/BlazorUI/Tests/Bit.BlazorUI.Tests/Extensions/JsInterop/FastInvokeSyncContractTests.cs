@@ -173,7 +173,22 @@ public class FastInvokeSyncContractTests
             resolved = m.Groups["value"].Value;
         }
 
-        return resolved;
+        if (resolved is not null) return resolved;
+
+        // No in-scope local matched. The index/scope walk above is correct for locals (which must be
+        // declared before use), but a type-level `const string` field can be declared after the method that
+        // uses it, so the `m.Index >= callIndex` break would skip it. In valid C# a variable that resolves
+        // to no in-scope local must refer to a class-level const (always in scope within the type), so fall
+        // back to a declaration-order-independent, name-based match to resolve those.
+        foreach (Match m in ConstStringDeclRegex.Matches(text))
+        {
+            if (m.Groups["name"].Value == variableName)
+            {
+                return m.Groups["value"].Value;
+            }
+        }
+
+        return null;
     }
 
     private static bool IsDeclarationInScopeAt(string text, int declIndex, int callIndex)

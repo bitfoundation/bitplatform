@@ -264,7 +264,13 @@ public partial class BitPanel : BitComponentBase
         {
             await _js.BitSwipesDispose(_containerId);
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSDisconnectedException)
+        {
+            // The circuit/browser is gone, so BitSwipe.dispose() (which normally owns _dotnetObj) can't run.
+            // Release the managed reference here so it doesn't leak.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+        }
 
         await base.DisposeAsync(disposing);
     }

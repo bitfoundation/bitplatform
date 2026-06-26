@@ -67,6 +67,22 @@ public class TsPromiseMethodScannerTests
     }
 
     [TestMethod]
+    public void BodyScan_TreatsReturnFollowedByNewlineAsVoidReturn()
+    {
+        // Automatic Semicolon Insertion: `return` then a newline parses as `return;`, so the fetch(...) on
+        // the next line is a separate (unreachable) statement, not the returned value. The method returns
+        // void, so it must NOT be classified as promise-returning.
+        var body = """
+            {
+              return
+              fetch(url);
+            }
+            """;
+
+        Assert.IsFalse(TsPromiseMethodScanner.BodyHasDirectTopLevelPromiseReturn(body));
+    }
+
+    [TestMethod]
     public void CollectFromSource_DetectsAsyncModifier()
     {
         var ts = """

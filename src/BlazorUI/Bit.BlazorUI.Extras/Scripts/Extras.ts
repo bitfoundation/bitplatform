@@ -69,18 +69,27 @@ namespace BitBlazorUI {
             // Resolve only when every script has actually executed. Loading is tracked per-url so that
             // concurrent callers (e.g. several components, or a re-mount) await the same execution instead
             // of a second caller seeing the <script> tag in the DOM and assuming it is already usable.
-            // Kick off in array order (each call appends its <script> synchronously) but await all
-            // settlements so one failure does not suppress the rest, mirroring initStylesheets. Note that
-            // dynamically inserted scripts execute in load order, not insertion order, so callers must not
-            // rely on these scripts running in array order if they have load-order dependencies.
-            const promises: Promise<void>[] = [];
-            for (const s of scripts ?? []) {
-                promises.push(Extras.loadResource('script', s, isModule));
+            //
+            // Classic (non-module) scripts share a single global scope and execute in load order, not
+            // insertion order, so loading them concurrently can run a dependent before its dependency
+            // (BitChart's DateAdapterScripts, BitRichTextEditor's quill module scripts). To preserve the
+            // guaranteed execution order those callers rely on, classic scripts are awaited sequentially.
+            // ES modules resolve their own dependencies via import, so they are loaded concurrently.
+            if (isModule) {
+                const promises: Promise<void>[] = [];
+                for (const s of scripts ?? []) {
+                    promises.push(Extras.loadResource('script', s, true));
+                }
+                const results = await Promise.allSettled(promises);
+                const failure = results.find((r): r is PromiseRejectedResult => r.status === 'rejected');
+                if (failure) {
+                    throw failure.reason;
+                }
+                return;
             }
-            const results = await Promise.allSettled(promises);
-            const failure = results.find((r): r is PromiseRejectedResult => r.status === 'rejected');
-            if (failure) {
-                throw failure.reason;
+
+            for (const s of scripts ?? []) {
+                await Extras.loadResource('script', s, false);
             }
         }
 

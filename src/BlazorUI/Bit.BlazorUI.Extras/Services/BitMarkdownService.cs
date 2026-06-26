@@ -80,7 +80,12 @@ public class BitMarkdownService(IJSRuntime js, IServiceProvider serviceProvider)
                 await js.BitExtrasInitScripts([MARKED_FILE]);
             }
 
-            html = await js.BitMarkdownViewerParse(markdown!, jsMiddleware) ?? string.Empty;
+            html = await js.BitMarkdownViewerParse(markdown!, jsMiddleware)
+                // A null result here means the JS interop call failed (a swallowed JSON/JS interop error on
+                // the in-process path); the runtime is valid on this client branch, so null is never an
+                // expected "no output". Surface it as a failure so BitMarkdownViewer's exception-based
+                // fallback shows the parse-failed message instead of silently rendering an empty string.
+                ?? throw new InvalidOperationException("Failed to parse the markdown via JavaScript interop.");
         }
 
         if (csMiddleware is not null)

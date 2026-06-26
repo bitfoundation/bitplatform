@@ -187,8 +187,25 @@ internal static class TsPromiseMethodScanner
             if (!IsIdentifierAt(body, i, "return")) continue;
 
             i += "return".Length;
-            while (i < body.Length && char.IsWhiteSpace(body[i])) i++;
+
+            // Automatic Semicolon Insertion: in JS/TS a line terminator between `return` and its operand
+            // turns the statement into a bare `return;` (void) - the following token starts a new, separate
+            // (unreachable) statement and is NOT the returned expression. Treat such a return as void so a
+            // promise expression on the next line isn't misclassified as a returned value.
+            var sawLineTerminator = false;
+            while (i < body.Length && char.IsWhiteSpace(body[i]))
+            {
+                if (body[i] is '\r' or '\n') sawLineTerminator = true;
+                i++;
+            }
             if (i >= body.Length) continue;
+            if (sawLineTerminator)
+            {
+                // Re-scan the next token as an ordinary statement rather than a returned expression
+                // (the for-loop's i++ would otherwise step over its first character).
+                i--;
+                continue;
+            }
 
             if (expressionMatches(i)) return true;
 

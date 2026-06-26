@@ -248,7 +248,13 @@ public partial class BitPullToRefresh : BitComponentBase
         {
             await _js.BitPullToRefreshDispose(UniqueId);
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSDisconnectedException)
+        {
+            // The circuit/browser is gone, so the JS dispose that normally owns _dotnetObj can't run.
+            // Release the managed reference here so it doesn't leak.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+        }
 
         await base.DisposeAsync(disposing);
     }
