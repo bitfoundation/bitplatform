@@ -19,7 +19,6 @@ public abstract class BitMarkdownViewerMarkdownNode
     /// <see cref="ChildNodes"/> collection; nodes with several (e.g. a table's cells)
     /// override this to expose each one.
     /// </summary>
-    private IList<BitMarkdownViewerMarkdownNode>[]? _childLists;
     public virtual IEnumerable<IList<BitMarkdownViewerMarkdownNode>> ChildLists
-        => ChildNodes is { } c ? (_childLists ??= new[] { c }) : Array.Empty<IList<BitMarkdownViewerMarkdownNode>>();
+        => ChildNodes is { } c ? new[] { c } : Array.Empty<IList<BitMarkdownViewerMarkdownNode>>();
 }

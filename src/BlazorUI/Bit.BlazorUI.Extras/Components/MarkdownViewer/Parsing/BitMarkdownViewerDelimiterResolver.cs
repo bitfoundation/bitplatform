@@ -36,9 +36,13 @@ internal static class BitMarkdownViewerDelimiterResolver
             Tok? bottom = openersBottom.TryGetValue(key, out var b) ? b : null;
 
             // Find a matching opener walking backwards (stopping just above the
-            // cached bottom token, if any).
+            // cached bottom token, if any). A candidate that the processor cannot
+            // turn into a node only disqualifies that opener/closer pairing, so we
+            // keep scanning for an earlier opener rather than giving up on the closer.
             int openerIdx = closerIdx - 1;
             bool found = false;
+            BitMarkdownViewerMarkdownNode? node = null;
+            int used = 0;
             while (openerIdx >= 0)
             {
                 var opener = tokens[openerIdx];
@@ -52,8 +56,15 @@ internal static class BitMarkdownViewerDelimiterResolver
                         && !(opener.Count % 3 == 0 && closer.Count % 3 == 0);
                     if (!oddMatch)
                     {
-                        found = true;
-                        break;
+                        var candidateInner = ToNodes(tokens.GetRange(openerIdx + 1, closerIdx - openerIdx - 1));
+                        used = processor.TryCreate(dc, opener.Count, closer.Count, candidateInner, out node);
+                        if (used > 0 && node is not null)
+                        {
+                            found = true;
+                            break;
+                        }
+                        // This processor can't form a node for these lengths; keep
+                        // searching for an earlier opener instead of dropping the closer.
                     }
                 }
                 openerIdx--;
@@ -68,18 +79,6 @@ internal static class BitMarkdownViewerDelimiterResolver
             }
 
             var op = tokens[openerIdx];
-
-            var inner = ToNodes(tokens.GetRange(openerIdx + 1, closerIdx - openerIdx - 1));
-            int used = processor.TryCreate(dc, op.Count, closer.Count, inner, out var node);
-
-            if (used <= 0 || node is null)
-            {
-                // This processor can't form a node for these lengths; skip this closer.
-                openersBottom[key] = closerIdx > 0 ? tokens[closerIdx - 1] : null;
-                if (!closer.CanOpen) closer.Active = false;
-                closerIdx++;
-                continue;
-            }
 
             // Remove the inner tokens and splice in the wrapping node.
             tokens.RemoveRange(openerIdx + 1, closerIdx - openerIdx - 1);

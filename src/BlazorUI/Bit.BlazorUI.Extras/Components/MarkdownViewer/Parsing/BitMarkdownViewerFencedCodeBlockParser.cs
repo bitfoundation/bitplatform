@@ -34,7 +34,7 @@ public sealed class BitMarkdownViewerFencedCodeBlockParser : BitMarkdownViewerBl
                 i++;
                 break;
             }
-            sb.AppendLine(BitMarkdownViewerBlockProcessor.StripIndent(l, indent));
+            sb.Append(BitMarkdownViewerBlockProcessor.StripIndent(l, indent)).Append('\n');
             i++;
         }
 

@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Walks an AST and dispatches each node to the first matching <see cref="BitMarkdownViewerNodeRenderer"/>.
+/// Walks an AST and dispatches each node to a matching <see cref="BitMarkdownViewerNodeRenderer"/>.
+/// Renderers are probed in reverse registration order, so the last renderer registered for a
+/// node type wins, allowing pipeline extensions to override the core renderers.
 /// A fresh instance is used per render pass because it maintains render-tree sequence state.
 /// </summary>
 public sealed class BitMarkdownViewerMarkdownRenderer

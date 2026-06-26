@@ -62,17 +62,17 @@ public partial class BitMarkdownViewer : BitComponentBase
     {
         var renderer = EffectivePipeline.CreateRenderer();
 
-        builder.OpenElement(renderer.NextSeq(), "div");
+        builder.OpenElement(0, "div");
 
-        builder.AddMultipleAttributes(renderer.NextSeq(), HtmlAttributes);
-        builder.AddAttribute(renderer.NextSeq(), "id", _Id);
-        builder.AddAttribute(renderer.NextSeq(), "style", StyleBuilder.Value);
-        builder.AddAttribute(renderer.NextSeq(), "class", ClassBuilder.Value);
+        builder.AddMultipleAttributes(1, HtmlAttributes);
+        builder.AddAttribute(2, "id", _Id);
+        builder.AddAttribute(3, "style", StyleBuilder.Value);
+        builder.AddAttribute(4, "class", ClassBuilder.Value);
         if (Dir is not null)
         {
-            builder.AddAttribute(renderer.NextSeq(), "dir", Dir.Value.ToString().ToLower());
+            builder.AddAttribute(5, "dir", Dir.Value.ToString().ToLower());
         }
-        builder.AddElementReferenceCapture(renderer.NextSeq(), v => RootElement = v);
+        builder.AddElementReferenceCapture(6, v => RootElement = v);
 
         renderer.WriteNodes(builder, _document.Children);
 

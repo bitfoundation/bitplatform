@@ -23,6 +23,10 @@ public static class BitMarkdownViewerPipelineBuilderExtensions
     public static BitMarkdownViewerPipelineBuilder UseEmojis(this BitMarkdownViewerPipelineBuilder b)
         => b.Use(new BitMarkdownViewerEmojiExtension());
 
+    /// <summary>Adds <c>:shortcode:</c> emoji replacement with per-pipeline emoji overrides.</summary>
+    public static BitMarkdownViewerPipelineBuilder UseEmojis(this BitMarkdownViewerPipelineBuilder b, IReadOnlyDictionary<string, string> overrides)
+        => b.Use(new BitMarkdownViewerEmojiExtension(overrides));
+
     /// <summary>Adds automatic heading id slugs.</summary>
     public static BitMarkdownViewerPipelineBuilder UseAutoIdentifiers(this BitMarkdownViewerPipelineBuilder b)
         => b.Use(new BitMarkdownViewerAutoIdentifierExtension());
