@@ -38,19 +38,42 @@
             </div>
 
             <div class="bit-bfc-dtp-time">
-                <select @bind="_hour" @bind:after="OnTimeChanged" aria-label="@HourAriaLabel">
-                    @for (var i = 0; i < 24; i++)
-                    {
-                        <option value="@i">@i.ToString("00", CultureInfo.InvariantCulture)</option>
-                    }
-                </select>
-                <span>:</span>
-                <select @bind="_minute" @bind:after="OnTimeChanged" aria-label="@MinuteAriaLabel">
-                    @for (var i = 0; i < 60; i++)
-                    {
-                        <option value="@i">@i.ToString("00", CultureInfo.InvariantCulture)</option>
-                    }
-                </select>
+                @if (Use24HourFormat)
+                {
+                    <select @bind="_hour" @bind:after="OnTimeChanged" aria-label="@HourAriaLabel">
+                        @for (var i = 0; i < 24; i++)
+                        {
+                            <option value="@i">@i.ToString("00", CultureInfo.InvariantCulture)</option>
+                        }
+                    </select>
+                    <span>:</span>
+                    <select @bind="_minute" @bind:after="OnTimeChanged" aria-label="@MinuteAriaLabel">
+                        @for (var i = 0; i < 60; i++)
+                        {
+                            <option value="@i">@i.ToString("00", CultureInfo.InvariantCulture)</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <select value="@Hour12" @onchange="OnHour12Changed" aria-label="@HourAriaLabel">
+                        @for (var i = 1; i <= 12; i++)
+                        {
+                            <option value="@i">@i.ToString("00", CultureInfo.InvariantCulture)</option>
+                        }
+                    </select>
+                    <span>:</span>
+                    <select @bind="_minute" @bind:after="OnTimeChanged" aria-label="@MinuteAriaLabel">
+                        @for (var i = 0; i < 60; i++)
+                        {
+                            <option value="@i">@i.ToString("00", CultureInfo.InvariantCulture)</option>
+                        }
+                    </select>
+                    <select value="@(IsPm ? "PM" : "AM")" @onchange="OnMeridiemChanged" aria-label="@MeridiemAriaLabel">
+                        <option value="AM">@Culture.DateTimeFormat.AMDesignator</option>
+                        <option value="PM">@Culture.DateTimeFormat.PMDesignator</option>
+                    </select>
+                }
             </div>
         </div>
     }

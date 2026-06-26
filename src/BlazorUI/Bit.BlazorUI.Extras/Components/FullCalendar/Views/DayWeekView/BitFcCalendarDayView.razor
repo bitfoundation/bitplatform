@@ -36,22 +36,29 @@
                         <div class="bit-bfc-hour-row bit-bfc-droppable @GetHourDropClass(hour, 0)"
                              role="button"
                              tabindex="0"
-                             aria-label="@HourSlotAriaLabel(hour)"
+                             aria-label="@HourSlotAriaLabel(hour, 0)"
                              @ondragenter="() => OnDragEnterHour(hour, 0)"
                              @ondragover:preventDefault="true"
                              @ondrop="() => OnDropHour(hour, 0)"
-                             @onclick="() => OnHourClickAsync(hour)"
-                             @onkeydown="e => OnHourKeyDownAsync(e, hour)">
+                             @onclick="() => OnHourClickAsync(hour, 0)"
+                             @onkeydown="e => OnHourKeyDownAsync(e, hour, 0)">
                             @if (h > 0)
                             {
                                 <div style="position:absolute;top:0;left:0;right:0;border-top:1px solid var(--bit-bfc-border);"></div>
                             }
                             <div class="bit-bfc-hour-row-half bit-bfc-droppable @GetHourDropClass(hour, 30)"
+                                 role="button"
+                                 tabindex="0"
+                                 aria-label="@HourSlotAriaLabel(hour, 30)"
                                  @ondragenter="() => OnDragEnterHour(hour, 30)"
                                  @ondragenter:stopPropagation="true"
                                  @ondragover:preventDefault="true"
                                  @ondrop:stopPropagation="true"
-                                 @ondrop="() => OnDropHour(hour, 30)"></div>
+                                 @ondrop="() => OnDropHour(hour, 30)"
+                                 @onclick="() => OnHourClickAsync(hour, 30)"
+                                 @onclick:stopPropagation="true"
+                                 @onkeydown="e => OnHourKeyDownAsync(e, hour, 30)"
+                                 @onkeydown:stopPropagation="true"></div>
                             <div class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-hour" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                                 @Texts.AddEventHoverHint
@@ -106,7 +113,7 @@
 
 @if (_showAddDialog)
 {
-    <BitFcAddEditEventDialog StartDate="_addStartDate" StartHour="_addStartHour" OnClose="() => _showAddDialog = false" />
+    <BitFcAddEditEventDialog StartDate="_addStartDate" StartHour="_addStartHour" StartMinute="_addStartMinute" OnClose="() => _showAddDialog = false" />
 }
 
 @if (_selectedEvent != null)

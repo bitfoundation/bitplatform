@@ -7,10 +7,13 @@ public partial class BitFcDateTimePicker : IDisposable
     [Parameter] public DateTime Value { get; set; }
     [Parameter] public EventCallback<DateTime> ValueChanged { get; set; }
     [Parameter] public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
+    /// <summary>When true the time selects/display use 24-hour values; otherwise a 12-hour hour list plus an AM/PM select.</summary>
+    [Parameter] public bool Use24HourFormat { get; set; } = true;
     [Parameter] public string PreviousMonthAriaLabel { get; set; } = "Previous month";
     [Parameter] public string NextMonthAriaLabel { get; set; } = "Next month";
     [Parameter] public string HourAriaLabel { get; set; } = "Hour";
     [Parameter] public string MinuteAriaLabel { get; set; } = "Minute";
+    [Parameter] public string MeridiemAriaLabel { get; set; } = "AM/PM";
     [Parameter] public string SelectedDayAriaLabel { get; set; } = "selected";
 
     /// <summary>
@@ -94,6 +97,32 @@ public partial class BitFcDateTimePicker : IDisposable
         Value = selected;
         _lastSyncedDate = selected;
         await ValueChanged.InvokeAsync(selected);
+    }
+
+    // 12-hour view helpers. _hour stays canonical (0-23); these project it onto the 12-hour
+    // hour list and AM/PM selector and convert edits back to the canonical 24-hour value.
+    private int Hour12 => _hour % 12 == 0 ? 12 : _hour % 12;
+    private bool IsPm => _hour >= 12;
+
+    private static int ConvertTo24Hour(int hour12, bool pm)
+    {
+        var h = hour12 % 12; // 12 maps to 0
+        return pm ? h + 12 : h;
+    }
+
+    private async Task OnHour12Changed(ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var h12))
+            return;
+        _hour = ConvertTo24Hour(Math.Clamp(h12, 1, 12), IsPm);
+        await OnTimeChanged();
+    }
+
+    private async Task OnMeridiemChanged(ChangeEventArgs e)
+    {
+        var pm = string.Equals(e.Value?.ToString(), "PM", StringComparison.Ordinal);
+        _hour = ConvertTo24Hour(Hour12, pm);
+        await OnTimeChanged();
     }
 
     private void OnFocusOut(FocusEventArgs args)
@@ -188,7 +217,9 @@ public partial class BitFcDateTimePicker : IDisposable
     private string GetDisplayText()
     {
         var datePart = Value.ToString("d", Culture);
-        var timePart = Value.ToString("HH:mm", CultureInfo.InvariantCulture);
+        // Honor the configured time format: 24-hour ("HH:mm") or 12-hour with the culture's AM/PM
+        // designator ("h:mm tt"), matching the rest of the calendar's time rendering.
+        var timePart = Value.ToString(Use24HourFormat ? "HH:mm" : "h:mm tt", Culture);
         return $"{datePart} {timePart}";
     }
 

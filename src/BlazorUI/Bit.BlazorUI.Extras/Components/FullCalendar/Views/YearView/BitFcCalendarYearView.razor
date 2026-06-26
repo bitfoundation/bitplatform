@@ -4,17 +4,21 @@
     var allEvents = MultiDayEvents.Concat(SingleDayEvents).ToList();
     var cal = State.Culture.Calendar;
     var dtf = State.Culture.DateTimeFormat;
+    // Capture the era of the anchor date and pass it explicitly into every calendar call below so
+    // the year range stays correct for era-based calendars (e.g. JapaneseCalendar) where the same
+    // year number repeats across eras and the default (current) era would resolve the wrong dates.
+    int era = cal.GetEra(State.SelectedDate);
     int culturalYear = cal.GetYear(State.SelectedDate);
-    var months = Enumerable.Range(1, cal.GetMonthsInYear(culturalYear))
-        .Select(m => cal.ToDateTime(culturalYear, m, 1, 0, 0, 0, 0))
+    var months = Enumerable.Range(1, cal.GetMonthsInYear(culturalYear, era))
+        .Select(m => cal.ToDateTime(culturalYear, m, 1, 0, 0, 0, 0, era))
         .ToArray();
     var yearWeekDayHeaders = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(State.Culture);
 
     // Pre-compute a date -> events lookup once instead of scanning every event for every cell
     // (the year grid has ~500 cells, so the per-cell Where was O(cells * events)).
-    var monthsInYear = cal.GetMonthsInYear(culturalYear);
-    var yearStartDate = cal.ToDateTime(culturalYear, 1, 1, 0, 0, 0, 0);
-    var yearEndDate = cal.ToDateTime(culturalYear, monthsInYear, cal.GetDaysInMonth(culturalYear, monthsInYear), 0, 0, 0, 0);
+    var monthsInYear = cal.GetMonthsInYear(culturalYear, era);
+    var yearStartDate = cal.ToDateTime(culturalYear, 1, 1, 0, 0, 0, 0, era);
+    var yearEndDate = cal.ToDateTime(culturalYear, monthsInYear, cal.GetDaysInMonth(culturalYear, monthsInYear, era), 0, 0, 0, 0, era);
     var lookupStart = yearStartDate.AddDays(-7);
     var lookupEnd = yearEndDate.AddDays(7);
     var eventsByDay = new Dictionary<DateTime, List<BitFullCalendarEvent>>();

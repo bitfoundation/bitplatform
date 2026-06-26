@@ -10,8 +10,17 @@ public sealed class BitFullCalendarResource
 {
     /// <summary>
     /// Stable identifier matched against <see cref="BitFullCalendarEvent.Resource"/>.
+    /// Cannot be null, empty, or whitespace - grouping helpers key rows by this value and assume a
+    /// non-empty key, so a blank id is rejected at assignment time.
     /// </summary>
-    public required string Id { get; set; }
+    public required string Id
+    {
+        get => _id;
+        set => _id = string.IsNullOrWhiteSpace(value)
+            ? throw new ArgumentException("Resource Id cannot be null, empty, or whitespace.", nameof(value))
+            : value;
+    }
+    private string _id = null!;
 
     /// <summary>
     /// Display name for the resource (for example "Bay Wing", "Alice Johnson", "Meeting Room 3B").

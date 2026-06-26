@@ -18,15 +18,21 @@ public sealed class BitFullCalendarColorScheme
     public BitFullCalendarColorScheme(IReadOnlyList<BitFullCalendarColorOption>? options)
     {
         var list = options is { Count: > 0 } ? options : BitFullCalendarColorOption.Defaults;
-        // Snapshot the source so Options and the _byId lookup can't drift apart if the caller mutates the original list.
-        Options = [.. list];
+        // Build Options and the _byId lookup from the SAME canonicalized sequence: trim ids, skip
+        // blanks, and keep only the first occurrence of each id (case-insensitive). Otherwise Options
+        // (consumed by the UI / filters / GetSortOrder) could expose blank or duplicate entries that
+        // the id resolver silently ignores, so what the user sees would drift from what Find resolves.
         _byId = new Dictionary<string, BitFullCalendarColorOption>(StringComparer.OrdinalIgnoreCase);
+        var canonical = new List<BitFullCalendarColorOption>(list.Count);
         foreach (var o in list)
         {
             var id = o.Id?.Trim();
-            if (!string.IsNullOrEmpty(id) && !_byId.ContainsKey(id))
-                _byId[id] = o;
+            if (string.IsNullOrEmpty(id) || _byId.ContainsKey(id))
+                continue;
+            _byId[id] = o;
+            canonical.Add(o);
         }
+        Options = canonical;
     }
 
     /// <summary>Configured colors in display order.</summary>

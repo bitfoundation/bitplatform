@@ -213,6 +213,11 @@ public partial class BitFullCalendar : IDisposable
     // OnViewChange/OnModeChange callbacks for those echoes while still keeping the bound
     // View/Mode/Date parameters in sync with the resulting state.
     private bool _applyingParameters;
+    // While applying parameters, several state setters (SetCulture, SetMode/SetView, SetSelectedDate)
+    // can each emit a date-range change in one pass. We coalesce them here and raise only the final
+    // resolved range to consumers once ApplyBoundState has finished, instead of forwarding every
+    // intermediate range.
+    private BitFullCalendarDateChangeEventArgs? _pendingDateChange;
 
     private BitCascadingValueList BuildCascadingValues() => new()
     {
@@ -300,6 +305,15 @@ public partial class BitFullCalendar : IDisposable
         finally
         {
             _applyingParameters = false;
+        }
+
+        // Raise the single coalesced date-range change (if any) now that all parameter-driven
+        // setters have run, so consumers see only the final resolved range rather than each
+        // intermediate one produced while applying parameters.
+        if (_pendingDateChange is { } pending)
+        {
+            _pendingDateChange = null;
+            InvokeAsync(() => OnDateChange.InvokeAsync(pending));
         }
     }
 
@@ -410,6 +424,15 @@ public partial class BitFullCalendar : IDisposable
 
     private void HandleDateRangeChanged(BitFullCalendarDateChangeEventArgs args)
     {
+        // While applying parameters, coalesce: keep only the latest range and let OnParametersSet
+        // raise it once after ApplyBoundState finishes. Outside that window (user-driven navigation,
+        // view switches) forward each change immediately as before.
+        if (_applyingParameters)
+        {
+            _pendingDateChange = args;
+            return;
+        }
+
         InvokeAsync(() => OnDateChange.InvokeAsync(args));
     }
 

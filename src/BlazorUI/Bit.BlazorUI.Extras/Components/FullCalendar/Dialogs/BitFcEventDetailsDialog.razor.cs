@@ -41,13 +41,23 @@ public partial class BitFcEventDetailsDialog
 
         var snapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
         State.RemoveEvent(Event.Id);
-        await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+        try
         {
-            Event = snapshot,
-            OldEvent = snapshot,
-            Kind = BitFullCalendarChangeKind.Delete,
-            Source = BitFullCalendarChangeSource.Delete
-        });
-        await OnClose.InvokeAsync();
+            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+            {
+                Event = snapshot,
+                OldEvent = snapshot,
+                Kind = BitFullCalendarChangeKind.Delete,
+                Source = BitFullCalendarChangeSource.Delete
+            });
+            await OnClose.InvokeAsync();
+        }
+        finally
+        {
+            // The event has already been removed from state, so a throwing notifier/close must not
+            // leave the dialog wedged with _isDeleting stuck true - reset it so the user can retry
+            // (e.g. close) instead of the delete button staying permanently inert.
+            _isDeleting = false;
+        }
     }
 }

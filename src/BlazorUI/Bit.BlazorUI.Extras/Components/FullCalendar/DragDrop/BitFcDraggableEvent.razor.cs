@@ -12,4 +12,12 @@ public partial class BitFcDraggableEvent
 
     private void OnDragStart() => State.StartDrag(Event);
     private void OnDragEnd() => State.EndDrag();
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        // role="button" must be keyboard-activatable: mirror native button behavior by invoking the
+        // click callback on Enter/Space.
+        if (e.Key is "Enter" or " " or "Spacebar")
+            await OnClick.InvokeAsync();
+    }
 }

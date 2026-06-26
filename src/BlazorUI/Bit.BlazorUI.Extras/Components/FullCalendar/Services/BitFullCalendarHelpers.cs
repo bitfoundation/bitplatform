@@ -26,17 +26,15 @@ public static class BitFullCalendarHelpers
     {
         culture ??= CultureInfo.CurrentUICulture;
         var cal = culture.Calendar;
-        var dtf = culture.DateTimeFormat;
 
         switch (view)
         {
             case BitFullCalendarView.Month:
             case BitFullCalendarView.Agenda:
             {
-                int y = cal.GetYear(date);
-                int m = cal.GetMonth(date);
-                string monthName = dtf.GetMonthName(m);
-                return $"{monthName} {y.ToString(culture)}";
+                // Use the culture's YearMonth pattern so the field ordering (month-before-year vs
+                // year-before-month) follows the culture's calendar instead of being hard-coded.
+                return date.ToString("Y", culture);
             }
             case BitFullCalendarView.Week:
             {
@@ -56,17 +54,52 @@ public static class BitFullCalendarHelpers
         }
     }
 
-    /// <summary>Formats a date as "Mon d, Year" using the supplied culture's calendar.</summary>
+    /// <summary>Formats a date with an abbreviated month using the culture's field ordering and calendar.</summary>
     public static string FormatCultureDate(DateTime date, CultureInfo? culture = null)
     {
         culture ??= CultureInfo.CurrentUICulture;
-        var cal = culture.Calendar;
         var dtf = culture.DateTimeFormat;
+
+        // Honor the culture's field ordering (and calendar) by deriving the date pattern from the
+        // culture's long-date pattern instead of hard-coding "Mon d, yyyy": drop the weekday token
+        // and prefer the abbreviated month so the label stays compact across cultures (e.g.
+        // day-month-year in much of Europe, year-month-day in East Asian calendars). Falls back to
+        // the previous manual format if the derived pattern turns out to be unusable.
+        try
+        {
+            var pattern = BuildAbbreviatedDatePattern(dtf.LongDatePattern);
+            if (!string.IsNullOrWhiteSpace(pattern))
+                return date.ToString(pattern, culture);
+        }
+        catch (FormatException)
+        {
+            // Derived pattern was not a valid format string for this culture; fall through.
+        }
+
+        var cal = culture.Calendar;
         int y = cal.GetYear(date);
         int m = cal.GetMonth(date);
         int d = cal.GetDayOfMonth(date);
-        string abbr = dtf.GetAbbreviatedMonthName(m);
-        return $"{abbr} {d.ToString(culture)}, {y.ToString(culture)}";
+        return $"{dtf.GetAbbreviatedMonthName(m)} {d.ToString(culture)}, {y.ToString(culture)}";
+    }
+
+    /// <summary>
+    /// Derives a compact date pattern from a culture's long-date pattern by removing the day-of-week
+    /// token and using the abbreviated month form, while preserving the culture's field ordering.
+    /// </summary>
+    private static string BuildAbbreviatedDatePattern(string longDatePattern)
+    {
+        if (string.IsNullOrWhiteSpace(longDatePattern))
+            return string.Empty;
+
+        // Remove the day-of-week token (ddd / dddd), switch to the abbreviated month, then clean up
+        // any separators left behind (whitespace and comma variants, including the Arabic comma).
+        var p = System.Text.RegularExpressions.Regex.Replace(longDatePattern, "d{3,4}", "");
+        p = p.Replace("MMMM", "MMM");
+        p = System.Text.RegularExpressions.Regex.Replace(p, "^[\\s,\u060C]+", "");
+        p = System.Text.RegularExpressions.Regex.Replace(p, "[\\s,\u060C]+$", "");
+        p = System.Text.RegularExpressions.Regex.Replace(p, "\\s{2,}", " ");
+        return p.Trim();
     }
 
     // -- Culture-aware: Navigation ------------------------------

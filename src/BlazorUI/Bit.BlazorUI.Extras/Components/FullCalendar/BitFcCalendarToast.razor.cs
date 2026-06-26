@@ -9,7 +9,11 @@ public partial class BitFcCalendarToast : IAsyncDisposable
 
     public void Show(string message, bool isError = false)
     {
-        var item = new ToastItem { Id = _nextId++, Message = message, IsError = isError };
+        // Allocate the id atomically: Show can be invoked off the renderer thread (the list mutation
+        // is marshalled below, but the id is assigned here on the caller's thread), so a plain
+        // _nextId++ could hand out duplicate ids under concurrent calls and break RemoveAfterDelay's
+        // per-id removal.
+        var item = new ToastItem { Id = Interlocked.Increment(ref _nextId), Message = message, IsError = isError };
 
         var cts = new CancellationTokenSource();
         lock (_removalTokensLock)
