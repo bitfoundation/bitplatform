@@ -177,20 +177,40 @@ public partial class BitFcAddEditEventDialog
             else
                 State.AddEvent(ev);
 
-            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+            try
             {
-                Event = BitFullCalendarChangeNotifier.CloneEvent(ev),
-                OldEvent = oldSnapshot,
-                Kind = _isEditing ? BitFullCalendarChangeKind.Edit : BitFullCalendarChangeKind.Add,
-                Source = BitFullCalendarChangeSource.Dialog
-            });
+                await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                {
+                    Event = BitFullCalendarChangeNotifier.CloneEvent(ev),
+                    OldEvent = oldSnapshot,
+                    Kind = _isEditing ? BitFullCalendarChangeKind.Edit : BitFullCalendarChangeKind.Add,
+                    Source = BitFullCalendarChangeSource.Dialog
+                });
 
-            // Prefer the dedicated success path when provided (e.g. the details dialog closes itself
-            // only on a real save), otherwise fall back to OnClose for standalone add/edit usages.
-            if (OnSaved.HasDelegate)
-                await OnSaved.InvokeAsync();
-            else
-                await OnClose.InvokeAsync();
+                // Prefer the dedicated success path when provided (e.g. the details dialog closes itself
+                // only on a real save), otherwise fall back to OnClose for standalone add/edit usages.
+                if (OnSaved.HasDelegate)
+                    await OnSaved.InvokeAsync();
+                else
+                    await OnClose.InvokeAsync();
+            }
+            catch
+            {
+                // Compensate so the dialog is safe to retry: a throwing notifier/close must not leave
+                // the event committed to State, otherwise a second submit would add a duplicate (Add)
+                // or the edit would be applied without its consumers ever being notified. Restore the
+                // pre-submit snapshot on edit, or remove the just-added event on add.
+                if (_isEditing)
+                {
+                    if (oldSnapshot is not null)
+                        State.UpdateEvent(oldSnapshot);
+                }
+                else
+                {
+                    State.RemoveEvent(ev.Id);
+                }
+                throw;
+            }
         }
         finally
         {

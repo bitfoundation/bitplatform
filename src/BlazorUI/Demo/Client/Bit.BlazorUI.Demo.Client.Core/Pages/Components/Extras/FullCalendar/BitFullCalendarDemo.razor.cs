@@ -46,7 +46,7 @@ public partial class BitFullCalendarDemo
             Name = "DefaultMode",
             Type = "BitFullCalendarMode?",
             DefaultValue = "null",
-            Description = "The default layout mode used initially when the Mode parameter is not set. Event shows day/week/month/year/agenda views. Timeline shows resources × time grid and requires Resources to be non-empty.",
+            Description = "The default layout mode used initially when the Mode parameter is not set. Event shows the day/week/month/year/agenda views. Timeline shows a resources × time grid (requires Resources to be non-empty) and supports only the day, week, and month layouts - Year and Agenda fall back to the week layout in Timeline mode.",
             LinkType = LinkType.Link,
             Href = "#mode-enum",
         },
@@ -55,7 +55,7 @@ public partial class BitFullCalendarDemo
             Name = "DefaultView",
             Type = "BitFullCalendarView?",
             DefaultValue = "null",
-            Description = "The default view used initially when the View parameter is not set (Day, Week, Month, Year, Agenda).",
+            Description = "The default view used initially when the View parameter is not set. In Event mode any of Day, Week, Month, Year, or Agenda apply; in Timeline mode only Day, Week, and Month are supported (Year and Agenda fall back to the week layout).",
             LinkType = LinkType.Link,
             Href = "#view-enum",
         },
@@ -96,7 +96,7 @@ public partial class BitFullCalendarDemo
             Name = "Mode",
             Type = "BitFullCalendarMode",
             DefaultValue = "BitFullCalendarMode.Event",
-            Description = "The currently active layout mode of the calendar (Event or Timeline). Timeline requires Resources to be non-empty. (two-way bound)",
+            Description = "The currently active layout mode of the calendar (Event or Timeline). Timeline requires Resources to be non-empty and only supports the Day, Week, and Month views (Year and Agenda fall back to the week layout). (two-way bound)",
             LinkType = LinkType.Link,
             Href = "#mode-enum",
         },
@@ -204,7 +204,7 @@ public partial class BitFullCalendarDemo
             Name = "View",
             Type = "BitFullCalendarView",
             DefaultValue = "BitFullCalendarView.Month",
-            Description = "The currently active view of the calendar (Day, Week, Month, Year, Agenda). (two-way bound)",
+            Description = "The currently active view of the calendar (Day, Week, Month, Year, Agenda). In Timeline mode only Day, Week, and Month are supported (Year and Agenda fall back to the week layout). (two-way bound)",
             LinkType = LinkType.Link,
             Href = "#view-enum",
         },
@@ -229,21 +229,21 @@ public partial class BitFullCalendarDemo
             Items =
             [
                 new() { Name = "Event", Description = "Day, week, month, year, and agenda views on a date grid.", Value = "0" },
-                new() { Name = "Timeline", Description = "Resource-centric layout: resources × time grid.", Value = "1" },
+                new() { Name = "Timeline", Description = "Resource-centric layout (resources × time grid); requires Resources. Supports only the day, week, and month layouts.", Value = "1" },
             ]
         },
         new()
         {
             Id = "view-enum",
             Name = "BitFullCalendarView",
-            Description = "Active view inside the current mode.",
+            Description = "Active view inside the current mode. In Timeline mode only Day, Week, and Month are supported; Year and Agenda fall back to the week layout.",
             Items =
             [
                 new() { Name = "Day", Description = "Single-day detailed view.", Value = "0" },
                 new() { Name = "Week", Description = "7-day view with hourly time slots.", Value = "1" },
                 new() { Name = "Month", Description = "Month grid with multi-day events.", Value = "2" },
-                new() { Name = "Year", Description = "12-month overview.", Value = "3" },
-                new() { Name = "Agenda", Description = "Searchable list grouped by date or color.", Value = "4" },
+                new() { Name = "Year", Description = "12-month overview. Event mode only - falls back to the week layout in Timeline mode.", Value = "3" },
+                new() { Name = "Agenda", Description = "Searchable list grouped by date or color. Event mode only - falls back to the week layout in Timeline mode.", Value = "4" },
             ]
         },
         new()

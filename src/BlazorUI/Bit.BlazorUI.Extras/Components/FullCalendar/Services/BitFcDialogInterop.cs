@@ -13,14 +13,16 @@ internal static class BitFcDialogInterop
 {
     public static async ValueTask SetupAsync(IJSRuntime js, ElementReference container)
     {
+        // Only suppress the cases that legitimately occur when the circuit is going away
+        // (disconnect / cancellation). A JSException or InvalidOperationException here means the
+        // focus-management interop is genuinely broken, so let it surface instead of silently
+        // leaving the dialog without focus trapping.
         try
         {
             await js.InvokeVoidAsync("BitBlazorUI.FullCalendar.setupDialog", container);
         }
         catch (JSDisconnectedException) { }
         catch (OperationCanceledException) { }
-        catch (JSException) { }
-        catch (InvalidOperationException) { }
     }
 
     public static async ValueTask TeardownAsync(IJSRuntime js, ElementReference container)

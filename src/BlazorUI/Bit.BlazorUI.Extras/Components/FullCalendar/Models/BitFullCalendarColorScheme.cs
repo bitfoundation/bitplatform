@@ -37,7 +37,9 @@ public sealed class BitFullCalendarColorScheme
             _byId[id] = normalized;
             canonical.Add(normalized);
         }
-        Options = canonical;
+        // Wrap in a read-only view so consumers can't mutate Options after construction and
+        // desynchronize it from the _byId lookup it was built alongside.
+        Options = canonical.AsReadOnly();
     }
 
     /// <summary>Configured colors in display order.</summary>

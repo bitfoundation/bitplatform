@@ -56,15 +56,14 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
 
         try
         {
-            // Once the local removal has been committed and the Delete notification dispatched,
-            // never send it again. A notifier/close that throws resets _isDeleting (below) so the
-            // user can retry closing the dialog, but _deleteCommitted prevents that retry from
-            // emitting a second Delete for an event that was already removed.
+            // Once the local removal AND the Delete notification have both succeeded, never send it
+            // again: _deleteCommitted is set only after NotifyAsync returns, so if a later OnClose
+            // throws the retry skips re-deleting/re-notifying. If NotifyAsync itself throws, the flag
+            // stays unset and the retry re-runs the idempotent removal and the notification.
             if (!_deleteCommitted)
             {
                 var snapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
                 State.RemoveEvent(Event.Id);
-                _deleteCommitted = true;
                 await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
                 {
                     Event = snapshot,
@@ -72,6 +71,10 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
                     Kind = BitFullCalendarChangeKind.Delete,
                     Source = BitFullCalendarChangeSource.Delete
                 });
+                // Mark committed only after the notification has succeeded. If NotifyAsync throws,
+                // _deleteCommitted stays false so a retry re-runs the (idempotent) removal AND the
+                // notification, instead of silently closing without ever notifying consumers.
+                _deleteCommitted = true;
             }
 
             await OnClose.InvokeAsync();

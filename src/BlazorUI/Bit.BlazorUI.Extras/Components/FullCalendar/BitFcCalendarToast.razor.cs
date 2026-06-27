@@ -30,6 +30,12 @@ public partial class BitFcCalendarToast : IAsyncDisposable
         // invoked from a non-renderer thread.
         _ = InvokeAsync(() =>
         {
+            // DisposeAsync cancels every queued token; if it ran between scheduling this callback
+            // and it executing, bail out before touching _toasts/StateHasChanged so no UI work (or
+            // RemoveAfterDelay timer) starts after the component has been torn down.
+            if (token.IsCancellationRequested)
+                return;
+
             _toasts.Add(item);
             StateHasChanged();
             // Start the expiration timer only after the toast has actually been queued into the UI,

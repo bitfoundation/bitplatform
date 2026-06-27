@@ -24,10 +24,19 @@ public partial class BitFcDroppableArea
         }
         _isOver = true;
     }
-    private void OnDragLeave() => _isOver = false;
+    private void OnDragLeave()
+    {
+        // A real hover-state transition must be allowed to render (to drop the drag-over styling),
+        // so clear any pending skip left by a previous repeated dragover before flipping _isOver.
+        _skipRender = false;
+        _isOver = false;
+    }
 
     private async Task OnDrop()
     {
+        // Same as OnDragLeave: the post-drop UI update must render, so never let a stale skip flag
+        // from a prior dragover suppress it.
+        _skipRender = false;
         _isOver = false;
         await Notifier.HandleDropAsync(Date, Hour, Minute);
     }

@@ -2410,7 +2410,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     position: absolute;
     top: 0;
     bottom: 0;
-    right: 0;
+    inset-inline-end: 0;
     width: 50%;
     border-inline-start: 1px dashed var(--bit-bfc-border);
     opacity: 0.5;
@@ -2488,19 +2488,19 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-resize-handle-start {
-    left: -5px;
+    inset-inline-start: -5px;
 }
 
 .bit-bfc-resize-handle-start::after {
-    left: 3px;
+    inset-inline-start: 3px;
 }
 
 .bit-bfc-resize-handle-end {
-    right: -5px;
+    inset-inline-end: -5px;
 }
 
 .bit-bfc-resize-handle-end::after {
-    right: 3px;
+    inset-inline-end: 3px;
 }
 
 .bit-bfc-resize-handle-h:hover {
