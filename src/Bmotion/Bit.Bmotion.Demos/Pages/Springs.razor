@@ -1,0 +1,291 @@
+@page "/springs"
+
+<h1>Springs</h1>
+
+<div class="demo-section">
+    <h2>Spring Physics</h2>
+    <p>
+        Set <strong>Transition.Type = BmotionTransitionType.Spring</strong> for physically-based motion.
+        Tune <em>Stiffness</em> (snap speed) and <em>Damping</em> (oscillation).
+    </p>
+
+    <div class="demo-row">
+        @foreach (var cfg in _springs)
+        {
+            <div class="demo-card" style="flex-direction:column; gap:.75rem;">
+                <span style="font-size:.78rem; color:#888">@cfg.Label</span>
+                <Bmotion Tag="div"
+                        Class="box box-sm"
+                        Animate="@(_on ? new BmotionAnimationProps { X = 80 } : new BmotionAnimationProps { X = 0 })"
+                        Transition="@cfg.Config" />
+            </div>
+        }
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _on = !_on)">
+        Animate
+    </button>
+
+    <CodeSnippet Code="@_springCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Bouncy Enter</h2>
+    <p>Underdamped springs produce delightful overshoots on mount.</p>
+    <div class="demo-row">
+        <div class="demo-card">
+            <Bmotion Tag="div"
+                    Class="box"
+                    Initial="@(new BmotionAnimationProps { Scale = 0, Rotate = -180 })"
+                    Animate="@(new BmotionAnimationProps { Scale = 1, Rotate = 0 })"
+                    Transition="@BmotionTransitionConfig.Spring(stiffness:260, damping:12)"
+                    @key="@_mountKey" />
+        </div>
+    </div>
+    <button class="btn-bm" style="margin-top:1rem" @onclick="Remount">Re-mount</button>
+
+    <CodeSnippet Code="@_bouncyCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Repeating Springs</h2>
+    <p>
+        Springs now honour <strong>Repeat</strong>, <strong>RepeatType</strong> and <strong>RepeatDelay</strong>.
+        <em>Mirror</em> ping-pongs back to the start, <em>Loop</em> replays from the origin.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column; gap:.75rem;">
+            <span style="font-size:.78rem; color:#888">Mirror &middot; infinite</span>
+            <Bmotion Tag="div"
+                    Class="box box-sm"
+                    Animate="@(_repeat ? new BmotionAnimationProps { X = 90 } : new BmotionAnimationProps { X = 0 })"
+                    Transition="@(new BmotionTransitionConfig
+                    {
+                        Type = BmotionTransitionType.Spring,
+                        Stiffness = 200,
+                        Damping = 12,
+                        RepeatInfinite = true,
+                        RepeatType = BmotionRepeatType.Mirror,
+                    })" />
+        </div>
+
+        <div class="demo-card" style="flex-direction:column; gap:.75rem;">
+            <span style="font-size:.78rem; color:#888">Loop &middot; 3&times; with delay</span>
+            <Bmotion Tag="div"
+                    Class="box box-sm"
+                    Animate="@(_repeat ? new BmotionAnimationProps { Y = 60 } : new BmotionAnimationProps { Y = 0 })"
+                    Transition="@(new BmotionTransitionConfig
+                    {
+                        Type = BmotionTransitionType.Spring,
+                        Stiffness = 300,
+                        Damping = 18,
+                        Repeat = 3,
+                        RepeatType = BmotionRepeatType.Loop,
+                        RepeatDelay = 0.3,
+                    })" />
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _repeat = !_repeat)">
+        @(_repeat ? "Reset" : "Start repeating")
+    </button>
+
+    <CodeSnippet Code="@_repeatCode" />
+</div>
+
+@code {
+    private bool _on;
+    private bool _repeat;
+    private int  _mountKey;
+
+    private record SpringDemo(string Label, BmotionTransitionConfig Config);
+
+    private readonly SpringDemo[] _springs =
+    [
+        new("Stiff 400 / Damp 40",  BmotionTransitionConfig.Spring(400, 40)),
+        new("Stiff 100 / Damp 10",  BmotionTransitionConfig.Spring(100, 10)),
+        new("Stiff 50 / Damp 5",    BmotionTransitionConfig.Spring(50,  5)),
+        new("Stiff 300 / Damp 70",  BmotionTransitionConfig.Spring(300, 70)),
+    ];
+
+    void Remount() => _mountKey++;
+
+    private const string _springCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root {
+                --bm-primary: #6c47ff; --bm-secondary: #ff4785;
+                --bm-card: #1e1e2e; --bm-muted: #888; --bm-radius: 12px;
+            }
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: var(--bm-radius); padding: 2rem; min-height: 160px; flex: 1;
+                min-width: 220px; display: flex; align-items: center; justify-content: center;
+            }
+            .box-sm {
+                width: 50px; height: 50px; border-radius: 8px;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+            }
+            .btn-bm {
+                background: var(--bm-primary); color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>Spring Physics</h2>
+
+            <div class="demo-row">
+                @foreach (var cfg in _springs)
+                {
+                    <div class="demo-card" style="flex-direction:column; gap:.75rem;">
+                        <span style="font-size:.78rem; color:#888">@cfg.Label</span>
+                        <Bmotion Tag="div"
+                                Class="box box-sm"
+                                Animate="@(_on ? new BmotionAnimationProps { X = 80 } : new BmotionAnimationProps { X = 0 })"
+                                Transition="@cfg.Config" />
+                    </div>
+                }
+            </div>
+
+            <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _on = !_on)">
+                Animate
+            </button>
+        </div>
+
+        @code {
+            private bool _on;
+
+            private record SpringDemo(string Label, BmotionTransitionConfig Config);
+
+            private readonly SpringDemo[] _springs =
+            [
+                new("Stiff 400 / Damp 40",  BmotionTransitionConfig.Spring(400, 40)),
+                new("Stiff 100 / Damp 10",  BmotionTransitionConfig.Spring(100, 10)),
+                new("Stiff 50 / Damp 5",    BmotionTransitionConfig.Spring(50,  5)),
+                new("Stiff 300 / Damp 70",  BmotionTransitionConfig.Spring(300, 70)),
+            ];
+        }
+        """;
+
+    private const string _bouncyCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; --bm-muted: #888; }
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-section p { color: var(--bm-muted); margin-bottom: 1.5rem; line-height: 1.6; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box {
+                width: 80px; height: 80px; border-radius: 10px;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+            }
+            .btn-bm {
+                background: var(--bm-primary); color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>Bouncy Enter</h2>
+            <p>Underdamped springs produce delightful overshoots on mount.</p>
+            <div class="demo-row">
+                <div class="demo-card">
+                    <Bmotion Tag="div"
+                            Class="box"
+                            Initial="@(new BmotionAnimationProps { Scale = 0, Rotate = -180 })"
+                            Animate="@(new BmotionAnimationProps { Scale = 1, Rotate = 0 })"
+                            Transition="@BmotionTransitionConfig.Spring(stiffness:260, damping:12)"
+                            @key="@_mountKey" />
+                </div>
+            </div>
+            <button class="btn-bm" style="margin-top:1rem" @onclick="Remount">Re-mount</button>
+        </div>
+
+        @code {
+            private int _mountKey;
+
+            void Remount() => _mountKey++;
+        }
+        """;
+
+    private const string _repeatCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box-sm {
+                width: 50px; height: 50px; border-radius: 8px;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+            }
+            .btn-bm {
+                background: var(--bm-primary); color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>Repeating Springs</h2>
+
+            <div class="demo-row">
+                <div class="demo-card" style="flex-direction:column; gap:.75rem;">
+                    <span style="font-size:.78rem; color:#888">Mirror &middot; infinite</span>
+                    <Bmotion Tag="div"
+                            Class="box box-sm"
+                            Animate="@(_repeat ? new BmotionAnimationProps { X = 90 } : new BmotionAnimationProps { X = 0 })"
+                            Transition="@(new BmotionTransitionConfig
+                            {
+                                Type = BmotionTransitionType.Spring,
+                                Stiffness = 200,
+                                Damping = 12,
+                                RepeatInfinite = true,
+                                RepeatType = BmotionRepeatType.Mirror,
+                            })" />
+                </div>
+
+                <div class="demo-card" style="flex-direction:column; gap:.75rem;">
+                    <span style="font-size:.78rem; color:#888">Loop &middot; 3&times; with delay</span>
+                    <Bmotion Tag="div"
+                            Class="box box-sm"
+                            Animate="@(_repeat ? new BmotionAnimationProps { Y = 60 } : new BmotionAnimationProps { Y = 0 })"
+                            Transition="@(new BmotionTransitionConfig
+                            {
+                                Type = BmotionTransitionType.Spring,
+                                Stiffness = 300,
+                                Damping = 18,
+                                Repeat = 3,
+                                RepeatType = BmotionRepeatType.Loop,
+                                RepeatDelay = 0.3,
+                            })" />
+                </div>
+            </div>
+
+            <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _repeat = !_repeat)">
+                @(_repeat ? "Reset" : "Start repeating")
+            </button>
+        </div>
+
+        @code {
+            private bool _repeat;
+        }
+        """;
+}

@@ -1,0 +1,146 @@
+﻿@namespace Bit.BlazorUI
+@inject IJSRuntime JS
+
+@*
+  Timeline mode - Month view.
+  Resources × (one column per day in the active month). Day-precision drops re-place an event
+  on a different resource and date but keep its original time-of-day.
+*@
+
+@{
+    const int dayWidth = BitFullCalendarHelpers.TimelineDayWidthPx;
+    const int laneHeight = 40;
+    const int laneGap = 4;
+    const int rowPadding = 4;
+    const int minRowHeight = 60;
+
+    var culture = State.Culture;
+    var cal = culture.Calendar;
+    // Capture the era from the selected date and pass it explicitly so multi-era calendars (e.g. the
+    // Japanese calendar) resolve the year/month/days against the date's own era instead of falling
+    // back to CurrentEra, which would mis-handle a SelectedDate from a previous era.
+    var era = cal.GetEra(State.SelectedDate);
+    var year = cal.GetYear(State.SelectedDate);
+    var month = cal.GetMonth(State.SelectedDate);
+    var monthStart = cal.ToDateTime(year, month, 1, 0, 0, 0, 0, era);
+    var daysInMonth = cal.GetDaysInMonth(year, month, era);
+    var monthDays = Enumerable.Range(0, daysInMonth).Select(i => monthStart.AddDays(i)).ToArray();
+
+    var resources = State.Resources;
+    var resourceIds = resources.Select(r => r.Id).Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
+
+    // Group every event that touches the month into resource-keyed lists.
+    var perResource = BitFullCalendarHelpers.GroupEventsByResourceForMonth(
+        Events, monthStart, daysInMonth, resourceIds, _unassignedKey);
+
+    int LaneCountFor(string resourceId) =>
+        perResource.TryGetValue(resourceId, out var lanes) && lanes.Count > 0 ? lanes.Count : 1;
+
+    int RowHeight(int laneCount)
+    {
+        var content = (laneCount * laneHeight) + (Math.Max(0, laneCount - 1) * laneGap) + (rowPadding * 2);
+        return Math.Max(minRowHeight, content);
+    }
+
+    // Render the unassigned row when there are unassigned events, OR when there are no persistable
+    // resources at all (resourceIds is the set of valid, non-blank ids) so the user always has at
+    // least one row to create the first event in - blank-id resources still fall back here.
+    var hasUnassignedEvents = perResource.TryGetValue(_unassignedKey, out var u) && u.Count > 0;
+    var hasUnassigned = hasUnassignedEvents || resourceIds.Count == 0;
+    var unassignedLaneCount = hasUnassignedEvents ? perResource[_unassignedKey].Count : 1;
+
+    // If today falls inside the active month, scroll horizontally to today's day cell.
+    var todayIdx = Array.FindIndex(monthDays, d => d.Date == DateTime.Today);
+}
+
+<BitFcTimelineLayout ColumnCount="daysInMonth"
+                ColumnWidthPx="dayWidth"
+                ScrollContainerId="@_scrollContainerId"
+                HasUnassignedRow="hasUnassigned"
+                RowHeightFor="r => RowHeight(LaneCountFor(r.Id))"
+                UnassignedRowHeight="RowHeight(unassignedLaneCount)">
+
+    <HeaderContent>
+        <div class="bit-bfc-tl-time-row bit-bfc-tl-time-row-slots">
+            @for (var di = 0; di < monthDays.Length; di++)
+            {
+                var dayIndex = di;
+                var d = monthDays[dayIndex];
+                var isToday = d.Date == DateTime.Today;
+                var dayNum = BitFullCalendarHelpers.GetCulturalDayOfMonth(d, culture);
+                var dowInitial = culture.DateTimeFormat.GetShortestDayName(d.DayOfWeek);
+                var isScrollTarget = dayIndex == todayIdx;
+                <div class="bit-bfc-tl-time-cell @(isToday ? "today" : "")" style="width:@(dayWidth)px;" data-bit-bfc-tl-scroll-target="@(isScrollTarget ? "true" : null)">
+                    <span class="bit-bfc-tl-time-cell-label">@dayNum @dowInitial</span>
+                </div>
+            }
+        </div>
+    </HeaderContent>
+
+    <RowContent Context="resource">
+        @{ var rowKey = resource.Id; }
+        @for (var di = 0; di < daysInMonth; di++)
+        {
+            var dayIndex = di;
+            var day = monthDays[dayIndex];
+            var leftPx = dayIndex * dayWidth;
+            var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
+            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
+                 style="left:@(leftPx)px;width:@(dayWidth)px;"
+                 role="button"
+                 tabindex="0"
+                 aria-label="@SlotAriaLabel(day, resource.Title)"
+                 @ondragenter="() => OnDragEnter(rowKey, day)"
+                 @ondragover:preventDefault="true"
+                 @ondrop="() => OnDrop(rowKey, day)"
+                 @onclick="() => OnSlotClickAsync(rowKey, day)"
+                 @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day)">
+                <div class="bit-bfc-cell-add-hint" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    @Texts.AddEventHoverHint
+                </div>
+            </div>
+        }
+
+        @if (perResource.TryGetValue(rowKey, out var lanes))
+        {
+            @RenderLanes(lanes, monthStart, daysInMonth)
+        }
+    </RowContent>
+
+    <UnassignedRowContent>
+        @{ var rowKey = _unassignedKey; }
+        @for (var di = 0; di < daysInMonth; di++)
+        {
+            var dayIndex = di;
+            var day = monthDays[dayIndex];
+            var leftPx = dayIndex * dayWidth;
+            var isPreview = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date;
+            <div class="bit-bfc-tl-cell bit-bfc-tl-cell-day @(isPreview ? "bit-bfc-tl-drop-preview" : "")"
+                 style="left:@(leftPx)px;width:@(dayWidth)px;"
+                 role="button"
+                 tabindex="0"
+                 aria-label="@SlotAriaLabel(day, Texts.NoResourceLabel)"
+                 @ondragenter="() => OnDragEnter(rowKey, day)"
+                 @ondragover:preventDefault="true"
+                 @ondrop="() => OnDrop(rowKey, day)"
+                 @onclick="() => OnSlotClickAsync(rowKey, day)"
+                 @onkeydown="e => OnSlotKeyDownAsync(e, rowKey, day)"></div>
+        }
+        @if (hasUnassignedEvents)
+        {
+            @RenderLanes(perResource[_unassignedKey], monthStart, daysInMonth)
+        }
+    </UnassignedRowContent>
+</BitFcTimelineLayout>
+
+@if (_showAddDialog)
+{
+    <BitFcAddEditEventDialog StartDate="_addStartDate" StartHour="_addStartHour" Resource="_addResourceId" OnClose="() => _showAddDialog = false" />
+}
+
+@if (_selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
+}
+

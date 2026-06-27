@@ -1,0 +1,141 @@
+@page "/fetch"
+@inject Bit.Butil.Fetch fetch
+
+<PageTitle>Butil - Fetch Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="Fetch"
+            Lead="Send browser fetch requests from C# with progress reporting and cancellation - useful for large downloads and fetch-specific semantics."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" />
+
+<pre>
+@@inject Bit.Butil.Fetch fetch
+
+var response = await fetch.Send(new FetchRequest { Url = "https://…" },
+    onProgress: p => { /* bytes received */ });
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="GET request" Api="Send"
+              Description="Fetch JSON from a public endpoint and show the response status and body preview.">
+        <div class="field">
+            <span class="field-label">URL</span>
+            <input @bind="_url" placeholder="https://jsonplaceholder.typicode.com/todos/1" />
+        </div>
+        <button @onclick="SendGet" disabled="@_busy">Send GET</button>
+        @if (_lastBodyPreview is not null)
+        {
+            <pre style="margin-top:1rem;white-space:pre-wrap;word-break:break-all">@_lastBodyPreview</pre>
+        }
+    </DemoCard>
+
+    <DemoCard Title="Progress & abort" Api="Send + CancellationToken"
+              Description="Download a larger payload and watch progress, or cancel mid-flight.">
+        <div class="controls">
+            <button @onclick="SendWithProgress" disabled="@_busy">Download with progress</button>
+            <button class="danger" @onclick="AbortRequest" disabled="@_cts is null">Abort</button>
+        </div>
+        @if (_progressText is not null)
+        {
+            <p style="margin-top:0.75rem"><span class="result-pill">@_progressText</span></p>
+        }
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="fetch output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private string _url = "https://jsonplaceholder.typicode.com/todos/1";
+    private string? _lastBodyPreview;
+    private string? _progressText;
+    private bool _busy;
+    private CancellationTokenSource? _cts;
+
+    private async Task SendGet()
+    {
+        if (string.IsNullOrWhiteSpace(_url))
+        {
+            await output.Warn("Enter a URL first.");
+            return;
+        }
+
+        _busy = true;
+        _lastBodyPreview = null;
+        try
+        {
+            var response = await fetch.Send(new FetchRequest { Url = _url.Trim() });
+            await LogResponse(response);
+            _lastBodyPreview = PreviewBody(response.Body);
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task SendWithProgress()
+    {
+        _busy = true;
+        _progressText = null;
+        _cts = new CancellationTokenSource();
+
+        try
+        {
+            var response = await fetch.Send(
+                new FetchRequest { Url = "https://jsonplaceholder.typicode.com/photos" },
+                onProgress: p =>
+                {
+                    _progressText = p.Total.HasValue
+                        ? $"Received {p.Loaded} / {p.Total} bytes"
+                        : $"Received {p.Loaded} bytes";
+                    InvokeAsync(StateHasChanged);
+                },
+                cancellationToken: _cts.Token);
+
+            await LogResponse(response);
+            _progressText = response.Aborted ? "Aborted" : "Complete";
+        }
+        catch (OperationCanceledException)
+        {
+            await output.Warn("Request cancelled.");
+            _progressText = "Cancelled";
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+        finally
+        {
+            _cts.Dispose();
+            _cts = null;
+            _busy = false;
+        }
+    }
+
+    private void AbortRequest() => _cts?.Cancel();
+
+    private async Task LogResponse(FetchResponse response)
+    {
+        if (response.Error is not null)
+        {
+            await output.Error(response.Error);
+            return;
+        }
+
+        await output.Success($"Status {response.Status} {response.StatusText} →",
+            $"{response.Body.Length} bytes from {response.Url}");
+    }
+
+    private static string PreviewBody(byte[] body)
+    {
+        if (body.Length == 0) return "(empty body)";
+        var text = System.Text.Encoding.UTF8.GetString(body);
+        return text.Length > 500 ? text[..500] + "…" : text;
+    }
+}

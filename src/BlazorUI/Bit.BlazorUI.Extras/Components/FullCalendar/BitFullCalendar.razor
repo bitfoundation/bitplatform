@@ -1,0 +1,12 @@
+@namespace Bit.BlazorUI
+
+<BitCascadingValueProvider ValueList="BuildCascadingValues()">
+    <div class="bit-bfc" dir="@(State.IsRtl ? "rtl" : "ltr")">
+        <BitFcCalendarHeader />
+        <BitFcCalendarBody MonthEventTemplate="MonthEventTemplate"
+                           WeekEventTemplate="WeekEventTemplate"
+                           DayEventTemplate="DayEventTemplate"
+                           TimelineEventTemplate="TimelineEventTemplate" />
+        <BitFcCalendarToast />
+    </div>
+</BitCascadingValueProvider>

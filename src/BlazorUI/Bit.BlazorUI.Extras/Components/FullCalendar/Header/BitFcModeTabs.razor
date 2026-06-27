@@ -1,0 +1,23 @@
+@namespace Bit.BlazorUI
+
+@*
+  Top-level mode switch (Event ⇄ Timeline). The whole switch is rendered only when at least one
+  resource is supplied, because the Timeline mode is meaningless without resources and a lone
+  Event tab adds no value.
+*@
+
+@if (State.Resources.Count > 0)
+{
+    <div class="bit-bfc-mode-tabs" role="tablist">
+        @foreach (var mode in _modes)
+        {
+            <button class="bit-bfc-mode-tab @(State.Mode == mode ? "active" : "")"
+                    type="button"
+                    role="tab"
+                    aria-selected="@(State.Mode == mode ? "true" : "false")"
+                    @onclick="() => State.SetMode(mode)">
+                @Texts.GetModeLabel(mode)
+            </button>
+        }
+    </div>
+}

@@ -1,0 +1,81 @@
+@page "/permissions"
+@inject Bit.Butil.Permissions permissions
+
+<PageTitle>Butil - Permissions Samples</PageTitle>
+
+<PageHeader Category="Browser & Device"
+            Title="Permissions"
+            Lead="Query the browser's permission state for geolocation, notifications, camera, clipboard and other capabilities - without triggering a prompt."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Permissions" />
+
+<pre>
+@@inject Bit.Butil.Permissions permissions
+
+var state = await permissions.Query("geolocation");
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Support check" Api="IsSupported"
+              Description="True when navigator.permissions is available in this browser.">
+        <button @onclick="CheckSupported">IsSupported</button>
+    </DemoCard>
+
+    <DemoCard Title="Query permission state" Api="Query"
+              Description="Returns granted, denied, prompt or unknown for the selected descriptor.">
+        <div class="field">
+            <span class="field-label">Permission name</span>
+            <select @bind="_selectedPermission">
+                @foreach (var name in _permissionNames)
+                {
+                    <option value="@name">@name</option>
+                }
+            </select>
+        </div>
+        <div class="controls">
+            <button @onclick="QuerySelected">Query selected</button>
+            <button class="secondary" @onclick="QueryAll">Query all common</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="permissions output" />
+
+@code {
+    private DemoConsole output = default!;
+    private string _selectedPermission = "geolocation";
+
+    private static readonly string[] _permissionNames =
+    [
+        "geolocation",
+        "notifications",
+        "camera",
+        "microphone",
+        "clipboard-read",
+        "clipboard-write",
+        "push",
+        "midi",
+        "background-sync",
+        "persistent-storage",
+    ];
+
+    private async Task CheckSupported()
+    {
+        await output.Success("IsSupported →", await permissions.IsSupported());
+    }
+
+    private async Task QuerySelected()
+    {
+        var state = await permissions.Query(_selectedPermission);
+        await output.Success($"Query(\"{_selectedPermission}\") →", state);
+    }
+
+    private async Task QueryAll()
+    {
+        await output.Info("Querying common permissions…");
+        foreach (var name in _permissionNames)
+        {
+            var state = await permissions.Query(name);
+            await output.Log($"{name} → {state}");
+        }
+    }
+}

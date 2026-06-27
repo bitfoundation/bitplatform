@@ -25,6 +25,12 @@
     <Project Path="Besql/Demo/Bit.Besql.Demo.Client/Bit.Besql.Demo.Client.csproj" />
     <Project Path="Besql/Demo/Bit.Besql.Demo/Bit.Besql.Demo.csproj" />
   </Folder>
+  <Folder Name="/Bmotion/">
+    <File Path="Bmotion/README.md" />
+    <Project Path="Bmotion/Bit.Bmotion.Demos/Bit.Bmotion.Demos.csproj" />
+    <Project Path="Bmotion/Bit.Bmotion/Bit.Bmotion.csproj" />
+    <Project Path="Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
+  </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>
@@ -38,6 +44,14 @@
     <Project Path="BlazorUI/Bit.BlazorUI.SourceGenerators/Bit.BlazorUI.SourceGenerators.csproj" />
     <Project Path="BlazorUI/Tests/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
   </Folder>
+  <Folder Name="/BlazorUI/Demo/">
+    <Project Path="BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj" />
+    <Project Path="BlazorUI/Demo/Bit.BlazorUI.Demo.Shared/Bit.BlazorUI.Demo.Shared.csproj" />
+  </Folder>
+  <Folder Name="/BlazorUI/Demo/Client/">
+    <Project Path="BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj" />
+    <Project Path="BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Web/Bit.BlazorUI.Demo.Client.Web.csproj" />
+  </Folder>
   <Folder Name="/Bswup/">
     <File Path="Bswup/README.md" />
     <Project Path="Bswup/Bit.Bswup.Demo/Bit.Bswup.Demo.csproj" />
@@ -49,9 +63,22 @@
   </Folder>
   <Folder Name="/Brouter/">
     <Project Path="Brouter/Bit.Brouter/Bit.Brouter.csproj" />
-  </Folder>
-  <Folder Name="/Brouter/Tests/">
     <Project Path="Brouter/Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Brouter/InteralDemos/" />
+  <Folder Name="/Brouter/InteralDemos/Auto/">
+    <Project Path="Brouter/InteralDemos/Auto/Bit.Brouter.Demos.Auto/Bit.Brouter.Demos.Auto.csproj" />
+    <Project Path="Brouter/InteralDemos/Auto/Bit.Brouter.Demos.Auto.Client/Bit.Brouter.Demos.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Brouter/InteralDemos/Core/">
+    <Project Path="Brouter/InteralDemos/Core/Bit.Brouter.Demos.Core.csproj" />
+  </Folder>
+  <Folder Name="/Brouter/InteralDemos/Server/">
+    <Project Path="Brouter/InteralDemos/Server/Bit.Brouter.Demos.Server.csproj" />
+  </Folder>
+  <Folder Name="/Brouter/InteralDemos/Wasm/">
+    <Project Path="Brouter/InteralDemos/Wasm/Bit.Brouter.Demos.Wasm/Bit.Brouter.Demos.Wasm.csproj" />
+    <Project Path="Brouter/InteralDemos/Wasm/Bit.Brouter.Demos.Wasm.Client/Bit.Brouter.Demos.Wasm.Client.csproj" />
   </Folder>
   <Folder Name="/Butil/">
     <File Path="Butil/README.md" />

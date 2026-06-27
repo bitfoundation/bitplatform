@@ -1,0 +1,156 @@
+@page "/files"
+@inject Bit.Butil.FileReader fileReader
+@inject Bit.Butil.ObjectUrls objectUrls
+
+<PageTitle>Butil - FileReader & ObjectUrls Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="Files"
+            Lead="Read files selected in an input element as text, bytes or data URLs - then create blob object URLs for previews and downloads."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/FileReader" />
+
+<pre>
+@@inject Bit.Butil.FileReader fileReader
+@@inject Bit.Butil.ObjectUrls objectUrls
+
+var text = await fileReader.ReadAsText(inputElement);
+var url  = await objectUrls.Create(bytes, "image/png");
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Pick a file" Api="GetFileInfo / ReadAsText / ReadAsBytes / ReadAsDataUrl"
+              Description="Choose one or more files and inspect or read them.">
+        <div class="field">
+            <span class="field-label">File input</span>
+            <input type="file" @ref="_fileInput" @onchange="OnFilesChanged" multiple />
+        </div>
+        <div class="controls">
+            <button @onclick="ReadInfo">GetFileInfo</button>
+            <button @onclick="ReadText">ReadAsText</button>
+            <button @onclick="ReadBytes">ReadAsBytes</button>
+            <button @onclick="ReadDataUrl">ReadAsDataUrl</button>
+            <button class="secondary" @onclick="ClearInput">Clear</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Object URL preview" Api="ObjectUrls.Create / Revoke"
+              Description="Create a blob URL from typed text and preview or download it.">
+        <div class="field">
+            <span class="field-label">Text to blob</span>
+            <textarea @bind="_blobText" rows="3" placeholder="Hello from Butil!"></textarea>
+        </div>
+        <div class="controls">
+            <button @onclick="CreateObjectUrl">Create object URL</button>
+            <button class="secondary" @onclick="RevokeObjectUrl">Revoke URL</button>
+        </div>
+        @if (_objectUrl is not null)
+        {
+            <p style="margin-top:0.75rem">
+                <a href="@_objectUrl" target="_blank" rel="noopener">Open blob URL</a>
+            </p>
+        }
+        @if (_imagePreviewUrl is not null)
+        {
+            <img src="@_imagePreviewUrl" alt="Preview" style="margin-top:1rem;max-width:240px;border-radius:8px" />
+        }
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="files output" />
+
+@code {
+    private DemoConsole output = default!;
+    private ElementReference _fileInput;
+
+    private string _blobText = "Hello from Bit.Butil ObjectUrls!";
+    private string? _objectUrl;
+    private string? _imagePreviewUrl;
+
+    private async Task OnFilesChanged() => await ReadInfo();
+
+    private async Task ReadInfo()
+    {
+        var infos = await fileReader.GetFileInfos(_fileInput);
+        if (infos.Length == 0)
+        {
+            await output.Warn("No file selected.");
+            return;
+        }
+
+        foreach (var info in infos)
+        {
+            await output.Success($"{info.Name} →", $"{info.Size} bytes, {info.Type}");
+        }
+    }
+
+    private async Task ReadText()
+    {
+        var text = await fileReader.ReadAsText(_fileInput);
+        if (string.IsNullOrEmpty(text))
+        {
+            await output.Warn("No file or empty content.");
+            return;
+        }
+
+        var preview = text.Length > 300 ? text[..300] + "…" : text;
+        await output.Success("ReadAsText →", preview);
+    }
+
+    private async Task ReadBytes()
+    {
+        var bytes = await fileReader.ReadAsBytes(_fileInput);
+        if (bytes is null)
+        {
+            await output.Warn("No file selected.");
+            return;
+        }
+
+        await output.Success("ReadAsBytes →", $"{bytes.Length} bytes");
+    }
+
+    private async Task ReadDataUrl()
+    {
+        var dataUrl = await fileReader.ReadAsDataUrl(_fileInput);
+        if (string.IsNullOrEmpty(dataUrl))
+        {
+            await output.Warn("No file selected.");
+            return;
+        }
+
+        _imagePreviewUrl = dataUrl.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)
+            ? dataUrl
+            : null;
+
+        var preview = dataUrl.Length > 120 ? dataUrl[..120] + "…" : dataUrl;
+        await output.Success("ReadAsDataUrl →", preview);
+    }
+
+    private async Task ClearInput()
+    {
+        await fileReader.Clear(_fileInput);
+        _imagePreviewUrl = null;
+        await output.Log("Input cleared.");
+    }
+
+    private async Task CreateObjectUrl()
+    {
+        await RevokeObjectUrlInternal();
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(_blobText);
+        _objectUrl = await objectUrls.Create(bytes, "text/plain");
+        await output.Success("Create →", _objectUrl);
+    }
+
+    private async Task RevokeObjectUrl()
+    {
+        await RevokeObjectUrlInternal();
+        await output.Log("Object URL revoked.");
+    }
+
+    private async Task RevokeObjectUrlInternal()
+    {
+        if (_objectUrl is null) return;
+        await objectUrls.Revoke(_objectUrl);
+        _objectUrl = null;
+    }
+}

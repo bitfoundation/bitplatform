@@ -1,0 +1,73 @@
+@namespace Bit.BlazorUI
+
+<div class="bit-bfc-dropdown">
+    <button type="button" class="bit-bfc-btn bit-bfc-btn-icon bit-bfc-btn-sm" @onclick="() => _open = !_open" title="@Texts.SettingsButtonTitle" aria-expanded="@(_open ? "true" : "false")" aria-controls="@_menuId">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+    @if (_open)
+    {
+        <div class="bit-bfc-dropdown-menu" id="@_menuId">
+            <div class="bit-bfc-dropdown-label">@Texts.CalendarSettingsLabel</div>
+
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@((State.BadgeVariant == BitFullCalendarBadgeVariant.Dot) ? "true" : "false")" @onclick="() => State.SetBadgeVariant(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? BitFullCalendarBadgeVariant.Colored : BitFullCalendarBadgeVariant.Dot)">
+                <span>@Texts.DotBadgeLabel</span>
+                <span class="bit-bfc-toggle @(State.BadgeVariant == BitFullCalendarBadgeVariant.Dot ? "checked" : "")" aria-hidden="true">
+                    <span class="bit-bfc-toggle-track"></span>
+                    <span class="bit-bfc-toggle-thumb"></span>
+                </span>
+            </button>
+
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@(State.Use24HourFormat ? "true" : "false")" @onclick="State.ToggleTimeFormat">
+                <span>@Texts.TwentyFourHourFormatLabel</span>
+                <span class="bit-bfc-toggle @(State.Use24HourFormat ? "checked" : "")" aria-hidden="true">
+                    <span class="bit-bfc-toggle-track"></span>
+                    <span class="bit-bfc-toggle-thumb"></span>
+                </span>
+            </button>
+
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@((State.EventLayout == BitFullCalendarEventLayout.Stack) ? "true" : "false")" @onclick="State.ToggleEventLayout">
+                <span>@Texts.StackedEventsLabel</span>
+                <span class="bit-bfc-toggle @(State.EventLayout == BitFullCalendarEventLayout.Stack ? "checked" : "")" aria-hidden="true">
+                    <span class="bit-bfc-toggle-track"></span>
+                    <span class="bit-bfc-toggle-thumb"></span>
+                </span>
+            </button>
+
+            <button type="button" class="bit-bfc-dropdown-item" aria-pressed="@(State.ShowDayViewCalendar ? "true" : "false")" @onclick="State.ToggleShowDayViewCalendar">
+                <span>@Texts.ShowDayViewCalendarLabel</span>
+                <span class="bit-bfc-toggle @(State.ShowDayViewCalendar ? "checked" : "")" aria-hidden="true">
+                    <span class="bit-bfc-toggle-track"></span>
+                    <span class="bit-bfc-toggle-thumb"></span>
+                </span>
+            </button>
+
+            <div class="bit-bfc-dropdown-sep"></div>
+
+            <div class="bit-bfc-dropdown-item">
+                <span>@Texts.DayStartsAtLabel</span>
+                <div style="display:flex;align-items:center;gap:4px;">
+                    <input type="number" min="0" max="16" value="@State.StartOfDayHour"
+                           @onchange="OnStartHourChange" aria-label="@Texts.DayStartsAtLabel"
+                           style="width:50px;padding:4px;font-size:12px;border:1px solid var(--bit-bfc-border);border-radius:4px;background:var(--bit-bfc-bg);color:var(--bit-bfc-text);" />
+                    <span style="font-size:12px;">@Texts.HourSuffix</span>
+                </div>
+            </div>
+
+            <div class="bit-bfc-dropdown-sep"></div>
+            <div class="bit-bfc-dropdown-label">@Texts.AgendaGroupByLabel</div>
+
+            <button type="button" class="bit-bfc-dropdown-item @(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "active" : "")"
+                 aria-pressed="@((State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date) ? "true" : "false")"
+                 @onclick="() => State.SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy.Date)"
+                 style="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date ? "background:var(--bit-bfc-bg-hover);" : "")">
+                @Texts.AgendaGroupByDate
+            </button>
+            <button type="button" class="bit-bfc-dropdown-item @(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "active" : "")"
+                 aria-pressed="@((State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color) ? "true" : "false")"
+                 @onclick="() => State.SetAgendaModeGroupBy(BitFullCalendarAgendaGroupBy.Color)"
+                 style="@(State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Color ? "background:var(--bit-bfc-bg-hover);" : "")">
+                @Texts.AgendaGroupByColor
+            </button>
+        </div>
+    }
+</div>

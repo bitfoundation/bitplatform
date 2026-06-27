@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <div>
-    <BitModal @bind-IsOpen="IsLogModalOpen" FullSize>
+    <BitProModal @bind-IsOpen="IsLogModalOpen" FullSize>
         <BitStack style="padding:1rem;">
             <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                 <BitText Typography="BitTypography.H6">Log details</BitText>
@@ -35,5 +35,5 @@
                 <pre style="margin:0">@Content</pre>
             </BitText>
         </BitStack>
-    </BitModal>
+    </BitProModal>
 </div>

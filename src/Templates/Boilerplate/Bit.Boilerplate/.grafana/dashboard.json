@@ -3,8 +3,8 @@
     "kind": "Dashboard",
     "metadata": {
         "name": "boilerplate-app-overview",
-        "generation": 117,
-        "creationTimestamp": "2026-06-12T11:54:48Z",
+        "generation": 7,
+        "creationTimestamp": "2026-06-15T15:50:30Z",
         "labels": {},
         "annotations": {}
     },
@@ -77,7 +77,7 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "timeseries",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "annotations": {
@@ -250,7 +250,7 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "timeseries",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "annotations": {
@@ -424,7 +424,7 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "timeseries",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "annotations": {
@@ -554,7 +554,7 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "timeseries",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "annotations": {
@@ -685,7 +685,7 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "timeseries",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "annotations": {
@@ -815,7 +815,7 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "timeseries",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "annotations": {
@@ -949,10 +949,11 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "table",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "cellHeight": "sm",
+                                "enablePagination": true,
                                 "showHeader": true,
                                 "sortBy": [
                                     {
@@ -981,6 +982,7 @@
                                         "cellOptions": {
                                             "type": "auto"
                                         },
+                                        "filterable": true,
                                         "footer": {
                                             "reducers": []
                                         },
@@ -1041,10 +1043,11 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "table",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "cellHeight": "sm",
+                                "enablePagination": true,
                                 "showHeader": true,
                                 "sortBy": [
                                     {
@@ -1073,6 +1076,7 @@
                                         "cellOptions": {
                                             "type": "auto"
                                         },
+                                        "filterable": true,
                                         "footer": {
                                             "reducers": []
                                         },
@@ -1173,10 +1177,11 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "table",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "cellHeight": "sm",
+                                "enablePagination": true,
                                 "showHeader": true,
                                 "sortBy": [
                                     {
@@ -1205,6 +1210,7 @@
                                         "cellOptions": {
                                             "type": "auto"
                                         },
+                                        "filterable": true,
                                         "footer": {
                                             "reducers": []
                                         },
@@ -1265,7 +1271,7 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "timeseries",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "annotations": {
@@ -1440,11 +1446,11 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "table",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "cellHeight": "sm",
-                                "enablePagination": false,
+                                "enablePagination": true,
                                 "showHeader": true
                             },
                             "fieldConfig": {
@@ -1467,6 +1473,7 @@
                                         "cellOptions": {
                                             "type": "auto"
                                         },
+                                        "filterable": true,
                                         "footer": {
                                             "reducers": []
                                         },
@@ -1525,7 +1532,7 @@
                     "vizConfig": {
                         "kind": "VizConfig",
                         "group": "timeseries",
-                        "version": "13.1.0-27335746580",
+                        "version": "13.1.0-27822252871",
                         "spec": {
                             "options": {
                                 "annotations": {
@@ -1981,7 +1988,7 @@
                         "spec": {
                             "azureLogAnalytics": {
                                 "mode": "raw",
-                                "query": "AppExceptions\r\n| distinct iff(isempty(AppRoleName), \"Client\", AppRoleName)",
+                                "query": "AppExceptions\r\n| where $__timeFilter(TimeGenerated)\r\n| distinct iff(isempty(AppRoleName), \"Client\", AppRoleName)",
                                 "resources": [
                                     "${workspace}"
                                 ]

@@ -1,0 +1,18 @@
+@namespace Bit.BlazorUI
+
+@if (_multiDayForDay.Count > 0)
+{
+    <div class="bit-bfc-multiday-row">
+        @foreach (var ev in _multiDayForDay)
+        {
+            var position = GetPosition(ev);
+            <BitFcMonthEventBadge @key="ev" Event="ev" CellDate="Date" Position="@position" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
+        }
+    </div>
+}
+
+@if (_selectedEvent != null)
+{
+    <BitFcEventDetailsDialog Event="_selectedEvent" OnClose="CloseEventDetails" />
+}
+

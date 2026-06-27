@@ -1,0 +1,100 @@
+@namespace Bit.BlazorUI
+
+<div class="bit-bfc-overlay" @onclick="OnClose">
+    <div @ref="_dialogRef" class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" @onclick:stopPropagation="true">
+        <div class="bit-bfc-dialog-header bit-bfc-dialog-header-row">
+            <div>
+                <h3 id="@_dialogTitleId">@(_isEditing ? Texts.EditEventDialogTitle : Texts.AddEventDialogTitle)</h3>
+                <p>@(_isEditing ? Texts.EditEventDialogSubtitle : Texts.AddEventDialogSubtitle)</p>
+            </div>
+            <button type="button" class="bit-bfc-dialog-close-btn" @onclick="OnClose" aria-label="@Texts.CloseAriaLabel">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="bit-bfc-dialog-body">
+            <div class="bit-bfc-field">
+                <label for="@_titleInputId">@Texts.TitleLabel</label>
+                <input id="@_titleInputId" type="text" @bind="_title" placeholder="@Texts.EventTitlePlaceholder" />
+                @if (_errors.ContainsKey("title"))
+                {
+                    <div class="bit-bfc-field-error">@_errors["title"]</div>
+                }
+            </div>
+
+            <div class="bit-bfc-field">
+                <label>@Texts.StartDateTimeLabel</label>
+                <BitFcDateTimePicker Value="_startDate" ValueChanged="OnStartDateChanged" Culture="State.Culture" Use24HourFormat="State.Use24HourFormat" TriggerAriaLabel="@Texts.StartDateTimeLabel"
+                                     PreviousMonthAriaLabel="@Texts.PreviousMonthAriaLabel" NextMonthAriaLabel="@Texts.NextMonthAriaLabel"
+                                     HourAriaLabel="@Texts.PickerHourAriaLabel" MinuteAriaLabel="@Texts.PickerMinuteAriaLabel"
+                                     MeridiemAriaLabel="@Texts.PickerMeridiemAriaLabel" SelectedDayAriaLabel="@Texts.PickerSelectedDayAriaLabel" />
+            </div>
+
+            <div class="bit-bfc-field">
+                <label>@Texts.EndDateTimeLabel</label>
+                <BitFcDateTimePicker Value="_endDate" ValueChanged="OnEndDateChanged" Culture="State.Culture" Use24HourFormat="State.Use24HourFormat" TriggerAriaLabel="@Texts.EndDateTimeLabel"
+                                     PreviousMonthAriaLabel="@Texts.PreviousMonthAriaLabel" NextMonthAriaLabel="@Texts.NextMonthAriaLabel"
+                                     HourAriaLabel="@Texts.PickerHourAriaLabel" MinuteAriaLabel="@Texts.PickerMinuteAriaLabel"
+                                     MeridiemAriaLabel="@Texts.PickerMeridiemAriaLabel" SelectedDayAriaLabel="@Texts.PickerSelectedDayAriaLabel" />
+                @if (_errors.ContainsKey("endDate"))
+                {
+                    <div class="bit-bfc-field-error">@_errors["endDate"]</div>
+                }
+            </div>
+
+            <div class="bit-bfc-field">
+                <label for="@_colorSelectId">@Texts.ColorLabel</label>
+                <select id="@_colorSelectId" @bind="_color" aria-label="@Texts.EventColorAriaLabel">
+                    @foreach (var opt in ColorScheme.GetEditorOptions(_isEditing ? _color : null))
+                    {
+                        <option value="@opt.Id">@opt.Title</option>
+                    }
+                </select>
+            </div>
+
+            <div class="bit-bfc-field">
+                <label for="@_descriptionInputId">@Texts.DescriptionLabel</label>
+                <textarea id="@_descriptionInputId" @bind="_description" placeholder="@Texts.EventDescriptionPlaceholder"></textarea>
+                @if (_errors.ContainsKey("description"))
+                {
+                    <div class="bit-bfc-field-error">@_errors["description"]</div>
+                }
+            </div>
+
+            <div class="bit-bfc-field">
+                <label>@Texts.AttendeesLabel</label>
+                @if (_attendees.Count > 0)
+                {
+                    <div class="bit-bfc-attendees-chips">
+                        @foreach (var a in _attendees)
+                        {
+                            var attendee = a;
+                            <span class="bit-bfc-attendee-chip">
+                                <span class="bit-bfc-attendee-chip-avatar">@attendee.Initials</span>
+                                @attendee.FullName
+                                <button class="bit-bfc-attendee-chip-remove" type="button" aria-label="@($"{Texts.RemoveAttendeeAriaLabel}: {attendee.FullName}")" @onclick="() => RemoveAttendee(attendee)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                </button>
+                            </span>
+                        }
+                    </div>
+                }
+                <div class="bit-bfc-attendee-add-row">
+                    <input type="text" @bind="_newFirstName" placeholder="@Texts.FirstNamePlaceholder" aria-label="@Texts.FirstNamePlaceholder" />
+                    <input type="text" @bind="_newLastName" placeholder="@Texts.LastNamePlaceholder" aria-label="@Texts.LastNamePlaceholder" />
+                    <input type="text" @bind="_newId" placeholder="@Texts.IdOptionalPlaceholder" aria-label="@Texts.IdOptionalPlaceholder" />
+                    <button class="bit-bfc-btn bit-bfc-btn-sm" type="button" @onclick="AddAttendee">@Texts.AddButton</button>
+                </div>
+                @if (_errors.ContainsKey("attendee"))
+                {
+                    <div class="bit-bfc-field-error">@_errors["attendee"]</div>
+                }
+            </div>
+        </div>
+        <div class="bit-bfc-dialog-footer">
+            <button type="button" class="bit-bfc-btn" @onclick="OnClose">@Texts.CancelButton</button>
+            <button type="button" class="bit-bfc-btn bit-bfc-btn-primary" @onclick="Submit" disabled="@_isSubmitting">
+                @(_isEditing ? Texts.SaveChangesButton : Texts.CreateEventButton)
+            </button>
+        </div>
+    </div>
+</div>

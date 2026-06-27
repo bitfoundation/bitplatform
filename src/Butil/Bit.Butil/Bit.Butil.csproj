@@ -5,11 +5,6 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
-        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net10.0'">
-            BeforeBuildTasks;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
-        <NoWarn>$(NoWarn);IL2026</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -28,13 +23,43 @@
     </ItemGroup>
 
     <ItemGroup>
-        <TypeScriptFiles Include="**\*.ts" />
+        <TypeScriptFiles Include="Scripts\**\*.ts" />
     </ItemGroup>
 
-        <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net10.0'">
-        <CallTarget Targets="InstallNodejsDependencies" />
-        <CallTarget Targets="BuildJavaScript" />
+    <!-- Restores npm packages then compiles the TypeScript bundle. Both sub-targets are incremental
+         via their Inputs/Outputs, so this is a no-op when nothing changed. -->
+    <Target Name="BuildButilJavaScript" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript" />
+
+    <!-- The bundle (wwwroot/bit-butil.js) is a generated, git-ignored file. On a clean build it does
+         not exist when the default "wwwroot/**" Content glob is evaluated, so the static web asset
+         discovery in ResolveProjectStaticWebAssets would miss it and consumers get a 404 for
+         _content/Bit.Butil/bit-butil.js (this is what breaks the demo on a fresh checkout).
+
+         ResolveProjectStaticWebAssets runs BeforeTargets="AssignTargetPaths" and does NOT depend on
+         ResolveStaticWebAssetsInputs, so the old ResolveStaticWebAssetsInputsDependsOn hook never ran
+         early enough. Hooking BeforeTargets="ResolveProjectStaticWebAssets" guarantees the bundle is
+         generated first (DependsOnTargets) and then explicitly added to @(Content) so discovery picks
+         it up. The Remove-before-Include keeps it to a single Content entry (avoiding a duplicate /
+         conflicting-target-path error) for builds where the glob already captured it. -->
+    <Target Name="IncludeButilJavaScriptAsStaticWebAsset"
+            BeforeTargets="ResolveProjectStaticWebAssets"
+            DependsOnTargets="BuildButilJavaScript">
+        <ItemGroup>
+            <Content Remove="wwwroot\bit-butil.js" />
+            <Content Include="wwwroot\bit-butil.js" />
+        </ItemGroup>
     </Target>
+
+    <!-- In a multi-targeted build, produce the bundle exactly once in the outer (cross-targeting)
+         build, before the per-TFM inner builds are dispatched. This prevents several inner builds
+         from invoking tsc/esbuild concurrently against the same shared wwwroot output file.
+         The Condition is evaluated at execution time (when IsCrossTargetingBuild is set), so the
+         target only runs in the outer build; inner builds emit a harmless "DispatchToInnerBuilds
+         does not exist" message at detailed verbosity only. -->
+    <Target Name="BuildButilJavaScriptOnCrossTargeting"
+            BeforeTargets="DispatchToInnerBuilds"
+            Condition="'$(IsCrossTargetingBuild)' == 'true'"
+            DependsOnTargets="BuildButilJavaScript" />
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
@@ -42,14 +67,12 @@
 
     <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/bit-butil.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <!-- Minify to a temp file and move it into place, rather than overwriting the input in-place.
+             An interrupted in-place minify could leave a half-written bundle that the Outputs check
+             above then treats as up-to-date, requiring a clean to recover. The Move is atomic enough
+             to avoid that. -->
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-butil.min.js" DestinationFiles="wwwroot/bit-butil.js" OverwriteReadOnlyFiles="true" />
     </Target>
-
-    <ItemGroup>
-        <Content Remove="package*.json" />
-        <Content Remove="tsconfig.json" />
-        <None Include="package*json" />
-        <None Include="tsconfig.json" />
-    </ItemGroup>
 
 </Project>

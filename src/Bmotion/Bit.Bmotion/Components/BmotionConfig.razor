@@ -1,0 +1,61 @@
+@namespace Bit.Bmotion
+
+@* BmotionConfig provides global animation defaults to the entire subtree. *@
+
+<CascadingValue Value="_ctx" IsFixed="false">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Global default transition applied when no per-component transition is set.</summary>
+    [Parameter] public BmotionTransitionConfig? Transition { get; set; }
+
+    /// <summary>
+    /// Global reduce-motion override.
+    /// <c>null</c> = auto-detect via CSS media query.
+    /// <c>true</c>  = always skip animations.
+    /// <c>false</c> = always play animations.
+    /// </summary>
+    [Parameter] public bool? ReduceMotion { get; set; }
+
+    /// <summary>
+    /// Scale factor applied to all durations in this subtree.
+    /// 0 = instant, 2 = half speed. Default: 1.
+    /// </summary>
+    [Parameter] public double TransitionSpeed { get; set; } = 1.0;
+
+    private BmotionConfigContext _ctx = new();
+
+    // Cache the last parameter values so OnParametersSet only swaps in a new context (and triggers
+    // a downstream re-render of the cascading value) when one of them actually changes.
+    private BmotionTransitionConfig? _lastTransition;
+    private bool? _lastReduceMotion;
+    private double _lastTransitionSpeed = 1.0;
+    private bool _ctxInitialized;
+
+    protected override void OnParametersSet()
+    {
+        if (_ctxInitialized &&
+            ReferenceEquals(_lastTransition, Transition) &&
+            _lastReduceMotion == ReduceMotion &&
+            _lastTransitionSpeed.Equals(TransitionSpeed))
+            return;
+
+        // Replace the context with a fresh instance (rather than mutating in place) so the cascading
+        // value's reference changes whenever parameters change, ensuring descendants are notified.
+        // The TransitionSpeed setter still coerces negative / non-finite (NaN/Infinity) speeds to 0,
+        // so a bad binding can't corrupt duration math or crash the render.
+        _ctx = new BmotionConfigContext
+        {
+            DefaultTransition = Transition,
+            ReduceMotion      = ReduceMotion,
+            TransitionSpeed   = TransitionSpeed,
+        };
+        _lastTransition = Transition;
+        _lastReduceMotion = ReduceMotion;
+        _lastTransitionSpeed = TransitionSpeed;
+        _ctxInitialized = true;
+    }
+}

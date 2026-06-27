@@ -1,0 +1,80 @@
+@namespace Bit.BlazorUI
+
+<div class="bit-bfc-overlay" @onclick="OnClose">
+    <div class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1" @ref="_dialogRef" @onclick:stopPropagation="true">
+        <div class="bit-bfc-dialog-header bit-bfc-dialog-header-row">
+            <h3 id="@_dialogTitleId">@Event.Title</h3>
+            <button type="button" class="bit-bfc-dialog-close-btn" @onclick="OnClose" aria-label="@Texts.CloseAriaLabel">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="bit-bfc-dialog-body">
+            <div class="bit-bfc-event-detail-row">
+                <span class="bit-bfc-event-detail-swatch bit-bfc-bg" style="@ColorScheme.GetColorStyle(Event.Color)" aria-hidden="true"></span>
+                <div>
+                    <div class="bit-bfc-event-detail-label">@Texts.ColorLabel</div>
+                    <div class="bit-bfc-event-detail-value bit-bfc-event-detail-color bit-bfc-color" style="@ColorScheme.GetColorStyle(Event.Color)">@ColorScheme.GetLabel(Event.Color)</div>
+                </div>
+            </div>
+            <div class="bit-bfc-event-detail-row">
+                <svg class="bit-bfc-event-detail-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <div style="flex:1;min-width:0;">
+                    <div class="bit-bfc-event-detail-label">@Texts.AttendeesLabel</div>
+                    @if (Event.Attendees.Count == 0)
+                    {
+                        <div class="bit-bfc-event-detail-value" style="color:var(--bit-bfc-text-muted);">@Texts.NoAttendeesText</div>
+                    }
+                    else
+                    {
+                        <div class="bit-bfc-attendees-chips" style="margin-top:6px;">
+                            @foreach (var a in Event.Attendees)
+                            {
+                                <span class="bit-bfc-attendee-chip bit-bfc-attendee-chip-readonly">
+                                    <span class="bit-bfc-attendee-chip-avatar">@a.Initials</span>
+                                    @a.FullName
+                                </span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="bit-bfc-event-detail-row">
+                <svg class="bit-bfc-event-detail-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <div>
+                    <div class="bit-bfc-event-detail-label">@Texts.StartDateLabel</div>
+                    <div class="bit-bfc-event-detail-value">
+                        @Event.StartDate.ToString("dddd dd MMMM", State.Culture) @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)
+                    </div>
+                </div>
+            </div>
+            <div class="bit-bfc-event-detail-row">
+                <svg class="bit-bfc-event-detail-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <div>
+                    <div class="bit-bfc-event-detail-label">@Texts.EndDateLabel</div>
+                    <div class="bit-bfc-event-detail-value">
+                        @Event.EndDate.ToString("dddd dd MMMM", State.Culture) @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.EndDate, State.Use24HourFormat, State.Culture)
+                    </div>
+                </div>
+            </div>
+            <div class="bit-bfc-event-detail-row">
+                <svg class="bit-bfc-event-detail-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+                <div>
+                    <div class="bit-bfc-event-detail-label">@Texts.DescriptionLabel</div>
+                    <div class="bit-bfc-event-detail-value">@Event.Description</div>
+                </div>
+            </div>
+        </div>
+        <div class="bit-bfc-dialog-footer" style="justify-content:space-between;">
+            <div style="display:flex;gap:8px;">
+                <button type="button" class="bit-bfc-btn" @onclick="Edit">@Texts.EditButton</button>
+                <button type="button" class="bit-bfc-btn bit-bfc-btn-danger" @onclick="Delete" disabled="@_isDeleting">@Texts.DeleteButton</button>
+            </div>
+            <button type="button" class="bit-bfc-btn" @onclick="OnClose">@Texts.CloseButton</button>
+        </div>
+    </div>
+</div>
+
+@if (_showEdit)
+{
+    <BitFcAddEditEventDialog ExistingEvent="Event" OnClose="OnEditClose" OnSaved="OnEditSaved" />
+}

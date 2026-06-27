@@ -3,6 +3,40 @@ var BitButil = BitButil || {};
 (function (butil: any) {
     butil.userAgent = {
         extract,
+        isClientHintsSupported() { return !!(window.navigator as any).userAgentData; },
+        getBrands() {
+            const data = (window.navigator as any).userAgentData;
+            if (!data?.brands) return [];
+            return data.brands.map((b: any) => ({ brand: b.brand, version: b.version }));
+        },
+        isMobile() { return !!(window.navigator as any).userAgentData?.mobile; },
+        getPlatform() { return (window.navigator as any).userAgentData?.platform ?? ''; },
+        async getHighEntropyValues(hints: string[]) {
+            const data = (window.navigator as any).userAgentData;
+            const empty = {
+                architecture: null, bitness: null, brands: null, fullVersionList: null,
+                mobile: null, model: null, platform: null, platformVersion: null,
+                uaFullVersion: null, wow64: null
+            };
+            if (!data?.getHighEntropyValues) return empty;
+            try {
+                const v = await data.getHighEntropyValues(hints || []);
+                return {
+                    architecture: v.architecture ?? null,
+                    bitness: v.bitness ?? null,
+                    brands: v.brands?.map((b: any) => ({ brand: b.brand, version: b.version })) ?? null,
+                    fullVersionList: v.fullVersionList?.map((b: any) => ({ brand: b.brand, version: b.version })) ?? null,
+                    mobile: typeof v.mobile === 'boolean' ? v.mobile : null,
+                    model: v.model ?? null,
+                    platform: v.platform ?? null,
+                    platformVersion: v.platformVersion ?? null,
+                    uaFullVersion: v.uaFullVersion ?? null,
+                    wow64: typeof v.wow64 === 'boolean' ? v.wow64 : null
+                };
+            } catch {
+                return empty;
+            }
+        }
     };
 
     function extract(userAgentString?: string) {

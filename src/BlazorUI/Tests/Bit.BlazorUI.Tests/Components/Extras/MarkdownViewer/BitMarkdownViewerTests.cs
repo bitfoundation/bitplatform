@@ -1,129 +1,121 @@
-﻿using System.Threading.Tasks;
-using Bunit;
-using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownViewer;
 
 [TestClass]
 public class BitMarkdownViewerTests : BunitTestContext
 {
-    private const string MARKED_FILE = "_content/Bit.BlazorUI.Extras/marked/marked-15.0.7.js";
-
-    [TestInitialize]
-    public void RegisterService()
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderExpectedClass()
     {
-        Services.AddSingleton<BitMarkdownService>();
-    }
+        var component = RenderComponent<BitMarkdownViewer>();
 
-    private void SetupMarkdownInterop(string markdown, string html)
-    {
-        Context.JSInterop.SetupVoid("BitBlazorUI.Extras.initScripts");
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parse", markdown).SetResult(html);
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown, null).SetResult(html);
-        Context.JSInterop.Setup<bool>("BitBlazorUI.MarkdownViewer.checkScriptLoaded", MARKED_FILE).SetResult(true);
+        var root = component.Find(".bit-mdv");
+
+        Assert.IsNotNull(root);
     }
 
     [TestMethod]
-    public void BitMarkdownViewerShouldRenderParsedHtml()
+    public void BitMarkdownViewerShouldRenderHeading()
     {
-        var markdown = "hello";
-        var html = "<p>hello</p>";
-
-        SetupMarkdownInterop(markdown, html);
-
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
-            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Markdown, "# hello");
         });
 
         var root = component.Find(".bit-mdv");
 
-        component.WaitForAssertion(() =>
-        {
-            Assert.Contains(html, root.InnerHtml);
-            Assert.AreEqual(Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownViewer.parseAsync").Arguments[0], markdown);
-        });
+        Assert.Contains("<h1>hello</h1>", root.InnerHtml);
     }
 
     [TestMethod]
-    public void BitMarkdownViewerShouldInvokeCallbacks()
+    public void BitMarkdownViewerShouldRenderInlineFormatting()
     {
-        var markdown = "callbacks";
-        var html = "<p>callbacks</p>";
-
-        SetupMarkdownInterop(markdown, html);
-
-        var parsingCalled = false;
-        var parsedCalled = false;
-        var renderedCalled = false;
-        string? parsedValue = null;
-
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
-            parameters.Add(p => p.Markdown, markdown);
-
-            parameters.Add(p => p.OnParsing, EventCallback.Factory.Create(this, (string? value) =>
-            {
-                parsingCalled = value == markdown;
-                return Task.CompletedTask;
-            }));
-
-            parameters.Add(p => p.OnParsed, EventCallback.Factory.Create(this, (string? parsed) =>
-            {
-                parsedCalled = parsed == html;
-                parsedValue = parsed;
-                return Task.CompletedTask;
-            }));
-
-            parameters.Add(p => p.OnRendered, EventCallback.Factory.Create(this, (string? parsed) =>
-            {
-                renderedCalled = parsed == parsedValue;
-                return Task.CompletedTask;
-            }));
+            parameters.Add(p => p.Markdown, "a **bold** and *italic* word");
         });
 
-        component.WaitForAssertion(() =>
+        var root = component.Find(".bit-mdv");
+
+        Assert.Contains("<strong>bold</strong>", root.InnerHtml);
+        Assert.Contains("<em>italic</em>", root.InnerHtml);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldTreatRawHtmlAsText()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
-            Assert.IsTrue(parsingCalled);
-            Assert.IsTrue(parsedCalled);
-            Assert.IsTrue(renderedCalled);
+            parameters.Add(p => p.Markdown, "<script>alert(1)</script>");
         });
+
+        var root = component.Find(".bit-mdv");
+
+        // Raw HTML must be escaped (rendered as text), never as live markup.
+        Assert.DoesNotContain("<script>", root.InnerHtml);
+        Assert.Contains("&lt;script&gt;", root.InnerHtml);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldSanitizeUnsafeLinks()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[click](javascript:alert(1))");
+        });
+
+        // Validate the rendered link's actual href rather than a substring of the HTML.
+        // Removing the unsafe node entirely is also a valid (secure) sanitizer outcome.
+        var links = component.FindAll(".bit-mdv a");
+        if (links.Count > 0)
+        {
+            var href = links[0].GetAttribute("href") ?? string.Empty;
+            Assert.IsTrue(
+                href.Length == 0 || !href.Contains("javascript:", StringComparison.OrdinalIgnoreCase),
+                $"Unsafe link href was not sanitized: '{href}'.");
+        }
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldSanitizeUnsafeImages()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![alt](javascript:alert(1))");
+        });
+
+        // Validate the rendered image's actual src rather than a substring of the HTML.
+        // Removing the unsafe node entirely is also a valid (secure) sanitizer outcome.
+        var imgs = component.FindAll(".bit-mdv img");
+        if (imgs.Count > 0)
+        {
+            var src = imgs[0].GetAttribute("src") ?? string.Empty;
+            Assert.IsTrue(
+                src.Length == 0 || !src.Contains("javascript:", StringComparison.OrdinalIgnoreCase),
+                $"Unsafe image src was not sanitized: '{src}'.");
+        }
     }
 
     [TestMethod]
     public void BitMarkdownViewerShouldReparseWhenMarkdownChanges()
     {
-        var markdown = "one";
-        var html = "<p>one</p>";
-
-        SetupMarkdownInterop(markdown, html);
-
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
-            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Markdown, "# one");
         });
 
-        component.WaitForAssertion(() =>
-        {
-            Assert.Contains(html, component.Markup);
-        });
-
-        markdown = "two";
-        html = "<p>two</p>";
-
-        SetupMarkdownInterop(markdown, html);
+        Assert.Contains("<h1>one</h1>", component.Markup);
 
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Markdown, "# two");
         });
 
-        component.WaitForAssertion(() =>
-        {
-            Assert.Contains(html, component.Markup);
-        });
+        Assert.Contains("<h1>two</h1>", component.Markup);
+        Assert.DoesNotContain("<h1>one</h1>", component.Markup);
     }
 
     [TestMethod,
@@ -131,14 +123,10 @@ public class BitMarkdownViewerTests : BunitTestContext
         DataRow(false)]
     public void BitMarkdownViewerShouldRespectIsEnabled(bool isEnabled)
     {
-        var markdown = "enable";
-        var html = "<p>enable</p>";
-
-        SetupMarkdownInterop(markdown, html);
-
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Markdown, "enable");
         });
 
         var root = component.Find(".bit-mdv");
@@ -154,99 +142,68 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMarkdownViewerShouldApplyCSharpMiddleware()
+    public void BitMarkdownViewerBasicPipelineShouldNotRenderTables()
     {
-        var markdown = "middleware";
-        var html = "<p>middleware</p>";
-        var processedHtml = "<p>middleware-processed</p>";
-
-        SetupMarkdownInterop(markdown, html);
-
-        var middlewareCalled = false;
-
-        async Task<string> middleware(string input)
-        {
-            middlewareCalled = input == html;
-            await Task.Delay(1);
-            return processedHtml;
-        }
+        var markdown = "| a | b |\n|---|---|\n| 1 | 2 |";
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
-            parameters.Add(p => p.Middleware, middleware);
         });
 
-        component.WaitForAssertion(() =>
-        {
-            Assert.IsTrue(middlewareCalled);
-            Assert.Contains(processedHtml, component.Markup);
-        });
+        Assert.DoesNotContain("<table", component.Markup);
     }
 
     [TestMethod]
-    public void BitMarkdownViewerShouldApplyJsMiddleware()
+    public void BitMarkdownViewerGitHubPipelineShouldRenderGfmFeatures()
     {
-        var markdown = "js-middleware";
-        var html = "<p>js-middleware</p>";
-        var processedHtml = "<p>js-processed</p>";
-        var jsMiddleware = "myApp.sanitize";
-
-        SetupMarkdownInterop(markdown, html);
-
-        Context.JSInterop.Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown, jsMiddleware).SetResult(processedHtml);
+        var markdown = "~~gone~~\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n- [x] done\n- [ ] todo";
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
-            parameters.Add(p => p.JsMiddlewareIdentifier, jsMiddleware);
+            parameters.Add(p => p.Pipeline, BitMarkdownViewerPipelines.GitHub);
         });
 
-        component.WaitForAssertion(() =>
-        {
-            Assert.Contains(processedHtml, component.Markup);
-        });
+        var markup = component.Markup;
+
+        Assert.Contains("<del>gone</del>", markup);
+        Assert.Contains("<table", markup);
+        Assert.Contains("type=\"checkbox\"", markup);
     }
 
     [TestMethod]
-    public void BitMarkdownViewerShouldApplyJsThenCSharpMiddleware()
+    public void BitMarkdownViewerAdvancedPipelineShouldRenderEmojiAndHeadingIds()
     {
-        var markdown = "combined-middleware";
-        var html = "<p>combined-middleware</p>";
-        var jsProcessedHtml = "<p>combined-middleware-js-processed</p>";
-        var csharpProcessedHtml = "<p>combined-middleware-csharp-processed</p>";
-        var jsMiddleware = "myApp.sanitize";
-
-        SetupMarkdownInterop(markdown, html);
-
-        Context.JSInterop
-            .Setup<string>("BitBlazorUI.MarkdownViewer.parseAsync", markdown, jsMiddleware)
-            .SetResult(jsProcessedHtml);
-
-        var middlewareCalled = false;
-        string? middlewareInput = null;
-
-        async Task<string> csMiddleware(string input)
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
-            middlewareCalled = true;
-            middlewareInput = input;
-            await Task.Delay(1);
-            return csharpProcessedHtml;
-        }
+            parameters.Add(p => p.Markdown, "# Hello World :rocket:");
+            parameters.Add(p => p.Pipeline, BitMarkdownViewerPipelines.Advanced);
+        });
+
+        var markup = component.Markup;
+
+        Assert.Contains("🚀", markup);
+        Assert.Contains("id=\"hello-world\"", markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldReparseWhenPipelineChanges()
+    {
+        var markdown = "~~gone~~";
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, markdown);
-            parameters.Add(p => p.JsMiddlewareIdentifier, jsMiddleware);
-            parameters.Add(p => p.Middleware, csMiddleware);
         });
 
-        component.WaitForAssertion(() =>
+        Assert.DoesNotContain("<del>gone</del>", component.Markup);
+
+        component.SetParametersAndRender(parameters =>
         {
-            Assert.IsTrue(middlewareCalled);
-            Assert.AreEqual(jsProcessedHtml, middlewareInput);
-            Assert.Contains(csharpProcessedHtml, component.Markup);
+            parameters.Add(p => p.Pipeline, BitMarkdownViewerPipelines.GitHub);
         });
+
+        Assert.Contains("<del>gone</del>", component.Markup);
     }
 }
-

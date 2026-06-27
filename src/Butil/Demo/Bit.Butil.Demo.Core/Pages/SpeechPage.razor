@@ -1,0 +1,176 @@
+@page "/speech"
+@implements IAsyncDisposable
+@inject Bit.Butil.SpeechSynthesis speechSynthesis
+@inject Bit.Butil.SpeechRecognition speechRecognition
+
+<PageTitle>Butil - Speech Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="Speech"
+            Lead="Text-to-speech and speech-to-text using the browser's Web Speech APIs - synthesize utterances and capture live transcripts."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API" />
+
+<pre>
+@@inject Bit.Butil.SpeechSynthesis speechSynthesis
+@@inject Bit.Butil.SpeechRecognition speechRecognition
+
+await speechSynthesis.Speak("Hello from Butil!");
+await using var rec = await speechRecognition.Start(options, onResult: r => { /* … */ });
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Text-to-speech" Api="SpeechSynthesis"
+              Description="Speak text with optional voice, rate and pitch controls.">
+        <div class="field">
+            <span class="field-label">Text</span>
+            <textarea @bind="_speakText" rows="2"></textarea>
+        </div>
+        <div class="field">
+            <span class="field-label">Voice</span>
+            <select @bind="_voiceName">
+                <option value="">Default</option>
+                @foreach (var voice in _voices)
+                {
+                    <option value="@voice.Name">@voice.Name (@voice.Lang)</option>
+                }
+            </select>
+        </div>
+        <div class="controls">
+            <button @onclick="LoadVoices">GetVoices</button>
+            <button @onclick="Speak">Speak</button>
+            <button class="secondary" @onclick="PauseSpeech">Pause</button>
+            <button class="secondary" @onclick="ResumeSpeech">Resume</button>
+            <button class="danger" @onclick="CancelSpeech">Cancel</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Speech recognition" Api="SpeechRecognition.Start"
+              Description="Capture microphone input and show interim/final transcripts (Chromium-based browsers).">
+        <div class="controls">
+            <button @onclick="StartRecognition" disabled="@_recognizing">Start listening</button>
+            <button class="danger" @onclick="StopRecognition" disabled="@(_recognitionHandle is null)">Stop</button>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(_transcript))
+        {
+            <p style="margin-top:1rem"><span class="result-pill">@_transcript</span></p>
+        }
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="speech output" />
+
+@code {
+    private DemoConsole output = default!;
+    private SpeechVoice[] _voices = [];
+    private string _speakText = "Hello from Bit.Butil speech synthesis!";
+    private string? _voiceName;
+    private string _transcript = "";
+    private bool _recognizing;
+    private IAsyncDisposable? _recognitionHandle;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await LoadVoices();
+    }
+
+    private async Task LoadVoices()
+    {
+        if (!await speechSynthesis.IsSupported())
+        {
+            await output.Warn("Speech synthesis is not supported in this browser.");
+            return;
+        }
+
+        _voices = await speechSynthesis.GetVoices();
+        await output.Success("Voices →", _voices.Length);
+        StateHasChanged();
+    }
+
+    private async Task Speak()
+    {
+        if (string.IsNullOrWhiteSpace(_speakText))
+        {
+            await output.Warn("Enter text to speak.");
+            return;
+        }
+
+        await speechSynthesis.Speak(new SpeechUtterance
+        {
+            Text = _speakText,
+            VoiceName = string.IsNullOrWhiteSpace(_voiceName) ? null : _voiceName,
+            Rate = 1,
+            Pitch = 1,
+        });
+        await output.Log("Speak queued.");
+    }
+
+    private async Task PauseSpeech()
+    {
+        await speechSynthesis.Pause();
+        await output.Log($"Paused (speaking={await speechSynthesis.IsSpeaking()})");
+    }
+
+    private async Task ResumeSpeech()
+    {
+        await speechSynthesis.Resume();
+        await output.Log("Resumed.");
+    }
+
+    private async Task CancelSpeech()
+    {
+        await speechSynthesis.Cancel();
+        await output.Log("Cancelled.");
+    }
+
+    private async Task StartRecognition()
+    {
+        if (!await speechRecognition.IsSupported())
+        {
+            await output.Warn("Speech recognition is not supported in this browser.");
+            return;
+        }
+
+        await StopRecognitionInternal();
+
+        _transcript = "";
+        _recognizing = true;
+
+        _recognitionHandle = await speechRecognition.Start(
+            new SpeechRecognitionOptions { Continuous = true, InterimResults = true },
+            onResult: result =>
+            {
+                _transcript = result.IsFinal
+                    ? $"Final: {result.Transcript} ({result.Confidence:P0})"
+                    : $"Interim: {result.Transcript}";
+                InvokeAsync(StateHasChanged);
+            },
+            onError: err => _ = output.Error("Recognition error →", err),
+            onEnd: () =>
+            {
+                _recognizing = false;
+                InvokeAsync(StateHasChanged);
+            });
+
+        await output.Log("Listening…");
+    }
+
+    private async Task StopRecognition()
+    {
+        await StopRecognitionInternal();
+        await output.Log("Recognition stopped.");
+    }
+
+    private async Task StopRecognitionInternal()
+    {
+        if (_recognitionHandle is null) return;
+        await _recognitionHandle.DisposeAsync();
+        _recognitionHandle = null;
+        _recognizing = false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await StopRecognitionInternal();
+    }
+}

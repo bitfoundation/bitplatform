@@ -1,0 +1,188 @@
+@page "/components/fullcalendar"
+
+<PageOutlet Url="components/fullcalendar"
+            Title="FullCalendar"
+            Description="A feature-rich, interactive calendar component with day, week, month, year, agenda, and resource timeline views." />
+
+<DemoPage Name="FullCalendar"
+          Description="BitFullCalendar is a feature-rich, interactive calendar component with day, week, month, year, agenda, and resource timeline views, event CRUD, drag-and-drop, resize, and culture-aware date handling."
+          SecondaryNames="@(["Scheduler"])"
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          GitHubExtrasUrl="FullCalendar/BitFullCalendar.razor"
+          GitHubDemoUrl="Extras/FullCalendar/BitFullCalendarDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+    </NotesTemplate>
+    <IntroductionTemplate>
+        <BitText>
+            The BitFullCalendar brings a complete scheduling experience to Blazor: multiple view modes
+            (day, week, month, year, agenda, and a resource timeline), built-in event create/edit/delete,
+            drag-and-drop, resize, filtering, theming that follows the Bit theme (including dark mode),
+            and culture-aware date rendering.
+            Explore a live calendar below - switch views, add events, and drag them around.
+        </BitText>
+    </IntroductionTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>The simplest usage of a BitFullCalendar is by passing a list of events.</div>
+            <br />
+            <BitFullCalendar Events="basicEvents" />
+        </DemoExample>
+
+        <DemoExample Title="Settings" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                Drive initial preferences from code with the Settings parameter - 12/24-hour
+                time format, day start hour, badge variant, and agenda grouping.
+            </div>
+            <br />
+            <BitFullCalendar Events="settingsEvents" Settings="settings" />
+        </DemoExample>
+
+        <DemoExample Title="Event layout" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                Choose how overlapping event cards are arranged in the day and week views with
+                <code>Settings.EventLayout</code>. <b>Overlap</b> (default) cascades the cards on top of
+                each other, while <b>Stack</b> places them side by side in equal-width columns.
+                Switch to the Day or Week view to see the difference - pick a layout below, or toggle it
+                from the settings gear ("Stack overlapping events").
+            </div>
+            <br />
+            <BitChoiceGroup Horizontal
+                            Label="Event layout"
+                            TItem="BitChoiceGroupOption<BitFullCalendarEventLayout>"
+                            TValue="BitFullCalendarEventLayout"
+                            Value="layoutMode"
+                            OnChange="HandleLayoutChange">
+                <BitChoiceGroupOption Text="Overlap" Value="BitFullCalendarEventLayout.Overlap" />
+                <BitChoiceGroupOption Text="Stack" Value="BitFullCalendarEventLayout.Stack" />
+            </BitChoiceGroup>
+            <br />
+            <BitFullCalendar Events="layoutEvents" Settings="layoutSettings" />
+        </DemoExample>
+
+        <DemoExample Title="Event templates" RazorCode="@example4RazorCode" Id="example4">
+            <div>Customize the event card content for each view with the per-view templates.</div>
+            <br />
+            <BitFullCalendar Events="templateEvents"
+                             DayEventTemplate="EventCard"
+                             WeekEventTemplate="EventCard"
+                             MonthEventTemplate="MonthBadge" />
+        </DemoExample>
+
+        <DemoExample Title="Resource timeline" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                Supply Resources to enable the Timeline mode, where rows are resources (rooms, machines,
+                people) and columns are time. Drag events between rows to reassign their resource.
+            </div>
+            <br />
+            <BitFullCalendar Events="resourceEvents"
+                             Resources="resources"
+                             DefaultMode="BitFullCalendarMode.Timeline" />
+        </DemoExample>
+
+        <DemoExample Title="OnChange" RazorCode="@example6RazorCode" Id="example6">
+            <div>The OnChange callback is raised whenever a user adds, edits, or deletes an event.</div>
+            <br />
+            <BitFullCalendar Events="changeEvents" OnChange="HandleChange" />
+            <br />
+            <BitText>Last change: <b>@(lastChange ?? "-")</b></BitText>
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                The <code>View</code>, <code>Mode</code>, and <code>Date</code> parameters are two-way bound,
+                so you can drive the calendar from outside and react to user-driven changes through
+                <code>OnViewChange</code>, <code>OnModeChange</code>, and <code>OnDateChange</code>.
+                The <code>DefaultView</code>, <code>DefaultMode</code>, and <code>DefaultDate</code> parameters
+                set the initial values that are used when their two-way counterparts are not bound.
+            </div>
+            <br />
+            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">
+                <BitChoiceGroup Horizontal
+                                Label="View"
+                                TItem="BitChoiceGroupOption<BitFullCalendarView>"
+                                TValue="BitFullCalendarView"
+                                @bind-Value="bindingView">
+                    <BitChoiceGroupOption Text="Day" Value="BitFullCalendarView.Day" />
+                    <BitChoiceGroupOption Text="Week" Value="BitFullCalendarView.Week" />
+                    <BitChoiceGroupOption Text="Month" Value="BitFullCalendarView.Month" />
+                    @if (bindingMode == BitFullCalendarMode.Event)
+                    {
+                        <BitChoiceGroupOption Text="Year" Value="BitFullCalendarView.Year" />
+                        <BitChoiceGroupOption Text="Agenda" Value="BitFullCalendarView.Agenda" />
+                    }
+                </BitChoiceGroup>
+                <BitChoiceGroup Horizontal
+                                Label="Mode"
+                                TItem="BitChoiceGroupOption<BitFullCalendarMode>"
+                                TValue="BitFullCalendarMode"
+                                @bind-Value="bindingMode">
+                    <BitChoiceGroupOption Text="Event" Value="BitFullCalendarMode.Event" />
+                    <BitChoiceGroupOption Text="Timeline" Value="BitFullCalendarMode.Timeline" />
+                </BitChoiceGroup>
+                <div style="display:flex;gap:4px;align-items:center">
+                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => bindingDate = bindingDate.AddDays(-1)">Prev day</BitButton>
+                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => bindingDate = DateTime.Today">Today</BitButton>
+                    <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Outline" OnClick="() => bindingDate = bindingDate.AddDays(1)">Next day</BitButton>
+                </div>
+            </div>
+            <br />
+            <BitFullCalendar Events="bindingEvents"
+                             Resources="resources"
+                             @bind-View="bindingView"
+                             @bind-Mode="bindingMode"
+                             @bind-Date="bindingDate"
+                             OnViewChange="HandleViewChange"
+                             OnModeChange="HandleModeChange"
+                             OnDateChange="HandleDateChange" />
+            <br />
+            <BitText>View: <b>@bindingView</b> | Mode: <b>@bindingMode</b> | Date: <b>@bindingDate.ToString("yyyy-MM-dd")</b></BitText>
+            <BitText>Last calendar event: <b>@(bindingLog ?? "-")</b></BitText>
+        </DemoExample>
+
+        <DemoExample Title="Localization" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                Render the calendar with a localized culture (here Persian, <code>fa-IR</code>) and
+                override the UI strings through a customized <code>BitFullCalendarTexts</code> instance.
+                This example translates most of the available strings - toolbar, view/mode tabs, filters,
+                settings panel, search/agenda, dialogs, form fields, validation messages, and resource labels.
+            </div>
+            <br />
+            <BitFullCalendar Events="localizationEvents" CultureName="fa-IR" Texts="persianTexts" />
+        </DemoExample>
+
+        <DemoExample Title="Hide filters & settings" RazorCode="@example9RazorCode" Id="example9">
+            <div>
+                Hide the built-in color/attendee filters and the settings gear to provide your own
+                external controls or a minimal header.
+            </div>
+            <br />
+            <BitFullCalendar Events="basicEvents" HideFilters HideSettings />
+        </DemoExample>
+    </Examples>
+</DemoPage>
+
+@code {
+    private RenderFragment<BitFullCalendarEvent> EventCard => ev =>
+        @<div style="display:flex;flex-direction:column;gap:2px">
+            <strong>@ev.Title</strong>
+            @if (!string.IsNullOrWhiteSpace(ev.Description))
+            {
+                <span style="font-size:11px;opacity:.8">@ev.Description</span>
+            }
+        </div>;
+
+    private RenderFragment<BitFullCalendarEvent> MonthBadge => ev => @<span>📌 @ev.Title</span>;
+}

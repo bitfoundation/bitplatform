@@ -1,0 +1,2637 @@
+/* BitFullCalendar */
+
+@import "../../../Bit.BlazorUI/Styles/functions.scss";
+
+/* ===== CSS Variables =====
+   The calendar maps its internal --bit-bfc-* custom properties onto the Bit BlazorUI theme tokens
+   (--bit-clr-*, shape and shadow tokens). Because those tokens are redefined by the active Bit
+   theme (including dark mode via :root[bit-theme="dark"]), the calendar follows the application
+   theme automatically without any component-level theme or dark-mode switch. */
+.bit-bfc {
+    --bit-bfc-bg: #{$clr-bg-pri};
+    --bit-bfc-bg-secondary: #{$clr-bg-sec};
+    --bit-bfc-bg-hover: #{$clr-bg-pri-hover};
+    --bit-bfc-border: #{$clr-brd-ter};
+    --bit-bfc-text: #{$clr-fg-pri};
+    --bit-bfc-text-secondary: #{$clr-fg-sec};
+    --bit-bfc-text-muted: #{$clr-fg-ter};
+    --bit-bfc-primary: #{$clr-pri};
+    --bit-bfc-primary-hover: #{$clr-pri-hover};
+    --bit-bfc-primary-text: #{$clr-pri-text};
+    --bit-bfc-danger: #{$clr-err};
+    --bit-bfc-danger-hover: #{$clr-err-hover};
+    --bit-bfc-radius: #{$shp-border-radius};
+    --bit-bfc-radius-sm: #{$shp-border-radius};
+    --bit-bfc-shadow: #{$box-shadow-sm};
+    --bit-bfc-shadow-lg: #{$box-shadow-md};
+    --bit-bfc-hour-height: 96px;
+    --bit-bfc-height: 600px;
+    --bit-bfc-timeline-color: #{$clr-err};
+    --bit-bfc-resize-ring: color-mix(in srgb, #{$clr-pri} 65%, transparent);
+    --bit-bfc-resize-glow: color-mix(in srgb, #{$clr-pri} 22%, transparent);
+    --bit-bfc-resize-preview-bg: #{$clr-bg-pri};
+    --bit-bfc-resize-preview-border: color-mix(in srgb, #{$clr-pri} 45%, transparent);
+    --bit-bfc-resize-handle-line: #{$clr-pri};
+}
+
+/* ===== Base ===== */
+.bit-bfc {
+    font-family: #{$tg-font-family};
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    /* A definite default height keeps the day/week time grids from expanding to their full
+       (24 * hour-height) intrinsic height when the host doesn't constrain the calendar. This makes
+       the views scrollable (so "scroll to start of day" works) out of the box. Override via the
+       --bit-bfc-height custom property, e.g. style="--bit-bfc-height: 100%" inside a sized container. */
+    height: var(--bit-bfc-height, 600px);
+}
+
+/* ===== Header ===== */
+.bit-bfc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--bit-bfc-border);
+    background: var(--bit-bfc-bg);
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.bit-bfc-header-left,
+.bit-bfc-header-center,
+.bit-bfc-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bit-bfc-header-left {
+    flex: 1;
+}
+
+.bit-bfc-header-right {
+    flex: 1;
+    justify-content: flex-end;
+}
+
+/* ===== Buttons ===== */
+.bit-bfc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius-sm);
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    line-height: 1.817;
+}
+
+.bit-bfc-btn:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-btn-primary {
+    background: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+    border-color: var(--bit-bfc-primary);
+}
+
+.bit-bfc-btn-primary:hover {
+    background: var(--bit-bfc-primary-hover);
+}
+
+.bit-bfc-btn-danger {
+    background: var(--bit-bfc-danger);
+    color: #fff;
+    border-color: var(--bit-bfc-danger);
+}
+
+.bit-bfc-btn-danger:hover {
+    background: var(--bit-bfc-danger-hover);
+}
+
+.bit-bfc-btn-icon {
+    padding: 6px;
+    width: 32px;
+    height: 32px;
+}
+
+.bit-bfc-btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.bit-bfc-btn-group {
+    display: inline-flex;
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius-sm);
+    overflow: hidden;
+}
+
+.bit-bfc-btn-group .bit-bfc-btn {
+    border: none;
+    border-radius: 0;
+    border-inline-end: 1px solid var(--bit-bfc-border);
+}
+
+.bit-bfc-btn-group .bit-bfc-btn:last-child {
+    border-inline-end: none;
+}
+
+.bit-bfc-btn-group .bit-bfc-btn.active {
+    background: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+}
+
+/* ===== View Tabs ===== */
+.bit-bfc-view-tabs {
+    display: inline-flex;
+    background: var(--bit-bfc-bg-secondary);
+    border-radius: var(--bit-bfc-radius-sm);
+    padding: 2px;
+    gap: 2px;
+}
+
+.bit-bfc-view-tab {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--bit-bfc-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.bit-bfc-view-tab:hover {
+    color: var(--bit-bfc-text);
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-view-tab.active {
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
+    box-shadow: var(--bit-bfc-shadow);
+}
+
+/* ===== Calendar Body ===== */
+.bit-bfc-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+    animation: bit-bfc-fade-in 0.2s ease;
+}
+
+@keyframes bit-bfc-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ===== Month View ===== */
+.bit-bfc-month {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.bit-bfc-month-header {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    border-bottom: 1px solid var(--bit-bfc-border);
+    flex-shrink: 0;
+}
+
+.bit-bfc-month-header-cell {
+    padding: 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bit-bfc-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.bit-bfc-month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    flex: 0 0 auto;
+    align-content: start;
+}
+
+.bit-bfc-month-cell {
+    border-right: 1px solid var(--bit-bfc-border);
+    border-bottom: 1px solid var(--bit-bfc-border);
+    padding: 4px;
+    min-height: 100px;
+    min-width: 0;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.1s;
+    overflow: clip;
+    overflow-clip-margin: 4px;
+}
+
+.bit-bfc-month-cell:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-month-cell:nth-child(7n) {
+    border-right: none;
+}
+
+.bit-bfc-month-cell.other-month {
+    opacity: 0.4;
+}
+
+.bit-bfc-month-cell-day {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.bit-bfc-month-cell-day.today {
+    background: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+}
+
+.bit-bfc-month-events {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.bit-bfc-month-event-slot {
+    height: 22px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.bit-bfc-month-more {
+    font-size: 11px;
+    color: var(--bit-bfc-text-secondary);
+    padding: 2px 4px;
+    cursor: pointer;
+    font-weight: 500;
+    /* Rendered as a real <button> for native keyboard activation (Enter/Space without page scroll)
+       and focusability; strip the default button chrome so it keeps the plain inline-text look. */
+    display: block;
+    width: 100%;
+    border: none;
+    background: none;
+    font-family: inherit;
+    text-align: start;
+}
+
+.bit-bfc-month-more:hover {
+    color: var(--bit-bfc-primary);
+}
+
+/* ===== Event Badge (month view) ===== */
+.bit-bfc-event-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    height: 22px;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: grab;
+    overflow: hidden;
+    border: 1px solid transparent;
+    transition: filter 0.1s;
+    user-select: none;
+}
+
+.bit-bfc-event-badge-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+}
+
+.bit-bfc-event-badge:hover {
+    filter: brightness(0.95);
+}
+
+.bit-bfc-event-badge.position-first {
+    border-radius: 4px 0 0 4px;
+    margin-right: 0;
+    border-right: none;
+}
+
+.bit-bfc-event-badge.position-middle {
+    border-radius: 0;
+    margin: 0 !important;
+    border-left: none;
+    border-right: none;
+}
+
+.bit-bfc-event-badge.position-last {
+    border-radius: 0 4px 4px 0;
+    margin-left: 0;
+    border-left: none;
+}
+
+.bit-bfc-event-badge-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.bit-bfc-event-badge-time {
+    font-size: 10px;
+    opacity: 0.8;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* ===== Event Bullet ===== */
+.bit-bfc-bullet {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--bit-bfc-evt-color, var(--bit-bfc-primary));
+}
+
+/* ===== Color Classes =====
+   Colors are driven by the per-event CSS custom property --bit-bfc-evt-color, set inline by the
+   component from BitFullCalendarColorOption.Value. The classes derive a soft chip surface
+   (bit-bfc-color) and a solid swatch (bit-bfc-bg) from that single value using color-mix(), so any CSS
+   color works without authoring extra rules. */
+.bit-bfc-color {
+    background: color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-primary)) 18%, var(--bit-bfc-bg));
+    color: color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-primary)) 75%, var(--bit-bfc-text));
+    border-color: color-mix(in srgb, var(--bit-bfc-evt-color, var(--bit-bfc-primary)) 32%, var(--bit-bfc-bg));
+}
+
+.bit-bfc-bg {
+    background: var(--bit-bfc-evt-color, var(--bit-bfc-primary));
+}
+
+/* Dot-variant badge (neutral background, colored dot) */
+.bit-bfc-event-badge.dot-variant {
+    background: var(--bit-bfc-bg-secondary);
+    color: var(--bit-bfc-text);
+    border-color: var(--bit-bfc-border);
+}
+
+/* ===== Day/Week Shared: Time Grid ===== */
+.bit-bfc-timegrid-wrapper {
+    display: flex;
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    align-items: flex-start;
+}
+
+.bit-bfc-time-column {
+    flex-shrink: 0;
+    width: 60px;
+    border-inline-end: 1px solid var(--bit-bfc-border);
+}
+
+.bit-bfc-time-slot-label {
+    height: var(--bit-bfc-hour-height);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 0;
+    font-size: 11px;
+    color: var(--bit-bfc-text-muted);
+    font-weight: 500;
+    position: relative;
+    top: -7px;
+}
+
+.bit-bfc-timegrid {
+    flex: 1;
+    position: relative;
+    min-height: calc(24 * var(--bit-bfc-hour-height));
+}
+
+.bit-bfc-timegrid-day {
+    position: relative;
+    flex: 1;
+}
+
+.bit-bfc-timegrid-days {
+    display: flex;
+    flex: 1;
+    position: relative;
+    min-height: calc(24 * var(--bit-bfc-hour-height));
+}
+
+.bit-bfc-hour-row {
+    height: var(--bit-bfc-hour-height);
+    border-bottom: 1px solid var(--bit-bfc-border);
+    position: relative;
+}
+
+/* Top half of each hour (:00 hit area). A sibling of the bottom half so the two slots are not
+   nested focusable controls - the hour row itself is just a non-interactive layout wrapper. */
+.bit-bfc-hour-slot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 50%;
+    z-index: 1;
+}
+
+/* Bottom half of each hour - must stretch from 50% to bottom or it has ~0 height
+   and all drops land on the parent row (always :00). */
+.bit-bfc-hour-row-half {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    border-top: 1px dashed var(--bit-bfc-border);
+    opacity: 0.5;
+}
+
+/* Event block in day/week */
+.bit-bfc-event-block {
+    position: relative;
+    z-index: 2;
+    padding: 4px 8px;
+    border-radius: var(--bit-bfc-radius-sm);
+    font-size: 12px;
+    cursor: grab;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    pointer-events: auto;
+    overflow: hidden;
+    border: 1px solid transparent;
+    user-select: none;
+    transition: box-shadow 0.15s, filter 0.1s;
+}
+
+.bit-bfc-event-block:hover {
+    filter: brightness(0.95);
+    z-index: 5;
+    box-shadow: var(--bit-bfc-shadow);
+}
+
+.bit-bfc-event-block-pass-through {
+    pointer-events: none;
+}
+
+/* Wrapper around an event block when overlapping events are stacked diagonally.
+   A subtle box-shadow on the right edge separates the cards behind it. The hovered
+   card and its wrapper are lifted so the full content becomes readable. */
+.bit-bfc-event-stack-item:has(.bit-bfc-event-block:hover),
+.bit-bfc-event-stack-item:focus-within {
+    z-index: 20 !important;
+}
+
+.bit-bfc-event-stack-item .bit-bfc-event-block {
+    box-shadow: -1px 0 0 0 var(--bit-bfc-bg, #fff);
+}
+
+.bit-bfc-event-stack-item .bit-bfc-event-block:hover {
+    z-index: 21;
+}
+
+/* Side-by-side stacked layout: equal-width lanes placed next to each other. A small right gap and
+   a flat left edge (no diagonal separator shadow) keep the cards close together yet distinct. */
+.bit-bfc-event-stack-item-side-by-side {
+    padding-right: 2px;
+    box-sizing: border-box;
+}
+
+.bit-bfc-event-stack-item-side-by-side .bit-bfc-event-block {
+    box-shadow: none;
+}
+
+.bit-bfc-event-stack-item-side-by-side .bit-bfc-event-block:hover {
+    box-shadow: var(--bit-bfc-shadow);
+}
+
+.bit-bfc-event-block-resizing {
+    z-index: 12;
+    cursor: ns-resize;
+    filter: brightness(1.02) saturate(1.05);
+    will-change: transform, height;
+    border-color: var(--bit-bfc-resize-ring) !important;
+    box-shadow:
+        0 0 0 2px var(--bit-bfc-resize-ring),
+        0 0 0 5px var(--bit-bfc-resize-glow),
+        0 12px 28px rgba(15, 23, 42, 0.18),
+        var(--bit-bfc-shadow);
+    transition: box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
+}
+
+.bit-bfc-event-block-title {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bit-bfc-event-block-time {
+    font-size: 11px;
+    opacity: 0.8;
+    white-space: nowrap;
+}
+
+/* Resize handles */
+.bit-bfc-resize-handle {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 10px;
+    cursor: ns-resize;
+    z-index: 3;
+    touch-action: none;
+    border-radius: 4px;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bit-bfc-resize-handle::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--bit-bfc-resize-handle-line);
+    opacity: 0;
+    transition: opacity 0.15s ease, width 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.bit-bfc-resize-handle-top {
+    top: -5px;
+}
+
+.bit-bfc-resize-handle-top::after {
+    top: 3px;
+}
+
+.bit-bfc-resize-handle-bottom {
+    bottom: -5px;
+}
+
+.bit-bfc-resize-handle-bottom::after {
+    bottom: 3px;
+}
+
+.bit-bfc-resize-handle:hover {
+    background: var(--bit-bfc-resize-glow);
+}
+
+.bit-bfc-resize-handle:hover::after {
+    opacity: 0.85;
+    width: 36px;
+}
+
+.bit-bfc-event-block-resizing .bit-bfc-resize-handle-top {
+    background: linear-gradient(to bottom, var(--bit-bfc-resize-glow), transparent);
+}
+
+.bit-bfc-event-block-resizing .bit-bfc-resize-handle-bottom {
+    background: linear-gradient(to top, var(--bit-bfc-resize-glow), transparent);
+}
+
+.bit-bfc-event-block-resizing .bit-bfc-resize-handle::after {
+    opacity: 1;
+    width: 40px;
+    box-shadow: 0 0 0 2px var(--bit-bfc-resize-glow), 0 2px 6px color-mix(in srgb, var(--bit-bfc-primary) 35%, transparent);
+}
+
+.bit-bfc-event-block-resizing.bit-bfc-resize-dir-top .bit-bfc-resize-handle-top::after,
+.bit-bfc-event-block-resizing.bit-bfc-resize-dir-bottom .bit-bfc-resize-handle-bottom::after {
+    height: 4px;
+    width: 44px;
+    box-shadow: 0 0 0 3px var(--bit-bfc-resize-glow), 0 2px 10px color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
+}
+
+.bit-bfc-resize-preview {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    left: auto;
+    top: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px 6px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+    color: var(--bit-bfc-primary);
+    background: var(--bit-bfc-resize-preview-bg);
+    border: 1px solid var(--bit-bfc-resize-preview-border);
+    border-radius: var(--bit-bfc-radius-sm);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+        0 4px 14px color-mix(in srgb, var(--bit-bfc-primary) 20%, transparent),
+        var(--bit-bfc-shadow);
+    z-index: 14;
+    white-space: nowrap;
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.bit-bfc-event-block-resizing.bit-bfc-resize-dir-top .bit-bfc-resize-preview {
+    top: 6px;
+    bottom: auto;
+}
+
+.bit-bfc-resize-preview-icon {
+    flex-shrink: 0;
+    opacity: 0.9;
+}
+
+.bit-bfc-resize-preview-time {
+    color: var(--bit-bfc-text);
+    font-weight: 700;
+}
+
+/* When resizing a timeline event from the start edge, anchor the floating preview to the
+   start side so it stays visible for short events. */
+.bit-bfc-timeline-event-resizing.bit-bfc-resize-dir-start .bit-bfc-resize-preview {
+    inset-inline-start: 6px;
+    inset-inline-end: auto;
+}
+
+/* ===== Timeline (current time indicator) ===== */
+.bit-bfc-timeline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
+
+.bit-bfc-timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--bit-bfc-timeline-color);
+    /* Logical offset so the dot stays centered on the leading edge of the timeline in both
+       LTR and RTL (the time grid flips to direction:rtl), matching the label's RTL handling. */
+    margin-inline-start: -5px;
+    flex-shrink: 0;
+}
+
+.bit-bfc-timeline-line {
+    flex: 1;
+    height: 2px;
+    background: var(--bit-bfc-timeline-color);
+}
+
+.bit-bfc-timeline-label {
+    position: absolute;
+    left: -54px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--bit-bfc-timeline-color);
+    white-space: nowrap;
+}
+
+/* ===== Day View Layout ===== */
+.bit-bfc-day-layout {
+    display: flex;
+    height: 100%;
+}
+
+.bit-bfc-day-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.bit-bfc-day-sidebar {
+    width: 280px;
+    border-inline-start: 1px solid var(--bit-bfc-border);
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--bit-bfc-bg-secondary);
+}
+
+.bit-bfc-day-header {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    border-bottom: 1px solid var(--bit-bfc-border);
+    font-weight: 600;
+}
+
+/* Aligns with .bit-bfc-time-column (60px) so the time-axis border continues through the header in LTR and RTL */
+.bit-bfc-day-header-time-gutter {
+    width: 60px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    border-inline-end: 1px solid var(--bit-bfc-border);
+}
+
+.bit-bfc-day-header-titles {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0;
+    min-width: 0;
+}
+
+.bit-bfc-day-header-date {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.bit-bfc-day-header-date.today {
+    background: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+}
+
+/* Multi-day row above time grid */
+.bit-bfc-multiday-row {
+    padding: 4px 0;
+    padding-inline-start: 60px;
+    border-bottom: 1px solid var(--bit-bfc-border);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 28px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* ===== Week View ===== */
+.bit-bfc-week-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.bit-bfc-week-scroll {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    position: relative;
+}
+
+.bit-bfc-week-header {
+    display: flex;
+    border-bottom: 1px solid var(--bit-bfc-border);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--bit-bfc-bg);
+    flex-shrink: 0;
+}
+
+.bit-bfc-week-body {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.bit-bfc-week-header-time {
+    width: 60px;
+    flex-shrink: 0;
+    border-inline-end: 1px solid var(--bit-bfc-border);
+}
+
+.bit-bfc-week-header-day {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    border-right: 1px solid var(--bit-bfc-border);
+    font-size: 13px;
+}
+
+.bit-bfc-week-header-day:last-child {
+    border-right: none;
+}
+
+.bit-bfc-week-header-day-name {
+    color: var(--bit-bfc-text-secondary);
+    font-weight: 500;
+}
+
+.bit-bfc-week-header-day-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.bit-bfc-week-header-day-num.today {
+    background: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+}
+
+.bit-bfc-week-day-col {
+    flex: 1;
+    position: relative;
+    border-right: 1px solid var(--bit-bfc-border);
+    min-height: calc(24 * var(--bit-bfc-hour-height));
+    overflow: hidden;
+}
+
+.bit-bfc-week-day-col:last-child {
+    border-right: none;
+}
+
+/* ===== Year View ===== */
+.bit-bfc-year {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 16px;
+    padding: 16px;
+    overflow-y: auto;
+    height: 100%;
+}
+
+.bit-bfc-year-month {
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius);
+    padding: 12px;
+    min-width: 0;
+}
+
+.bit-bfc-year-month-title {
+    /* Rendered as a real <button> in BitFcCalendarYearView for native keyboard activation, so
+       strip the browser-default button chrome (border, background, padding, appearance, font and
+       alignment) while keeping the title's own typography and cursor. */
+    appearance: none;
+    border: none;
+    background: none;
+    padding: 0;
+    color: inherit;
+    font-family: inherit;
+    text-align: start;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.bit-bfc-year-month-title:hover {
+    color: var(--bit-bfc-primary);
+}
+
+.bit-bfc-year-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+}
+
+.bit-bfc-year-weekday {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--bit-bfc-text-muted);
+    text-transform: uppercase;
+}
+
+.bit-bfc-year-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+}
+
+.bit-bfc-year-day {
+    text-align: center;
+    padding: 3px 0;
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: default;
+    position: relative;
+}
+
+.bit-bfc-year-day.other-month {
+    opacity: 0.3;
+}
+
+.bit-bfc-year-day-number {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    border-radius: 50%;
+}
+
+.bit-bfc-year-day-number.today {
+    background: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+    font-weight: 700;
+}
+
+.bit-bfc-year-day.has-events {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.bit-bfc-year-day.has-events:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-year-day-bullets {
+    display: flex;
+    gap: 2px;
+    justify-content: center;
+    margin-top: 1px;
+}
+
+/* ===== Agenda View ===== */
+.bit-bfc-agenda {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.bit-bfc-agenda-search {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--bit-bfc-border);
+}
+
+.bit-bfc-agenda-search input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius-sm);
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
+    font-size: 13px;
+    outline: none;
+}
+
+.bit-bfc-agenda-search input:focus {
+    border-color: var(--bit-bfc-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
+}
+
+.bit-bfc-agenda-group {
+    border-bottom: 1px solid var(--bit-bfc-border);
+}
+
+.bit-bfc-agenda-group-title {
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bit-bfc-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--bit-bfc-bg-secondary);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.bit-bfc-agenda-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.bit-bfc-agenda-item:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-agenda-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.bit-bfc-agenda-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.bit-bfc-agenda-title {
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bit-bfc-agenda-desc {
+    font-size: 12px;
+    color: var(--bit-bfc-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bit-bfc-agenda-time {
+    font-size: 12px;
+    color: var(--bit-bfc-text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.bit-bfc-agenda-empty {
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--bit-bfc-text-muted);
+    font-size: 14px;
+}
+
+/* ===== Dialogs / Modals ===== */
+.bit-bfc-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: bit-bfc-fade-in 0.15s ease;
+}
+
+.bit-bfc-dialog {
+    background: var(--bit-bfc-bg);
+    border-radius: var(--bit-bfc-radius);
+    box-shadow: var(--bit-bfc-shadow-lg);
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: bit-bfc-slide-up 0.2s ease;
+}
+
+@keyframes bit-bfc-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bit-bfc-dialog-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--bit-bfc-border);
+}
+
+.bit-bfc-dialog-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.bit-bfc-dialog-header p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--bit-bfc-text-secondary);
+}
+
+.bit-bfc-dialog-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.bit-bfc-dialog-header-row h3 {
+    flex: 1;
+    min-width: 0;
+}
+
+.bit-bfc-dialog-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    background: none;
+    border-radius: var(--bit-bfc-radius-sm);
+    color: var(--bit-bfc-text-muted);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.1s, color 0.1s;
+}
+
+.bit-bfc-dialog-close-btn:hover {
+    background: var(--bit-bfc-bg-hover);
+    color: var(--bit-bfc-text);
+}
+
+.bit-bfc-dialog-body {
+    padding: 16px 20px;
+}
+
+.bit-bfc-dialog-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--bit-bfc-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* ===== Form fields ===== */
+.bit-bfc-field {
+    margin-bottom: 14px;
+}
+
+.bit-bfc-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: var(--bit-bfc-text);
+}
+
+.bit-bfc-field input,
+.bit-bfc-field select,
+.bit-bfc-field textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius-sm);
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.bit-bfc-field input:focus,
+.bit-bfc-field select:focus,
+.bit-bfc-field textarea:focus {
+    border-color: var(--bit-bfc-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
+}
+
+.bit-bfc-field textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.bit-bfc-field .bit-bfc-field-error {
+    color: var(--bit-bfc-danger);
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+/* ===== Custom Date-Time Picker ===== */
+.bit-bfc-dtp {
+    position: relative;
+}
+
+.bit-bfc-dtp-trigger {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius-sm);
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
+    font-size: 13px;
+    text-align: start;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.bit-bfc-dtp-trigger:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-dtp-trigger-icon {
+    color: var(--bit-bfc-text-muted);
+    font-size: 10px;
+}
+
+.bit-bfc-dtp-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius-sm);
+    background: var(--bit-bfc-bg);
+    padding: 8px;
+    box-shadow: var(--bit-bfc-shadow-lg);
+}
+
+.bit-bfc-dtp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.bit-bfc-dtp-month-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bit-bfc-text);
+}
+
+.bit-bfc-dtp-nav-btn {
+    border: 1px solid var(--bit-bfc-border);
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
+    width: 24px;
+    height: 24px;
+    border-radius: var(--bit-bfc-radius-sm);
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bit-bfc-dtp-nav-btn:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-dtp-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.bit-bfc-dtp-weekdays span {
+    text-align: center;
+    font-size: 11px;
+    color: var(--bit-bfc-text-muted);
+}
+
+.bit-bfc-dtp-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+}
+
+.bit-bfc-dtp-day {
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--bit-bfc-text);
+    border-radius: 6px;
+    height: 28px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.bit-bfc-dtp-day:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-dtp-day-muted {
+    color: var(--bit-bfc-text-muted);
+}
+
+.bit-bfc-dtp-day-selected {
+    background: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+}
+
+.bit-bfc-dtp-day-selected:hover {
+    background: var(--bit-bfc-primary);
+}
+
+.bit-bfc-dtp-time {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bit-bfc-dtp-time select {
+    width: auto;
+    min-width: 64px;
+}
+
+/* Color picker in form */
+.bit-bfc-color-picker {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.bit-bfc-color-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.1s, border-color 0.1s;
+    background: var(--bit-bfc-evt-color, var(--bit-bfc-primary));
+}
+
+.bit-bfc-color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.bit-bfc-color-swatch.selected {
+    border-color: var(--bit-bfc-text);
+    transform: scale(1.15);
+}
+
+/* ===== Attendee Chips ===== */
+.bit-bfc-attendees-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.bit-bfc-attendee-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px 3px 4px;
+    background: var(--bit-bfc-bg-hover);
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--bit-bfc-text);
+}
+
+.bit-bfc-attendee-chip-readonly {
+    padding: 3px 10px 3px 4px;
+}
+
+.bit-bfc-attendee-chip-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--bit-bfc-primary);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.bit-bfc-attendee-chip-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: 2px;
+    cursor: pointer;
+    color: var(--bit-bfc-text-muted);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    transition: background 0.1s, color 0.1s;
+}
+
+.bit-bfc-attendee-chip-remove:hover {
+    background: var(--bit-bfc-danger);
+    color: #fff;
+}
+
+/* Attendee add row */
+.bit-bfc-attendee-add-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.bit-bfc-attendee-add-row input {
+    flex: 1;
+    min-width: 80px;
+    padding: 6px 8px;
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius-sm);
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
+    font-size: 12px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.bit-bfc-attendee-add-row input:focus {
+    border-color: var(--bit-bfc-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
+}
+
+/* ===== Event Details Dialog ===== */
+.bit-bfc-event-detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.bit-bfc-event-detail-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--bit-bfc-text-muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.bit-bfc-event-detail-label {
+    font-size: 12px;
+    color: var(--bit-bfc-text-muted);
+    margin-bottom: 2px;
+}
+
+.bit-bfc-event-detail-value {
+    font-size: 13px;
+}
+
+.bit-bfc-event-detail-swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 1px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-sizing: border-box;
+}
+
+.bit-bfc-event-detail-color {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 4px 10px;
+    border-radius: var(--bit-bfc-radius-sm);
+    border: 1px solid transparent;
+    font-weight: 500;
+}
+
+/* ===== Settings Dropdown ===== */
+.bit-bfc-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.bit-bfc-dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: var(--bit-bfc-bg);
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius);
+    box-shadow: var(--bit-bfc-shadow-lg);
+    min-width: 240px;
+    z-index: 50;
+    padding: 6px;
+    animation: bit-bfc-slide-up 0.15s ease;
+}
+
+.bit-bfc-dropdown-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bit-bfc-text-secondary);
+    padding: 6px 10px 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.bit-bfc-dropdown-item {
+    gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.1s;
+    background: transparent;
+}
+
+.bit-bfc-dropdown-sep {
+    height: 1px;
+    background: var(--bit-bfc-border);
+    margin: 4px 0;
+}
+
+/* ===== Toggle Switch ===== */
+.bit-bfc-toggle {
+    position: relative;
+    display: inline-flex;
+    width: 36px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.bit-bfc-toggle-track {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    background: var(--bit-bfc-border);
+    transition: background 0.2s;
+}
+
+.bit-bfc-toggle.checked .bit-bfc-toggle-track {
+    background: var(--bit-bfc-primary);
+}
+
+.bit-bfc-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.bit-bfc-toggle.checked .bit-bfc-toggle-thumb {
+    transform: translateX(16px);
+}
+
+/* ===== Filter row ===== */
+.bit-bfc-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+/* ===== Filter Select ===== */
+.bit-bfc-filter-select {
+    padding: 6px 10px;
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text-secondary);
+    outline: none;
+    min-width: 120px;
+}
+
+.bit-bfc-filter-select-person {
+    min-width: 140px;
+    max-width: 200px;
+}
+
+.bit-bfc-filter-select:focus {
+    border-color: var(--bit-bfc-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
+}
+
+/* ===== User Select ===== */
+.bit-bfc-user-select {
+    position: relative;
+}
+
+.bit-bfc-user-select-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: var(--bit-bfc-bg);
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius);
+    box-shadow: var(--bit-bfc-shadow-lg);
+    min-width: 200px;
+    z-index: 50;
+    padding: 4px;
+    animation: bit-bfc-slide-up 0.15s ease;
+}
+
+.bit-bfc-user-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.bit-bfc-user-option:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-user-option.active {
+    background: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+}
+
+/* ===== Drag feedback ===== */
+.bit-bfc-dragging {
+    opacity: 0.5;
+}
+
+.bit-bfc-drop-target {
+    background: color-mix(in srgb, var(--bit-bfc-primary) 8%, transparent) !important;
+}
+
+/* ===== Mini calendar (day picker sidebar) ===== */
+.bit-bfc-mini-calendar {
+    width: 100%;
+}
+
+.bit-bfc-mini-calendar table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bit-bfc-mini-calendar th {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--bit-bfc-text-muted);
+    padding: 4px;
+    text-align: center;
+}
+
+.bit-bfc-mini-calendar td {
+    text-align: center;
+    padding: 2px;
+}
+
+.bit-bfc-mini-calendar-day {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.1s;
+    background: transparent;
+}
+
+.bit-bfc-mini-calendar-day:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-mini-calendar-day.today {
+    background: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+}
+
+.bit-bfc-mini-calendar-day.selected {
+    background: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+    opacity: 0.8;
+}
+
+.bit-bfc-mini-calendar-day.other-month {
+    opacity: 0.3;
+}
+
+/* ===== Happening Now (Day view sidebar) ===== */
+.bit-bfc-happening-now {
+    background: var(--bit-bfc-bg);
+    border-radius: var(--bit-bfc-radius);
+    padding: 12px;
+    border: 1px solid var(--bit-bfc-border);
+}
+
+.bit-bfc-happening-now-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bit-bfc-primary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bit-bfc-happening-now-empty {
+    font-size: 12px;
+    color: var(--bit-bfc-text-muted);
+}
+
+.bit-bfc-happening-event {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    border-radius: var(--bit-bfc-radius-sm);
+    margin-bottom: 6px;
+    border: 1px solid var(--bit-bfc-border);
+    background: var(--bit-bfc-bg);
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.bit-bfc-happening-event:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-happening-event:focus-visible {
+    outline: 2px solid var(--bit-bfc-primary);
+    outline-offset: 2px;
+}
+
+[dir="rtl"] .bit-bfc-happening-event {
+    text-align: right;
+}
+
+.bit-bfc-happening-event-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.bit-bfc-happening-event-meta {
+    font-size: 12px;
+    color: var(--bit-bfc-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ===== Toast ===== */
+.bit-bfc-toast-container {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bit-bfc-toast {
+    padding: 12px 16px;
+    background: var(--bit-bfc-bg);
+    border: 1px solid var(--bit-bfc-border);
+    border-radius: var(--bit-bfc-radius);
+    box-shadow: var(--bit-bfc-shadow-lg);
+    font-size: 13px;
+    animation: bit-bfc-slide-up 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 320px;
+}
+
+.bit-bfc-toast.success {
+    border-inline-start: 3px solid #22c55e;
+}
+
+.bit-bfc-toast.error {
+    border-inline-start: 3px solid #ef4444;
+}
+
+/* ===== SVG Icon sizes ===== */
+.bit-bfc-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-bfc-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .bit-bfc-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bit-bfc-header-left,
+    .bit-bfc-header-center,
+    .bit-bfc-header-right {
+        justify-content: center;
+    }
+
+    .bit-bfc-day-sidebar {
+        display: none;
+    }
+
+    .bit-bfc-year {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .bit-bfc-week-mobile-warning {
+        display: block;
+    }
+}
+
+@media (max-width: 640px) {
+    .bit-bfc-year {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 769px) {
+    .bit-bfc-week-mobile-warning {
+        display: none;
+    }
+}
+
+.bit-bfc-week-mobile-warning {
+    padding: 12px 16px;
+    background: color-mix(in srgb, #{$clr-wrn} 18%, var(--bit-bfc-bg));
+    color: #{$clr-wrn-dark};
+    font-size: 13px;
+    text-align: center;
+    border-bottom: 1px solid color-mix(in srgb, #{$clr-wrn} 35%, var(--bit-bfc-bg));
+}
+
+/* ===== Droppable area hover states ===== */
+.bit-bfc-droppable {
+    transition: background 0.1s;
+}
+
+.bit-bfc-droppable.drag-over {
+    background: color-mix(in srgb, var(--bit-bfc-primary) 8%, transparent);
+}
+
+.bit-bfc-droppable.bit-bfc-drop-preview-hour {
+    background: linear-gradient(to bottom,
+            color-mix(in srgb, var(--bit-bfc-primary) 16%, transparent) 0%,
+            color-mix(in srgb, var(--bit-bfc-primary) 16%, transparent) 50%,
+            transparent 50%,
+            transparent 100%);
+    outline: 1px solid color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
+    outline-offset: -1px;
+    z-index: 6;
+}
+
+.bit-bfc-droppable.bit-bfc-drop-preview-half {
+    background: color-mix(in srgb, var(--bit-bfc-primary) 16%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
+    outline-offset: -1px;
+    z-index: 7;
+    opacity: 1;
+}
+
+/* ===== Cell "add event" hover hint ===== */
+.bit-bfc-hour-row {
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.bit-bfc-hour-row:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-cell-add-hint {
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--bit-bfc-text-muted);
+    font-size: 11px;
+    font-weight: 500;
+    user-select: none;
+}
+
+.bit-bfc-month-cell:hover .bit-bfc-cell-add-hint,
+.bit-bfc-hour-row:hover .bit-bfc-cell-add-hint {
+    opacity: 1;
+}
+
+/* When the month add hint is a real <button>, strip the default button chrome, re-enable pointer
+   events (the base class disables them for the decorative variants), and reveal it on keyboard
+   focus so it stays accessible without relying on hover. */
+button.bit-bfc-cell-add-hint {
+    appearance: none;
+    border: none;
+    background: none;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.bit-bfc-month-cell:focus-within .bit-bfc-cell-add-hint,
+button.bit-bfc-cell-add-hint:focus-visible {
+    opacity: 1;
+}
+
+.bit-bfc-cell-add-hint-month {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+}
+
+.bit-bfc-cell-add-hint-hour {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    z-index: 0;
+}
+
+[dir="rtl"] .bit-bfc-cell-add-hint-month {
+    right: auto;
+    left: 6px;
+}
+
+[dir="rtl"] .bit-bfc-cell-add-hint-hour {
+    right: auto;
+    left: 8px;
+}
+
+/* ===== Scrollbar styling ===== */
+.bit-bfc-body ::-webkit-scrollbar,
+.bit-bfc-week-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.bit-bfc-body ::-webkit-scrollbar-track,
+.bit-bfc-week-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.bit-bfc-body ::-webkit-scrollbar-thumb,
+.bit-bfc-week-scroll::-webkit-scrollbar-thumb {
+    background: var(--bit-bfc-border);
+    border-radius: 4px;
+}
+
+.bit-bfc-body ::-webkit-scrollbar-thumb:hover,
+.bit-bfc-week-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--bit-bfc-text-muted);
+}
+
+/* ===== RTL (Right-to-Left) support ===== */
+
+/* Flip horizontal navigation arrows (prev/next) for RTL */
+[dir="rtl"] .bit-bfc-btn-nav svg {
+    transform: scaleX(-1);
+}
+
+/* Header zones: reverse the logical order of sections */
+/* [dir="rtl"] .bit-bfc-header { flex-direction: row-reverse; }
+[dir="rtl"] .bit-bfc-header-left  { flex: 1; justify-content: flex-end; }
+[dir="rtl"] .bit-bfc-header-right { flex: 1; justify-content: flex-start; } */
+
+/* Month grid: columns flow right-to-left */
+[dir="rtl"] .bit-bfc-month-header {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-month-grid {
+    direction: rtl;
+}
+
+/* Week header + timegrid */
+[dir="rtl"] .bit-bfc-week-header {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-week-layout {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-week-scroll {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-timegrid-days {
+    direction: rtl;
+}
+
+/* Multi-day badge joins need mirrored corners/borders in RTL */
+[dir="rtl"] .bit-bfc-event-badge.position-first {
+    border-radius: 0 4px 4px 0;
+    border-left: none;
+    border-right: 1px solid transparent;
+}
+
+[dir="rtl"] .bit-bfc-event-badge.position-last {
+    border-radius: 4px 0 0 4px;
+    border-right: none;
+    border-left: 1px solid transparent;
+}
+
+/* Visual last-column borders in RTL are on the first DOM child */
+[dir="rtl"] .bit-bfc-month-cell:nth-child(7n) {
+    border-right: 1px solid var(--bit-bfc-border);
+}
+
+[dir="rtl"] .bit-bfc-month-cell:nth-child(7n + 1) {
+    border-right: none;
+}
+
+[dir="rtl"] .bit-bfc-week-header-day:last-child {
+    border-right: 1px solid var(--bit-bfc-border);
+}
+
+[dir="rtl"] .bit-bfc-week-header-day:first-child {
+    border-right: none;
+}
+
+[dir="rtl"] .bit-bfc-week-day-col:last-child {
+    border-right: 1px solid var(--bit-bfc-border);
+}
+
+[dir="rtl"] .bit-bfc-week-day-col:first-child {
+    border-right: none;
+}
+
+/* Day view: sidebar moves to the left side */
+[dir="rtl"] .bit-bfc-day-layout {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-day-main>.bit-bfc-timegrid-wrapper {
+    direction: rtl;
+}
+
+/* Year view mini-grids */
+[dir="rtl"] .bit-bfc-year {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-year-weekdays {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-year-days {
+    direction: rtl;
+}
+
+/* Agenda view */
+[dir="rtl"] .bit-bfc-agenda-item {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-agenda-time {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+[dir="rtl"] .bit-bfc-agenda-info {
+    text-align: right;
+}
+
+[dir="rtl"] .bit-bfc-timeline-label {
+    left: auto;
+    right: -54px;
+}
+
+/* Settings dropdown should open toward the viewport in RTL */
+[dir="rtl"] .bit-bfc-dropdown-menu {
+    right: auto;
+    left: 0;
+}
+
+/* User-select dropdown should mirror like the settings dropdown in RTL */
+[dir="rtl"] .bit-bfc-user-select-menu {
+    right: auto;
+    left: 0;
+}
+
+/* Mini-calendar */
+[dir="rtl"] .bit-bfc-mini-calendar {
+    direction: rtl;
+}
+
+/* Dialog / toast */
+[dir="rtl"] .bit-bfc-dialog {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-toast {
+    direction: rtl;
+}
+
+/* Text alignment helpers */
+[dir="rtl"] .bit-bfc-day-header {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-happening-now {
+    direction: rtl;
+}
+
+
+/* ===== Mode Tabs (Event ⇄ Timeline) ===== */
+.bit-bfc-mode-tabs {
+    display: inline-flex;
+    background: var(--bit-bfc-bg-secondary);
+    border-radius: var(--bit-bfc-radius-sm);
+    padding: 2px;
+    gap: 2px;
+    margin-inline-end: 8px;
+}
+
+.bit-bfc-mode-tab {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--bit-bfc-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.bit-bfc-mode-tab:hover {
+    color: var(--bit-bfc-text);
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-mode-tab.active {
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
+    box-shadow: var(--bit-bfc-shadow);
+}
+
+/* ===== Timeline Mode (resource × time grid) ===== */
+.bit-bfc-tl-layout {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bit-bfc-bg);
+}
+
+.bit-bfc-tl-empty {
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--bit-bfc-text-muted);
+    font-size: 14px;
+}
+
+.bit-bfc-tl-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    position: relative;
+}
+
+.bit-bfc-tl-grid {
+    display: flex;
+    flex-direction: column;
+    /* width is set inline (resource gutter + total time width) */
+    align-content: start;
+    min-height: 100%;
+}
+
+.bit-bfc-tl-header-row {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    /* Width set inline (resource gutter + total time width).
+       Sticky on the row itself keeps both the corner and the time header pinned to the top. */
+}
+
+.bit-bfc-tl-body-row {
+    display: flex;
+    /* Width set inline so each row's containing block spans the full timeline width.
+       This is what allows the sticky resource cell to stay pinned across the entire horizontal scroll. */
+}
+
+.bit-bfc-tl-corner {
+    position: sticky;
+    left: 0;
+    z-index: 6;
+    background: var(--bit-bfc-bg-secondary);
+    border-bottom: 1px solid var(--bit-bfc-border);
+    border-inline-end: 1px solid var(--bit-bfc-border);
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bit-bfc-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.bit-bfc-tl-time-header {
+    /* Sticky-top is provided by the header row; keep this element non-sticky so the resource
+       gutter can stay pinned on top of it during horizontal scroll. */
+    z-index: 4;
+    background: var(--bit-bfc-bg-secondary);
+    border-bottom: 1px solid var(--bit-bfc-border);
+    box-sizing: border-box;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.bit-bfc-tl-time-row {
+    display: flex;
+    box-sizing: border-box;
+}
+
+.bit-bfc-tl-time-row-days {
+    border-bottom: 1px solid var(--bit-bfc-border);
+    height: 32px;
+}
+
+.bit-bfc-tl-time-row-slots {
+    height: 36px;
+}
+
+.bit-bfc-tl-day-header {
+    flex-shrink: 0;
+    box-sizing: border-box;
+    border-inline-end: 1px solid var(--bit-bfc-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bit-bfc-text);
+    background: var(--bit-bfc-bg-secondary);
+    padding: 0 8px;
+}
+
+.bit-bfc-tl-day-header.today {
+    color: var(--bit-bfc-primary);
+}
+
+.bit-bfc-tl-day-header-name {
+    font-weight: 600;
+}
+
+.bit-bfc-tl-day-header-date {
+    color: var(--bit-bfc-text-muted);
+    font-weight: 500;
+}
+
+.bit-bfc-tl-time-cell {
+    flex-shrink: 0;
+    box-sizing: border-box;
+    border-inline-end: 1px solid var(--bit-bfc-border);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-inline-start: 6px;
+}
+
+.bit-bfc-tl-time-cell.today {
+    background: color-mix(in srgb, var(--bit-bfc-primary) 8%, transparent);
+}
+
+.bit-bfc-tl-time-cell-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--bit-bfc-text-muted);
+    white-space: nowrap;
+}
+
+.bit-bfc-tl-resource-cell {
+    position: sticky;
+    left: 0;
+    z-index: 4;
+    background: var(--bit-bfc-bg);
+    border-bottom: 1px solid var(--bit-bfc-border);
+    border-inline-end: 1px solid var(--bit-bfc-border);
+    padding: 8px 12px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+}
+
+.bit-bfc-tl-resource-cell-unassigned {
+    background: var(--bit-bfc-bg-secondary);
+}
+
+.bit-bfc-tl-resource-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bit-bfc-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bit-bfc-tl-resource-subtitle {
+    font-size: 11px;
+    color: var(--bit-bfc-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bit-bfc-tl-row {
+    position: relative;
+    border-bottom: 1px solid var(--bit-bfc-border);
+    box-sizing: border-box;
+    background: var(--bit-bfc-bg);
+    flex-shrink: 0;
+}
+
+.bit-bfc-tl-cell {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    border-inline-end: 1px solid var(--bit-bfc-border);
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.bit-bfc-tl-cell:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-tl-cell:hover .bit-bfc-cell-add-hint {
+    opacity: 1;
+}
+
+.bit-bfc-tl-cell-half {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    inset-inline-end: 0;
+    width: 50%;
+    border-inline-start: 1px dashed var(--bit-bfc-border);
+    opacity: 0.5;
+}
+
+.bit-bfc-tl-cell-day {
+    /* Day-precision cell (timeline month view) - no half-hour split. */
+}
+
+.bit-bfc-tl-drop-preview {
+    background: var(--bit-bfc-resize-glow);
+}
+
+.bit-bfc-tl-event-anchor {
+    position: absolute;
+    z-index: 3;
+}
+
+.bit-bfc-timeline-event {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 4px 8px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    font-size: 12px;
+    cursor: grab;
+    overflow: hidden;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    line-height: 1.2;
+    transition: filter 0.1s, box-shadow 0.15s;
+}
+
+.bit-bfc-timeline-event:hover {
+    filter: brightness(0.95);
+    box-shadow: var(--bit-bfc-shadow);
+    z-index: 5;
+}
+
+.bit-bfc-timeline-event-pass-through {
+    pointer-events: none;
+    opacity: 0.55;
+}
+
+/* Horizontal resize handles for timeline event blocks */
+.bit-bfc-resize-handle-h {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    cursor: ew-resize;
+    z-index: 3;
+    touch-action: none;
+    border-radius: 3px;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bit-bfc-resize-handle-h::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 28px;
+    width: 3px;
+    border-radius: 999px;
+    background: var(--bit-bfc-resize-handle-line);
+    opacity: 0;
+    transition: opacity 0.15s ease, height 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.bit-bfc-resize-handle-start {
+    inset-inline-start: -5px;
+}
+
+.bit-bfc-resize-handle-start::after {
+    inset-inline-start: 3px;
+}
+
+.bit-bfc-resize-handle-end {
+    inset-inline-end: -5px;
+}
+
+.bit-bfc-resize-handle-end::after {
+    inset-inline-end: 3px;
+}
+
+.bit-bfc-resize-handle-h:hover {
+    background: var(--bit-bfc-resize-glow);
+}
+
+.bit-bfc-resize-handle-h:hover::after {
+    opacity: 0.85;
+    height: 36px;
+}
+
+.bit-bfc-timeline-event-resizing {
+    z-index: 12;
+    cursor: ew-resize;
+    filter: brightness(1.02) saturate(1.05);
+    will-change: transform, width;
+    border-color: var(--bit-bfc-resize-ring) !important;
+    box-shadow:
+        0 0 0 2px var(--bit-bfc-resize-ring),
+        0 0 0 5px var(--bit-bfc-resize-glow),
+        0 12px 28px rgba(15, 23, 42, 0.18),
+        var(--bit-bfc-shadow);
+    transition: box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
+}
+
+.bit-bfc-timeline-event-resizing .bit-bfc-resize-handle-start {
+    background: linear-gradient(to right, var(--bit-bfc-resize-glow), transparent);
+}
+
+.bit-bfc-timeline-event-resizing .bit-bfc-resize-handle-end {
+    background: linear-gradient(to left, var(--bit-bfc-resize-glow), transparent);
+}
+
+.bit-bfc-timeline-event-resizing .bit-bfc-resize-handle-h::after {
+    opacity: 1;
+    height: 40px;
+    box-shadow: 0 0 0 2px var(--bit-bfc-resize-glow), 0 2px 6px color-mix(in srgb, var(--bit-bfc-primary) 35%, transparent);
+}
+
+.bit-bfc-timeline-event-resizing.bit-bfc-resize-dir-start .bit-bfc-resize-handle-start::after,
+.bit-bfc-timeline-event-resizing.bit-bfc-resize-dir-end .bit-bfc-resize-handle-end::after {
+    width: 4px;
+    height: 44px;
+    box-shadow: 0 0 0 3px var(--bit-bfc-resize-glow), 0 2px 10px color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
+}
+
+.bit-bfc-timeline-event-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.bit-bfc-timeline-event-title {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
+}
+
+.bit-bfc-timeline-event-time {
+    font-size: 11px;
+    opacity: 0.85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bit-bfc-timeline-event.dot-variant {
+    background: var(--bit-bfc-bg-secondary);
+    color: var(--bit-bfc-text);
+    border-color: var(--bit-bfc-border);
+}
+
+/* RTL: keep the resource gutter on the leading edge.
+   With direction:rtl on the flex rows, the inline-start edge maps to the right side of
+   the scroll container, so the corner and resource cells must pin to right:0 instead of left:0. */
+[dir="rtl"] .bit-bfc-tl-grid {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-tl-time-header {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-tl-row {
+    direction: rtl;
+}
+
+[dir="rtl"] .bit-bfc-tl-corner {
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .bit-bfc-tl-resource-cell {
+    left: auto;
+    right: 0;
+}
+
+/* Responsive: shrink resource gutter on small screens */
+@media (max-width: 768px) {
+
+    .bit-bfc-tl-corner,
+    .bit-bfc-tl-resource-cell {
+        padding-inline: 8px;
+    }
+
+    .bit-bfc-tl-resource-title {
+        font-size: 12px;
+    }
+}

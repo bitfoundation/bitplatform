@@ -12,16 +12,16 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 /// </summary>
 public partial class SignInModalService : IAsyncDisposable
 {
-    public SignInModalService(BitModalService modalService, NavigationManager navigationManager)
+    public SignInModalService(BitProModalService modalService, NavigationManager navigationManager)
     {
         this.modalService = modalService;
         this.navigationManager = navigationManager;
         this.navigationManager.LocationChanged += NavigationManager_LocationChanged;
     }
 
-    private BitModalService modalService;
+    private BitProModalService modalService;
     private NavigationManager navigationManager;
-    private BitModalReference? modalReference = null;
+    private BitProModalReference? modalReference = null;
     private TaskCompletionSource<bool>? signInModalTcs;
 
     public async Task<bool> SignIn(string? returnUrl = null)
@@ -35,7 +35,7 @@ public partial class SignInModalService : IAsyncDisposable
             { nameof(SignInModal.OnClose), () => { signInModalTcs.SetResult(false); modalReference?.Close(); } },
             { nameof(SignInModal.OnSuccess), () => { signInModalTcs.SetResult(true); modalReference?.Close(); } },
         };
-        var modalParameters = new BitModalParameters()
+        var modalParameters = new BitProModalParameters()
         {
             Draggable = true,
             DragElementSelector = ".header-stack",

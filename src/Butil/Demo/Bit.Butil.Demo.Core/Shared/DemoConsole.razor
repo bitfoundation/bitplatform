@@ -1,0 +1,92 @@
+@using System.Text.Json
+@inject Bit.Butil.Console console
+
+<div class="demo-console">
+    <div class="demo-console-head">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="label">@Title</span>
+        <button class="clear-btn" @onclick="Clear">Clear</button>
+    </div>
+    <div class="demo-console-body">
+        @if (_lines.Count == 0)
+        {
+            <div class="empty">@Placeholder</div>
+        }
+        else
+        {
+            @foreach (var line in _lines)
+            {
+                <div class="line @line.Kind">
+                    <span class="ts">@line.Timestamp</span>
+                    <span class="msg">@line.Message</span>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "output";
+    [Parameter] public string Placeholder { get; set; } = "Results will appear here when you interact with the samples.";
+
+    /// <summary>When true, every entry is also mirrored to the browser DevTools console.</summary>
+    [Parameter] public bool MirrorToDevTools { get; set; } = true;
+
+    private readonly List<LogLine> _lines = new();
+
+    public Task Log(params object?[] values) => Write("log", values);
+    public Task Info(params object?[] values) => Write("info", values);
+    public Task Success(params object?[] values) => Write("success", values);
+    public Task Warn(params object?[] values) => Write("warn", values);
+    public Task Error(params object?[] values) => Write("error", values);
+
+    private async Task Write(string kind, object?[] values)
+    {
+        var message = string.Join(" ", values.Select(Format));
+        _lines.Insert(0, new LogLine(kind, message, DateTime.Now.ToString("HH:mm:ss")));
+        if (_lines.Count > 100)
+        {
+            _lines.RemoveAt(_lines.Count - 1);
+        }
+
+        StateHasChanged();
+
+        if (MirrorToDevTools)
+        {
+            switch (kind)
+            {
+                case "warn": await console.Warn(values); break;
+                case "error": await console.Error(values); break;
+                case "info": await console.Info(values); break;
+                default: await console.Log(values); break;
+            }
+        }
+    }
+
+    public void Clear()
+    {
+        _lines.Clear();
+        StateHasChanged();
+    }
+
+    private static string Format(object? value)
+    {
+        if (value is null) return "null";
+        if (value is string s) return s;
+
+        var type = value.GetType();
+        if (type.IsPrimitive || value is decimal or char) return value.ToString() ?? "";
+        if (type.IsEnum) return value.ToString() ?? "";
+
+        try
+        {
+            return JsonSerializer.Serialize(value);
+        }
+        catch
+        {
+            return value.ToString() ?? "";
+        }
+    }
+
+    private record LogLine(string Kind, string Message, string Timestamp);
+}

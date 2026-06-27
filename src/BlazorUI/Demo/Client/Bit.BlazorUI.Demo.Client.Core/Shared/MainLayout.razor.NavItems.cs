@@ -161,6 +161,7 @@ public partial class MainLayout
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "Flag", Url = "/components/flag" },
+                new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler" },
                 new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling" },
                 new() { Text = "Map", Url = "/components/map" },
                 new() { Text = "MarkdownEditor", Url = "/components/markdowneditor", Description = "MdEditor" },

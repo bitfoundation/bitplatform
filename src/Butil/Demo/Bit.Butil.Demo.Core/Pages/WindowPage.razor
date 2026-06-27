@@ -1,268 +1,154 @@
 ﻿@page "/window"
 @implements IDisposable
-@inject Bit.Butil.Console console
 @inject Bit.Butil.Window window
 
-<PageTitle>Window Samples</PageTitle>
+<PageTitle>Butil - Window Samples</PageTitle>
 
-<h1>Window</h1>
+<PageHeader Category="DOM"
+            Title="Window"
+            Lead="The top-level browser window: dialogs, dimensions, scrolling, base64 helpers, in-page find, media queries, selection and more - all from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Window" />
 
-<pre style="font-family:Consolas; overflow: auto;">
+<pre>
 @@inject Bit.Butil.Window window
 
-@@code {
-    ...
-    await window.AddEventListener(ButilEvents.KeyDown, args => { ... });
-    ...
-    await window.Alert("Alert from C#");
-    ...
-}
+await window.AddEventListener(ButilEvents.KeyDown, args => { ... });
+await window.Alert("Alert from C#");
 </pre>
 
-<br />
-<hr />
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Event listeners" Api="AddEventListener / RemoveEventListener"
+              Description="Listen for keydown events on the window. While registered, each key press logs its code below.">
+        <div class="controls">
+            <button @onclick=AddEventListener disabled="@isKeyDownRegistered">Add keydown listener</button>
+            <button class="secondary" @onclick=RemoveEventListener disabled="@(!isKeyDownRegistered)">Remove</button>
+            <span class="result-pill">Registered: <b>@isKeyDownRegistered</b></span>
+        </div>
+    </DemoCard>
 
-<h3>Open the DevTools' console and start pressing keys or clicking on buttons</h3>
+    <DemoCard Title="Before-unload" Api="AddBeforeUnload / RemoveBeforeUnload"
+              Description="When enabled, the browser warns the user before they leave or reload the page.">
+        <div class="controls">
+            <button @onclick=AddBeforeUnload disabled="@isBeforeUnloadRegistered">Add beforeunload</button>
+            <button class="secondary" @onclick=RemoveBeforeUnload disabled="@(!isBeforeUnloadRegistered)">Remove</button>
+            <span class="result-pill">Registered: <b>@isBeforeUnloadRegistered</b></span>
+        </div>
+    </DemoCard>
 
-<hr />
-<br />
+    <DemoCard Title="Dimensions" Api="GetInner* / GetOuter* / GetScreen* / GetScroll*"
+              Description="Read the various size and position metrics of the window.">
+        <div class="controls">
+            <button @onclick=GetInnerHeight>InnerHeight</button>
+            <button @onclick=GetInnerWidth>InnerWidth</button>
+            <button @onclick=GetOuterHeight>OuterHeight</button>
+            <button @onclick=GetOuterWidth>OuterWidth</button>
+            <button @onclick=GetScreenX>ScreenX</button>
+            <button @onclick=GetScreenY>ScreenY</button>
+            <button @onclick=GetScrollX>ScrollX</button>
+            <button @onclick=GetScrollY>ScrollY</button>
+        </div>
+    </DemoCard>
 
-<button @onclick=AddEventListener>AddEventListener</button>
-&nbsp;
-<button @onclick=RemoveEventListener>RemoveEventListener</button>
-<br />
-<br />
-<div>Is KeyDown Registered? @isKeyDownRegistered</div>
+    <DemoCard Title="Dialogs" Api="Alert / Confirm / Prompt"
+              Description="Show the native browser dialog boxes.">
+        <div class="controls">
+            <button @onclick=ShowAlert>Alert</button>
+            <button @onclick=ShowConfirm>Confirm</button>
+            <button @onclick=ShowPrompt>Prompt</button>
+        </div>
+    </DemoCard>
 
-<br />
-<hr />
-<br />
+    <DemoCard Title="Windows & printing" Api="Open / Close / Print"
+              Description="Open a popup window to /document, close the most recent one, or open the print dialog.">
+        <div class="controls">
+            <button @onclick=OpenWindow>Open window</button>
+            <button class="secondary" @onclick=CloseWindow>Close window</button>
+            <button class="secondary" @onclick=OpenPrint>Print</button>
+        </div>
+    </DemoCard>
 
-<button @onclick=AddBeforeUnload>AddBeforeUnload</button>
-&nbsp;
-<button @onclick=RemoveBeforeUnload>RemoveBeforeUnload</button>
-<br />
-<br />
-<div>Is BeforeUnload Registered? @isBeforeUnloadRegistered</div>
+    <DemoCard Title="Base64 encode / decode" Api="Btoa / Atob"
+              Description="Encode a string to base64 and decode it back.">
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <input @bind-value="btoaValue" placeholder="Text to encode" />
+            <button @onclick=EncodeData>Encode</button>
+        </div>
+        <div class="inline-field">
+            <input @bind-value="atobValue" placeholder="Base64 to decode" />
+            <button @onclick=DecodeData>Decode</button>
+        </div>
+    </DemoCard>
 
-<br />
-<hr />
-<br />
+    <DemoCard Title="Find in page" Api="Find"
+              Description="Search for text on this page with optional matching rules.">
+        <div class="field">
+            <span class="field-label">Search text</span>
+            <input @bind-value="searchText" placeholder="Find text on page" />
+        </div>
+        <div class="check-row"><input type="checkbox" id="cs" @bind-value="isCaseSensitive" /><label for="cs">Case sensitive</label></div>
+        <div class="check-row"><input type="checkbox" id="bw" @bind-value="isBackward" /><label for="bw">Backward</label></div>
+        <div class="check-row"><input type="checkbox" id="wa" @bind-value="isWrapAround" /><label for="wa">Wrap around</label></div>
+        <div class="check-row"><input type="checkbox" id="ww" @bind-value="isWholeWord" /><label for="ww">Whole word</label></div>
+        <div class="check-row"><input type="checkbox" id="sf" @bind-value="isSearchInFrame" /><label for="sf">Search in frame</label></div>
+        <button @onclick=Find>Find</button>
+    </DemoCard>
 
-<button @onclick=GetInnerHeight>GetInnerHeight</button>
-&nbsp;
-<button @onclick=GetInnerWidth>GetInnerWidth</button>
+    <DemoCard Title="Context & naming" Api="IsSecureContext / SetName / GetName / GetOrigin"
+              Description="Check whether the context is secure, and read/write the window name and origin.">
+        <div class="controls" style="margin-bottom:.7rem">
+            <button @onclick=CheckContextIsSecured>IsSecureContext</button>
+            <button @onclick=GetOrigin>GetOrigin</button>
+            <button @onclick=GetWindowName>GetName</button>
+        </div>
+        <div class="inline-field">
+            <input @bind-value="windowName" placeholder="New window name" />
+            <button @onclick=SetWindowName>SetName</button>
+        </div>
+    </DemoCard>
 
-<br />
-<br />
-<hr />
-<br />
+    <DemoCard Title="Selection & media query" Api="GetSelection / MatchMedia"
+              Description="Read the text currently selected on this page, or test a media query.">
+        <div class="controls">
+            <button @onclick=GetSelection>GetSelection</button>
+            <button @onclick=GetMatchMedia>MatchMedia (max-width: 600px)</button>
+        </div>
+        <p class="muted" style="margin-top:.6rem">Highlight some text on this page, then click GetSelection.</p>
+    </DemoCard>
 
-<button @onclick=GetOuterHeight>GetOuterHeight</button>
-&nbsp;
-<button @onclick=GetOuterWidth>GetOuterWidth</button>
+    <DemoCard Title="Scroll" Api="Scroll / ScrollBy"
+              Description="Scroll to an absolute position, or by a relative offset, with smooth behavior.">
+        <div class="inline-field" style="margin-bottom:.6rem">
+            <label>X</label><input type="number" @bind-value="scrollX" />
+            <label>Y</label><input type="number" @bind-value="scrollY" />
+            <button @onclick=Scroll>Scroll</button>
+        </div>
+        <div class="inline-field">
+            <label>X</label><input type="number" @bind-value="scrollByX" />
+            <label>Y</label><input type="number" @bind-value="scrollByY" />
+            <button @onclick=ScrollBy>ScrollBy</button>
+        </div>
+    </DemoCard>
+</div>
 
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick=GetScreenX>GetScreenX</button>
-&nbsp;
-<button @onclick=GetScreenY>GetScreenY</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick=GetScrollX>GetScrollX</button>
-&nbsp;
-<button @onclick=GetScrollY>GetScrollY</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick=ShowAlert>ShowAlert</button>
-&nbsp;
-<button @onclick=ShowConfirm>ShowConfirm</button>
-&nbsp;
-<button @onclick=ShowPrompt>ShowPrompt</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick=OpenWindow>OpenWindow</button>
-<button @onclick=CloseWindow>CloseWindow</button>
-<br />
-<br />
-<button @onclick=OpenPrint>OpenPrint</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<input @bind-value="btoaValue" />
-<br />
-<br />
-<button @onclick=EncodeData>EncodeData</button>
-<br />
-<br />
-<div>Encoded text is: @btoaText</div>
-
-<br />
-<br />
-
-<input @bind-value="atobValue" />
-<br />
-<br />
-<button @onclick=DecodeData>DecodeData</button>
-<br />
-<br />
-<div>Decoded text is: @atobText</div>
-
-<br />
-<hr />
-<br />
-
-<input placeholder="Find text on page" @bind-value="searchText" />
-<br />
-<br />
-<input type="checkbox" name="caseSensitive" @bind-value="isCaseSensitive"/>
-<label for="caseSensitive">CaseSensitive</label>
-<br />
-<input type="checkbox" name="backward" @bind-value="isBackward"/>
-<label for="backward">Backward</label>
-<br />
-<input type="checkbox" name="wrapAround" @bind-value="isWrapAround" />
-<label for="wrapAround">WrapAround</label>
-<br />
-<input type="checkbox" name="wholeWord" @bind-value="isWholeWord" />
-<label for="wholeWord">WholeWord</label>
-<br />
-<input type="checkbox" name="searchInFrame" @bind-value="@isSearchInFrame" />
-<label for="searchInFrame">SearchInFrame</label>
-<br />
-<br />
-<button @onclick=Find>Find</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-<button @onclick=CheckContextIsSecured>CheckContextIsSecured</button>
-<br />
-<br />
-<div>Is context secured? @contextSecureStatus</div>
-
-<br />
-<hr />
-<br />
-
-<input @bind-value="windowName" />
-<br />
-<br />
-<button @onclick=SetWindowName>SetWindowName</button>
-
-<br />
-<br />
-<br />
-
-<button @onclick=GetWindowName>GetWindowName</button>
-<br />
-<br />
-<div>Current window name is: @currentWindowName</div>
-
-<br />
-<hr />
-<br />
-
-<button @onclick=GetOrigin>GetOrigin</button>
-<br />
-<br />
-<div>Origin is: @origin</div>
-
-<br />
-<hr />
-<br />
-
-<div>Select/Highlight a text on this window</div>
-<br />
-<button @onclick=GetSelection>GetSelection</button>
-<br />
-<br />
-<div>Selected text is: @selectedText</div>
-
-<br />
-<hr />
-<br />
-
-<button @onclick=GetMatchMedia>GetMatchMedia</button>
-<br />
-<br />
-<div>Is media query matches 'max-width: 600px'? @mediaQueryMatchStatus</div>
-
-<br />
-<hr />
-<br />
-
-X: <input type="number" @bind-value="scrollX"/>
-<br />
-<br />
-Y: <input type="number" @bind-value="scrollY"/>
-<br />
-<br />
-<button @onclick=Scroll>Scroll</button>
-
-<br />
-<br />
-<hr />
-<br />
-
-X: <input type="number" @bind-value="scrollByX"/>
-<br />
-<br />
-Y: <input type="number" @bind-value="scrollByY"/>
-<br />
-<br />
-<button @onclick=ScrollBy>ScrollBy</button>
-
-<br />
-<br />
+<DemoConsole @ref="output" Title="window output" />
 
 @code {
+    private DemoConsole output = default!;
+
     private bool isKeyDownRegistered;
     private bool isBeforeUnloadRegistered;
-
-    private string contextSecureStatus;
 
     private string btoaValue;
     private string atobValue;
 
-    private string btoaText;
-    private string atobText;
-
     private string searchText;
-    private bool isCaseSensitive; 
-    private bool isBackward; 
-    private bool isWrapAround; 
-    private bool isWholeWord; 
-    private bool isSearchInFrame; 
+    private bool isCaseSensitive;
+    private bool isBackward;
+    private bool isWrapAround;
+    private bool isWholeWord;
+    private bool isSearchInFrame;
 
     private string windowName;
-    private string currentWindowName;
-
-    private string origin;
-
-    private string selectedText;
-
-    private string mediaQueryMatchStatus;
 
     private float scrollY = 0;
     private float scrollX = 0;
@@ -274,7 +160,7 @@ Y: <input type="number" @bind-value="scrollByY"/>
 
     protected override void OnInitialized()
     {
-        _handler = (ButilKeyboardEventArgs arg) => _ = console.Log("KeyDown from C#:", arg.Code);
+        _handler = (ButilKeyboardEventArgs arg) => _ = output.Info("KeyDown from C# →", arg.Code);
 
         base.OnInitialized();
     }
@@ -303,136 +189,91 @@ Y: <input type="number" @bind-value="scrollByY"/>
         isBeforeUnloadRegistered = false;
     }
 
-    private async Task GetInnerHeight()
-    {
-        await console.Log("Window InnerHeight =", await window.GetInnerHeight());
-    }
+    private async Task GetInnerHeight() => await output.Success("InnerHeight →", await window.GetInnerHeight());
+    private async Task GetInnerWidth() => await output.Success("InnerWidth →", await window.GetInnerWidth());
+    private async Task GetOuterHeight() => await output.Success("OuterHeight →", await window.GetOuterHeight());
+    private async Task GetOuterWidth() => await output.Success("OuterWidth →", await window.GetOuterWidth());
+    private async Task GetScreenX() => await output.Success("ScreenX →", await window.GetScreenX());
+    private async Task GetScreenY() => await output.Success("ScreenY →", await window.GetScreenY());
+    private async Task GetScrollX() => await output.Success("ScrollX →", await window.GetScrollX());
+    private async Task GetScrollY() => await output.Success("ScrollY →", await window.GetScrollY());
 
-    private async Task GetInnerWidth()
-    {
-        await console.Log("Window InnerWidth =", await window.GetInnerWidth());
-    }
-
-    private async Task GetOuterHeight()
-    {
-        await console.Log("Window OuterHeight =", await window.GetOuterHeight());
-    }
-
-    private async Task GetOuterWidth()
-    {
-        await console.Log("Window OuterWidth =", await window.GetOuterWidth());
-    }
-
-    private async Task GetScreenX()
-    {
-        await console.Log("Window ScreenX =", await window.GetScreenX());
-    }
-
-    private async Task GetScreenY()
-    {
-        await console.Log("Window ScreenY =", await window.GetScreenY());
-    }
-
-    private async Task GetScrollX()
-    {
-        await console.Log("Window ScrollX =", await window.GetScrollX());
-    }
-
-    private async Task GetScrollY()
-    {
-        await console.Log("Window ScrollY =", await window.GetScrollY());
-    }
-
-    private async Task ShowAlert()
-    {
-        await window.Alert("Alert from C#");
-    }
-
-    private async Task ShowConfirm()
-    {
-        await window.Confirm("Confirm from C#");
-    }
-
-    private async Task ShowPrompt()
-    {
-        await window.Prompt("Prompt from C#", string.Empty);
-    }
+    private async Task ShowAlert() => await window.Alert("Alert from C#");
+    private async Task ShowConfirm() => await output.Success("Confirm →", await window.Confirm("Confirm from C#"));
+    private async Task ShowPrompt() => await output.Success("Prompt →", await window.Prompt("Prompt from C#", string.Empty));
 
     private List<string> windowIds = [];
     private async Task OpenWindow()
     {
         var windowFeatures = new WindowFeatures() { Popup = true, Width = 848, Height = 568 };
         windowIds.Add(await window.Open("/document", "_blank", windowFeatures));
+        await output.Log("Opened a popup window");
     }
 
     private async Task CloseWindow()
     {
-        if (windowIds.Count == 0) return;
+        if (windowIds.Count == 0)
+        {
+            await output.Warn("No window to close");
+            return;
+        }
         var id = windowIds[^1];
         await window.Close(id);
         windowIds.Remove(id);
+        await output.Log("Closed the popup window");
     }
 
-    private async Task OpenPrint()
-    {
-        await window.Print();
-    }
+    private async Task OpenPrint() => await window.Print();
 
     private async Task EncodeData()
     {
-        var res = await window.Btoa(btoaValue);
-        btoaText = res;
+        var res = await window.Btoa(btoaValue ?? string.Empty);
+        await output.Success("Btoa →", res);
     }
 
     private async Task DecodeData()
     {
-        var res = await window.Atob(atobValue);
-        atobText = res;
+        var res = await window.Atob(atobValue ?? string.Empty);
+        await output.Success("Atob →", res);
     }
 
     private async Task Find()
     {
-        await window.Find(searchText,
-            isCaseSensitive,
-            isBackward,
-            isWrapAround,
-            isWholeWord,
-            isSearchInFrame);
+        var found = await window.Find(searchText, isCaseSensitive, isBackward, isWrapAround, isWholeWord, isSearchInFrame);
+        await output.Success($"Find(\"{searchText}\") →", found);
     }
 
     private async Task CheckContextIsSecured()
     {
-        var res = await window.IsSecureContext();
-        contextSecureStatus = res.ToString();
+        await output.Success("IsSecureContext →", await window.IsSecureContext());
     }
 
     private async Task SetWindowName()
     {
         await window.SetName(windowName);
+        await output.Log("window.name set to", $"\"{windowName}\"");
     }
 
     private async Task GetWindowName()
     {
-        var res = await window.GetName();
-        currentWindowName = res;
+        await output.Success("window.name →", await window.GetName());
     }
 
     private async Task GetOrigin()
     {
-        var res = await window.GetOrigin();
-        origin = res;
+        await output.Success("window.origin →", await window.GetOrigin());
     }
 
     private async Task GetSelection()
     {
         var res = await window.GetSelection();
-        selectedText = res;
+        await output.Success("Selected text →", $"\"{res?.Text ?? string.Empty}\"");
     }
 
     private async Task GetMatchMedia()
     {
         var res = await window.MatchMedia("(max-width: 600px)");
-        mediaQueryMatchStatus = res.Matches.ToString();
+        await output.Success("matchMedia(max-width: 600px) →", res.Matches);
     }
 
     private async Task Scroll()
