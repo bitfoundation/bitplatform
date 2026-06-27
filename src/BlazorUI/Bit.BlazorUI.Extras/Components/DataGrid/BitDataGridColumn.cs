@@ -100,6 +100,14 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     // can be removed) rather than leaving a stale registry key behind.
     private string? _registeredId;
 
+    // Snapshot of the parameters that affect the grid's computed view/aggregates. When any of these
+    // change after registration the grid must recompute even if the resolved Id is unchanged (e.g. a
+    // fixed ColumnId with a mutated Field, or a changed Aggregate/Format).
+    private string? _lastField;
+    private BitDataGridAggregateType _lastAggregate;
+    private string? _lastFormat;
+    private string? _lastAggregateFormat;
+
     internal string DisplayTitle => Title ?? Humanize(Field) ?? Id;
 
     internal bool HasField => !string.IsNullOrEmpty(Field);
@@ -140,6 +148,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
         Grid.AddColumn(this);
         _registeredId = Id;
+        SnapshotSemanticParameters();
     }
 
     protected override void OnParametersSet()
@@ -156,7 +165,32 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         {
             Grid?.UpdateColumnRegistration(this, _registeredId);
             _registeredId = Id;
+            // UpdateColumnRegistration already refreshes the grid; resync the snapshot so the change
+            // detection below doesn't trigger a second redundant refresh in the same parameter set.
+            SnapshotSemanticParameters();
         }
+        else if (_registeredId is not null && SemanticParametersChanged())
+        {
+            // Field/Aggregate/Format/AggregateFormat changed while the Id stayed the same (typically a
+            // fixed ColumnId with a mutated Field). The grid resolves accessors/aggregates by column,
+            // so ask it to recompute its view so the active state doesn't go stale.
+            Grid?.NotifyColumnChanged();
+            SnapshotSemanticParameters();
+        }
+    }
+
+    private bool SemanticParametersChanged()
+        => _lastField != Field
+        || _lastAggregate != Aggregate
+        || _lastFormat != Format
+        || _lastAggregateFormat != AggregateFormat;
+
+    private void SnapshotSemanticParameters()
+    {
+        _lastField = Field;
+        _lastAggregate = Aggregate;
+        _lastFormat = Format;
+        _lastAggregateFormat = AggregateFormat;
     }
 
     public void Dispose() => Grid?.RemoveColumn(this);

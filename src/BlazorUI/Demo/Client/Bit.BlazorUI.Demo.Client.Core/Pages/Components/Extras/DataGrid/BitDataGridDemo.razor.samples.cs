@@ -492,7 +492,7 @@ private void OnCellContextMenu(BitDataGridCellEventArgs<Product> e) { /* e.Mouse
 
     private readonly string example17RazorCode = @"
 <BitDataGrid TItem=""Product"" Items=""@products"" Height=""460px""
-             CellNavigation=""true"" Sortable=""true"" Editable=""true"">
+             CellNavigation=""true"" Sortable=""true"" Editable=""true"" OnRowSave=""_ => {}"">
     <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" Editable=""false"" />
     <BitDataGridColumn TItem=""Product"" Field=""Name"" />
     <BitDataGridColumn TItem=""Product"" Field=""Price"" Format=""C2"" />

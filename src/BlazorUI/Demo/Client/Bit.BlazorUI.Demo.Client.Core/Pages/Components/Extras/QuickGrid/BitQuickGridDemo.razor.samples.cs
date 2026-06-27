@@ -411,10 +411,16 @@ protected override async Task OnInitializedAsync()
             var firmFilter = _virtualSampleNameFilter?.Replace(""\\"", string.Empty).Replace(""\"""""", string.Empty) ?? string.Empty;
             var query = new Dictionary<string, object?>
             {
-                { ""search"",$""recalling_firm:\""{firmFilter}\"" },
                 { ""skip"", req.StartIndex },
                 { ""limit"", req.Count }
             };
+
+            // Only add the firm filter when the user typed something; an empty Lucene clause
+            // would suppress the default (unfiltered) results.
+            if (!string.IsNullOrWhiteSpace(firmFilter))
+            {
+                query.Add(""search"", $""recalling_firm:\""{firmFilter}\"""");
+            }
 
             var sort = req.GetSortByProperties().SingleOrDefault();
 

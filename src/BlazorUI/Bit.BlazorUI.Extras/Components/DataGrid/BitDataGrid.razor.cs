@@ -252,6 +252,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal void AddColumn(BitDataGridColumn<TItem> column)
     {
         if (_columns.Contains(column)) return;
+
+        // Reject a second column registering under an id that is already taken. Overwriting the
+        // registry entry while both columns remain in _columns would desync the two collections, so
+        // sort/filter/group/footer lookups (which resolve a column by id) could resolve to the wrong
+        // instance. Skip the duplicate instead of silently shadowing the existing column.
+        if (_columnsById.ContainsKey(column.Id)) return;
+
         _columns.Add(column);
         _columnsById[column.Id] = column;
 
@@ -260,6 +267,24 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // Instead recompute footer/aggregate values from the rows already loaded and just re-render so
         // late-registered footer columns still get their values. In client mode RefreshAsync only
         // reprocesses the in-memory view (and recomputes aggregates), so it is cheap and used as-is.
+        if (IsServerMode || IsInfiniteMode)
+        {
+            _footerAggregates = BitDataGridDataProcessor.Aggregate(_pageItems, _columns);
+            InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            InvokeAsync(RefreshAsync);
+        }
+    }
+
+    /// <summary>
+    /// Recomputes the grid's view and aggregates after a registered column's semantic parameters
+    /// (Field/Aggregate/Format/AggregateFormat) change without its <see cref="BitDataGridColumn{TItem}.Id"/>
+    /// changing. Mirrors <see cref="AddColumn"/>'s mode-aware refresh so the active view never goes stale.
+    /// </summary>
+    internal void NotifyColumnChanged()
+    {
         if (IsServerMode || IsInfiniteMode)
         {
             _footerAggregates = BitDataGridDataProcessor.Aggregate(_pageItems, _columns);
@@ -1077,6 +1102,30 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     // ----------------------------------------------------- Row reordering
     internal void StartRowDrag(TItem row) => _dragRow = row;
+
+    /// <summary>
+    /// Moves a row one position toward the start (<paramref name="delta"/> = -1) or end (+1) of the
+    /// current view, reusing the same reorder pipeline as drag-and-drop. Backs the keyboard-accessible
+    /// reorder handle so row reordering is not pointer-only.
+    /// </summary>
+    internal async Task MoveRowAsync(TItem row, int delta)
+    {
+        if (!RowReorderable) return;
+
+        var view = _view;
+        int from = -1;
+        for (int i = 0; i < view.Count; i++)
+        {
+            if (EqualityComparer<TItem>.Default.Equals(view[i], row)) { from = i; break; }
+        }
+        if (from < 0) return;
+
+        var to = from + delta;
+        if (to < 0 || to >= view.Count) return;
+
+        _dragRow = row;
+        await DropRowAsync(view[to]);
+    }
 
     internal async Task DropRowAsync(TItem target)
     {

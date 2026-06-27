@@ -114,6 +114,7 @@
                             var draggable = ColumnReorderable(column) ? "true" : "false";
                             <div class="@hcellClass"
                                  role="columnheader"
+                                 aria-sort="@(sort is null ? null : sort.Direction == BitDataGridSortDirection.Ascending ? "ascending" : "descending")"
                                  style="@FrozenStyle(column)"
                                  draggable="@draggable"
                                  @ondragstart="() => StartColumnDrag(column)"

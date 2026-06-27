@@ -96,7 +96,10 @@ public sealed class BitDataGridPropertyAccessor<TItem>
                 // culture to match the ISO 8601 string the editors emit, so conversion is locale-stable.
                 result = value is DateTimeOffset dto ? dto : DateTimeOffset.Parse(value.ToString()!, CultureInfo.InvariantCulture);
             else
-                result = Convert.ChangeType(value, target);
+                // Parse with the invariant culture so editor values are coerced consistently
+                // regardless of the current thread culture (e.g. "1.5" must not be misread in a
+                // comma-decimal locale where the editor still emits an invariant numeric string).
+                result = Convert.ChangeType(value, target, CultureInfo.InvariantCulture);
             return true;
         }
         catch

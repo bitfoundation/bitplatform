@@ -356,7 +356,7 @@ public partial class BitQuickGridDemo : AppComponentBase
          {
             Id = "pagination-state",
             Title = "BitQuickGridPaginationState",
-            Description = "A component that provides a user interface for pagination.",
+            Description = "Holds state to represent the pagination of a BitQuickGrid. Tracks the current page index, the number of items per page, and the total item count so a paginator UI and the grid stay in sync.",
             Parameters=
             [
                 new()
@@ -620,10 +620,17 @@ public partial class BitQuickGridDemo : AppComponentBase
                 var firmFilter = _virtualSampleNameFilter?.Replace("\\", string.Empty).Replace("\"", string.Empty) ?? string.Empty;
                 var query = new Dictionary<string, object?>
                 {
-                    { "search", $"recalling_firm:\"{firmFilter}\"" },
                     { "skip", req.StartIndex },
                     { "limit", req.Count }
                 };
+
+                // Only constrain by firm when the user actually typed something: sending an empty
+                // recalling_firm clause is an empty Lucene query that suppresses the default results
+                // on the initial (unfiltered) load.
+                if (!string.IsNullOrWhiteSpace(firmFilter))
+                {
+                    query.Add("search", $"recalling_firm:\"{firmFilter}\"");
+                }
 
                 var sort = req.GetSortByProperties().SingleOrDefault();
 

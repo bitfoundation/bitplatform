@@ -12,19 +12,19 @@
     case BitDataGridColumnDataType.Number:
         <input type="number" class="bit-dtg-editor" step="any"
                value="@(GetNumberString())"
-               @oninput="e => Set(e.Value)" />
+               @oninput="e => SetNullable(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.Date:
         <input type="date" class="bit-dtg-editor"
                value="@(GetDate())"
-               @onchange="e => Set(e.Value)" />
+               @onchange="e => SetNullable(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.DateTime:
         <input type="datetime-local" class="bit-dtg-editor"
                value="@(GetDateTime())"
-               @onchange="e => Set(e.Value)" />
+               @onchange="e => SetNullable(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.DateTimeOffset:
@@ -108,6 +108,25 @@
 
     private void Set(object? raw) => Grid.SetEditValue(Column, raw);
 
+    // True when the bound member is a nullable value type (e.g. int?, DateTime?). A cleared editor
+    // (empty string) should then map back to null rather than being rejected by the accessor's type
+    // conversion, which would otherwise leave the previous value in place.
+    private bool IsNullableValue
+        => Column.Accessor is not null
+        && Nullable.GetUnderlyingType(Column.Accessor.PropertyType) is not null;
+
+    // Normalizes a cleared number/date input: an empty string maps to null when the bound property is
+    // nullable so the cell actually clears, otherwise the raw value flows through the normal Set path.
+    private void SetNullable(object? raw)
+    {
+        if (raw is string s && string.IsNullOrEmpty(s) && IsNullableValue)
+        {
+            Grid.SetEditValue(Column, null);
+            return;
+        }
+        Set(raw);
+    }
+
     // <input type="datetime-local"> has no UTC offset, so a naive parse back through the property
     // accessor would discard the original offset. Combine the edited local date/time with the offset
     // of the current value (falling back to the system local offset for a new/empty value) and pass a
@@ -123,7 +142,7 @@
         }
         else
         {
-            Grid.SetEditValue(Column, raw);
+            SetNullable(raw);
         }
     }
 }
