@@ -30,7 +30,10 @@
                 }
                 @if (ShowColumnChooser)
                 {
-                    <button type="button" class="bit-dtg-btn" @onclick="ToggleColumnChooser">Columns ▾</button>
+                    <button type="button" class="bit-dtg-btn" @onclick="ToggleColumnChooser"
+                            aria-haspopup="true"
+                            aria-expanded="@(_showColumnChooserPanel ? "true" : "false")"
+                            aria-controls="@_columnChooserPanelId">Columns ▾</button>
                 }
             </div>
         </div>
@@ -38,7 +41,7 @@
 
     @if (_showColumnChooserPanel)
     {
-        <div class="bit-dtg-column-chooser">
+        <div class="bit-dtg-column-chooser" id="@_columnChooserPanelId">
             @foreach (var col in AllColumns)
             {
                 <label class="bit-dtg-chooser-item">
@@ -217,7 +220,10 @@
                 </div>
             }
 
-            <div class="bit-dtg-body" role="rowgroup">
+            @* Virtualize injects spacer <div>s as direct children of its host. An ARIA rowgroup must
+               contain only row elements, so when virtualizing we drop the rowgroup role here (the rows
+               stay valid grid descendants) to keep the Virtualize host free of non-row ARIA children. *@
+            <div class="bit-dtg-body" role="@(UseVirtualization ? null : "rowgroup")">
                 @if (PendingNewItem is not null)
                 {
                     <BitDataGridRow TItem="TItem" Grid="this" Item="PendingNewItem" />

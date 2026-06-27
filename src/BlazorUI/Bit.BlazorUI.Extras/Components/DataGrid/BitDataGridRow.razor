@@ -2,12 +2,12 @@
 @namespace Bit.BlazorUI
 
 <div class="@RowClass" role="row" style="@RowStyle" @onclick="OnRowClick"
-     draggable="@(Grid.RowReorderable && !Editing ? "true" : null)"
+     draggable="@(Grid.RowReorderEnabled && !Editing ? "true" : null)"
      @ondragstart="() => Grid.StartRowDrag(Item)"
-     @ondragover:preventDefault="@(Grid.RowReorderable && !Editing)"
+     @ondragover:preventDefault="@(Grid.RowReorderEnabled && !Editing)"
      @ondrop="() => Grid.DropRowAsync(Item)">
 
-    @if (Grid.RowReorderable)
+    @if (Grid.RowReorderEnabled)
     {
         <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="gridcell" @onclick:stopPropagation="true">
             <button type="button" class="bit-dtg-drag-handle"
@@ -164,7 +164,7 @@
     // one position toward the start/end, reusing the same reorder pipeline as the pointer drag path.
     private async Task HandleReorderKeyDown(KeyboardEventArgs e)
     {
-        if (!Grid.RowReorderable) return;
+        if (!Grid.RowReorderEnabled) return;
         if (e.Key == "ArrowUp") await Grid.MoveRowAsync(Item, -1);
         else if (e.Key == "ArrowDown") await Grid.MoveRowAsync(Item, 1);
     }

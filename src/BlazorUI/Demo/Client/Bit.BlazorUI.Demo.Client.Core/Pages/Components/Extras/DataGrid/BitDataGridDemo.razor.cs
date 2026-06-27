@@ -252,8 +252,8 @@ public partial class BitDataGridDemo : AppComponentBase
     // requested equality/range operator is honored instead of a substring match on ToString().
     private static bool MatchComparable<T>(T value, BitDataGridFilterDescriptor f) where T : IComparable
     {
-        if (f.Operator is BitDataGridFilterOperator.IsEmpty) return f.Value is null;
-        if (f.Operator is BitDataGridFilterOperator.IsNotEmpty) return f.Value is not null;
+        if (f.Operator is BitDataGridFilterOperator.IsEmpty) return value is null;
+        if (f.Operator is BitDataGridFilterOperator.IsNotEmpty) return value is not null;
         if (f.Value is null) return true;
 
         // The grid hands back a value already of the column's type; guard against an unexpected type.

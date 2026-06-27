@@ -417,9 +417,9 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         // Move into a "loading" state, cancelling any earlier-but-still-pending load. Do NOT dispose
         // the previous source here: the load that owns it may still be in flight and holding its token
         // (e.g. registered on it), so disposing now could surface an ObjectDisposedException instead of
-        // the expected OperationCanceledException. The owning load disposes its own source in its
-        // finally block (only when it is still the current one); a superseded source has no timer or
-        // registrations of its own, so it is cheap to let the GC reclaim it.
+        // the expected OperationCanceledException. Each load disposes its own source in its finally block
+        // once it has finished using it (whether or not it is still the current one), so a superseded
+        // source is disposed by its owning load rather than leaked to the GC.
         _pendingDataLoadCancellationTokenSource?.Cancel();
         var thisLoadCts = _pendingDataLoadCancellationTokenSource = new CancellationTokenSource();
 
@@ -447,9 +447,11 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
             {
                 // Always reconcile the load-state, even if RefreshDataAsync threw, so we don't leak the
                 // CTS or leave _pendingDataLoadCancellationTokenSource pointing at a disposed instance.
+                // This load is done with its own source, so dispose it unconditionally; only clear the
+                // field when it still points at this source (a newer load may already own it).
+                thisLoadCts.Dispose();
                 if (ReferenceEquals(_pendingDataLoadCancellationTokenSource, thisLoadCts))
                 {
-                    thisLoadCts.Dispose();
                     _pendingDataLoadCancellationTokenSource = null;
                 }
             }
@@ -479,9 +481,11 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
             }
             finally
             {
+                // This load is done with its own source, so dispose it unconditionally to avoid leaking
+                // a superseded source; only clear the field when it still points at this source.
+                thisLoadCts.Dispose();
                 if (ReferenceEquals(_pendingDataLoadCancellationTokenSource, thisLoadCts))
                 {
-                    thisLoadCts.Dispose();
                     _pendingDataLoadCancellationTokenSource = null;
                 }
             }

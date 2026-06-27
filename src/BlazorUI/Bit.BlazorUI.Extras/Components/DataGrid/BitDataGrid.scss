@@ -500,6 +500,13 @@ button.bit-dtg-htext {
     color: var(--bit-clr-pri-text);
 }
 
+/* Win over the generic .bit-dtg-btn:hover rule so primary buttons keep their primary treatment on hover */
+.bit-dtg-btn-primary:hover:not(:disabled) {
+    background: var(--bit-clr-pri-hover);
+    border-color: var(--bit-clr-pri-hover);
+    color: var(--bit-clr-pri-text);
+}
+
 .bit-dtg-btn-danger {
     color: var(--bit-clr-err);
     border-color: var(--bit-clr-err);

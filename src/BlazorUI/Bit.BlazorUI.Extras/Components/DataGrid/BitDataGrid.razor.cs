@@ -185,6 +185,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private int _currentPage = 1;
     private int _effectivePageSize;
     private bool _showColumnChooserPanel;
+    // Stable per-instance id tying the column-chooser toggle button (aria-controls/aria-expanded) to
+    // the chooser panel it shows, so assistive tech can announce whether the chooser is open.
+    private readonly string _columnChooserPanelId = $"bit-dtg-cc-{Guid.NewGuid():n}";
 
     // Tracks external data inputs so we only (re)load when they actually change,
     // rather than on every parent re-render (which would loop in server mode).
@@ -1184,7 +1187,24 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal bool ColumnReorderable(BitDataGridColumn<TItem> column) => column.Reorderable ?? Reorderable;
 
     // ----------------------------------------------------- Row reordering
-    internal void StartRowDrag(TItem row) => _dragRow = row;
+    // Row reordering moves items by index within the bound source list (see DropRowAsync). That is only
+    // coherent when the rendered order maps 1:1 to that source, so it is disabled whenever the view is
+    // transformed (sorting, filtering, grouping, tree mode) or driven remotely (server/infinite), where
+    // _view no longer matches the underlying Items list. Centralizing the gate here keeps the drag handle,
+    // drag start, keyboard move and drop all consistent.
+    internal bool RowReorderEnabled => RowReorderable
+        && _sorts.Count == 0
+        && _filters.Count == 0
+        && _groups.Count == 0
+        && !IsTreeMode
+        && !IsServerMode
+        && !IsInfiniteMode;
+
+    internal void StartRowDrag(TItem row)
+    {
+        if (!RowReorderEnabled) return;
+        _dragRow = row;
+    }
 
     /// <summary>
     /// Moves a row one position toward the start (<paramref name="delta"/> = -1) or end (+1) of the
@@ -1193,7 +1213,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// </summary>
     internal async Task MoveRowAsync(TItem row, int delta)
     {
-        if (!RowReorderable) return;
+        if (!RowReorderEnabled) return;
 
         var view = _view;
         int from = -1;
@@ -1212,6 +1232,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal async Task DropRowAsync(TItem target)
     {
+        if (!RowReorderEnabled) { _dragRow = default; return; }
         if (_dragRow is null || KeyEquals(_dragRow, target)) { _dragRow = default; return; }
 
         var dragged = _dragRow;
@@ -1564,7 +1585,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal bool HasSelectColumn => SelectionMode == BitDataGridSelectionMode.Multiple;
     internal bool HasDetailColumn => DetailTemplate is not null;
     internal bool HasCommandColumn => Editable;
-    internal bool HasReorderColumn => RowReorderable;
+    internal bool HasReorderColumn => RowReorderEnabled;
 
     private const double ReorderColWidth = 36;
     private const double DetailColWidth = 44;

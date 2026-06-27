@@ -206,7 +206,7 @@ public class MedalsModel
                 </ColumnOptions>
             </BitQuickGridPropertyColumn>
             <BitQuickGridTemplateColumn Title=""Flag"" Align=""BitQuickGridAlign.Center"">
-                <img class=""flag"" src=""https://flagsapi.com/@(context.Code)/shiny/32.png"" loading=""lazy"" alt=""@(context.Code)"" />
+                <img class=""flag"" src=""_content/Bit.BlazorUI.Extras/flags/@(context.Code)-flat-16.webp"" loading=""lazy"" alt=""@(context.Code)"" />
             </BitQuickGridTemplateColumn>
             <BitQuickGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" />
             <BitQuickGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
@@ -396,7 +396,7 @@ string VirtualSampleNameFilter
     set
     {
         _virtualSampleNameFilter = value;
-        _ = dataGrid.RefreshDataAsync();
+        _ = dataGrid?.RefreshDataAsync();
     }
 }
 
@@ -718,7 +718,7 @@ string ODataSampleNameFilter
     set
     {
         _odataSampleNameFilter = value;
-        _ = productsDataGrid.RefreshDataAsync();
+        _ = productsDataGrid?.RefreshDataAsync();
     }
 }
 

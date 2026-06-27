@@ -100,6 +100,9 @@
     private string SortButtonLabel()
         => string.IsNullOrEmpty(Title) ? "Sort" : $"Sort by {Title}";
 
+    private string ColumnOptionsLabel()
+        => string.IsNullOrEmpty(Title) ? "Column options" : $"Column options for {Title}";
+
     private void RenderDefaultHeaderContent(RenderTreeBuilder __builder)
     {
         @if (HeaderTemplate is not null)
@@ -110,7 +113,7 @@
         {
             @if (ColumnOptions is not null && Align != BitQuickGridAlign.Right)
             {
-                <button type="button" class="bit-qkg-cob" aria-label="Column options" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
+                <button type="button" class="bit-qkg-cob" aria-label="@ColumnOptionsLabel()" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
             }
 
             if (Sortable.HasValue ? Sortable.Value : IsSortableByDefault())
@@ -129,7 +132,7 @@
 
             @if (ColumnOptions is not null && Align == BitQuickGridAlign.Right)
             {
-                <button type="button" class="bit-qkg-cob" aria-label="Column options" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
+                <button type="button" class="bit-qkg-cob" aria-label="@ColumnOptionsLabel()" @onclick="@(() => Grid.ShowColumnOptions(this))"></button>
             }
         }
     }
