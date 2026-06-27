@@ -25,6 +25,7 @@ public partial class BitRichTextEditor
     [JSInvokable("OnSlashTrigger")]
     public void _OnSlashTrigger()
     {
+        if (ReadOnly) return;
         _slashFilter = "";
         _showSlash = true;
         StateHasChanged();
@@ -45,6 +46,7 @@ public partial class BitRichTextEditor
 
     private async Task ApplySlashAsync(string command)
     {
+        if (ReadOnly) return;
         _showSlash = false;
         _slashFilter = "";
         await _js.BitRichTextEditorApplySlashCommand(_editorRef, command);

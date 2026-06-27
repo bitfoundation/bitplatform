@@ -46,7 +46,7 @@ public partial class BitRichTextEditor
         // YouTube
         var ytId = TryGetYouTubeId(uri);
         if (ytId is not null)
-            return $"<iframe width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/{ytId}\" " +
+            return $"<iframe width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/{Esc(ytId)}\" " +
                    "frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe>";
 
         // Vimeo
@@ -70,17 +70,30 @@ public partial class BitRichTextEditor
     private static string? TryGetYouTubeId(Uri uri)
     {
         var host = uri.Host.ToLowerInvariant();
+        string? id = null;
         if (host.Contains("youtu.be"))
-            return uri.AbsolutePath.Trim('/').Split('/')[0] is { Length: > 0 } id ? id : null;
-        if (host.Contains("youtube.com"))
+        {
+            id = uri.AbsolutePath.Trim('/').Split('/')[0];
+        }
+        else if (host.Contains("youtube.com"))
         {
             var v = GetQueryValue(uri.Query, "v");
-            if (string.IsNullOrEmpty(v) is false) return v;
-            var m = Regex.Match(uri.AbsolutePath, @"/embed/([\w-]+)");
-            if (m.Success) return m.Groups[1].Value;
+            if (string.IsNullOrEmpty(v) is false)
+            {
+                id = v;
+            }
+            else
+            {
+                var m = Regex.Match(uri.AbsolutePath, @"/embed/([\w-]+)");
+                if (m.Success) id = m.Groups[1].Value;
+            }
         }
-        return null;
+        return IsValidYouTubeId(id) ? id : null;
     }
+
+    // YouTube ids are short, URL-safe base64-ish tokens; constrain before embedding in HTML.
+    private static bool IsValidYouTubeId(string? id)
+        => id is { Length: > 0 and <= 20 } && id.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '-');
 
     private static string? GetQueryValue(string query, string key)
     {

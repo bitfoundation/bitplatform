@@ -140,4 +140,24 @@ public class BitRichTextEditorTests : BunitTestContext
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.dispose");
     }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldInvokeSanitizeBridgeWhenPolicyIsSet()
+    {
+        SetupJsInterop();
+        Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", _ => true).SetResult("<p>clean</p>");
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.SanitizationPolicy, BitRichTextEditorSanitizationPolicy.Default);
+        });
+
+        // A value change after initialization routes through the sanitization bridge.
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Value, "<p><script>alert(1)</script>dirty</p>");
+        });
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.sanitizeHtml");
+    }
 }

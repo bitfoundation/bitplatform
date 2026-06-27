@@ -17,7 +17,7 @@ public sealed class BitRichTextEditorSelectionState
     public bool JustifyRight { get; set; }
 
     /// <summary>The current block tag (e.g. "p", "h1", "blockquote", "pre"), lowercase.</summary>
-    public string Block { get; set; } = "";
+    public string Block { get; set; } = "p";
 
     public bool Subscript { get; set; }
     public bool Superscript { get; set; }

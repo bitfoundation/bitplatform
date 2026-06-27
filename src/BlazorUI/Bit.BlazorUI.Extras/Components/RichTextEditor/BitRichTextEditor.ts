@@ -27,7 +27,7 @@ namespace BitBlazorUI {
             const notify = () => {
                 RichTextEditor.updateEmpty(editor);
                 if (editor._dotNetRef)
-                    editor._dotNetRef.invokeMethodAsync('OnContentChanged', editor.innerHTML, RichTextEditor.computeFacts(editor));
+                    editor._dotNetRef.invokeMethodAsync('OnContentChanged', RichTextEditor.cleanHtml(editor), RichTextEditor.computeFacts(editor));
             };
             editor._notify = notify;
 
@@ -100,14 +100,29 @@ namespace BitBlazorUI {
         // Content get/set
         // ====================================================================
         public static getHtml(editor: any): string {
-            return editor ? editor.innerHTML : '';
+            return editor ? RichTextEditor.cleanHtml(editor) : '';
+        }
+
+        // Returns the editor's HTML with transient find-highlight markup stripped, so the
+        // temporary <mark class="bit-rte-find"> nodes never leak into persisted Value.
+        private static cleanHtml(editor: any): string {
+            if (!editor) return '';
+            if (!editor.querySelector('mark.bit-rte-find')) return editor.innerHTML;
+            const clone = editor.cloneNode(true) as HTMLElement;
+            clone.querySelectorAll('mark.bit-rte-find').forEach((m: Element) => {
+                m.replaceWith(...Array.from(m.childNodes));
+            });
+            clone.normalize();
+            return clone.innerHTML;
         }
 
         // Undo-safe set: when the surface is focused and already has content, route the
         // replacement through the engine (insertHTML) so the native undo stack survives.
         public static setHtml(editor: any, html: string) {
             if (!editor) return;
-            const next = html ?? '';
+            // Always sanitize inbound HTML against the active policy (or the secure default
+            // when no policy is set) before it reaches the DOM.
+            const next = RichTextEditor.sanitize(editor, html ?? '');
             if (editor.innerHTML === next) return;
 
             const focused = document.activeElement === editor;
@@ -155,12 +170,20 @@ namespace BitBlazorUI {
 
         public static createLink(editor: any, url: string) {
             if (!editor || !url) return;
+            if (!RichTextEditor.isAllowedUri(editor, url, false)) {
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
+                return;
+            }
             RichTextEditor.dispatch(editor, 'createLink', { value: url });
             RichTextEditor.afterChange(editor);
         }
 
         public static updateLink(editor: any, url: string) {
             if (!editor || !url) return;
+            if (!RichTextEditor.isAllowedUri(editor, url, false)) {
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
+                return;
+            }
             const a = RichTextEditor.linkAtSelection(editor);
             if (a) {
                 a.setAttribute('href', url);
@@ -172,6 +195,10 @@ namespace BitBlazorUI {
 
         public static insertImageUrl(editor: any, url: string) {
             if (!editor || !url) return;
+            if (!RichTextEditor.isAllowedUri(editor, url, true)) {
+                RichTextEditor.reportClientError(editor, 'invalid-url', 'That image URL is not allowed.');
+                return;
+            }
             RichTextEditor.dispatch(editor, 'insertImage', { html: `<img src="${RichTextEditor.escapeAttr(url)}" alt="">` });
             RichTextEditor.afterChange(editor);
         }
@@ -723,8 +750,12 @@ namespace BitBlazorUI {
 
             const max = editor._maxLength;
             if (max != null) {
+                // Selected text will be replaced by the paste, so it counts against neither
+                // the current length nor the remaining budget.
+                const sel = document.getSelection();
+                const selected = (sel && !sel.isCollapsed) ? sel.toString().length : 0;
                 const current = (editor.textContent || '').length;
-                const remaining = Math.max(0, max - current);
+                const remaining = Math.max(0, max - (current - selected));
                 if (remaining === 0) return;
                 if (text.length > remaining) {
                     toInsert = RichTextEditor.escapeHtml(text.slice(0, remaining)).replace(/\r?\n/g, '<br>');
@@ -760,14 +791,17 @@ namespace BitBlazorUI {
             return null;
         }
 
-        private static onKeyDown(editor: any, e: KeyboardEvent) {
+        private static async onKeyDown(editor: any, e: KeyboardEvent) {
             if (!(e.ctrlKey || e.metaKey)) return;
             const key = e.key.toLowerCase();
             const primary = e.ctrlKey || e.metaKey;
-            if (editor._dotNetRef) {
-                editor._dotNetRef.invokeMethodAsync('OnShortcut', key, primary, e.shiftKey, e.altKey);
-            }
-            if (['b', 'i', 'u'].includes(key)) e.preventDefault();
+            // Pre-empt the browser default for the built-in editing shortcuts so the native
+            // action (e.g. undo/redo) does not race the async .NET dispatch below.
+            if (['b', 'i', 'u', 'z', 'y'].includes(key)) e.preventDefault();
+            if (!editor._dotNetRef) return;
+            const handled = await editor._dotNetRef.invokeMethodAsync('OnShortcut', key, primary, e.shiftKey, e.altKey);
+            // When the C# side handled the combo (defaults or custom), suppress the browser default.
+            if (handled) e.preventDefault();
         }
 
         private static onBeforeInput(editor: any, e: InputEvent) {
@@ -779,8 +813,12 @@ namespace BitBlazorUI {
             if (!isInsert) return;
             if (e.inputType === 'insertFromPaste') return;
 
+            // Account for any selected text that will be replaced so in-place edits at the
+            // limit are allowed when the net length does not increase.
+            const sel = document.getSelection();
+            const selected = (sel && !sel.isCollapsed) ? sel.toString().length : 0;
             const adding = (e.data ? e.data.length : 1);
-            if (current + adding > max) {
+            if (current - selected + adding > max) {
                 e.preventDefault();
             }
         }
@@ -791,7 +829,7 @@ namespace BitBlazorUI {
         private static afterChange(editor: any) {
             RichTextEditor.updateEmpty(editor);
             if (!editor._dotNetRef) return;
-            editor._dotNetRef.invokeMethodAsync('OnContentChanged', editor.innerHTML, RichTextEditor.computeFacts(editor));
+            editor._dotNetRef.invokeMethodAsync('OnContentChanged', RichTextEditor.cleanHtml(editor), RichTextEditor.computeFacts(editor));
             RichTextEditor.reportState(editor);
         }
 
@@ -960,6 +998,36 @@ namespace BitBlazorUI {
 
         private static escapeAttr(s: string): string {
             return (s ?? '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // Validates a URL against the active sanitization policy's scheme allowlist (or a
+        // secure default when no policy is present). Relative URLs are allowed; protocol-
+        // relative (//host) and javascript: URLs are rejected. data: is only allowed for
+        // images and only when the policy permits it.
+        private static isAllowedUri(editor: any, url: string, isImage: boolean): boolean {
+            const policy = editor && editor._policy;
+            const trimmed = (url || '').trim();
+            if (!trimmed) return false;
+            if (/^\s*javascript:/i.test(trimmed)) return false;
+
+            const schemeMatch = /^([a-z][a-z0-9+.-]*):/i.exec(trimmed);
+            if (!schemeMatch) {
+                // No scheme: relative URL. Reject protocol-relative (//host).
+                return !trimmed.startsWith('//');
+            }
+
+            const scheme = schemeMatch[1].toLowerCase();
+            if (scheme === 'data') {
+                if (!isImage) return false;
+                const isImageData = /^data:image\//i.test(trimmed);
+                if (policy) return policy.allowDataImageUris === true && isImageData;
+                return isImageData;
+            }
+
+            if (policy && Array.isArray(policy.allowedUriSchemes)) {
+                return policy.allowedUriSchemes.includes(scheme);
+            }
+            return ['http', 'https', 'mailto', 'tel'].includes(scheme);
         }
 
         private static escapeRegExp(s: string): string {

@@ -9,6 +9,7 @@ public partial class BitRichTextEditor : BitComponentBase
 {
     private bool _initialized;
     private string _currentHtml = "";
+    private bool _toolbarRovingEnabled;
     private ElementReference _editorRef = default!;
     private BitRichTextEditorContentFacts _facts;
     private BitRichTextEditorSelectionState _state = new();
@@ -229,31 +230,43 @@ public partial class BitRichTextEditor : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false) return;
-
-        _dotnetObj = DotNetObjectReference.Create(this);
-        _currentHtml = Value ?? "";
-
-        await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, new()
+        if (firstRender)
         {
-            Debounce = DebounceMs,
-            Policy = BuildPolicyPayload(),
-            HasUpload = OnImageUpload is not null,
-            PlainTextPaste = PasteAsPlainText,
-            MaxLength = MaxLength
-        });
+            _dotnetObj = DotNetObjectReference.Create(this);
+            _currentHtml = Value ?? "";
 
+            await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, new()
+            {
+                Debounce = DebounceMs,
+                Policy = BuildPolicyPayload(),
+                HasUpload = OnImageUpload is not null,
+                PlainTextPaste = PasteAsPlainText,
+                MaxLength = MaxLength
+            });
+
+            if (string.IsNullOrEmpty(_currentHtml) is false)
+            {
+                await _js.BitRichTextEditorSetHtml(_editorRef, _currentHtml);
+            }
+
+            _initialized = true;
+        }
+
+        // Wire (or re-wire) the toolbar roving tabindex whenever the toolbar becomes visible.
+        // The JS side is idempotent per element, and resetting the flag when the toolbar is
+        // hidden lets a later ShowToolbar=true (a fresh element) initialize again.
         if (ShowToolbar)
         {
-            await _js.BitRichTextEditorEnableToolbarRoving(_toolbarRef);
+            if (_toolbarRovingEnabled is false)
+            {
+                _toolbarRovingEnabled = true;
+                await _js.BitRichTextEditorEnableToolbarRoving(_toolbarRef);
+            }
         }
-
-        if (string.IsNullOrEmpty(_currentHtml) is false)
+        else
         {
-            await _js.BitRichTextEditorSetHtml(_editorRef, _currentHtml);
+            _toolbarRovingEnabled = false;
         }
-
-        _initialized = true;
     }
 
     private async ValueTask OnValueSet()

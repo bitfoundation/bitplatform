@@ -19,8 +19,11 @@ public sealed class BitRichTextEditorSanitizationPolicy
     /// <summary>Whether <c>data:</c> image URIs are permitted in image sources.</summary>
     public bool AllowDataImageUris { get; init; } = true;
 
-    /// <summary>A secure default policy covering the editor's standard formatting output.</summary>
-    public static BitRichTextEditorSanitizationPolicy Default { get; } = new()
+    /// <summary>
+    /// A secure default policy covering the editor's standard formatting output. Returns a
+    /// fresh instance on each access so callers can mutate it without affecting other editors.
+    /// </summary>
+    public static BitRichTextEditorSanitizationPolicy Default => new()
     {
         AllowedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -47,7 +50,7 @@ public sealed class BitRichTextEditorSanitizationPolicy
         },
         AllowedUriSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "http", "https", "mailto", "tel", "data"
+            "http", "https", "mailto", "tel"
         }
     };
 }

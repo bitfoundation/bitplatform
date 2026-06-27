@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace Bit.BlazorUI;
 
 // Image insertion (URL, drag-drop, paste, upload callback), color, and font.
@@ -40,6 +42,8 @@ public partial class BitRichTextEditor
 
     private async Task ApplyImageUrlAsync()
     {
+        if (ReadOnly) return;
+
         var url = _imageUrl.Trim();
         if (IsAcceptableImageUrl(url) is false)
         {
@@ -79,7 +83,9 @@ public partial class BitRichTextEditor
         }
         catch (Exception ex)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("upload-failed", $"Upload of \"{fileName}\" failed: {ex.Message}"));
+            // Keep infrastructure details out of the user-facing error; log them instead.
+            Debug.WriteLine($"BitRichTextEditor image upload failed for \"{fileName}\": {ex}");
+            await RaiseErrorAsync(new BitRichTextEditorError("upload-failed", $"Upload of \"{fileName}\" failed. Please try again."));
             return null;
         }
     }

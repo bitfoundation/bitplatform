@@ -62,6 +62,8 @@ public partial class BitRichTextEditor
     {
         // Allow absolute http(s)/mailto/tel and site-relative URLs; reject script vectors.
         if (url.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase)) return false;
+        // Protocol-relative URLs (//example.com) are external; require an explicit scheme.
+        if (url.StartsWith("//")) return false;
         if (url.StartsWith('/') || url.StartsWith('#') || url.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)
             || url.StartsWith("tel:", StringComparison.OrdinalIgnoreCase))
             return true;

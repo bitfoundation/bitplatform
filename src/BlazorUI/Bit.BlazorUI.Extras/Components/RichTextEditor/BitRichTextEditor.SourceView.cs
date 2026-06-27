@@ -36,6 +36,7 @@ public partial class BitRichTextEditor
         StateHasChanged();
 
         await AssignValue(sanitized);
+        NotifyEditContextChanged();
         await OnChange.InvokeAsync(sanitized);
     }
 

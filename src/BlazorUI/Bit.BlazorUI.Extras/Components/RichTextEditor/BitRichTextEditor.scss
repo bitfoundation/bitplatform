@@ -215,7 +215,7 @@
     outline: none;
     resize: vertical;
     padding: spacing(1.7) spacing(2);
-    font-family: "SFMono-Regular", Consolas, monospace;
+    font-family: SFMono-Regular, Consolas, monospace;
     font-size: 0.85rem;
     line-height: 1.5;
     background: $clr-bg-sec;
@@ -284,7 +284,7 @@
         border-radius: $shp-border-radius;
         padding: spacing(1.5) spacing(2);
         overflow-x: auto;
-        font-family: "SFMono-Regular", Consolas, monospace;
+        font-family: SFMono-Regular, Consolas, monospace;
         font-size: 0.9rem;
     }
 

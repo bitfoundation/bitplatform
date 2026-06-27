@@ -16,12 +16,23 @@ public partial class BitRichTextEditor
 
     private FieldIdentifier _fieldIdentifier;
     private bool _hasField;
+    private Expression<Func<string?>>? _cachedValueExpression;
 
     private void EnsureField()
     {
-        if (_hasField is false && ValueExpression is not null)
+        if (ValueExpression is null)
+        {
+            _hasField = false;
+            _cachedValueExpression = null;
+            return;
+        }
+
+        // Recompute whenever the bound expression changes so a rebinding never leaves us
+        // notifying a stale field.
+        if (_hasField is false || _cachedValueExpression != ValueExpression)
         {
             _fieldIdentifier = FieldIdentifier.Create(ValueExpression);
+            _cachedValueExpression = ValueExpression;
             _hasField = true;
         }
     }

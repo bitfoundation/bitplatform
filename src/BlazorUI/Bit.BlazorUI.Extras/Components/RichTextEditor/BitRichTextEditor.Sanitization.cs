@@ -18,9 +18,13 @@ public partial class BitRichTextEditor
         {
             allowedTags = SanitizationPolicy.AllowedTags.Select(t => t.ToLowerInvariant()).ToArray(),
             allowedAttributes = SanitizationPolicy.AllowedAttributes
+                .GroupBy(kv => kv.Key.ToLowerInvariant())
                 .ToDictionary(
-                    kv => kv.Key.ToLowerInvariant(),
-                    kv => kv.Value.Select(a => a.ToLowerInvariant()).ToArray()),
+                    g => g.Key,
+                    g => g.SelectMany(kv => kv.Value)
+                          .Select(a => a.ToLowerInvariant())
+                          .Distinct()
+                          .ToArray()),
             allowedUriSchemes = SanitizationPolicy.AllowedUriSchemes.Select(s => s.ToLowerInvariant()).ToArray(),
             allowDataImageUris = SanitizationPolicy.AllowDataImageUris
         };
