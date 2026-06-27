@@ -202,20 +202,14 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
                     Kind = _isEditing ? BitFullCalendarChangeKind.Edit : BitFullCalendarChangeKind.Add,
                     Source = BitFullCalendarChangeSource.Dialog
                 });
-
-                // Prefer the dedicated success path when provided (e.g. the details dialog closes itself
-                // only on a real save), otherwise fall back to OnClose for standalone add/edit usages.
-                if (OnSaved.HasDelegate)
-                    await OnSaved.InvokeAsync();
-                else
-                    await OnClose.InvokeAsync();
             }
             catch
             {
-                // Compensate so the dialog is safe to retry: a throwing notifier/close must not leave
-                // the event committed to State, otherwise a second submit would add a duplicate (Add)
-                // or the edit would be applied without its consumers ever being notified. Restore the
-                // pre-submit snapshot on edit, or remove the just-added event on add.
+                // Compensate so the dialog is safe to retry: a throwing notifier must not leave the
+                // event committed to State, otherwise a second submit would add a duplicate (Add) or
+                // the edit would be applied without its consumers ever being notified. Restore the
+                // pre-submit snapshot on edit, or remove the just-added event on add. Only notifier
+                // failures roll back - the event is committed once notification succeeds.
                 if (_isEditing)
                 {
                     if (oldSnapshot is not null)
@@ -227,6 +221,15 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
                 }
                 throw;
             }
+
+            // Notification succeeded and the event is committed; post-notify callbacks run outside
+            // the compensation scope so an OnSaved/OnClose exception does not roll back the change.
+            // Prefer the dedicated success path when provided (e.g. the details dialog closes itself
+            // only on a real save), otherwise fall back to OnClose for standalone add/edit usages.
+            if (OnSaved.HasDelegate)
+                await OnSaved.InvokeAsync();
+            else
+                await OnClose.InvokeAsync();
         }
         finally
         {

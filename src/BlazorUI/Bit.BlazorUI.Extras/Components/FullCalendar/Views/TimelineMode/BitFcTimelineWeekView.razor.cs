@@ -96,7 +96,9 @@ public partial class BitFcTimelineWeekView
 
     private async Task OnSlotKeyDownAsync(KeyboardEventArgs e, string resourceId, DateTime day, int hour, int minute)
     {
-        if (e.Key is "Enter" or " " or "Spacebar")
+        // Ignore auto-repeat keydowns so a held Enter/Space only creates a single draft event,
+        // matching the day/month timeline view behavior.
+        if (e.Key is "Enter" or " " or "Spacebar" && !e.Repeat)
             await OnSlotClickAsync(resourceId, day, hour, minute);
     }
 

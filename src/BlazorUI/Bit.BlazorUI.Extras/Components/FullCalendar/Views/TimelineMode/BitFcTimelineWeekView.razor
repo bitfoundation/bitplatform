@@ -108,7 +108,7 @@
                 var leftPx = dayOffsetPx + (hour * hourWidth);
                 var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 0;
                 var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 30;
-                <div class="bit-bfc-tl-cell" style="left:@(leftPx)px;width:@(hourWidth)px;">
+                <div class="bit-bfc-tl-cell" style="inset-inline-start:@(leftPx)px;width:@(hourWidth)px;">
                     <div class="bit-bfc-tl-cell-slot @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
                          style="position:absolute;top:0;bottom:0;inset-inline-start:0;width:50%;"
                          role="button"
@@ -157,7 +157,7 @@
                 var leftPx = dayOffsetPx + (hour * hourWidth);
                 var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 0;
                 var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragDay == day.Date && _dragHour == hour && _dragMinute == 30;
-                <div class="bit-bfc-tl-cell" style="left:@(leftPx)px;width:@(hourWidth)px;">
+                <div class="bit-bfc-tl-cell" style="inset-inline-start:@(leftPx)px;width:@(hourWidth)px;">
                     <div class="bit-bfc-tl-cell-slot @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
                          style="position:absolute;top:0;bottom:0;inset-inline-start:0;width:50%;"
                          role="button"

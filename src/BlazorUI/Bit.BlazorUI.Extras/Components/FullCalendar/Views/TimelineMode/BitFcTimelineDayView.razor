@@ -61,9 +61,9 @@
             var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 0;
             var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 30;
             <div class="bit-bfc-tl-cell"
-                 style="left:@(hour * hourWidth)px;width:@(hourWidth)px;">
+                 style="inset-inline-start:@(hour * hourWidth)px;width:@(hourWidth)px;">
                 <div class="bit-bfc-tl-cell-slot @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
-                     style="position:absolute;top:0;bottom:0;left:0;width:50%;"
+                     style="position:absolute;top:0;bottom:0;inset-inline-start:0;width:50%;"
                      role="button"
                      tabindex="0"
                      aria-label="@SlotAriaLabel(rowLabel, hour, 0)"
@@ -103,9 +103,9 @@
             var isPreviewHour = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 0;
             var isPreviewHalf = State.IsDragging && _dragResourceId == rowKey && _dragHour == hour && _dragMinute == 30;
             <div class="bit-bfc-tl-cell"
-                 style="left:@(hour * hourWidth)px;width:@(hourWidth)px;">
+                 style="inset-inline-start:@(hour * hourWidth)px;width:@(hourWidth)px;">
                 <div class="bit-bfc-tl-cell-slot @(isPreviewHour ? "bit-bfc-tl-drop-preview" : "")"
-                     style="position:absolute;top:0;bottom:0;left:0;width:50%;"
+                     style="position:absolute;top:0;bottom:0;inset-inline-start:0;width:50%;"
                      role="button"
                      tabindex="0"
                      aria-label="@SlotAriaLabel(rowLabel, hour, 0)"

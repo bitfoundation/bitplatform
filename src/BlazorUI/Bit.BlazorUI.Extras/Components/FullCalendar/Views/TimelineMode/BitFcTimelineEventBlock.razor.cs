@@ -213,13 +213,23 @@ public partial class BitFcTimelineEventBlock
 
                     State.UpdateEvent(updated);
 
-                    await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                    try
                     {
-                        Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
-                        OldEvent = oldSnapshot,
-                        Kind = BitFullCalendarChangeKind.Edit,
-                        Source = BitFullCalendarChangeSource.Resize
-                    });
+                        await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                        {
+                            Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
+                            OldEvent = oldSnapshot,
+                            Kind = BitFullCalendarChangeKind.Edit,
+                            Source = BitFullCalendarChangeSource.Resize
+                        });
+                    }
+                    catch
+                    {
+                        // Notification failed: restore the pre-resize event so local state stays in
+                        // sync with what consumers believe, instead of leaving the committed resize.
+                        State.UpdateEvent(oldSnapshot);
+                        throw;
+                    }
                 }
             }
         }

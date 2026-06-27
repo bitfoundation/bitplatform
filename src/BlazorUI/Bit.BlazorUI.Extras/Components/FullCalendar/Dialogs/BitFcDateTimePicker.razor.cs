@@ -191,7 +191,11 @@ public partial class BitFcDateTimePicker : IDisposable
     {
         var year = ActiveCalendar.GetYear(date);
         var month = ActiveCalendar.GetMonth(date);
-        return ActiveCalendar.ToDateTime(year, month, 1, 0, 0, 0, 0);
+        // Anchor the first day within the same era as the source date. Era-based calendars (e.g.
+        // JapaneseCalendar) repeat year numbers across eras, so resolving without the era would
+        // map the anchor to the wrong era's month.
+        var era = ActiveCalendar.GetEra(date);
+        return ActiveCalendar.ToDateTime(year, month, 1, 0, 0, 0, 0, era);
     }
 
     private bool IsSameCalendarMonth(DateTime left, DateTime right) =>
