@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.RichTextEditor;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.RichTextEditor;
 
 public partial class BitRichTextEditorDemo
 {
@@ -15,54 +17,105 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
-            Name = "EditorTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Custom template for the editor content."
+            Name = "DebounceMs",
+            Type = "int",
+            DefaultValue = "200",
+            Description = "Debounce window (ms) for content-change notifications while typing."
         },
         new()
         {
-            Name = "FullToolbar",
+            Name = "FontFamilies",
+            Type = "IReadOnlyList<string>?",
+            DefaultValue = "null",
+            Description = "Font families offered in the font-family selector. Null/empty uses defaults."
+        },
+        new()
+        {
+            Name = "FontSizes",
+            Type = "IReadOnlyList<string>?",
+            DefaultValue = "null",
+            Description = "Font sizes offered in the font-size selector. Null/empty uses defaults."
+        },
+        new()
+        {
+            Name = "Height",
+            Type = "string",
+            DefaultValue = "300px",
+            Description = "Minimum height of the editing surface (any CSS length)."
+        },
+        new()
+        {
+            Name = "KeyboardShortcuts",
+            Type = "IReadOnlyDictionary<string, string>?",
+            DefaultValue = "null",
+            Description = "Custom key-combo to command map, merged over the built-in defaults."
+        },
+        new()
+        {
+            Name = "Localizer",
+            Type = "IBitRichTextEditorLocalizer?",
+            DefaultValue = "null",
+            Description = "Localized labels/tooltips provider. Null uses built-in English labels."
+        },
+        new()
+        {
+            Name = "MaxLength",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Maximum plain-text character count. Null means unlimited."
+        },
+        new()
+        {
+            Name = "OnBlur",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback for when the editor loses focus."
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<string?>",
+            DefaultValue = "",
+            Description = "Callback for when the editor content changes."
+        },
+        new()
+        {
+            Name = "OnError",
+            Type = "EventCallback<BitRichTextEditorError>",
+            DefaultValue = "",
+            Description = "Callback for when the editor encounters a recoverable error.",
+            LinkType = LinkType.Link,
+            Href = "#editor-error"
+        },
+        new()
+        {
+            Name = "OnFocus",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "Callback for when the editor gains focus."
+        },
+        new()
+        {
+            Name = "OnImageUpload",
+            Type = "Func<BitRichTextEditorImageUpload, Task<string?>>?",
+            DefaultValue = "null",
+            Description = "Invoked to persist an image binary, returning the URL to embed. When null, dropped or pasted images are embedded as inline data URLs.",
+            LinkType = LinkType.Link,
+            Href = "#image-upload"
+        },
+        new()
+        {
+            Name = "PasteAsPlainText",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the full toolbar with all of the available features."
-        },
-        new()
-        {
-            Name = "Modules",
-            Type = "IEnumerable<BitRichTextEditorModule>?",
-            DefaultValue = "null",
-            Description = "Custom Quill modules to be registered at first render (<see href=\"https://quilljs.com/docs/guides/building-a-custom-module\"/>).",
-            LinkType = LinkType.Link,
-            Href = "#rich-text-editor-module"
-        },
-        new()
-        {
-            Name = "OnEditorReady",
-            Type = "EventCallback<string>",
-            DefaultValue = "",
-            Description = "Callback for when the editor instance is created and ready to use."
-        },
-        new()
-        {
-            Name = "OnQuillReady",
-            Type = "EventCallback",
-            DefaultValue = "",
-            Description = "Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment."
-        },
-        new()
-        {
-            Name = "OnQuillModulesReady",
-            Type = "EventCallback",
-            DefaultValue = "",
-            Description = "Callback for when the scripts of the provided Quill Modules are loaded and their api are ready to use."
+            Description = "When true, pasted content is inserted as plain text."
         },
         new()
         {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The placeholder value of the editor."
+            Description = "The placeholder value of the editor shown while it is empty."
         },
         new()
         {
@@ -73,10 +126,24 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
-            Name = "Reversed",
+            Name = "SanitizationPolicy",
+            Type = "BitRichTextEditorSanitizationPolicy?",
+            DefaultValue = "null",
+            Description = "Allowlist policy applied to all content. When null a secure default allowlist is applied."
+        },
+        new()
+        {
+            Name = "ShowCount",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Reverses the location of the Toolbar and the Editor."
+            Description = "Show the character/word count footer."
+        },
+        new()
+        {
+            Name = "ShowToolbar",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the formatting toolbar is shown."
         },
         new()
         {
@@ -89,19 +156,28 @@ public partial class BitRichTextEditorDemo
         },
         new()
         {
-            Name = "Theme",
-            Type = "BitRichTextEditorTheme?",
-            DefaultValue = "null",
-            Description = "The theme of the editor.",
+            Name = "Toolbar",
+            Type = "BitRichTextEditorToolbar",
+            DefaultValue = "BitRichTextEditorToolbar.All",
+            Description = "Which toolbar groups to display.",
             LinkType = LinkType.Link,
-            Href = "#rich-text-editor-theme",
+            Href = "#toolbar-enum"
         },
         new()
         {
-            Name = "ToolbarTemplate",
-            Type = "RenderFragment?",
+            Name = "ToolbarConfig",
+            Type = "BitRichTextEditorToolbarConfig?",
             DefaultValue = "null",
-            Description = "Custom template for the toolbar content."
+            Description = "Custom toolbar items and ordering. Null uses the default group order.",
+            LinkType = LinkType.Link,
+            Href = "#toolbar-config"
+        },
+        new()
+        {
+            Name = "Value",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The two-way bound HTML content of the editor."
         },
     ];
 
@@ -109,39 +185,21 @@ public partial class BitRichTextEditorDemo
     [
         new()
         {
-            Name = "GetText",
-            Type = "Func<ValueTask<string>>",
-            Description = "Gets the current text content of the editor."
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Moves keyboard focus into the editor."
         },
         new()
         {
-            Name = "GetHtml",
-            Type = "Func<ValueTask<string>>",
-            Description = "Gets the current html content of the editor."
+            Name = "GetHtmlAsync",
+            Type = "ValueTask<string>",
+            Description = "Returns the current HTML content of the editor."
         },
         new()
         {
-            Name = "GetContent",
-            Type = "Func<ValueTask<string>>",
-            Description = "Gets the current content of the editor in JSON format."
-        },
-        new()
-        {
-            Name = "SetText",
-            Type = "Action<ValueTask<string?>>",
-            Description = "Sets the current text content of the editor."
-        },
-        new()
-        {
-            Name = "SetHtml",
-            Type = "Action<ValueTask<string?>>",
-            Description = "Sets the current html content of the editor."
-        },
-        new()
-        {
-            Name = "SetContent",
-            Type = "Action<ValueTask<string?>>",
-            Description = "Sets the current content of the editor in JSON format."
+            Name = "ExecuteCommandAsync",
+            Type = "Task",
+            Description = "Runs a raw editing command against the editor."
         },
     ];
 
@@ -153,57 +211,61 @@ public partial class BitRichTextEditorDemo
             Title = "BitRichTextEditorClassStyles",
             Parameters =
             [
-                new()
-                {
-                    Name = "Root",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the root of the BitRichTextEditor.",
-                },
-                new()
-                {
-                    Name = "Toolbar",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the toolbar of the BitRichTextEditor.",
-                },
-                new()
-                {
-                    Name = "Editor",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the editor container of the BitRichTextEditor.",
-                },
+                new() { Name = "Root", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the root of the BitRichTextEditor." },
+                new() { Name = "Toolbar", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the toolbar of the BitRichTextEditor." },
+                new() { Name = "Group", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the toolbar groups of the BitRichTextEditor." },
+                new() { Name = "Button", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the toolbar buttons of the BitRichTextEditor." },
+                new() { Name = "Editor", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the editor (content) area of the BitRichTextEditor." },
+                new() { Name = "Source", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the HTML source view textarea of the BitRichTextEditor." },
+                new() { Name = "Count", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the character/word count footer of the BitRichTextEditor." },
             ]
         },
         new()
         {
-            Id = "rich-text-editor-module",
-            Title = "BitRichTextEditorModule",
-            Description = "Represents a Quill custom module specifications.",
+            Id = "toolbar-config",
+            Title = "BitRichTextEditorToolbarConfig",
+            Description = "Configures toolbar ordering and custom items.",
             Parameters =
             [
-                new()
-                {
-                    Name = "Name",
-                    Type = "string",
-                    DefaultValue = "",
-                    Description = "The name of the Quill custom module.",
-                },
-                new()
-                {
-                    Name = "Src",
-                    Type = "string",
-                    DefaultValue = "",
-                    Description = "The script src of the Quill custom module to load at firt render.",
-                },
-                new()
-                {
-                    Name = "Config",
-                    Type = "object",
-                    DefaultValue = "",
-                    Description = "The configuration object that applies the settings of the Quill custom module.",
-                },
+                new() { Name = "Order", Type = "IReadOnlyList<string>?", DefaultValue = "null", Description = "Explicit ordering of toolbar entry ids (built-in group ids and custom item ids)." },
+                new() { Name = "CustomItems", Type = "IReadOnlyList<BitRichTextEditorToolbarItem>?", DefaultValue = "null", Description = "Custom toolbar items (max 50 are rendered)." },
+            ]
+        },
+        new()
+        {
+            Id = "toolbar-item",
+            Title = "BitRichTextEditorToolbarItem",
+            Description = "A custom toolbar button supplied by the host.",
+            Parameters =
+            [
+                new() { Name = "Id", Type = "string", DefaultValue = "", Description = "Unique id used for ordering and lookup." },
+                new() { Name = "Label", Type = "string?", DefaultValue = "null", Description = "Text label shown when no icon is provided." },
+                new() { Name = "Icon", Type = "RenderFragment?", DefaultValue = "null", Description = "Optional icon content." },
+                new() { Name = "AriaLabel", Type = "string", DefaultValue = "", Description = "Non-empty accessible label / tooltip." },
+                new() { Name = "OnActivate", Type = "Func<BitRichTextEditor, Task>", DefaultValue = "", Description = "Action invoked when the item is activated; receives the editor instance." },
+            ]
+        },
+        new()
+        {
+            Id = "image-upload",
+            Title = "BitRichTextEditorImageUpload",
+            Description = "An image to be persisted by the host's OnImageUpload delegate.",
+            Parameters =
+            [
+                new() { Name = "FileName", Type = "string", DefaultValue = "", Description = "Original file name, when available." },
+                new() { Name = "ContentType", Type = "string", DefaultValue = "", Description = "MIME type, e.g. \"image/png\"." },
+                new() { Name = "Content", Type = "byte[]", DefaultValue = "", Description = "Raw image bytes." },
+            ]
+        },
+        new()
+        {
+            Id = "editor-error",
+            Title = "BitRichTextEditorError",
+            Description = "An error surfaced by the editor (e.g. invalid URL, failed upload, invalid HTML).",
+            Parameters =
+            [
+                new() { Name = "Code", Type = "string", DefaultValue = "", Description = "Stable error code, e.g. \"invalid-url\"." },
+                new() { Name = "Message", Type = "string", DefaultValue = "", Description = "Human-readable description." },
             ]
         }
     ];
@@ -212,62 +274,82 @@ public partial class BitRichTextEditorDemo
     [
         new()
         {
-            Id = "rich-text-editor-theme",
-            Name = "BitRichTextEditorTheme",
-            Description = "",
+            Id = "toolbar-enum",
+            Name = "BitRichTextEditorToolbar",
+            Description = "Toolbar button groups. Combine with bitwise OR, or use All / AllExtended.",
             Items =
             [
-                new() { Name = "Snow", Value = "0" },
-                new() { Name = "Bubble", Value = "1" },
+                new() { Name = "None", Value = "0" },
+                new() { Name = "History", Value = "1" },
+                new() { Name = "BlockFormat", Value = "2" },
+                new() { Name = "Inline", Value = "4" },
+                new() { Name = "Lists", Value = "8" },
+                new() { Name = "Blocks", Value = "16" },
+                new() { Name = "Link", Value = "32" },
+                new() { Name = "Alignment", Value = "64" },
+                new() { Name = "Clear", Value = "128" },
+                new() { Name = "Image", Value = "256" },
+                new() { Name = "Color", Value = "512" },
+                new() { Name = "Font", Value = "1024" },
+                new() { Name = "Indent", Value = "2048" },
+                new() { Name = "Script", Value = "4096" },
+                new() { Name = "Source", Value = "8192" },
+                new() { Name = "Table", Value = "16384" },
+                new() { Name = "Media", Value = "32768" },
+                new() { Name = "Rule", Value = "65536" },
+                new() { Name = "Emoji", Value = "131072" },
+                new() { Name = "Find", Value = "262144" },
+                new() { Name = "FullScreen", Value = "524288" },
+                new() { Name = "Direction", Value = "1048576" },
+                new() { Name = "All", Value = "255" },
+                new() { Name = "AllExtended", Value = "2097151" },
             ]
         }
     ];
 
 
 
-    private BitRichTextEditor getEditorRef = default!;
-    private string? result;
-    private async Task GetText()
+    private string? boundHtml = "<p>Hello <strong>world</strong>.</p>";
+
+    private BitRichTextEditor apiEditor = default!;
+    private string? apiResult;
+    private async Task FocusEditor()
     {
-        result = await getEditorRef.GetText();
+        await apiEditor.FocusAsync();
     }
-    private async Task GetHtml()
+    private async Task GetEditorHtml()
     {
-        result = await getEditorRef.GetHtml();
-    }
-    private async Task GetContent()
-    {
-        result = await getEditorRef.GetContent();
+        apiResult = await apiEditor.GetHtmlAsync();
     }
 
-    private BitRichTextEditor setEditorRef = default!;
-    private string? setValue;
-    private async Task SetText()
+    private string eventLog = "-";
+
+    private readonly FormModel formModel = new();
+    private bool formSubmitted;
+    private void HandleValidSubmit()
     {
-        await setEditorRef.SetText(setValue);
+        formSubmitted = true;
     }
-    private async Task SetHtml()
+    public class FormModel
     {
-        await setEditorRef.SetHtml(setValue);
-    }
-    private async Task SetContent()
-    {
-        await setEditorRef.SetContent(setValue);
+        [Required(ErrorMessage = "The body is required.")]
+        public string? Body { get; set; }
     }
 
-    private async Task HandleOnQuillReady()
+    private BitRichTextEditor customEditor = default!;
+    private readonly BitRichTextEditorToolbarConfig toolbarConfig = new()
     {
-        await JSRuntime.InvokeVoidAsync("registerQuillCustomFonts");
-    }
-
-    private List<BitRichTextEditorModule> modules = [
-        new()
-        {
-            Name = "imageResize",
-            Src = "_content/Bit.BlazorUI.Demo.Client.Core/scripts/quill-image-resize-module.js",
-            Config = new { displaySize = true }
-        }
-    ];
+        CustomItems =
+        [
+            new()
+            {
+                Id = "signature",
+                Label = "✍",
+                AriaLabel = "Insert signature",
+                OnActivate = async editor => await editor.ExecuteCommandAsync("insertText", " — Sent from BitRichTextEditor")
+            }
+        ]
+    };
 
 
 
@@ -275,196 +357,102 @@ public partial class BitRichTextEditorDemo
 <BitRichTextEditor />";
 
     private readonly string example2RazorCode = @"
-<BitRichTextEditor Placeholder=""This is a custom placeholder"" />";
+<BitRichTextEditor Placeholder=""Write something..."" />";
 
     private readonly string example3RazorCode = @"
-<BitRichTextEditor Placeholder=""This is a custom placeholder"" />";
+<BitRichTextEditor ReadOnly Value=""<p>This editor is <strong>readonly</strong>.</p>"" />";
 
     private readonly string example4RazorCode = @"
-<BitRichTextEditor Placeholder=""The toolbar location is reversed!"" Reversed />";
+<BitRichTextEditor @bind-Value=""boundHtml"" Placeholder=""Type here to update the bound value..."" />
+
+<div>Bound HTML value:</div>
+<pre>@boundHtml</pre>";
+    private readonly string example4CsharpCode = @"
+private string? boundHtml = ""<p>Hello <strong>world</strong>.</p>"";";
 
     private readonly string example5RazorCode = @"
-<BitRichTextEditor Style=""min-height: 300px"" FullToolbar />";
+<BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.AllExtended""
+                   Placeholder=""All of the available toolbar groups are enabled."" />";
 
     private readonly string example6RazorCode = @"
-<BitRichTextEditor Styles=""@(new() { Toolbar = ""border-color: red"", Editor = ""border-color: blue""})"" />";
+<BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists | BitRichTextEditorToolbar.Link""
+                   Placeholder=""Only the inline, lists and link groups are shown."" />";
 
     private readonly string example7RazorCode = @"
-<BitRichTextEditor @ref=""getEditorRef"" />
-
-<BitButton OnClick=""GetText"">GetText</BitButton>
-<BitButton OnClick=""GetHtml"">GetHtml</BitButton>
-<BitButton OnClick=""GetContent"">GetContent</BitButton>
-
-<div>result:</div>
-<pre>@result</pre>";
-    private readonly string example7CsharpCode = @"
-private BitRichTextEditor getEditorRef = default!;
-private string? result;
-private async Task GetText()
-{
-    result = await getEditorRef.GetText();
-}
-private async Task GetHtml()
-{
-    result = await getEditorRef.GetHtml();
-}
-private async Task GetContent()
-{
-    result = await getEditorRef.GetContent();
-}";
+<BitRichTextEditor Height=""150px"" ShowCount MaxLength=""200""
+                   Placeholder=""Up to 200 characters..."" />";
 
     private readonly string example8RazorCode = @"
-<textarea @bind-value=""setValue"" @bind-value:event=""oninput"" style=""width:100%;height:100px"" />
+<BitRichTextEditor @ref=""apiEditor"" />
 
-<BitButton OnClick=""SetText"">SetText</BitButton>
-<BitButton OnClick=""SetHtml"">SetHtml</BitButton>
-<BitButton OnClick=""SetContent"">SetContent</BitButton>
+<BitButton OnClick=""FocusEditor"">FocusAsync</BitButton>
+<BitButton OnClick=""GetEditorHtml"">GetHtmlAsync</BitButton>
+<BitButton OnClick=""@(() => apiEditor.ExecuteCommandAsync(""bold""))"">ExecuteCommand(""bold"")</BitButton>
 
-<BitRichTextEditor @ref=""setEditorRef"" />";
+<div>result:</div>
+<pre>@apiResult</pre>";
     private readonly string example8CsharpCode = @"
-private BitRichTextEditor setEditorRef = default!;
-private string? setValue;
-private async Task SetText()
+private BitRichTextEditor apiEditor = default!;
+private string? apiResult;
+private async Task FocusEditor()
 {
-    await setEditorRef.SetText(setValue);
+    await apiEditor.FocusAsync();
 }
-private async Task SetHtml()
+private async Task GetEditorHtml()
 {
-    await setEditorRef.SetHtml(setValue);
-}
-private async Task SetContent()
-{
-    await setEditorRef.SetContent(setValue);
+    apiResult = await apiEditor.GetHtmlAsync();
 }";
 
     private readonly string example9RazorCode = @"
-<BitRichTextEditor Style=""min-height: 300px"">
-    <ToolbarTemplate>
-        <span class=""ql-formats"">
-            <select class=""ql-font""></select>
-            <select class=""ql-size""></select>
-        </span>
-        <span class=""ql-formats"">
-            <button class=""ql-bold""></button>
-            <button class=""ql-italic""></button>
-            <button class=""ql-underline""></button>
-            <button class=""ql-strike""></button>
-        </span>
-        <span class=""ql-formats"">
-            <select class=""ql-color""></select>
-            <select class=""ql-background""></select>
-        </span>
-        <span class=""ql-formats"">
-            <button class=""ql-blockquote""></button>
-            <button class=""ql-code-block""></button>
-            <button class=""ql-link""></button>
-        </span>
-        <span class=""ql-formats"">
-            <button class=""ql-header"" value=""1""></button>
-            <button class=""ql-header"" value=""2""></button>
-        </span>
-        <span class=""ql-formats"">
-            <button class=""ql-list"" value=""ordered""></button>
-            <button class=""ql-list"" value=""bullet""></button>
-            <button class=""ql-indent"" value=""-1""></button>
-            <button class=""ql-indent"" value=""+1""></button>
-        </span>
-        <span class=""ql-formats"">
-            <button class=""ql-direction"" value=""rtl""></button>
-            <select class=""ql-align""></select>
-        </span>
-        <span class=""ql-formats"">
-            <button class=""ql-script"" value=""sub""></button>
-            <button class=""ql-script"" value=""super""></button>
-        </span>
-        <span class=""ql-formats"">
-            <button class=""ql-clean""></button>
-        </span>
-    </ToolbarTemplate>
-    <EditorTemplate>
-        <div><b>this is bold</b></div>
-        <div><em>this is italic</em></div>
-        <div><b><em>this is italic & bold</em></b></div>
-    </EditorTemplate>
-</BitRichTextEditor>";
+<BitRichTextEditor OnFocus=""() => eventLog = $""Focused at {DateTime.Now:HH:mm:ss}""""
+                   OnBlur=""() => eventLog = $""Blurred at {DateTime.Now:HH:mm:ss}""""
+                   OnError=""e => eventLog = $""Error ({e.Code}): {e.Message}""""
+                   Toolbar=""BitRichTextEditorToolbar.AllExtended""
+                   Placeholder=""Focus, blur, or trigger an error (e.g. an invalid link)."" />
+
+<div>last event: @eventLog</div>";
+    private readonly string example9CsharpCode = @"
+private string eventLog = ""-"";";
 
     private readonly string example10RazorCode = @"
-<link rel=""stylesheet"" href=""https://fonts.googleapis.com/css?family=Aref+Ruqaa|Mirza|Roboto"" />
-
-<style>
-    .custom-font-editor {
-        font-family: 'Segoe UI';
-        font-size: 18px;
-        height: 375px;
-    }
-
-    .custom-font-editor .ql-font-aref-ruqaa {
-        font-family: 'Aref Ruqaa';
-    }
-
-    .custom-font-editor .ql-font-mirza {
-        font-family: 'Mirza';
-    }
-
-    .custom-font-editor .ql-font-roboto {
-        font-family: 'Roboto';
-    }
-
-    .custom-font-toolbar .ql-font span[data-label='Segoe UI']::before {
-        font-family: 'Segoe UI';
-    }
-
-    .custom-font-toolbar .ql-font span[data-label='Aref Ruqaa']::before {
-        font-family: 'Aref Ruqaa';
-    }
-
-    .custom-font-toolbar .ql-font span[data-label='Mirza']::before {
-        font-family: 'Mirza';
-    }
-
-    .custom-font-toolbar .ql-font span[data-label='Roboto']::before {
-        font-family: 'Roboto';
-    }
-</style>
-
-<script>
-    function registerQuillCustomFonts() {
-        const Font = Quill.import('formats/font');
-        Font.whitelist = ['aref-ruqaa', 'mirza', 'roboto'];
-        Quill.register(Font, true);
-    };
-</script>
-
-<BitRichTextEditor OnQuillReady=""HandleOnQuillReady""
-                   Classes=""@(new() { Editor = ""custom-font-editor"", Toolbar = ""custom-font-toolbar"" })"">
-    <ToolbarTemplate>
-        <select class=""ql-font"">
-            <option selected>Segoe UI</option>
-            <option value=""aref-ruqaa"">Aref Ruqaa</option>
-            <option value=""mirza"">Mirza</option>
-            <option value=""roboto"">Roboto</option>
-        </select>
-    </ToolbarTemplate>
-    <EditorTemplate>
-        <p>this is a sample of adding custom fonts to the BitRichTextEditor!</p>
-    </EditorTemplate>
-</BitRichTextEditor>";
+<EditForm Model=""formModel"" OnValidSubmit=""HandleValidSubmit"">
+    <DataAnnotationsValidator />
+    <BitRichTextEditor @bind-Value=""formModel.Body"" Placeholder=""The body is required..."" />
+    <ValidationMessage For=""() => formModel.Body"" />
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
     private readonly string example10CsharpCode = @"
-private async Task HandleOnQuillReady()
+private readonly FormModel formModel = new();
+private bool formSubmitted;
+private void HandleValidSubmit()
 {
-    await JSRuntime.InvokeVoidAsync(""registerQuillCustomFonts"");
+    formSubmitted = true;
+}
+public class FormModel
+{
+    [Required(ErrorMessage = ""The body is required."")]
+    public string? Body { get; set; }
 }";
 
     private readonly string example11RazorCode = @"
-<BitRichTextEditor FullToolbar Modules=""@modules"" />";
+<BitRichTextEditor @ref=""customEditor"" ToolbarConfig=""toolbarConfig"" />";
     private readonly string example11CsharpCode = @"
-private List<BitRichTextEditorModule> modules = [
-    new()
-    {
-        Name = ""imageResize"",
-        Src = ""/scripts/quill-image-resize-module.js"",
-        Config = new { displaySize = true }
-    }
-];";
+private BitRichTextEditor customEditor = default!;
+private BitRichTextEditorToolbarConfig toolbarConfig = new()
+{
+    CustomItems =
+    [
+        new()
+        {
+            Id = ""signature"",
+            Label = ""✍"",
+            AriaLabel = ""Insert signature"",
+            OnActivate = async editor => await editor.ExecuteCommandAsync(""insertText"", "" — Sent from BitRichTextEditor"")
+        }
+    ]
+};";
+
+    private readonly string example12RazorCode = @"
+<BitRichTextEditor Styles=""@(new() { Toolbar = ""border-bottom-color: red"", Editor = ""background-color: #fff8e1"" })""
+                   Placeholder=""Custom styles applied to the toolbar and editor."" />";
 }

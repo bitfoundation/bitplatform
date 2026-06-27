@@ -1,14 +1,21 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// BitRichTextEditor is a WYSIWYG text editor, utilizing the famous Quill js library (<see href="https://quilljs.com/"/>).
+/// BitRichTextEditor is a native WYSIWYG rich text editor. All component logic lives in C#;
+/// a thin JavaScript bridge handles the browser-only concerns (contenteditable events,
+/// formatting commands, and selection). Two-way bind the HTML content with <c>@bind-Value</c>.
 /// </summary>
 public partial class BitRichTextEditor : BitComponentBase
 {
+    private bool _initialized;
+    private string _currentHtml = "";
     private ElementReference _editorRef = default!;
-    private ElementReference _toolbarRef = default!;
-    private TaskCompletionSource _readyTcs = new();
+    private BitRichTextEditorContentFacts _facts;
+    private BitRichTextEditorSelectionState _state = new();
     private DotNetObjectReference<BitRichTextEditor>? _dotnetObj = null;
+
+    /// <summary>Transient inline error message shown in the editor chrome.</summary>
+    private string? _inlineError;
 
 
 
@@ -22,50 +29,50 @@ public partial class BitRichTextEditor : BitComponentBase
     [Parameter] public BitRichTextEditorClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Custom template for the editor content.
+    /// Debounce window (ms) for content-change notifications while typing.
     /// </summary>
-    [Parameter] public RenderFragment? EditorTemplate { get; set; }
+    [Parameter] public int DebounceMs { get; set; } = 200;
 
     /// <summary>
-    /// Renders the full toolbar with all of the available features.
+    /// Minimum height of the editing surface (any CSS length).
     /// </summary>
-    [Parameter] public bool FullToolbar { get; set; }
+    [Parameter] public string Height { get; set; } = "300px";
 
     /// <summary>
-    /// Custom Quill modules to be registered at first render (<see href="https://quilljs.com/docs/guides/building-a-custom-module"/>).
+    /// Callback for when the editor loses focus.
     /// </summary>
-    [Parameter] public IEnumerable<BitRichTextEditorModule>? Modules { get; set; }
+    [Parameter] public EventCallback OnBlur { get; set; }
 
     /// <summary>
-    /// Callback for when the editor instance is created and ready to use.
+    /// Callback for when the editor content changes.
     /// </summary>
-    [Parameter] public EventCallback<string> OnEditorReady { get; set; }
+    [Parameter] public EventCallback<string?> OnChange { get; set; }
 
     /// <summary>
-    /// Callback for when the Quill scripts is loaded and the Quill api is ready to use. It allows for custom actions to be performed at that moment.
+    /// Callback for when the editor encounters a recoverable error (invalid input, etc.).
     /// </summary>
-    [Parameter] public EventCallback OnQuillReady { get; set; }
+    [Parameter] public EventCallback<BitRichTextEditorError> OnError { get; set; }
 
     /// <summary>
-    /// Callback for when the scripts of the provided Quill Modules are loaded and their api are ready to use.
+    /// Callback for when the editor gains focus.
     /// </summary>
-    [Parameter] public EventCallback OnQuillModulesReady { get; set; }
+    [Parameter] public EventCallback OnFocus { get; set; }
 
     /// <summary>
-    /// The placeholder value of the editor.
+    /// The placeholder value of the editor shown while it is empty.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
     /// Makes the editor readonly.
     /// </summary>
-    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool ReadOnly { get; set; }
 
     /// <summary>
-    /// Reverses the location of the Toolbar and the Editor.
+    /// Whether the formatting toolbar is shown.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Reversed { get; set; }
+    [Parameter] public bool ShowToolbar { get; set; } = true;
 
     /// <summary>
     /// Custom CSS styles for different parts of the rich text editor.
@@ -73,69 +80,133 @@ public partial class BitRichTextEditor : BitComponentBase
     [Parameter] public BitRichTextEditorClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The theme of the editor.
+    /// Which toolbar groups to display.
     /// </summary>
-    [Parameter] public BitRichTextEditorTheme? Theme { get; set; }
+    [Parameter] public BitRichTextEditorToolbar Toolbar { get; set; } = BitRichTextEditorToolbar.All;
 
     /// <summary>
-    /// Custom template for the toolbar content.
+    /// The two-way bound HTML content of the editor.
     /// </summary>
-    [Parameter] public RenderFragment? ToolbarTemplate { get; set; }
+    [Parameter, TwoWayBound, CallOnSet(nameof(OnValueSet))]
+    public string? Value { get; set; }
 
 
 
     /// <summary>
-    /// Gets the current text content of the editor.
+    /// Moves keyboard focus into the editor.
     /// </summary>
-    public async ValueTask<string> GetText()
+    public async ValueTask FocusAsync()
     {
-        await _readyTcs.Task;
-        return await _js.BitRichTextEditorGetText(_Id);
+        await _js.BitRichTextEditorFocus(_editorRef);
     }
 
     /// <summary>
-    /// Gets the current html content of the editor.
+    /// Returns the current HTML content of the editor.
     /// </summary>
-    public async ValueTask<string> GetHtml()
+    public async ValueTask<string> GetHtmlAsync()
     {
-        await _readyTcs.Task;
-        return await _js.BitRichTextEditorGetHtml(_Id);
+        if (_initialized is false) return _currentHtml;
+        return await _js.BitRichTextEditorGetHtml(_editorRef);
     }
 
     /// <summary>
-    /// Gets the current content of the editor in JSON format.
+    /// Runs a raw editing command against the editor.
     /// </summary>
-    public async ValueTask<string> GetContent()
+    public Task ExecuteCommandAsync(string command, string? value = null) => ExecAsync(command, value);
+
+
+
+    private bool ControlsDisabled => ReadOnly || _inSourceView;
+
+    private bool Has(BitRichTextEditorToolbar group) => Toolbar.HasFlag(group);
+
+
+
+    // ---- callbacks from JS ----
+
+    [JSInvokable("OnContentChanged")]
+    public async Task _OnContentChanged(string html, BitRichTextEditorContentFacts facts)
     {
-        await _readyTcs.Task;
-        return await _js.BitRichTextEditorGetContent(_Id);
+        _currentHtml = html;
+        _facts = facts;
+        if (ShowCount)
+        {
+            StateHasChanged();
+        }
+
+        await AssignValue(html);
+        NotifyEditContextChanged();
+        await OnChange.InvokeAsync(html);
     }
 
-    /// <summary>
-    /// Sets the current text content of the editor.
-    /// </summary>
-    public async ValueTask SetText(string? text)
+    [JSInvokable("OnSelectionChanged")]
+    public void _OnSelectionChanged(BitRichTextEditorSelectionState state)
     {
-        await _readyTcs.Task;
-        await _js.BitRichTextEditorSetText(_Id, text);
+        _state = state;
+        StateHasChanged();
     }
 
-    /// <summary>
-    /// Sets the current html content of the editor.
-    /// </summary>
-    public async ValueTask SetHtml(string? html)
+    [JSInvokable("OnFocused")]
+    public Task _OnFocused() => OnFocus.InvokeAsync();
+
+    [JSInvokable("OnBlurred")]
+    public Task _OnBlurred() => OnBlur.InvokeAsync();
+
+    /// <summary>Reported by the bridge when a formatting command fails; content is unchanged.</summary>
+    [JSInvokable("OnCommandError")]
+    public Task _OnCommandError(string command, string message)
+        => RaiseErrorAsync(new BitRichTextEditorError("command-failed", $"Command '{command}' failed: {message}"));
+
+
+
+    // ---- commands ----
+
+    private async Task ExecAsync(string command, string? value = null)
     {
-        await _readyTcs.Task;
-        await _js.BitRichTextEditorSetHtml(_Id, html);
+        if (ReadOnly) return;
+        await _js.BitRichTextEditorExec(_editorRef, command, value);
     }
 
-    /// <summary>
-    /// Sets the current content of the editor in JSON format.
-    /// </summary>
-    public async ValueTask SetContent(string? content)
+    private Task UndoAsync() => ExecAsync("undo");
+    private Task RedoAsync() => ExecAsync("redo");
+
+    private Task OnBlockFormatChanged(ChangeEventArgs e)
+        => ExecBlockAsync(e.Value?.ToString() ?? "p");
+
+    private async Task ExecBlockAsync(string tag)
     {
-        await _readyTcs.Task;
-        await _js.BitRichTextEditorSetContent(_Id, content);
+        if (ReadOnly) return;
+        await _js.BitRichTextEditorExecBlock(_editorRef, tag);
+    }
+
+    private Task FormatBlockToggleAsync(string tag)
+        => ExecBlockAsync(_state.Block == tag ? "p" : tag);
+
+    private async Task ClearFormattingAsync()
+    {
+        if (ReadOnly) return;
+        await _js.BitRichTextEditorExec(_editorRef, "removeFormat", null);
+        await _js.BitRichTextEditorExecBlock(_editorRef, "p");
+    }
+
+
+
+    // ---- helpers ----
+
+    private async Task RaiseErrorAsync(BitRichTextEditorError error)
+    {
+        _inlineError = error.Message;
+        StateHasChanged();
+        await OnError.InvokeAsync(error);
+    }
+
+    private void ClearInlineError()
+    {
+        if (_inlineError is not null)
+        {
+            _inlineError = null;
+            StateHasChanged();
+        }
     }
 
 
@@ -145,8 +216,8 @@ public partial class BitRichTextEditor : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
-
-        ClassBuilder.Register(() => Reversed ? "bit-rte-rvs" : string.Empty);
+        ClassBuilder.Register(() => _fullScreen ? "bit-rte-fsc" : string.Empty);
+        ClassBuilder.Register(() => ReadOnly ? "bit-rte-ro" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -160,43 +231,44 @@ public partial class BitRichTextEditor : BitComponentBase
 
         if (firstRender is false) return;
 
-        await _js.BitExtrasInitScripts(["_content/Bit.BlazorUI.Extras/quilljs/quill-2.0.3.js"]);
+        _dotnetObj = DotNetObjectReference.Create(this);
+        _currentHtml = Value ?? "";
 
-        _ = OnQuillReady.InvokeAsync();
-
-        var theme = (Theme ?? BitRichTextEditorTheme.Snow).ToString().ToLower();
-        await _js.BitExtrasInitStylesheets([$"_content/Bit.BlazorUI.Extras/quilljs/quill.{theme}-2.0.3.css"]);
-
-        List<QuillModule> quillModules = [];
-
-        if (Modules is not null)
+        await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, new()
         {
-            List<string> quillModuleScripts = [];
-            foreach (var module in Modules)
-            {
-                quillModuleScripts.Add(module.Src);
-                quillModules.Add(new() { Name = module.Name, Config = module.Config });
-            }
+            Debounce = DebounceMs,
+            Policy = BuildPolicyPayload(),
+            HasUpload = OnImageUpload is not null,
+            PlainTextPaste = PasteAsPlainText,
+            MaxLength = MaxLength
+        });
 
-            try
-            {
-                await _js.BitExtrasInitScripts(quillModuleScripts);
-
-                _ = OnQuillModulesReady.InvokeAsync();
-            }
-            catch
-            {
-                // we need to ignore script load exceptions here, since we can't safely recover from such errors in this state!
-                // so the developers should make sure the scripts they are providing is correct and has no issue to load.
-            }
+        if (ShowToolbar)
+        {
+            await _js.BitRichTextEditorEnableToolbarRoving(_toolbarRef);
         }
 
-        _dotnetObj = DotNetObjectReference.Create(this);
-        ElementReference? toolbarRef = ToolbarTemplate is null ? null : _toolbarRef;
-        await _js.BitRichTextEditorSetup(_Id, _dotnetObj, _editorRef, toolbarRef, theme, Placeholder, ReadOnly, FullToolbar, Styles?.Toolbar, Classes?.Toolbar, quillModules);
-        _readyTcs.SetResult();
+        if (string.IsNullOrEmpty(_currentHtml) is false)
+        {
+            await _js.BitRichTextEditorSetHtml(_editorRef, _currentHtml);
+        }
 
-        await OnEditorReady.InvokeAsync(_Id);
+        _initialized = true;
+    }
+
+    private async ValueTask OnValueSet()
+    {
+        if (_initialized is false) return;
+        if (_inSourceView) return;
+        if ((Value ?? "") == _currentHtml) return; // originated from the editor
+
+        var html = Value ?? "";
+        if (SanitizationPolicy is not null && string.IsNullOrEmpty(html) is false)
+        {
+            html = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
+        }
+        _currentHtml = html;
+        await _js.BitRichTextEditorSetHtml(_editorRef, html);
     }
 
 
@@ -209,10 +281,9 @@ public partial class BitRichTextEditor : BitComponentBase
 
         try
         {
-            await _js.BitRichTextEditorDispose(_Id);
+            await _js.BitRichTextEditorDispose(_editorRef);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-
 
         await base.DisposeAsync(disposing);
     }

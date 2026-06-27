@@ -1,0 +1,60 @@
+namespace Bit.BlazorUI;
+
+// Find and replace.
+public partial class BitRichTextEditor
+{
+    private bool _showFind;
+    private string _findTerm = "";
+    private string _replaceTerm = "";
+    private bool _findCaseSensitive;
+    private string _findCount = "";
+
+    private void ToggleFind()
+    {
+        _showFind = !_showFind;
+        if (_showFind is false)
+        {
+            _findTerm = "";
+            _replaceTerm = "";
+            _findCount = "";
+            _ = ClearFindAsync();
+        }
+        ClearInlineError();
+    }
+
+    private async Task ClearFindAsync()
+    {
+        await _js.BitRichTextEditorClearFind(_editorRef);
+    }
+
+    private async Task RunFindAsync()
+    {
+        if (string.IsNullOrEmpty(_findTerm))
+        {
+            _findCount = "";
+            await _js.BitRichTextEditorClearFind(_editorRef);
+            return;
+        }
+        if (_findTerm.Length > 1000)
+        {
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", "Search term is too long."));
+            return;
+        }
+        var count = await _js.BitRichTextEditorFind(_editorRef, _findTerm, _findCaseSensitive);
+        _findCount = count == 0 ? "No matches" : $"{count} match{(count == 1 ? "" : "es")}";
+    }
+
+    private async Task ReplaceCurrentAsync()
+    {
+        if (ReadOnly || string.IsNullOrEmpty(_findTerm)) return;
+        await _js.BitRichTextEditorReplaceCurrent(_editorRef, _findTerm, _replaceTerm, _findCaseSensitive);
+        await RunFindAsync();
+    }
+
+    private async Task ReplaceAllAsync()
+    {
+        if (ReadOnly || string.IsNullOrEmpty(_findTerm)) return;
+        var n = await _js.BitRichTextEditorReplaceAll(_editorRef, _findTerm, _replaceTerm, _findCaseSensitive);
+        _findCount = $"{n} replaced";
+    }
+}
