@@ -172,7 +172,20 @@ public partial class BitPanel : BitComponentBase
             var orientationLock = position == BitPanelPosition.Start || position == BitPanelPosition.End
                                     ? BitSwipeOrientation.Horizontal 
                                     : BitSwipeOrientation.Vertical;
-            await _js.BitSwipesSetup(_containerId, SwipeTrigger ?? 0.25m, position, Dir == BitDir.Rtl, orientationLock, _dotnetObj, false);
+            try
+            {
+                await _js.BitSwipesSetup(_containerId, SwipeTrigger ?? 0.25m, position, Dir == BitDir.Rtl, orientationLock, _dotnetObj, false);
+            }
+            catch
+            {
+                // BitSwipesSetup didn't complete, so the JS dispose path (which normally owns _dotnetObj)
+                // will never run. Release the managed reference here to avoid leaking the GCHandle, then
+                // rethrow so the original failure surfaces. On the success path the reference is kept for
+                // later cleanup handled by DisposeAsync.
+                _dotnetObj?.Dispose();
+                _dotnetObj = null;
+                throw;
+            }
         }
 
         if (_internalIsOpen == IsOpen) return;

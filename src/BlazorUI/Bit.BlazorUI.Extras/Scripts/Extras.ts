@@ -246,11 +246,13 @@ namespace BitBlazorUI {
                 // Match the script type too: a classic script must not be reused when a module script is
                 // requested (or vice versa), since they produce different <script> tags and execution semantics.
                 // For the classic case, only reuse tags whose type is an executable JavaScript type so
-                // non-executable tags (e.g. application/json) can never satisfy the lookup.
+                // non-executable tags (e.g. application/json) can never satisfy the lookup. Also exclude
+                // nomodule scripts: they don't execute in module-capable browsers, so reusing one would
+                // falsely report the resource as loaded.
                 const wantModule = !!isModule;
                 return Array.from(document.scripts).find(s => !!s.src
                     && Extras.normalizeResourceUrl(s.src) === targetUrl
-                    && (wantModule ? (s.type ?? '').trim().toLowerCase() === 'module' : Extras.isExecutableClassicScriptType(s.type))
+                    && (wantModule ? (s.type ?? '').trim().toLowerCase() === 'module' : (Extras.isExecutableClassicScriptType(s.type) && !s.noModule))
                     && !s.hasAttribute('data-bit-load-failed')
                     && !(document.readyState === 'complete' && !Extras.isHostScriptLoaded(s)));
             }

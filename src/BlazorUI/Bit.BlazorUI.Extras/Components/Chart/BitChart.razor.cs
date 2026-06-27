@@ -30,8 +30,10 @@ public partial class BitChart : IAsyncDisposable
     /// This event is fired once, on the component's first render, after the interop setup attempt has run.
     /// It fires unconditionally - regardless of whether <see cref="Config"/> was set or the chart setup
     /// actually succeeded - so treat it as a "first render completed" signal rather than a guarantee that the
-    /// JavaScript chart object is available. Use this callback if you need to setup custom JavaScript options
-    /// or register plugins.
+    /// JavaScript chart object is available. Note that the chart setup (<c>BitChartJsSetupChart</c>) has
+    /// already been attempted by the time this callback fires, so it is not a suitable place to register
+    /// plugins or custom JavaScript options that need to be present during setup. Any such registration must
+    /// happen before first render (i.e. before <see cref="Config"/> is assigned).
     /// </summary>
     [Parameter] public EventCallback SetupCompletedCallback { get; set; }
 

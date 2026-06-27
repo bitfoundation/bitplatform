@@ -134,6 +134,15 @@ public partial class BitColorPicker : BitComponentBase
 
         _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, nameof(HandlePointerUp), nameof(HandlePointerMove));
 
+        // When setup fails it returns no id, meaning the JS side never registered the abort controller and
+        // therefore can't own and dispose this .NET reference later. Release it here so the GCHandle doesn't
+        // leak, and leave _abortControllerId null so DisposeAsync skips the (now pointless) JS dispose call.
+        if (_abortControllerId is null)
+        {
+            _dotnetObj.Dispose();
+            _dotnetObj = null!;
+        }
+
         await SetSaturationPickerThumbPositionAsync();
     }
 
