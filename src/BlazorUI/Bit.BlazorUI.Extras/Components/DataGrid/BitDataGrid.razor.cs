@@ -347,6 +347,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         if (oldId == column.Id) return;
 
+        // Only re-key a column that is actually registered. AddColumn skips a duplicate-id registration
+        // without adding the column to _columns; if such a skipped column later changes its id, re-keying
+        // here would insert an unregistered column into _columnsById and desync it from _columns.
+        if (!_columns.Contains(column)) return;
+
         // Reject the rename if the new id already belongs to a different live column. Overwriting the
         // registry entry would shadow that column and desync _columnsById from _columns (mirrors the
         // duplicate-id rejection in AddColumn). Keep the renamed column under its old key in that case.
@@ -710,6 +715,28 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             _infiniteHandle = await JS.InvokeAsync<IJSObjectReference>(
                 "BitBlazorUI.DataGrid.initInfiniteScroll", _infiniteViewport, _infiniteSelfRef, 200);
         }
+        else if (!IsInfiniteMode && _infiniteObserverAttached)
+        {
+            // Infinite mode was turned off (OnLoadMore became null) after the observer was attached.
+            // Tear the JS observer down so it can't keep firing OnInfiniteScrollNearEndAsync against a
+            // grid that no longer streams batches, and reset the state so a later re-enable re-attaches.
+            _infiniteObserverAttached = false;
+            var handle = _infiniteHandle;
+            _infiniteHandle = null;
+            if (handle is not null)
+            {
+                try
+                {
+                    await handle.InvokeVoidAsync("dispose");
+                    await handle.DisposeAsync();
+                }
+                catch (JSDisconnectedException) { }
+                catch (JSException) { }
+            }
+            // Drop the callback reference too; a later re-enable recreates it via the ??= above.
+            _infiniteSelfRef?.Dispose();
+            _infiniteSelfRef = null;
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -860,7 +887,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal async Task SetFilterAsync(BitDataGridColumn<TItem> column, BitDataGridFilterOperator op, object? value)
     {
         var existing = GetFilter(column);
-        var isEmpty = value is null || (value is string s && s.Length == 0);
+        // Treat a null, empty or whitespace-only value as "no filter" so a box cleared to spaces clears
+        // the filter rather than being stored as a criterion. This matches the data processor, which
+        // also ignores whitespace-only filter values, keeping remote and client modes consistent.
+        var isEmpty = value is null || (value is string s && string.IsNullOrWhiteSpace(s));
         if (isEmpty && op is not (BitDataGridFilterOperator.IsEmpty or BitDataGridFilterOperator.IsNotEmpty))
         {
             if (existing is not null) _filters.Remove(existing);

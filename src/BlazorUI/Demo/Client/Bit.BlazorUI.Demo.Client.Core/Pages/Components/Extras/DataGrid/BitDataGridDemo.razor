@@ -49,7 +49,8 @@
         <DemoExample Title="Filtering &amp; paging" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
                 A quick-filter row sits under the header; the pager controls page size and navigation.
-                Type in any filter box to narrow results (case-insensitive contains).
+                Typed filters are used for numeric, date, boolean and enum columns (like Price, Stock and Category),
+                while text columns (like Name and Supplier) use case-insensitive text filtering.
             </div>
             <br />
             <BitDataGrid TItem="Product" Items="@filterProducts" Height="430px"

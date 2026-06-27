@@ -332,12 +332,14 @@ private async Task<BitDataGridReadResult<Product>> LoadData(BitDataGridReadReque
         // filtering
         foreach (var f in request.Filters)
         {
-            var term = f.Value?.ToString() ?? """";
             query = f.ColumnId switch
             {
-                nameof(Product.Name) => query.Where(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase)),
-                nameof(Product.Price) => query.Where(p => p.Price.ToString().Contains(term)),
-                nameof(Product.Id) => query.Where(p => p.Id.ToString().Contains(term)),
+                // text column: case-insensitive contains on the string value
+                nameof(Product.Name) => query.Where(p => p.Name.Contains(f.Value?.ToString() ?? """", StringComparison.OrdinalIgnoreCase)),
+                // numeric columns: BitDataGrid emits a typed value with an Equals operator, so compare
+                // against the typed value instead of a substring of ToString()
+                nameof(Product.Price) => query.Where(p => f.Value is decimal price && p.Price == price),
+                nameof(Product.Id) => query.Where(p => f.Value is int id && p.Id == id),
                 _ => query
             };
         }

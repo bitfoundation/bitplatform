@@ -301,7 +301,8 @@ public partial class BitDataGridDemo
                 new() { Name = "Boolean", Value = "3" },
                 new() { Name = "Date", Value = "4" },
                 new() { Name = "DateTime", Value = "5" },
-                new() { Name = "Enum", Value = "6" },
+                new() { Name = "DateTimeOffset", Value = "6" },
+                new() { Name = "Enum", Value = "7" },
             ]
         },
         new()

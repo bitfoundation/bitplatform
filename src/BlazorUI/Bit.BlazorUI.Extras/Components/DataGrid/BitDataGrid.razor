@@ -458,6 +458,8 @@
 
     // Translates the raw editor input into a typed value + operator for the column's data type, then
     // applies it. Text columns keep the "contains" behavior; the rest use Equals against a typed value.
+    // Date/DateTime/DateTimeOffset values are parsed to a calendar day (midnight) and matched on the day
+    // (see BitDataGridDataProcessor), so a row's time-of-day no longer prevents an equality match.
     private Task SetTypedFilterAsync(BitDataGridColumn<TItem> column, string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))

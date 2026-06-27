@@ -243,6 +243,16 @@ public static class BitDataGridDataProcessor
                 };
             }
 
+            // The date filter editor emits a calendar day at midnight (no time component). Comparing it
+            // with strict equality against a DateTime/DateTimeOffset row value that carries a time-of-day
+            // would never match, so equality filters on those types are evaluated on the calendar day
+            // only (day-range semantics). DateOnly has no time component and keeps its existing behavior.
+            if (filter.Operator is BitDataGridFilterOperator.Equals or BitDataGridFilterOperator.NotEquals
+                && TryDateOnlyEquals(value, CoerceToValueType(value, filter.Value), out var sameDay))
+            {
+                return filter.Operator is BitDataGridFilterOperator.Equals ? sameDay : !sameDay;
+            }
+
             var cmp = BitDataGridValueComparer.Instance.Compare(value, CoerceToValueType(value, filter.Value));
             return filter.Operator switch
             {
@@ -272,8 +282,28 @@ public static class BitDataGridDataProcessor
         };
     }
 
-    private static object? CoerceToValueType(object? sample, object filterValue)
+    // Returns true (via <paramref name="equal"/>) when a DateTime/DateTimeOffset row value falls on the
+    // same calendar day as a date-only filter value (one whose time component is midnight). Used so an
+    // equality filter coming from the date editor matches the whole day instead of an exact timestamp.
+    // Returns false when the operands aren't a date/time pair carrying a midnight filter value, leaving
+    // the caller to fall back to the normal exact comparison.
+    private static bool TryDateOnlyEquals(object? value, object? filterValue, out bool equal)
     {
+        equal = false;
+        if (value is DateTime vdt && filterValue is DateTime fdt && fdt.TimeOfDay == TimeSpan.Zero)
+        {
+            equal = vdt.Date == fdt.Date;
+            return true;
+        }
+        if (value is DateTimeOffset vdto && filterValue is DateTimeOffset fdto && fdto.TimeOfDay == TimeSpan.Zero)
+        {
+            equal = vdto.Date == fdto.Date;
+            return true;
+        }
+        return false;
+    }
+
+    private static object? CoerceToValueType(object? sample, object filterValue)    {
         if (sample is null) return filterValue;
         var target = Nullable.GetUnderlyingType(sample.GetType()) ?? sample.GetType();
         if (target.IsInstanceOfType(filterValue)) return filterValue;

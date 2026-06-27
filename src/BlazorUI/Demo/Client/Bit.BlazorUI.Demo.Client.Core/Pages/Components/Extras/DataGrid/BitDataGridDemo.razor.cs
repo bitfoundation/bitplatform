@@ -164,14 +164,16 @@ public partial class BitDataGridDemo : AppComponentBase
 
             foreach (var f in request.Filters)
             {
-                var term = f.Value?.ToString() ?? "";
                 query = f.ColumnId switch
                 {
-                    nameof(Product.Name) => query.Where(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase)),
-                    nameof(Product.Category) => query.Where(p => p.Category.ToString().Contains(term, StringComparison.OrdinalIgnoreCase)),
-                    nameof(Product.Supplier) => query.Where(p => p.Supplier.Contains(term, StringComparison.OrdinalIgnoreCase)),
-                    nameof(Product.Price) => query.Where(p => p.Price.ToString().Contains(term)),
-                    nameof(Product.Stock) => query.Where(p => p.Stock.ToString().Contains(term)),
+                    // Text columns use the string operators emitted by the grid's text filter editor.
+                    nameof(Product.Name) => query.Where(p => MatchText(p.Name, f)),
+                    nameof(Product.Supplier) => query.Where(p => MatchText(p.Supplier, f)),
+                    // Non-text columns receive a typed value (enum/decimal/int) with a comparison
+                    // operator, so compare against the typed value instead of a substring of ToString().
+                    nameof(Product.Category) => query.Where(p => MatchComparable(p.Category, f)),
+                    nameof(Product.Price) => query.Where(p => MatchComparable(p.Price, f)),
+                    nameof(Product.Stock) => query.Where(p => MatchComparable(p.Stock, f)),
                     _ => query
                 };
             }
@@ -222,6 +224,53 @@ public partial class BitDataGridDemo : AppComponentBase
                 await InvokeAsync(StateHasChanged);
             }
         }
+    }
+
+    // Applies a text-column filter the way the grid's text editor emits it: a string value combined with
+    // one of the string/empty operators. Anything else is treated as "no criteria" so the row matches.
+    private static bool MatchText(string value, BitDataGridFilterDescriptor f)
+    {
+        if (f.Operator is BitDataGridFilterOperator.IsEmpty) return string.IsNullOrEmpty(value);
+        if (f.Operator is BitDataGridFilterOperator.IsNotEmpty) return !string.IsNullOrEmpty(value);
+
+        var term = f.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(term)) return true;
+
+        return f.Operator switch
+        {
+            BitDataGridFilterOperator.Contains => value.Contains(term, StringComparison.OrdinalIgnoreCase),
+            BitDataGridFilterOperator.DoesNotContain => !value.Contains(term, StringComparison.OrdinalIgnoreCase),
+            BitDataGridFilterOperator.StartsWith => value.StartsWith(term, StringComparison.OrdinalIgnoreCase),
+            BitDataGridFilterOperator.EndsWith => value.EndsWith(term, StringComparison.OrdinalIgnoreCase),
+            BitDataGridFilterOperator.Equals => string.Equals(value, term, StringComparison.OrdinalIgnoreCase),
+            BitDataGridFilterOperator.NotEquals => !string.Equals(value, term, StringComparison.OrdinalIgnoreCase),
+            _ => true
+        };
+    }
+
+    // Applies a non-text-column filter against the typed value the grid emits (enum/decimal/int) so the
+    // requested equality/range operator is honored instead of a substring match on ToString().
+    private static bool MatchComparable<T>(T value, BitDataGridFilterDescriptor f) where T : IComparable
+    {
+        if (f.Operator is BitDataGridFilterOperator.IsEmpty) return f.Value is null;
+        if (f.Operator is BitDataGridFilterOperator.IsNotEmpty) return f.Value is not null;
+        if (f.Value is null) return true;
+
+        // The grid hands back a value already of the column's type; guard against an unexpected type.
+        if (f.Value is not T typed)
+            return true;
+
+        var cmp = value.CompareTo(typed);
+        return f.Operator switch
+        {
+            BitDataGridFilterOperator.Equals => cmp == 0,
+            BitDataGridFilterOperator.NotEquals => cmp != 0,
+            BitDataGridFilterOperator.GreaterThan => cmp > 0,
+            BitDataGridFilterOperator.GreaterThanOrEqual => cmp >= 0,
+            BitDataGridFilterOperator.LessThan => cmp < 0,
+            BitDataGridFilterOperator.LessThanOrEqual => cmp <= 0,
+            _ => true
+        };
     }
 
 
