@@ -229,7 +229,12 @@ namespace BitBlazorUI {
                     callout.style.bottom = (fixedRect.bottom - (visibleBottom - 2)) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, visualHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else {
-                    callout.style.left = ((isRtl ? (componentX + componentWidth + 1) : (componentX - calloutWidth - 1)) - fixedRect.left) + 'px';
+                    // Neither horizontal side has enough space; fall back to the opposite side but
+                    // re-clamp so the callout never lands at a negative/off-viewport left offset.
+                    let sideLeft = isRtl ? (componentX + componentWidth + 1) : (componentX - calloutWidth - 1);
+                    if (sideLeft + calloutWidth > visibleRight) sideLeft = visibleRight - calloutWidth - 3;
+                    if (sideLeft < visibleLeft) sideLeft = visibleLeft;
+                    callout.style.left = (sideLeft - fixedRect.left) + 'px';
                     callout.style.bottom = (fixedRect.bottom - (visibleBottom - 2)) + 'px';
                     scrollContainer.style.maxHeight = Math.max(0, visualHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 }
