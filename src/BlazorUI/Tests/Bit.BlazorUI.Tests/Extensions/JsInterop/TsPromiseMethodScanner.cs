@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
@@ -50,14 +51,21 @@ internal static class TsPromiseMethodScanner
     /// </summary>
     public static HashSet<string> CollectFromSource(string text)
     {
-        var classMatches = TsClassRegex.Matches(text)
+        // The class/static-method header regexes run against a copy of the source with all comment and string
+        // content blanked out (positions preserved). This prevents commented-out or quoted signatures like
+        // "// static async foo()" or "'class Bar { static baz() }'" from being matched as real declarations and
+        // adding bogus Class.Method entries. Body extraction below still uses the original text (FindMatching /
+        // SkipReturnAnnotation already skip non-code), and the masked indices map 1:1 onto the original.
+        var scanText = MaskNonCode(text);
+
+        var classMatches = TsClassRegex.Matches(scanText)
             .Select(m => (Name: m.Groups["class"].Value, Index: m.Index))
             .OrderBy(c => c.Index)
             .ToList();
 
         var methods = new List<TsStaticMethod>();
 
-        foreach (Match header in TsStaticMethodHeaderRegex.Matches(text))
+        foreach (Match header in TsStaticMethodHeaderRegex.Matches(scanText))
         {
             var openParen = header.Index + header.Length - 1;
             var closeParen = FindMatching(text, openParen, '(', ')');
@@ -600,6 +608,37 @@ internal static class TsPromiseMethodScanner
 
         annotation = text.Substring(annotationStart, Math.Max(0, i - annotationStart));
         return i;
+    }
+
+    /// <summary>
+    /// Returns a copy of <paramref name="text"/> with all comment and string-literal content replaced by spaces
+    /// (line breaks preserved, length and all code-token positions unchanged). Running the structural regexes
+    /// against this masked text keeps commented-out or quoted class/method signatures from being misread as real
+    /// declarations, while the 1:1 index mapping lets body extraction continue against the original source.
+    /// </summary>
+    private static string MaskNonCode(string text)
+    {
+        var sb = new StringBuilder(text);
+
+        var i = 0;
+        while (i < text.Length)
+        {
+            var start = i;
+            i = SkipNonCode(text, i, out var skipped);
+            if (skipped)
+            {
+                for (var j = start; j < i && j < sb.Length; j++)
+                {
+                    if (sb[j] is not ('\n' or '\r')) sb[j] = ' ';
+                }
+            }
+            else
+            {
+                i++;
+            }
+        }
+
+        return sb.ToString();
     }
 
     private static int SkipNonCode(string text, int i, out bool skipped)

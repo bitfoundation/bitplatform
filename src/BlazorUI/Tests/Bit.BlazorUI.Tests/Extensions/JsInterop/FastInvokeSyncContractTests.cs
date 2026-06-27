@@ -4,6 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
@@ -35,11 +38,6 @@ public class FastInvokeSyncContractTests
     private static readonly Regex FastInvokeCallRegex =
         new(@"FastInvoke(?:Void)?\s*(?:<[^>]+>)?\s*\(\s*(?:""(?<id>[^""]+)""|(?<var>[A-Za-z_]\w*))", RegexOptions.Compiled);
 
-    // Matches a local `const string <name> = "<value>";` declaration so a variable used as a FastInvoke
-    // identifier can be resolved back to its literal value.
-    private static readonly Regex ConstStringDeclRegex =
-        new(@"const\s+string\s+(?<name>[A-Za-z_]\w*)\s*=\s*""(?<value>[^""]+)""", RegexOptions.Compiled);
-
     [TestMethod]
     public void FastInvoke_CallSites_ShouldNotTargetAsyncJavaScriptFunctions()
     {
@@ -67,6 +65,10 @@ public class FastInvokeSyncContractTests
             foreach (var file in EnumerateSourceFiles(dir, "*.cs"))
             {
                 var text = File.ReadAllText(file);
+
+                // Parsed lazily and reused for every variable-identifier resolution in this file.
+                CompilationUnitSyntax? syntaxRoot = null;
+
                 foreach (Match match in FastInvokeCallRegex.Matches(text))
                 {
                     string? identifier;
@@ -77,9 +79,10 @@ public class FastInvokeSyncContractTests
                     else
                     {
                         // The identifier was passed as a variable (e.g. `const string identifier = "...";`).
-                        // Resolve it from the nearest preceding const string declaration in scope; skip the
-                        // call site when it can't be resolved (it's not a contract-relevant literal target).
-                        identifier = ResolveConstStringIdentifier(text, match.Groups["var"].Value, match.Index);
+                        // Resolve it from the const string declaration that is actually visible at the call
+                        // site; skip the call when it can't be resolved (not a contract-relevant literal target).
+                        syntaxRoot ??= CSharpSyntaxTree.ParseText(text).GetCompilationUnitRoot();
+                        identifier = ResolveConstStringIdentifier(syntaxRoot, match.Groups["var"].Value, match.Index);
                         if (identifier is null) continue;
                     }
 
@@ -155,65 +158,93 @@ public class FastInvokeSyncContractTests
         }
     }
 
-    private static string? ResolveConstStringIdentifier(string text, string variableName, int callIndex)
+    private static string? ResolveConstStringIdentifier(CompilationUnitSyntax root, string variableName, int callPosition)
     {
         // Resolve the variable to the 'const string <variableName> = "...";' declaration that is actually
-        // visible at the call site. A C# local const is in scope from its declaration to the end of its
-        // enclosing block, so a textually-earlier declaration in a sibling method/block must not be picked.
-        // Walk declarations in source order, keep the last matching one that precedes the call AND whose
-        // enclosing block still encloses the call (see IsDeclarationInScopeAt). This way a declaration in a
-        // nested block or a separate method does not override the correct enclosing declaration.
-        string? resolved = null;
-        foreach (Match m in ConstStringDeclRegex.Matches(text))
+        // visible at the call site, using the parsed C# syntax tree rather than raw text scanning. Walking the
+        // real syntax ancestry means braces, comments, and string literals can never be miscounted, and a
+        // same-named const declared in an unrelated method or type can never be bound by mistake.
+        var node = root.FindToken(callPosition).Parent;
+
+        for (var current = node; current is not null; current = current.Parent)
         {
-            if (m.Index >= callIndex) break;
-            if (m.Groups["name"].Value != variableName) continue;
-            if (!IsDeclarationInScopeAt(text, m.Index, callIndex)) continue;
-
-            resolved = m.Groups["value"].Value;
-        }
-
-        if (resolved is not null) return resolved;
-
-        // No in-scope local matched. The index/scope walk above is correct for locals (which must be
-        // declared before use), but a type-level `const string` field can be declared after the method that
-        // uses it, so the `m.Index >= callIndex` break would skip it. In valid C# a variable that resolves
-        // to no in-scope local must refer to a class-level const (always in scope within the type), so fall
-        // back to a declaration-order-independent, name-based match to resolve those.
-        foreach (Match m in ConstStringDeclRegex.Matches(text))
-        {
-            if (m.Groups["name"].Value == variableName)
+            // Local consts: visible from their declaration to the end of the enclosing block, so only a
+            // declaration that textually precedes the call site counts.
+            foreach (var statement in EnumerateLocalConstStatements(current))
             {
-                return m.Groups["value"].Value;
+                foreach (var v in statement.Declaration.Variables)
+                {
+                    if (v.Identifier.ValueText != variableName) continue;
+                    if (v.SpanStart >= callPosition) continue;
+
+                    var value = TryGetStringLiteral(v);
+                    if (value is not null) return value;
+                }
+            }
+
+            // Type-level const fields: visible anywhere within the declaring type regardless of source order.
+            // Scoping resolution to the containing type (rather than a file-wide name match) prevents binding a
+            // same-named const from an unrelated type.
+            if (current is TypeDeclarationSyntax typeDecl)
+            {
+                foreach (var field in typeDecl.Members.OfType<FieldDeclarationSyntax>())
+                {
+                    if (!field.Modifiers.Any(SyntaxKind.ConstKeyword)) continue;
+                    if (!IsStringType(field.Declaration.Type)) continue;
+
+                    foreach (var v in field.Declaration.Variables)
+                    {
+                        if (v.Identifier.ValueText != variableName) continue;
+
+                        var value = TryGetStringLiteral(v);
+                        if (value is not null) return value;
+                    }
+                }
             }
         }
 
         return null;
     }
 
-    private static bool IsDeclarationInScopeAt(string text, int declIndex, int callIndex)
+    private static IEnumerable<LocalDeclarationStatementSyntax> EnumerateLocalConstStatements(SyntaxNode scope)
     {
-        // A local declaration is visible from its position to the end of its enclosing block. Scan forward
-        // from the declaration tracking brace depth (starting at 0): the first '}' that drops depth below 0
-        // closes the enclosing block and ends the declaration's scope. The declaration is in scope at the
-        // call site only when the call precedes that closing brace. Nested blocks opened after the
-        // declaration are balanced by their own '}', so they don't end the enclosing scope prematurely.
-        var depth = 0;
-        for (var i = declIndex; i < callIndex && i < text.Length; i++)
+        // Only inspect statements that belong directly to this scope's own statement list (block or
+        // switch-section). Descendant blocks are handled when the walk reaches them as their own scope.
+        var statements = scope switch
         {
-            var c = text[i];
-            if (c == '{')
+            BlockSyntax block => block.Statements,
+            SwitchSectionSyntax section => section.Statements,
+            _ => default
+        };
+
+        foreach (var statement in statements)
+        {
+            if (statement is LocalDeclarationStatementSyntax local &&
+                local.IsConst &&
+                IsStringType(local.Declaration.Type))
             {
-                depth++;
-            }
-            else if (c == '}')
-            {
-                depth--;
-                if (depth < 0) return false;
+                yield return local;
             }
         }
+    }
 
-        return true;
+    private static bool IsStringType(TypeSyntax type) => type switch
+    {
+        PredefinedTypeSyntax predefined => predefined.Keyword.IsKind(SyntaxKind.StringKeyword),
+        IdentifierNameSyntax { Identifier.ValueText: "String" } => true,
+        QualifiedNameSyntax { Right.Identifier.ValueText: "String" } => true,
+        _ => false
+    };
+
+    private static string? TryGetStringLiteral(VariableDeclaratorSyntax declarator)
+    {
+        if (declarator.Initializer?.Value is LiteralExpressionSyntax literal &&
+            literal.IsKind(SyntaxKind.StringLiteralExpression))
+        {
+            return literal.Token.ValueText;
+        }
+
+        return null;
     }
 
     private static string? LastTwoSegments(string identifier)

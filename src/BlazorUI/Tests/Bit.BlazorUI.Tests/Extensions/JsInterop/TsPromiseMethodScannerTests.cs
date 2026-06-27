@@ -256,4 +256,47 @@ public class TsPromiseMethodScannerTests
         Assert.IsTrue(promiseMethods.Contains("Sample.loadAsync"),
             "A top-level Promise return type must still be detected even when its type argument is complex.");
     }
+
+    [TestMethod]
+    public void CollectFromSource_IgnoresCommentedOutSignatures()
+    {
+        var ts = """
+            namespace BitBlazorUI {
+              class Sample {
+                // public static async ghostAsync() { await Promise.resolve(); }
+                /* public static realGhost(): Promise<void> { return Promise.resolve(); } */
+                public static loadAsync(): Promise<void> { return Promise.resolve(); }
+              }
+            }
+            """;
+
+        var promiseMethods = TsPromiseMethodScanner.CollectFromSource(ts);
+
+        Assert.IsTrue(promiseMethods.Contains("Sample.loadAsync"));
+        Assert.IsFalse(promiseMethods.Contains("Sample.ghostAsync"),
+            "A signature inside a line comment must not be treated as a real declaration.");
+        Assert.IsFalse(promiseMethods.Contains("Sample.realGhost"),
+            "A signature inside a block comment must not be treated as a real declaration.");
+    }
+
+    [TestMethod]
+    public void CollectFromSource_IgnoresSignaturesInsideStringLiterals()
+    {
+        var ts = """
+            namespace BitBlazorUI {
+              class Sample {
+                public static describe(): string {
+                  return "class Ghost { static async hauntAsync() { await Promise.resolve(); } }";
+                }
+              }
+            }
+            """;
+
+        var promiseMethods = TsPromiseMethodScanner.CollectFromSource(ts);
+
+        Assert.IsFalse(promiseMethods.Contains("Ghost.hauntAsync"),
+            "A class/method signature embedded in a string literal must not be treated as a real declaration.");
+        Assert.IsFalse(promiseMethods.Contains("Sample.describe"),
+            "A method returning a plain string must not be flagged as promise-returning.");
+    }
 }

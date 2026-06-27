@@ -31,8 +31,9 @@ internal static class BitChartJsInterop
     /// <param name="jsRuntime"></param>
     /// <param name="chartConfig">The config for the new chart.</param>
     /// <returns>
-    /// <see langword="true"/> when setup succeeded, <see langword="false"/> when the chart could not be updated in place,
-    /// or <see langword="null"/> when interop could not run or an error was swallowed on the in-process (WASM) path.
+    /// <see langword="true"/> when the chart was set up (or updated in place when one with the same id already existed).
+    /// The underlying <c>BitBlazorUI.BitChart.setupChart</c> throws on failure rather than returning <see langword="false"/>;
+    /// on the in-process (WASM) fast path that error can be swallowed, in which case the result is <see langword="null"/>.
     /// </returns>
     public static ValueTask<bool?> BitChartJsSetupChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
@@ -47,8 +48,9 @@ internal static class BitChartJsInterop
     /// <param name="jsRuntime"></param>
     /// <param name="chartConfig">The updated config of the chart you want to update.</param>
     /// <returns>
-    /// <see langword="true"/> when the chart was updated, <see langword="false"/> when the chart instance was missing,
-    /// or <see langword="null"/> when interop could not run or an error was swallowed on the in-process (WASM) path.
+    /// <see langword="true"/> when the chart was updated. The underlying <c>BitBlazorUI.BitChart.updateChart</c> throws
+    /// when no chart with the given id exists rather than returning <see langword="false"/>; on the in-process (WASM)
+    /// fast path that error can be swallowed, in which case the result is <see langword="null"/>.
     /// </returns>
     public static ValueTask<bool?> BitChartJsUpdateChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {

@@ -263,6 +263,10 @@ public partial class BitPanel : BitComponentBase
         try
         {
             await _js.BitSwipesDispose(_containerId);
+
+            // The JS dispose owns disposal of the .NET reference; clear our field after the successful
+            // ownership handoff so we don't keep a stale reference alive.
+            _dotnetObj = null;
         }
         catch (JSDisconnectedException)
         {
@@ -270,6 +274,14 @@ public partial class BitPanel : BitComponentBase
             // Release the managed reference here so it doesn't leak.
             _dotnetObj?.Dispose();
             _dotnetObj = null;
+        }
+        catch
+        {
+            // Any other failure means the JS dispose didn't complete its ownership handoff, so release the
+            // managed reference here to avoid leaking the GCHandle, then rethrow so the original error surfaces.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+            throw;
         }
 
         await base.DisposeAsync(disposing);

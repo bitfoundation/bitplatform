@@ -263,7 +263,10 @@ public partial class BitPullToRefresh : BitComponentBase
             _dotnetObj = null;
             throw;
         }
-
-        await base.DisposeAsync(disposing);
+        finally
+        {
+            // Base cleanup must always run, even when the JS dispose failed and rethrew above.
+            await base.DisposeAsync(disposing);
+        }
     }
 }
