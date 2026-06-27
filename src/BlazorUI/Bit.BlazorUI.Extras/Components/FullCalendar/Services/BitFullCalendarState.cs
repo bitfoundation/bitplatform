@@ -214,9 +214,12 @@ public class BitFullCalendarState
     {
         if (EventsMatch(events))
         {
-            // References are unchanged, but event properties (color, attendees, ...) may have been
-            // mutated in place. Recompute the filtered projection so filter-dependent state stays
-            // accurate. Skip the change notification to avoid a re-render loop from OnParametersSet.
+            // References are unchanged, but event properties (color, attendees, id, ...) may have
+            // been mutated in place. Re-normalize ids first so a blanked or now-duplicate Id can't
+            // leave the month-view slot dictionaries keyed by colliding ids, then recompute the
+            // filtered projection so filter-dependent state stays accurate. Skip the change
+            // notification to avoid a re-render loop from OnParametersSet.
+            NormalizeEventIds();
             ApplyFilters();
             return;
         }

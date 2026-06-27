@@ -53,12 +53,17 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     {
         // Re-run initialization whenever the parameters that drive the form change, so a reused
         // dialog instance reflects the new ExistingEvent / start parameters instead of stale values.
-        // State.SelectedDate is tracked too because it is the fallback base date for a new event
-        // when StartDate is null (see the non-editing branch below).
+        // State.SelectedDate is only the fallback base date for a NEW event when no explicit
+        // StartDate is supplied (see the non-editing branch below). A selected-date change must
+        // therefore only force a reset while the dialog is actually using that fallback source -
+        // never while editing an ExistingEvent or when an explicit StartDate was provided, otherwise
+        // an unrelated calendar navigation would clobber the in-progress form.
+        var usesFallbackDate = ExistingEvent is null && StartDate is null;
+        var selectedDateChanged = usesFallbackDate && _lastSelectedDate != State.SelectedDate;
         var parametersChanged = !_initialized
             || !ReferenceEquals(_lastExistingEvent, ExistingEvent)
             || _lastStartDate != StartDate
-            || _lastSelectedDate != State.SelectedDate
+            || selectedDateChanged
             || _lastStartHour != StartHour
             || _lastStartMinute != StartMinute
             || _lastResource != Resource;

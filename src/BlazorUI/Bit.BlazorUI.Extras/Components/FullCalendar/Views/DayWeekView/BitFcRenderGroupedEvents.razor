@@ -11,27 +11,47 @@
     {
         var style = BitFullCalendarHelpers.GetEventBlockStyle(ev, Day, groupIndex, GroupedEvents.Count);
 
-        // Count lanes that actually overlap this event in time, to the left and to the right of
-        // this event's lane. Lanes that don't intersect the event's time range are ignored so a
-        // non-conflicting event keeps the full column width.
-        var leftConflicts = 0;
-        var rightConflicts = 0;
+        // Determine how many columns this event really needs. Counting every lane that touches ev
+        // overcounts: lanes whose events are staggered (each overlaps ev but never coexist with one
+        // another inside ev's own time range) would each take a column and shrink ev unnecessarily.
+        // Instead compute the peak number of events (including ev) that are simultaneously active at
+        // any instant within ev's [Start, End] range, clamping every overlapping event to that range
+        // so concurrency is measured strictly where ev lives.
+        var boundaries = new List<(DateTime Time, int Delta)>();
         for (var i = 0; i < GroupedEvents.Count; i++)
         {
-            if (i == groupIndex)
-                continue;
-
-            var otherGroup = GroupedEvents[i];
-            var conflicts = otherGroup.Any(other =>
-                ev.StartDate < other.EndDate && ev.EndDate > other.StartDate);
-            if (!conflicts)
-                continue;
-
-            if (i < groupIndex) leftConflicts++; else rightConflicts++;
+            foreach (var other in GroupedEvents[i])
+            {
+                if (!(ev.StartDate < other.EndDate && ev.EndDate > other.StartDate))
+                    continue;
+                var s = other.StartDate < ev.StartDate ? ev.StartDate : other.StartDate;
+                var e = other.EndDate > ev.EndDate ? ev.EndDate : other.EndDate;
+                if (e <= s)
+                    continue;
+                boundaries.Add((s, 1));
+                boundaries.Add((e, -1));
+            }
+        }
+        // Sweep the clamped boundaries. Process an end (-1) before a start (+1) at the same instant
+        // so events that merely touch (one ends as the next begins) are not counted as concurrent.
+        var running = 0;
+        var depth = 1;
+        foreach (var b in boundaries.OrderBy(b => b.Time).ThenBy(b => b.Delta))
+        {
+            running += b.Delta;
+            if (running > depth) depth = running;
         }
 
-        var depth = leftConflicts + rightConflicts + 1;
-        var rank = leftConflicts;
+        // Place ev within those columns. Lanes to the left of ev's lane that overlap it set its
+        // column, clamped into the available column count so a staggered left-neighbour can never
+        // push left/width past the available width.
+        var leftConflicts = 0;
+        for (var i = 0; i < groupIndex; i++)
+        {
+            if (GroupedEvents[i].Any(other => ev.StartDate < other.EndDate && ev.EndDate > other.StartDate))
+                leftConflicts++;
+        }
+        var rank = Math.Min(leftConflicts, depth - 1);
 
         double left;
         double width;
