@@ -2,277 +2,394 @@
 
 public partial class BitMarkdownViewerDemo
 {
+    private enum MarkdownFlavor { Basic, GitHub, Advanced }
+
     private readonly List<ComponentParameter> componentParameters =
     [
-        new()
-        {
-           Name = "JsMiddlewareIdentifier",
-           Type = "string?",
-           DefaultValue = "null",
-           Description = @"The fully qualified JavaScript function identifier to invoke as JavaScript middleware after parsing.
-                           The string should reference a global JS function (e.g. <c>""myApp.sanitizeHtml""</c>) that accepts
-                           an HTML string and returns the processed HTML string.
-                           JavaScript middleware is skipped during server-side prerendering.",
-        },
         new()
         {
            Name = "Markdown",
            Type = "string?",
            DefaultValue = "null",
-           Description = "The Markdown string value to render as an html element.",
+           Description = "The Markdown string value to render as html elements.",
         },
         new()
         {
-           Name = "Middleware",
-           Type = "Func<string, Task<string>>?",
+           Name = "Pipeline",
+           Type = "BitMarkdownViewerPipeline?",
            DefaultValue = "null",
-           Description = @"The C# function to run after parsing markdown and before rendering HTML.
-                           The middleware receives the parsed HTML string and returns the processed HTML string.
-                           C# middleware is applied after JavaScript middleware.",
+           Description = @"The processing pipeline (flavor set). Defaults to the basic CommonMark core with no extensions.
+                           Use one of the ready-made pipelines on BitMarkdownViewerPipelines (Basic, GitHub, Advanced)
+                           or build a custom one with BitMarkdownViewerPipelineBuilder.",
+           LinkType = LinkType.Link,
+           Href = "#markdown-viewer-pipeline",
+        },
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "markdown-viewer-pipeline",
+            Title = "BitMarkdownViewerPipeline",
+            Description = "An immutable, reusable Markdown processing configuration produced by a BitMarkdownViewerPipelineBuilder. Pipelines are thread-safe and should be cached and shared. Ready-made pipelines are available on BitMarkdownViewerPipelines (Basic, GitHub, Advanced).",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Basic",
+                    Type = "static BitMarkdownViewerPipeline",
+                    DefaultValue = "",
+                    Description = "A pipeline with only the basic CommonMark core (no flavors).",
+                },
+                new()
+                {
+                    Name = "Parse",
+                    Type = "BitMarkdownViewerDocumentNode Parse(string? markdown)",
+                    DefaultValue = "",
+                    Description = "Parses Markdown source into an AST, applying all AST processors.",
+                    LinkType = LinkType.Link,
+                    Href = "#markdown-viewer-document-node",
+                },
+                new()
+                {
+                    Name = "CreateRenderer",
+                    Type = "BitMarkdownViewerMarkdownRenderer CreateRenderer()",
+                    DefaultValue = "",
+                    Description = "Creates a renderer bound to this pipeline's node renderers.",
+                    LinkType = LinkType.Link,
+                    Href = "#markdown-viewer-renderer",
+                },
+            ]
         },
         new()
         {
-           Name = "NoPrerender",
-           Type = "bool",
-           DefaultValue = "false",
-           Description = "Disables parse and render of the markdown content in the prerendering phase.",
+            Id = "markdown-viewer-document-node",
+            Title = "BitMarkdownViewerDocumentNode",
+            Description = "The root of a parsed Markdown document. Inherits from BitMarkdownViewerMarkdownNode.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Children",
+                    Type = "List<BitMarkdownViewerMarkdownNode>",
+                    DefaultValue = "[]",
+                    Description = "The top-level child nodes of the document.",
+                    LinkType = LinkType.Link,
+                    Href = "#markdown-viewer-node",
+                },
+                new()
+                {
+                    Name = "ChildNodes",
+                    Type = "IList<BitMarkdownViewerMarkdownNode>",
+                    DefaultValue = "",
+                    Description = "The node's single child collection (returns Children).",
+                    LinkType = LinkType.Link,
+                    Href = "#markdown-viewer-node",
+                },
+            ]
         },
         new()
         {
-           Name = "OnParsing",
-           Type = "EventCallback<string?>",
-           DefaultValue = "null",
-           Description = "A callback that is called before starting to parse the markdown.",
+            Id = "markdown-viewer-node",
+            Title = "BitMarkdownViewerMarkdownNode",
+            Description = "The abstract base type for every node produced by the parser. Nodes expose their mutable child collections so that AST processors (plugins) can traverse and rewrite the tree generically, even for node types they did not define.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "ChildNodes",
+                    Type = "virtual IList<BitMarkdownViewerMarkdownNode>?",
+                    DefaultValue = "null",
+                    Description = "The node's single child collection, if it has exactly one. Container nodes override this; leaf nodes return null.",
+                },
+                new()
+                {
+                    Name = "ChildLists",
+                    Type = "virtual IEnumerable<IList<BitMarkdownViewerMarkdownNode>>",
+                    DefaultValue = "",
+                    Description = "All mutable child collections owned by this node. Defaults to the single ChildNodes collection; nodes with several (e.g. a table's cells) override this to expose each one.",
+                },
+            ]
         },
         new()
         {
-           Name = "OnParsed",
-           Type = "EventCallback<string?>",
-           DefaultValue = "null",
-           Description = "A callback that is called after parsing the markdown.",
-        },
-        new()
-        {
-           Name = "OnRendered",
-           Type = "EventCallback<string?>",
-           DefaultValue = "null",
-           Description = "A callback that is called after rendering the parsed markdown.",
+            Id = "markdown-viewer-renderer",
+            Title = "BitMarkdownViewerMarkdownRenderer",
+            Description = "Walks an AST and dispatches each node to a matching node renderer. Renderers are probed in reverse registration order, so the last renderer registered for a node type wins, allowing pipeline extensions to override the core renderers.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "WriteNodes",
+                    Type = "void WriteNodes(RenderTreeBuilder builder, IEnumerable<BitMarkdownViewerMarkdownNode> nodes)",
+                    DefaultValue = "",
+                    Description = "Renders a sequence of nodes.",
+                },
+                new()
+                {
+                    Name = "WriteNode",
+                    Type = "void WriteNode(RenderTreeBuilder builder, BitMarkdownViewerMarkdownNode node)",
+                    DefaultValue = "",
+                    Description = "Renders a single node using the matching renderer (last registered wins).",
+                },
+            ]
         },
     ];
 
 
 
-    private string advancedMarkdown = @"![Header](https://user-images.githubusercontent.com/6169846/251658486-b16e1db8-5481-46c4-9fc1-c9b279a4364a.png)
+    // -- Advanced (live editor) example --------------------------------------
 
-<br/>
+    private MarkdownFlavor playgroundFlavor = MarkdownFlavor.Advanced;
+    private BitMarkdownViewerPipeline playgroundPipeline = BitMarkdownViewerPipelines.Advanced;
+    private string playgroundMarkdown = SampleMarkdown;
 
-![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
-![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
-![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
-[![Nuget downloads](https://img.shields.io/badge/packages_download-8.2M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform ""Average time to resolve an issue"")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform ""Percentage of issues still open"")
-
-<br/>
-
-# 🧾 Introduction
-
-At **bitplatform**, we've curated a comprehensive toolkit to empower you in crafting the finest projects using Blazor. Diverging from others merely offering UI Toolkits, ***bit BlazorUI components*** distinguishes itself with over 80 components, with a compact size of under 400 KB. These components boast both Dark and Light Themes, delivering unparalleled High Performance 🚀
-
-Yet, bitplatform doesn't stop there. Our platform introduces exclusive tools that elevate your development experience:
-
-***Bswup***: This unique tool harnesses the power of Progressive Web Apps (PWA) within the innovative new structure of dotnet 8. By amalgamating pre-rendering techniques reminiscent of renowned platforms like GitHub, Reddit, and Facebook, Bswup ensures an exceptional user experience 😍
-
-***Butil***: Embracing Blazor because of your love for C#? Butil enables you to stay true to that sentiment by providing essential Browser APIs in C#, eliminating the need to revert to JavaScript for any functionality 👌
-
-***Besql***: Dreaming of an offline web application capable of saving data and syncing later? Enter Besql, your solution to incorporating ef core & sqlite in your browser. It's a crucial aid for achieving this objective seamlessly 🕺
-
-***Bit Boilerplate Project Template***: If the aforementioned features have piqued your interest, dive into the Bit Boilerplate project template. Experience everything mentioned above along with additional features such as ASP.NET Core Identity integration, multilingualism, and other cool features that empowers you to develop unified Web, Android, iOS, Windows, and macOS apps from a single codebase, while providing seamless integration with native platform features and third-party Java, Kotlin, Swift, Objective-C, and JavaScript libraries 💯
-
-For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
-
-<br/>
-
-**Note**: This project is tested with [BrowserStack](https://www.browserstack.com/).
-
-<br/>
-
-# 🎁 OSS Showcases
-
-The following apps are our open-source projects powered by the bit platform showcasing the different capabilities of our toolchain:
-
-| | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS |
-|:-:|:--:|:--:|:--:|:--:|:--:|
-| bitplatform | [![PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://bitplatform.dev)| *N/A* | *N/A* | *N/A* | *N/A* |
-| Sales | [![PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://sales.bitplatform.dev) | *Soon!* | *Soon!* | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe) | *Soon!* |
-| bit BlazorUI | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://blazorui.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-blazor-ui/id6450401404) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.BlazorUI.Demo) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-components.bitplatform.dev/Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-blazor-ui/id6450401404)
-| AdminPanel | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://adminpanel.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-adminpanel/id6450611349) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-adminpanel/id6450611349) |
-| Todo | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://todo.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-todotemplate/id6450611072) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-todotemplate/id6450611072)
-
-1. [bitplatform.dev](https://bitplatform.dev): .NET 9 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-2. [sales.bitplatform.dev](https://sales.bitplatform.dev): .NET 9 Sales Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-3. [blazorui.bitplatform.dev](https://blazorui.bitplatform.dev): .NET 9 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-4. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): .NET 9 PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-5. [todo.bitplatform.dev](https://todo.bitplatform.dev): .NET 8 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-6. [adminpanel.bitplatform.cc](https://adminpanel.bitplatform.cc): .NET 9 PWA with Blazor WebAssembly Standalone (Azure static web app)
-7. [todo-aot.bitplatform.cc](https://todo-aot.bitplatform.cc): .NET 9 AOT Compiled PWA with Blazor WebAssembly Standalone (Azure static web app)
-8. [todo-small.bitplatform.cc](https://todo-small.bitplatform.cc): .NET 9 Todo demo app with smaller download footprint (Azure static web app)
-9. [todo-offline.bitplatform.cc](https://todo-offline.bitplatform.cc): .NET 9 Todo demo app with ef-core & sqlite (Azure static web app)
-
-[Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram. 
-
-Prerendering combined with PWA functionality delivers an experience akin to that of GitHub and Reddit. The bitplatform solution, seamlessly integrated with the innovative new .NET 8 project structure, stands as the exclusive remedy for such a scenario within the realm of Blazor.
-
-# How to contribute?
-
-We welcome contributions! Many people all over the world have helped make this project better.
-
-* [Contributing](CONTRIBUTING.md) explains what kinds of contributions we welcome.
-* [Build Instructions](docs/how-to-build.md) explains how to build and test.
-* [Get Up and Running on bit platform](docs/up-and-running.md) explains how to get the latest builds and their libraries to test them in your own projects.
-
-<br/>
-
-# **Contributions**
-
-![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg ""bit platform open source contributions report"")";
-
-    private DateTimeOffset? parsingDateTime;
-    private DateTimeOffset? parsedDateTime;
-    private DateTimeOffset? renderedDateTime;
-
-    private void OnParsing(string? markdown)
+    private void SetPlaygroundFlavor(MarkdownFlavor flavor)
     {
-        parsingDateTime = DateTimeOffset.Now;
+        playgroundFlavor = flavor;
+        playgroundPipeline = flavor switch
+        {
+            MarkdownFlavor.Basic => BitMarkdownViewerPipelines.Basic,
+            MarkdownFlavor.GitHub => BitMarkdownViewerPipelines.GitHub,
+            _ => BitMarkdownViewerPipelines.Advanced
+        };
     }
 
-    private void OnParsed(string? html)
-    {
-        parsedDateTime = DateTimeOffset.Now;
-    }
+    private void ResetPlaygroundSample() => playgroundMarkdown = SampleMarkdown;
 
-    private void OnRendered(string? html)
+    private string playgroundHint => playgroundFlavor switch
     {
-        renderedDateTime = DateTimeOffset.Now;
-    }
+        MarkdownFlavor.Basic => "Basic CommonMark only. Tables, strikethrough, task lists, emoji and bare URLs render as plain text.",
+        MarkdownFlavor.GitHub => "GitHub Flavored Markdown: pipe tables, ~~strikethrough~~, task lists and autolink literals.",
+        _ => "Advanced: GitHub Flavored Markdown plus :sparkles: emoji and automatic heading ids."
+    };
+
+    private const string SampleMarkdown = """
+        # BitMarkdownViewer
+
+        A **native Blazor** Markdown viewer written in _pure C#_ - no JavaScript,
+        no `innerHTML`, and ~~no external dependencies~~ zero external dependencies.
+
+        ## Why it exists
+
+        Most Blazor Markdown components wrap a JavaScript library and marshal strings
+        across the interop boundary. This one parses Markdown into an AST and renders
+        it straight to the Blazor render tree, so the output is **real DOM**.
+
+        ### Feature highlights
+
+        - Headings (ATX `#` and Setext)
+        - **Bold**, *italic*, ***bold italic***, and ~~strikethrough~~
+        - `inline code` and fenced code blocks
+        - [Links](https://learn.microsoft.com/aspnet/core/blazor) and images
+        - Ordered and unordered lists, including nesting:
+            1. First item
+            2. Second item
+                - nested bullet
+                - another one
+            3. Third item
+        - GitHub-style task lists:
+            - [x] Parse blocks
+            - [x] Parse inlines
+            - [ ] Conquer the world
+
+        ## Code
+
+        Inline: `var viewer = new BitMarkdownViewer();`
+
+        ```csharp
+        public static BitMarkdownViewerDocumentNode Parse(string? markdown)
+        {
+            var document = new BitMarkdownViewerDocumentNode();
+            if (string.IsNullOrEmpty(markdown))
+                return document;
+            return document;
+        }
+        ```
+
+        ## Blockquotes
+
+        > "Any sufficiently advanced technology is indistinguishable from magic."
+        >
+        > - Arthur C. Clarke
+
+        ## Tables
+
+        | Feature        | Supported | Notes                  |
+        | :------------- | :-------: | ---------------------: |
+        | Headings       |    Yes    | Levels 1-6             |
+        | Tables         |    Yes    | With column alignment  |
+        | Task lists     |    Yes    | GitHub flavoured       |
+        | Raw HTML       |    No     | Escaped for safety     |
+
+        ## Safety
+
+        Link and image URLs are sanitized, so `javascript:` URIs are stripped and raw
+        HTML in the source is rendered as text rather than executed.
+
+        ## Plugins (try the Flavor switch above)
+
+        With the **Advanced** flavor you also get emoji and autolinks:
+
+        - Emoji shortcodes: :rocket: :sparkles: :tada: :fire: :+1:
+        - Bare URLs become links: https://learn.microsoft.com
+        - Email autolinks: support@example.com
+
+        Switch to **Basic** to see the same source rendered as plain CommonMark.
+
+        ---
+
+        Made with C# and the Blazor render tree.
+        """;
+
+
+
+    // -- GitHub flavored example ---------------------------------------------
+
+    private readonly string gitHubMarkdown = @"# GitHub Flavored Markdown
+
+Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
+
+## Task list
+
+- [x] Parse Markdown in pure C#
+- [x] Render the real render tree
+- [ ] Use any JavaScript
+
+## Table
+
+| Feature       | Basic | GitHub |
+|:--------------|:-----:|:------:|
+| Headings      |   ✔   |   ✔    |
+| Tables        |       |   ✔    |
+| Strikethrough |       |   ✔    |
+";
+
+
+
+    // -- Custom pipeline example ---------------------------------------------
+
+    private readonly BitMarkdownViewerPipeline customPipeline = new BitMarkdownViewerPipelineBuilder()
+        .UsePipeTables()
+        .UseStrikethrough()
+        .UseTaskLists()
+        .UseEmojis()
+        .UseAutoIdentifiers()
+        .Build();
+
+    private readonly string customMarkdown = @"# Custom pipeline :sparkles:
+
+This viewer uses a pipeline composed with only the extensions we picked:
+pipe tables, strikethrough, task lists, emoji and auto identifiers.
+
+- [x] ~~Old~~ approach replaced
+- [ ] Anything left to do?
+";
 
 
 
     private readonly string example1RazorCode = @"
-<BitMarkdownViewer Markdown=""@(""# Marked in the browser\n\nRendered by [**marked**](https://marked.js.org)."")"" />";
+<BitMarkdownViewer Markdown=""@(""# Native Markdown in Blazor\n\nRendered entirely in **C#** with no JavaScript and no third-party packages.\n\n- Real DOM output\n- Safe by default\n- Zero interop"")"" />";
 
     private readonly string example2RazorCode = @"
-<style>
-    .advanced {
-        img {
-            max-width: 100%;
-        }
-    }
-</style>
-<BitMarkdownViewer Markdown=""@advancedMarkdown"" Class=""advanced"" />";
+<BitMarkdownViewer Markdown=""@gitHubMarkdown"" Pipeline=""BitMarkdownViewerPipelines.GitHub"" />";
     private readonly string example2CsharpCode = @"
-private string advancedMarkdown = @""![Header](https://user-images.githubusercontent.com/6169846/251658486-b16e1db8-5481-46c4-9fc1-c9b279a4364a.png)
+private readonly string gitHubMarkdown = @""# GitHub Flavored Markdown
 
-<br/>
+Supports ~~strikethrough~~ and bare links like https://bitplatform.dev
 
-![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
-![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
-![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
-[![Nuget downloads](https://img.shields.io/badge/packages_download-8.2M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
-[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform """"Average time to resolve an issue"""")
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform """"Percentage of issues still open"""")
+## Task list
 
-<br/>
+- [x] Parse Markdown in pure C#
+- [x] Render the real render tree
+- [ ] Use any JavaScript
 
-# 🧾 Introduction
+## Table
 
-At **bitplatform**, we've curated a comprehensive toolkit to empower you in crafting the finest projects using Blazor. Diverging from others merely offering UI Toolkits, ***bit BlazorUI components*** distinguishes itself with over 80 components, with a compact size of under 400 KB. These components boast both Dark and Light Themes, delivering unparalleled High Performance 🚀
-
-Yet, bitplatform doesn't stop there. Our platform introduces exclusive tools that elevate your development experience:
-
-***Bswup***: This unique tool harnesses the power of Progressive Web Apps (PWA) within the innovative new structure of dotnet 8. By amalgamating pre-rendering techniques reminiscent of renowned platforms like GitHub, Reddit, and Facebook, Bswup ensures an exceptional user experience 😍
-
-***Butil***: Embracing Blazor because of your love for C#? Butil enables you to stay true to that sentiment by providing essential Browser APIs in C#, eliminating the need to revert to JavaScript for any functionality 👌
-
-***Besql***: Dreaming of an offline web application capable of saving data and syncing later? Enter Besql, your solution to incorporating ef core & sqlite in your browser. It's a crucial aid for achieving this objective seamlessly 🕺
-
-***Bit Boilerplate Project Template***: If the aforementioned features have piqued your interest, dive into the Bit Boilerplate project template. Experience everything mentioned above along with additional features such as ASP.NET Core Identity integration, multilingualism, and other cool features that empowers you to develop unified Web, Android, iOS, Windows, and macOS apps from a single codebase, while providing seamless integration with native platform features and third-party Java, Kotlin, Swift, Objective-C, and JavaScript libraries 💯
-
-For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
-
-<br/>
-
-**Note**: This project is tested with [BrowserStack](https://www.browserstack.com/).
-
-<br/>
-
-# 🎁 OSS Showcases
-
-The following apps are our open-source projects powered by the bit platform showcasing the different capabilities of our toolchain:
-
-| | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS |
-|:-:|:--:|:--:|:--:|:--:|:--:|
-| bitplatform | [![PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://bitplatform.dev)| *N/A* | *N/A* | *N/A* | *N/A* |
-| Sales | [![PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://sales.bitplatform.dev) | *Soon!* | *Soon!* | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe) | *Soon!* |
-| bit BlazorUI | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://blazorui.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-blazor-ui/id6450401404) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.BlazorUI.Demo) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-components.bitplatform.dev/Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-blazor-ui/id6450401404)
-| AdminPanel | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://adminpanel.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-adminpanel/id6450611349) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-adminpanel/id6450611349) |
-| Todo | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://todo.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-todotemplate/id6450611072) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-todotemplate/id6450611072)
-
-1. [bitplatform.dev](https://bitplatform.dev): .NET 9 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-2. [sales.bitplatform.dev](https://sales.bitplatform.dev): .NET 9 Sales Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-3. [blazorui.bitplatform.dev](https://blazorui.bitplatform.dev): .NET 9 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-4. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): .NET 9 PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-5. [todo.bitplatform.dev](https://todo.bitplatform.dev): .NET 8 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-6. [adminpanel.bitplatform.cc](https://adminpanel.bitplatform.cc): .NET 9 PWA with Blazor WebAssembly Standalone (Azure static web app)
-7. [todo-aot.bitplatform.cc](https://todo-aot.bitplatform.cc): .NET 9 AOT Compiled PWA with Blazor WebAssembly Standalone (Azure static web app)
-8. [todo-small.bitplatform.cc](https://todo-small.bitplatform.cc): .NET 9 Todo demo app with smaller download footprint (Azure static web app)
-9. [todo-offline.bitplatform.cc](https://todo-offline.bitplatform.cc): .NET 9 Todo demo app with ef-core & sqlite (Azure static web app)
-
-[Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram. 
-
-Prerendering combined with PWA functionality delivers an experience akin to that of GitHub and Reddit. The bitplatform solution, seamlessly integrated with the innovative new .NET 8 project structure, stands as the exclusive remedy for such a scenario within the realm of Blazor.
-
-# How to contribute?
-
-We welcome contributions! Many people all over the world have helped make this project better.
-
-* [Contributing](CONTRIBUTING.md) explains what kinds of contributions we welcome.
-* [Build Instructions](docs/how-to-build.md) explains how to build and test.
-* [Get Up and Running on bit platform](docs/up-and-running.md) explains how to get the latest builds and their libraries to test them in your own projects.
-
-<br/>
-
-# **Contributions**
-
-![Alt](https://repobeats.axiom.co/api/embed/66dc1fc04ed967094b98ac118e8f18fa38b19f6a.svg """"bit platform open source contributions report"""")"";";
+| Feature       | Basic | GitHub |
+|:--------------|:-----:|:------:|
+| Headings      |   ✔   |   ✔    |
+| Tables        |       |   ✔    |
+| Strikethrough |       |   ✔    |
+"";";
 
     private readonly string example3RazorCode = @"
-<BitMarkdownViewer Markdown=""@(""# Events of the BitMarkdownViewer:\n\n- OnParsing\n- OnParsed\n- OnRendered"")""
-                   Id=""test-mdv""
-                   OnParsing=""OnParsing""
-                   OnParsed=""OnParsed""
-                   OnRendered=""OnRendered"" />
-<hr />
-<div>Parsing at [@parsingDateTime?.ToString(""o"")]</div>
-<div>Parsed at [@parsedDateTime?.ToString(""o"")]</div>
-<div>Rendered at [@renderedDateTime?.ToString(""o"")]</div>";
+<div class=""mdv-playground"">
+    <div class=""mdv-toolbar"">
+        <span class=""mdv-label"">Flavor:</span>
+        <BitButton Size=""BitSize.Small""
+                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.Basic)""
+                   Variant=""@(playgroundFlavor == MarkdownFlavor.Basic ? BitVariant.Fill : BitVariant.Outline)""
+                   OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Basic))"">Basic</BitButton>
+        <BitButton Size=""BitSize.Small""
+                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.GitHub)""
+                   Variant=""@(playgroundFlavor == MarkdownFlavor.GitHub ? BitVariant.Fill : BitVariant.Outline)""
+                   OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.GitHub))"">GitHub</BitButton>
+        <BitButton Size=""BitSize.Small""
+                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.Advanced)""
+                   Variant=""@(playgroundFlavor == MarkdownFlavor.Advanced ? BitVariant.Fill : BitVariant.Outline)""
+                   OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Advanced))"">Advanced</BitButton>
+        <span class=""mdv-spacer""></span>
+        <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""ResetPlaygroundSample"">Reset sample</BitButton>
+        <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""@(() => playgroundMarkdown = string.Empty)"">Clear</BitButton>
+    </div>
+
+    <div class=""mdv-hint"">@playgroundHint</div>
+
+    <div class=""mdv-split"">
+        <textarea class=""mdv-editor"" spellcheck=""false"" aria-label=""Markdown editor"" @bind=""playgroundMarkdown"" @bind:event=""oninput""></textarea>
+        <div class=""mdv-preview"">
+            <BitMarkdownViewer Markdown=""@playgroundMarkdown"" Pipeline=""@playgroundPipeline"" />
+        </div>
+    </div>
+</div>";
     private readonly string example3CsharpCode = @"
-private DateTimeOffset? parsingDateTime;
-private DateTimeOffset? parsedDateTime;
-private DateTimeOffset? renderedDateTime;
+private enum MarkdownFlavor { Basic, GitHub, Advanced }
 
-private void OnParsing(string? markdown)
+private MarkdownFlavor playgroundFlavor = MarkdownFlavor.Advanced;
+private BitMarkdownViewerPipeline playgroundPipeline = BitMarkdownViewerPipelines.Advanced;
+private string playgroundMarkdown = SampleMarkdown; // a feature-rich sample document
+
+private void SetPlaygroundFlavor(MarkdownFlavor flavor)
 {
-    parsingDateTime = DateTimeOffset.Now;
+    playgroundFlavor = flavor;
+    playgroundPipeline = flavor switch
+    {
+        MarkdownFlavor.Basic => BitMarkdownViewerPipelines.Basic,
+        MarkdownFlavor.GitHub => BitMarkdownViewerPipelines.GitHub,
+        _ => BitMarkdownViewerPipelines.Advanced
+    };
 }
 
-private void OnParsed(string? html)
-{
-    parsedDateTime = DateTimeOffset.Now;
-}
+private void ResetPlaygroundSample() => playgroundMarkdown = SampleMarkdown;
 
-private void OnRendered(string? html)
+private string playgroundHint => playgroundFlavor switch
 {
-    renderedDateTime = DateTimeOffset.Now;
-}";
+    MarkdownFlavor.Basic => ""Basic CommonMark only. Tables, strikethrough, task lists, emoji and bare URLs render as plain text."",
+    MarkdownFlavor.GitHub => ""GitHub Flavored Markdown: pipe tables, ~~strikethrough~~, task lists and autolink literals."",
+    _ => ""Advanced: GitHub Flavored Markdown plus :sparkles: emoji and automatic heading ids.""
+};
+
+private const string SampleMarkdown = ""# BitMarkdownViewer\n\nA **native Blazor** Markdown viewer written in _pure C#_ - no JavaScript.\n\n- Headings, **bold**, *italic*, ~~strikethrough~~\n- `inline code` and fenced code blocks\n- [Links](https://bitplatform.dev) and task lists:\n    - [x] Parse blocks\n    - [ ] Conquer the world\n\n> Switch the Flavor above to compare rendering."";";
+
+    private readonly string example4RazorCode = @"
+<BitMarkdownViewer Markdown=""@customMarkdown"" Pipeline=""customPipeline"" />";
+    private readonly string example4CsharpCode = @"
+private readonly BitMarkdownViewerPipeline customPipeline = new BitMarkdownViewerPipelineBuilder()
+    .UsePipeTables()
+    .UseStrikethrough()
+    .UseTaskLists()
+    .UseEmojis()
+    .UseAutoIdentifiers()
+    .Build();
+
+private readonly string customMarkdown = @""# Custom pipeline :sparkles:
+
+This viewer uses a pipeline composed with only the extensions we picked:
+pipe tables, strikethrough, task lists, emoji and auto identifiers.
+
+- [x] ~~Old~~ approach replaced
+- [ ] Anything left to do?
+"";";
 }

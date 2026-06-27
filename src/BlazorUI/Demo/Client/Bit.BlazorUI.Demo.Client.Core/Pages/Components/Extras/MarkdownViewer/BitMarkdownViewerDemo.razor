@@ -5,36 +5,60 @@
             Description="markdownviewer component of the bit BlazorUI components" />
 
 <DemoPage Name="MarkdownViewer"
-          Description="BitMarkdownViewer is a SEO friendly Blazor wrapper around the famous markedjs library."
+          Description="BitMarkdownViewer is a native, SEO friendly Blazor component that renders Markdown to HTML entirely in C#, with no JavaScript interop and no third-party packages."
           SecondaryNames="@(["MdViewer", "MD"])"
           Parameters="componentParameters"
-          GitHubExtrasUrl="MarkdownViewer/BitMarkdownViewer.razor"
+          SubClasses="componentSubClasses"
+          GitHubExtrasUrl="MarkdownViewer/BitMarkdownViewer.cs"
           GitHubDemoUrl="Extras/MarkdownViewer/BitMarkdownViewerDemo.razor">
     <NotesTemplate>
         <BitMarkdownViewer Markdown="@("To use this component, you need to install the [**`Bit.BlazorUI.Extras`**](https://www.nuget.org/packages/Bit.BlazorUI.Extras) nuget package, as described in the Optional steps of the [Getting started](/getting-started) page.")" />
-        <BitMarkdownViewer Markdown="@("To utilize the **prerender** mode you need to install the [**`Jint`**](https://www.nuget.org/packages/Jint) nuget package on the Server project that is responsible for the prerendering.")" />
+        <BitMarkdownViewer Markdown="@("Parsing and rendering happen entirely in C# (no JavaScript interop), so the component renders real DOM and works the same while prerendering, on the server, and on the client.")" />
     </NotesTemplate>
 
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <BitMarkdownViewer Markdown="@("# Marked in the browser\n\nRendered by [**marked**](https://marked.js.org).")" />
+            <BitMarkdownViewer Markdown="@("# Native Markdown in Blazor\n\nRendered entirely in **C#** with no JavaScript and no third-party packages.\n\n- Real DOM output\n- Safe by default\n- Zero interop")" />
         </DemoExample>
 
-        <DemoExample Title="Advanced" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <div>
-                <BitMarkdownViewer Markdown="@advancedMarkdown" Class="advanced" />
+        <DemoExample Title="GitHub flavored" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <BitMarkdownViewer Markdown="@gitHubMarkdown" Pipeline="BitMarkdownViewerPipelines.GitHub" />
+        </DemoExample>
+
+        <DemoExample Title="Advanced" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div class="mdv-playground">
+                <div class="mdv-toolbar">
+                    <span class="mdv-label">Flavor:</span>
+                    <BitButton Size="BitSize.Small"
+                               aria-pressed="@(playgroundFlavor == MarkdownFlavor.Basic)"
+                               Variant="@(playgroundFlavor == MarkdownFlavor.Basic ? BitVariant.Fill : BitVariant.Outline)"
+                               OnClick="@(() => SetPlaygroundFlavor(MarkdownFlavor.Basic))">Basic</BitButton>
+                    <BitButton Size="BitSize.Small"
+                               aria-pressed="@(playgroundFlavor == MarkdownFlavor.GitHub)"
+                               Variant="@(playgroundFlavor == MarkdownFlavor.GitHub ? BitVariant.Fill : BitVariant.Outline)"
+                               OnClick="@(() => SetPlaygroundFlavor(MarkdownFlavor.GitHub))">GitHub</BitButton>
+                    <BitButton Size="BitSize.Small"
+                               aria-pressed="@(playgroundFlavor == MarkdownFlavor.Advanced)"
+                               Variant="@(playgroundFlavor == MarkdownFlavor.Advanced ? BitVariant.Fill : BitVariant.Outline)"
+                               OnClick="@(() => SetPlaygroundFlavor(MarkdownFlavor.Advanced))">Advanced</BitButton>
+                    <span class="mdv-spacer"></span>
+                    <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="ResetPlaygroundSample">Reset sample</BitButton>
+                    <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="@(() => playgroundMarkdown = string.Empty)">Clear</BitButton>
+                </div>
+
+                <div class="mdv-hint">@playgroundHint</div>
+
+                <div class="mdv-split">
+                    <textarea class="mdv-editor" spellcheck="false" aria-label="Markdown editor" @bind="playgroundMarkdown" @bind:event="oninput"></textarea>
+                    <div class="mdv-preview">
+                        <BitMarkdownViewer Markdown="@playgroundMarkdown" Pipeline="@playgroundPipeline" />
+                    </div>
+                </div>
             </div>
         </DemoExample>
 
-        <DemoExample Title="Events" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-            <BitMarkdownViewer Markdown="@("# Events of the BitMarkdownViewer:\n\n- OnParsing\n- OnParsed\n- OnRendered")"
-                               OnParsing="OnParsing"
-                               OnParsed="OnParsed"
-                               OnRendered="OnRendered" />
-            <hr />
-            <div>Parsing at [@parsingDateTime?.ToString("o")]</div>
-            <div>Parsed at [@parsedDateTime?.ToString("o")]</div>
-            <div>Rendered at [@renderedDateTime?.ToString("o")]</div>
+        <DemoExample Title="Custom pipeline" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <BitMarkdownViewer Markdown="@customMarkdown" Pipeline="customPipeline" />
         </DemoExample>
     </Examples>
 </DemoPage>

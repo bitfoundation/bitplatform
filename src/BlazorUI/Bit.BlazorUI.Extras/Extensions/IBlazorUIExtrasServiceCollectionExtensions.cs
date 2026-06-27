@@ -33,7 +33,6 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
         }
 
         services.TryAddScoped<BitExtraServices>();
-        services.TryAddScoped<BitMarkdownService>();
 
         return services;
     }
