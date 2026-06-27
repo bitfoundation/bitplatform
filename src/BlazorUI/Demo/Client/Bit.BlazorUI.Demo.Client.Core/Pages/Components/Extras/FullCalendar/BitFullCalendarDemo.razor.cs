@@ -662,6 +662,27 @@ public partial class BitFullCalendarDemo
     private Task HandleChange(BitFullCalendarChangeEventArgs args)
     {
         lastChange = $"{args.Kind} ({args.Source}): {args.Event.Title}";
+
+        // Persist the change into our backing list so it stays in sync with the calendar's internal
+        // state. The calendar copies Events into its own store, so without applying the add/edit/delete
+        // here a later re-render would re-sync this stale list and discard the user's change.
+        switch (args.Kind)
+        {
+            case BitFullCalendarChangeKind.Add:
+                changeEvents.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Edit:
+                var index = changeEvents.FindIndex(e => e.Id == args.Event.Id);
+                if (index >= 0)
+                    changeEvents[index] = args.Event;
+                else
+                    changeEvents.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Delete:
+                changeEvents.RemoveAll(e => e.Id == args.Event.Id);
+                break;
+        }
+
         return InvokeAsync(StateHasChanged);
     }
 
@@ -799,6 +820,25 @@ public partial class BitFullCalendarDemo
     private Task HandleChange(BitFullCalendarChangeEventArgs args)
     {
         lastChange = $""{args.Kind} ({args.Source}): {args.Event.Title}"";
+
+        // Keep the bound list in sync with the calendar's internal state so changes are not lost on re-render.
+        switch (args.Kind)
+        {
+            case BitFullCalendarChangeKind.Add:
+                events.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Edit:
+                var index = events.FindIndex(e => e.Id == args.Event.Id);
+                if (index >= 0)
+                    events[index] = args.Event;
+                else
+                    events.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Delete:
+                events.RemoveAll(e => e.Id == args.Event.Id);
+                break;
+        }
+
         return InvokeAsync(StateHasChanged);
     }
 " + eventsCode + @"
