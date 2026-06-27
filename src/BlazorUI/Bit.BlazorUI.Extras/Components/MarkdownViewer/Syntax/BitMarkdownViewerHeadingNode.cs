@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 /// <summary>An ATX (<c># Heading</c>) or setext heading. <see cref="Level"/> is 1-6.</summary>
 public sealed class BitMarkdownViewerHeadingNode : BitMarkdownViewerMarkdownNode
 {
-    private readonly int _level;
+    private readonly int _level = 1;
 
     public int Level
     {

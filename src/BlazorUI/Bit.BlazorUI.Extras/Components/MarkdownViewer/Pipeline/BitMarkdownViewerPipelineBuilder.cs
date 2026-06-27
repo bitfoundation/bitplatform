@@ -56,14 +56,18 @@ public sealed class BitMarkdownViewerPipelineBuilder
         ArgumentNullException.ThrowIfNull(extension);
         if (_extensions.Any(e => e.GetType() == extension.GetType()))
             return this;
-        // Register before Setup so a self-referential registration inside Setup is
-        // caught by the duplicate check above instead of recursing infinitely.
-        _extensions.Add(extension);
-
         // Snapshot every registration list so a failed Setup can be fully reverted
         // to its exact pre-Setup state. A misbehaving extension may insert, remove,
         // or reorder items before throwing, so a tail-truncating rollback is not
         // enough; we restore the full contents. This keeps the builder reusable.
+        // _extensions is snapshotted from before this extension was added so any
+        // nested extensions registered via Use(...) inside Setup are also rolled
+        // back; otherwise a retry would short-circuit on a half-applied extension.
+        var extensions = _extensions.ToList();
+        // Register before Setup so a self-referential registration inside Setup is
+        // caught by the duplicate check above instead of recursing infinitely.
+        _extensions.Add(extension);
+
         var blockParsers = BlockParsers.ToList();
         var inlineParsers = InlineParsers.ToList();
         var delimiterProcessors = DelimiterProcessors.ToList();
@@ -77,7 +81,7 @@ public sealed class BitMarkdownViewerPipelineBuilder
         {
             // Setup failed: undo every mutation it made so the builder isn't left in
             // a partially-registered state and the extension can be retried.
-            _extensions.Remove(extension);
+            Restore(_extensions, extensions);
             Restore(BlockParsers, blockParsers);
             Restore(InlineParsers, inlineParsers);
             Restore(DelimiterProcessors, delimiterProcessors);

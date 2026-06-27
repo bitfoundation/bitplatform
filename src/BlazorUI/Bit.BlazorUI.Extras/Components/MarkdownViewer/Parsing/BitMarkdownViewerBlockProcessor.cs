@@ -59,7 +59,15 @@ public sealed class BitMarkdownViewerBlockProcessor
 
     // -- shared helpers -----------------------------------------------------
 
-    public static bool IsBlank(string line) => line.Trim().Length == 0;
+    // A line is blank only when it is empty or made up solely of spaces and tabs.
+    // Other Unicode whitespace (e.g. NBSP) must stay visible to the block parsers,
+    // so a generic Trim() (which strips all whitespace) is intentionally avoided.
+    public static bool IsBlank(string line)
+    {
+        foreach (char c in line)
+            if (c != ' ' && c != '\t') return false;
+        return true;
+    }
 
     public static int GetIndent(string line)
     {

@@ -6,17 +6,12 @@ namespace Bit.BlazorUI;
 /// Walks an AST and dispatches each node to a matching <see cref="BitMarkdownViewerNodeRenderer"/>.
 /// Renderers are probed in reverse registration order, so the last renderer registered for a
 /// node type wins, allowing pipeline extensions to override the core renderers.
-/// A fresh instance is used per render pass because it maintains render-tree sequence state.
 /// </summary>
 public sealed class BitMarkdownViewerMarkdownRenderer
 {
     private readonly IReadOnlyList<BitMarkdownViewerNodeRenderer> _renderers;
-    private int _seq;
 
     public BitMarkdownViewerMarkdownRenderer(IReadOnlyList<BitMarkdownViewerNodeRenderer> renderers) => _renderers = renderers;
-
-    /// <summary>Returns the next monotonic sequence number for the render tree.</summary>
-    public int NextSeq() => _seq++;
 
     /// <summary>Renders a sequence of nodes.</summary>
     public void WriteNodes(RenderTreeBuilder builder, IEnumerable<BitMarkdownViewerMarkdownNode> nodes)

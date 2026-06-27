@@ -10,8 +10,8 @@ public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownV
 {
     [GeneratedRegex(
         @"\b(?:" +
-        @"(?<url>https?://[^\s<]+[^\s<.,:;""')\]\}])" +
-        @"|(?<www>www\.[^\s<]+[^\s<.,:;""')\]\}])" +
+        @"(?<url>https?://[^\s<]+)" +
+        @"|(?<www>www\.[^\s<]+)" +
         @"|(?<email>[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})" +
         @")",
         RegexOptions.IgnoreCase)]
@@ -66,6 +66,12 @@ public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownV
                 result.Add(new BitMarkdownViewerTextNode(text[last..m.Index]));
 
             string matched = m.Value;
+            // The url/www patterns greedily grab trailing punctuation; trim the part
+            // that conventionally isn't a link character so the surplus stays as plain
+            // text. (Emails are already tightly bounded by their own pattern.)
+            if (!m.Groups["email"].Success)
+                matched = matched[..TrimmedLength(matched)];
+
             string href = m.Groups["www"].Success ? "http://" + matched
                 : m.Groups["email"].Success ? "mailto:" + matched
                 : matched;
@@ -75,11 +81,44 @@ public sealed partial class BitMarkdownViewerAutoLinkAstProcessor : BitMarkdownV
             var link = new BitMarkdownViewerLinkNode { Url = BitMarkdownViewerUrlSanitizer.Sanitize(href, isImage: false) };
             link.Children.Add(new BitMarkdownViewerTextNode(matched));
             result.Add(link);
-            last = m.Index + m.Length;
+            // Advance only past the characters kept in the link so any trimmed
+            // trailing punctuation is re-emitted as plain text.
+            last = m.Index + matched.Length;
         }
         if (last < text.Length)
             result.Add(new BitMarkdownViewerTextNode(text[last..]));
 
         return result;
+    }
+
+    // Returns the length of the URL candidate after trimming trailing punctuation
+    // that is conventionally not part of a bare URL. Sentence punctuation is always
+    // trimmed; closing brackets are trimmed only when unbalanced (more closers than
+    // matching openers), so URLs like "https://e.com/Foo_(bar)" keep their bracket.
+    private static int TrimmedLength(string url)
+    {
+        int end = url.Length;
+        while (end > 0)
+        {
+            char c = url[end - 1];
+            if (c is '.' or ',' or ':' or ';' or '!' or '?' or '"' or '\'')
+            {
+                end--;
+                continue;
+            }
+            if (c is ')' or ']' or '}')
+            {
+                char open = c == ')' ? '(' : c == ']' ? '[' : '{';
+                int closers = 0, openers = 0;
+                for (int k = 0; k < end; k++)
+                {
+                    if (url[k] == c) closers++;
+                    else if (url[k] == open) openers++;
+                }
+                if (closers > openers) { end--; continue; }
+            }
+            break;
+        }
+        return end;
     }
 }

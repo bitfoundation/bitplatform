@@ -147,10 +147,13 @@ public sealed class BitMarkdownViewerListParser : BitMarkdownViewerBlockParser
     // spaces following the marker. Per CommonMark, 1-4 spaces are consumed as
     // indentation; 5+ spaces place the content one column past the marker and keep
     // the surplus spaces as item content (an indented code block within the item).
+    // The 5+ rule is driven purely by the spaces after the marker: it applies even
+    // when the first line has no content, so a blank first line still yields the
+    // correct (marker + 1) content indent instead of an inflated one.
     private static (int markerIndent, string firstContent) ResolveContentIndent(
         int baseIndent, int afterMarker, string firstContent)
     {
-        if (afterMarker >= 5 && firstContent.Length > 0)
+        if (afterMarker >= 5)
             return (baseIndent + 1, new string(' ', afterMarker - 1) + firstContent);
 
         return (baseIndent + Math.Max(1, afterMarker), firstContent);

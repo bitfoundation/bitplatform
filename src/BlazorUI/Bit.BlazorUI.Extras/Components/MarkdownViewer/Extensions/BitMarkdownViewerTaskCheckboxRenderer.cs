@@ -9,12 +9,13 @@ public sealed class BitMarkdownViewerTaskCheckboxRenderer : BitMarkdownViewerNod
 
     public override void Write(BitMarkdownViewerMarkdownRenderer r, RenderTreeBuilder b, BitMarkdownViewerMarkdownNode node)
     {
+        // Fixed literal sequence numbers (see BitMarkdownViewerCoreRenderer for the rationale).
         var task = (BitMarkdownViewerTaskCheckboxNode)node;
-        b.OpenElement(r.NextSeq(), "input");
-        b.AddAttribute(r.NextSeq(), "type", "checkbox");
-        b.AddAttribute(r.NextSeq(), "class", "task-list-item-checkbox");
-        b.AddAttribute(r.NextSeq(), "disabled", true);
-        if (task.Checked) b.AddAttribute(r.NextSeq(), "checked", true);
+        b.OpenElement(0, "input");
+        b.AddAttribute(1, "type", "checkbox");
+        b.AddAttribute(2, "class", "task-list-item-checkbox");
+        b.AddAttribute(3, "disabled", true);
+        if (task.Checked) b.AddAttribute(4, "checked", true);
         b.CloseElement();
     }
 }

@@ -9,7 +9,8 @@ public sealed class BitMarkdownViewerStrikethroughRenderer : BitMarkdownViewerNo
 
     public override void Write(BitMarkdownViewerMarkdownRenderer r, RenderTreeBuilder b, BitMarkdownViewerMarkdownNode node)
     {
-        b.OpenElement(r.NextSeq(), "del");
+        // Fixed literal sequence number (see BitMarkdownViewerCoreRenderer for the rationale).
+        b.OpenElement(0, "del");
         r.WriteNodes(b, ((BitMarkdownViewerStrikethroughNode)node).Children);
         b.CloseElement();
     }
