@@ -1790,13 +1790,18 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
-        _dotnetObj?.Dispose();
-
         try
         {
             await _js.BitCalloutClearCallout(_calloutId);
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // Dispose the .NET reference after the JS cleanup so any callbacks the JS teardown makes still
+            // have a live target, matching BitDateRangePicker.DisposeAsync. The finally ensures it's always
+            // released even if the JS cleanup throws a non-JSDisconnectedException.
+            _dotnetObj?.Dispose();
+        }
     }
 }

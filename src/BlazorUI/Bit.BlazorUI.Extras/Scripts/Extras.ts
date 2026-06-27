@@ -250,7 +250,7 @@ namespace BitBlazorUI {
                 const wantModule = !!isModule;
                 return Array.from(document.scripts).find(s => !!s.src
                     && Extras.normalizeResourceUrl(s.src) === targetUrl
-                    && (wantModule ? s.type === 'module' : Extras.isExecutableClassicScriptType(s.type))
+                    && (wantModule ? (s.type ?? '').trim().toLowerCase() === 'module' : Extras.isExecutableClassicScriptType(s.type))
                     && !s.hasAttribute('data-bit-load-failed')
                     && !(document.readyState === 'complete' && !Extras.isHostScriptLoaded(s)));
             }

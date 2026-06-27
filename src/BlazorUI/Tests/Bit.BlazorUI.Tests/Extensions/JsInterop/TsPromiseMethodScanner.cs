@@ -43,11 +43,6 @@ internal static class TsPromiseMethodScanner
     private static readonly Regex TsStaticMethodHeaderRegex =
         new(@"\bstatic\s+(?<async>async\s+)?(?<method>\w+)\s*(?:<[^>]+>)?\s*\(", RegexOptions.Compiled);
 
-    // Matches "Promise" as a standalone token in a return annotation. A substring check would misclassify
-    // unrelated types like NotAPromise or PromiseState, so the word boundary keeps only true Promise types.
-    private static readonly Regex PromiseAnnotationRegex =
-        new(@"\bPromise\b", RegexOptions.Compiled);
-
     private sealed record TsStaticMethod(string Class, string Method, string Body, bool DeclaredAsync, bool AnnotatedPromise);
 
     /// <summary>
@@ -75,7 +70,7 @@ internal static class TsPromiseMethodScanner
             if (bodyCloseBrace < 0) continue;
 
             var declaredAsync = header.Groups["async"].Success;
-            var annotatedPromise = PromiseAnnotationRegex.IsMatch(returnAnnotation);
+            var annotatedPromise = AnnotationHasTopLevelPromise(returnAnnotation);
 
             var owningClass = classMatches.LastOrDefault(c => c.Index < header.Index);
             if (owningClass.Name is null) continue;
@@ -489,6 +484,48 @@ internal static class TsPromiseMethodScanner
         }
 
         return i;
+    }
+
+    /// <summary>
+    /// True when the standalone token <c>Promise</c> appears at the top level of the return type — i.e. the
+    /// method itself returns a Promise. Promise tokens nested inside object-literal type members
+    /// (<c>{ p: Promise&lt;void&gt; }</c>), generic arguments (<c>Array&lt;Promise&lt;void&gt;&gt;</c>), or the
+    /// return type of a returned function type (<c>() =&gt; Promise&lt;void&gt;</c>) are intentionally ignored,
+    /// since in those cases the method does not return a Promise itself.
+    /// </summary>
+    private static bool AnnotationHasTopLevelPromise(string annotation)
+    {
+        var depth = 0;
+        for (var i = 0; i < annotation.Length; i++)
+        {
+            i = SkipNonCode(annotation, i, out var skipped);
+            if (skipped) { i--; continue; }
+            if (i >= annotation.Length) break;
+
+            var c = annotation[i];
+
+            if (c is '(' or '[' or '{' or '<')
+            {
+                depth++;
+                continue;
+            }
+
+            if (c is ')' or ']' or '}' or '>')
+            {
+                if (depth > 0) depth--;
+                continue;
+            }
+
+            if (depth != 0) continue;
+
+            // A top-level "=>" means the return type is a function type; whatever it returns (possibly a
+            // Promise) is not this method's own return value, so stop scanning.
+            if (c == '=' && i + 1 < annotation.Length && annotation[i + 1] == '>') break;
+
+            if (IsIdentifierAt(annotation, i, "Promise")) return true;
+        }
+
+        return false;
     }
 
     private static int SkipReturnAnnotation(string text, int start, out string annotation)

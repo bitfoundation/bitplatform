@@ -2341,9 +2341,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        // Dispose the .NET reference after the JS cleanup so any callbacks the JS teardown makes still
-        // have a live target, matching BitDropdown.DisposeAsync.
-        _dotnetObj?.Dispose();
+        finally
+        {
+            // Dispose the .NET reference after the JS cleanup so any callbacks the JS teardown makes still
+            // have a live target, matching BitDropdown.DisposeAsync. The finally ensures the managed
+            // reference is always released even if the JS cleanup throws a non-JSDisconnectedException.
+            _dotnetObj?.Dispose();
+        }
     }
 }

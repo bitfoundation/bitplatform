@@ -168,11 +168,9 @@
 
         public dispose() {
             this.disposer();
-            try {
-                this.dotnetObj?.dispose();
-            } catch (e) {
-                console.error(e);
-            }
+            // Let any failure from the .NET handoff surface so the C# DisposeAsync fallback can release
+            // _dotnetObj instead of silently leaking it. Clear the reference only after dispose() succeeds.
+            this.dotnetObj?.dispose();
             this.dotnetObj = undefined;
         }
     }

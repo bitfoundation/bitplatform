@@ -776,13 +776,18 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
-        _dotnetObj?.Dispose();
-
         try
         {
             await _js.BitCalloutClearCallout(_calloutId);
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // Dispose the .NET reference after the JS cleanup so JS callbacks can't target an already-disposed
+            // reference, matching BitDropdown.DisposeAsync. The finally ensures it's always released even if the
+            // JS cleanup throws a non-JSDisconnectedException.
+            _dotnetObj?.Dispose();
+        }
     }
 }

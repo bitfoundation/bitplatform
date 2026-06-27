@@ -188,4 +188,72 @@ public class TsPromiseMethodScannerTests
         Assert.IsFalse(promiseMethods.Contains("Sample.setup"),
             "Delegation fixpoint must not chain from body-scanned methods to avoid compounding heuristic false positives.");
     }
+
+    [TestMethod]
+    public void CollectFromSource_IgnoresPromiseNestedInsideObjectLiteralReturnType()
+    {
+        var ts = """
+            namespace BitBlazorUI {
+              class Sample {
+                public static makeState(): { pending: Promise<void> } { return { pending: Promise.resolve() }; }
+              }
+            }
+            """;
+
+        var promiseMethods = TsPromiseMethodScanner.CollectFromSource(ts);
+
+        Assert.IsFalse(promiseMethods.Contains("Sample.makeState"),
+            "A Promise nested inside an object-literal return type must not flag the method as promise-returning.");
+    }
+
+    [TestMethod]
+    public void CollectFromSource_IgnoresPromiseNestedInsideReturnedFunctionType()
+    {
+        var ts = """
+            namespace BitBlazorUI {
+              class Sample {
+                public static makeLoader(): () => Promise<void> { return () => Promise.resolve(); }
+              }
+            }
+            """;
+
+        var promiseMethods = TsPromiseMethodScanner.CollectFromSource(ts);
+
+        Assert.IsFalse(promiseMethods.Contains("Sample.makeLoader"),
+            "A method returning a function that returns a Promise does not itself return a Promise.");
+    }
+
+    [TestMethod]
+    public void CollectFromSource_IgnoresPromiseNestedInsideGenericArgumentReturnType()
+    {
+        var ts = """
+            namespace BitBlazorUI {
+              class Sample {
+                public static collect(): Array<Promise<void>> { return []; }
+              }
+            }
+            """;
+
+        var promiseMethods = TsPromiseMethodScanner.CollectFromSource(ts);
+
+        Assert.IsFalse(promiseMethods.Contains("Sample.collect"),
+            "A Promise nested inside a generic argument must not flag the method as promise-returning.");
+    }
+
+    [TestMethod]
+    public void CollectFromSource_DetectsTopLevelPromiseWithNestedTypeArgument()
+    {
+        var ts = """
+            namespace BitBlazorUI {
+              class Sample {
+                public static loadAsync(): Promise<{ ok: boolean }> { return Promise.resolve({ ok: true }); }
+              }
+            }
+            """;
+
+        var promiseMethods = TsPromiseMethodScanner.CollectFromSource(ts);
+
+        Assert.IsTrue(promiseMethods.Contains("Sample.loadAsync"),
+            "A top-level Promise return type must still be detected even when its type argument is complex.");
+    }
 }

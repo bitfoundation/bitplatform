@@ -44,7 +44,13 @@ namespace BitBlazorUI {
                     colOptions.style.transform = `translateX(${applyOffset}px)`;
                 }
 
-                colOptions.scrollIntoViewIfNeeded?.();
+                if (typeof colOptions.scrollIntoViewIfNeeded === 'function') {
+                    colOptions.scrollIntoViewIfNeeded();
+                } else {
+                    // Non-standard scrollIntoViewIfNeeded is unavailable in some browsers; fall back to the
+                    // standard scrollIntoView with nearest alignment so the popup still stays in view.
+                    colOptions.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                }
 
                 const autoFocusElem = colOptions.querySelector('[autofocus]');
                 if (autoFocusElem) {
