@@ -106,14 +106,14 @@
         margin: 0 0 1em 0;
         padding: 0 1em;
         color: $clr-fg-sec;
-        border-left: 0.25em solid $clr-brd-pri;
+        border-inline-start: 0.25em solid $clr-brd-pri;
     }
 
     ul,
     ol {
         margin-top: 0;
         margin-bottom: 1em;
-        padding-left: 2em;
+        padding-inline-start: 2em;
     }
 
     li + li {
@@ -126,7 +126,8 @@
     }
 
     .task-list-item-checkbox {
-        margin: 0 0.5em 0 -1.4em;
+        margin-block: 0;
+        margin-inline: -1.4em 0.5em;
         vertical-align: middle;
     }
 

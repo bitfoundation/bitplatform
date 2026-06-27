@@ -60,13 +60,15 @@ public sealed class BitMarkdownViewerPipelineBuilder
         // caught by the duplicate check above instead of recursing infinitely.
         _extensions.Add(extension);
 
-        // Snapshot every registration list so a failed Setup can be fully reverted,
-        // not just the _extensions entry. This keeps the builder reusable afterwards.
-        int blockParsers = BlockParsers.Count;
-        int inlineParsers = InlineParsers.Count;
-        int delimiterProcessors = DelimiterProcessors.Count;
-        int astProcessors = AstProcessors.Count;
-        int renderers = Renderers.Count;
+        // Snapshot every registration list so a failed Setup can be fully reverted
+        // to its exact pre-Setup state. A misbehaving extension may insert, remove,
+        // or reorder items before throwing, so a tail-truncating rollback is not
+        // enough; we restore the full contents. This keeps the builder reusable.
+        var blockParsers = BlockParsers.ToList();
+        var inlineParsers = InlineParsers.ToList();
+        var delimiterProcessors = DelimiterProcessors.ToList();
+        var astProcessors = AstProcessors.ToList();
+        var renderers = Renderers.ToList();
         try
         {
             extension.Setup(this);
@@ -76,20 +78,20 @@ public sealed class BitMarkdownViewerPipelineBuilder
             // Setup failed: undo every mutation it made so the builder isn't left in
             // a partially-registered state and the extension can be retried.
             _extensions.Remove(extension);
-            Rollback(BlockParsers, blockParsers);
-            Rollback(InlineParsers, inlineParsers);
-            Rollback(DelimiterProcessors, delimiterProcessors);
-            Rollback(AstProcessors, astProcessors);
-            Rollback(Renderers, renderers);
+            Restore(BlockParsers, blockParsers);
+            Restore(InlineParsers, inlineParsers);
+            Restore(DelimiterProcessors, delimiterProcessors);
+            Restore(AstProcessors, astProcessors);
+            Restore(Renderers, renderers);
             throw;
         }
         return this;
     }
 
-    private static void Rollback<T>(List<T> list, int originalCount)
+    private static void Restore<T>(List<T> list, List<T> snapshot)
     {
-        if (list.Count > originalCount)
-            list.RemoveRange(originalCount, list.Count - originalCount);
+        list.Clear();
+        list.AddRange(snapshot);
     }
 
     /// <summary>Builds an immutable, reusable pipeline.</summary>

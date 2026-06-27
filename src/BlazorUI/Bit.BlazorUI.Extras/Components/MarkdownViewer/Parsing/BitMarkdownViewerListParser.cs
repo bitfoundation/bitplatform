@@ -91,7 +91,15 @@ public sealed class BitMarkdownViewerListParser : BitMarkdownViewerBlockParser
                         i++;
                         continue;
                     }
-                    if (j < lines.Count && IsSameMarker(lines[j], ordered, markerChar)) loose = true;
+                    if (j < lines.Count && IsSameMarker(lines[j], ordered, markerChar))
+                    {
+                        // A same-marker item after blank separator(s) makes the list
+                        // loose; advance past the blank separator so the outer loop
+                        // resumes at the next marker instead of stopping on the blank
+                        // line (which would split this into two separate lists).
+                        loose = true;
+                        i = j;
+                    }
                     break;
                 }
 

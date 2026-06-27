@@ -19,8 +19,12 @@ public sealed partial class BitMarkdownViewerTaskListAstProcessor : BitMarkdownV
             {
                 // Detect task markers from the raw (pre-inline) item source so that
                 // escaped literals like "\[ \]" are not misread as real checkboxes.
+                // Only the first logical source line is considered, otherwise a
+                // multi-line item (with continuation lines) fails the anchored regex.
                 if (item.Source is null) continue;
-                var raw = TaskMarker().Match(item.Source);
+                int newline = item.Source.IndexOfAny(['\n', '\r']);
+                var firstLine = newline >= 0 ? item.Source[..newline] : item.Source;
+                var raw = TaskMarker().Match(firstLine);
                 if (!raw.Success) continue;
 
                 if (item.Children.FirstOrDefault() is not BitMarkdownViewerParagraphNode para) continue;
