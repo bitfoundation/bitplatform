@@ -241,7 +241,8 @@ public partial class BitRichTextEditor : BitComponentBase
                 Policy = BuildPolicyPayload(),
                 HasUpload = OnImageUpload is not null,
                 PlainTextPaste = PasteAsPlainText,
-                MaxLength = MaxLength
+                MaxLength = MaxLength,
+                ShortcutKeys = BuildOwnedShortcutCombos()
             });
 
             if (string.IsNullOrEmpty(_currentHtml) is false)

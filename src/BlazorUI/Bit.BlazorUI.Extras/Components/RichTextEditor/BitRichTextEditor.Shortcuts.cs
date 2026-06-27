@@ -69,4 +69,20 @@ public partial class BitRichTextEditor
     };
 
     private static bool IsKnownCommand(string command) => KnownCommands.Contains(command);
+
+    /// <summary>
+    /// The set of owned key combos (built-in defaults merged with any custom shortcuts),
+    /// sent to the JS bridge so it can suppress the browser default synchronously - before
+    /// the async OnShortcut callback - for combos that overlap native browser behavior.
+    /// </summary>
+    private string[] BuildOwnedShortcutCombos()
+    {
+        var combos = new HashSet<string>(DefaultShortcuts.Keys, StringComparer.OrdinalIgnoreCase);
+        if (KeyboardShortcuts is not null)
+        {
+            foreach (var key in KeyboardShortcuts.Keys)
+                combos.Add(key);
+        }
+        return combos.Select(c => c.ToLowerInvariant()).ToArray();
+    }
 }

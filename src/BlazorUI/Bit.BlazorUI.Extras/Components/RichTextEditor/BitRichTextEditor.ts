@@ -22,6 +22,8 @@ namespace BitBlazorUI {
             editor._hasUpload = options.hasUpload === true;
             editor._plainTextPaste = options.plainTextPaste === true;
             editor._maxLength = (typeof options.maxLength === 'number') ? options.maxLength : null;
+            editor._shortcutKeys = new Set((Array.isArray(options.shortcutKeys) ? options.shortcutKeys : [])
+                .map((k: string) => (k || '').toLowerCase()));
             let timer: ReturnType<typeof setTimeout> | null = null;
 
             const notify = () => {
@@ -795,13 +797,25 @@ namespace BitBlazorUI {
             if (!(e.ctrlKey || e.metaKey)) return;
             const key = e.key.toLowerCase();
             const primary = e.ctrlKey || e.metaKey;
-            // Pre-empt the browser default for the built-in editing shortcuts so the native
-            // action (e.g. undo/redo) does not race the async .NET dispatch below.
-            if (['b', 'i', 'u', 'z', 'y'].includes(key)) e.preventDefault();
+
+            // Identify owned shortcuts synchronously (before any await) so the browser default
+            // never wins the race against the async .NET dispatch. The combo is built to match
+            // the C# BuildComboKey form ("ctrl+b", "ctrl+shift+z", ...). The hardcoded set of
+            // built-in editing keys is kept as a baseline when no combo list was provided.
+            const parts: string[] = ['ctrl'];
+            if (e.shiftKey) parts.push('shift');
+            if (e.altKey) parts.push('alt');
+            parts.push(key);
+            const combo = parts.join('+');
+            const owned = (editor._shortcutKeys && editor._shortcutKeys.has(combo))
+                || ['b', 'i', 'u', 'z', 'y'].includes(key);
+            if (owned) e.preventDefault();
+
             if (!editor._dotNetRef) return;
             const handled = await editor._dotNetRef.invokeMethodAsync('OnShortcut', key, primary, e.shiftKey, e.altKey);
-            // When the C# side handled the combo (defaults or custom), suppress the browser default.
-            if (handled) e.preventDefault();
+            // For non-owned combos the .NET side may still report custom handling; suppress the
+            // default in that case too (best-effort, since the await has already yielded).
+            if (handled && !owned) e.preventDefault();
         }
 
         private static onBeforeInput(editor: any, e: InputEvent) {
@@ -970,8 +984,13 @@ namespace BitBlazorUI {
                     const name = attr.name.toLowerCase();
                     const val = attr.value;
                     if (name.startsWith('on')) { el.removeAttribute(attr.name); continue; }
-                    if ((name === 'href' || name === 'src') && /^\s*javascript:/i.test(val)) {
-                        el.removeAttribute(attr.name); continue;
+                    if (name === 'href' || name === 'src') {
+                        // Enforce the active policy's scheme allowlist on every inbound HTML
+                        // path (paste, source import, setHtml) - not just the command handlers.
+                        const isImageSrc = name === 'src' && tag === 'img';
+                        if (!RichTextEditor.isAllowedUri(editor, val, isImageSrc)) {
+                            el.removeAttribute(attr.name); continue;
+                        }
                     }
                     if (policy && policy.allowedAttributes) {
                         const allowed = policy.allowedAttributes[tag] || policy.allowedAttributes['*'] || [];
@@ -1008,18 +1027,25 @@ namespace BitBlazorUI {
             const policy = editor && editor._policy;
             const trimmed = (url || '').trim();
             if (!trimmed) return false;
-            if (/^\s*javascript:/i.test(trimmed)) return false;
 
-            const schemeMatch = /^([a-z][a-z0-9+.-]*):/i.exec(trimmed);
+            // Browsers ignore tab/newline/CR and other control characters when resolving a
+            // URL's scheme, so strip them before validating. This defeats obfuscated values
+            // like "java\nscript:" or "java\tscript:" that would otherwise dodge the checks.
+            const candidate = trimmed.replace(/[\u0000-\u0020\u007F-\u009F\u200B-\u200D\uFEFF]/g, '');
+            if (!candidate) return false;
+            if (/^javascript:/i.test(candidate)) return false;
+            if (/^vbscript:/i.test(candidate)) return false;
+
+            const schemeMatch = /^([a-z][a-z0-9+.-]*):/i.exec(candidate);
             if (!schemeMatch) {
                 // No scheme: relative URL. Reject protocol-relative (//host).
-                return !trimmed.startsWith('//');
+                return !candidate.startsWith('//');
             }
 
             const scheme = schemeMatch[1].toLowerCase();
             if (scheme === 'data') {
                 if (!isImage) return false;
-                const isImageData = /^data:image\//i.test(trimmed);
+                const isImageData = /^data:image\//i.test(candidate);
                 if (policy) return policy.allowDataImageUris === true && isImageData;
                 return isImageData;
             }
