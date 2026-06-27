@@ -408,14 +408,25 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
         }
         var thisLoadCts = _pendingDataLoadCancellationTokenSource = new CancellationTokenSource();
 
-        if (_virtualizeComponent is not null)
+        // Render now so the loading state (IsLoading / LoadingTemplate) becomes visible as soon as the
+        // refresh starts, instead of only after the async load below completes.
+        StateHasChanged();
+
+        if (Virtualize)
         {
             // If we're using Virtualize, we have to go through its RefreshDataAsync API otherwise:
             // (1) It won't know to update its own internal state if the provider output has changed
             // (2) We won't know what slice of data to query for
+            // The reference can still be null before it's captured (first render) or right after toggling
+            // virtualization on; in that case Virtualize will request its own items once it renders, so we
+            // just reconcile the load-state here. The non-virtualized provider request must never run for a
+            // virtualized grid.
             try
             {
-                await _virtualizeComponent.RefreshDataAsync();
+                if (_virtualizeComponent is not null)
+                {
+                    await _virtualizeComponent.RefreshDataAsync();
+                }
             }
             finally
             {

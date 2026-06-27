@@ -172,19 +172,19 @@
                         <div class="bit-dtg-row bit-dtg-filter-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
                             @if (HasReorderColumn)
                             {
-                                <div class="bit-dtg-hcell bit-dtg-sticky" style="@ReorderStickyStyle"></div>
+                                <div class="bit-dtg-hcell bit-dtg-sticky" role="columnheader" style="@ReorderStickyStyle"></div>
                             }
                             @if (HasDetailColumn)
                             {
-                                <div class="bit-dtg-hcell bit-dtg-sticky" style="@DetailStickyStyle"></div>
+                                <div class="bit-dtg-hcell bit-dtg-sticky" role="columnheader" style="@DetailStickyStyle"></div>
                             }
                             @if (HasSelectColumn)
                             {
-                                <div class="bit-dtg-hcell bit-dtg-sticky" style="@SelectStickyStyle"></div>
+                                <div class="bit-dtg-hcell bit-dtg-sticky" role="columnheader" style="@SelectStickyStyle"></div>
                             }
                             @foreach (var column in VisibleColumns)
                             {
-                                <div class="bit-dtg-hcell@(column.Frozen ? " bit-dtg-sticky" : "")" style="@FrozenStyle(column)">
+                                <div class="bit-dtg-hcell@(column.Frozen ? " bit-dtg-sticky" : "")" role="columnheader" style="@FrozenStyle(column)">
                                     @if (ColumnFilterable(column))
                                     {
                                         <input class="bit-dtg-filter-input" placeholder="Filter…"
@@ -195,7 +195,7 @@
                             }
                             @if (HasCommandColumn)
                             {
-                                <div class="bit-dtg-hcell"></div>
+                                <div class="bit-dtg-hcell" role="columnheader"></div>
                             }
                         </div>
                     }
@@ -259,7 +259,7 @@
                         {
                             <div class="bit-dtg-row bit-dtg-placeholder-row" role="row"
                                  style="grid-template-columns:var(--bit-dtg-template);min-height:@RowHeight.ToString(System.Globalization.CultureInfo.InvariantCulture)px;">
-                                <div class="bit-dtg-cell bit-dtg-placeholder-cell" style="grid-column:1 / -1;">
+                                <div class="bit-dtg-cell bit-dtg-placeholder-cell" role="gridcell" style="grid-column:1 / -1;">
                                     <span class="bit-dtg-skeleton"></span>
                                 </div>
                             </div>
@@ -295,20 +295,20 @@
                     <div class="bit-dtg-row bit-dtg-footer-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
                         @if (HasReorderColumn)
                         {
-                            <div class="bit-dtg-cell"></div>
+                            <div class="bit-dtg-cell" role="gridcell"></div>
                         }
                         @if (HasDetailColumn)
                         {
-                            <div class="bit-dtg-cell"></div>
+                            <div class="bit-dtg-cell" role="gridcell"></div>
                         }
                         @if (HasSelectColumn)
                         {
-                            <div class="bit-dtg-cell"></div>
+                            <div class="bit-dtg-cell" role="gridcell"></div>
                         }
                         @foreach (var column in VisibleColumns)
                         {
                             var agg = _footerAggregates.FirstOrDefault(a => a.ColumnId == column.Id);
-                            <div class="bit-dtg-cell @AlignClass(column.Align)">
+                            <div class="bit-dtg-cell @AlignClass(column.Align)" role="gridcell">
                                 @if (column.FooterTemplate is not null && agg is not null)
                                 {
                                     @column.FooterTemplate(agg)
@@ -321,7 +321,7 @@
                         }
                         @if (HasCommandColumn)
                         {
-                            <div class="bit-dtg-cell"></div>
+                            <div class="bit-dtg-cell" role="gridcell"></div>
                         }
                     </div>
                 </div>

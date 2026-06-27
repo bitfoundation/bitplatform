@@ -1116,7 +1116,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         int from = -1;
         for (int i = 0; i < view.Count; i++)
         {
-            if (EqualityComparer<TItem>.Default.Equals(view[i], row)) { from = i; break; }
+            if (KeyEquals(view[i], row)) { from = i; break; }
         }
         if (from < 0) return;
 
@@ -1129,7 +1129,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     internal async Task DropRowAsync(TItem target)
     {
-        if (_dragRow is null || EqualityComparer<TItem>.Default.Equals(_dragRow, target)) { _dragRow = default; return; }
+        if (_dragRow is null || KeyEquals(_dragRow, target)) { _dragRow = default; return; }
 
         var dragged = _dragRow;
         _dragRow = default;
@@ -1137,8 +1137,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // Determine indices within the bound source.
         if (Items is IList<TItem> list)
         {
-            var from = list.IndexOf(dragged);
-            var to = list.IndexOf(target);
+            var from = IndexOfByKey(list, dragged);
+            var to = IndexOfByKey(list, target);
             if (from < 0 || to < 0) return;
 
             if (!list.IsReadOnly)
@@ -1204,9 +1204,22 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// <summary>Roving tabindex: only one cell is in the tab order at a time.</summary>
     internal int CellTabIndex(TItem item, int colIndex)
     {
-        if (_focusedRow is not null)
-            return IsCellFocused(item, colIndex) ? 0 : -1;
         var rows = NavigableRows;
+
+        // If a focused row is set and still present in the current view, keep its cell tabbable.
+        if (_focusedRow is not null)
+        {
+            bool focusedRowVisible = false;
+            for (int i = 0; i < rows.Count; i++)
+            {
+                if (KeyEquals(rows[i], _focusedRow)) { focusedRowVisible = true; break; }
+            }
+
+            if (focusedRowVisible)
+                return IsCellFocused(item, colIndex) ? 0 : -1;
+            // Otherwise the focused row was paged/filtered/sorted away: fall back to the first cell below.
+        }
+
         return rows.Count > 0 && KeyEquals(rows[0], item) && colIndex == 0 ? 0 : -1;
     }
 
@@ -1408,6 +1421,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private object GetKey(TItem item) => KeyField?.Invoke(item) ?? item!;
     private bool KeyEquals(TItem a, TItem b)
         => KeyField is not null ? Equals(KeyField(a), KeyField(b)) : EqualityComparer<TItem>.Default.Equals(a, b);
+
+    /// <summary>Finds the index of <paramref name="item"/> in <paramref name="list"/> using the grid's
+    /// key-based identity (<see cref="KeyEquals"/>) so re-materialized rows still resolve when KeyField is set.</summary>
+    private int IndexOfByKey(IList<TItem> list, TItem item)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (KeyEquals(list[i], item)) return i;
+        }
+        return -1;
+    }
 
     /// <summary>Compares rows by their key (via <see cref="GetKey"/>) so selection tracks key identity
     /// rather than object reference, surviving refreshes that yield new instances with the same key.</summary>
