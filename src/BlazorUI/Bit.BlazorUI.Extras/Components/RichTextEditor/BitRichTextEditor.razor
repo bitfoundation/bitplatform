@@ -21,7 +21,7 @@
         @if (_showLinkInput)
         {
             <div class="bit-rte-bar">
-                <input type="url" class="bit-rte-inp" placeholder="https://example.com"
+                <input type="url" class="bit-rte-inp" placeholder="@Label("link-url-placeholder", "https://example.com")"
                        @bind="_linkUrl" @bind:event="oninput"
                        @onkeydown="OnLinkKeyDown" />
                 <button type="button" class="bit-rte-btn" @onclick="ApplyLinkAsync">@Label("apply", "Apply")</button>
@@ -36,7 +36,7 @@
         @if (_showImageInput)
         {
             <div class="bit-rte-bar">
-                <input type="url" class="bit-rte-inp" placeholder="https://example.com/image.png"
+                <input type="url" class="bit-rte-inp" placeholder="@Label("image-url-placeholder", "https://example.com/image.png")"
                        @bind="_imageUrl" @bind:event="oninput" />
                 <button type="button" class="bit-rte-btn" @onclick="ApplyImageUrlAsync">@Label("insert", "Insert")</button>
                 <button type="button" class="bit-rte-btn" @onclick="ToggleImageInput">@Label("cancel", "Cancel")</button>
@@ -46,7 +46,7 @@
         @if (_showMediaInput)
         {
             <div class="bit-rte-bar">
-                <input type="url" class="bit-rte-inp" placeholder="https://youtube.com/watch?v=..."
+                <input type="url" class="bit-rte-inp" placeholder="@Label("media-url-placeholder", "https://youtube.com/watch?v=...")"
                        @bind="_mediaUrl" @bind:event="oninput" />
                 <button type="button" class="bit-rte-btn" @onclick="ApplyMediaAsync">@Label("embed", "Embed")</button>
                 <button type="button" class="bit-rte-btn" @onclick="ToggleMediaInput">@Label("cancel", "Cancel")</button>

@@ -309,20 +309,73 @@ public partial class BitRichTextEditorDemo
 
 
 
-    private string? boundHtml = "<p>Hello <strong>world</strong>.</p>";
+    private readonly string readOnlyHtml = "<p>This instance is <strong>read-only</strong> with the toolbar hidden - useful for displaying stored content.</p>";
 
-    private BitRichTextEditor apiEditor = default!;
-    private string? apiResult;
-    private async Task FocusEditor()
+    private string? bindingHtml = "<p>The bound value is just a <strong>string</strong> you own.</p>";
+
+    private string? debounceHtml = "<p>Type and watch the value update after the debounce window.</p>";
+
+    private string focusState = "blurred";
+
+    private string? formattingHtml = "<h2>Headings</h2><p>Mix <strong>bold</strong>, <em>italic</em>, <u>underline</u> and <s>strikethrough</s>.</p><blockquote>A short quote.</blockquote><ol><li>First</li><li>Second</li></ol>";
+
+    private string? scriptHtml = "<p>Water is H<sub>2</sub>O. Einstein wrote E = mc<sup>2</sup>.</p>";
+
+    private string? linkHtml = "<p>Read the <a href=\"https://learn.microsoft.com/aspnet/core/blazor\">Blazor docs</a> to learn more.</p>";
+    private string? linkError;
+
+    private string? imageHtml = "<p>Images can sit inline with text.</p>";
+    private string? lastUpload;
+    private Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
     {
-        await apiEditor.FocusAsync();
-    }
-    private async Task GetEditorHtml()
-    {
-        apiResult = await apiEditor.GetHtmlAsync();
+        lastUpload = $"{image.FileName} ({image.ContentType}, {image.Content.Length:N0} bytes)";
+        var dataUrl = $"data:{image.ContentType};base64,{Convert.ToBase64String(image.Content)}";
+        return Task.FromResult<string?>(dataUrl);
     }
 
-    private string eventLog = "-";
+    private string? colorHtml = "<p>Make words <span style=\"color:#5b3df5\">colorful</span> or <span style=\"background:#fff3a3\">highlighted</span>.</p>";
+
+    private string? fontHtml = "<p>Choose a typeface for this paragraph.</p>";
+    private readonly string[] fonts = ["Segoe UI", "Georgia", "Courier New", "Comic Sans MS"];
+    private readonly string[] sizes = ["12px", "16px", "20px", "28px"];
+
+    private string? tableHtml = "<table><thead><tr><th>Feature</th><th>Status</th></tr></thead><tbody><tr><td>Tables</td><td>Ready</td></tr><tr><td>Merge cells</td><td>Ready</td></tr></tbody></table>";
+
+    private string? mediaHtml = "<p>Add a divider below, then embed a video.</p><hr><p>Next section.</p>";
+
+    private string? sourceHtml = "<p>Switch to <strong>source view</strong> to see and edit the raw HTML.</p>";
+
+    private string? sanitizationHtml = "<p>Only allowlisted tags, attributes and URI schemes survive.</p>";
+    private readonly BitRichTextEditorSanitizationPolicy sanitizationPolicy = new()
+    {
+        AllowedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "p", "br", "strong", "em", "a", "ul", "ol", "li" },
+        AllowedAttributes = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["*"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "class" },
+            ["a"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "href", "title" },
+        },
+        AllowedUriSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "http", "https", "mailto" },
+        AllowDataImageUris = false,
+    };
+
+    private string? plainPasteHtml = "<p>Try pasting formatted content here.</p>";
+
+    private string? findHtml = "<p>The quick brown fox jumps over the lazy dog. The fox is quick.</p>";
+
+    private string? fullScreenHtml = "<p>Expand me to full screen and write without distractions.</p>";
+
+    private string? slashHtml = "<p>Place the cursor on a new line and type a slash.</p>";
+
+    private string? shortcutHtml = "<p>Press Ctrl/Cmd+B or your custom Ctrl/Cmd+Shift+K.</p>";
+    private readonly Dictionary<string, string> shortcuts = new()
+    {
+        ["ctrl+b"] = "bold",
+        ["ctrl+shift+k"] = "createLink",
+    };
+
+    private string? emojiHtml = "<p>Add a little ✨ to your text.</p>";
+
+    private string? countHtml = "<p>Counting characters and words.</p>";
 
     private readonly FormModel formModel = new();
     private bool formSubmitted;
@@ -333,23 +386,42 @@ public partial class BitRichTextEditorDemo
     public class FormModel
     {
         [Required(ErrorMessage = "The body is required.")]
+        [MinLength(20, ErrorMessage = "Add a bit more detail (min 20 characters).")]
         public string? Body { get; set; }
     }
 
-    private BitRichTextEditor customEditor = default!;
-    private readonly BitRichTextEditorToolbarConfig toolbarConfig = new()
+    private string? customHtml = "<p>A custom toolbar button can run any command.</p>";
+    private readonly BitRichTextEditorToolbarConfig customConfig = new()
     {
         CustomItems =
         [
             new()
             {
-                Id = "signature",
-                Label = "✍",
-                AriaLabel = "Insert signature",
-                OnActivate = async editor => await editor.ExecuteCommandAsync("insertText", " — Sent from BitRichTextEditor")
+                Id = "insert-date",
+                Label = "Today",
+                AriaLabel = "Insert today's date",
+                OnActivate = editor => editor.ExecuteCommandAsync("insertText", DateTime.Now.ToString("yyyy-MM-dd"))
             }
         ]
     };
+
+    private string? reorderHtml = "<p>The inline, lists and link groups are pulled to the front.</p>";
+    private readonly BitRichTextEditorToolbarConfig reorderConfig = new()
+    {
+        Order = ["inline", "lists", "link"]
+    };
+
+    private BitRichTextEditor apiEditor = default!;
+    private string? apiHtml = "<p>Drive me from the buttons below.</p>";
+    private string? apiResult;
+    private async Task FocusEditor()
+    {
+        await apiEditor.FocusAsync();
+    }
+    private async Task GetEditorHtml()
+    {
+        apiResult = await apiEditor.GetHtmlAsync();
+    }
 
 
 
@@ -357,41 +429,203 @@ public partial class BitRichTextEditorDemo
 <BitRichTextEditor />";
 
     private readonly string example2RazorCode = @"
-<BitRichTextEditor Placeholder=""Write something..."" />";
+<BitRichTextEditor Placeholder=""Write something..."" Height=""10rem"" />";
 
     private readonly string example3RazorCode = @"
-<BitRichTextEditor ReadOnly Value=""<p>This editor is <strong>readonly</strong>.</p>"" />";
+<BitRichTextEditor Value=""<p>This is <strong>read-only</strong>.</p>""
+                   ReadOnly ShowToolbar=""false"" Height=""auto"" />";
 
     private readonly string example4RazorCode = @"
-<BitRichTextEditor @bind-Value=""boundHtml"" Placeholder=""Type here to update the bound value..."" />
+<BitButton OnClick='() => bindingHtml = ""<h3>Set from code</h3>""'>Set content</BitButton>
+<BitButton OnClick=""() => bindingHtml = string.Empty"">Clear</BitButton>
+<BitButton OnClick='() => bindingHtml += ""<p>Appended.</p>""'>Append</BitButton>
 
-<div>Bound HTML value:</div>
-<pre>@boundHtml</pre>";
+<BitRichTextEditor @bind-Value=""bindingHtml"" Placeholder=""Edit me..."" />
+
+<pre>@bindingHtml</pre>
+<div>@((MarkupString)(bindingHtml ?? """"))</div>";
     private readonly string example4CsharpCode = @"
-private string? boundHtml = ""<p>Hello <strong>world</strong>.</p>"";";
+private string? bindingHtml = ""<p>The bound value is just a <strong>string</strong> you own.</p>"";";
 
     private readonly string example5RazorCode = @"
-<BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.AllExtended""
-                   Placeholder=""All of the available toolbar groups are enabled."" />";
+<BitRichTextEditor @bind-Value=""html"" DebounceMs=""600""
+                   Placeholder=""Change notifications are debounced by 600ms..."" />";
 
     private readonly string example6RazorCode = @"
-<BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists | BitRichTextEditorToolbar.Link""
-                   Placeholder=""Only the inline, lists and link groups are shown."" />";
+<BitRichTextEditor OnFocus='() => focusState = ""focused""'
+                   OnBlur='() => focusState = ""blurred""' />
+
+<div>Editor is currently: <b>@focusState</b></div>";
+    private readonly string example6CsharpCode = @"
+private string focusState = ""blurred"";";
 
     private readonly string example7RazorCode = @"
-<BitRichTextEditor Height=""150px"" ShowCount MaxLength=""200""
-                   Placeholder=""Up to 200 characters..."" />";
+<BitRichTextEditor @bind-Value=""html"" Toolbar=""BitRichTextEditorToolbar.All"" />";
 
     private readonly string example8RazorCode = @"
-<BitRichTextEditor @ref=""apiEditor"" />
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Indent | BitRichTextEditorToolbar.Script"" />";
+
+    private readonly string example9RazorCode = @"
+<BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists"" />";
+
+    private readonly string example10RazorCode = @"
+<BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.AllExtended"" />";
+
+    private readonly string example11RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link""
+                   OnError='e => linkError = $""{e.Code}: {e.Message}""' />";
+    private readonly string example11CsharpCode = @"
+private string? linkHtml = ""<p>Read the <a href=\""https://...\"">docs</a>.</p>"";
+private string? linkError;";
+
+    private readonly string example12RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.Image | BitRichTextEditorToolbar.Inline""
+                   OnImageUpload=""HandleImageUpload"" />";
+    private readonly string example12CsharpCode = @"
+private async Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
+{
+    // image.FileName, image.ContentType, image.Content (byte[])
+    var url = await storage.SaveAsync(image.FileName, image.Content);
+    return url; // return null to cancel the insert
+}";
+
+    private readonly string example13RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.Color | BitRichTextEditorToolbar.Inline"" />";
+
+    private readonly string example14RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.Font""
+                   FontFamilies=""fonts""
+                   FontSizes=""sizes"" />";
+    private readonly string example14CsharpCode = @"
+private readonly string[] fonts = [""Segoe UI"", ""Georgia"", ""Courier New"", ""Comic Sans MS""];
+private readonly string[] sizes = [""12px"", ""16px"", ""20px"", ""28px""];";
+
+    private readonly string example15RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.Table | BitRichTextEditorToolbar.Inline"" />";
+
+    private readonly string example16RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.Media | BitRichTextEditorToolbar.Rule | BitRichTextEditorToolbar.BlockFormat"" />";
+
+    private readonly string example17RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Source"" />";
+
+    private readonly string example18RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Source""
+                   SanitizationPolicy=""sanitizationPolicy"" />";
+    private readonly string example18CsharpCode = @"
+private readonly BitRichTextEditorSanitizationPolicy sanitizationPolicy = new()
+{
+    AllowedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        { ""p"", ""br"", ""strong"", ""em"", ""a"", ""ul"", ""ol"", ""li"" },
+    AllowedAttributes = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)
+    {
+        [""*""] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ""class"" },
+        [""a""] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ""href"", ""title"" },
+    },
+    AllowedUriSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        { ""http"", ""https"", ""mailto"" },
+    AllowDataImageUris = false,
+};";
+
+    private readonly string example19RazorCode = @"
+<BitRichTextEditor @bind-Value=""html"" PasteAsPlainText />";
+
+    private readonly string example20RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.Find | BitRichTextEditorToolbar.Inline"" />";
+
+    private readonly string example21RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.FullScreen"" />";
+
+    private readonly string example22RazorCode = @"
+<BitRichTextEditor @bind-Value=""html"" Toolbar=""BitRichTextEditorToolbar.AllExtended"" />";
+
+    private readonly string example23RazorCode = @"
+<BitRichTextEditor @bind-Value=""html"" KeyboardShortcuts=""shortcuts"" />";
+    private readonly string example23CsharpCode = @"
+private readonly Dictionary<string, string> shortcuts = new()
+{
+    [""ctrl+b""] = ""bold"",
+    [""ctrl+shift+k""] = ""createLink"",
+};";
+
+    private readonly string example24RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.Emoji | BitRichTextEditorToolbar.Inline"" />";
+
+    private readonly string example25RazorCode = @"
+<BitRichTextEditor @bind-Value=""html"" ShowCount MaxLength=""120"" />";
+
+    private readonly string example26RazorCode = @"
+<EditForm Model=""formModel"" OnValidSubmit=""HandleValidSubmit"">
+    <DataAnnotationsValidator />
+    <BitRichTextEditor @bind-Value=""formModel.Body""
+                       Toolbar=""BitRichTextEditorToolbar.All""
+                       ShowCount MaxLength=""500"" />
+    <ValidationMessage For=""() => formModel.Body"" />
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
+    private readonly string example26CsharpCode = @"
+private readonly FormModel formModel = new();
+private bool formSubmitted;
+private void HandleValidSubmit() => formSubmitted = true;
+
+public class FormModel
+{
+    [Required(ErrorMessage = ""The body is required."")]
+    [MinLength(20, ErrorMessage = ""Add a bit more detail (min 20 characters)."")]
+    public string? Body { get; set; }
+}";
+
+    private readonly string example27RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.All""
+                   ToolbarConfig=""customConfig"" />";
+    private readonly string example27CsharpCode = @"
+private readonly BitRichTextEditorToolbarConfig customConfig = new()
+{
+    CustomItems =
+    [
+        new()
+        {
+            Id = ""insert-date"",
+            Label = ""Today"",
+            AriaLabel = ""Insert today's date"",
+            OnActivate = editor => editor.ExecuteCommandAsync(""insertText"", DateTime.Now.ToString(""yyyy-MM-dd""))
+        }
+    ]
+};";
+
+    private readonly string example28RazorCode = @"
+<BitRichTextEditor @bind-Value=""html""
+                   Toolbar=""BitRichTextEditorToolbar.All""
+                   ToolbarConfig=""reorderConfig"" />";
+    private readonly string example28CsharpCode = @"
+// listed ids appear first; enabled-but-omitted groups follow in default order
+private readonly BitRichTextEditorToolbarConfig reorderConfig = new()
+{
+    Order = [""inline"", ""lists"", ""link""]
+};";
+
+    private readonly string example29RazorCode = @"
+<BitRichTextEditor @ref=""apiEditor"" @bind-Value=""html"" Toolbar=""BitRichTextEditorToolbar.All"" />
 
 <BitButton OnClick=""FocusEditor"">FocusAsync</BitButton>
-<BitButton OnClick=""GetEditorHtml"">GetHtmlAsync</BitButton>
 <BitButton OnClick=""@(() => apiEditor.ExecuteCommandAsync(""bold""))"">ExecuteCommand(""bold"")</BitButton>
+<BitButton OnClick=""GetEditorHtml"">GetHtmlAsync</BitButton>
 
-<div>result:</div>
 <pre>@apiResult</pre>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example29CsharpCode = @"
 private BitRichTextEditor apiEditor = default!;
 private string? apiResult;
 private async Task FocusEditor()
@@ -403,56 +637,7 @@ private async Task GetEditorHtml()
     apiResult = await apiEditor.GetHtmlAsync();
 }";
 
-    private readonly string example9RazorCode = @"
-<BitRichTextEditor OnFocus=""() => eventLog = $""Focused at {DateTime.Now:HH:mm:ss}""""
-                   OnBlur=""() => eventLog = $""Blurred at {DateTime.Now:HH:mm:ss}""""
-                   OnError=""e => eventLog = $""Error ({e.Code}): {e.Message}""""
-                   Toolbar=""BitRichTextEditorToolbar.AllExtended""
-                   Placeholder=""Focus, blur, or trigger an error (e.g. an invalid link)."" />
-
-<div>last event: @eventLog</div>";
-    private readonly string example9CsharpCode = @"
-private string eventLog = ""-"";";
-
-    private readonly string example10RazorCode = @"
-<EditForm Model=""formModel"" OnValidSubmit=""HandleValidSubmit"">
-    <DataAnnotationsValidator />
-    <BitRichTextEditor @bind-Value=""formModel.Body"" Placeholder=""The body is required..."" />
-    <ValidationMessage For=""() => formModel.Body"" />
-    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
-    private readonly string example10CsharpCode = @"
-private readonly FormModel formModel = new();
-private bool formSubmitted;
-private void HandleValidSubmit()
-{
-    formSubmitted = true;
-}
-public class FormModel
-{
-    [Required(ErrorMessage = ""The body is required."")]
-    public string? Body { get; set; }
-}";
-
-    private readonly string example11RazorCode = @"
-<BitRichTextEditor @ref=""customEditor"" ToolbarConfig=""toolbarConfig"" />";
-    private readonly string example11CsharpCode = @"
-private BitRichTextEditor customEditor = default!;
-private BitRichTextEditorToolbarConfig toolbarConfig = new()
-{
-    CustomItems =
-    [
-        new()
-        {
-            Id = ""signature"",
-            Label = ""✍"",
-            AriaLabel = ""Insert signature"",
-            OnActivate = async editor => await editor.ExecuteCommandAsync(""insertText"", "" — Sent from BitRichTextEditor"")
-        }
-    ]
-};";
-
-    private readonly string example12RazorCode = @"
+    private readonly string example30RazorCode = @"
 <BitRichTextEditor Styles=""@(new() { Toolbar = ""border-bottom-color: red"", Editor = ""background-color: #fff8e1"" })""
                    Placeholder=""Custom styles applied to the toolbar and editor."" />";
 }

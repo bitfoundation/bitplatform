@@ -1,36 +1,11 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 .bit-rte {
-    // Theming tokens — mapped to the bit theme system so the editor follows the active
-    // (light/dark) theme automatically, while still allowing host overrides per token.
-    --rte-border: #{$clr-brd-pri};
-    --rte-radius: #{$shp-border-radius};
-    --rte-bg: #{$clr-bg-pri};
-    --rte-fg: #{$clr-fg-pri};
-    --rte-toolbar-bg: #{$clr-bg-sec};
-    --rte-toolbar-border: #{$clr-brd-sec};
-    --rte-group-border: #{$clr-brd-sec};
-    --rte-btn-fg: #{$clr-fg-pri};
-    --rte-btn-hover-bg: #{$clr-bg-sec-hover};
-    --rte-active-bg: #{$clr-bg-pri-active};
-    --rte-active-border: #{$clr-pri};
-    --rte-active-fg: #{$clr-pri};
-    --rte-focus: #{$clr-pri};
-    --rte-placeholder: #{$clr-fg-ter};
-    --rte-bar-bg: #{$clr-bg-sec};
-    --rte-code-bg: #{$clr-bg-sec};
-    --rte-quote-border: #{$clr-brd-pri};
-    --rte-quote-fg: #{$clr-fg-sec};
-    --rte-error-bg: #{$clr-bg-sec};
-    --rte-error-fg: #{$clr-err};
-    --rte-error-border: #{$clr-err};
-    --rte-spacing: #{spacing(1)};
-
-    border: $shp-border-width $shp-border-style var(--rte-border);
-    border-radius: var(--rte-radius);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: $shp-border-radius;
     overflow: hidden;
-    background: var(--rte-bg);
-    color: var(--rte-fg);
+    background: $clr-bg-pri;
+    color: $clr-fg-pri;
     display: flex;
     flex-direction: column;
 }
@@ -47,9 +22,9 @@
     flex-wrap: wrap;
     align-items: center;
     gap: spacing(0.5);
-    padding: spacing(0.7) var(--rte-spacing);
-    border-bottom: $shp-border-width $shp-border-style var(--rte-toolbar-border);
-    background: var(--rte-toolbar-bg);
+    padding: spacing(0.7) spacing(1);
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+    background: $clr-bg-sec;
     position: sticky;
     top: 0;
     z-index: 2;
@@ -60,7 +35,7 @@
     gap: spacing(0.3);
     padding-right: spacing(0.7);
     margin-right: spacing(0.3);
-    border-right: $shp-border-width $shp-border-style var(--rte-group-border);
+    border-right: $shp-border-width $shp-border-style $clr-brd-sec;
 
     &:last-child {
         border-right: none;
@@ -72,9 +47,9 @@
     height: spacing(3.75);
     padding: 0 spacing(0.9);
     border: $shp-border-width $shp-border-style transparent;
-    border-radius: var(--rte-radius);
+    border-radius: $shp-border-radius;
     background: transparent;
-    color: var(--rte-btn-fg);
+    color: $clr-fg-pri;
     font-size: 0.95rem;
     line-height: 1;
     cursor: pointer;
@@ -83,13 +58,13 @@
     justify-content: center;
 
     &:hover:not(:disabled) {
-        background: var(--rte-btn-hover-bg);
+        background: $clr-bg-sec-hover;
     }
 
     &.bit-rte-act {
-        background: var(--rte-active-bg);
-        border-color: var(--rte-active-border);
-        color: var(--rte-active-fg);
+        background: $clr-bg-pri-active;
+        border-color: $clr-pri;
+        color: $clr-pri;
     }
 
     &:disabled {
@@ -98,23 +73,23 @@
     }
 
     &:focus-visible {
-        outline: spacing(0.25) solid var(--rte-focus);
+        outline: spacing(0.25) solid $clr-pri;
         outline-offset: spacing(0.125);
     }
 }
 
 .bit-rte-sel {
     height: spacing(3.75);
-    border: $shp-border-width $shp-border-style var(--rte-border);
-    border-radius: var(--rte-radius);
-    background: var(--rte-bg);
-    color: var(--rte-fg);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: $shp-border-radius;
+    background: $clr-bg-pri;
+    color: $clr-fg-pri;
     padding: 0 spacing(0.8);
     font-size: 0.85rem;
     cursor: pointer;
 
     &:focus-visible {
-        outline: spacing(0.25) solid var(--rte-focus);
+        outline: spacing(0.25) solid $clr-pri;
         outline-offset: spacing(0.125);
     }
 }
@@ -124,12 +99,12 @@
     align-items: center;
     height: spacing(3.75);
     padding: 0 spacing(0.5);
-    border-radius: var(--rte-radius);
+    border-radius: $shp-border-radius;
     cursor: pointer;
     gap: spacing(0.25);
 
     &:hover {
-        background: var(--rte-btn-hover-bg);
+        background: $clr-bg-sec-hover;
     }
 
     input[type="color"] {
@@ -146,21 +121,21 @@
     display: flex;
     gap: spacing(0.7);
     align-items: center;
-    padding: spacing(0.8) var(--rte-spacing);
-    border-bottom: $shp-border-width $shp-border-style var(--rte-toolbar-border);
-    background: var(--rte-bar-bg);
+    padding: spacing(0.8) spacing(1);
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+    background: $clr-bg-sec;
 }
 
 .bit-rte-inp {
     flex: 1;
     min-width: spacing(7.5);
     height: spacing(3.75);
-    border: $shp-border-width $shp-border-style var(--rte-border);
-    border-radius: var(--rte-radius);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: $shp-border-radius;
     padding: 0 spacing(1.1);
     font-size: 0.88rem;
-    background: var(--rte-bg);
-    color: var(--rte-fg);
+    background: $clr-bg-pri;
+    color: $clr-fg-pri;
 }
 
 .bit-rte-find-opt {
@@ -172,14 +147,14 @@
 
 .bit-rte-find-count {
     font-size: 0.8rem;
-    color: var(--rte-quote-fg);
+    color: $clr-fg-sec;
     min-width: spacing(8);
 }
 
 .bit-rte-emoji-panel {
-    padding: spacing(0.8) var(--rte-spacing);
-    border-bottom: $shp-border-width $shp-border-style var(--rte-toolbar-border);
-    background: var(--rte-bar-bg);
+    padding: spacing(0.8) spacing(1);
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+    background: $clr-bg-sec;
 }
 
 .bit-rte-emoji-grid {
@@ -195,41 +170,41 @@
     width: spacing(3.75);
     height: spacing(3.75);
     border: $shp-border-width $shp-border-style transparent;
-    border-radius: var(--rte-radius);
+    border-radius: $shp-border-radius;
     background: transparent;
     font-size: 1.1rem;
     cursor: pointer;
 
     &:hover {
-        background: var(--rte-btn-hover-bg);
+        background: $clr-bg-sec-hover;
     }
 }
 
 .bit-rte-emoji-empty {
     font-size: 0.82rem;
-    color: var(--rte-quote-fg);
+    color: $clr-fg-sec;
     padding: spacing(0.5);
 }
 
 .bit-rte-err {
     padding: spacing(0.7) spacing(1.2);
-    background: var(--rte-error-bg);
-    color: var(--rte-error-fg);
-    border-bottom: $shp-border-width $shp-border-style var(--rte-error-border);
+    background: $clr-bg-sec;
+    color: $clr-err;
+    border-bottom: $shp-border-width $shp-border-style $clr-err;
     font-size: 0.82rem;
 }
 
 .bit-rte-cnt {
     padding: spacing(0.5) spacing(1.2);
-    border-top: $shp-border-width $shp-border-style var(--rte-toolbar-border);
-    background: var(--rte-toolbar-bg);
-    color: var(--rte-quote-fg);
+    border-top: $shp-border-width $shp-border-style $clr-brd-sec;
+    background: $clr-bg-sec;
+    color: $clr-fg-sec;
     font-size: 0.78rem;
     text-align: right;
 }
 
 .bit-rte-cnt-over {
-    color: var(--rte-error-fg);
+    color: $clr-err;
     margin-left: spacing(0.8);
     font-weight: 600;
 }
@@ -243,8 +218,8 @@
     font-family: "SFMono-Regular", Consolas, monospace;
     font-size: 0.85rem;
     line-height: 1.5;
-    background: var(--rte-code-bg);
-    color: var(--rte-fg);
+    background: $clr-bg-sec;
+    color: $clr-fg-pri;
     box-sizing: border-box;
 }
 
@@ -253,7 +228,7 @@
     outline: none;
     overflow-y: auto;
     line-height: 1.6;
-    color: var(--rte-fg);
+    color: $clr-fg-pri;
     flex: 1;
     position: relative;
 
@@ -263,7 +238,7 @@
 
     &.bit-rte-edt-empty::before {
         content: attr(data-placeholder);
-        color: var(--rte-placeholder);
+        color: $clr-fg-ter;
         pointer-events: none;
         position: absolute;
         inset-block-start: spacing(1.7);
@@ -300,13 +275,13 @@
     blockquote {
         margin: 0 0 spacing(1.2);
         padding: spacing(0.5) spacing(2);
-        border-left: spacing(0.5) $shp-border-style var(--rte-quote-border);
-        color: var(--rte-quote-fg);
+        border-left: spacing(0.5) $shp-border-style $clr-brd-pri;
+        color: $clr-fg-sec;
     }
 
     pre {
-        background: var(--rte-code-bg);
-        border-radius: var(--rte-radius);
+        background: $clr-bg-sec;
+        border-radius: $shp-border-radius;
         padding: spacing(1.5) spacing(2);
         overflow-x: auto;
         font-family: "SFMono-Regular", Consolas, monospace;
@@ -320,7 +295,7 @@
     }
 
     a {
-        color: var(--rte-focus);
+        color: $clr-pri;
     }
 
     img {
@@ -335,14 +310,14 @@
 
     td,
     th {
-        border: $shp-border-width $shp-border-style var(--rte-border);
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
         padding: spacing(0.6) spacing(1);
         min-width: spacing(4);
     }
 
     hr {
         border: none;
-        border-top: spacing(0.25) $shp-border-style var(--rte-border);
+        border-top: spacing(0.25) $shp-border-style $clr-brd-pri;
         margin: spacing(1.6) 0;
     }
 
@@ -362,10 +337,10 @@
     flex-direction: column;
     gap: spacing(0.25);
     padding: spacing(0.7);
-    border: $shp-border-width $shp-border-style var(--rte-border);
-    border-radius: var(--rte-radius);
-    background: var(--rte-bg);
-    margin: spacing(0.5) var(--rte-spacing);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: $shp-border-radius;
+    background: $clr-bg-pri;
+    margin: spacing(0.5) spacing(1);
     box-shadow: 0 spacing(0.5) spacing(1.75) rgba(0, 0, 0, 0.12);
     max-width: spacing(32.5);
 }
@@ -374,13 +349,13 @@
     text-align: left;
     border: none;
     background: transparent;
-    color: var(--rte-fg);
+    color: $clr-fg-pri;
     padding: spacing(0.6) spacing(1);
-    border-radius: var(--rte-radius);
+    border-radius: $shp-border-radius;
     cursor: pointer;
     font-size: 0.88rem;
 
     &:hover {
-        background: var(--rte-btn-hover-bg);
+        background: $clr-bg-sec-hover;
     }
 }
