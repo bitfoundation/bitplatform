@@ -33,6 +33,11 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     // Set when column recollection drops the active sort column; triggers a data refresh after render
     // so the grid query stays in sync with the (now changed) header sort state.
     private bool _queueSortReconciliationRefresh;
+    // Tracks whether columns have been collected at least once, and the sort column captured at the
+    // start of a collection pass, so a *new* default sort applied during a later recollection can also
+    // queue a refresh (the very first collection already loads data via ColumnsFirstCollected).
+    private bool _columnsCollectedOnce;
+    private BitQuickGridColumnBase<TGridItem>? _sortByColumnBeforeCollect;
 
     // The associated ES6 module, which uses document-level event listeners
     //private IJSObjectReference? _jsModule;
@@ -375,6 +380,7 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
 
     private void StartCollectingColumns()
     {
+        _sortByColumnBeforeCollect = _sortByColumn;
         _columns.Clear();
         _collectingColumns = true;
     }
@@ -393,6 +399,15 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
             _sortByAscending = false;
             _queueSortReconciliationRefresh = true;
         }
+        else if (_columnsCollectedOnce && _sortByColumnBeforeCollect is null && _sortByColumn is not null)
+        {
+            // A recollection assigned a brand-new default sort (none was active before). The initial
+            // collection already loads data via ColumnsFirstCollected, but later recollections do not,
+            // so queue a refresh to re-query in the newly defaulted sort order and keep header/data in sync.
+            _queueSortReconciliationRefresh = true;
+        }
+
+        _columnsCollectedOnce = true;
     }
 
     // Same as RefreshDataAsync, except without forcing a re-render. We use this from OnParametersSetAsync

@@ -7,15 +7,26 @@ namespace BitBlazorUI {
             const distance = threshold ?? 200;
             let ticking = false;
             let disposed = false;
+            // Guards against firing OnInfiniteScrollNearEndAsync again while a prior invocation is still
+            // in flight, which would otherwise overlap loads and duplicate interop on rapid scrolling.
+            let pending = false;
 
             const check = () => {
                 ticking = false;
-                if (disposed || !viewport) return;
+                if (disposed || !viewport || pending) return;
                 const remaining = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
                 if (remaining <= distance) {
+                    pending = true;
                     // The circuit may disconnect (navigation, refresh) between the disposed check and
                     // this async call, so swallow the resulting rejection to avoid unhandled console errors.
-                    dotNetRef.invokeMethodAsync('OnInfiniteScrollNearEndAsync').catch(() => { });
+                    dotNetRef.invokeMethodAsync('OnInfiniteScrollNearEndAsync')
+                        .catch(() => { })
+                        .finally(() => {
+                            pending = false;
+                            // Re-check once the load settled: if the viewport is still near the end and
+                            // more data exists, another batch is needed to fill it.
+                            if (!disposed) check();
+                        });
                 }
             };
 

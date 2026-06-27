@@ -146,9 +146,13 @@
 
                                 @if (ColumnGroupable(column))
                                 {
-                                    var groupClass = IsGrouped(column) ? "bit-dtg-icon-btn bit-dtg-group-btn bit-dtg-active" : "bit-dtg-icon-btn bit-dtg-group-btn";
+                                    var grouped = IsGrouped(column);
+                                    var groupClass = grouped ? "bit-dtg-icon-btn bit-dtg-group-btn bit-dtg-active" : "bit-dtg-icon-btn bit-dtg-group-btn";
+                                    var groupLabel = grouped ? $"Ungroup by {column.DisplayTitle}" : $"Group by {column.DisplayTitle}";
                                     <button type="button" class="@groupClass"
-                                            title="@($"Group by {column.DisplayTitle}")"
+                                            title="@groupLabel"
+                                            aria-label="@groupLabel"
+                                            aria-pressed="@(grouped ? "true" : "false")"
                                             @onclick="() => ToggleGroupAsync(column)" @onclick:stopPropagation="true">⊞</button>
                                 }
 
@@ -364,7 +368,10 @@
         var collapsed = IsGroupCollapsed(group);
         <div class="bit-dtg-group-row" role="row" style="--bit-dtg-group-level:@group.Level;">
             <div class="bit-dtg-group-cell" role="gridcell" style="padding-inline-start:@(8 + group.Level * 20)px;">
-                <button type="button" class="bit-dtg-icon-btn" @onclick="() => ToggleGroup(group)">
+                <button type="button" class="bit-dtg-icon-btn"
+                        aria-label="@($"{(collapsed ? "Expand" : "Collapse")} group {groupCol?.DisplayTitle}: {group.KeyText}")"
+                        aria-expanded="@(collapsed ? "false" : "true")"
+                        @onclick="() => ToggleGroup(group)">
                     @(collapsed ? "▸" : "▾")
                 </button>
                 <strong>@(groupCol?.DisplayTitle): @group.KeyText</strong>

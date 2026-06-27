@@ -181,7 +181,7 @@ public partial class BitDataGridDemo
             Parameters =
             [
                 new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The identifier of the column being filtered." },
-                new() { Name = "Operator", Type = "BitDataGridFilterOperator", DefaultValue = "BitDataGridFilterOperator.Contains", Description = "The comparison operator applied to the value.", LinkType = LinkType.Link, Href = "#BitDataGridFilterOperator" },
+                new() { Name = "Operator", Type = "BitDataGridFilterOperator", DefaultValue = "BitDataGridFilterOperator.Unspecified", Description = "The comparison operator applied to the value.", LinkType = LinkType.Link, Href = "#BitDataGridFilterOperator" },
                 new() { Name = "Value", Type = "object?", DefaultValue = "null", Description = "The value compared against the column's cell value." },
             ],
         },

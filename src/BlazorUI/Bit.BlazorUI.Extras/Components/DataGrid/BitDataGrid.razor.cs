@@ -175,12 +175,6 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private TItem? _focusedRow;
     private int _focusedCol;
     private bool _focusPending;
-    // Drives the cells' @onkeydown:preventDefault. Only the keys the grid navigation actually acts on
-    // should suppress native behavior (e.g. page scrolling); Tab/Shift+Tab and printable keys must keep
-    // their default so keyboard users are never trapped inside the grid. Starts true so arrow keys don't
-    // scroll the page on the first press in a freshly focused cell.
-    private bool _preventCellKeyDefault = true;
-    internal bool PreventCellKeyDefault => _preventCellKeyDefault;
 
     private IReadOnlyList<TItem> _view = Array.Empty<TItem>();      // filtered + sorted (full)
     private IReadOnlyList<TItem> _pageItems = Array.Empty<TItem>(); // current page slice
@@ -241,8 +235,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // would misrepresent the data and leave page math out of sync with what is displayed. Treat paging
     // as off in that case so the pager UI, TotalPages and GoToPageAsync all agree with the rendered rows.
     // Tree mode also flattens every visible node without paging (ProcessTreeData ignores paging), so the
-    // pager is suppressed there too to stay consistent with the rendered rows.
-    internal bool PagingActive => Pageable && _groups.Count == 0 && !IsTreeMode;
+    // pager is suppressed there too to stay consistent with the rendered rows. Infinite-scrolling mode
+    // streams batches with no paging UI and no known total, so paging is suppressed there as well.
+    internal bool PagingActive => Pageable && _groups.Count == 0 && !IsTreeMode && !IsInfiniteMode;
     internal int TotalPages => (!PagingActive || _effectivePageSize <= 0) ? 1 : Math.Max(1, (int)Math.Ceiling(TotalCount / (double)_effectivePageSize));
     internal int CurrentPage => _currentPage;
     internal IReadOnlyList<BitDataGridAggregateResult> FooterAggregates => _footerAggregates;
@@ -316,7 +311,20 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             _sorts.RemoveAll(s => s.ColumnId == key);
             _filters.RemoveAll(f => f.ColumnId == key);
             _groups.RemoveAll(g => g.ColumnId == key);
-            InvokeAsync(StateHasChanged);
+
+            // Rebuild the view/aggregates the same mode-aware way AddColumn does so dropping a column
+            // (and any of its sort/filter/group descriptors) immediately updates the rendered rows
+            // instead of leaving a stale _view/_pageItems. Server/infinite modes only recompute
+            // aggregates and re-render to avoid a re-query during column teardown.
+            if (IsServerMode || IsInfiniteMode)
+            {
+                _footerAggregates = BitDataGridDataProcessor.Aggregate(_pageItems, _columns);
+                InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                InvokeAsync(RefreshAsync);
+            }
         }
     }
 
@@ -329,6 +337,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal void UpdateColumnRegistration(BitDataGridColumn<TItem> column, string oldId)
     {
         if (oldId == column.Id) return;
+
+        // Reject the rename if the new id already belongs to a different live column. Overwriting the
+        // registry entry would shadow that column and desync _columnsById from _columns (mirrors the
+        // duplicate-id rejection in AddColumn). Keep the renamed column under its old key in that case.
+        if (_columnsById.TryGetValue(column.Id, out var clash) && !ReferenceEquals(clash, column))
+            return;
 
         if (_columnsById.TryGetValue(oldId, out var existing) && ReferenceEquals(existing, column))
             _columnsById.Remove(oldId);
@@ -1265,17 +1279,6 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         if (rows.Count == 0) return;
         var colCount = VisibleColumns.Count;
         if (colCount == 0) return;
-
-        // Suppress native key behavior only for the keys the grid itself handles. Tab/Shift+Tab and
-        // printable keys keep their default so focus can leave the grid normally (no keyboard trap).
-        // The value is consumed on the next render, so update it (and re-render) whenever it changes.
-        var prevent = e.Key is "ArrowRight" or "ArrowLeft" or "ArrowDown" or "ArrowUp"
-            or "Home" or "End" or "PageDown" or "PageUp" or "Enter" or "F2" or "Escape";
-        if (_preventCellKeyDefault != prevent)
-        {
-            _preventCellKeyDefault = prevent;
-            StateHasChanged();
-        }
 
         var rowIdx = IndexOfRow(rows, item);
         if (rowIdx < 0) rowIdx = 0;

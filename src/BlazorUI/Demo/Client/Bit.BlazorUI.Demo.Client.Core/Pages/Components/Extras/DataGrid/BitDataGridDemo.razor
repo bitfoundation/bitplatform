@@ -72,7 +72,7 @@
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
                 <BitButton Variant="@(selectionMode == BitDataGridSelectionMode.Single ? BitVariant.Fill : BitVariant.Outline)"
-                           OnClick="() => selectionMode = BitDataGridSelectionMode.Single">Single</BitButton>
+                           OnClick="SelectSingleMode">Single</BitButton>
                 <BitButton Variant="@(selectionMode == BitDataGridSelectionMode.Multiple ? BitVariant.Fill : BitVariant.Outline)"
                            OnClick="() => selectionMode = BitDataGridSelectionMode.Multiple">Multiple</BitButton>
                 <BitText>@selectedProducts.Count selected</BitText>

@@ -261,13 +261,10 @@
     font-size: 12px;
 }
 
-/* Nested groups: subtle indentation shading by level */
+/* Nested groups: subtle indentation shading applied at every level so deeper groups
+   keep the hierarchy cue (the level value drives indentation elsewhere). */
 .bit-dtg-group-row .bit-dtg-group-cell {
-    border-left: 3px solid transparent;
-}
-
-.bit-dtg-group-row[style*="--bit-dtg-group-level:0"] .bit-dtg-group-cell {
-    border-left-color: var(--bit-clr-pri);
+    border-left: 3px solid var(--bit-clr-pri);
 }
 
 /* ----------------------------------------------- Grouped column headers */

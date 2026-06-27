@@ -114,9 +114,13 @@ public static class BitDataGridDataProcessor
                 return group;
             });
 
-        grouped = descriptor.Direction == BitDataGridSortDirection.Descending
-            ? grouped.OrderByDescending(g => g.Key, BitDataGridValueComparer.Instance)
-            : grouped.OrderBy(g => g.Key, BitDataGridValueComparer.Instance);
+        grouped = descriptor.Direction switch
+        {
+            // None: preserve the original group encounter order rather than implicitly sorting ascending.
+            BitDataGridSortDirection.None => grouped,
+            BitDataGridSortDirection.Descending => grouped.OrderByDescending(g => g.Key, BitDataGridValueComparer.Instance),
+            _ => grouped.OrderBy(g => g.Key, BitDataGridValueComparer.Instance)
+        };
 
         result = grouped.ToList();
         return result;

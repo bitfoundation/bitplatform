@@ -100,28 +100,28 @@ public partial class BitQuickGridDemo : AppComponentBase
             Name = "RowClass",
             Type = "string?",
             DefaultValue = "null",
-            Description = @"The CSS class of all rows of the data grid.",
+            Description = @"The CSS class of all rows of the BitQuickGrid.",
          },
          new()
          {
             Name = "RowClassSelector",
             Type = "Func<TGridItem, string>?",
             DefaultValue = "null",
-            Description = @"The function to generate the CSS class of each row of the data grid.",
+            Description = @"The function to generate the CSS class of each row of the BitQuickGrid.",
          },
          new()
          {
             Name = "RowStyle",
             Type = "string?",
             DefaultValue = "null",
-            Description = @"The CSS style of all rows of the data grid.",
+            Description = @"The CSS style of all rows of the BitQuickGrid.",
          },
          new()
          {
             Name = "RowStyleSelector",
             Type = "Func<TGridItem, string>?",
             DefaultValue = "null",
-            Description = @"The function to generate the CSS style of each row of the data grid.",
+            Description = @"The function to generate the CSS style of each row of the BitQuickGrid.",
          },
          new()
          {
@@ -621,7 +621,7 @@ public partial class BitQuickGridDemo : AppComponentBase
                 var query = new Dictionary<string, object?>
                 {
                     { "skip", req.StartIndex },
-                    { "limit", req.Count }
+                    { "limit", req.Count ?? 50 }
                 };
 
                 // Only constrain by firm when the user actually typed something: sending an empty

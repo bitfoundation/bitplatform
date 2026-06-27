@@ -129,15 +129,16 @@
 
     // <input type="datetime-local"> has no UTC offset, so a naive parse back through the property
     // accessor would discard the original offset. Combine the edited local date/time with the offset
-    // of the current value (falling back to the system local offset for a new/empty value) and pass a
-    // real DateTimeOffset so the accessor stores it without losing the offset.
+    // of the current value when one exists; otherwise use the local time zone's offset *for that
+    // timestamp* (not DateTimeOffset.Now.Offset, which can differ across DST boundaries) so the stored
+    // offset matches the entered date.
     private void SetDateTimeOffset(object? raw)
     {
         var inv = System.Globalization.CultureInfo.InvariantCulture;
         if (raw is string s && !string.IsNullOrEmpty(s)
             && DateTime.TryParse(s, inv, System.Globalization.DateTimeStyles.None, out var local))
         {
-            var offset = Value is DateTimeOffset current ? current.Offset : DateTimeOffset.Now.Offset;
+            var offset = Value is DateTimeOffset current ? current.Offset : TimeZoneInfo.Local.GetUtcOffset(local);
             Grid.SetEditValue(Column, new DateTimeOffset(local, offset));
         }
         else
