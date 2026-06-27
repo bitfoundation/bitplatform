@@ -41,7 +41,9 @@ public partial class BitFcTimelineMonthView
             {
                 var clippedStart = ev.StartDate < monthStart ? monthStart : ev.StartDate;
                 var clippedEnd = ev.EndDate > monthEnd ? monthEnd : ev.EndDate;
-                if (clippedEnd <= clippedStart) continue;
+                // Allow zero-length markers (clippedEnd == clippedStart) through so a 00:00 all-day
+                // marker is still rendered (as a single-day block below) instead of being hidden.
+                if (clippedEnd < clippedStart) continue;
 
                 // Use full-day boundaries for span (start of start day → start of next-after-end day).
                 var startDayIdx = (int)(clippedStart.Date - monthStart.Date).TotalDays;
@@ -52,7 +54,12 @@ public partial class BitFcTimelineMonthView
                 var widthPx = (endExclusiveIdx - startDayIdx) * dayWidth - 2; // -2 for visual gap
 
                 var style = $"left:{leftPx.ToString("F2", inv)}px;width:{Math.Max(widthPx, 12).ToString("F2", inv)}px;top:{laneTop}px;height:{_laneHeight}px;";
+                // Key the per-event block by the event's stable identity so Blazor preserves the
+                // correct BitFcTimelineEventBlock instance (and its in-flight state) when lane ordering
+                // is recomputed, instead of reusing a sibling's component by position - matching the
+                // week timeline view.
                 builder.OpenElement(0, "div");
+                builder.SetKey(ev.Id);
                 builder.AddAttribute(1, "class", "bit-bfc-tl-event-anchor");
                 builder.AddAttribute(2, "style", style);
                 builder.OpenComponent<BitFcTimelineEventBlock>(3);

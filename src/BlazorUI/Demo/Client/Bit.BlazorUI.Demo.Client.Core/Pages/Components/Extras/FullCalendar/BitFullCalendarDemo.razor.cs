@@ -646,7 +646,19 @@ public partial class BitFullCalendarDemo
 
     private readonly List<BitFullCalendarEvent> bindingEvents = CreateResourceEvents();
     private BitFullCalendarView bindingView = BitFullCalendarView.Week;
-    private BitFullCalendarMode bindingMode = BitFullCalendarMode.Event;
+    private BitFullCalendarMode _bindingMode = BitFullCalendarMode.Event;
+    private BitFullCalendarMode bindingMode
+    {
+        get => _bindingMode;
+        set
+        {
+            _bindingMode = value;
+            // Timeline mode only supports Day/Week/Month; coerce an unsupported view (Year/Agenda)
+            // back to a supported one so the bound View can't drift out of sync with the rendered view.
+            if (value == BitFullCalendarMode.Timeline && bindingView is BitFullCalendarView.Year or BitFullCalendarView.Agenda)
+                bindingView = BitFullCalendarView.Week;
+        }
+    }
     private DateTime bindingDate = DateTime.Today;
     private string? bindingLog;
 
@@ -965,8 +977,11 @@ public partial class BitFullCalendarDemo
     <BitChoiceGroupOption Text=""Day"" Value=""BitFullCalendarView.Day"" />
     <BitChoiceGroupOption Text=""Week"" Value=""BitFullCalendarView.Week"" />
     <BitChoiceGroupOption Text=""Month"" Value=""BitFullCalendarView.Month"" />
-    <BitChoiceGroupOption Text=""Year"" Value=""BitFullCalendarView.Year"" />
-    <BitChoiceGroupOption Text=""Agenda"" Value=""BitFullCalendarView.Agenda"" />
+    @if (bindingMode == BitFullCalendarMode.Event)
+    {
+        <BitChoiceGroupOption Text=""Year"" Value=""BitFullCalendarView.Year"" />
+        <BitChoiceGroupOption Text=""Agenda"" Value=""BitFullCalendarView.Agenda"" />
+    }
 </BitChoiceGroup>
 <BitChoiceGroup Horizontal Label=""Mode""
                 TItem=""BitChoiceGroupOption<BitFullCalendarMode>""
@@ -993,7 +1008,17 @@ public partial class BitFullCalendarDemo
 
 @code {
     private BitFullCalendarView bindingView = BitFullCalendarView.Week;
-    private BitFullCalendarMode bindingMode = BitFullCalendarMode.Event;
+    private BitFullCalendarMode _bindingMode = BitFullCalendarMode.Event;
+    private BitFullCalendarMode bindingMode
+    {
+        get => _bindingMode;
+        set
+        {
+            _bindingMode = value;
+            if (value == BitFullCalendarMode.Timeline && bindingView is BitFullCalendarView.Year or BitFullCalendarView.Agenda)
+                bindingView = BitFullCalendarView.Week;
+        }
+    }
     private DateTime bindingDate = DateTime.Today;
     private string? bindingLog;
 

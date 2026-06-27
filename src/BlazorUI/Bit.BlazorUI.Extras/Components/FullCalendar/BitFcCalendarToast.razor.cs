@@ -58,6 +58,12 @@ public partial class BitFcCalendarToast : IAsyncDisposable
                 return;
             }
 
+            // Final cancellation check before the dispatcher hop: DisposeAsync may have cancelled the
+            // token after Task.Delay completed but before we queue the render. Bail out so _toasts and
+            // StateHasChanged are never touched once teardown has started.
+            if (token.IsCancellationRequested)
+                return;
+
             // Mutate the toast list on the renderer's dispatcher to avoid racing the template's foreach.
             await InvokeAsync(() =>
             {

@@ -400,7 +400,13 @@ public static class BitFullCalendarHelpers
 
         foreach (var ev in events)
         {
-            if (ev.StartDate >= monthEnd || ev.EndDate <= monthStart)
+            if (ev.StartDate >= monthEnd)
+                continue;
+            // Keep zero-length markers (StartDate == EndDate, e.g. a 00:00 all-day marker) that fall
+            // on/after monthStart, matching OverlapsPeriod/GetInclusiveEndDate; the strict
+            // EndDate <= monthStart check would otherwise drop a midnight marker sitting at the month
+            // start instead of laning it.
+            if (ev.EndDate <= monthStart && !(ev.StartDate == ev.EndDate && ev.StartDate >= monthStart))
                 continue;
 
             var key = ev.Resource is { Length: > 0 } r && validIds.Contains(r) ? r : unassignedKey;
@@ -427,6 +433,10 @@ public static class BitFullCalendarHelpers
         DateTime ClipStartDate(BitFullCalendarEvent e) => (e.StartDate < rangeStart ? rangeStart : e.StartDate).Date;
         DateTime ClipEndDate(BitFullCalendarEvent e)
         {
+            // Zero-length markers (StartDate == EndDate) occupy their single start day - don't shift
+            // a 00:00 end back before the start, which would mis-lane the marker (negative span).
+            if (e.StartDate == e.EndDate)
+                return ClipStartDate(e);
             var end = e.EndDate > rangeEnd ? rangeEnd : e.EndDate;
             // Treat 00:00 boundary as ending the previous day (exclusive end).
             return end.TimeOfDay == TimeSpan.Zero ? end.Date.AddDays(-1) : end.Date;

@@ -23,12 +23,18 @@
 
             <div class="bit-bfc-field">
                 <label>@Texts.StartDateTimeLabel</label>
-                <BitFcDateTimePicker Value="_startDate" ValueChanged="OnStartDateChanged" Culture="State.Culture" Use24HourFormat="State.Use24HourFormat" TriggerAriaLabel="@Texts.StartDateTimeLabel" />
+                <BitFcDateTimePicker Value="_startDate" ValueChanged="OnStartDateChanged" Culture="State.Culture" Use24HourFormat="State.Use24HourFormat" TriggerAriaLabel="@Texts.StartDateTimeLabel"
+                                     PreviousMonthAriaLabel="@Texts.PreviousMonthAriaLabel" NextMonthAriaLabel="@Texts.NextMonthAriaLabel"
+                                     HourAriaLabel="@Texts.PickerHourAriaLabel" MinuteAriaLabel="@Texts.PickerMinuteAriaLabel"
+                                     MeridiemAriaLabel="@Texts.PickerMeridiemAriaLabel" SelectedDayAriaLabel="@Texts.PickerSelectedDayAriaLabel" />
             </div>
 
             <div class="bit-bfc-field">
                 <label>@Texts.EndDateTimeLabel</label>
-                <BitFcDateTimePicker Value="_endDate" ValueChanged="OnEndDateChanged" Culture="State.Culture" Use24HourFormat="State.Use24HourFormat" TriggerAriaLabel="@Texts.EndDateTimeLabel" />
+                <BitFcDateTimePicker Value="_endDate" ValueChanged="OnEndDateChanged" Culture="State.Culture" Use24HourFormat="State.Use24HourFormat" TriggerAriaLabel="@Texts.EndDateTimeLabel"
+                                     PreviousMonthAriaLabel="@Texts.PreviousMonthAriaLabel" NextMonthAriaLabel="@Texts.NextMonthAriaLabel"
+                                     HourAriaLabel="@Texts.PickerHourAriaLabel" MinuteAriaLabel="@Texts.PickerMinuteAriaLabel"
+                                     MeridiemAriaLabel="@Texts.PickerMeridiemAriaLabel" SelectedDayAriaLabel="@Texts.PickerSelectedDayAriaLabel" />
                 @if (_errors.ContainsKey("endDate"))
                 {
                     <div class="bit-bfc-field-error">@_errors["endDate"]</div>

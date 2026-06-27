@@ -36,6 +36,7 @@
      @onclick="OnClick"
      @onkeydown="OnKeyDown"
      @onclick:stopPropagation="true"
+     @onkeydown:preventDefault="true"
      @onkeydown:stopPropagation="true">
 
     <div id="@_topHandleId"

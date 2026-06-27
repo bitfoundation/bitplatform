@@ -7,13 +7,25 @@ namespace Bit.BlazorUI;
 /// </summary>
 public sealed class BitFullCalendarColorScheme
 {
-    /// <summary>Id used when an event's <see cref="BitFullCalendarEvent.Color"/> is null/empty.</summary>
+    /// <summary>
+    /// Preferred id for events with no explicit color, used only when the configured palette actually
+    /// contains it. When a custom palette omits this id, the resolver falls back to the first
+    /// configured swatch instead (see <see cref="_fallbackId"/>).
+    /// </summary>
     public const string FallbackColorId = "blue";
 
     /// <summary>Inline style emitted on color-bearing elements (bullets, swatches, chips, blocks).</summary>
     public const string ColorVariableName = "--bit-bfc-evt-color";
 
     private readonly Dictionary<string, BitFullCalendarColorOption> _byId;
+
+    /// <summary>
+    /// The id that blank (null/empty/whitespace) color ids resolve to. Prefers
+    /// <see cref="FallbackColorId"/> when the configured palette contains it, otherwise the first
+    /// configured swatch, so default-colored events always map to a real entry in the current scheme
+    /// rather than assuming "blue" exists.
+    /// </summary>
+    private readonly string _fallbackId;
 
     public BitFullCalendarColorScheme(IReadOnlyList<BitFullCalendarColorOption>? options)
     {
@@ -40,18 +52,26 @@ public sealed class BitFullCalendarColorScheme
         // Wrap in a read-only view so consumers can't mutate Options after construction and
         // desynchronize it from the _byId lookup it was built alongside.
         Options = canonical.AsReadOnly();
+
+        // Resolve the blank-id fallback against the CURRENT scheme: prefer "blue" when present,
+        // otherwise the first configured swatch. Only assume the "blue" literal when nothing was
+        // configured at all (Options is empty), so blank ids never point at a non-existent entry.
+        _fallbackId = _byId.ContainsKey(FallbackColorId)
+            ? FallbackColorId
+            : (Options.Count > 0 ? Options[0].Id : FallbackColorId);
     }
 
     /// <summary>Configured colors in display order.</summary>
     public IReadOnlyList<BitFullCalendarColorOption> Options { get; }
 
     /// <summary>
-    /// Maps a blank (null/empty/whitespace) color id to <see cref="FallbackColorId"/> and trims the
-    /// rest, so blank ids resolve to the same swatch as the default-colored events everywhere
-    /// (lookup, label, css value, sort order) instead of drifting between methods.
+    /// Maps a blank (null/empty/whitespace) color id to the scheme's resolved fallback swatch
+    /// (<see cref="_fallbackId"/>) and trims the rest, so blank ids resolve to the same swatch as the
+    /// default-colored events everywhere (lookup, label, css value, sort order) instead of drifting
+    /// between methods.
     /// </summary>
-    private static string NormalizeId(string? colorId)
-        => string.IsNullOrWhiteSpace(colorId) ? FallbackColorId : colorId.Trim();
+    private string NormalizeId(string? colorId)
+        => string.IsNullOrWhiteSpace(colorId) ? _fallbackId : colorId.Trim();
 
     /// <summary>Looks up a color option by id (case-insensitive). Returns null when unknown.</summary>
     public BitFullCalendarColorOption? Find(string? colorId)

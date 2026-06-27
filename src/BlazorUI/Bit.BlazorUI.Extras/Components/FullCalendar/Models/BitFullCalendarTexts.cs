@@ -18,6 +18,10 @@ public class BitFullCalendarTexts
     public string NextButtonTitle { get; set; } = "Next";
     public string PreviousMonthAriaLabel { get; set; } = "Previous month";
     public string NextMonthAriaLabel { get; set; } = "Next month";
+    public string PickerHourAriaLabel { get; set; } = "Hour";
+    public string PickerMinuteAriaLabel { get; set; } = "Minute";
+    public string PickerMeridiemAriaLabel { get; set; } = "AM/PM";
+    public string PickerSelectedDayAriaLabel { get; set; } = "selected";
     public string SettingsButtonTitle { get; set; } = "Settings";
 
     public string FilterByColorAriaLabel { get; set; } = "Filter events by color";

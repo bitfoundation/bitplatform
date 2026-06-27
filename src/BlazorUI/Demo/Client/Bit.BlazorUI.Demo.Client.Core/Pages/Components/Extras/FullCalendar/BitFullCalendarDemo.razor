@@ -118,8 +118,11 @@
                     <BitChoiceGroupOption Text="Day" Value="BitFullCalendarView.Day" />
                     <BitChoiceGroupOption Text="Week" Value="BitFullCalendarView.Week" />
                     <BitChoiceGroupOption Text="Month" Value="BitFullCalendarView.Month" />
-                    <BitChoiceGroupOption Text="Year" Value="BitFullCalendarView.Year" />
-                    <BitChoiceGroupOption Text="Agenda" Value="BitFullCalendarView.Agenda" />
+                    @if (bindingMode == BitFullCalendarMode.Event)
+                    {
+                        <BitChoiceGroupOption Text="Year" Value="BitFullCalendarView.Year" />
+                        <BitChoiceGroupOption Text="Agenda" Value="BitFullCalendarView.Agenda" />
+                    }
                 </BitChoiceGroup>
                 <BitChoiceGroup Horizontal
                                 Label="Mode"
