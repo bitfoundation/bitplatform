@@ -17,5 +17,11 @@ public sealed class BitDataGridReadRequest
 
     public IReadOnlyList<BitDataGridFilterDescriptor> Filters { get; init; } = Array.Empty<BitDataGridFilterDescriptor>();
 
+    /// <summary>
+    /// The active group descriptors, in nesting order. Lets a server-side <c>OnRead</c> handler
+    /// reconstruct the grouping the grid is displaying. Empty when no grouping is active.
+    /// </summary>
+    public IReadOnlyList<BitDataGridGroupDescriptor> Groups { get; init; } = Array.Empty<BitDataGridGroupDescriptor>();
+
     public CancellationToken CancellationToken { get; init; }
 }

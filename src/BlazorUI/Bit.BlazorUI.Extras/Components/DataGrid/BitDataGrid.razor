@@ -6,7 +6,7 @@
     @ChildContent
 </CascadingValue>
 
-<div class="@RootClasses()" style="@Style" dir="@(Direction == BitDir.Rtl ? "rtl" : "ltr")">
+<div class="@RootClasses()" style="@Style" dir="@(Direction switch { BitDir.Rtl => "rtl", BitDir.Auto => "auto", _ => "ltr" })">
 
     @* ---------------------------------------------------------- Toolbar *@
     @if (ShowToolbar || ToolbarTemplate is not null || ShowColumnChooser || ShowCsvExport || (Editable && NewItemFactory is not null))
@@ -204,9 +204,7 @@
                                 <div class="bit-dtg-hcell@(column.Frozen ? " bit-dtg-sticky" : "")" role="columnheader" style="@FrozenStyle(column)">
                                     @if (ColumnFilterable(column))
                                     {
-                                        <input class="bit-dtg-filter-input" placeholder="Filter…"
-                                               value="@(GetFilter(column)?.Value)"
-                                               @onchange="e => SetFilterAsync(column, BitDataGridFilterOperator.Contains, e.Value)" />
+                                        @RenderFilterEditor(column)
                                     }
                                 </div>
                             }
@@ -409,6 +407,124 @@
                 }
             }
         }
+    };
+
+    // Renders a column filter editor whose input kind, operator and value type match the column's
+    // data type, so Number/Date/Boolean/Enum columns no longer filter as plain "contains" text.
+    private RenderFragment RenderFilterEditor(BitDataGridColumn<TItem> column) => __builder =>
+    {
+        var current = GetFilter(column)?.Value;
+        var type = column.EffectiveDataType;
+
+        if (type is BitDataGridColumnDataType.Number)
+        {
+            <input class="bit-dtg-filter-input" type="number" placeholder="="
+                   value="@FormatFilterNumber(current)"
+                   @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)" />
+        }
+        else if (type is BitDataGridColumnDataType.Date or BitDataGridColumnDataType.DateTime or BitDataGridColumnDataType.DateTimeOffset)
+        {
+            <input class="bit-dtg-filter-input" type="date"
+                   value="@FormatFilterDate(current)"
+                   @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)" />
+        }
+        else if (type is BitDataGridColumnDataType.Boolean)
+        {
+            <select class="bit-dtg-filter-input" value="@(current?.ToString()?.ToLowerInvariant())"
+                    @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)">
+                <option value="">All</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
+            </select>
+        }
+        else if (type is BitDataGridColumnDataType.Enum)
+        {
+            <select class="bit-dtg-filter-input" value="@(current?.ToString())"
+                    @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)">
+                <option value="">All</option>
+                @foreach (var name in EnumNames(column))
+                {
+                    <option value="@name">@name</option>
+                }
+            </select>
+        }
+        else
+        {
+            <input class="bit-dtg-filter-input" placeholder="Filter…"
+                   value="@(current?.ToString())"
+                   @onchange="e => SetFilterAsync(column, BitDataGridFilterOperator.Contains, (string?)e.Value)" />
+        }
+    };
+
+    // Translates the raw editor input into a typed value + operator for the column's data type, then
+    // applies it. Text columns keep the "contains" behavior; the rest use Equals against a typed value.
+    private Task SetTypedFilterAsync(BitDataGridColumn<TItem> column, string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return SetFilterAsync(column, BitDataGridFilterOperator.Equals, null);
+
+        var underlying = column.Accessor?.UnderlyingType;
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+
+        switch (column.EffectiveDataType)
+        {
+            case BitDataGridColumnDataType.Number:
+                try
+                {
+                    var parsed = Convert.ChangeType(raw, underlying ?? typeof(double), inv);
+                    return SetFilterAsync(column, BitDataGridFilterOperator.Equals, parsed);
+                }
+                catch { return SetFilterAsync(column, BitDataGridFilterOperator.Equals, null); }
+
+            case BitDataGridColumnDataType.Boolean:
+                return SetFilterAsync(column, BitDataGridFilterOperator.Equals,
+                    bool.TryParse(raw, out var b) ? b : (object?)null);
+
+            case BitDataGridColumnDataType.Date:
+            case BitDataGridColumnDataType.DateTime:
+            case BitDataGridColumnDataType.DateTimeOffset:
+            {
+                object? value = null;
+                if (underlying == typeof(DateOnly))
+                {
+                    if (DateOnly.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var d)) value = d;
+                }
+                else if (underlying == typeof(DateTimeOffset))
+                {
+                    if (DateTimeOffset.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var dto)) value = dto;
+                }
+                else
+                {
+                    if (DateTime.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var dt)) value = dt;
+                }
+                return SetFilterAsync(column, BitDataGridFilterOperator.Equals, value);
+            }
+
+            case BitDataGridColumnDataType.Enum:
+                if (underlying is { IsEnum: true } et && Enum.TryParse(et, raw, true, out var ev))
+                    return SetFilterAsync(column, BitDataGridFilterOperator.Equals, ev);
+                return SetFilterAsync(column, BitDataGridFilterOperator.Equals, null);
+
+            default:
+                return SetFilterAsync(column, BitDataGridFilterOperator.Contains, raw);
+        }
+    }
+
+    private static IEnumerable<string> EnumNames(BitDataGridColumn<TItem> column)
+    {
+        var t = column.Accessor?.UnderlyingType;
+        return t is { IsEnum: true } ? Enum.GetNames(t) : Enumerable.Empty<string>();
+    }
+
+    private static string? FormatFilterNumber(object? value)
+        => value is IFormattable f ? f.ToString(null, System.Globalization.CultureInfo.InvariantCulture) : value?.ToString();
+
+    private static string? FormatFilterDate(object? value) => value switch
+    {
+        DateOnly d => d.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+        DateTime dt => dt.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+        DateTimeOffset dto => dto.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+        _ => null
     };
 
     private string ViewportStyle

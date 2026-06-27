@@ -308,18 +308,27 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             _columnsById.Remove(key);
             // Drop any sort/filter/group descriptors that referenced the removed column so later
             // refreshes and remote reads no longer carry descriptors for a column that is gone.
-            _sorts.RemoveAll(s => s.ColumnId == key);
-            _filters.RemoveAll(f => f.ColumnId == key);
-            _groups.RemoveAll(g => g.ColumnId == key);
+            var removedDescriptors = _sorts.RemoveAll(s => s.ColumnId == key)
+                + _filters.RemoveAll(f => f.ColumnId == key)
+                + _groups.RemoveAll(g => g.ColumnId == key);
 
             // Rebuild the view/aggregates the same mode-aware way AddColumn does so dropping a column
             // (and any of its sort/filter/group descriptors) immediately updates the rendered rows
-            // instead of leaving a stale _view/_pageItems. Server/infinite modes only recompute
-            // aggregates and re-render to avoid a re-query during column teardown.
+            // instead of leaving a stale _view/_pageItems. In server/infinite modes a removed
+            // descriptor changes the active query (a filter/sort no longer applies), so re-load the
+            // remote data to reflect it; when no descriptor was dropped only the aggregates and render
+            // need refreshing, matching AddColumn's no-requery behavior during column teardown.
             if (IsServerMode || IsInfiniteMode)
             {
-                _footerAggregates = BitDataGridDataProcessor.Aggregate(_pageItems, _columns);
-                InvokeAsync(StateHasChanged);
+                if (removedDescriptors > 0)
+                {
+                    InvokeAsync(RefreshAsync);
+                }
+                else
+                {
+                    _footerAggregates = BitDataGridDataProcessor.Aggregate(_pageItems, _columns);
+                    InvokeAsync(StateHasChanged);
+                }
             }
             else
             {
@@ -624,6 +633,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             Take = batch,
             Sorts = _sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList(),
             Filters = _filters.ToList(),
+            Groups = _groups.ToList(),
             CancellationToken = ResetLoadCancellation()
         };
         var version = _loadVersion;
@@ -745,6 +755,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             Take = Pageable ? _effectivePageSize : null,
             Sorts = _sorts.Where(s => s.Direction != BitDataGridSortDirection.None).OrderBy(s => s.Priority).ToList(),
             Filters = _filters.ToList(),
+            Groups = _groups.ToList(),
             CancellationToken = ResetLoadCancellation()
         };
         // Capture this request's version right after ResetLoadCancellation; bail out below if a newer

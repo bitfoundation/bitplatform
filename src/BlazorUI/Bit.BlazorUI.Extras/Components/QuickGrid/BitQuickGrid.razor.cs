@@ -414,13 +414,13 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     // because in that case there's going to be a re-render anyway.
     private async Task RefreshDataCoreAsync()
     {
-        // Move into a "loading" state, cancelling and disposing any earlier-but-still-pending load
-        var previousCts = _pendingDataLoadCancellationTokenSource;
-        if (previousCts is not null)
-        {
-            previousCts.Cancel();
-            previousCts.Dispose();
-        }
+        // Move into a "loading" state, cancelling any earlier-but-still-pending load. Do NOT dispose
+        // the previous source here: the load that owns it may still be in flight and holding its token
+        // (e.g. registered on it), so disposing now could surface an ObjectDisposedException instead of
+        // the expected OperationCanceledException. The owning load disposes its own source in its
+        // finally block (only when it is still the current one); a superseded source has no timer or
+        // registrations of its own, so it is cheap to let the GC reclaim it.
+        _pendingDataLoadCancellationTokenSource?.Cancel();
         var thisLoadCts = _pendingDataLoadCancellationTokenSource = new CancellationTokenSource();
 
         // Render now so the loading state (IsLoading / LoadingTemplate) becomes visible as soon as the
@@ -640,8 +640,11 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     {
         if (_disposed || disposing is false) return;
 
+        // Cancel (but don't dispose) any in-flight load: the load that owns this source may still be
+        // holding its token, so disposing here could race into an ObjectDisposedException. The owning
+        // load disposes it in its finally block (it's still the current source during disposal), so we
+        // only signal cancellation here.
         _pendingDataLoadCancellationTokenSource?.Cancel();
-        _pendingDataLoadCancellationTokenSource?.Dispose();
 
         _currentPageItemsChanged.Dispose();
 

@@ -108,7 +108,7 @@
     font-weight: 600;
     position: relative;
     background: var(--bit-clr-bg-sec);
-    border-right: 1px solid transparent;
+    border-inline-end: 1px solid transparent;
     user-select: none;
     overflow: hidden;
 }
@@ -125,7 +125,7 @@
 
 .bit-dtg-bordered .bit-dtg-cell,
 .bit-dtg-bordered .bit-dtg-hcell {
-    border-right: 1px solid var(--bit-clr-brd-ter);
+    border-inline-end: 1px solid var(--bit-clr-brd-ter);
 }
 
 .bit-dtg-center {
@@ -289,7 +289,7 @@ button.bit-dtg-htext {
 .bit-dtg-group-header {
     font-weight: 700;
     background: var(--bit-clr-bg-sec);
-    border-right: 1px solid var(--bit-clr-brd-ter);
+    border-inline-end: 1px solid var(--bit-clr-brd-ter);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -298,7 +298,7 @@ button.bit-dtg-htext {
 
 .bit-dtg-group-header-empty {
     background: transparent;
-    border-right: none;
+    border-inline-end: none;
 }
 
 /* ---------------------------------------------------------- Row reorder */
