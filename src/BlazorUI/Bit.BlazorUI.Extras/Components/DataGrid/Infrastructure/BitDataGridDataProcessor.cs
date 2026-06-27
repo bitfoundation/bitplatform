@@ -208,6 +208,12 @@ public static class BitDataGridDataProcessor
                 return value is not null && !string.IsNullOrEmpty(value.ToString());
         }
 
+        // A blank (null, empty or whitespace-only) filter value carries no criteria, so treat it like
+        // an omitted filter and match every row. This runs before the comparison and string-operator
+        // branches so operators like DoesNotContain or the numeric comparisons never evaluate against "".
+        if (filter.Value is null || (filter.Value is string blank && string.IsNullOrWhiteSpace(blank)))
+            return true;
+
         // Numeric / comparable operators
         if (filter.Operator is BitDataGridFilterOperator.GreaterThan or BitDataGridFilterOperator.GreaterThanOrEqual
             or BitDataGridFilterOperator.LessThan or BitDataGridFilterOperator.LessThanOrEqual

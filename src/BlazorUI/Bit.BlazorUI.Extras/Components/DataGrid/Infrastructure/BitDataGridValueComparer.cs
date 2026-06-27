@@ -14,19 +14,11 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
         if (x is IComparable cx && x.GetType() == y.GetType())
             return cx.CompareTo(y);
 
-        // Mixed types: compare by string representation first so the result is symmetric regardless of
+        // Mixed types: compare by string representation so the result is symmetric regardless of
         // argument order. A one-sided Convert.ChangeType (coercing y to x's type) could order the same
-        // pair differently when the operands are swapped, breaking the IComparer<T> contract. Only when
-        // the strings are equal do we attempt a type-specific tie-break.
-        var byString = string.Compare(x.ToString(), y.ToString(), StringComparison.OrdinalIgnoreCase);
-        if (byString != 0) return byString;
-
-        if (x is IComparable cx2)
-        {
-            try { return cx2.CompareTo(Convert.ChangeType(y, x.GetType(), System.Globalization.CultureInfo.InvariantCulture)); }
-            catch { /* fall through */ }
-        }
-
-        return 0;
+        // pair differently when the operands are swapped, breaking the IComparer<T> contract. When the
+        // strings are equal we treat the values as equivalent for ordering (return 0) rather than
+        // attempting an asymmetric type-specific tie-break.
+        return string.Compare(x.ToString(), y.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 }

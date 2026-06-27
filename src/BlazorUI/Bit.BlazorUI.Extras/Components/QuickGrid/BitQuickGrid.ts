@@ -4,7 +4,11 @@ namespace BitBlazorUI {
             // Tracks the drag handles this init() bound so stop() can remove their listeners too,
             // preventing handlers from accumulating across repeated init()/stop() cycles.
             const boundDragHandles: { handle: any, listener: any }[] = [];
-            QuickGrid.enableColumnResizing(tableElement, boundDragHandles);
+            // Holds the teardown for an in-progress column resize drag (the document-level move/up
+            // listeners installed by handleMouseDown) so stop() can detach them even if disposal
+            // happens mid-drag, before the pointer is released.
+            const dragState: { cleanup: (() => void) | null } = { cleanup: null };
+            QuickGrid.enableColumnResizing(tableElement, boundDragHandles, dragState);
 
             const bodyClickHandler = (event: any) => {
                 const columnOptionsElement = tableElement.tHead.querySelector('.bit-qkg-cop');
@@ -28,6 +32,13 @@ namespace BitBlazorUI {
                     document.body.removeEventListener('click', bodyClickHandler);
                     document.body.removeEventListener('mousedown', bodyClickHandler);
                     document.body.removeEventListener('keydown', keyDownHandler);
+
+                    // Detach any document-level listeners left by an in-progress resize drag and clear
+                    // the active drag state, so disposal/re-init mid-drag can't keep mutating a stale th.
+                    if (dragState.cleanup) {
+                        dragState.cleanup();
+                        dragState.cleanup = null;
+                    }
 
                     // Remove the per-handle drag listeners and clear the bound marker so a later
                     // init() can rebind the same surviving elements without duplicating handlers.
@@ -72,7 +83,7 @@ namespace BitBlazorUI {
             }
         }
 
-        private static enableColumnResizing(tableElement: any, boundDragHandles: { handle: any, listener: any }[]) {
+        private static enableColumnResizing(tableElement: any, boundDragHandles: { handle: any, listener: any }[], dragState: { cleanup: (() => void) | null }) {
             tableElement.tHead.querySelectorAll('.bit-qkg-drg').forEach((handle: any) => {
                 // Bind each handle only once. A surviving handle (reused by Blazor's diffing across
                 // re-renders) would otherwise accumulate a fresh listener on every init() call.
@@ -113,6 +124,7 @@ namespace BitBlazorUI {
                         document.body.removeEventListener('touchmove', handleMouseMove);
                         document.body.removeEventListener('touchend', handleMouseUp);
                         document.body.removeEventListener('touchcancel', handleMouseUp);
+                        dragState.cleanup = null;
                     }
 
                     if (window.TouchEvent && evt instanceof TouchEvent) {
@@ -125,6 +137,10 @@ namespace BitBlazorUI {
                         document.body.addEventListener('mousemove', handleMouseMove, { passive: true });
                         document.body.addEventListener('mouseup', handleMouseUp, { passive: true });
                     }
+
+                    // Expose this drag's teardown so stop() can detach the document-level listeners if
+                    // the grid is disposed/re-initialized before the pointer is released.
+                    dragState.cleanup = handleMouseUp;
                 }
             });
         }

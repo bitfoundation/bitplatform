@@ -121,28 +121,41 @@
                                  @ondragover:preventDefault="true"
                                  @ondrop="() => DropColumn(column)">
 
-                                <span class="bit-dtg-htext"
-                                      role="@(ColumnSortable(column) ? "button" : null)"
-                                      tabindex="@(ColumnSortable(column) ? 0 : -1)"
-                                      @onclick="e => OnHeaderClick(column, e)"
-                                      @onkeydown="e => OnHeaderKeyDown(column, e)">
-                                    @if (column.HeaderTemplate is not null)
-                                    {
-                                        @column.HeaderTemplate
-                                    }
-                                    else
-                                    {
-                                        @column.DisplayTitle
-                                    }
-                                    @if (sort is not null)
-                                    {
-                                        <span class="bit-dtg-sort-icon">@(sort.Direction == BitDataGridSortDirection.Ascending ? "▲" : "▼")</span>
-                                        @if (MultiSort && _sorts.Count > 1)
+                                @{
+                                    RenderFragment headerInner =@<text>
+                                        @if (column.HeaderTemplate is not null)
                                         {
-                                            <span class="bit-dtg-sort-priority">@sort.Priority</span>
+                                            @column.HeaderTemplate
                                         }
-                                    }
-                                </span>
+                                        else
+                                        {
+                                            @column.DisplayTitle
+                                        }
+                                        @if (sort is not null)
+                                        {
+                                            <span class="bit-dtg-sort-icon">@(sort.Direction == BitDataGridSortDirection.Ascending ? "▲" : "▼")</span>
+                                            @if (MultiSort && _sorts.Count > 1)
+                                            {
+                                                <span class="bit-dtg-sort-priority">@sort.Priority</span>
+                                            }
+                                        }
+                                    </text>;
+                                }
+                                @if (ColumnSortable(column))
+                                {
+                                    @* A real button gives native keyboard activation (Enter/Space) and an
+                                       implicit button role, so no custom keydown handling is needed and
+                                       Space won't scroll the page. *@
+                                    <button type="button" class="bit-dtg-htext" @onclick="e => OnHeaderClick(column, e)">
+                                        @headerInner
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="bit-dtg-htext">
+                                        @headerInner
+                                    </span>
+                                }
 
                                 @if (ColumnGroupable(column))
                                 {
@@ -414,16 +427,6 @@
         await ToggleSortAsync(column, MultiSort && (e.CtrlKey || e.MetaKey));
     }
 
-    private async Task OnHeaderKeyDown(BitDataGridColumn<TItem> column, KeyboardEventArgs e)
-    {
-        if (!ColumnSortable(column)) return;
-        // Activate sorting from the keyboard so the header is usable without a pointer.
-        if (e.Key is "Enter" or " " or "Spacebar")
-        {
-            await ToggleSortAsync(column, MultiSort && (e.CtrlKey || e.MetaKey));
-        }
-    }
-
     private RenderFragment RenderPager => @<div class="bit-dtg-pager">
         <div class="bit-dtg-pager-info">
             @{
@@ -439,11 +442,11 @@
             </select>
         </div>
         <div class="bit-dtg-pager-buttons">
-            <button type="button" class="bit-dtg-btn" disabled="@(CurrentPage <= 1)" @onclick="() => GoToPageAsync(1)">«</button>
-            <button type="button" class="bit-dtg-btn" disabled="@(CurrentPage <= 1)" @onclick="() => GoToPageAsync(CurrentPage - 1)">‹</button>
+            <button type="button" class="bit-dtg-btn" aria-label="First page" disabled="@(CurrentPage <= 1)" @onclick="() => GoToPageAsync(1)">«</button>
+            <button type="button" class="bit-dtg-btn" aria-label="Previous page" disabled="@(CurrentPage <= 1)" @onclick="() => GoToPageAsync(CurrentPage - 1)">‹</button>
             <span class="bit-dtg-pager-current">Page @CurrentPage of @TotalPages</span>
-            <button type="button" class="bit-dtg-btn" disabled="@(CurrentPage >= TotalPages)" @onclick="() => GoToPageAsync(CurrentPage + 1)">›</button>
-            <button type="button" class="bit-dtg-btn" disabled="@(CurrentPage >= TotalPages)" @onclick="() => GoToPageAsync(TotalPages)">»</button>
+            <button type="button" class="bit-dtg-btn" aria-label="Next page" disabled="@(CurrentPage >= TotalPages)" @onclick="() => GoToPageAsync(CurrentPage + 1)">›</button>
+            <button type="button" class="bit-dtg-btn" aria-label="Last page" disabled="@(CurrentPage >= TotalPages)" @onclick="() => GoToPageAsync(TotalPages)">»</button>
         </div>
     </div>;
 }

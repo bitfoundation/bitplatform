@@ -19,14 +19,14 @@ namespace BitBlazorUI {
                     pending = true;
                     // The circuit may disconnect (navigation, refresh) between the disposed check and
                     // this async call, so swallow the resulting rejection to avoid unhandled console errors.
-                    dotNetRef.invokeMethodAsync('OnInfiniteScrollNearEndAsync')
-                        .catch(() => { })
-                        .finally(() => {
-                            pending = false;
-                            // Re-check once the load settled: if the viewport is still near the end and
-                            // more data exists, another batch is needed to fill it.
-                            if (!disposed) check();
-                        });
+                    // Only re-check once the load settles if the .NET callback reports more data was
+                    // appended and remains; otherwise stop, so end-of-data (a no-op load) doesn't spin
+                    // this check()->invoke->check() loop forever.
+                    dotNetRef.invokeMethodAsync<boolean>('OnInfiniteScrollNearEndAsync')
+                        .then(
+                            (more) => { pending = false; if (!disposed && more) check(); },
+                            () => { pending = false; }
+                        );
                 }
             };
 

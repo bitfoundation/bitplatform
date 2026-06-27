@@ -2,9 +2,9 @@
 @namespace Bit.BlazorUI
 
 <div class="@RowClass" role="row" style="@RowStyle" @onclick="OnRowClick"
-     draggable="@(Grid.RowReorderable ? "true" : null)"
+     draggable="@(Grid.RowReorderable && !Editing ? "true" : null)"
      @ondragstart="() => Grid.StartRowDrag(Item)"
-     @ondragover:preventDefault="Grid.RowReorderable"
+     @ondragover:preventDefault="@(Grid.RowReorderable && !Editing)"
      @ondrop="() => Grid.DropRowAsync(Item)">
 
     @if (Grid.RowReorderable)

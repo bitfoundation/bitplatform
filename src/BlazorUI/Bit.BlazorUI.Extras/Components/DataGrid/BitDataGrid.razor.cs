@@ -420,6 +420,14 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             || (!IsServerMode && !IsInfiniteMode);
         if (!_dataInitialized || inputsChanged)
         {
+            // A genuinely new Items reference means a new tree hierarchy: clear the tree bootstrap
+            // state so ProcessTreeData re-applies TreeInitiallyExpanded to the new roots instead of
+            // carrying over the previous source's expand/collapse state.
+            if (IsTreeMode && !ReferenceEquals(Items, _lastItems))
+            {
+                _treeInitialized = false;
+                _expandedTree.Clear();
+            }
             _lastItems = Items;
             _lastPageSize = PageSize;
             _dataInitialized = true;
@@ -673,13 +681,14 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     /// <summary>Invoked from JavaScript when the viewport is scrolled near its end.</summary>
     [JSInvokable]
-    public async Task OnInfiniteScrollNearEndAsync()
+    public async Task<bool> OnInfiniteScrollNearEndAsync()
     {
-        if (!IsInfiniteMode) return;
-        // LoadNextBatchAsync itself drives any follow-up viewport re-check (only after it actually
-        // appends a batch), so this handler must not re-invoke check() — doing so unconditionally is
-        // what previously caused a tight loop when the load was a no-op.
-        await LoadNextBatchAsync();
+        if (!IsInfiniteMode) return false;
+        // Returns whether the JS watcher should re-check the viewport: only when this load actually
+        // appended a batch and more data may remain. At end-of-data (or a no-op load) this returns
+        // false so the watcher stops re-invoking, instead of spinning a tight JS<->.NET loop.
+        var appended = await LoadNextBatchAsync();
+        return appended && _infiniteHasMore;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1002,7 +1011,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     // ---------------------------------------------------------- Editing
     internal bool ColumnEditable(BitDataGridColumn<TItem> column)
-        => column.HasField && column.Accessor?.CanWrite == true && (column.Editable ?? Editable);
+        // Value-type rows are excluded from inline editing: TItem is held (and passed to the property
+        // setter) by value, so edits would mutate a throwaway copy and never persist back to the bound
+        // data. Disallowing the editor here avoids silently discarding the user's input.
+        => !typeof(TItem).IsValueType
+        && column.HasField && column.Accessor?.CanWrite == true && (column.Editable ?? Editable);
 
     internal void BeginEdit(TItem item)
     {

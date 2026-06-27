@@ -195,6 +195,19 @@
     white-space: nowrap;
 }
 
+/* When the header is sortable it renders as a real <button> for native keyboard
+   activation; strip the default button chrome so it matches the non-sortable span. */
+button.bit-dtg-htext {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+}
+
 .bit-dtg-sort-icon {
     font-size: 10px;
     color: var(--bit-clr-pri);
@@ -264,7 +277,7 @@
 /* Nested groups: subtle indentation shading applied at every level so deeper groups
    keep the hierarchy cue (the level value drives indentation elsewhere). */
 .bit-dtg-group-row .bit-dtg-group-cell {
-    border-left: 3px solid var(--bit-clr-pri);
+    border-inline-start: 3px solid var(--bit-clr-pri);
 }
 
 /* ----------------------------------------------- Grouped column headers */
