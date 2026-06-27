@@ -467,6 +467,17 @@
     position: relative;
 }
 
+/* Top half of each hour (:00 hit area). A sibling of the bottom half so the two slots are not
+   nested focusable controls - the hour row itself is just a non-interactive layout wrapper. */
+.bit-bfc-hour-slot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 50%;
+    z-index: 1;
+}
+
 /* Bottom half of each hour - must stretch from 50% to bottom or it has ~0 height
    and all drops land on the parent row (always :00). */
 .bit-bfc-hour-row-half {
@@ -1245,7 +1256,7 @@
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
     font-size: 13px;
-    text-align: left;
+    text-align: start;
     cursor: pointer;
     display: flex;
     align-items: center;

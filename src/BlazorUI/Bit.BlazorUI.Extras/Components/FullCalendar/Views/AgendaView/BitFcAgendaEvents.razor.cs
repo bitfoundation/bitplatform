@@ -29,11 +29,12 @@ public partial class BitFcAgendaEvents
             if (scrolled)
                 _lastAgendaScrollNonce = nonce;
         }
-        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException)
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or InvalidOperationException)
         {
-            // The circuit/render is mid-teardown or the JS side isn't reachable; the scroll is a
-            // best-effort convenience, so swallow the transient failure and retry on a later render
-            // (the nonce is intentionally left unchanged so the scroll is re-attempted).
+            // The circuit/render is mid-teardown, the JS side isn't reachable, or interop was issued
+            // during prerender (InvalidOperationException); the scroll is a best-effort convenience,
+            // so swallow the transient failure and retry on a later render (the nonce is intentionally
+            // left unchanged so the scroll is re-attempted).
         }
     }
 

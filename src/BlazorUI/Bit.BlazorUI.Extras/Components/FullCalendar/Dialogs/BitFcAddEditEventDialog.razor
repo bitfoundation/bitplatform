@@ -1,7 +1,7 @@
 @namespace Bit.BlazorUI
 
 <div class="bit-bfc-overlay" @onclick="OnClose">
-    <div class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" @onclick:stopPropagation="true">
+    <div @ref="_dialogRef" class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" @onclick:stopPropagation="true">
         <div class="bit-bfc-dialog-header bit-bfc-dialog-header-row">
             <div>
                 <h3 id="@_dialogTitleId">@(_isEditing ? Texts.EditEventDialogTitle : Texts.AddEventDialogTitle)</h3>

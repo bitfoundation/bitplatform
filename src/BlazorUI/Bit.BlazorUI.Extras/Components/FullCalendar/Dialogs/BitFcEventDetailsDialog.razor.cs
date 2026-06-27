@@ -57,23 +57,31 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         try
         {
             // Once the local removal AND the Delete notification have both succeeded, never send it
-            // again: _deleteCommitted is set only after NotifyAsync returns, so if a later OnClose
-            // throws the retry skips re-deleting/re-notifying. If NotifyAsync itself throws, the flag
-            // stays unset and the retry re-runs the idempotent removal and the notification.
+            // again: _deleteCommitted is set only after NotifyAsync returns. If NotifyAsync throws,
+            // the local removal is rolled back so State stays in sync with consumers (mirroring the
+            // add/edit save compensation), and the flag stays unset so a retry re-runs both steps.
             if (!_deleteCommitted)
             {
                 var snapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
                 State.RemoveEvent(Event.Id);
-                await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                try
                 {
-                    Event = snapshot,
-                    OldEvent = snapshot,
-                    Kind = BitFullCalendarChangeKind.Delete,
-                    Source = BitFullCalendarChangeSource.Delete
-                });
-                // Mark committed only after the notification has succeeded. If NotifyAsync throws,
-                // _deleteCommitted stays false so a retry re-runs the (idempotent) removal AND the
-                // notification, instead of silently closing without ever notifying consumers.
+                    await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                    {
+                        Event = snapshot,
+                        OldEvent = snapshot,
+                        Kind = BitFullCalendarChangeKind.Delete,
+                        Source = BitFullCalendarChangeSource.Delete
+                    });
+                }
+                catch
+                {
+                    // Restore the removed event so the calendar doesn't show it gone while consumers
+                    // were never notified; the next attempt will remove and notify again.
+                    State.AddEvent(snapshot);
+                    throw;
+                }
+                // Mark committed only after the notification has succeeded.
                 _deleteCommitted = true;
             }
 

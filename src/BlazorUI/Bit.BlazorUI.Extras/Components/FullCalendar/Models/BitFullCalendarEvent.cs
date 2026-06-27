@@ -28,8 +28,15 @@ public class BitFullCalendarEvent
     /// Optional resource identifier linking this event to a <see cref="BitFullCalendarResource"/>
     /// (for example a meeting room name or a machine id). Used by the resource timeline view to
     /// place the event on the matching resource row. <c>null</c> or empty means the event is unassigned.
+    /// Whitespace-only values are normalized to <c>null</c> so a blank id can never map to a resource
+    /// row, mirroring how <see cref="BitFullCalendarResource.Id"/> rejects blank identifiers.
     /// </summary>
-    public string? Resource { get; set; }
+    public string? Resource
+    {
+        get => _resource;
+        set => _resource = string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+    private string? _resource;
 
     public bool IsSingleDay => StartDate.Date == BitFullCalendarHelpers.GetInclusiveEndDate(this);
     public bool IsMultiDay => !IsSingleDay;

@@ -20,6 +20,18 @@ public static class BitFullCalendarHelpers
     public static DateTime GetInclusiveEndDate(BitFullCalendarEvent ev)
         => (ev.EndDate > ev.StartDate ? ev.EndDate.AddTicks(-1) : ev.EndDate).Date;
 
+    /// <summary>
+    /// True when an event overlaps the period <c>[periodStart, periodEndInclusive]</c>. The end is
+    /// treated exclusively (<c>EndDate &gt; periodStart</c>) so an event ending exactly at the period
+    /// boundary doesn't leak in, but zero-length single-day events (<c>StartDate == EndDate</c>, e.g.
+    /// a 00:00 all-day marker) that fall on or after <paramref name="periodStart"/> are still kept -
+    /// otherwise they'd be dropped by the strict <c>EndDate &gt; periodStart</c> check even though they
+    /// sit inside the visible range. Used by the year/week/month period helpers so they share one rule.
+    /// </summary>
+    private static bool OverlapsPeriod(BitFullCalendarEvent ev, DateTime periodStart, DateTime periodEndInclusive)
+        => ev.StartDate.Date <= periodEndInclusive
+           && (ev.EndDate > periodStart || (ev.StartDate == ev.EndDate && ev.StartDate >= periodStart));
+
     // -- Culture-aware: Range text ------------------------------
 
     public static string RangeText(BitFullCalendarView view, DateTime date, CultureInfo? culture = null)
@@ -249,7 +261,7 @@ public static class BitFullCalendarHelpers
         int monthsInYear   = cal.GetMonthsInYear(culturalYear);
         int lastDayOfYear  = cal.GetDaysInMonth(culturalYear, monthsInYear);
         DateTime yearEnd   = cal.ToDateTime(culturalYear, monthsInYear, lastDayOfYear, 23, 59, 59, 0);
-        return events.Where(ev => ev.StartDate.Date <= yearEnd && ev.EndDate > yearStart).ToList();
+        return events.Where(ev => OverlapsPeriod(ev, yearStart, yearEnd)).ToList();
     }
 
     public static string FormatTime(DateTime date, bool use24Hour, CultureInfo? culture = null)
@@ -640,8 +652,7 @@ public static class BitFullCalendarHelpers
     {
         var weekStart = StartOfWeek(date, culture);
         var weekEnd = weekStart.AddDays(6);
-        return events.Where(ev =>
-            ev.StartDate.Date <= weekEnd && ev.EndDate > weekStart).ToList();
+        return events.Where(ev => OverlapsPeriod(ev, weekStart, weekEnd)).ToList();
     }
 
     public static List<BitFullCalendarEvent> GetEventsForMonth(List<BitFullCalendarEvent> events, DateTime date, CultureInfo? culture = null)
@@ -652,8 +663,7 @@ public static class BitFullCalendarHelpers
         int m = cal.GetMonth(date);
         DateTime monthStart = cal.ToDateTime(y, m, 1, 0, 0, 0, 0);
         DateTime monthEnd   = cal.AddMonths(monthStart, 1).AddDays(-1);
-        return events.Where(ev =>
-            ev.StartDate.Date <= monthEnd && ev.EndDate > monthStart).ToList();
+        return events.Where(ev => OverlapsPeriod(ev, monthStart, monthEnd)).ToList();
     }
 
     /// <summary>

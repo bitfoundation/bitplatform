@@ -1,7 +1,12 @@
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+
 namespace Bit.BlazorUI;
 
-public partial class BitFcAddEditEventDialog
+public partial class BitFcAddEditEventDialog : IAsyncDisposable
 {
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
@@ -20,6 +25,8 @@ public partial class BitFcAddEditEventDialog
     private readonly string _titleInputId = $"bfc-title-{Guid.NewGuid():N}";
     private readonly string _colorSelectId = $"bfc-color-{Guid.NewGuid():N}";
     private readonly string _descriptionInputId = $"bfc-desc-{Guid.NewGuid():N}";
+
+    private ElementReference _dialogRef;
 
     private bool _isEditing;
     private bool _isSubmitting;
@@ -98,6 +105,15 @@ public partial class BitFcAddEditEventDialog
             _startDate = baseDate.Date.AddHours(StartHour ?? DateTime.Now.Hour).AddMinutes(StartMinute ?? 0);
             _endDate = _startDate.AddMinutes(30);
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Move focus into the dialog and trap Tab navigation once it has rendered; teardown in
+        // DisposeAsync restores focus to the element that was focused before it opened. Mirrors
+        // BitFcEventDetailsDialog so the add/edit dialog behaves like a true modal.
+        if (firstRender)
+            await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
     }
 
     private void AddAttendee()
@@ -216,5 +232,10 @@ public partial class BitFcAddEditEventDialog
         {
             _isSubmitting = false;
         }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
     }
 }

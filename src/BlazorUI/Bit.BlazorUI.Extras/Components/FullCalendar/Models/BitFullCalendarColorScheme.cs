@@ -45,12 +45,18 @@ public sealed class BitFullCalendarColorScheme
     /// <summary>Configured colors in display order.</summary>
     public IReadOnlyList<BitFullCalendarColorOption> Options { get; }
 
+    /// <summary>
+    /// Maps a blank (null/empty/whitespace) color id to <see cref="FallbackColorId"/> and trims the
+    /// rest, so blank ids resolve to the same swatch as the default-colored events everywhere
+    /// (lookup, label, css value, sort order) instead of drifting between methods.
+    /// </summary>
+    private static string NormalizeId(string? colorId)
+        => string.IsNullOrWhiteSpace(colorId) ? FallbackColorId : colorId.Trim();
+
     /// <summary>Looks up a color option by id (case-insensitive). Returns null when unknown.</summary>
     public BitFullCalendarColorOption? Find(string? colorId)
     {
-        if (string.IsNullOrWhiteSpace(colorId))
-            return null;
-        return _byId.TryGetValue(colorId.Trim(), out var o) ? o : null;
+        return _byId.TryGetValue(NormalizeId(colorId), out var o) ? o : null;
     }
 
     /// <summary>Display label for dropdowns, filters, agenda headers, and event details.</summary>
@@ -106,9 +112,7 @@ public sealed class BitFullCalendarColorScheme
     /// <summary>Sort key for agenda grouping - configured order first, then unknown ids (sorted by name at the call site).</summary>
     public int GetSortOrder(string? colorId)
     {
-        if (string.IsNullOrWhiteSpace(colorId))
-            return int.MaxValue;
-        var trimmed = colorId.Trim();
+        var trimmed = NormalizeId(colorId);
         for (var i = 0; i < Options.Count; i++)
         {
             if (string.Equals(Options[i].Id?.Trim(), trimmed, StringComparison.OrdinalIgnoreCase))

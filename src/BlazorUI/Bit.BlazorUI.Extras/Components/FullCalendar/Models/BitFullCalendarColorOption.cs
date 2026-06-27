@@ -33,12 +33,13 @@ public sealed class BitFullCalendarColorOption
     /// <c>BitFullCalendarEventColor</c>, so events created against the defaults need no migration.
     /// </summary>
     public static IReadOnlyList<BitFullCalendarColorOption> Defaults { get; } =
-    [
-        new() { Id = "blue",   Title = "Blue",   Value = "#3b82f6" },
-        new() { Id = "green",  Title = "Green",  Value = "#22c55e" },
-        new() { Id = "red",    Title = "Red",    Value = "#ef4444" },
-        new() { Id = "yellow", Title = "Yellow", Value = "#eab308" },
-        new() { Id = "purple", Title = "Purple", Value = "#a855f7" },
-        new() { Id = "orange", Title = "Orange", Value = "#f97316" },
-    ];
+        new BitFullCalendarColorOption[]
+        {
+            new() { Id = "blue",   Title = "Blue",   Value = "#3b82f6" },
+            new() { Id = "green",  Title = "Green",  Value = "#22c55e" },
+            new() { Id = "red",    Title = "Red",    Value = "#ef4444" },
+            new() { Id = "yellow", Title = "Yellow", Value = "#eab308" },
+            new() { Id = "purple", Title = "Purple", Value = "#a855f7" },
+            new() { Id = "orange", Title = "Orange", Value = "#f97316" },
+        }.AsReadOnly();
 }
