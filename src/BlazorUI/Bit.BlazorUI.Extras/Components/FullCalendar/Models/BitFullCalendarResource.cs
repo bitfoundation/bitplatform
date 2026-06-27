@@ -11,7 +11,9 @@ public sealed class BitFullCalendarResource
     /// <summary>
     /// Stable identifier matched against <see cref="BitFullCalendarEvent.Resource"/>.
     /// Cannot be null, empty, or whitespace - grouping helpers key rows by this value and assume a
-    /// non-empty key, so a blank id is rejected at assignment time.
+    /// non-empty key, so a blank id is rejected at assignment time. Ids must also be unique across
+    /// the resource list assigned to the calendar; duplicate ids are rejected when the resources are
+    /// applied because timeline row grouping and rendering key on this value.
     /// </summary>
     public required string Id
     {

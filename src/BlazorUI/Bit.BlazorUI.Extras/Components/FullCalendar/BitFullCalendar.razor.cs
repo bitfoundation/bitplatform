@@ -284,7 +284,12 @@ public partial class BitFullCalendar : IDisposable
         {
             _colorScheme = new BitFullCalendarColorScheme(EventColorOptions);
             var resolved = ResolveCulture();
-            if (!string.Equals(resolved.Name, State.Culture.Name, StringComparison.Ordinal))
+            // Compare the calendar identity in addition to the culture name: two cultures can share
+            // the same Name but resolve to different calendars (for example a culture whose calendar
+            // was switched), and a name-only check would skip the required SetCulture when only the
+            // calendar changed - leaving the calendar rendering against the previous calendar system.
+            if (!string.Equals(resolved.Name, State.Culture.Name, StringComparison.Ordinal)
+                || resolved.Calendar.GetType() != State.Culture.Calendar.GetType())
                 State.SetCulture(resolved);
 
             if (Events is not null)

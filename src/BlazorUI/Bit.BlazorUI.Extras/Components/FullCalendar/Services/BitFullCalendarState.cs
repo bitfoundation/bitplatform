@@ -240,6 +240,12 @@ public class BitFullCalendarState
         if (ResourcesMatch(next))
             return;
 
+        // Resource ids key the timeline row grouping and rendering, so two resources sharing an id
+        // would collapse or mis-render rows. The Id setter already rejects blank ids; enforce
+        // uniqueness here (the resource-building path that populates State.Resources) before the
+        // resources reach the FullCalendar models.
+        EnsureUniqueResourceIds(next);
+
         _resources = next;
 
         // If resources were emptied while Timeline mode is active, fall back to Event mode so the
@@ -253,8 +259,22 @@ public class BitFullCalendarState
         NotifyStateChanged();
     }
 
-    private bool ResourcesMatch(List<BitFullCalendarResource> resources)
+    private static void EnsureUniqueResourceIds(List<BitFullCalendarResource> resources)
     {
+        if (resources.Count < 2)
+            return;
+
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var resource in resources)
+        {
+            if (!seen.Add(resource.Id))
+                throw new ArgumentException(
+                    $"Duplicate resource Id '{resource.Id}'. Resource ids must be unique.",
+                    nameof(resources));
+        }
+    }
+
+    private bool ResourcesMatch(List<BitFullCalendarResource> resources)    {
         if (_resources.Count != resources.Count)
             return false;
 
