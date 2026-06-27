@@ -43,7 +43,7 @@ public static partial class MauiProgram
             .UseSentry(options =>
             {
                 var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui").Build();
-                configuration.GetRequiredSection("Logging:Sentry").Bind(options);
+                configuration.Bind("Logging:Sentry", options);
             })
             //#endif
             .Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");

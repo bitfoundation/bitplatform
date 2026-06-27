@@ -15,6 +15,14 @@ public static partial class Program
         // The following services are blazor web assembly only.
 
         builder.Logging.ConfigureLoggers(configuration);
+        //#if (sentry == true)
+        builder.Logging.AddSentry(options =>
+        {
+            options.Debug = AppEnvironment.IsDevelopment();
+            options.Environment = AppEnvironment.Current;
+            configuration.Bind("Logging:Sentry", options);
+        });
+        //#endif
 
         services.AddClientWebProjectServices(configuration);
 

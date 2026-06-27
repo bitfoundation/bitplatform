@@ -38,6 +38,7 @@
         <PackageReference Include="Bit.Bswup" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" />
+        <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" />
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
