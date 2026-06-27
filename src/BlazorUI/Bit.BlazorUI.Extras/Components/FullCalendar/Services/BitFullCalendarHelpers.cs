@@ -360,7 +360,13 @@ public static class BitFullCalendarHelpers
 
         foreach (var ev in events)
         {
-            if (ev.StartDate >= dayEnd || ev.EndDate <= dayStart)
+            if (ev.StartDate >= dayEnd)
+                continue;
+            // Keep zero-length markers (StartDate == EndDate, e.g. a 00:00 all-day marker) that fall
+            // on/after dayStart, matching OverlapsPeriod/GetEventsForDay and the month grouping; the
+            // strict EndDate <= dayStart check would otherwise drop a midnight marker sitting at the
+            // day start instead of laning it.
+            if (ev.EndDate <= dayStart && !(ev.StartDate == ev.EndDate && ev.StartDate >= dayStart))
                 continue;
 
             var key = ev.Resource is { Length: > 0 } r && validIds.Contains(r) ? r : unassignedKey;

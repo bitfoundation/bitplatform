@@ -16,10 +16,14 @@
 
     var culture = State.Culture;
     var cal = culture.Calendar;
+    // Capture the era from the selected date and pass it explicitly so multi-era calendars (e.g. the
+    // Japanese calendar) resolve the year/month/days against the date's own era instead of falling
+    // back to CurrentEra, which would mis-handle a SelectedDate from a previous era.
+    var era = cal.GetEra(State.SelectedDate);
     var year = cal.GetYear(State.SelectedDate);
     var month = cal.GetMonth(State.SelectedDate);
-    var monthStart = cal.ToDateTime(year, month, 1, 0, 0, 0, 0);
-    var daysInMonth = cal.GetDaysInMonth(year, month);
+    var monthStart = cal.ToDateTime(year, month, 1, 0, 0, 0, 0, era);
+    var daysInMonth = cal.GetDaysInMonth(year, month, era);
     var monthDays = Enumerable.Range(0, daysInMonth).Select(i => monthStart.AddDays(i)).ToArray();
 
     var resources = State.Resources;

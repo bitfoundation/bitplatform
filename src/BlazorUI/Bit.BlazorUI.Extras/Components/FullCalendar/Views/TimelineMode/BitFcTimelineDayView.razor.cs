@@ -44,7 +44,12 @@ public partial class BitFcTimelineDayView
                     continue;
 
                 var style = $"left:{p.LeftPx.ToString("F2", inv)}px;width:{Math.Max(p.WidthPx, 12).ToString("F2", inv)}px;top:{laneTop}px;height:{_laneHeight}px;";
+                // Key the per-event block by the event's stable identity so Blazor preserves the
+                // correct BitFcTimelineEventBlock instance (and its in-flight drag/resize state) when
+                // lane ordering is recomputed, instead of reusing a sibling's component by position -
+                // matching the week/month timeline views.
                 builder.OpenElement(0, "div");
+                builder.SetKey(ev.Id);
                 builder.AddAttribute(1, "class", "bit-bfc-tl-event-anchor");
                 builder.AddAttribute(2, "style", style);
                 builder.OpenComponent<BitFcTimelineEventBlock>(3);
