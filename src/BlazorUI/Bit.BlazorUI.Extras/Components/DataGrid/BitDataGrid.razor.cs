@@ -583,11 +583,14 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Appends the next batch of rows. No total count is assumed: the end of the data is detected
     /// when a batch returns fewer rows than requested (or none at all). Re-entrancy is guarded so
-    /// rapid scroll events coalesce into a single in-flight request.
+    /// rapid scroll events coalesce into a single in-flight request. Returns <c>true</c> only when a
+    /// batch was actually appended (so callers can decide whether a viewport re-check is warranted);
+    /// a no-op call (load already in flight, no more data, or a superseded/cancelled request) returns
+    /// <c>false</c>.
     /// </summary>
-    private async Task LoadNextBatchAsync()
+    private async Task<bool> LoadNextBatchAsync()
     {
-        if (OnLoadMore is null || _infiniteLoading || !_infiniteHasMore) return;
+        if (OnLoadMore is null || _infiniteLoading || !_infiniteHasMore) return false;
 
         _infiniteLoading = true;
         StateHasChanged();
@@ -602,12 +605,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             CancellationToken = ResetLoadCancellation()
         };
         var version = _loadVersion;
+        var appended = false;
 
         try
         {
             var result = await OnLoadMore(read);
             // A newer request superseded this one (e.g. sort/filter changed mid-flight); drop the stale response.
-            if (version != _loadVersion) return;
+            if (version != _loadVersion) return false;
 
             var loaded = result.Items;
             _infiniteItems.AddRange(loaded);
@@ -616,6 +620,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             _view = _infiniteItems;
             _pageItems = _infiniteItems;
             _footerAggregates = BitDataGridDataProcessor.Aggregate(_infiniteItems, _columns);
+            appended = true;
         }
         catch (OperationCanceledException) when (read.CancellationToken.IsCancellationRequested)
         {
@@ -623,7 +628,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             // cancellation token fired. Cancellation from our own token is expected here, so drop this
             // batch and let the newer load own the loading state. Any other cancellation (e.g. a
             // provider-side timeout) is a real error and propagates.
-            return;
+            return false;
         }
         finally
         {
@@ -635,6 +640,21 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
                 StateHasChanged();
             }
         }
+
+        // Only after a batch was genuinely appended do we ask JS whether the viewport still isn't
+        // filled (e.g. a short first batch) and therefore needs another load. Gating the re-check on a
+        // real append is essential: re-checking after a no-op load would spin a tight JS<->.NET loop —
+        // while the initial batch is still in flight the viewport is empty (so it always looks "near the
+        // end"), every check() would re-enter here, hit the _infiniteLoading guard, return immediately
+        // and re-check again, starving the in-flight batch's continuation and freezing the UI thread.
+        if (appended && _infiniteHasMore && _infiniteHandle is not null)
+        {
+            try { await _infiniteHandle.InvokeVoidAsync("check"); }
+            catch (JSException) { }
+            catch (JSDisconnectedException) { }
+        }
+
+        return appended;
     }
 
     /// <summary>Invoked from JavaScript when the viewport is scrolled near its end.</summary>
@@ -642,15 +662,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     public async Task OnInfiniteScrollNearEndAsync()
     {
         if (!IsInfiniteMode) return;
+        // LoadNextBatchAsync itself drives any follow-up viewport re-check (only after it actually
+        // appends a batch), so this handler must not re-invoke check() — doing so unconditionally is
+        // what previously caused a tight loop when the load was a no-op.
         await LoadNextBatchAsync();
-        // If the freshly loaded rows still don't fill the viewport, keep loading until they do
-        // (or the data runs out). The JS re-check fires this method again only while near the end.
-        if (_infiniteHasMore && _infiniteHandle is not null)
-        {
-            try { await _infiniteHandle.InvokeVoidAsync("check"); }
-            catch (JSException) { }
-            catch (JSDisconnectedException) { }
-        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
