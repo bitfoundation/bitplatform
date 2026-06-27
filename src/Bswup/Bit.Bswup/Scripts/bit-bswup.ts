@@ -629,9 +629,13 @@ if (!BitBswup.initialized) {
         const cachePromises = cacheKeys.filter(shouldDelete).map(key => caches.delete(key));
         await Promise.all(cachePromises);
 
-        const regs = await navigator.serviceWorker.getRegistrations();
-        const regPromises = regs.map(r => r.unregister());
-        await Promise.all(regPromises);
+        // Only unregister Bswup's own service worker, not every same-origin registration.
+        // getRegistrations() returns workers for unrelated apps sharing this origin (other
+        // scopes / mounted sub-apps), and tearing those down would break them. getRegistration()
+        // (no arg) resolves the registration whose scope controls this page - i.e. this app's
+        // own worker - so the reset stays scoped to Bswup.
+        const reg = await navigator.serviceWorker.getRegistration();
+        await reg?.unregister();
 
         window.location.reload();
     }

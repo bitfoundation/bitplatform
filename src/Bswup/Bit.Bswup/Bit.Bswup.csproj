@@ -40,7 +40,7 @@
         <CallTarget Targets="BuildCss"/>
     </Target>
 
-    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 

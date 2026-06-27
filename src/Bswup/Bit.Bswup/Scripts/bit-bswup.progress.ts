@@ -47,7 +47,18 @@
         const appElOriginalDisplay = appEl && appEl.style.display;
 
         (window as any).bitBswupHandler = bitBswupHandler;
-        const handlerFn = (handler ? window[handler] : undefined) as (message: any, data: any) => void;
+        // Resolve the optional user handler lazily rather than capturing window[handler] once
+        // here at start(): if the host registers its handler after this script runs (a racey
+        // script order), an early capture would bind `undefined` forever and the custom handler
+        // would never fire. Re-resolve on each message until a real function is found, then
+        // cache it.
+        let handlerFn: ((message: any, data: any) => void) | undefined;
+        function resolveHandler() {
+            if (typeof handlerFn === 'function') return handlerFn;
+            const candidate = handler ? window[handler] : undefined;
+            if (typeof candidate === 'function') handlerFn = candidate as (message: any, data: any) => void;
+            return handlerFn;
+        }
 
         // The global handler bit-bswup.ts invokes for every lifecycle message. It runs the
         // built-in UI handling first, then forwards to the optional user handler (errors in
@@ -56,7 +67,7 @@
             handleInternal(message, data);
 
             try {
-                handlerFn?.(message, data);
+                resolveHandler()?.(message, data);
             } catch (err) {
                 console.error(err);
             }
@@ -248,6 +259,31 @@
         document.addEventListener('DOMContentLoaded', autoStart);
     } else {
         autoStart();
+    }
+
+    // The splash element can also appear *after* load - e.g. an interactive Blazor render
+    // or any host that injects #bit-bswup once the app is mounted. A one-shot autoStart()
+    // would have already returned (element missing) and never run again, so window
+    // .bitBswupHandler would never be installed and BitBswupProgress would stay dark. Watch
+    // for the element with a MutationObserver and initialize once it shows up; the
+    // data-bit-bswup-initialized guard inside autoStart() keeps this from clashing with the
+    // DOMContentLoaded/immediate path above, and we disconnect as soon as it initializes.
+    if (typeof MutationObserver !== 'undefined') {
+        const observer = new MutationObserver(() => {
+            const el = document.getElementById('bit-bswup');
+            if (el && el.getAttribute('data-bit-bswup-initialized') !== 'true') {
+                autoStart();
+            }
+            if (el && el.getAttribute('data-bit-bswup-initialized') === 'true') {
+                observer.disconnect();
+            }
+        });
+        const startObserving = () => observer.observe(document.documentElement, { childList: true, subtree: true });
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startObserving);
+        } else {
+            startObserving();
+        }
     }
 }());
 
