@@ -301,7 +301,6 @@ public partial class BitFullCalendarDemo
                 new() { Name = "Dialog", Description = "From the add/edit dialog.", Value = "0" },
                 new() { Name = "Drag", Description = "From a drag-and-drop move.", Value = "1" },
                 new() { Name = "Resize", Description = "From resizing an event block.", Value = "2" },
-                new() { Name = "Delete", Description = "From the delete action.", Value = "3" },
             ]
         },
     ];
@@ -396,7 +395,7 @@ public partial class BitFullCalendarDemo
                 new() { Name = "Event", Type = "BitFullCalendarEvent", DefaultValue = "", Description = "The current event snapshot after the change for Add/Edit, or the removed event snapshot for Delete.", LinkType = LinkType.Link, Href = "#event-class" },
                 new() { Name = "Kind", Type = "BitFullCalendarChangeKind", DefaultValue = "", Description = "The change type that occurred (Add, Edit, Delete).", LinkType = LinkType.Link, Href = "#change-kind-enum" },
                 new() { Name = "OldEvent", Type = "BitFullCalendarEvent?", DefaultValue = "null", Description = "The event snapshot before the change for Edit/Delete. Null for Add.", LinkType = LinkType.Link, Href = "#event-class" },
-                new() { Name = "Source", Type = "BitFullCalendarChangeSource", DefaultValue = "", Description = "The UI source that triggered this change (Dialog, Drag, Resize, Delete).", LinkType = LinkType.Link, Href = "#change-source-enum" },
+                new() { Name = "Source", Type = "BitFullCalendarChangeSource", DefaultValue = "", Description = "The UI source that triggered this change (Dialog, Drag, Resize).", LinkType = LinkType.Link, Href = "#change-source-enum" },
             ]
         },
         new()

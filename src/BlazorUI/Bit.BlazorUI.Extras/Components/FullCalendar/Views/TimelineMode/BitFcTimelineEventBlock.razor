@@ -47,7 +47,7 @@
      @ondragend="OnDragEnd"
      @onclick="OnClick"
      @onkeydown="OnKeyDown"
-     @onkeydown:preventDefault="true"
+     @onkeydown:stopPropagation="true"
      @onclick:stopPropagation="true">
 
     @if (canResize)

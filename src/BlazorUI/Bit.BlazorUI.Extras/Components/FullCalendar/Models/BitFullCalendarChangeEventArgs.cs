@@ -12,13 +12,14 @@ public enum BitFullCalendarChangeKind
 
 /// <summary>
 /// Identifies where a calendar event change originated from in the UI.
+/// This describes the interaction origin only; the action itself (add/edit/delete)
+/// is carried by <see cref="BitFullCalendarChangeKind"/>.
 /// </summary>
 public enum BitFullCalendarChangeSource
 {
     Dialog,
     Drag,
-    Resize,
-    Delete
+    Resize
 }
 
 /// <summary>

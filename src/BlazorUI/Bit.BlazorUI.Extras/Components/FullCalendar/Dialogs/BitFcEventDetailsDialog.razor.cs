@@ -71,7 +71,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
                         Event = snapshot,
                         OldEvent = snapshot,
                         Kind = BitFullCalendarChangeKind.Delete,
-                        Source = BitFullCalendarChangeSource.Delete
+                        Source = BitFullCalendarChangeSource.Dialog
                     });
                 }
                 catch

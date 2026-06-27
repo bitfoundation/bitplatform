@@ -67,6 +67,12 @@ public partial class BitFcCalendarToast : IAsyncDisposable
             // Mutate the toast list on the renderer's dispatcher to avoid racing the template's foreach.
             await InvokeAsync(() =>
             {
+                // Re-check inside the dispatcher callback: DisposeAsync can cancel after the check
+                // above but before this lambda runs, so no-op once teardown has begun instead of
+                // mutating _toasts / calling StateHasChanged on a disposed component.
+                if (token.IsCancellationRequested)
+                    return;
+
                 _toasts.RemoveAll(t => t.Id == id);
                 StateHasChanged();
             });

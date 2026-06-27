@@ -190,53 +190,44 @@ public static class BitFullCalendarHelpers
         var cal = culture.Calendar;
         var dtf = culture.DateTimeFormat;
 
-        int culturalYear  = cal.GetYear(selectedDate);
-        int culturalMonth = cal.GetMonth(selectedDate);
+        // Anchor on the first day of the cultural month using pure date arithmetic derived from the
+        // selected date itself, then walk adjacent days with AddDays / AddMonths. This keeps every
+        // reconstructed date in the selected date's own era (e.g. JapaneseCalendar) instead of
+        // re-materializing year/month numbers against CurrentEra, and avoids manual +/-1 month math
+        // on GetYear/GetMonth results that can resolve the wrong era or an invalid day.
+        int culturalDay = cal.GetDayOfMonth(selectedDate);
+        DateTime firstDay = selectedDate.Date.AddDays(1 - culturalDay);
 
-        // First day of this cultural month as a Gregorian DateTime
-        DateTime firstDay = cal.ToDateTime(culturalYear, culturalMonth, 1, 0, 0, 0, 0);
-        int daysInMonth   = cal.GetDaysInMonth(culturalYear, culturalMonth);
+        // Days in this month = distance to the first day of the next month (era-preserving transition).
+        DateTime nextMonthFirstDay = cal.AddMonths(firstDay, 1);
+        int daysInMonth = (int)(nextMonthFirstDay.Date - firstDay.Date).TotalDays;
 
-        // Leading blank cells (days from prev cultural month)
+        // Leading blank cells (days from the previous cultural month)
         int firstDow      = (int)cal.GetDayOfWeek(firstDay);
         int culturalFirst = (int)dtf.FirstDayOfWeek;
         int leadingDays   = (firstDow - culturalFirst + 7) % 7;
 
-        // Previous cultural month
-        int prevCulturalMonth = culturalMonth == 1
-            ? cal.GetMonthsInYear(culturalYear - 1)
-            : culturalMonth - 1;
-        int prevCulturalYear = culturalMonth == 1 ? culturalYear - 1 : culturalYear;
-        int daysInPrevMonth  = cal.GetDaysInMonth(prevCulturalYear, prevCulturalMonth);
-
         var cells = new List<BitFullCalendarCell>();
 
-        for (int i = 0; i < leadingDays; i++)
+        for (int i = leadingDays; i > 0; i--)
         {
-            int d = daysInPrevMonth - leadingDays + i + 1;
-            DateTime date = cal.ToDateTime(prevCulturalYear, prevCulturalMonth, d, 0, 0, 0, 0);
-            cells.Add(new BitFullCalendarCell { Day = d, CurrentMonth = false, Date = date });
+            DateTime date = firstDay.AddDays(-i);
+            cells.Add(new BitFullCalendarCell { Day = cal.GetDayOfMonth(date), CurrentMonth = false, Date = date });
         }
 
-        for (int i = 1; i <= daysInMonth; i++)
+        for (int i = 0; i < daysInMonth; i++)
         {
-            DateTime date = cal.ToDateTime(culturalYear, culturalMonth, i, 0, 0, 0, 0);
-            cells.Add(new BitFullCalendarCell { Day = i, CurrentMonth = true, Date = date });
+            DateTime date = firstDay.AddDays(i);
+            cells.Add(new BitFullCalendarCell { Day = cal.GetDayOfMonth(date), CurrentMonth = true, Date = date });
         }
 
-        int totalDays  = leadingDays + daysInMonth;
-        int trailing   = (7 - (totalDays % 7)) % 7;
-        int nextCulturalMonth = culturalMonth == cal.GetMonthsInYear(culturalYear)
-            ? 1
-            : culturalMonth + 1;
-        int nextCulturalYear = culturalMonth == cal.GetMonthsInYear(culturalYear)
-            ? culturalYear + 1
-            : culturalYear;
+        int totalDays = leadingDays + daysInMonth;
+        int trailing  = (7 - (totalDays % 7)) % 7;
 
-        for (int i = 1; i <= trailing; i++)
+        for (int i = 0; i < trailing; i++)
         {
-            DateTime date = cal.ToDateTime(nextCulturalYear, nextCulturalMonth, i, 0, 0, 0, 0);
-            cells.Add(new BitFullCalendarCell { Day = i, CurrentMonth = false, Date = date });
+            DateTime date = nextMonthFirstDay.AddDays(i);
+            cells.Add(new BitFullCalendarCell { Day = cal.GetDayOfMonth(date), CurrentMonth = false, Date = date });
         }
 
         return cells;

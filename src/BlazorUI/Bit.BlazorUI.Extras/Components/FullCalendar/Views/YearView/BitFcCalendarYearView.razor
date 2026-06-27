@@ -17,14 +17,35 @@
     var monthsInYear = cal.GetMonthsInYear(culturalYear, era);
     for (int m = 1; m <= monthsInYear; m++)
     {
+        // Day 1 may not exist in a partial era month (the era can begin mid-month), so probe for
+        // the first day that actually materializes instead of assuming day 1 and dropping the whole
+        // month. Only skip a month when no day in it is valid for this era/year.
+        int daysInM;
         try
         {
-            months.Add(cal.ToDateTime(culturalYear, m, 1, 0, 0, 0, 0, era));
+            daysInM = cal.GetDaysInMonth(culturalYear, m, era);
         }
         catch (ArgumentOutOfRangeException)
         {
-            // This month does not exist in the selected partial era year; skip it.
+            continue;
         }
+
+        DateTime? firstValid = null;
+        for (int d = 1; d <= daysInM; d++)
+        {
+            try
+            {
+                firstValid = cal.ToDateTime(culturalYear, m, d, 0, 0, 0, 0, era);
+                break;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                // This day does not exist in the selected partial era month; try the next one.
+            }
+        }
+
+        if (firstValid.HasValue)
+            months.Add(firstValid.Value);
     }
     var yearWeekDayHeaders = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(State.Culture);
 
