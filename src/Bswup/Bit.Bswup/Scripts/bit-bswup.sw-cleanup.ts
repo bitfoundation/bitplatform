@@ -27,8 +27,17 @@ async function removeBswup() {
     // doesn't resolve before the teardown signalling has actually been dispatched.
     await self.skipWaiting();
     const clients = await self.clients.matchAll({ includeUncontrolled: true });
+    const reloadSignals: Promise<void>[] = [];
     (clients || []).forEach((client: any) => {
         client.postMessage('UNREGISTER');
-        setTimeout(() => client.postMessage('WAITING_SKIPPED'), 1000);
+        // Keep the install event (waitUntil -> removeBswup) alive until the delayed
+        // 'WAITING_SKIPPED' nudge has actually fired; otherwise the browser may terminate
+        // this short-lived cleanup worker before the 1s timer runs and the fallback reload
+        // signal would never be dispatched.
+        reloadSignals.push(new Promise<void>(resolve => setTimeout(() => {
+            client.postMessage('WAITING_SKIPPED');
+            resolve();
+        }, 1000)));
     });
+    await Promise.all(reloadSignals);
 }
