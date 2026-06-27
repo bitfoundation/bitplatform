@@ -2335,13 +2335,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
-        _dotnetObj?.Dispose();
-
         try
         {
             await _js.BitCalloutClearCallout(_calloutId);
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        // Dispose the .NET reference after the JS cleanup so any callbacks the JS teardown makes still
+        // have a live target, matching BitDropdown.DisposeAsync.
+        _dotnetObj?.Dispose();
     }
 }

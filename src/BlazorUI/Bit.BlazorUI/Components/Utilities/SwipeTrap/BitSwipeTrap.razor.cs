@@ -133,6 +133,14 @@ public partial class BitSwipeTrap : BitComponentBase
             _dotnetObj?.Dispose();
             _dotnetObj = null;
         }
+        catch
+        {
+            // Any other failure means the JS dispose didn't complete its ownership handoff, so release the
+            // managed reference here to avoid leaking it, then rethrow so the original error still surfaces.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+            throw;
+        }
 
         await base.DisposeAsync(disposing);
     }
