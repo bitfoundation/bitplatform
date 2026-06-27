@@ -21,6 +21,119 @@ public partial class BitMarkdownViewerDemo
            Description = @"The processing pipeline (flavor set). Defaults to the basic CommonMark core with no extensions.
                            Use one of the ready-made pipelines on BitMarkdownViewerPipelines (Basic, GitHub, Advanced)
                            or build a custom one with BitMarkdownViewerPipelineBuilder.",
+           LinkType = LinkType.Link,
+           Href = "#markdown-viewer-pipeline",
+        },
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "markdown-viewer-pipeline",
+            Title = "BitMarkdownViewerPipeline",
+            Description = "An immutable, reusable Markdown processing configuration produced by a BitMarkdownViewerPipelineBuilder. Pipelines are thread-safe and should be cached and shared. Ready-made pipelines are available on BitMarkdownViewerPipelines (Basic, GitHub, Advanced).",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Basic",
+                    Type = "static BitMarkdownViewerPipeline",
+                    DefaultValue = "",
+                    Description = "A pipeline with only the basic CommonMark core (no flavors).",
+                },
+                new()
+                {
+                    Name = "Parse",
+                    Type = "BitMarkdownViewerDocumentNode Parse(string? markdown)",
+                    DefaultValue = "",
+                    Description = "Parses Markdown source into an AST, applying all AST processors.",
+                    LinkType = LinkType.Link,
+                    Href = "#markdown-viewer-document-node",
+                },
+                new()
+                {
+                    Name = "CreateRenderer",
+                    Type = "BitMarkdownViewerMarkdownRenderer CreateRenderer()",
+                    DefaultValue = "",
+                    Description = "Creates a renderer bound to this pipeline's node renderers.",
+                    LinkType = LinkType.Link,
+                    Href = "#markdown-viewer-renderer",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "markdown-viewer-document-node",
+            Title = "BitMarkdownViewerDocumentNode",
+            Description = "The root of a parsed Markdown document. Inherits from BitMarkdownViewerMarkdownNode.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Children",
+                    Type = "List<BitMarkdownViewerMarkdownNode>",
+                    DefaultValue = "[]",
+                    Description = "The top-level child nodes of the document.",
+                    LinkType = LinkType.Link,
+                    Href = "#markdown-viewer-node",
+                },
+                new()
+                {
+                    Name = "ChildNodes",
+                    Type = "IList<BitMarkdownViewerMarkdownNode>",
+                    DefaultValue = "",
+                    Description = "The node's single child collection (returns Children).",
+                    LinkType = LinkType.Link,
+                    Href = "#markdown-viewer-node",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "markdown-viewer-node",
+            Title = "BitMarkdownViewerMarkdownNode",
+            Description = "The abstract base type for every node produced by the parser. Nodes expose their mutable child collections so that AST processors (plugins) can traverse and rewrite the tree generically, even for node types they did not define.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "ChildNodes",
+                    Type = "virtual IList<BitMarkdownViewerMarkdownNode>?",
+                    DefaultValue = "null",
+                    Description = "The node's single child collection, if it has exactly one. Container nodes override this; leaf nodes return null.",
+                },
+                new()
+                {
+                    Name = "ChildLists",
+                    Type = "virtual IEnumerable<IList<BitMarkdownViewerMarkdownNode>>",
+                    DefaultValue = "",
+                    Description = "All mutable child collections owned by this node. Defaults to the single ChildNodes collection; nodes with several (e.g. a table's cells) override this to expose each one.",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "markdown-viewer-renderer",
+            Title = "BitMarkdownViewerMarkdownRenderer",
+            Description = "Walks an AST and dispatches each node to a matching node renderer. Renderers are probed in reverse registration order, so the last renderer registered for a node type wins, allowing pipeline extensions to override the core renderers.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "WriteNodes",
+                    Type = "void WriteNodes(RenderTreeBuilder builder, IEnumerable<BitMarkdownViewerMarkdownNode> nodes)",
+                    DefaultValue = "",
+                    Description = "Renders a sequence of nodes.",
+                },
+                new()
+                {
+                    Name = "WriteNode",
+                    Type = "void WriteNode(RenderTreeBuilder builder, BitMarkdownViewerMarkdownNode node)",
+                    DefaultValue = "",
+                    Description = "Renders a single node using the matching renderer (last registered wins).",
+                },
+            ]
         },
     ];
 
