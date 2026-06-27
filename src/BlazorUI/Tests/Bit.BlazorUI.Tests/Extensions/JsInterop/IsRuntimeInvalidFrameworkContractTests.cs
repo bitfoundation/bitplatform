@@ -92,7 +92,7 @@ public class IsRuntimeInvalidFrameworkContractTests
     private static object CreateFrameworkRuntime(string assemblyName, string typeName)
     {
         var type = ResolveFrameworkRuntimeType(assemblyName, typeName);
-        return Activator.CreateInstance(type)
+        return Activator.CreateInstance(type, nonPublic: true)
             ?? throw new InvalidOperationException($"Could not create an instance of '{type.FullName}'.");
     }
 
