@@ -611,12 +611,12 @@ private readonly FormModel formModel = new();
 private bool formSubmitted;
 private void HandleValidSubmit() => formSubmitted = true;
 
-public class FormModel : IValidatableObject
+public class FormModel : System.ComponentModel.DataAnnotations.IValidatableObject
 {
-    [Required(ErrorMessage = ""The body is required."")]
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = ""The body is required."")]
     public string? Body { get; set; }
 
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> Validate(System.ComponentModel.DataAnnotations.ValidationContext validationContext)
     {
         // Body is HTML, so validate the normalized visible text: strip tags, decode entities,
         // and trim. Markup with no visible text passes [Required] (the raw HTML is non-empty),
@@ -624,9 +624,9 @@ public class FormModel : IValidatableObject
         var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? """", ""<[^>]+>"", """");
         var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
         if (string.IsNullOrEmpty(Body) is false && text.Length == 0)
-            yield return new ValidationResult(""The body is required."", [nameof(Body)]);
+            yield return new System.ComponentModel.DataAnnotations.ValidationResult(""The body is required."", [nameof(Body)]);
         else if (text.Length > 0 && text.Length < 20)
-            yield return new ValidationResult(""Add a bit more detail (min 20 characters)."", [nameof(Body)]);
+            yield return new System.ComponentModel.DataAnnotations.ValidationResult(""Add a bit more detail (min 20 characters)."", [nameof(Body)]);
     }
 }";
 

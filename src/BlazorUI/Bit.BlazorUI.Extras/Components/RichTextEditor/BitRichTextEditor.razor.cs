@@ -322,7 +322,6 @@ public partial class BitRichTextEditor : BitComponentBase
     private async ValueTask OnValueSet()
     {
         if (_initialized is false) return;
-        if (_inSourceView) return;
         if ((Value ?? "") == _currentHtml) return; // originated from the editor
 
         var html = Value ?? "";
@@ -334,7 +333,20 @@ public partial class BitRichTextEditor : BitComponentBase
             html = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
         }
         _currentHtml = html;
-        await _js.BitRichTextEditorSetHtml(_editorRef, html);
+
+        // While source view is open the WYSIWYG surface is detached from the live value, so don't
+        // push into the editor element. Instead reflect the external change into the raw-HTML
+        // textarea (and the cached _currentHtml above) so leaving source view starts from the
+        // latest parent Value rather than the stale content captured when source view was entered.
+        if (_inSourceView)
+        {
+            _sourceText = html;
+            StateHasChanged();
+        }
+        else
+        {
+            await _js.BitRichTextEditorSetHtml(_editorRef, html);
+        }
 
         // Keep the bound model in sync with the sanitized/rendered content: if the policy
         // stripped anything, write the cleaned HTML back so @bind-Value never holds the

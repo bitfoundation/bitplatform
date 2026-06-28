@@ -23,6 +23,12 @@ public sealed class BitRichTextEditorSanitizationPolicy
     /// A secure default policy covering the editor's standard formatting output. Returns a
     /// fresh instance on each access so callers can mutate it without affecting other editors.
     /// </summary>
+    /// <remarks>
+    /// iframe is intentionally excluded: the general sanitize pass does not host-restrict iframe
+    /// sources (only the media-insert path enforces the YouTube/Vimeo host allowlist), so allowing
+    /// iframe here would permit arbitrary embeds. Media embeds are therefore opt-in - add the
+    /// iframe tag and its attributes to a custom policy if such embeds must round-trip.
+    /// </remarks>
     public static BitRichTextEditorSanitizationPolicy Default => new()
     {
         AllowedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase)

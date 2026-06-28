@@ -1082,14 +1082,16 @@ namespace BitBlazorUI {
             // Identify owned shortcuts synchronously (before any await) so the browser default
             // never wins the race against the async .NET dispatch. The combo is built to match
             // the C# BuildComboKey form ("ctrl+b", "ctrl+shift+z", ...). The hardcoded set of
-            // built-in editing keys is kept as a baseline when no combo list was provided.
+            // built-in editing keys is kept as a baseline when no combo list was provided, but
+            // only for non-Alt combos: treating ctrl+alt (AltGr) presses as owned would block
+            // legitimate text entry, so Alt-modified combos are only owned via _shortcutKeys.
             const parts: string[] = ['ctrl'];
             if (e.shiftKey) parts.push('shift');
             if (e.altKey) parts.push('alt');
             parts.push(key);
             const combo = parts.join('+');
             const owned = (editor._shortcutKeys && editor._shortcutKeys.has(combo))
-                || ['b', 'i', 'u', 'z', 'y'].includes(key);
+                || (!e.altKey && ['b', 'i', 'u', 'z', 'y'].includes(key));
             if (owned) e.preventDefault();
 
             if (!editor._dotNetRef) return;
@@ -1275,16 +1277,17 @@ namespace BitBlazorUI {
                             el.removeAttribute(attr.name); continue;
                         }
                     }
-                    if (policy && policy.allowedAttributes) {
-                        // Merge tag-specific and global ('*') attribute allowlists so global
-                        // attributes (style/class/dir) are honored even when a tag has its own
-                        // entry - the previous `[tag] || ['*']` form dropped the '*' set.
-                        const allowed = [
-                            ...(policy.allowedAttributes[tag] || []),
-                            ...(policy.allowedAttributes['*'] || [])
-                        ];
-                        if (!allowed.includes(name)) el.removeAttribute(attr.name);
-                    }
+                    // Default to a deny-all allowlist when the policy omits allowedAttributes so a
+                    // custom policy without that map cannot let arbitrary (non-event) attributes
+                    // survive on otherwise-allowed tags. Merge tag-specific and global ('*')
+                    // attribute allowlists so global attributes (style/class/dir) are honored even
+                    // when a tag has its own entry - the previous `[tag] || ['*']` form dropped '*'.
+                    const allowedAttributes = (policy && policy.allowedAttributes) || {};
+                    const allowed = [
+                        ...(allowedAttributes[tag] || []),
+                        ...(allowedAttributes['*'] || [])
+                    ];
+                    if (!allowed.includes(name)) el.removeAttribute(attr.name);
                 }
             });
             return tpl.innerHTML;
