@@ -1014,8 +1014,12 @@ namespace BitBlazorUI {
                 const current = (editor.textContent || '').length;
                 const remaining = Math.max(0, max - (current - selected));
                 if (remaining === 0) return;
-                if (text.length > remaining) {
-                    toInsert = RichTextEditor.escapeHtml(text.slice(0, remaining)).replace(/\r?\n/g, '<br>');
+                // Measure the final inserted content (sanitized HTML, HTML-only, or escaped
+                // plain text) and truncate that markup so it cannot exceed the remaining budget,
+                // rather than budgeting against the plain-text payload which may differ from
+                // toInsert (or be empty for HTML-only transfers).
+                if (RichTextEditor.visibleTextLength(toInsert) > remaining) {
+                    toInsert = RichTextEditor.truncateHtmlToVisibleLength(toInsert, remaining);
                 }
             }
             RichTextEditor.dispatch(editor, 'insertHtml', { html: toInsert });
@@ -1293,6 +1297,38 @@ namespace BitBlazorUI {
         private static escapeHtml(s: string): string {
             const d = document.createElement('div');
             d.textContent = s ?? '';
+            return d.innerHTML;
+        }
+
+        // Measures the visible (text) length of an HTML fragment, matching how _maxLength is
+        // enforced against the editor's textContent length.
+        private static visibleTextLength(html: string): number {
+            const d = document.createElement('div');
+            d.innerHTML = html ?? '';
+            return (d.textContent || '').length;
+        }
+
+        // Truncates an HTML fragment so its visible text length does not exceed max, walking
+        // text nodes and dropping any content past the budget while preserving surrounding markup.
+        private static truncateHtmlToVisibleLength(html: string, max: number): string {
+            const d = document.createElement('div');
+            d.innerHTML = html ?? '';
+            let remaining = max;
+            const walker = document.createTreeWalker(d, NodeFilter.SHOW_TEXT);
+            const toRemove: Node[] = [];
+            let node: Node | null;
+            while ((node = walker.nextNode())) {
+                const len = (node.textContent || '').length;
+                if (remaining <= 0) {
+                    toRemove.push(node);
+                } else if (len > remaining) {
+                    node.textContent = (node.textContent || '').slice(0, remaining);
+                    remaining = 0;
+                } else {
+                    remaining -= len;
+                }
+            }
+            toRemove.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); });
             return d.innerHTML;
         }
 

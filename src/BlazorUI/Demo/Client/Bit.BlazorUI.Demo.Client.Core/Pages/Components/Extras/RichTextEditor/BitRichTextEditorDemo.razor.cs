@@ -398,10 +398,12 @@ public partial class BitRichTextEditorDemo
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            // The bound value is HTML, so measure the visible text (tags stripped) rather than the
-            // markup; otherwise tags alone could satisfy the minimum without enough real content.
-            var text = System.Text.RegularExpressions.Regex.Replace(Body ?? "", "<[^>]+>", "").Trim();
-            if (text.Length < 20)
+            // The bound value is HTML, so measure normalized visible text: strip tags, decode
+            // entities, and trim before counting. Empty bodies are left to the [Required] check
+            // so an empty value isn't reported by both rules.
+            var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? "", "<[^>]+>", "");
+            var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
+            if (text.Length > 0 && text.Length < 20)
             {
                 yield return new ValidationResult("Add a bit more detail (min 20 characters).", [nameof(Body)]);
             }
@@ -611,9 +613,11 @@ public class FormModel : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        // Body is HTML, so validate the visible text length, not the markup length.
-        var text = Regex.Replace(Body ?? """", ""<[^>]+>"", """").Trim();
-        if (text.Length < 20)
+        // Body is HTML, so validate the normalized visible text: strip tags, decode entities,
+        // and trim. Empty bodies are left to [Required] so they aren't reported twice.
+        var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? """", ""<[^>]+>"", """");
+        var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
+        if (text.Length > 0 && text.Length < 20)
             yield return new ValidationResult(""Add a bit more detail (min 20 characters)."", [nameof(Body)]);
     }
 }";
