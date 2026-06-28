@@ -68,4 +68,25 @@ namespace BitBlazorUI {
             setTimeout(() => URL.revokeObjectURL(url), 0);
         }
     }
+
+    // Reorder drag handles move rows with ArrowUp/ArrowDown. The browser's default for those keys is to
+    // scroll the page/grid, which must be cancelled *before* the event reaches Blazor's .NET handler.
+    // Blazor evaluates @onkeydown:preventDefault at render time, so it can't decide based on the upcoming
+    // key and lags a keystroke behind. A single capture-phase listener decides per-key up front and only
+    // cancels the arrow keys on a focused drag handle, so Tab/Enter/Space keep working and the .NET
+    // keydown handler still runs to actually move the row.
+    let reorderKeyGuardInstalled = false;
+    function installReorderKeyGuard() {
+        if (reorderKeyGuardInstalled || typeof document === 'undefined') return;
+        reorderKeyGuardInstalled = true;
+        document.addEventListener('keydown', (e: KeyboardEvent) => {
+            if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+            const target = e.target as HTMLElement | null;
+            if (target?.classList?.contains('bit-dtg-drag-handle')) {
+                e.preventDefault();
+            }
+        }, { capture: true });
+    }
+
+    installReorderKeyGuard();
 }

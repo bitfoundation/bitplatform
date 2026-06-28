@@ -26,13 +26,21 @@ internal static class AsyncQueryExecutorSupplier
         {
             // Inspect every registered executor, not just the first one resolved: a registered executor
             // that does not support this queryable must not shadow another that does, nor suppress the
-            // EF misconfiguration warning below. Use the first executor that reports support.
+            // EF misconfiguration warning below. Keep scanning and return the *last* supported executor
+            // so later, more specific registrations override earlier generic ones - mirroring how DI
+            // resolves a single service (last registration wins).
+            IAsyncQueryExecutor? selected = null;
             foreach (var executor in services.GetServices<IAsyncQueryExecutor>())
             {
                 if (executor.IsSupported(queryable))
                 {
-                    return executor;
+                    selected = executor;
                 }
+            }
+
+            if (selected is not null)
+            {
+                return selected;
             }
 
             // No registered executor supports this queryable. It's useful to detect if the developer is

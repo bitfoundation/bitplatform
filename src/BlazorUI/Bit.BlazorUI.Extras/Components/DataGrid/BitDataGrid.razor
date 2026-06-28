@@ -467,9 +467,10 @@
 
     // Translates the raw editor input into a typed value + operator for the column's data type, then
     // applies it. Text columns keep the "contains" behavior; numbers/booleans/enums use Equals against a
-    // typed value. DateTime/DateTimeOffset use a boundary-safe half-open same-day range ([start, nextDay))
-    // built from standard comparison operators, so a row's time-of-day never prevents a match and remote
-    // OnRead consumers can apply the filter with ordinary comparisons (see SetDateRangeFilterAsync).
+    // typed value. DateTime uses a boundary-safe half-open same-day range ([start, nextDay)) built from
+    // standard comparison operators, so a row's time-of-day never prevents a match and remote OnRead
+    // consumers can apply the filter with ordinary comparisons (see SetDateRangeFilterAsync). DateOnly and
+    // DateTimeOffset use a date-only Equals so day matching follows each row's own calendar date.
     private Task SetTypedFilterAsync(BitDataGridColumn<TItem> column, string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
@@ -510,16 +511,18 @@
                 // both the client pipeline and remote consumers can apply with standard comparisons.
                 if (underlying == typeof(DateTimeOffset))
                 {
-                    // The date editor emits a date-only string (no time/offset), so parse it as a
-                    // DateOnly and build the day bounds with a fixed UTC offset. Relying on the offset
-                    // that DateTimeOffset.TryParse infers would bind the range to the host's ambient
-                    // time zone, making the same filter select a different instant per environment.
+                    // The date editor emits a date-only string (no time/offset). A fixed UTC
+                    // [start, nextDay) range compares instants, so a row whose own offset places it on
+                    // the selected calendar day - but whose UTC instant falls outside that UTC day -
+                    // would be wrongly excluded. Emit a date-only Equals filter instead: the data
+                    // processor matches it against each row's own calendar date (DateTimeOffset.Date),
+                    // so filtering follows the displayed date regardless of the value's offset.
                     if (DateOnly.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var d))
                     {
-                        var start = new DateTimeOffset(d.Year, d.Month, d.Day, 0, 0, 0, TimeSpan.Zero);
-                        return SetDateRangeFilterAsync(column, start, start.AddDays(1));
+                        var day = new DateTimeOffset(d.Year, d.Month, d.Day, 0, 0, 0, TimeSpan.Zero);
+                        return SetFilterAsync(column, BitDataGridFilterOperator.Equals, day);
                     }
-                    return SetDateRangeFilterAsync(column, null, null);
+                    return SetFilterAsync(column, BitDataGridFilterOperator.Equals, null);
                 }
                 else
                 {

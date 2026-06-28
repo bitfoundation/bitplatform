@@ -13,7 +13,7 @@
                     @ondragstart="() => Grid.StartRowDrag(Item)"
                     title="Drag to reorder, or focus and use the arrow keys to move this row"
                     aria-label="Reorder row. Press Arrow Up or Arrow Down to move this row."
-                    @onkeydown="HandleReorderKeyDown" @onkeydown:preventDefault="_preventReorderKeyDefault">⠿</button>
+                    @onkeydown="HandleReorderKeyDown">⠿</button>
         </div>
     }
 
@@ -164,15 +164,14 @@
 
     // Lets keyboard users reorder rows without drag-and-drop: ArrowUp/ArrowDown move the focused row
     // one position toward the start/end, reusing the same reorder pipeline as the pointer drag path.
-    // Blazor evaluates @onkeydown:preventDefault at render time, so we toggle this field per keystroke
-    // to scope the suppression to the arrow keys (keeping Tab/Enter/Space working on the handle) and
-    // stop the browser from scrolling the page/grid when moving rows.
-    private bool _preventReorderKeyDefault;
-
+    // The browser's default for the arrow keys (scrolling the page/grid) is cancelled by a capture-phase
+    // keydown guard installed in BitDataGrid.ts, which decides per-key *before* the event reaches this
+    // .NET callback. We can't do that with @onkeydown:preventDefault because Blazor evaluates it at
+    // render time, which can't know the upcoming key and lags a keystroke behind (so the first arrow
+    // press still scrolled and a stale "true" could swallow the next Tab).
     private async Task HandleReorderKeyDown(KeyboardEventArgs e)
     {
         if (!Grid.RowReorderEnabled) return;
-        _preventReorderKeyDefault = e.Key is "ArrowUp" or "ArrowDown";
         if (e.Key == "ArrowUp") await Grid.MoveRowAsync(Item, -1);
         else if (e.Key == "ArrowDown") await Grid.MoveRowAsync(Item, 1);
     }

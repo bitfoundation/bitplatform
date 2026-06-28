@@ -552,9 +552,11 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
             // ARIA's rowcount is part of the UI, so it should reflect what the human user regards as the number of rows in the table,
             // not the number of physical <tr> elements. For virtualization this means what's in the entire scrollable range, not just
             // the current viewport. In the case where you're also paginating then it means what's conceptually on the current page.
-            // TODO: This currently assumes we always want to expand the last page to have ItemsPerPage rows, but the experience might
-            //       be better if we let the last page only be as big as its number of actual rows.
-            _ariaBodyRowCount = Pagination is null ? providerResult.TotalItemCount : Pagination.ItemsPerPage;
+            // The last page can hold fewer than ItemsPerPage rows, so clamp the paginated count to the items remaining on the current
+            // page; otherwise assistive tech would announce non-existent trailing rows on a short final page.
+            _ariaBodyRowCount = Pagination is null
+                ? providerResult.TotalItemCount
+                : Math.Clamp(providerResult.TotalItemCount - Pagination.CurrentPageIndex * Pagination.ItemsPerPage, 0, Pagination.ItemsPerPage);
 
             await (Pagination?.SetTotalItemCountAsync(providerResult.TotalItemCount) ?? Task.CompletedTask);
 
