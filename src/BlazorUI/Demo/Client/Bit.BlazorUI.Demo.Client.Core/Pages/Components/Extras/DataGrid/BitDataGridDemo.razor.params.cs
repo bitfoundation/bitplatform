@@ -171,7 +171,7 @@ public partial class BitDataGridDemo
             [
                 new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The identifier of the column being sorted." },
                 new() { Name = "Direction", Type = "BitDataGridSortDirection", DefaultValue = "BitDataGridSortDirection.Ascending", Description = "The sort direction.", LinkType = LinkType.Link, Href = "#BitDataGridSortDirection" },
-                new() { Name = "Priority", Type = "int", DefaultValue = "0", Description = "Priority for multi-column sorting (1 = primary)." },
+                new() { Name = "Priority", Type = "int", DefaultValue = "int.MaxValue", Description = "Priority for multi-column sorting (1 = primary)." },
             ],
         },
         new()
@@ -182,7 +182,7 @@ public partial class BitDataGridDemo
             Parameters =
             [
                 new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The identifier of the column being filtered." },
-                new() { Name = "Operator", Type = "BitDataGridFilterOperator", DefaultValue = "BitDataGridFilterOperator.Unspecified", Description = "The comparison operator applied to the value.", LinkType = LinkType.Link, Href = "#BitDataGridFilterOperator" },
+                new() { Name = "Operator", Type = "BitDataGridFilterOperator", DefaultValue = "BitDataGridFilterOperator.Contains", Description = "The comparison operator applied to the value.", LinkType = LinkType.Link, Href = "#BitDataGridFilterOperator" },
                 new() { Name = "Value", Type = "object?", DefaultValue = "null", Description = "The value compared against the column's cell value." },
             ],
         },

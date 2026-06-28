@@ -11,6 +11,13 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
         if (x is null) return -1;
         if (y is null) return 1;
 
+        // Strings are ordered with the same case-insensitive ordinal rule as the mixed-type fallback
+        // below, so the comparer applies one consistent ordering rule for every code path and stays
+        // transitive (a culture-sensitive CompareTo here could disagree with the fallback and break
+        // the IComparer<T> contract when string and non-string values are mixed in the same column).
+        if (x is string sx && y is string sy)
+            return string.Compare(sx, sy, StringComparison.OrdinalIgnoreCase);
+
         if (x is IComparable cx && x.GetType() == y.GetType())
             return cx.CompareTo(y);
 

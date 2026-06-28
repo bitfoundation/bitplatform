@@ -254,8 +254,16 @@ public partial class BitQuickGrid<TGridItem> : IAsyncDisposable
     /// <returns>A <see cref="Task"/> that represents the completion of the operation.</returns>
     public async Task RefreshDataAsync()
     {
-        await RefreshDataCoreAsync();
-        StateHasChanged();
+        try
+        {
+            await RefreshDataCoreAsync();
+        }
+        finally
+        {
+            // Always rerender after the core refresh settles, even when it throws, so the grid
+            // doesn't get stuck showing the loading state if the caller handles the exception.
+            StateHasChanged();
+        }
     }
 
 

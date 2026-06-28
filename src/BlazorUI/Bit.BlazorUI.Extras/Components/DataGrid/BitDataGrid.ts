@@ -22,9 +22,13 @@ namespace BitBlazorUI {
                     // Only re-check once the load settles if the .NET callback reports more data was
                     // appended and remains; otherwise stop, so end-of-data (a no-op load) doesn't spin
                     // this check()->invoke->check() loop forever.
+                    // Defer the follow-up near-end check with requestAnimationFrame so it runs only
+                    // after Blazor has rendered the freshly appended rows; reading scrollHeight in the
+                    // synchronous continuation would otherwise observe stale layout. The disposed guard
+                    // is preserved so a circuit teardown between callback and frame stops the loop.
                     dotNetRef.invokeMethodAsync<boolean>('OnInfiniteScrollNearEndAsync')
                         .then(
-                            (more) => { pending = false; if (!disposed && more) check(); },
+                            (more) => { pending = false; if (!disposed && more) requestAnimationFrame(check); },
                             () => { pending = false; }
                         );
                 }

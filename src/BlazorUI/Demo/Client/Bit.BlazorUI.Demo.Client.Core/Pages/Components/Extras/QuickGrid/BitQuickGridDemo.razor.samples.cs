@@ -413,7 +413,7 @@ protected override async Task OnInitializedAsync()
             var query = new Dictionary<string, object?>
             {
                 { ""skip"", req.StartIndex },
-                { ""limit"", req.Count }
+                { ""limit"", req.Count ?? 50 }
             };
 
             // Only add the firm filter when the user typed something; an empty Lucene clause

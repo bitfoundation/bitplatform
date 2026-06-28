@@ -1638,8 +1638,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             : $"minmax({Math.Max(120, column.MinWidth)}px, 1fr)";
     }
 
-    /// <summary>Resolves the height (in px) for a given row, honouring <see cref="RowHeightSelector"/>.</summary>
-    internal float ResolveRowHeight(TItem item) => RowHeightSelector?.Invoke(item) ?? RowHeight;
+    /// <summary>
+    /// Resolves the height (in px) for a given row, honouring <see cref="RowHeightSelector"/>.
+    /// While <see cref="Virtualize"/> is enabled the selector is ignored and the uniform
+    /// <see cref="RowHeight"/> is always returned, because virtualization requires a constant row height.
+    /// </summary>
+    internal float ResolveRowHeight(TItem item) => Virtualize ? RowHeight : (RowHeightSelector?.Invoke(item) ?? RowHeight);
 
     /// <summary>Builds the CSS grid template-columns value for the whole row layout.</summary>
     private string BuildGridTemplate()
