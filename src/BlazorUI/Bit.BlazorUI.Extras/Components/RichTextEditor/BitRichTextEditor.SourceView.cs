@@ -22,7 +22,7 @@ public partial class BitRichTextEditor
         }
 
         // Exiting: validate, sanitize, render.
-        if (LooksLikeValidHtml(_sourceText) is false)
+        if (await _js.BitRichTextEditorValidateHtml(_sourceText) is false)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-html", "The HTML could not be parsed; fix it before leaving source view."));
             return;
@@ -38,15 +38,6 @@ public partial class BitRichTextEditor
         await AssignValue(sanitized);
         NotifyEditContextChanged();
         await OnChange.InvokeAsync(sanitized);
-    }
-
-    // Lightweight well-formedness check: reject mismatched angle brackets.
-    private static bool LooksLikeValidHtml(string html)
-    {
-        if (string.IsNullOrEmpty(html)) return true;
-        var open = html.Count(c => c == '<');
-        var close = html.Count(c => c == '>');
-        return open == close;
     }
 
     private void OnSourceTextChanged(ChangeEventArgs e)

@@ -10,6 +10,35 @@ namespace BitBlazorUI {
         private static readonly IMAGE_MIME = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'];
         private static readonly MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
+        // Built-in secure default allowlist, mirroring BitRichTextEditorSanitizationPolicy.Default.
+        // Applied when no custom policy is supplied so the no-policy path still enforces an
+        // explicit allowlist (tags/attributes/schemes) rather than a small denylist. iframe is
+        // intentionally excluded; iframe embeds are opt-in via a custom policy.
+        private static readonly DEFAULT_POLICY = {
+            allowedTags: [
+                'p', 'br', 'span', 'div',
+                'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'sub', 'sup',
+                'ul', 'ol', 'li',
+                'blockquote', 'pre', 'code',
+                'a', 'img', 'hr',
+                'table', 'thead', 'tbody', 'tr', 'th', 'td',
+                'audio', 'video', 'source'
+            ],
+            allowedAttributes: {
+                '*': ['style', 'class', 'dir'],
+                'a': ['href', 'title', 'target', 'rel'],
+                'img': ['src', 'alt', 'width', 'height'],
+                'td': ['colspan', 'rowspan'],
+                'th': ['colspan', 'rowspan'],
+                'audio': ['src', 'controls'],
+                'video': ['src', 'controls', 'width', 'height'],
+                'source': ['src', 'type']
+            } as { [tag: string]: string[] },
+            allowedUriSchemes: ['http', 'https', 'mailto', 'tel'],
+            allowDataImageUris: true
+        };
+
         // ====================================================================
         // Lifecycle
         // ====================================================================
@@ -153,6 +182,50 @@ namespace BitBlazorUI {
             return RichTextEditor.sanitize(editor, html ?? '');
         }
 
+        // Real (tag-stack) HTML validation used by the source-view exit path. Returns false for
+        // stray angle brackets, unmatched closing tags, or misnested/unclosed elements so
+        // malformed markup is rejected before it is committed. Void elements and tags with
+        // optional end tags (p, li, td, ...) are handled leniently to match the HTML spec.
+        public static validateHtml(html: string): boolean {
+            if (!html) return true;
+
+            const voidTags = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
+            const optionalClose = new Set(['p', 'li', 'td', 'th', 'tr', 'thead', 'tbody', 'tfoot', 'option', 'optgroup', 'dt', 'dd', 'colgroup', 'col']);
+            const tagRx = /<\/?([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)(\/?)>/g;
+
+            const stack: string[] = [];
+            let lastIndex = 0;
+            let m: RegExpExecArray | null;
+            while ((m = tagRx.exec(html)) !== null) {
+                // Any stray '<' in the text between tags means malformed markup.
+                if (html.slice(lastIndex, m.index).indexOf('<') !== -1) return false;
+                lastIndex = tagRx.lastIndex;
+
+                const tag = m[1].toLowerCase();
+                const isClose = m[0][1] === '/';
+                const selfClose = m[3] === '/';
+
+                if (isClose) {
+                    let matchIndex = -1;
+                    for (let j = stack.length - 1; j >= 0; j--) {
+                        if (stack[j] === tag) { matchIndex = j; break; }
+                    }
+                    if (matchIndex === -1) return false;
+                    // Anything still open above the match must be an optional-close element.
+                    for (let j = matchIndex + 1; j < stack.length; j++) {
+                        if (!optionalClose.has(stack[j])) return false;
+                    }
+                    stack.length = matchIndex;
+                } else if (!selfClose && !voidTags.has(tag)) {
+                    stack.push(tag);
+                }
+            }
+            if (html.slice(lastIndex).indexOf('<') !== -1) return false;
+
+            // Leftover open tags are only acceptable if they have optional end tags.
+            return stack.every(t => optionalClose.has(t));
+        }
+
         // ====================================================================
         // Command entry points used by C# (all route through dispatch)
         // ====================================================================
@@ -219,8 +292,52 @@ namespace BitBlazorUI {
 
         public static insertMedia(editor: any, html: string) {
             if (!editor || !html) return;
-            RichTextEditor.dispatch(editor, 'insertMedia', { html });
+            // Route media through a media-specific allowlist so only approved embed markup
+            // (iframe/video/audio/source with safe attributes and schemes) reaches the document.
+            const safe = RichTextEditor.sanitizeMedia(editor, html);
+            if (!safe) {
+                RichTextEditor.reportClientError(editor, 'media-not-allowed', 'That media could not be embedded.');
+                return;
+            }
+            RichTextEditor.dispatch(editor, 'insertMedia', { html: safe });
             RichTextEditor.afterChange(editor);
+        }
+
+        // Media-specific allowlist: permits only the embed elements/attributes produced by the
+        // server-side media builder, strips event handlers, and validates src schemes/hosts.
+        private static sanitizeMedia(editor: any, html: string): string {
+            const tpl = document.createElement('template');
+            tpl.innerHTML = html;
+            const allowedTags = new Set(['iframe', 'video', 'audio', 'source', 'br', 'p']);
+            const allowedAttrs: { [tag: string]: Set<string> } = {
+                iframe: new Set(['src', 'width', 'height', 'allow', 'allowfullscreen', 'frameborder']),
+                video: new Set(['src', 'controls', 'width', 'height']),
+                audio: new Set(['src', 'controls']),
+                source: new Set(['src', 'type'])
+            };
+            const iframeHosts = ['www.youtube-nocookie.com', 'youtube-nocookie.com', 'www.youtube.com', 'youtube.com', 'player.vimeo.com'];
+
+            tpl.content.querySelectorAll('*').forEach((el: Element) => {
+                const tag = el.tagName.toLowerCase();
+                if (!allowedTags.has(tag)) { el.replaceWith(...Array.from(el.childNodes)); return; }
+                for (const attr of Array.from(el.attributes)) {
+                    const name = attr.name.toLowerCase();
+                    if (name.startsWith('on')) { el.removeAttribute(attr.name); continue; }
+                    const allowed = allowedAttrs[tag];
+                    if (allowed && !allowed.has(name)) { el.removeAttribute(attr.name); continue; }
+                    if (name === 'src') {
+                        const val = (attr.value || '').trim();
+                        if (tag === 'iframe') {
+                            let host = '';
+                            try { host = new URL(val).host.toLowerCase(); } catch { host = ''; }
+                            if (!iframeHosts.includes(host)) { el.remove(); return; }
+                        } else if (!RichTextEditor.isAllowedUri(editor, val, false)) {
+                            el.removeAttribute(attr.name);
+                        }
+                    }
+                }
+            });
+            return tpl.innerHTML;
         }
 
         public static insertText(editor: any, text: string) {
@@ -607,14 +724,40 @@ namespace BitBlazorUI {
             const sel = document.getSelection();
             if (!sel || sel.rangeCount === 0) return;
             const range = sel.getRangeAt(0);
-            const cells = Array.from(table.querySelectorAll('td,th')).filter(c => range.intersectsNode(c)) as HTMLElement[];
-            if (cells.length < 2) return;
-            const first = cells[0];
-            first.setAttribute('colspan', String((parseInt(first.getAttribute('colspan') || '1')) + cells.length - 1));
-            for (let i = 1; i < cells.length; i++) {
-                if (cells[i].innerHTML && cells[i].innerHTML !== '<br>') first.innerHTML += ' ' + cells[i].innerHTML;
-                cells[i].remove();
+            const selected = (Array.from(table.querySelectorAll('td,th')) as HTMLElement[])
+                .filter(c => range.intersectsNode(c));
+            if (selected.length < 2) return;
+
+            const rows = Array.from(table.querySelectorAll('tr')) as HTMLTableRowElement[];
+
+            // Map each selected cell to its (row, column) position so the merge can span the
+            // full selected rectangle rather than collapsing everything onto a single row.
+            let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
+            const info = selected.map(cell => {
+                const tr = cell.parentElement as HTMLTableRowElement;
+                const rowIdx = rows.indexOf(tr);
+                const colIdx = Array.from(tr.children).indexOf(cell);
+                if (rowIdx < minRow) minRow = rowIdx;
+                if (rowIdx > maxRow) maxRow = rowIdx;
+                if (colIdx < minCol) minCol = colIdx;
+                if (colIdx > maxCol) maxCol = colIdx;
+                return { cell, rowIdx, colIdx };
+            });
+
+            const topLeft = info.find(i => i.rowIdx === minRow && i.colIdx === minCol)?.cell;
+            if (!topLeft) return;
+
+            const colspan = maxCol - minCol + 1;
+            const rowspan = maxRow - minRow + 1;
+
+            for (const { cell } of info) {
+                if (cell === topLeft) continue;
+                if (cell.innerHTML && cell.innerHTML !== '<br>') topLeft.innerHTML += ' ' + cell.innerHTML;
+                cell.remove();
             }
+
+            if (colspan > 1) topLeft.setAttribute('colspan', String(colspan)); else topLeft.removeAttribute('colspan');
+            if (rowspan > 1) topLeft.setAttribute('rowspan', String(rowspan)); else topLeft.removeAttribute('rowspan');
         }
 
         private static enableImageResize(editor: any) {
@@ -700,14 +843,20 @@ namespace BitBlazorUI {
                     continue;
                 }
                 accepted++;
-                const dataUrl = await RichTextEditor.readAsDataUrl(file);
-                let url: string | null = dataUrl;
-                if (editor._hasUpload && editor._dotNetRef) {
-                    const base64 = (dataUrl.split(',')[1]) ?? '';
-                    url = await editor._dotNetRef.invokeMethodAsync('ResolveImageUrl', file.name, file.type, base64);
-                    if (!url) continue;
+                try {
+                    const dataUrl = await RichTextEditor.readAsDataUrl(file);
+                    let url: string | null = dataUrl;
+                    if (editor._hasUpload && editor._dotNetRef) {
+                        const base64 = (dataUrl.split(',')[1]) ?? '';
+                        url = await editor._dotNetRef.invokeMethodAsync('ResolveImageUrl', file.name, file.type, base64);
+                        if (!url) continue;
+                    }
+                    RichTextEditor.dispatch(editor, 'insertImage', { html: `<img src="${RichTextEditor.escapeAttr(url)}" alt="${RichTextEditor.escapeAttr(file.name)}">` });
+                } catch {
+                    // Fail this file only; keep processing the rest of the batch.
+                    RichTextEditor.reportClientError(editor, 'image-read-failed', `"${file.name}" could not be processed.`);
+                    continue;
                 }
-                RichTextEditor.dispatch(editor, 'insertImage', { html: `<img src="${RichTextEditor.escapeAttr(url)}" alt="${RichTextEditor.escapeAttr(file.name)}">` });
             }
             if (editor._notify) editor._notify();
         }
@@ -962,12 +1111,14 @@ namespace BitBlazorUI {
             sel.addRange(r);
         }
 
-        // Allowlist-aware sanitize. When a policy is present it is applied; otherwise a secure
-        // default (strip script/style/embeds + event handlers + javascript: URIs) is used.
+        // Allowlist-aware sanitize. A custom policy (editor._policy) is applied when present;
+        // otherwise the built-in secure DEFAULT_POLICY allowlist is enforced. Either way only
+        // listed tags/attributes survive, so non-URI attributes like formaction are dropped
+        // unless explicitly allowed, and event handlers / disallowed URI schemes are stripped.
         private static sanitize(editor: any, html: string): string {
             const tpl = document.createElement('template');
             tpl.innerHTML = html;
-            const policy = editor && editor._policy;
+            const policy = (editor && editor._policy) || RichTextEditor.DEFAULT_POLICY;
 
             tpl.content.querySelectorAll('script,style,iframe,object,embed,link,meta,title,head').forEach((n: Element) => {
                 if (policy && policy.allowedTags && policy.allowedTags.includes(n.tagName.toLowerCase())) return;

@@ -118,6 +118,10 @@
 
     <div class="bit-rte-edt @Classes?.Editor"
          @ref="_editorRef"
+         role="textbox"
+         aria-multiline="true"
+         aria-label="@Label("editor", "Rich text editor")"
+         aria-readonly="@(ReadOnly ? "true" : null)"
          contenteditable="@((ReadOnly is false && _inSourceView is false).ToString().ToLowerInvariant())"
          data-placeholder="@Placeholder"
          hidden="@_inSourceView"

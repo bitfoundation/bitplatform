@@ -80,8 +80,11 @@ public partial class BitRichTextEditor
         var combos = new HashSet<string>(DefaultShortcuts.Keys, StringComparer.OrdinalIgnoreCase);
         if (KeyboardShortcuts is not null)
         {
-            foreach (var key in KeyboardShortcuts.Keys)
-                combos.Add(key);
+            // Only advertise custom combos whose command can actually be executed; otherwise the
+            // JS bridge would suppress the browser default for a combo _OnShortcut later rejects.
+            foreach (var (key, command) in KeyboardShortcuts)
+                if (IsKnownCommand(command))
+                    combos.Add(key);
         }
         return combos.Select(c => c.ToLowerInvariant()).ToArray();
     }

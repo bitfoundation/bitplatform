@@ -40,6 +40,11 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.Invoke<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", editor, html);
     }
 
+    public static ValueTask<bool> BitRichTextEditorValidateHtml(this IJSRuntime jsRuntime, string? html)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.RichTextEditor.validateHtml", html);
+    }
+
     public static ValueTask BitRichTextEditorExec(this IJSRuntime jsRuntime, ElementReference editor, string command, string? value)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.exec", editor, command, value);

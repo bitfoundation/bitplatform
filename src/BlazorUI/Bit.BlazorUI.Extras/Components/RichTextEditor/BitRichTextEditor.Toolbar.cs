@@ -94,7 +94,9 @@ public partial class BitRichTextEditor
         }
         catch (Exception ex)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("custom-action-failed", $"Toolbar action '{item.Id}' failed: {ex.Message}"));
+            // Keep host callback internals out of the user-facing error; log them for telemetry.
+            System.Diagnostics.Debug.WriteLine($"BitRichTextEditor toolbar action '{item.Id}' failed: {ex}");
+            await RaiseErrorAsync(new BitRichTextEditorError("custom-action-failed", $"Toolbar action '{item.Id}' failed."));
         }
     }
 }

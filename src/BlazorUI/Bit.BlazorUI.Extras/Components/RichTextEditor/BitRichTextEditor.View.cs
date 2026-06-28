@@ -10,10 +10,13 @@ public partial class BitRichTextEditor
 
     private async Task ToggleFullScreen()
     {
-        _fullScreen = !_fullScreen;
+        var next = !_fullScreen;
+        // Only flip the visual state once the browser action has been issued, so a failed
+        // interop call does not leave the component out of sync with the actual view.
+        await _js.BitRichTextEditorSetFullScreen(_editorRef, next);
+        _fullScreen = next;
         ClassBuilder.Reset();
         StateHasChanged();
-        await _js.BitRichTextEditorSetFullScreen(_editorRef, _fullScreen);
     }
 
     private async Task SetDirectionAsync(string dir)

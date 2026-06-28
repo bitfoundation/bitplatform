@@ -23,6 +23,8 @@ public partial class BitRichTextEditor
 
     private async Task ApplyLinkAsync()
     {
+        if (ReadOnly) return;
+
         var url = _linkUrl.Trim();
         if (string.IsNullOrWhiteSpace(url))
         {

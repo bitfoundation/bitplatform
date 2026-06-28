@@ -90,8 +90,9 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Inline);
         });
 
-        // The inline group renders four buttons (bold, italic, underline, strikethrough).
-        Assert.IsTrue(component.FindAll(".bit-rte-tlb .bit-rte-btn").Count >= 4);
+        // The inline group renders exactly four buttons (bold, italic, underline, strikethrough)
+        // and no other groups, so the count must be exact to catch extra groups leaking in.
+        Assert.AreEqual(4, component.FindAll(".bit-rte-tlb .bit-rte-btn").Count);
     }
 
     [TestMethod]

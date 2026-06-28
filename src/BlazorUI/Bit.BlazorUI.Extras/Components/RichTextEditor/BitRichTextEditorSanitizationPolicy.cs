@@ -34,7 +34,7 @@ public sealed class BitRichTextEditorSanitizationPolicy
             "blockquote", "pre", "code",
             "a", "img", "hr",
             "table", "thead", "tbody", "tr", "th", "td",
-            "audio", "video", "iframe", "source"
+            "audio", "video", "source"
         },
         AllowedAttributes = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)
         {
@@ -45,7 +45,6 @@ public sealed class BitRichTextEditorSanitizationPolicy
             ["th"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "colspan", "rowspan" },
             ["audio"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src", "controls" },
             ["video"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src", "controls", "width", "height" },
-            ["iframe"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src", "width", "height", "allow", "allowfullscreen", "frameborder" },
             ["source"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src", "type" }
         },
         AllowedUriSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
