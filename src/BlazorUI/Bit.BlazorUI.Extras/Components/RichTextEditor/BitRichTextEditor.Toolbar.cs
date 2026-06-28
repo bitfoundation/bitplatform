@@ -86,6 +86,12 @@ public partial class BitRichTextEditor
             if (seenIds.Add(item.Id) is false)
                 throw new ArgumentException($"BitRichTextEditor has duplicate custom toolbar item Id '{item.Id}'.", nameof(ToolbarConfig));
 
+            // Custom ids share the namespace used by OrderedToolbarIds()/RenderGroup() to resolve
+            // built-in groups; a collision with a reserved id (e.g. history, image) would shadow
+            // or be shadowed by a built-in group, so reject it outright.
+            if (DefaultGroupOrder.Any(g => string.Equals(g.Id, item.Id, StringComparison.OrdinalIgnoreCase)))
+                throw new ArgumentException($"BitRichTextEditor custom toolbar item Id '{item.Id}' collides with a built-in toolbar group id.", nameof(ToolbarConfig));
+
             if (string.IsNullOrWhiteSpace(item.AriaLabel))
                 throw new ArgumentException($"BitRichTextEditor custom toolbar item '{item.Id}' has a blank AriaLabel.", nameof(ToolbarConfig));
         }

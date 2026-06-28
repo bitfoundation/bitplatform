@@ -39,11 +39,13 @@ public partial class BitRichTextEditor
         }
         if (_findTerm.Length > 1000)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", "Search term is too long."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", Label("find-too-long", "Search term is too long.")));
             return;
         }
         var count = await _js.BitRichTextEditorFind(_editorRef, _findTerm, _findCaseSensitive);
-        _findCount = count == 0 ? "No matches" : $"{count} match{(count == 1 ? "" : "es")}";
+        _findCount = count == 0
+            ? Label("no-matches", "No matches")
+            : $"{count} {(count == 1 ? Label("match", "match") : Label("matches", "matches"))}";
     }
 
     private async Task ReplaceCurrentAsync()
@@ -53,7 +55,7 @@ public partial class BitRichTextEditor
         if (ControlsDisabled || string.IsNullOrEmpty(_findTerm)) return;
         if (_findTerm.Length > 1000)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", "Search term is too long."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", Label("find-too-long", "Search term is too long.")));
             return;
         }
         await _js.BitRichTextEditorReplaceCurrent(_editorRef, _findTerm, _replaceTerm, _findCaseSensitive);
@@ -65,10 +67,10 @@ public partial class BitRichTextEditor
         if (ControlsDisabled || string.IsNullOrEmpty(_findTerm)) return;
         if (_findTerm.Length > 1000)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", "Search term is too long."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", Label("find-too-long", "Search term is too long.")));
             return;
         }
         var n = await _js.BitRichTextEditorReplaceAll(_editorRef, _findTerm, _replaceTerm, _findCaseSensitive);
-        _findCount = $"{n} replaced";
+        _findCount = $"{n} {Label("replaced", "replaced")}";
     }
 }

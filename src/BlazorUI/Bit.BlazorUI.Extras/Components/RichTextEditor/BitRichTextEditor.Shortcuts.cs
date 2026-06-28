@@ -29,7 +29,10 @@ public partial class BitRichTextEditor
     [JSInvokable("OnShortcut")]
     public async Task<bool> _OnShortcut(string key, bool ctrl, bool shift, bool alt)
     {
-        if (ReadOnly) return false;
+        // Source view (and ReadOnly) disable command execution: ExecAsync no-ops when
+        // ControlsDisabled, so report the shortcut as unhandled instead of suppressing the
+        // browser default for a command that will not run.
+        if (ControlsDisabled) return false;
 
         var combo = BuildComboKey(key, ctrl, shift, alt);
         string? command = null;

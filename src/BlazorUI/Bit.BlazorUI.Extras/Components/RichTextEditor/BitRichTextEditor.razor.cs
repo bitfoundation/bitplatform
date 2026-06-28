@@ -291,6 +291,13 @@ public partial class BitRichTextEditor : BitComponentBase
                 await _js.BitRichTextEditorSetHtml(_editorRef, _currentHtml);
             }
 
+            // Sanitization may have changed the markup; push the cleaned HTML back through the
+            // binding so @bind-Value cannot retain unsafe content that was stripped for rendering.
+            if ((Value ?? "") != html)
+            {
+                await AssignValue(html);
+            }
+
             _initialized = true;
         }
 
@@ -324,6 +331,15 @@ public partial class BitRichTextEditor : BitComponentBase
         }
         _currentHtml = html;
         await _js.BitRichTextEditorSetHtml(_editorRef, html);
+
+        // Keep the bound model in sync with the sanitized/rendered content: if the policy
+        // stripped anything, write the cleaned HTML back so @bind-Value never holds the
+        // unsafe original. The guard above (Value == _currentHtml) short-circuits the
+        // re-entrant OnValueSet that this assignment triggers.
+        if ((Value ?? "") != html)
+        {
+            await AssignValue(html);
+        }
     }
 
 

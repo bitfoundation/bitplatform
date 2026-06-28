@@ -38,7 +38,7 @@ public sealed class BitRichTextEditorSanitizationPolicy
         },
         AllowedAttributes = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)
         {
-            ["*"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "style", "class", "dir" },
+            ["*"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "class", "dir" },
             ["a"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "href", "title", "target", "rel" },
             ["img"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "src", "alt", "width", "height" },
             ["td"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "colspan", "rowspan" },

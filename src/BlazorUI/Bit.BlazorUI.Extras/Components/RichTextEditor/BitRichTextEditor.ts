@@ -358,6 +358,9 @@ namespace BitBlazorUI {
                 audio: new Set(['src', 'controls']),
                 source: new Set(['src', 'type'])
             };
+            // Global attributes permitted on any allowed tag (e.g. wrapper p/br). Everything else
+            // is denied by default so non-media tags cannot smuggle arbitrary attributes through.
+            const globalAttrs = new Set(['class', 'dir']);
             const iframeHosts = ['www.youtube-nocookie.com', 'youtube-nocookie.com', 'www.youtube.com', 'youtube.com', 'player.vimeo.com'];
 
             tpl.content.querySelectorAll('*').forEach((el: Element) => {
@@ -372,8 +375,11 @@ namespace BitBlazorUI {
                 for (const attr of Array.from(el.attributes)) {
                     const name = attr.name.toLowerCase();
                     if (name.startsWith('on')) { el.removeAttribute(attr.name); continue; }
+                    // Default deny: keep only the per-tag media allowlist or the safe global
+                    // attributes; drop anything else regardless of which tag carries it.
                     const allowed = allowedAttrs[tag];
-                    if (allowed && !allowed.has(name)) { el.removeAttribute(attr.name); continue; }
+                    const permitted = allowed ? allowed.has(name) : globalAttrs.has(name);
+                    if (!permitted) { el.removeAttribute(attr.name); continue; }
                     if (name === 'src') {
                         const val = (attr.value || '').trim();
                         if (tag === 'iframe') {
@@ -621,6 +627,9 @@ namespace BitBlazorUI {
 
         // Removes the leading "/" trigger then applies a slash-menu command.
         public static applySlashCommand(editor: any, command: string) {
+            // Restore the editor's saved range first so focus is back inside the editor and the
+            // slash block lookup targets the real caret position rather than a stale selection.
+            RichTextEditor.restoreSelection(editor);
             const block = RichTextEditor.currentBlock(editor);
             if (block && (block.textContent || '').startsWith('/')) {
                 block.textContent = block.textContent!.slice(1);

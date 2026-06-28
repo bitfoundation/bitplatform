@@ -24,6 +24,16 @@ public partial class BitRichTextEditor
             return;
         }
 
+        // If ReadOnly was flipped on while source view was open, leaving must not sanitize,
+        // assign, or emit the edited source: that would mutate content the read-only contract
+        // forbids. Just exit back to the rendered (unchanged) view.
+        if (ReadOnly)
+        {
+            _inSourceView = false;
+            StateHasChanged();
+            return;
+        }
+
         // Exiting: validate, sanitize, render.
         if (await _js.BitRichTextEditorValidateHtml(_sourceText) is false)
         {

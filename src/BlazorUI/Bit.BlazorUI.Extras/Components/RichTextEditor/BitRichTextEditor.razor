@@ -18,7 +18,7 @@
             }
         </div>
 
-        @if (_showLinkInput && ReadOnly is false)
+        @if (_showLinkInput && ControlsDisabled is false)
         {
             <div class="bit-rte-bar">
                 <input type="url" class="bit-rte-inp" aria-label="@Label("link-url", "Link URL")"
@@ -34,7 +34,7 @@
             </div>
         }
 
-        @if (_showImageInput && ReadOnly is false)
+        @if (_showImageInput && ControlsDisabled is false)
         {
             <div class="bit-rte-bar">
                 <input type="url" class="bit-rte-inp" aria-label="@Label("image-url", "Image URL")"
@@ -45,7 +45,7 @@
             </div>
         }
 
-        @if (_showMediaInput && ReadOnly is false)
+        @if (_showMediaInput && ControlsDisabled is false)
         {
             <div class="bit-rte-bar">
                 <input type="url" class="bit-rte-inp" aria-label="@Label("media-url", "Media URL")"
@@ -56,7 +56,7 @@
             </div>
         }
 
-        @if (_showFind && ReadOnly is false)
+        @if (_showFind && ControlsDisabled is false)
         {
             <div class="bit-rte-bar">
                 <input type="text" class="bit-rte-inp" aria-label="@Label("find", "Find")" placeholder="@Label("find", "Find")"
@@ -71,7 +71,7 @@
             </div>
         }
 
-        @if (_showEmoji && ReadOnly is false)
+        @if (_showEmoji && ControlsDisabled is false)
         {
             <div class="bit-rte-emoji-panel">
                 <input type="text" class="bit-rte-inp" aria-label="@Label("search-emoji", "Search emoji")"
@@ -327,7 +327,7 @@
     </div>;
 
     private RenderFragment FindGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showFind ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("find-replace", "Find & replace")" aria-label="@Label("find-replace-label", "Find and replace")" disabled="@ReadOnly"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showFind ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Label("find-replace", "Find & replace")" aria-label="@Label("find-replace-label", "Find and replace")" disabled="@ControlsDisabled"
                 @onmousedown:preventDefault="true" @onclick="ToggleFind">🔍</button>
     </div>;
 
