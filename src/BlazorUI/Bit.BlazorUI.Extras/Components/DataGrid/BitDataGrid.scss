@@ -309,6 +309,9 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-drag-handle {
+    background: none;
+    border: none;
+    padding: 0;
     cursor: grab;
     color: var(--bit-clr-fg-sec);
     user-select: none;

@@ -421,22 +421,25 @@
     {
         var current = GetFilter(column)?.Value;
         var type = column.EffectiveDataType;
+        // Every filter control needs an accessible name so screen readers can identify which column
+        // it targets (placeholders and bare selects are not exposed as accessible names).
+        var filterLabel = $"Filter by {column.DisplayTitle}";
 
         if (type is BitDataGridColumnDataType.Number)
         {
-            <input class="bit-dtg-filter-input" type="number" placeholder="="
+            <input class="bit-dtg-filter-input" type="number" placeholder="=" aria-label="@filterLabel"
                    value="@FormatFilterNumber(current)"
                    @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)" />
         }
         else if (type is BitDataGridColumnDataType.Date or BitDataGridColumnDataType.DateTime or BitDataGridColumnDataType.DateTimeOffset)
         {
-            <input class="bit-dtg-filter-input" type="date"
+            <input class="bit-dtg-filter-input" type="date" aria-label="@filterLabel"
                    value="@FormatFilterDate(current)"
                    @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)" />
         }
         else if (type is BitDataGridColumnDataType.Boolean)
         {
-            <select class="bit-dtg-filter-input" value="@(current?.ToString()?.ToLowerInvariant())"
+            <select class="bit-dtg-filter-input" aria-label="@filterLabel" value="@(current?.ToString()?.ToLowerInvariant())"
                     @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)">
                 <option value="">All</option>
                 <option value="true">True</option>
@@ -445,7 +448,7 @@
         }
         else if (type is BitDataGridColumnDataType.Enum)
         {
-            <select class="bit-dtg-filter-input" value="@(current?.ToString())"
+            <select class="bit-dtg-filter-input" aria-label="@filterLabel" value="@(current?.ToString())"
                     @onchange="e => SetTypedFilterAsync(column, (string?)e.Value)">
                 <option value="">All</option>
                 @foreach (var name in EnumNames(column))
@@ -456,7 +459,7 @@
         }
         else
         {
-            <input class="bit-dtg-filter-input" placeholder="Filter…"
+            <input class="bit-dtg-filter-input" placeholder="Filter…" aria-label="@filterLabel"
                    value="@(current?.ToString())"
                    @onchange="e => SetFilterAsync(column, BitDataGridFilterOperator.Contains, (string?)e.Value)" />
         }
@@ -575,7 +578,7 @@
                 var to = Math.Min(CurrentPage * _effectivePageSize, TotalCount);
             }
             <span>@from–@to of @TotalCount</span>
-            <select class="bit-dtg-page-size" @onchange="e => { if (int.TryParse((string?)e.Value, out var ps)) return SetPageSizeAsync(ps); return Task.CompletedTask; }">
+            <select class="bit-dtg-page-size" aria-label="Rows per page" @onchange="e => { if (int.TryParse((string?)e.Value, out var ps)) return SetPageSizeAsync(ps); return Task.CompletedTask; }">
                 @foreach (var size in PageSizeOptions)
                 {
                     <option value="@size" selected="@(size == PageSize)">@size / page</option>

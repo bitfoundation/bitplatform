@@ -58,9 +58,11 @@ public partial class BitQuickGridPaginator : IDisposable
     public BitQuickGridPaginator()
     {
         // The "total item count" handler doesn't need to do anything except cause this component to
-        // re-render, so the paginator UI (page summary and navigation buttons) refreshes when the
-        // grid reports a new total item count.
-        _totalItemCountChanged = new(EventCallback.Factory.Create<BitQuickGridPaginationState>(this, () => StateHasChanged()));
+        // re-render. Invoking this EventCallback already routes through the paginator's
+        // IHandleEvent.HandleEventAsync (the receiver is `this`), which re-renders the component on its
+        // own, so the callback body is intentionally empty — calling StateHasChanged() here as well
+        // would queue a second, redundant render.
+        _totalItemCountChanged = new(EventCallback.Factory.Create<BitQuickGridPaginationState>(this, () => { }));
     }
 
     private Task GoFirstAsync() => GoToPageAsync(0);

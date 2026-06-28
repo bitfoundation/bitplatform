@@ -92,8 +92,8 @@ public static class BitDataGridDataProcessor
                 var keyId = g.Key switch
                 {
                     null => "∅",
-                    IFormattable f => $"{g.Key.GetType().Name}:{f.ToString(null, CultureInfo.InvariantCulture)}",
-                    _ => $"{g.Key.GetType().Name}:{g.Key}"
+                    IFormattable f => $"{g.Key.GetType().FullName ?? g.Key.GetType().Name}:{f.ToString(null, CultureInfo.InvariantCulture)}",
+                    _ => $"{g.Key.GetType().FullName ?? g.Key.GetType().Name}:{g.Key}"
                 };
                 // Include the grouping column id in the path so the collapse/expand state is scoped to
                 // the column that produced the group. Without it, changing the grouped column would let
@@ -208,10 +208,11 @@ public static class BitDataGridDataProcessor
                 return value is not null && !string.IsNullOrEmpty(value.ToString());
         }
 
-        // A blank (null, empty or whitespace-only) filter value carries no criteria, so treat it like
-        // an omitted filter and match every row. This runs before the comparison and string-operator
-        // branches so operators like DoesNotContain or the numeric comparisons never evaluate against "".
-        if (filter.Value is null || (filter.Value is string blank && string.IsNullOrWhiteSpace(blank)))
+        // An empty or whitespace-only string filter value carries no criteria, so treat it like an
+        // omitted filter and match every row. A *null* filter value, however, is a meaningful operand:
+        // it must flow into the numeric/comparable branch below so Equals/NotEquals can distinguish null
+        // rows from non-null rows (and string operators handle null via their own null guard).
+        if (filter.Value is string blank && string.IsNullOrWhiteSpace(blank))
             return true;
 
         // Numeric / comparable operators

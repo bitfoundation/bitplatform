@@ -517,7 +517,8 @@ private List<Product> products = SampleData.Generate(12);
 
 private void OnReorder(BitDataGridRowReorderEventArgs<Product> e)
 {
-    // e.DraggedItem, e.FromIndex, e.ToIndex
+    // e.DraggedItem, e.TargetItem, e.FromIndex, e.ToIndex
+    // FromIndex/ToIndex are int? and may be null when Items is not an indexable IList<T>.
 }" + ProductModelCode + SampleDataCode;
 
     private readonly string example16RazorCode = @"

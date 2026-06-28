@@ -21,11 +21,17 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
         if (x is IComparable cx && x.GetType() == y.GetType())
             return cx.CompareTo(y);
 
-        // Mixed types: compare by string representation so the result is symmetric regardless of
-        // argument order. A one-sided Convert.ChangeType (coercing y to x's type) could order the same
-        // pair differently when the operands are swapped, breaking the IComparer<T> contract. When the
-        // strings are equal we treat the values as equivalent for ordering (return 0) rather than
-        // attempting an asymmetric type-specific tie-break.
+        // Mixed types: order first by a stable type discriminator (the full type name) so the ordering
+        // is a total order and stays transitive across the whole column. Without this, same-type values
+        // ordered via CompareTo and cross-type values ordered via string could disagree (e.g. ints 2 and
+        // 10 sort numerically, but 2 vs the string "100" sorting by text would place 2 after it, breaking
+        // transitivity and the IComparer<T> contract). Within the same type name we then fall back to a
+        // symmetric, case-insensitive string comparison.
+        var tx = x.GetType().FullName ?? x.GetType().Name;
+        var ty = y.GetType().FullName ?? y.GetType().Name;
+        var typeOrder = string.Compare(tx, ty, StringComparison.Ordinal);
+        if (typeOrder != 0) return typeOrder;
+
         return string.Compare(x.ToString(), y.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 }

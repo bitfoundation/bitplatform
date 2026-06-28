@@ -622,7 +622,7 @@ public class Openfda
 </style>
 
 <div class=""grid"">
-    <BitQuickGrid @ref=""productsDataGrid"" ItemsProvider=""@productsItemsProvider"" ItemKey=""(p => p.Id)"" TGridItem=""ProductDto"" Virtualize>
+    <BitQuickGrid @ref=""productsDataGrid"" ItemsProvider=""@productsItemsProvider"" ItemKey=""(p => p.Id)"" TGridItem=""ProductDto"" Virtualize ItemSize=""32"">
         <BitQuickGridPropertyColumn Property=""@(p => p.Id)"" Sortable=""true"" IsDefaultSort=""BitQuickGridSortDirection.Ascending"" />
         <BitQuickGridPropertyColumn Property=""@(p => p.Name)"" Sortable=""true"" />
         <BitQuickGridPropertyColumn Property=""@(p => p.Price)"" Sortable=""true"" />

@@ -73,7 +73,10 @@ namespace BitBlazorUI {
                 if (typeof colOptions.scrollIntoViewIfNeeded === 'function') {
                     colOptions.scrollIntoViewIfNeeded();
                 } else {
-                    colOptions.scrollIntoView();
+                    // Fall back to a nearest-edge scroll so browsers without scrollIntoViewIfNeeded
+                    // don't scroll more aggressively than needed (the default scrollIntoView() can
+                    // jump the popup fully into view and shift the grid).
+                    colOptions.scrollIntoView({ block: 'nearest', inline: 'nearest' });
                 }
 
                 const autoFocusElem = colOptions.querySelector('[autofocus]');

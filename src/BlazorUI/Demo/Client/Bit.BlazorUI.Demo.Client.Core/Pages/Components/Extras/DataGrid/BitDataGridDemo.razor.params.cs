@@ -30,7 +30,7 @@ public partial class BitDataGridDemo
         new() { Name = "Groupable", Type = "bool", DefaultValue = "false", Description = "Enables grouping via a header button on groupable columns." },
         new() { Name = "ShowToolbar", Type = "bool", DefaultValue = "false", Description = "Renders the toolbar area." },
         new() { Name = "ShowColumnChooser", Type = "bool", DefaultValue = "false", Description = "Renders a column show/hide chooser in the toolbar." },
-        new() { Name = "ShowCsvExport", Type = "bool", DefaultValue = "false", Description = "Renders a CSV export link of the current view." },
+        new() { Name = "ShowCsvExport", Type = "bool", DefaultValue = "false", Description = "Renders a CSV export button for the current view." },
         new() { Name = "CellNavigation", Type = "bool", DefaultValue = "false", Description = "Enables keyboard cell navigation with a roving tabindex." },
         new() { Name = "RowReorderable", Type = "bool", DefaultValue = "false", Description = "Enables drag-and-drop row reordering." },
         new() { Name = "OnRowReorder", Type = "EventCallback<BitDataGridRowReorderEventArgs<TItem>>", DefaultValue = "", Description = "Raised when a row is dropped onto another row during reordering.", LinkType = LinkType.Link, Href = "#BitDataGridRowReorderEventArgs" },

@@ -400,6 +400,17 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
                 $"{nameof(OnLoadMore)} (infinite-scrolling mode) at the same time. Provide only one data callback.");
         }
 
+        // Tree mode flattens the bound Items via ProcessTreeData and never calls the remote data
+        // callbacks, so combining it with OnRead/OnLoadMore would let RefreshAsync bypass tree
+        // processing and present a flat remote list under a tree UI. Reject the ambiguous config.
+        if (ChildrenSelector is not null && (OnRead is not null || OnLoadMore is not null))
+        {
+            throw new InvalidOperationException(
+                $"{nameof(BitDataGrid<TItem>)} cannot combine tree mode ({nameof(ChildrenSelector)}) with " +
+                $"{nameof(OnRead)} (server mode) or {nameof(OnLoadMore)} (infinite-scrolling mode). " +
+                $"Tree data must be provided through {nameof(Items)}.");
+        }
+
         _effectivePageSize = Pageable ? Math.Max(1, PageSize) : int.MaxValue;
 
         // Reset the current selection whenever the selection mode changes
@@ -755,8 +766,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         catch (JSDisconnectedException) { }
         catch (JSException) { }
         _infiniteSelfRef?.Dispose();
+        // Only signal cancellation here; deterministic disposal of _loadCts belongs to the request
+        // lifecycle (ResetLoadCancellation). Disposing it during teardown could surface an
+        // ObjectDisposedException for an OnRead/OnLoadMore call still holding the token.
         _loadCts?.Cancel();
-        _loadCts?.Dispose();
         GC.SuppressFinalize(this);
     }
 

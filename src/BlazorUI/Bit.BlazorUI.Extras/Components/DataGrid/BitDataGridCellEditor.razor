@@ -24,7 +24,7 @@
     case BitDataGridColumnDataType.DateTime:
         <input type="datetime-local" class="bit-dtg-editor"
                value="@(GetDateTime())"
-               @onchange="e => SetNullable(e.Value)" />
+               @onchange="e => SetDateTime(e.Value)" />
         break;
 
     case BitDataGridColumnDataType.DateTimeOffset:
@@ -105,6 +105,26 @@
         => Column.Accessor is not null
         && Nullable.GetUnderlyingType(Column.Accessor.PropertyType) is not null
         && Column.Accessor.UnderlyingType.IsEnum;
+
+    // <input type="datetime-local"> has no time-zone/Kind information, so a naive parse back through
+    // the property accessor yields DateTimeKind.Unspecified and would drop the original Utc/Local
+    // semantics (changing the represented instant on round-trip). Re-stamp the parsed value with the
+    // current value's Kind so edited DateTimes preserve Utc/Local consistently — mirroring how
+    // SetDateTimeOffset reconstructs the offset.
+    private void SetDateTime(object? raw)
+    {
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        if (raw is string s && !string.IsNullOrEmpty(s)
+            && DateTime.TryParse(s, inv, System.Globalization.DateTimeStyles.None, out var local))
+        {
+            var kind = Value is DateTime current ? current.Kind : DateTimeKind.Unspecified;
+            Grid.SetEditValue(Column, DateTime.SpecifyKind(local, kind));
+        }
+        else
+        {
+            SetNullable(raw);
+        }
+    }
 
     private void Set(object? raw) => Grid.SetEditValue(Column, raw);
 
