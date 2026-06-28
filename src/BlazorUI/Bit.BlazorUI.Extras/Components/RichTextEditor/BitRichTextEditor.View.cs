@@ -44,7 +44,9 @@ public partial class BitRichTextEditor
 
     private async Task SetDirectionAsync(string dir)
     {
-        if (ReadOnly) return;
+        // Guard on ControlsDisabled (ReadOnly || source view) so block-direction changes can't
+        // mutate the hidden editor DOM while source view is active, matching the other commands.
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorSetBlockDirection(_editorRef, dir);
     }
 

@@ -277,10 +277,11 @@ public partial class BitRichTextEditor : BitComponentBase
             await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, setupOptions);
             _lastSetupSnapshot = SerializeSetupOptions(setupOptions);
 
-            // Sanitize the initial Value through the same bridge policy used by OnValueSet so the
-            // first content load cannot bypass SanitizationPolicy.
+            // Sanitize the initial Value through the bridge so the first content load can't bypass
+            // sanitization. The bridge enforces a secure default allowlist when no SanitizationPolicy
+            // is set, and the custom policy when one is, so sanitize any non-empty HTML either way.
             var html = Value ?? "";
-            if (SanitizationPolicy is not null && string.IsNullOrEmpty(html) is false)
+            if (string.IsNullOrEmpty(html) is false)
             {
                 html = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
             }
@@ -325,7 +326,10 @@ public partial class BitRichTextEditor : BitComponentBase
         if ((Value ?? "") == _currentHtml) return; // originated from the editor
 
         var html = Value ?? "";
-        if (SanitizationPolicy is not null && string.IsNullOrEmpty(html) is false)
+        // Sanitize any non-empty HTML through the bridge regardless of SanitizationPolicy: the
+        // bridge applies its secure default allowlist when no custom policy is set and the custom
+        // policy when one is, so an updated Value can never bypass sanitization.
+        if (string.IsNullOrEmpty(html) is false)
         {
             html = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
         }

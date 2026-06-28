@@ -600,7 +600,11 @@ namespace BitBlazorUI {
         public static enableToolbarRoving(toolbar: any) {
             if (!toolbar || toolbar._roving) return;
             toolbar._roving = true;
-            const items = () => [...toolbar.querySelectorAll('button,select,input,label')] as HTMLElement[];
+            // Only enabled interactive controls join the roving tab order. Disabled
+            // buttons/inputs/selects and non-focusable <label> wrappers are excluded so keyboard
+            // navigation never traps on an item that can't take focus.
+            const items = () => ([...toolbar.querySelectorAll('button,select,input')] as HTMLElement[])
+                .filter(el => !(el as HTMLButtonElement | HTMLInputElement | HTMLSelectElement).disabled);
             const setTabs = (activeIdx: number) => {
                 const list = items();
                 list.forEach((el, i) => el.tabIndex = i === activeIdx ? 0 : -1);

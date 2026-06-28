@@ -399,11 +399,16 @@ public partial class BitRichTextEditorDemo
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             // The bound value is HTML, so measure normalized visible text: strip tags, decode
-            // entities, and trim before counting. Empty bodies are left to the [Required] check
-            // so an empty value isn't reported by both rules.
+            // entities, and trim. Markup with no visible text (e.g. "<p></p>") passes [Required]
+            // because the raw HTML is non-empty, so require non-whitespace visible text here and
+            // base the min-length check on that same normalized text.
             var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? "", "<[^>]+>", "");
             var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
-            if (text.Length > 0 && text.Length < 20)
+            if (string.IsNullOrEmpty(Body) is false && text.Length == 0)
+            {
+                yield return new ValidationResult("The body is required.", [nameof(Body)]);
+            }
+            else if (text.Length > 0 && text.Length < 20)
             {
                 yield return new ValidationResult("Add a bit more detail (min 20 characters).", [nameof(Body)]);
             }
@@ -614,10 +619,13 @@ public class FormModel : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         // Body is HTML, so validate the normalized visible text: strip tags, decode entities,
-        // and trim. Empty bodies are left to [Required] so they aren't reported twice.
+        // and trim. Markup with no visible text passes [Required] (the raw HTML is non-empty),
+        // so require non-whitespace visible text and base the min-length check on it too.
         var stripped = System.Text.RegularExpressions.Regex.Replace(Body ?? """", ""<[^>]+>"", """");
         var text = System.Net.WebUtility.HtmlDecode(stripped).Trim();
-        if (text.Length > 0 && text.Length < 20)
+        if (string.IsNullOrEmpty(Body) is false && text.Length == 0)
+            yield return new ValidationResult(""The body is required."", [nameof(Body)]);
+        else if (text.Length > 0 && text.Length < 20)
             yield return new ValidationResult(""Add a bit more detail (min 20 characters)."", [nameof(Body)]);
     }
 }";
