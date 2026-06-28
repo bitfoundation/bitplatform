@@ -464,8 +464,20 @@ button.bit-dtg-htext {
     font: inherit;
 }
 
+/* The boolean editor reuses .bit-dtg-editor for class consistency, so fully strip the text-input
+   chrome (padding/border/background/sizing) here and restore the platform's native checkbox look
+   instead of leaving it boxed like a text field. Non-boolean editors keep the .bit-dtg-editor styles. */
 .bit-dtg-editor-check {
     width: auto;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    appearance: auto;
+    -webkit-appearance: checkbox;
+    accent-color: var(--bit-clr-pri);
+    cursor: pointer;
 }
 
 .bit-dtg-filter-input {

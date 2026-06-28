@@ -60,8 +60,9 @@ public sealed class BitDataGridPropertyAccessor<TItem>
     {
         // A cleared edit can arrive as an empty string (e.g. a select/text editor reset to "") rather
         // than null. Normalize it to null up front so the nullable-target handling below clears the
-        // value, while non-nullable value targets still reject the clear and keep the previous value.
-        if (value is string es && es.Length == 0)
+        // value — but only for non-string targets. For a string-typed property, "" is a legitimate
+        // user edit (an intentionally emptied text cell) and must be preserved rather than nulled.
+        if (value is string es && es.Length == 0 && PropertyType != typeof(string))
             value = null;
 
         if (value is null)

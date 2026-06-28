@@ -80,7 +80,7 @@
 
         <DemoExample Title="Virtualize" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div class="grid">
-                <BitQuickGrid @ref="dataGrid" ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize>
+                <BitQuickGrid @ref="dataGrid" ItemsProvider="@foodRecallProvider" TGridItem="FoodRecall" Virtualize ItemSize="32">
                     <BitQuickGridPropertyColumn Property="@(c => c.EventId)" />
                     <BitQuickGridPropertyColumn Property="@(c => c.State)" />
                     <BitQuickGridPropertyColumn Property="@(c => c.City)" />
