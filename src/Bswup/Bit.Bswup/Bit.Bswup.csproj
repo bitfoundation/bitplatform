@@ -44,7 +44,7 @@
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildJavaScript" Inputs="Scripts/bit-bswup.ts;Scripts/bit-bswup.progress.ts;Scripts/bit-bswup.sw.ts;Scripts/bit-bswup.sw-cleanup.ts;tsconfig.json;tsconfig.sw.json" Outputs="wwwroot/bit-bswup.js;wwwroot/bit-bswup.progress.js;wwwroot/bit-bswup.sw.js;wwwroot/bit-bswup.sw-cleanup.js">
+    <Target Name="BuildJavaScript" Inputs="Scripts/bit-bswup.ts;Scripts/bit-bswup.progress.ts;Scripts/bit-bswup.sw.ts;Scripts/bit-bswup.sw-cleanup.ts;tsconfig.json;tsconfig.sw.json;package.json;package-lock.json" Outputs="wwwroot/bit-bswup.js;wwwroot/bit-bswup.progress.js;wwwroot/bit-bswup.sw.js;wwwroot/bit-bswup.sw-cleanup.js">
         <!-- Page scripts (DOM lib) and service-worker scripts (WebWorker lib) are compiled by
              separate tsconfigs because the DOM and WebWorker type libraries cannot coexist in
              one compilation. Both emit into wwwroot. -->

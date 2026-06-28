@@ -428,11 +428,13 @@ function handleMessage(e: MessageEvent<string>) {
     }
 
     if (e.data === 'BLAZOR_STARTED') {
-        createAssetsCache(true);
+        // Keep the worker alive until the post-start top-up pass settles; createAssetsCache(true)
+        // is designed to never reject, so no extra error handling is needed here.
+        e.waitUntil(createAssetsCache(true));
     }
 
     if (e.data === 'CLEAN_UP') {
-        deleteOldCaches(); // remove the old caches
+        e.waitUntil(deleteOldCaches()); // remove the old caches
     }
 }
 
