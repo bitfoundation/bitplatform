@@ -119,6 +119,7 @@ public partial class BitDataGridDemo
                 new() { Name = "Take", Type = "int?", DefaultValue = "null", Description = "Maximum number of items to return (null means all)." },
                 new() { Name = "Sorts", Type = "IReadOnlyList<BitDataGridSortDescriptor>", DefaultValue = "[]", Description = "The active sort descriptors ordered by priority.", LinkType = LinkType.Link, Href = "#BitDataGridSortDescriptor" },
                 new() { Name = "Filters", Type = "IReadOnlyList<BitDataGridFilterDescriptor>", DefaultValue = "[]", Description = "The active filter descriptors.", LinkType = LinkType.Link, Href = "#BitDataGridFilterDescriptor" },
+                new() { Name = "Groups", Type = "IReadOnlyList<BitDataGridGroupDescriptor>", DefaultValue = "[]", Description = "The active group descriptors in nesting order, letting a server-side handler reconstruct the grouping. Empty when no grouping is active." },
                 new() { Name = "CancellationToken", Type = "CancellationToken", DefaultValue = "", Description = "A token that is cancelled when the request is superseded by a newer one." },
             ],
         },

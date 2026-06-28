@@ -11,6 +11,7 @@ public class BitQuickGridPropertyColumn<TGridItem, TProp> : BitQuickGridColumnBa
 {
     private Expression<Func<TGridItem, TProp>>? _lastAssignedProperty;
     private string? _lastAssignedFormat;
+    private string? _autoTitle;
     private Func<TGridItem, string?>? _cellTextFunc;
     private BitQuickGridSort<TGridItem>? _sortBuilder;
 
@@ -69,9 +70,17 @@ public class BitQuickGridPropertyColumn<TGridItem, TProp> : BitQuickGridColumnBa
             _lastAssignedFormat = Format;
         }
 
-        if (Title is null && Property.Body is MemberExpression memberExpression)
+        if (Property.Body is MemberExpression memberExpression)
         {
-            Title = memberExpression.Member.Name;
+            // Auto-derive the header from the member name unless the consumer set Title explicitly. A Title
+            // still equal to the previously derived name is treated as auto-managed, so a changed Property
+            // replaces the old member name instead of leaving a stale header.
+            var derived = memberExpression.Member.Name;
+            if (Title is null || Title == _autoTitle)
+            {
+                Title = derived;
+            }
+            _autoTitle = derived;
         }
     }
 

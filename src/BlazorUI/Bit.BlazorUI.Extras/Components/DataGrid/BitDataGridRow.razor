@@ -106,6 +106,7 @@
             {
                 <button type="button" class="bit-dtg-icon-btn bit-dtg-tree-toggle"
                         @onclick="() => Grid.ToggleTreeNodeAsync(Item)" @onclick:stopPropagation="true"
+                        @onkeydown:stopPropagation="true"
                         aria-label="Toggle children" aria-expanded="@Grid.IsTreeExpanded(Item)">
                     @(Grid.IsTreeExpanded(Item) ? "▾" : "▸")
                 </button>

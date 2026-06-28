@@ -896,7 +896,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         var isEmpty = value is null || (value is string s && string.IsNullOrWhiteSpace(s));
         if (isEmpty && op is not (BitDataGridFilterOperator.IsEmpty or BitDataGridFilterOperator.IsNotEmpty))
         {
-            if (existing is not null) _filters.Remove(existing);
+            // Remove every descriptor for the column, not just the first match, so clearing also drops
+            // the paired descriptors emitted by a range filter (e.g. the half-open same-day date range).
+            _filters.RemoveAll(f => f.ColumnId == column.Id);
         }
         else if (existing is null)
         {
@@ -906,6 +908,23 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         {
             existing.Operator = op;
             existing.Value = value;
+        }
+        _currentPage = 1;
+        await RefreshAsync();
+    }
+
+    // Applies a half-open [start, endExclusive) range for a date/time column as two standard comparison
+    // descriptors (>= start AND < endExclusive), which the data processor and OnRead consumers AND together.
+    // This keeps day-level date filtering boundary-safe for server-side consumers that compare against the
+    // raw values, instead of a single midnight Equals descriptor an exact match would never satisfy. A null
+    // start clears the column's filter.
+    internal async Task SetDateRangeFilterAsync(BitDataGridColumn<TItem> column, object? start, object? endExclusive)
+    {
+        _filters.RemoveAll(f => f.ColumnId == column.Id);
+        if (start is not null && endExclusive is not null)
+        {
+            _filters.Add(new BitDataGridFilterDescriptor { ColumnId = column.Id, Operator = BitDataGridFilterOperator.GreaterThanOrEqual, Value = start });
+            _filters.Add(new BitDataGridFilterDescriptor { ColumnId = column.Id, Operator = BitDataGridFilterOperator.LessThan, Value = endExclusive });
         }
         _currentPage = 1;
         await RefreshAsync();
@@ -1215,7 +1234,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     {
         if (!RowReorderEnabled) return;
 
-        var view = _view;
+        // Confine neighbor selection to the current page slice so keyboard reordering never jumps across
+        // pages. With no sort/filter/group active (RowReorderEnabled requires that), _pageItems is either
+        // the visible page (when paging) or the full view, so it is always the correct lookup set.
+        var view = _pageItems;
         int from = -1;
         for (int i = 0; i < view.Count; i++)
         {
@@ -1504,10 +1526,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     // ------------------------------------------------------- Column chooser
     internal void ToggleColumnChooser() { _showColumnChooserPanel = !_showColumnChooserPanel; StateHasChanged(); }
-    internal async Task SetColumnVisibilityAsync(BitDataGridColumn<TItem> column, bool visible)
+    internal void SetColumnVisibilityAsync(BitDataGridColumn<TItem> column, bool visible)
     {
+        // Column visibility is a layout-only change, so just re-render. Calling RefreshAsync here would
+        // needlessly re-run OnRead/ResetInfiniteAsync (requerying or clearing loaded data) for what is
+        // purely a column-chooser toggle.
         column.Visible = visible;
-        await RefreshAsync();
+        StateHasChanged();
     }
 
     // ----------------------------------------------------------- Identity

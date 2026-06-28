@@ -463,9 +463,10 @@
     };
 
     // Translates the raw editor input into a typed value + operator for the column's data type, then
-    // applies it. Text columns keep the "contains" behavior; the rest use Equals against a typed value.
-    // Date/DateTime/DateTimeOffset values are parsed to a calendar day (midnight) and matched on the day
-    // (see BitDataGridDataProcessor), so a row's time-of-day no longer prevents an equality match.
+    // applies it. Text columns keep the "contains" behavior; numbers/booleans/enums use Equals against a
+    // typed value. DateTime/DateTimeOffset use a boundary-safe half-open same-day range ([start, nextDay))
+    // built from standard comparison operators, so a row's time-of-day never prevents a match and remote
+    // OnRead consumers can apply the filter with ordinary comparisons (see SetDateRangeFilterAsync).
     private Task SetTypedFilterAsync(BitDataGridColumn<TItem> column, string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
@@ -492,20 +493,36 @@
             case BitDataGridColumnDataType.DateTime:
             case BitDataGridColumnDataType.DateTimeOffset:
             {
-                object? value = null;
+                // DateOnly has no time component, so an exact equality filter is already boundary-safe.
                 if (underlying == typeof(DateOnly))
                 {
-                    if (DateOnly.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var d)) value = d;
+                    return DateOnly.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var d)
+                        ? SetFilterAsync(column, BitDataGridFilterOperator.Equals, d)
+                        : SetFilterAsync(column, BitDataGridFilterOperator.Equals, null);
                 }
-                else if (underlying == typeof(DateTimeOffset))
+
+                // DateTime/DateTimeOffset row values carry a time-of-day, so a single midnight Equals
+                // descriptor would never match an exact-comparison consumer of OnRead. Emit a half-open
+                // same-day range [start, nextDay) so the whole day is selected in a boundary-safe way that
+                // both the client pipeline and remote consumers can apply with standard comparisons.
+                if (underlying == typeof(DateTimeOffset))
                 {
-                    if (DateTimeOffset.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var dto)) value = dto;
+                    if (DateTimeOffset.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var dto))
+                    {
+                        var start = new DateTimeOffset(dto.Year, dto.Month, dto.Day, 0, 0, 0, dto.Offset);
+                        return SetDateRangeFilterAsync(column, start, start.AddDays(1));
+                    }
+                    return SetDateRangeFilterAsync(column, null, null);
                 }
                 else
                 {
-                    if (DateTime.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var dt)) value = dt;
+                    if (DateTime.TryParse(raw, inv, System.Globalization.DateTimeStyles.None, out var dt))
+                    {
+                        var start = dt.Date;
+                        return SetDateRangeFilterAsync(column, start, start.AddDays(1));
+                    }
+                    return SetDateRangeFilterAsync(column, null, null);
                 }
-                return SetFilterAsync(column, BitDataGridFilterOperator.Equals, value);
             }
 
             case BitDataGridColumnDataType.Enum:

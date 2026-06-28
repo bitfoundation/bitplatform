@@ -337,6 +337,7 @@ public class MedalsModel
 
     private readonly string example3RazorCode = @"
 @using System.Text.Json;
+@using System.Text.Json.Serialization;
 @inject HttpClient HttpClient
 @inject NavigationManager NavManager
 
@@ -371,7 +372,7 @@ public class MedalsModel
 </style>
 
 <div class=""grid"">
-    <BitQuickGrid @ref=""dataGrid"" ItemsProvider=""@foodRecallProvider"" TGridItem=""FoodRecall"" Virtualize>
+    <BitQuickGrid @ref=""dataGrid"" ItemsProvider=""@foodRecallProvider"" TGridItem=""FoodRecall"" Virtualize ItemSize=""32"">
         <BitQuickGridPropertyColumn Property=""@(c=>c.EventId)"" />
         <BitQuickGridPropertyColumn Property=""@(c => c.State)"" />
         <BitQuickGridPropertyColumn Property=""@(c => c.City)"" />
@@ -586,6 +587,7 @@ public class Openfda
 
     private readonly string example4RazorCode = @"
 @using System.Text.Json;
+@using System.Text.Json.Serialization;
 @inject HttpClient HttpClient
 @inject NavigationManager NavManager
 
@@ -765,6 +767,7 @@ protected override async Task OnInitializedAsync()
 
     private readonly string example5RazorCode = @"
 @using System.Text.Json;
+@using System.Text.Json.Serialization;
 @inject HttpClient HttpClient
 @inject NavigationManager NavManager
 
