@@ -208,6 +208,13 @@
                 }
             }
         }
+
+        // Initialization completed: window.bitBswupHandler is installed and the splash is
+        // wired up. Mark the element now (not in autoStart() before start() ran) so the flag
+        // is only set after a successful start - a start() that threw can be retried - and so
+        // manual BitBswupProgress.start(...) callers are tracked too, keeping the
+        // DOMContentLoaded/MutationObserver paths from re-initializing.
+        bswupEl && bswupEl.setAttribute('data-bit-bswup-initialized', 'true');
     };
 
     function config(newConfig: IBswupProgressConfigs) {
@@ -232,7 +239,6 @@
         const el = document.getElementById('bit-bswup');
         if (!el || el.getAttribute('data-bit-bswup-config') !== 'true') return;
         if (el.getAttribute('data-bit-bswup-initialized') === 'true') return;
-        el.setAttribute('data-bit-bswup-initialized', 'true');
 
         const bool = (name: string, fallback: boolean) => {
             const value = el.getAttribute(name);

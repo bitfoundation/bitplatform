@@ -662,7 +662,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 // integrity when the message signals a digest/SRI problem, not on TypeError alone.
                 const isIntegrity =
                     hasIntegrity &&
-                    /integrity|digest|EPRPROTO|ERR_FAILED/i.test(String(fetchErr && (fetchErr as any).message || fetchErr));
+                    /integrity|digest|EPRPROTO/i.test(String(fetchErr && (fetchErr as any).message || fetchErr));
 
                 // Integrity failures are deterministic: re-fetching identical bytes fails the
                 // same way, so never retry them. Genuine network errors are transient and

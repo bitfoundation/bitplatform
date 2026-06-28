@@ -289,9 +289,13 @@ if (!BitBswup.initialized) {
                 }
 
                 if (e.data === 'UNREGISTER') {
-                    navigator.serviceWorker.getRegistrations().then(regs => {
-                        const regPromises = regs.map(r => r.unregister());
-                        Promise.all(regPromises).then(() => window.location.reload());
+                    // Only unregister Bswup's own service worker, not every same-origin
+                    // registration. getRegistrations() returns workers for unrelated apps
+                    // sharing this origin (other scopes / mounted sub-apps), and tearing those
+                    // down would break them. getRegistration() (no arg) resolves the
+                    // registration whose scope controls this page - this app's own worker.
+                    navigator.serviceWorker.getRegistration().then(reg => {
+                        Promise.resolve(reg?.unregister()).then(() => window.location.reload());
                     });
                     return;
                 }
