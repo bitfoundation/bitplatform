@@ -90,11 +90,11 @@
                 </div>
             </div>
         }
+    }
 
-        @if (_inlineError is not null)
-        {
-            <div class="bit-rte-err" role="alert">@_inlineError</div>
-        }
+    @if (_inlineError is not null)
+    {
+        <div class="bit-rte-err" role="alert">@_inlineError</div>
     }
 
     @if (_showSlash)
@@ -110,11 +110,11 @@
                     <button type="button" class="bit-rte-slash-item" role="option"
                             @onmousedown:preventDefault="true" @onclick="() => ApplySlashAsync(c.Command)">@Label(c.Key, c.Label)</button>
                 }
-                @if (FilteredSlash().Any() is false)
-                {
-                    <div class="bit-rte-emoji-empty">@Label("no-command", "No matching command")</div>
-                }
             </div>
+            @if (FilteredSlash().Any() is false)
+            {
+                <div class="bit-rte-emoji-empty">@Label("no-command", "No matching command")</div>
+            }
         </div>
     }
 
@@ -134,6 +134,7 @@
         <textarea class="bit-rte-src @Classes?.Source" style="min-height:@Height;@Styles?.Source"
                   aria-label="@Label("source-view", "HTML source")"
                   spellcheck="false"
+                  readonly="@ReadOnly"
                   value="@_sourceText" @oninput="OnSourceTextChanged"></textarea>
     }
 

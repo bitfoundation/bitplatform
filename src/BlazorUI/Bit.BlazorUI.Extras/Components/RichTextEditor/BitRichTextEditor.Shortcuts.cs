@@ -92,11 +92,18 @@ public partial class BitRichTextEditor
         var combos = new HashSet<string>(DefaultShortcuts.Keys, StringComparer.OrdinalIgnoreCase);
         if (KeyboardShortcuts is not null)
         {
-            // Only advertise custom combos whose command can actually be executed; otherwise the
-            // JS bridge would suppress the browser default for a combo _OnShortcut later rejects.
+            // Custom shortcuts win over the built-in defaults (see _OnShortcut). Only advertise a
+            // combo as owned when its effective command can actually be executed; if a custom
+            // override maps a key (including one that shadows a default) to an unknown command,
+            // drop it so the bridge does not suppress an otherwise-handled browser shortcut that
+            // _OnShortcut would later reject.
             foreach (var (key, command) in KeyboardShortcuts)
+            {
                 if (IsKnownCommand(command))
                     combos.Add(key);
+                else
+                    combos.Remove(key);
+            }
         }
         return combos.Select(c => c.ToLowerInvariant()).ToArray();
     }

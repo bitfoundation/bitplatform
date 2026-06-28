@@ -8,7 +8,8 @@ public partial class BitRichTextEditor
         if (ReadOnly) return;
         if (rows < 1 || rows > 50 || cols < 1 || cols > 50)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-table", "Tables must be between 1 and 50 rows/columns."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-table",
+                Label("invalid-table", "Tables must be between 1 and 50 rows/columns.")));
             return;
         }
         await _js.BitRichTextEditorInsertTable(_editorRef, rows, cols);

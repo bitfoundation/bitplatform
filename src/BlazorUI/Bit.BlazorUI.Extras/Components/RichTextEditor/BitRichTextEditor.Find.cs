@@ -9,7 +9,7 @@ public partial class BitRichTextEditor
     private bool _findCaseSensitive;
     private string _findCount = "";
 
-    private void ToggleFind()
+    private async Task ToggleFind()
     {
         _showFind = !_showFind;
         if (_showFind is false)
@@ -17,7 +17,9 @@ public partial class BitRichTextEditor
             _findTerm = "";
             _replaceTerm = "";
             _findCount = "";
-            _ = ClearFindAsync();
+            // Await the clear so stale highlight nodes are removed before the panel closes and
+            // any JS interop failure surfaces instead of being silently dropped.
+            await ClearFindAsync();
         }
         ClearInlineError();
     }

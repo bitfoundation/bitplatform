@@ -7,6 +7,15 @@ public partial class BitRichTextEditor
     /// <summary>Show the character/word count footer.</summary>
     [Parameter] public bool ShowCount { get; set; }
 
-    /// <summary>Maximum plain-text character count. Null means unlimited.</summary>
-    [Parameter] public int? MaxLength { get; set; }
+    private int? _maxLength;
+    /// <summary>
+    /// Maximum plain-text character count. Null means unlimited. Negative values are rejected
+    /// and treated as null (unlimited) so the footer and bridge never receive an invalid limit.
+    /// </summary>
+    [Parameter]
+    public int? MaxLength
+    {
+        get => _maxLength;
+        set => _maxLength = value is < 0 ? null : value;
+    }
 }

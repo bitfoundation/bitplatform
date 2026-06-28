@@ -85,6 +85,15 @@ namespace BitBlazorUI {
             };
             document.addEventListener('selectionchange', editor._onSelection);
 
+            // Report browser full-screen changes (including exits via Escape or browser UI) so
+            // the component's _fullScreen state never drifts from the actual view.
+            editor._onFullScreenChange = () => {
+                const root = editor.closest('.bit-rte');
+                const isFs = !!document.fullscreenElement && document.fullscreenElement === root;
+                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnFullScreenChanged', isFs);
+            };
+            document.addEventListener('fullscreenchange', editor._onFullScreenChange);
+
             editor._onPaste = (e: ClipboardEvent) => RichTextEditor.onPaste(editor, e);
             editor.addEventListener('paste', editor._onPaste);
 
@@ -131,6 +140,7 @@ namespace BitBlazorUI {
             editor.removeEventListener('keydown', editor._onKeyDown);
             editor.removeEventListener('beforeinput', editor._onBeforeInput);
             document.removeEventListener('selectionchange', editor._onSelection);
+            document.removeEventListener('fullscreenchange', editor._onFullScreenChange);
             RichTextEditor.removeResizeHandle(editor);
             editor._dotNetRef = null;
             editor._range = null;
@@ -268,6 +278,9 @@ namespace BitBlazorUI {
                 RichTextEditor.reportClientError(editor, 'invalid-url', 'That link URL is not allowed.');
                 return;
             }
+            // Restore the editor's saved range first so the link is applied to the editor
+            // selection rather than whatever the toolbar/dialog interaction left active.
+            RichTextEditor.restoreSelection(editor);
             const a = RichTextEditor.linkAtSelection(editor);
             if (a) {
                 a.setAttribute('href', url);
@@ -290,13 +303,33 @@ namespace BitBlazorUI {
         public static applyColor(editor: any, kind: string, value: string) {
             if (!editor || !value) return;
             RichTextEditor.dispatch(editor, kind === 'back' ? 'backColor' : 'foreColor', { value });
+            RichTextEditor.normalizeFontTags(editor);
             RichTextEditor.afterChange(editor);
         }
 
         public static applyFont(editor: any, kind: string, value: string) {
             if (!editor || !value) return;
             RichTextEditor.dispatch(editor, kind === 'size' ? 'fontSize' : 'fontName', { value });
+            RichTextEditor.normalizeFontTags(editor);
             RichTextEditor.afterChange(editor);
+        }
+
+        // execCommand emits <font> elements (color/face) which the sanitizer allowlist drops
+        // because <font> is not a permitted tag - taking the formatting with them on the next
+        // sanitize roundtrip (paste, setHtml, source view). Rewrite them into allowed
+        // <span style="..."> wrappers so the font formatting survives.
+        private static normalizeFontTags(editor: any) {
+            if (!editor) return;
+            editor.querySelectorAll('font').forEach((f: HTMLElement) => {
+                const span = document.createElement('span');
+                if (f.style.cssText) span.style.cssText = f.style.cssText;
+                const color = f.getAttribute('color');
+                const face = f.getAttribute('face');
+                if (color) span.style.color = color;
+                if (face) span.style.fontFamily = face;
+                while (f.firstChild) span.appendChild(f.firstChild);
+                f.replaceWith(span);
+            });
         }
 
         public static insertMedia(editor: any, html: string) {
@@ -358,6 +391,17 @@ namespace BitBlazorUI {
 
         public static insertText(editor: any, text: string) {
             if (!editor || !text) return;
+            // Honor the same _maxLength budget enforced by onBeforeInput/paste so programmatic
+            // inserts (emoji picker, custom toolbar items) cannot push past the limit.
+            const max = editor._maxLength;
+            if (max != null) {
+                const sel = document.getSelection();
+                const selected = (sel && !sel.isCollapsed) ? sel.toString().length : 0;
+                const current = (editor.textContent || '').length;
+                const remaining = Math.max(0, max - (current - selected));
+                if (remaining === 0) return;
+                if (text.length > remaining) text = text.slice(0, remaining);
+            }
             RichTextEditor.dispatch(editor, 'insertText', { value: text });
             RichTextEditor.afterChange(editor);
         }
@@ -376,6 +420,9 @@ namespace BitBlazorUI {
         }
 
         public static tableOp(editor: any, op: string) {
+            // Restore the editor selection so the operation targets the cell the user last
+            // selected in the editor, not a selection left in the toolbar.
+            RichTextEditor.restoreSelection(editor);
             const cell = RichTextEditor.cellAtSelection(editor);
             if (!cell) return;
             const row = cell.parentElement as HTMLTableRowElement;
@@ -509,6 +556,9 @@ namespace BitBlazorUI {
         }
 
         public static setBlockDirection(editor: any, dir: string) {
+            // Restore the editor's saved range so the direction is applied to the editor's
+            // block rather than a selection left active in the toolbar/dialog.
+            RichTextEditor.restoreSelection(editor);
             const sel = document.getSelection();
             if (!sel || sel.rangeCount === 0) {
                 if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnClientError', 'no-selection', 'Select a block to change its direction.');

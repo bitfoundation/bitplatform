@@ -19,6 +19,20 @@ public partial class BitRichTextEditor
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Reported by the bridge whenever the browser's full-screen state changes, including exits
+    /// triggered outside the component (Escape key, browser UI). Keeps <c>_fullScreen</c> in
+    /// sync with the actual view so the toggle button and root class never go stale.
+    /// </summary>
+    [JSInvokable("OnFullScreenChanged")]
+    public void _OnFullScreenChanged(bool isFullScreen)
+    {
+        if (_fullScreen == isFullScreen) return;
+        _fullScreen = isFullScreen;
+        ClassBuilder.Reset();
+        StateHasChanged();
+    }
+
     private async Task SetDirectionAsync(string dir)
     {
         if (ReadOnly) return;

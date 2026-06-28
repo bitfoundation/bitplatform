@@ -55,12 +55,40 @@ public partial class BitRichTextEditor
         _imageUrl = "";
     }
 
-    private static bool IsAcceptableImageUrl(string url)
+    // Known image MIME types accepted for data: URLs, mirroring the bridge's IMAGE_MIME set.
+    private static readonly string[] KnownImageMimeTypes =
+        ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"];
+
+    // data: image URIs are only honored when the active policy permits them (the default policy
+    // allows them); a null policy maps to the bridge default which also permits them.
+    private bool DataImageUrisAllowed => SanitizationPolicy?.AllowDataImageUris ?? true;
+
+    private static bool IsKnownImageMimeType(string contentType)
+    {
+        var mime = contentType?.Trim();
+        if (string.IsNullOrEmpty(mime)) return false;
+        // Strip any parameters (e.g. "image/png; charset=...") before matching.
+        var semicolon = mime.IndexOf(';');
+        if (semicolon >= 0) mime = mime[..semicolon].Trim();
+        return KnownImageMimeTypes.Contains(mime, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private bool IsAcceptableImageUrl(string url)
     {
         if (string.IsNullOrWhiteSpace(url) || url.Length > 2048) return false;
-        return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-            || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
-            || url.StartsWith("data:", StringComparison.OrdinalIgnoreCase);
+        if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        if (url.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        {
+            // Only allow data: URLs when the policy permits them and the declared MIME is a
+            // known image type, so non-image payloads cannot be smuggled in as an "image".
+            if (DataImageUrisAllowed is false) return false;
+            return KnownImageMimeTypes.Any(m => url.StartsWith($"data:{m}", StringComparison.OrdinalIgnoreCase));
+        }
+        return false;
     }
 
     /// <summary>Called by the bridge for each dropped/pasted image; returns the URL to embed.</summary>
@@ -68,7 +96,16 @@ public partial class BitRichTextEditor
     public async Task<string?> _ResolveImageUrl(string fileName, string contentType, string base64)
     {
         if (OnImageUpload is null)
+        {
+            // Inline data URL fallback: validate the client-reported MIME and the policy before
+            // embedding so non-image payloads are not turned into inline data URLs.
+            if (DataImageUrisAllowed is false || IsKnownImageMimeType(contentType) is false)
+            {
+                await RaiseErrorAsync(new BitRichTextEditorError("invalid-image", $"\"{fileName}\" is not a supported image type."));
+                return null;
+            }
             return $"data:{contentType};base64,{base64}";   // inline data URL fallback
+        }
 
         try
         {
