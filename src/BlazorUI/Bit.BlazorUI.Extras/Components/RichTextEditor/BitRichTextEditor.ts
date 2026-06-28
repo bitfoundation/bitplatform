@@ -391,6 +391,10 @@ namespace BitBlazorUI {
 
         public static insertText(editor: any, text: string) {
             if (!editor || !text) return;
+            // Restore the editor's saved range so the insert (and the budget calculation below)
+            // targets the editor's actual selection rather than whatever the live document
+            // selection is after a toolbar/custom-item interaction.
+            RichTextEditor.restoreSelection(editor);
             // Honor the same _maxLength budget enforced by onBeforeInput/paste so programmatic
             // inserts (emoji picker, custom toolbar items) cannot push past the limit.
             const max = editor._maxLength;
@@ -564,6 +568,12 @@ namespace BitBlazorUI {
             RichTextEditor.restoreSelection(editor);
             const sel = document.getSelection();
             if (!sel || sel.rangeCount === 0) {
+                if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnClientError', 'no-selection', 'Select a block to change its direction.');
+                return;
+            }
+            // Reject selections that are not inside this editor so external DOM cannot be
+            // modified through the restored/live selection.
+            if (!sel.anchorNode || !editor.contains(sel.anchorNode)) {
                 if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnClientError', 'no-selection', 'Select a block to change its direction.');
                 return;
             }

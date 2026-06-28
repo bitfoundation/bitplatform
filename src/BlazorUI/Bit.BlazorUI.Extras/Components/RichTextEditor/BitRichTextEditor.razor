@@ -18,7 +18,7 @@
             }
         </div>
 
-        @if (_showLinkInput)
+        @if (_showLinkInput && ReadOnly is false)
         {
             <div class="bit-rte-bar">
                 <input type="url" class="bit-rte-inp" aria-label="@Label("link-url", "Link URL")"
@@ -34,7 +34,7 @@
             </div>
         }
 
-        @if (_showImageInput)
+        @if (_showImageInput && ReadOnly is false)
         {
             <div class="bit-rte-bar">
                 <input type="url" class="bit-rte-inp" aria-label="@Label("image-url", "Image URL")"
@@ -45,7 +45,7 @@
             </div>
         }
 
-        @if (_showMediaInput)
+        @if (_showMediaInput && ReadOnly is false)
         {
             <div class="bit-rte-bar">
                 <input type="url" class="bit-rte-inp" aria-label="@Label("media-url", "Media URL")"
@@ -56,7 +56,7 @@
             </div>
         }
 
-        @if (_showFind)
+        @if (_showFind && ReadOnly is false)
         {
             <div class="bit-rte-bar">
                 <input type="text" class="bit-rte-inp" aria-label="@Label("find", "Find")" placeholder="@Label("find", "Find")"
@@ -104,10 +104,10 @@
                    placeholder="@Label("filter-commands", "Filter commands…")"
                    @bind="_slashFilter" @bind:event="oninput"
                    @onkeydown="@(e => { if (e.Key == "Escape") CloseSlash(); })" />
-            <div class="bit-rte-slash-list" role="listbox" aria-label="@Label("filter-commands", "Filter commands")">
+            <div class="bit-rte-slash-list" role="menu" aria-label="@Label("filter-commands", "Filter commands")">
                 @foreach (var c in FilteredSlash())
                 {
-                    <button type="button" class="bit-rte-slash-item" role="option"
+                    <button type="button" class="bit-rte-slash-item" role="menuitem"
                             @onmousedown:preventDefault="true" @onclick="() => ApplySlashAsync(c.Command)">@Label(c.Key, c.Label)</button>
                 }
             </div>

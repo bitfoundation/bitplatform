@@ -165,7 +165,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
     private async Task ExecAsync(string command, string? value = null)
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorExec(_editorRef, command, value);
     }
 
@@ -177,7 +177,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
     private async Task ExecBlockAsync(string tag)
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorExecBlock(_editorRef, tag);
     }
 
@@ -186,7 +186,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
     private async Task ClearFormattingAsync()
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorExec(_editorRef, "removeFormat", null);
         await _js.BitRichTextEditorExecBlock(_editorRef, "p");
     }

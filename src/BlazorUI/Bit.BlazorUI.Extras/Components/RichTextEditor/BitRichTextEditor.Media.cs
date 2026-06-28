@@ -86,7 +86,12 @@ public partial class BitRichTextEditor
             // Only allow data: URLs when the policy permits them and the declared MIME is a
             // known image type, so non-image payloads cannot be smuggled in as an "image".
             if (DataImageUrisAllowed is false) return false;
-            return KnownImageMimeTypes.Any(m => url.StartsWith($"data:{m}", StringComparison.OrdinalIgnoreCase));
+            // Parse the declared MIME exactly (the segment between "data:" and the first ';' or
+            // ',') and require that delimiter, so values like "data:image/pngfoo" are rejected.
+            var rest = url["data:".Length..];
+            var delimiter = rest.IndexOfAny([';', ',']);
+            if (delimiter < 0) return false;
+            return IsKnownImageMimeType(rest[..delimiter]);
         }
         return false;
     }
