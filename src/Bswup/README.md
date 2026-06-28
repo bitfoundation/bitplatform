@@ -224,9 +224,9 @@ The other settings are:
 
 Bswup exposes a small global `BitBswup` object on the page so you can drive the update lifecycle from your own code (a "check for updates" button, a custom poller, a "reset app" action, etc.):
 
-- `BitBswup.checkForUpdate()`: Asks the browser to re-fetch the service-worker script and check for a new version. If a new version is found, the normal update flow runs (`updateFound` -> `stateChanged` -> `updateReady`/`downloadFinished`). If the app is already on the latest version, Bswup raises the `updateNotFound` event so you can stop a spinner or show an "up to date" message. This is the registration-aware version that powers the built-in polling; it is safe to call as often as you like.
+- `BitBswup.checkForUpdate()`: Asks the browser to re-fetch the service-worker script and check for a new version. If a new version is found, the normal update flow runs (`updateFound` -> `stateChanged` -> `updateReady`/`downloadFinished`). If the app is already on the latest version, Bswup raises the `updateNotFound` event so you can stop a spinner or show an "up to date" message. If the check itself fails for a transient reason (offline, server hiccup, a throttled background tab), Bswup raises the non-blocking `updateCheckFailed` event instead of the install-path `error` event, so the default progress handler does **not** hide the app or show the install-failed UI; the payload still carries `reason`/`message` so you can surface it yourself. This is the registration-aware version that powers the built-in polling; it is safe to call as often as you like.
 - `BitBswup.skipWaiting()`: If an update has finished downloading and is waiting, this activates it immediately (equivalent to calling the `reload` callback you receive in `updateReady`/`downloadFinished`). Returns `true` when there was a waiting worker to activate, otherwise `false`.
-- `BitBswup.forceRefresh(cacheFilter?)`: Clears caches, unregisters all service workers, and reloads the page. Use this as a last-resort "reset" when a client gets into a bad state. By default it clears **every** CacheStorage bucket (Bswup, Blazor framework, and any app-owned caches such as Workbox add-ons or API caches) so nothing stale survives the reload. To narrow what gets cleared, pass an optional `cacheFilter`: a string (prefix match against the cache name, e.g. `'bit-bswup'`), a `RegExp` (tested against the cache name), or a predicate function `(key) => boolean` that returns `true` for caches to delete.
+- `BitBswup.forceRefresh(cacheFilter?)`: Clears caches, unregisters the service worker controlling the current page, and reloads. Use this as a last-resort "reset" when a client gets into a bad state. It only removes this app's own registration (the one whose scope controls the current page, via `navigator.serviceWorker.getRegistration()`), not every same-origin service worker - so other apps or sub-apps mounted under different scopes on the same origin are left untouched. By default it clears **every** CacheStorage bucket (Bswup, Blazor framework, and any app-owned caches such as Workbox add-ons or API caches) so nothing stale survives the reload. To narrow what gets cleared, pass an optional `cacheFilter`: a string (prefix match against the cache name, e.g. `'bit-bswup'`), a `RegExp` (tested against the cache name), or a predicate function `(key) => boolean` that returns `true` for caches to delete.
 
 ### Polling for updates
 
@@ -243,7 +243,17 @@ setInterval(() => BitBswup.checkForUpdate(), 60 * 60 * 1000);
 document.getElementById('check-updates').onclick = () => BitBswup.checkForUpdate();
 ```
 
-Either way, the result surfaces through your `bitBswupHandler`: a found update flows through `updateFound`/`updateReady`, and "nothing new" flows through `updateNotFound`.
+Either way, the result surfaces through your `bitBswupHandler`: a found update flows through `updateFound`/`updateReady`, "nothing new" flows through `updateNotFound`, and a transient check failure flows through `updateCheckFailed` (handle it the same way as the other events, e.g. stop your spinner and optionally show a "couldn't check right now" hint - the app keeps running on the current version):
+
+```js
+window.bitBswupHandler = (message, data) => {
+    switch (message) {
+        case 'UPDATE_NOT_FOUND': /* already up to date - stop the spinner */ break;
+        case 'UPDATE_CHECK_FAILED': /* transient failure - keep running, optionally notify */ break;
+        // updateFound / stateChanged / updateReady / downloadFinished drive the update UI
+    }
+};
+```
 
 > Built-in polling skips checks while the tab is in the background (the browser throttles
 > those timers anyway) and catches up automatically when the tab becomes visible again.

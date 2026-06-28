@@ -132,6 +132,13 @@
                             data.reload().then(() => {
                                 hideApp_ && appEl && (appEl.style.display = appElOriginalDisplay);
                                 bswupEl && (bswupEl.style.display = 'none');
+                            }).catch(() => {
+                                // Auto-reload failed (e.g. skipWaiting/activation rejected). Without
+                                // this the splash could stay hidden with no way forward, so restore
+                                // the splash and offer a manual retry wired to data.reload.
+                                bswupEl && (bswupEl.style.display = 'block');
+                                reloadButton && (reloadButton.style.display = 'block');
+                                reloadButton && (reloadButton.onclick = data.reload);
                             });
                         } else {
                             reloadButton && (reloadButton.style.display = 'block');
@@ -141,7 +148,12 @@
 
                     case BswupMessage.updateReady:
                         if (autoReload_) {
-                            data.reload();
+                            // Wrap in Promise.resolve so a non-promise return is handled too, and
+                            // fall back to a manual reload button if the auto-reload rejects.
+                            Promise.resolve(data.reload()).catch(() => {
+                                reloadButton && (reloadButton.style.display = 'inline');
+                                reloadButton && (reloadButton.onclick = data.reload);
+                            });
                         } else {
                             reloadButton && (reloadButton.style.display = 'inline');
                             reloadButton && (reloadButton.onclick = data.reload);

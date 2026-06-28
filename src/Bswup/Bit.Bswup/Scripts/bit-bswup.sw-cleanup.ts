@@ -3,6 +3,7 @@
 interface BitBswupGlobals {
     clients: any
     skipWaiting: any
+    registration: any
 }
 
 interface WorkerGlobalScope extends BitBswupGlobals { }
@@ -40,7 +41,15 @@ async function removeBswup() {
 // waitUntil) doesn't resolve before the teardown signalling has actually been dispatched.
 async function teardownClients() {
     await self.clients.claim();
-    const clients = await self.clients.matchAll({ includeUncontrolled: true });
+    // Only target window clients that belong to this registration's scope. matchAll with
+    // includeUncontrolled returns every same-origin client (including those under other
+    // scopes / mounted sub-apps and non-window clients like workers); broadcasting
+    // 'UNREGISTER' to all of them would tell unrelated apps to tear themselves down. Filter
+    // to in-scope window clients so the reloadSignals loop only reloads this registration.
+    const scope = self.registration && self.registration.scope;
+    const allClients = await self.clients.matchAll({ includeUncontrolled: true });
+    const clients = (allClients || []).filter((client: any) =>
+        client.type === 'window' && (!scope || (typeof client.url === 'string' && client.url.indexOf(scope) === 0)));
     const reloadSignals: Promise<void>[] = [];
     (clients || []).forEach((client: any) => {
         client.postMessage('UNREGISTER');
