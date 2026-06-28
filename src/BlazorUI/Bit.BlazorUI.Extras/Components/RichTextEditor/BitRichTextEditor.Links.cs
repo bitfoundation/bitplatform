@@ -23,7 +23,7 @@ public partial class BitRichTextEditor
 
     private async Task ApplyLinkAsync()
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
 
         var url = _linkUrl.Trim();
         if (string.IsNullOrWhiteSpace(url))
@@ -48,7 +48,7 @@ public partial class BitRichTextEditor
 
     private async Task RemoveLinkAsync()
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorExec(_editorRef, "unlink", null);
         _showLinkInput = false;
         _linkUrl = "";

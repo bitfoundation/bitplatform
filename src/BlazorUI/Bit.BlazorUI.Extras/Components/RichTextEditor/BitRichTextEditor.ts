@@ -377,9 +377,12 @@ namespace BitBlazorUI {
                     if (name === 'src') {
                         const val = (attr.value || '').trim();
                         if (tag === 'iframe') {
-                            let host = '';
-                            try { host = new URL(val).host.toLowerCase(); } catch { host = ''; }
-                            if (!iframeHosts.includes(host)) { el.remove(); return; }
+                            // iframe embeds must be HTTPS *and* on the host allowlist; a non-HTTPS
+                            // (or unparseable) URL is dropped so mixed-content/downgrade embeds
+                            // cannot slip through the media path.
+                            let host = '', scheme = '';
+                            try { const u = new URL(val); host = u.host.toLowerCase(); scheme = u.protocol.toLowerCase(); } catch { host = ''; scheme = ''; }
+                            if (scheme !== 'https:' || !iframeHosts.includes(host)) { el.remove(); return; }
                         } else if (!RichTextEditor.isAllowedUri(editor, val, false)) {
                             el.removeAttribute(attr.name);
                         }
@@ -981,6 +984,13 @@ namespace BitBlazorUI {
             e.preventDefault();
             const html = cb.getData('text/html');
             const text = cb.getData('text/plain');
+            RichTextEditor.insertTransferContent(editor, html, text);
+        }
+
+        // Shared sanitized-insertion path for both paste and drop: HTML is sanitized (with Word
+        // normalization) unless plain-text mode is on, plain text is escaped, and the result is
+        // clamped to the _maxLength budget before being dispatched.
+        private static insertTransferContent(editor: any, html: string, text: string) {
             const plainOnly = editor._plainTextPaste === true;
             let toInsert = (!plainOnly && html)
                 ? RichTextEditor.sanitize(editor, RichTextEditor.normalizeWordHtml(html))
@@ -988,7 +998,7 @@ namespace BitBlazorUI {
 
             const max = editor._maxLength;
             if (max != null) {
-                // Selected text will be replaced by the paste, so it counts against neither
+                // Selected text will be replaced by the insert, so it counts against neither
                 // the current length nor the remaining budget.
                 const sel = document.getSelection();
                 const selected = (sel && !sel.isCollapsed) ? sel.toString().length : 0;
@@ -1007,8 +1017,27 @@ namespace BitBlazorUI {
             const dt = e.dataTransfer;
             if (!dt) return;
             const imageFiles = Array.from<File>(dt.files as any || []).filter((f: File) => f.type.startsWith('image/')) as File[];
-            if (imageFiles.length === 0) return;
+            if (imageFiles.length > 0) {
+                e.preventDefault();
+                RichTextEditor.placeDropCaret(editor, e);
+                RichTextEditor.handleImageFiles(editor, Array.from<File>(dt.files as any));
+                return;
+            }
+
+            // Non-image drops (text/html, text/plain) are routed through the same sanitized
+            // insertion path as paste so dropped markup cannot bypass sanitize()/the max-length
+            // budget via the browser's default contenteditable handling.
+            const html = dt.getData('text/html');
+            const text = dt.getData('text/plain');
+            if (!html && !text) return;
             e.preventDefault();
+            RichTextEditor.placeDropCaret(editor, e);
+            RichTextEditor.insertTransferContent(editor, html, text);
+        }
+
+        // Move the editor selection (and the saved range) to the drop point so the subsequent
+        // insert targets where the user dropped rather than the prior caret position.
+        private static placeDropCaret(editor: any, e: DragEvent) {
             const range = RichTextEditor.caretRangeFromPoint(e.clientX, e.clientY);
             if (range) {
                 const sel = document.getSelection();
@@ -1016,7 +1045,6 @@ namespace BitBlazorUI {
                 sel!.addRange(range);
                 editor._range = range.cloneRange();
             }
-            RichTextEditor.handleImageFiles(editor, Array.from<File>(dt.files as any));
         }
 
         private static caretRangeFromPoint(x: number, y: number): Range | null {

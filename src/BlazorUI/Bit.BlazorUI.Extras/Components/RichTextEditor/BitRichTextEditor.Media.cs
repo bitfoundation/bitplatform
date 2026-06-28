@@ -42,7 +42,7 @@ public partial class BitRichTextEditor
 
     private async Task ApplyImageUrlAsync()
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
 
         var url = _imageUrl.Trim();
         if (IsAcceptableImageUrl(url) is false)
@@ -141,7 +141,7 @@ public partial class BitRichTextEditor
     private async Task ApplyColorAsync(string kind, ChangeEventArgs e)
     {
         var value = e.Value?.ToString();
-        if (ReadOnly || string.IsNullOrWhiteSpace(value)) return;
+        if (ControlsDisabled || string.IsNullOrWhiteSpace(value)) return;
         await _js.BitRichTextEditorApplyColor(_editorRef, kind, value);
     }
 
@@ -149,7 +149,7 @@ public partial class BitRichTextEditor
     private async Task ApplyFontAsync(string kind, ChangeEventArgs e)
     {
         var value = e.Value?.ToString();
-        if (ReadOnly || string.IsNullOrWhiteSpace(value)) return;
+        if (ControlsDisabled || string.IsNullOrWhiteSpace(value)) return;
         await _js.BitRichTextEditorApplyFont(_editorRef, kind, value);
     }
 

@@ -56,9 +56,13 @@ public class BitRichTextEditorTests : BunitTestContext
             {
                 Editor = "custom-editor",
                 Toolbar = "custom-toolbar",
-                Root = "custom-root"
+                Root = "custom-root",
+                Group = "custom-group",
+                Button = "custom-button",
+                Count = "custom-count"
             });
             parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.ShowCount, true);
         });
 
         var root = component.Find(".bit-rte");
@@ -66,6 +70,11 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rte-ro"));
         Assert.IsTrue(component.Find(".bit-rte-edt").ClassList.Contains("custom-editor"));
         Assert.IsTrue(component.Find(".bit-rte-tlb").ClassList.Contains("custom-toolbar"));
+        Assert.IsTrue(component.Find(".bit-rte-grp").ClassList.Contains("custom-group"));
+        Assert.IsTrue(component.Find(".bit-rte-btn").ClassList.Contains("custom-button"));
+        Assert.IsTrue(component.Find(".bit-rte-cnt").ClassList.Contains("custom-count"));
+        // Note: the Source hook only renders inside the HTML source-view textarea, which requires
+        // toggling into source view (a JS-bridged action) and is covered separately.
     }
 
     [TestMethod]

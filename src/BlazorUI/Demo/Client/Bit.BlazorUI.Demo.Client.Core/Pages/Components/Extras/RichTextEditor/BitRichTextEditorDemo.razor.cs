@@ -324,6 +324,14 @@ public partial class BitRichTextEditorDemo
     private string? linkHtml = "<p>Read the <a href=\"https://learn.microsoft.com/aspnet/core/blazor\">Blazor docs</a> to learn more.</p>";
     private string? linkError;
 
+    private void HandleLinkHtmlChanged(string? value)
+    {
+        linkHtml = value;
+        // A successful content update means the previous error no longer applies, so clear the
+        // stale message that OnError left behind.
+        linkError = null;
+    }
+
     private string? imageHtml = "<p>Images can sit inline with text.</p>";
     private string? lastUpload;
     private Task<string?> HandleImageUpload(BitRichTextEditorImageUpload image)
@@ -483,12 +491,18 @@ private string focusState = ""blurred"";";
 <BitRichTextEditor Toolbar=""BitRichTextEditorToolbar.AllExtended"" />";
 
     private readonly string example11RazorCode = @"
-<BitRichTextEditor @bind-Value=""html""
+<BitRichTextEditor Value=""linkHtml"" ValueChanged=""HandleLinkHtmlChanged""
                    Toolbar=""BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link""
                    OnError='e => linkError = $""{e.Code}: {e.Message}""' />";
     private readonly string example11CsharpCode = @"
 private string? linkHtml = ""<p>Read the <a href=\""https://...\"">docs</a>.</p>"";
-private string? linkError;";
+private string? linkError;
+
+private void HandleLinkHtmlChanged(string? value)
+{
+    linkHtml = value;
+    linkError = null; // a successful update clears the stale error
+}";
 
     private readonly string example12RazorCode = @"
 <BitRichTextEditor @bind-Value=""html""

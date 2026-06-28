@@ -17,7 +17,7 @@ public partial class BitRichTextEditor
 
     private async Task ApplyMediaAsync()
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
 
         var url = _mediaUrl.Trim();
         if (string.IsNullOrWhiteSpace(url) || url.Length > 2048
@@ -121,7 +121,7 @@ public partial class BitRichTextEditor
     // ---- horizontal rule ----
     private async Task InsertRuleAsync()
     {
-        if (ReadOnly) return;
+        if (ControlsDisabled) return;
         await _js.BitRichTextEditorExec(_editorRef, "insertHorizontalRule", null);
     }
 }

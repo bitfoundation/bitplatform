@@ -48,7 +48,9 @@ public partial class BitRichTextEditor
 
     private async Task ReplaceCurrentAsync()
     {
-        if (ReadOnly || string.IsNullOrEmpty(_findTerm)) return;
+        // Block replacements while source view is active (ControlsDisabled = ReadOnly || _inSourceView)
+        // so the rendered DOM and the raw source text cannot diverge.
+        if (ControlsDisabled || string.IsNullOrEmpty(_findTerm)) return;
         if (_findTerm.Length > 1000)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", "Search term is too long."));
@@ -60,7 +62,7 @@ public partial class BitRichTextEditor
 
     private async Task ReplaceAllAsync()
     {
-        if (ReadOnly || string.IsNullOrEmpty(_findTerm)) return;
+        if (ControlsDisabled || string.IsNullOrEmpty(_findTerm)) return;
         if (_findTerm.Length > 1000)
         {
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", "Search term is too long."));

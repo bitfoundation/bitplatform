@@ -147,7 +147,7 @@
                     <b>OnError</b> with a stable code such as invalid-url, and the content is left unchanged.
                 </div>
                 <br />
-                <BitRichTextEditor @bind-Value="linkHtml" Height="10rem"
+                <BitRichTextEditor Value="linkHtml" ValueChanged="HandleLinkHtmlChanged" Height="10rem"
                                    Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
                                    OnError='e => linkError = $"{e.Code}: {e.Message}"'
                                    Placeholder="Select text, then add a link..." />
@@ -388,8 +388,9 @@
 
             <DemoExample Title="Style & Class" RazorCode="@example30RazorCode" Id="example30">
                 <div>
-                    Use the <b>Styles</b> and <b>Classes</b> parameters to apply custom inline styles or CSS classes to
-                    individual parts of the editor (root, toolbar, group, button, editor, source, and count).
+                    Use the <b>Styles</b> parameter to apply custom inline styles to individual parts of the editor
+                    (root, toolbar, group, button, editor, source, and count). The <b>Classes</b> parameter works the
+                    same way for CSS classes.
                 </div>
                 <br />
                 <BitRichTextEditor Styles="@(new() { Toolbar = "border-bottom-color: red", Editor = "background-color: #fff8e1" })"

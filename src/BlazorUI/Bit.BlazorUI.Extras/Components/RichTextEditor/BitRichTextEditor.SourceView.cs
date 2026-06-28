@@ -10,7 +10,10 @@ public partial class BitRichTextEditor
 
     private async Task ToggleSourceViewAsync()
     {
-        if (ReadOnly) return;
+        // ReadOnly blocks *entering* source view, but exiting must stay possible: if the host
+        // flips ReadOnly to true while source view is open, the editor would otherwise be
+        // trapped there with no way back to the rendered view.
+        if (ReadOnly && _inSourceView is false) return;
         ClearInlineError();
 
         if (_inSourceView is false)

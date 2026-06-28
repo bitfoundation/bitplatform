@@ -73,10 +73,18 @@ public partial class BitRichTextEditor
     {
         if (ToolbarConfig?.CustomItems is not { } items) return;
 
+        // Track ids case-insensitively: OrderedToolbarIds() de-duplicates ids the same way and
+        // RenderCustomItem() resolves by the first case-insensitive match, so a duplicate id
+        // would silently hide every later item that shares it.
+        var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var item in items)
         {
             if (string.IsNullOrWhiteSpace(item.Id))
                 throw new ArgumentException("A BitRichTextEditor custom toolbar item has a blank Id.", nameof(ToolbarConfig));
+
+            if (seenIds.Add(item.Id) is false)
+                throw new ArgumentException($"BitRichTextEditor has duplicate custom toolbar item Id '{item.Id}'.", nameof(ToolbarConfig));
 
             if (string.IsNullOrWhiteSpace(item.AriaLabel))
                 throw new ArgumentException($"BitRichTextEditor custom toolbar item '{item.Id}' has a blank AriaLabel.", nameof(ToolbarConfig));
