@@ -562,7 +562,7 @@ private float RowHeight(Product p) => p.Price > 500 ? 64f : 36f;" + ProductModel
     private readonly string example19RazorCode = @"
 <BitDataGrid TItem=""Product"" Items=""@items"" Height=""320px"" Sortable=""true"">
     <EmptyTemplate>
-        <div>Nothing here yet. Try loading the sample data or adjusting your filters.</div>
+        <div>Nothing here yet. Try loading the sample data to populate the grid.</div>
     </EmptyTemplate>
     <ChildContent>
         <BitDataGridColumn TItem=""Product"" Field=""Id"" Title=""ID"" />

@@ -190,6 +190,9 @@
     align-items: center;
     gap: 4px;
     flex: 1;
+    /* Flex items default to min-width:auto, which refuses to shrink below their content size and
+       breaks the ellipsis on long labels in narrow columns; allow shrinking so the text can clip. */
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

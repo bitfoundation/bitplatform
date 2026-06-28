@@ -210,6 +210,10 @@ public partial class BitDataGridDemo : AppComponentBase
             total = filtered.Count;
             var items = filtered.Skip(request.Skip).Take(request.Take ?? total).ToList();
 
+            // A superseded request can finish filtering/sorting/paging after a newer one started; bail
+            // out before returning so the grid never receives stale rows for a cancelled load.
+            request.CancellationToken.ThrowIfCancellationRequested();
+
             return new BitDataGridReadResult<Product>(items, total);
         }
         finally
@@ -347,7 +351,11 @@ public partial class BitDataGridDemo : AppComponentBase
     // ---- row reordering ----
     private void OnReorder(BitDataGridRowReorderEventArgs<Product> e)
     {
-        reorderLog = $"{e.DraggedItem.Name} moved from #{e.FromIndex + 1} to #{e.ToIndex + 1}";
+        // FromIndex/ToIndex are null when the bound Items isn't an indexable IList<T>; fall back to "?"
+        // so the log stays readable instead of rendering an empty position.
+        var from = e.FromIndex is int fi ? (fi + 1).ToString() : "?";
+        var to = e.ToIndex is int ti ? (ti + 1).ToString() : "?";
+        reorderLog = $"{e.DraggedItem.Name} moved from #{from} to #{to}";
     }
 
 

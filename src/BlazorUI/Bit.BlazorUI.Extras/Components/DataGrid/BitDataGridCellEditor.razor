@@ -134,6 +134,13 @@
             && DateTime.TryParse(s, inv, System.Globalization.DateTimeStyles.None, out var local))
         {
             var kind = Value is DateTime current ? current.Kind : DateTimeKind.Unspecified;
+            // datetime-local only carries minute precision, so a round-trip would zero out the original
+            // seconds/ticks even when the user only edited the date or minute. Carry the original
+            // sub-minute component forward so editing the higher-order parts preserves it.
+            if (Value is DateTime original)
+            {
+                local = local.AddTicks(original.Ticks % TimeSpan.TicksPerMinute);
+            }
             Grid.SetEditValue(Column, DateTime.SpecifyKind(local, kind));
         }
         else
@@ -175,6 +182,12 @@
             && DateTime.TryParse(s, inv, System.Globalization.DateTimeStyles.None, out var local))
         {
             var offset = Value is DateTimeOffset current ? current.Offset : TimeZoneInfo.Local.GetUtcOffset(local);
+            // datetime-local only carries minute precision; carry the original sub-minute component
+            // forward so editing the date/minute doesn't reset the existing seconds/ticks to zero.
+            if (Value is DateTimeOffset original)
+            {
+                local = local.AddTicks(original.DateTime.Ticks % TimeSpan.TicksPerMinute);
+            }
             Grid.SetEditValue(Column, new DateTimeOffset(local, offset));
         }
         else
