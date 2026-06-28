@@ -383,11 +383,21 @@ public partial class BitRichTextEditorDemo
     {
         formSubmitted = true;
     }
-    public class FormModel
+    public class FormModel : IValidatableObject
     {
         [Required(ErrorMessage = "The body is required.")]
-        [MinLength(20, ErrorMessage = "Add a bit more detail (min 20 characters).")]
         public string? Body { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // The bound value is HTML, so measure the visible text (tags stripped) rather than the
+            // markup; otherwise tags alone could satisfy the minimum without enough real content.
+            var text = System.Text.RegularExpressions.Regex.Replace(Body ?? "", "<[^>]+>", "").Trim();
+            if (text.Length < 20)
+            {
+                yield return new ValidationResult("Add a bit more detail (min 20 characters).", [nameof(Body)]);
+            }
+        }
     }
 
     private string? customHtml = "<p>A custom toolbar button can run any command.</p>";
@@ -580,11 +590,18 @@ private readonly FormModel formModel = new();
 private bool formSubmitted;
 private void HandleValidSubmit() => formSubmitted = true;
 
-public class FormModel
+public class FormModel : IValidatableObject
 {
     [Required(ErrorMessage = ""The body is required."")]
-    [MinLength(20, ErrorMessage = ""Add a bit more detail (min 20 characters)."")]
     public string? Body { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Body is HTML, so validate the visible text length, not the markup length.
+        var text = Regex.Replace(Body ?? """", ""<[^>]+>"", """").Trim();
+        if (text.Length < 20)
+            yield return new ValidationResult(""Add a bit more detail (min 20 characters)."", [nameof(Body)]);
+    }
 }";
 
     private readonly string example27RazorCode = @"

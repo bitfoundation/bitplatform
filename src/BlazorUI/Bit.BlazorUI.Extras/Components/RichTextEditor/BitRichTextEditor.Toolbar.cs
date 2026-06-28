@@ -9,30 +9,31 @@ public partial class BitRichTextEditor
     /// <summary>Custom toolbar items and ordering. Null uses the default group order.</summary>
     [Parameter] public BitRichTextEditorToolbarConfig? ToolbarConfig { get; set; }
 
-    // Stable identifiers for the built-in groups, in default display order.
+    // Stable identifiers for the built-in groups, in default display order. The ids are sourced
+    // from BitRichTextEditorToolbarConfig.GroupIds so callers and this table never drift apart.
     private static readonly (string Id, BitRichTextEditorToolbar Flag)[] DefaultGroupOrder =
     [
-        ("history", BitRichTextEditorToolbar.History),
-        ("blockformat", BitRichTextEditorToolbar.BlockFormat),
-        ("font", BitRichTextEditorToolbar.Font),
-        ("inline", BitRichTextEditorToolbar.Inline),
-        ("color", BitRichTextEditorToolbar.Color),
-        ("script", BitRichTextEditorToolbar.Script),
-        ("lists", BitRichTextEditorToolbar.Lists),
-        ("indent", BitRichTextEditorToolbar.Indent),
-        ("blocks", BitRichTextEditorToolbar.Blocks),
-        ("link", BitRichTextEditorToolbar.Link),
-        ("media", BitRichTextEditorToolbar.Media),
-        ("image", BitRichTextEditorToolbar.Image),
-        ("table", BitRichTextEditorToolbar.Table),
-        ("rule", BitRichTextEditorToolbar.Rule),
-        ("alignment", BitRichTextEditorToolbar.Alignment),
-        ("direction", BitRichTextEditorToolbar.Direction),
-        ("emoji", BitRichTextEditorToolbar.Emoji),
-        ("find", BitRichTextEditorToolbar.Find),
-        ("source", BitRichTextEditorToolbar.Source),
-        ("fullscreen", BitRichTextEditorToolbar.FullScreen),
-        ("clear", BitRichTextEditorToolbar.Clear),
+        (BitRichTextEditorToolbarConfig.GroupIds.History, BitRichTextEditorToolbar.History),
+        (BitRichTextEditorToolbarConfig.GroupIds.BlockFormat, BitRichTextEditorToolbar.BlockFormat),
+        (BitRichTextEditorToolbarConfig.GroupIds.Font, BitRichTextEditorToolbar.Font),
+        (BitRichTextEditorToolbarConfig.GroupIds.Inline, BitRichTextEditorToolbar.Inline),
+        (BitRichTextEditorToolbarConfig.GroupIds.Color, BitRichTextEditorToolbar.Color),
+        (BitRichTextEditorToolbarConfig.GroupIds.Script, BitRichTextEditorToolbar.Script),
+        (BitRichTextEditorToolbarConfig.GroupIds.Lists, BitRichTextEditorToolbar.Lists),
+        (BitRichTextEditorToolbarConfig.GroupIds.Indent, BitRichTextEditorToolbar.Indent),
+        (BitRichTextEditorToolbarConfig.GroupIds.Blocks, BitRichTextEditorToolbar.Blocks),
+        (BitRichTextEditorToolbarConfig.GroupIds.Link, BitRichTextEditorToolbar.Link),
+        (BitRichTextEditorToolbarConfig.GroupIds.Media, BitRichTextEditorToolbar.Media),
+        (BitRichTextEditorToolbarConfig.GroupIds.Image, BitRichTextEditorToolbar.Image),
+        (BitRichTextEditorToolbarConfig.GroupIds.Table, BitRichTextEditorToolbar.Table),
+        (BitRichTextEditorToolbarConfig.GroupIds.Rule, BitRichTextEditorToolbar.Rule),
+        (BitRichTextEditorToolbarConfig.GroupIds.Alignment, BitRichTextEditorToolbar.Alignment),
+        (BitRichTextEditorToolbarConfig.GroupIds.Direction, BitRichTextEditorToolbar.Direction),
+        (BitRichTextEditorToolbarConfig.GroupIds.Emoji, BitRichTextEditorToolbar.Emoji),
+        (BitRichTextEditorToolbarConfig.GroupIds.Find, BitRichTextEditorToolbar.Find),
+        (BitRichTextEditorToolbarConfig.GroupIds.Source, BitRichTextEditorToolbar.Source),
+        (BitRichTextEditorToolbarConfig.GroupIds.FullScreen, BitRichTextEditorToolbar.FullScreen),
+        (BitRichTextEditorToolbarConfig.GroupIds.Clear, BitRichTextEditorToolbar.Clear),
     ];
 
     /// <summary>
@@ -63,6 +64,25 @@ public partial class BitRichTextEditor
         foreach (var id in customIds) yield return id;
     }
 
+    /// <summary>
+    /// Validates custom toolbar items before they are used for ordering, lookup, title, or
+    /// aria-label. <c>required</c> only guarantees the members are assigned, not that they are
+    /// meaningful, so reject null/empty/whitespace ids and aria-labels fast with a clear message.
+    /// </summary>
+    private void ValidateCustomItems()
+    {
+        if (ToolbarConfig?.CustomItems is not { } items) return;
+
+        foreach (var item in items)
+        {
+            if (string.IsNullOrWhiteSpace(item.Id))
+                throw new ArgumentException("A BitRichTextEditor custom toolbar item has a blank Id.", nameof(ToolbarConfig));
+
+            if (string.IsNullOrWhiteSpace(item.AriaLabel))
+                throw new ArgumentException($"BitRichTextEditor custom toolbar item '{item.Id}' has a blank AriaLabel.", nameof(ToolbarConfig));
+        }
+    }
+
     private void RenderCustomItem(RenderTreeBuilder builder, string id)
     {
         var item = ToolbarConfig?.CustomItems?.FirstOrDefault(i =>
@@ -76,8 +96,11 @@ public partial class BitRichTextEditor
         builder.AddAttribute(4, "type", "button");
         builder.AddAttribute(5, "class", $"bit-rte-btn {Classes?.Button}");
         builder.AddAttribute(6, "style", Styles?.Button);
-        builder.AddAttribute(7, "title", item.AriaLabel);
-        builder.AddAttribute(8, "aria-label", item.AriaLabel);
+        // Icon-only items may omit a visible label; fall back through Label then Id so the
+        // button always exposes a usable accessible name and tooltip.
+        var accessibleName = item.AriaLabel ?? item.Label ?? item.Id;
+        builder.AddAttribute(7, "title", accessibleName);
+        builder.AddAttribute(8, "aria-label", accessibleName);
         builder.AddAttribute(9, "disabled", ControlsDisabled);
         builder.AddAttribute(10, "onclick", EventCallback.Factory.Create(this, () => InvokeCustomItemAsync(item)));
         if (item.Icon is not null) builder.AddContent(11, item.Icon);

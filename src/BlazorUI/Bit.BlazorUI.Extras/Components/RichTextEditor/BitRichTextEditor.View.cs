@@ -11,9 +11,18 @@ public partial class BitRichTextEditor
     private async Task ToggleFullScreen()
     {
         var next = !_fullScreen;
-        // Only flip the visual state once the browser action has been issued, so a failed
-        // interop call does not leave the component out of sync with the actual view.
-        await _js.BitRichTextEditorSetFullScreen(_editorRef, next);
+        try
+        {
+            // Only flip the visual state once the browser action has succeeded, so a denied or
+            // failed request does not leave the component out of sync with the actual view. The
+            // bridge already reports denial through OnClientError, so swallow the interop failure
+            // here and keep the previous state.
+            await _js.BitRichTextEditorSetFullScreen(_editorRef, next);
+        }
+        catch (JSException)
+        {
+            return;
+        }
         _fullScreen = next;
         ClassBuilder.Reset();
         StateHasChanged();

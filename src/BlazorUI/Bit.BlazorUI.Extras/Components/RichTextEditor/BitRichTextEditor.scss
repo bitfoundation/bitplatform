@@ -119,6 +119,7 @@
 
 .bit-rte-bar {
     display: flex;
+    flex-wrap: wrap;
     gap: spacing(0.7);
     align-items: center;
     padding: spacing(0.8) spacing(1);

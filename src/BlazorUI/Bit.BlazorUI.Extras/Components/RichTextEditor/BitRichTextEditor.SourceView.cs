@@ -32,6 +32,15 @@ public partial class BitRichTextEditor
         var sanitized = await _js.BitRichTextEditorSanitizeHtml(_editorRef, _sourceText);
 
         _inSourceView = false;
+
+        // If the sanitized source is identical to what the editor already holds, there is no
+        // effective content change: just leave source view without re-rendering or re-notifying.
+        if (sanitized == _currentHtml)
+        {
+            StateHasChanged();
+            return;
+        }
+
         _currentHtml = sanitized;
         await _js.BitRichTextEditorSetHtml(_editorRef, sanitized);
         StateHasChanged();

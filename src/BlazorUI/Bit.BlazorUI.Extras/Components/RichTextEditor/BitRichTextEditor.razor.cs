@@ -9,6 +9,7 @@ public partial class BitRichTextEditor : BitComponentBase
 {
     private bool _initialized;
     private string _currentHtml = "";
+    private string? _lastSetupSnapshot;
     private bool _toolbarRovingEnabled;
     private ElementReference _editorRef = default!;
     private BitRichTextEditorContentFacts _facts;
@@ -230,12 +231,22 @@ public partial class BitRichTextEditor : BitComponentBase
     {
         await base.OnParametersSetAsync();
 
+        ValidateCustomItems();
+
         // Keep the JS bridge config aligned with the current C# parameter state. The first
         // render seeds these via BitRichTextEditorSetup; afterwards parameter changes must be
-        // pushed explicitly, otherwise the bridge keeps the frozen initial options.
+        // pushed explicitly, otherwise the bridge keeps the frozen initial options. Skip the
+        // interop call when nothing the bridge cares about (debounce, policy, upload, paste,
+        // max-length, owned shortcuts) actually changed since the last push.
         if (_initialized)
         {
-            await _js.BitRichTextEditorUpdateOptions(_editorRef, BuildSetupOptions());
+            var options = BuildSetupOptions();
+            var snapshot = SerializeSetupOptions(options);
+            if (snapshot != _lastSetupSnapshot)
+            {
+                _lastSetupSnapshot = snapshot;
+                await _js.BitRichTextEditorUpdateOptions(_editorRef, options);
+            }
         }
     }
 
@@ -249,6 +260,11 @@ public partial class BitRichTextEditor : BitComponentBase
         ShortcutKeys = BuildOwnedShortcutCombos()
     };
 
+    // Serializes the setup payload so OnParametersSetAsync can detect whether any bridge-backed
+    // setting changed and avoid redundant BitRichTextEditorUpdateOptions interop calls.
+    private static string SerializeSetupOptions(BitRichTextEditorSetupOptions options)
+        => System.Text.Json.JsonSerializer.Serialize(options);
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -257,7 +273,9 @@ public partial class BitRichTextEditor : BitComponentBase
         {
             _dotnetObj = DotNetObjectReference.Create(this);
 
-            await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, BuildSetupOptions());
+            var setupOptions = BuildSetupOptions();
+            await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, setupOptions);
+            _lastSetupSnapshot = SerializeSetupOptions(setupOptions);
 
             // Sanitize the initial Value through the same bridge policy used by OnValueSet so the
             // first content load cannot bypass SanitizationPolicy.

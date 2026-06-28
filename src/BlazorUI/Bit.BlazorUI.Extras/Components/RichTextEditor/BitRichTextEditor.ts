@@ -545,9 +545,12 @@ namespace BitBlazorUI {
             if (on) {
                 if (root.requestFullscreen) {
                     // Return the promise so the C# interop await (and ToggleFullScreen) only
-                    // proceeds once the request settles. Denial is still surfaced via OnClientError.
-                    return root.requestFullscreen().catch(() => {
+                    // proceeds once the request settles. Report denial via OnClientError, but
+                    // re-throw so the awaiting caller still observes the failure rather than a
+                    // silently-resolved promise that looks like success.
+                    return root.requestFullscreen().catch((err: any) => {
                         if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnClientError', 'fullscreen-denied', 'Full-screen mode was blocked by the browser.');
+                        throw err;
                     });
                 }
             } else if (document.fullscreenElement) {
