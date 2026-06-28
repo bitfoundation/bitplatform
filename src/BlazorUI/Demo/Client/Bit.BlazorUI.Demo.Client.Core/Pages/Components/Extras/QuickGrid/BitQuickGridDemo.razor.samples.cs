@@ -802,7 +802,7 @@ protected override async Task OnInitializedAsync()
 </style>
 
 <div class=""grid"">
-    <BitQuickGrid @ref=""productsDataGrid"" ItemsProvider=""@productsItemsProvider"" ItemKey=""@(p => p.Id)"" TGridItem=""ProductDto"" Pagination=""pagination"">
+    <BitQuickGrid @ref=""productsDataGrid"" ItemsProvider=""@productsItemsProvider"" ItemKey=""@(p => p.Id)"" TGridItem=""ProductDto"" Pagination=""@pagination"">
         <Columns>
             <BitQuickGridPropertyColumn Property=""@(p => p.Id)"" Sortable=""true"" IsDefaultSort=""BitQuickGridSortDirection.Ascending"" />
             <BitQuickGridPropertyColumn Property=""@(p => p.Name)"" Sortable=""true"" />
