@@ -47,6 +47,11 @@ public partial class BitRichTextEditor
     private async Task ReplaceCurrentAsync()
     {
         if (ReadOnly || string.IsNullOrEmpty(_findTerm)) return;
+        if (_findTerm.Length > 1000)
+        {
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", "Search term is too long."));
+            return;
+        }
         await _js.BitRichTextEditorReplaceCurrent(_editorRef, _findTerm, _replaceTerm, _findCaseSensitive);
         await RunFindAsync();
     }
@@ -54,6 +59,11 @@ public partial class BitRichTextEditor
     private async Task ReplaceAllAsync()
     {
         if (ReadOnly || string.IsNullOrEmpty(_findTerm)) return;
+        if (_findTerm.Length > 1000)
+        {
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-find", "Search term is too long."));
+            return;
+        }
         var n = await _js.BitRichTextEditorReplaceAll(_editorRef, _findTerm, _replaceTerm, _findCaseSensitive);
         _findCount = $"{n} replaced";
     }

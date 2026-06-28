@@ -221,6 +221,11 @@
     background: $clr-bg-sec;
     color: $clr-fg-pri;
     box-sizing: border-box;
+
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(-0.25);
+    }
 }
 
 .bit-rte-edt {
@@ -232,8 +237,9 @@
     flex: 1;
     position: relative;
 
-    &:focus {
-        outline: none;
+    &:focus-visible {
+        outline: spacing(0.25) solid $clr-pri;
+        outline-offset: spacing(-0.25);
     }
 
     &.bit-rte-edt-empty::before {
@@ -343,6 +349,12 @@
     margin: spacing(0.5) spacing(1);
     box-shadow: 0 spacing(0.5) spacing(1.75) rgba(0, 0, 0, 0.12);
     max-width: spacing(32.5);
+}
+
+.bit-rte-slash-list {
+    display: flex;
+    flex-direction: column;
+    gap: spacing(0.25);
 }
 
 .bit-rte-slash-item {

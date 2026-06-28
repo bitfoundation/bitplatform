@@ -10,6 +10,7 @@ public class BitRichTextEditorTests : BunitTestContext
     private void SetupJsInterop()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.initialize");
+        Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.updateOptions");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.enableToolbarRoving");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.setHtml");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.exec");
@@ -153,12 +154,17 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.SanitizationPolicy, BitRichTextEditorSanitizationPolicy.Default);
         });
 
+        // Capture how many times the sanitize bridge was invoked during setup so the assertion
+        // below proves the *update* path invokes it again, not an earlier render.
+        var before = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
+
         // A value change after initialization routes through the sanitization bridge.
         component.SetParametersAndRender(parameters =>
         {
             parameters.Add(p => p.Value, "<p><script>alert(1)</script>dirty</p>");
         });
 
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.sanitizeHtml");
+        var after = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
+        Assert.IsTrue(after > before, "The Value update should route through the sanitize bridge.");
     }
 }

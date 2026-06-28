@@ -226,6 +226,29 @@ public partial class BitRichTextEditor : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        // Keep the JS bridge config aligned with the current C# parameter state. The first
+        // render seeds these via BitRichTextEditorSetup; afterwards parameter changes must be
+        // pushed explicitly, otherwise the bridge keeps the frozen initial options.
+        if (_initialized)
+        {
+            await _js.BitRichTextEditorUpdateOptions(_editorRef, BuildSetupOptions());
+        }
+    }
+
+    private BitRichTextEditorSetupOptions BuildSetupOptions() => new()
+    {
+        Debounce = DebounceMs,
+        Policy = BuildPolicyPayload(),
+        HasUpload = OnImageUpload is not null,
+        PlainTextPaste = PasteAsPlainText,
+        MaxLength = MaxLength,
+        ShortcutKeys = BuildOwnedShortcutCombos()
+    };
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -233,17 +256,17 @@ public partial class BitRichTextEditor : BitComponentBase
         if (firstRender)
         {
             _dotnetObj = DotNetObjectReference.Create(this);
-            _currentHtml = Value ?? "";
 
-            await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, new()
+            await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, BuildSetupOptions());
+
+            // Sanitize the initial Value through the same bridge policy used by OnValueSet so the
+            // first content load cannot bypass SanitizationPolicy.
+            var html = Value ?? "";
+            if (SanitizationPolicy is not null && string.IsNullOrEmpty(html) is false)
             {
-                Debounce = DebounceMs,
-                Policy = BuildPolicyPayload(),
-                HasUpload = OnImageUpload is not null,
-                PlainTextPaste = PasteAsPlainText,
-                MaxLength = MaxLength,
-                ShortcutKeys = BuildOwnedShortcutCombos()
-            });
+                html = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
+            }
+            _currentHtml = html;
 
             if (string.IsNullOrEmpty(_currentHtml) is false)
             {

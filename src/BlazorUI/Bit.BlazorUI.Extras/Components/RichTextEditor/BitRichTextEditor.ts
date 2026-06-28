@@ -46,13 +46,7 @@ namespace BitBlazorUI {
             if (!editor) return;
             options = options || {};
             editor._dotNetRef = dotnetObj;
-            editor._debounce = options.debounce ?? 200;
-            editor._policy = options.policy ?? null;
-            editor._hasUpload = options.hasUpload === true;
-            editor._plainTextPaste = options.plainTextPaste === true;
-            editor._maxLength = (typeof options.maxLength === 'number') ? options.maxLength : null;
-            editor._shortcutKeys = new Set((Array.isArray(options.shortcutKeys) ? options.shortcutKeys : [])
-                .map((k: string) => (k || '').toLowerCase()));
+            RichTextEditor.updateOptions(editor, options);
             let timer: ReturnType<typeof setTimeout> | null = null;
 
             const notify = () => {
@@ -109,6 +103,21 @@ namespace BitBlazorUI {
             RichTextEditor.enableImageResize(editor);
             RichTextEditor.enableTableResize(editor);
             RichTextEditor.updateEmpty(editor);
+        }
+
+        // Refreshes the bridge options that can change after initialization (debounce, policy,
+        // upload availability, paste mode, max length, owned shortcut combos) without rebinding
+        // the DOM event listeners. Called on first setup and whenever the C# parameters change.
+        public static updateOptions(editor: any, options: any) {
+            if (!editor) return;
+            options = options || {};
+            editor._debounce = options.debounce ?? 200;
+            editor._policy = options.policy ?? null;
+            editor._hasUpload = options.hasUpload === true;
+            editor._plainTextPaste = options.plainTextPaste === true;
+            editor._maxLength = (typeof options.maxLength === 'number') ? options.maxLength : null;
+            editor._shortcutKeys = new Set((Array.isArray(options.shortcutKeys) ? options.shortcutKeys : [])
+                .map((k: string) => (k || '').toLowerCase()));
         }
 
         public static dispose(editor: any) {
@@ -308,6 +317,7 @@ namespace BitBlazorUI {
         private static sanitizeMedia(editor: any, html: string): string {
             const tpl = document.createElement('template');
             tpl.innerHTML = html;
+            const policy = (editor && editor._policy) || RichTextEditor.DEFAULT_POLICY;
             const allowedTags = new Set(['iframe', 'video', 'audio', 'source', 'br', 'p']);
             const allowedAttrs: { [tag: string]: Set<string> } = {
                 iframe: new Set(['src', 'width', 'height', 'allow', 'allowfullscreen', 'frameborder']),
@@ -320,6 +330,12 @@ namespace BitBlazorUI {
             tpl.content.querySelectorAll('*').forEach((el: Element) => {
                 const tag = el.tagName.toLowerCase();
                 if (!allowedTags.has(tag)) { el.replaceWith(...Array.from(el.childNodes)); return; }
+                // Honor the active sanitization policy first: media tags (notably iframe, which
+                // is opt-in) are only permitted when the policy allows them; otherwise setHtml()
+                // would strip them later, leaving inconsistent state.
+                if (policy && policy.allowedTags && !policy.allowedTags.includes(tag)) {
+                    el.replaceWith(...Array.from(el.childNodes)); return;
+                }
                 for (const attr of Array.from(el.attributes)) {
                     const name = attr.name.toLowerCase();
                     if (name.startsWith('on')) { el.removeAttribute(attr.name); continue; }
@@ -481,12 +497,14 @@ namespace BitBlazorUI {
             if (!root) return;
             if (on) {
                 if (root.requestFullscreen) {
-                    root.requestFullscreen().catch(() => {
+                    // Return the promise so the C# interop await (and ToggleFullScreen) only
+                    // proceeds once the request settles. Denial is still surfaced via OnClientError.
+                    return root.requestFullscreen().catch(() => {
                         if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnClientError', 'fullscreen-denied', 'Full-screen mode was blocked by the browser.');
                     });
                 }
             } else if (document.fullscreenElement) {
-                document.exitFullscreen?.();
+                return document.exitFullscreen?.();
             }
         }
 
@@ -851,6 +869,12 @@ namespace BitBlazorUI {
                         url = await editor._dotNetRef.invokeMethodAsync('ResolveImageUrl', file.name, file.type, base64);
                         if (!url) continue;
                     }
+                    // Enforce the active URI policy on the final image source (raw data URL or the
+                    // resolved upload URL) so disallowed data URIs / schemes are not inserted.
+                    if (!RichTextEditor.isAllowedUri(editor, url, true)) {
+                        RichTextEditor.reportClientError(editor, 'invalid-image-uri', `"${file.name}" has a disallowed image source.`);
+                        continue;
+                    }
                     RichTextEditor.dispatch(editor, 'insertImage', { html: `<img src="${RichTextEditor.escapeAttr(url)}" alt="${RichTextEditor.escapeAttr(file.name)}">` });
                 } catch {
                     // Fail this file only; keep processing the rest of the batch.
@@ -1144,7 +1168,13 @@ namespace BitBlazorUI {
                         }
                     }
                     if (policy && policy.allowedAttributes) {
-                        const allowed = policy.allowedAttributes[tag] || policy.allowedAttributes['*'] || [];
+                        // Merge tag-specific and global ('*') attribute allowlists so global
+                        // attributes (style/class/dir) are honored even when a tag has its own
+                        // entry - the previous `[tag] || ['*']` form dropped the '*' set.
+                        const allowed = [
+                            ...(policy.allowedAttributes[tag] || []),
+                            ...(policy.allowedAttributes['*'] || [])
+                        ];
                         if (!allowed.includes(name)) el.removeAttribute(attr.name);
                     }
                 }

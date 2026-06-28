@@ -10,6 +10,13 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.initialize", editor, dotnetObj, options);
     }
 
+    public static ValueTask BitRichTextEditorUpdateOptions(this IJSRuntime jsRuntime,
+                                                           ElementReference editor,
+                                                           BitRichTextEditorSetupOptions options)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.updateOptions", editor, options);
+    }
+
     public static ValueTask BitRichTextEditorEnableToolbarRoving(this IJSRuntime jsRuntime, ElementReference toolbar)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.enableToolbarRoving", toolbar);

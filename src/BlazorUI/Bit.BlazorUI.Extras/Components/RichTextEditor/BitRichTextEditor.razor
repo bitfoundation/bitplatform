@@ -99,20 +99,22 @@
 
     @if (_showSlash)
     {
-        <div class="bit-rte-slash" role="listbox">
+        <div class="bit-rte-slash">
             <input type="text" class="bit-rte-inp" aria-label="@Label("filter-commands", "Filter commands")"
                    placeholder="@Label("filter-commands", "Filter commands…")"
                    @bind="_slashFilter" @bind:event="oninput"
                    @onkeydown="@(e => { if (e.Key == "Escape") CloseSlash(); })" />
-            @foreach (var c in FilteredSlash())
-            {
-                <button type="button" class="bit-rte-slash-item" role="option"
-                        @onmousedown:preventDefault="true" @onclick="() => ApplySlashAsync(c.Command)">@c.Label</button>
-            }
-            @if (FilteredSlash().Any() is false)
-            {
-                <div class="bit-rte-emoji-empty">@Label("no-command", "No matching command")</div>
-            }
+            <div class="bit-rte-slash-list" role="listbox" aria-label="@Label("filter-commands", "Filter commands")">
+                @foreach (var c in FilteredSlash())
+                {
+                    <button type="button" class="bit-rte-slash-item" role="option"
+                            @onmousedown:preventDefault="true" @onclick="() => ApplySlashAsync(c.Command)">@Label(c.Key, c.Label)</button>
+                }
+                @if (FilteredSlash().Any() is false)
+                {
+                    <div class="bit-rte-emoji-empty">@Label("no-command", "No matching command")</div>
+                }
+            </div>
         </div>
     }
 

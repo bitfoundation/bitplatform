@@ -33,9 +33,21 @@ public partial class BitRichTextEditor
 
         var combo = BuildComboKey(key, ctrl, shift, alt);
         string? command = null;
-        if (KeyboardShortcuts is not null && KeyboardShortcuts.TryGetValue(combo, out var custom))
-            command = custom;                                   // custom wins
-        else if (DefaultShortcuts.TryGetValue(combo, out var def))
+        // Custom shortcut keys are advertised to the JS bridge lowercased (see
+        // BuildOwnedShortcutCombos), so probe the user-supplied map case-insensitively to keep
+        // matching consistent regardless of the casing used in the KeyboardShortcuts keys.
+        if (KeyboardShortcuts is not null)
+        {
+            foreach (var (k, v) in KeyboardShortcuts)
+            {
+                if (string.Equals(k, combo, StringComparison.OrdinalIgnoreCase))
+                {
+                    command = v;                                // custom wins
+                    break;
+                }
+            }
+        }
+        if (command is null && DefaultShortcuts.TryGetValue(combo, out var def))
             command = def;
 
         if (command is null) return false;
