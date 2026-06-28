@@ -135,11 +135,23 @@ public sealed class BitDataGridPropertyAccessor<TItem>
         Expression body = param;
         PropertyInfo? lastProp = null;
         Expression? nullGuard = null;
+        // Tracks whether the path is written through a value-type (struct) intermediate. A property
+        // getter returns a *copy* of a struct, so Expression.Assign on e.g. "Address.City" (where
+        // Address is a struct) would mutate that throwaway copy and never write back to the item.
+        // We detect this and keep such paths read-only rather than compile a silently broken setter.
+        var crossesValueTypeIntermediate = false;
 
         foreach (var segment in path.Split('.'))
         {
             if (string.IsNullOrWhiteSpace(segment))
                 throw new ArgumentException($"Property path '{path}' contains an empty or whitespace segment.", nameof(path));
+
+            // The owner of this segment is the previous body. If that owner is a value type (and not the
+            // root parameter), assigning to a member off it cannot write back through the parent.
+            if (!ReferenceEquals(body, param) && body.Type.IsValueType)
+            {
+                crossesValueTypeIntermediate = true;
+            }
 
             // If the owner of this segment is an intermediate (nullable) value, guard against it being null.
             if (!ReferenceEquals(body, param) && CanBeNull(body.Type))
@@ -167,7 +179,9 @@ public sealed class BitDataGridPropertyAccessor<TItem>
 
         // Setter (only for a simple, writable, single-level-or-nested property)
         Action<TItem, object?>? setter = null;
-        var canWrite = lastProp is { CanWrite: true };
+        // A path crossing a struct intermediate cannot be written back through the value-type copy, so
+        // leave it read-only rather than emit a setter that compiles but silently drops writes.
+        var canWrite = lastProp is { CanWrite: true } && !crossesValueTypeIntermediate;
         if (canWrite)
         {
             var valueParam = Expression.Parameter(typeof(object), "v");

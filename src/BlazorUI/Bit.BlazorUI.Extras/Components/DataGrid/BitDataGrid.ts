@@ -83,6 +83,10 @@ namespace BitBlazorUI {
             if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
             const target = e.target as HTMLElement | null;
             if (target?.classList?.contains('bit-dtg-drag-handle')) {
+                // Don't cancel the default while the row is being edited: keyboard reordering is
+                // short-circuited in that state (matching the .NET handler and the draggable guard),
+                // so swallowing the arrow keys here would needlessly block scrolling during an edit.
+                if (target.closest('.bit-dtg-row')?.classList?.contains('bit-dtg-editing')) return;
                 e.preventDefault();
             }
         }, { capture: true });

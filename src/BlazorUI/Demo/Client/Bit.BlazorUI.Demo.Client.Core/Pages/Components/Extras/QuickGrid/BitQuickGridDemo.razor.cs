@@ -675,9 +675,11 @@ public partial class BitQuickGridDemo : AppComponentBase
                     { "$skip", req.StartIndex }
                 };
 
-                if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
+                if (string.IsNullOrWhiteSpace(_odataSampleNameFilter) is false)
                 {
-                    var escapedFilter = _odataSampleNameFilter.Replace("'", "''");
+                    // Use the trimmed value so a whitespace-only entry isn't treated as a real search
+                    // term, while still escaping apostrophes to keep the OData string literal valid.
+                    var escapedFilter = _odataSampleNameFilter.Trim().Replace("'", "''");
                     query.Add("$filter", $"contains(Name,'{escapedFilter}')");
                 }
 
