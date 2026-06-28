@@ -99,6 +99,7 @@ public static class BitDataGridDataProcessor
                 // the column that produced the group. Without it, changing the grouped column would let
                 // a same-valued key at the same level reuse another column's stale expansion state.
                 var path = $"{parentPath}/{level}:{descriptor.ColumnId}:{keyId}";
+                var isLeaf = level + 1 >= groups.Count;
                 var group = new BitDataGridGroup<TItem>
                 {
                     ColumnId = descriptor.ColumnId,
@@ -106,9 +107,12 @@ public static class BitDataGridDataProcessor
                     KeyText = keyText,
                     Level = level,
                     Path = path,
-                    Items = items
+                    Count = items.Count,
+                    // Only leaf groups retain the row list; parent groups rely on Count/Aggregates/SubGroups
+                    // so a row isn't referenced again on every ancestor level.
+                    Items = isLeaf ? items : new List<TItem>()
                 };
-                if (level + 1 < groups.Count)
+                if (!isLeaf)
                     group.SubGroups.AddRange(BuildGroups(items, groups, columns, level + 1, path));
                 group.Aggregates.AddRange(Aggregate(items, columns.Values));
                 return group;

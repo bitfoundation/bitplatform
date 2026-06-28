@@ -20,7 +20,12 @@ public sealed class BitDataGridGroup<TItem>
     /// <summary>Stable, unique path identifying this group across the whole tree (used for collapse state).</summary>
     public required string Path { get; init; }
 
-    /// <summary>All rows that fall under this group (across nested subgroups).</summary>
+    /// <summary>
+    /// The rows held directly by this group. Only populated for leaf groups (those without
+    /// <see cref="SubGroups"/>); parent groups leave this empty and expose their rows through their
+    /// nested subgroups, so a row is referenced once per tree rather than on every ancestor level.
+    /// Use <see cref="Count"/> and <see cref="Aggregates"/> for parent-group summary data.
+    /// </summary>
     public List<TItem> Items { get; init; } = new();
 
     /// <summary>Child groups when this group is further grouped; empty for leaf groups.</summary>
@@ -31,6 +36,6 @@ public sealed class BitDataGridGroup<TItem>
 
     public bool HasSubGroups => SubGroups.Count > 0;
 
-    /// <summary>Total number of leaf rows in this group.</summary>
-    public int Count => Items.Count;
+    /// <summary>Total number of leaf rows in this group (including all nested subgroups).</summary>
+    public required int Count { get; init; }
 }

@@ -3,6 +3,18 @@
 
 @switch (Column.EffectiveDataType)
 {
+    case BitDataGridColumnDataType.Boolean when IsNullableValue:
+        @* A nullable bool has three states (true/false/null); a plain checkbox only has two and would
+           silently collapse null into false. Use a select whose empty option round-trips back to null
+           (via SetNullable), while still parsing "true"/"false" through the accessor like Set does. *@
+        <select class="bit-dtg-editor bit-dtg-editor-tristate" value="@(GetBoolString())"
+                @onchange="e => SetNullable(e.Value)">
+            <option value="">@string.Empty</option>
+            <option value="true">True</option>
+            <option value="false">False</option>
+        </select>
+        break;
+
     case BitDataGridColumnDataType.Boolean:
         <input type="checkbox" class="bit-dtg-editor bit-dtg-editor-check"
                checked="@(GetBool())"
@@ -71,6 +83,10 @@
             : (Value?.ToString() ?? string.Empty);
 
     private bool GetBool() => Value is bool b && b;
+
+    // Renders the current bool? as the tri-state select's value: "true"/"false" for a concrete value,
+    // empty string for null so the empty option is selected and a cleared cell stays null.
+    private string GetBoolString() => Value is bool b ? (b ? "true" : "false") : string.Empty;
 
     private string GetDate()
     {

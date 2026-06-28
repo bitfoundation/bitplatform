@@ -58,6 +58,12 @@ public sealed class BitDataGridPropertyAccessor<TItem>
     /// </summary>
     public bool TryConvertValue(object? value, out object? result)
     {
+        // A cleared edit can arrive as an empty string (e.g. a select/text editor reset to "") rather
+        // than null. Normalize it to null up front so the nullable-target handling below clears the
+        // value, while non-nullable value targets still reject the clear and keep the previous value.
+        if (value is string es && es.Length == 0)
+            value = null;
+
         if (value is null)
         {
             // A cleared edit (null) must not silently become the type's default (e.g. 0 / MinValue for

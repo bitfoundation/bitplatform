@@ -356,10 +356,14 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         if (!_columns.Contains(column)) return;
 
         // Reject the rename if the new id already belongs to a different live column. Overwriting the
-        // registry entry would shadow that column and desync _columnsById from _columns (mirrors the
-        // duplicate-id rejection in AddColumn). Keep the renamed column under its old key in that case.
+        // registry entry would shadow that column and desync _columnsById from _columns. Unlike AddColumn
+        // (where a duplicate column is simply never registered), the column here is already registered and
+        // its Id has already changed, so silently returning would leave it partially updated (registered
+        // under its old key while reporting the new id). Surface the collision as an error instead.
         if (_columnsById.TryGetValue(column.Id, out var clash) && !ReferenceEquals(clash, column))
-            return;
+            throw new InvalidOperationException(
+                $"Cannot change a {nameof(BitDataGridColumn<TItem>)}'s id to '{column.Id}' because another " +
+                $"column is already registered under that id. Column ids (ColumnId/Field) must be unique.");
 
         if (_columnsById.TryGetValue(oldId, out var existing) && ReferenceEquals(existing, column))
             _columnsById.Remove(oldId);
@@ -614,6 +618,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _infiniteLoading = false;
         _view = _infiniteItems;
         _pageItems = _infiniteItems;
+
+        // Recompute footer aggregates against the now-empty list so ShowFooter doesn't keep displaying
+        // totals from the pre-reset data while the first batch is still loading. LoadNextBatchAsync will
+        // recompute them again once rows arrive.
+        _footerAggregates = BitDataGridDataProcessor.Aggregate(_infiniteItems, _columns);
 
         // Bump the load version up-front so any batch still in flight from before this reset is
         // recognised as stale (by the version check in LoadNextBatchAsync) and won't append rows to
