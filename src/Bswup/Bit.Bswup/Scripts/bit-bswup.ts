@@ -42,6 +42,14 @@ if (!BitBswup.initialized) {
                 return scripts.find(s => s.src && s.src.indexOf('bit-bswup.js') !== -1) || null;
             }());
 
+        // Tracks the single Blazor.start() invocation. A first install (CLIENTS_CLAIMED),
+        // a controlled/hard-reload load, and the explicit force paths can all reach the
+        // start logic; Blazor.start() may only be called once (a second call rejects), so
+        // funnel every path through startBlazorCore() and remember the in-flight/settled
+        // promise to hand back to later callers.
+        let blazorStarted = false;
+        let blazorStartPromise: Promise<unknown> | undefined;
+
         if (document.readyState === 'loading') {
             window.addEventListener('DOMContentLoaded', runBswup); // important event!
         } else {
@@ -430,14 +438,6 @@ if (!BitBswup.initialized) {
 
             // ============================================================
 
-            // Tracks the single Blazor.start() invocation. A first install (CLIENTS_CLAIMED),
-            // a controlled/hard-reload load, and the explicit force paths can all reach the
-            // start logic; Blazor.start() may only be called once (a second call rejects), so
-            // funnel every path through startBlazorCore() and remember the in-flight/settled
-            // promise to hand back to later callers.
-            let blazorStarted = false;
-            let blazorStartPromise: Promise<unknown> | undefined;
-
             // Actually start Blazor, exactly once. Returns the start promise (or the existing
             // one on repeat calls), or undefined when Blazor is unavailable so callers can
             // decide how to proceed instead of crashing on a missing global.
@@ -622,12 +622,12 @@ if (!BitBswup.initialized) {
 
         const shouldDelete =
             typeof cacheFilter === 'function' ? cacheFilter :
-            cacheFilter instanceof RegExp ? (key: string) => {
-                cacheFilter.lastIndex = 0;
-                return cacheFilter.test(key);
-            } :
-            typeof cacheFilter === 'string' ? (key: string) => key.startsWith(cacheFilter) :
-            () => true;
+                cacheFilter instanceof RegExp ? (key: string) => {
+                    cacheFilter.lastIndex = 0;
+                    return cacheFilter.test(key);
+                } :
+                    typeof cacheFilter === 'string' ? (key: string) => key.startsWith(cacheFilter) :
+                        () => true;
 
         const cacheKeys = await caches.keys();
         const cachePromises = cacheKeys.filter(shouldDelete).map(key => caches.delete(key));
