@@ -9,10 +9,9 @@
 // script. We avoid re-declaring `self` as ServiceWorkerGlobalScope because that conflicts
 // with the lib's own declaration in a non-module script. These declarations are ambient, so
 // bit-bswup.sw-cleanup.ts in the same compilation sees them too.
-interface Window {
+interface BitBswupGlobals {
     clients: any
     skipWaiting: any
-    importScripts: any
     
     assetsManifest: any           // injected by service-worker-assets.js (version + asset list)
     assetsInclude: any            // extra RegExp(s) of asset URLs to precache
@@ -40,6 +39,19 @@ interface Window {
     cacheVersion: any             // override the version used in the cache bucket name
     mode: any                     // preset bundle of the above (see the switch below)
 }
+
+// `self` resolves to different types depending on which lib is in effect. The real build
+// (tsconfig.sw.json) uses the WebWorker lib, where `self` is WorkerGlobalScope & typeof
+// globalThis. The editor, however, type-checks this file in a default project that loads
+// the DOM lib - tsserver doesn't auto-discover the non-standard tsconfig.sw.json - so there
+// `self` is Window & typeof globalThis. Extending both interfaces from one shared list keeps
+// every `self.*` access typed in both contexts without duplicating the declarations. In each
+// compilation the interface for the *other* lib (WorkerGlobalScope under DOM, Window under
+// WebWorker) is simply a harmless, unused standalone declaration.
+interface WorkerGlobalScope extends BitBswupGlobals { }
+interface Window extends BitBswupGlobals {
+    // importScripts: any
+ }
 
 // Minimal shape of the ExtendableEvent / FetchEvent surface we use. Declared locally so the
 // install/activate/fetch handlers can call waitUntil()/respondWith() without DOM lib types.

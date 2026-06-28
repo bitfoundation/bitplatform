@@ -1,10 +1,5 @@
 (self as any)['bit-bswup.sw-cleanup version'] = '10.5.0-pre-04';
 
-interface WorkerGlobalScope {
-    clients: any
-    skipWaiting: any
-}
-
 // Self-destructing "uninstall" service worker. Deploy this in place of the real
 // bit-bswup.sw.js when an app needs to fully back out of Bswup (e.g. switching a site away
 // from offline support, or recovering clients stuck on a broken worker/cache). On install
