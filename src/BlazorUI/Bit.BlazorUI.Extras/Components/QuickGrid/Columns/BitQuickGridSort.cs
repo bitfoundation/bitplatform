@@ -178,3 +178,22 @@ public class BitQuickGridSort<TGridItem>
         });
     }
 }
+
+/// <summary>
+/// Backward-compatible alias for <see cref="BitQuickGridSort{TGridItem}"/>, kept so existing
+/// <c>SortBy</c> declarations that referenced the old <c>BitDataGridSort&lt;TGridItem&gt;</c> name keep
+/// compiling. The factory helpers forward to <see cref="BitQuickGridSort{TGridItem}"/>, whose instances
+/// are what the grid's sort APIs now expect.
+/// </summary>
+/// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
+[Obsolete("BitDataGridSort<TGridItem> has been renamed to BitQuickGridSort<TGridItem>. Use BitQuickGridSort<TGridItem> instead.")]
+public static class BitDataGridSort<TGridItem>
+{
+    /// <inheritdoc cref="BitQuickGridSort{TGridItem}.ByAscending{U}(Expression{Func{TGridItem, U}})"/>
+    public static BitQuickGridSort<TGridItem> ByAscending<U>(Expression<Func<TGridItem, U>> expression)
+        => BitQuickGridSort<TGridItem>.ByAscending(expression);
+
+    /// <inheritdoc cref="BitQuickGridSort{TGridItem}.ByDescending{U}(Expression{Func{TGridItem, U}})"/>
+    public static BitQuickGridSort<TGridItem> ByDescending<U>(Expression<Func<TGridItem, U>> expression)
+        => BitQuickGridSort<TGridItem>.ByDescending(expression);
+}

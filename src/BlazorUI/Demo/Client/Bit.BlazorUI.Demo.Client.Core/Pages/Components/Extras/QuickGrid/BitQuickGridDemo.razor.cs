@@ -617,7 +617,7 @@ public partial class BitQuickGridDemo : AppComponentBase
             {
                 // Strip characters that would break the openFDA Lucene query syntax (the firm name is
                 // wrapped in quotes), namely double quotes and backslashes, before interpolating it.
-                var firmFilter = _virtualSampleNameFilter?.Replace("\\", string.Empty).Replace("\"", string.Empty) ?? string.Empty;
+                var firmFilter = _virtualSampleNameFilter?.Replace("\\", string.Empty).Replace("\"", string.Empty).Trim() ?? string.Empty;
                 var query = new Dictionary<string, object?>
                 {
                     { "skip", req.StartIndex },

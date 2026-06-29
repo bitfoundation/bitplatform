@@ -9,6 +9,7 @@ public partial class BitQuickGridDemo : AppComponentBase
     <BitQuickGridPropertyColumn Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitQuickGridSortDirection.Ascending"">
         <ColumnOptions>
             <BitSearchBox @bind-Value=""typicalSampleNameFilter""
+                          AriaLabel=""Search by name""
                           FixedIcon
                           Immediate DebounceTime=""300""
                           Placeholder=""Search...""
@@ -199,6 +200,7 @@ public class MedalsModel
             <BitQuickGridPropertyColumn Property=""@(c => c.Name)"" IsDefaultSort=""BitQuickGridSortDirection.Ascending"" Sortable=""true"" Class=""wide"">
                 <ColumnOptions>
                     <BitSearchBox @bind-Value=""typicalSampleNameFilter""
+                                  AriaLabel=""Search by name""
                                   FixedIcon
                                   Immediate DebounceTime=""300""
                                   Placeholder=""Search on Name""
@@ -212,8 +214,8 @@ public class MedalsModel
             <BitQuickGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
             <BitQuickGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" />
             <BitQuickGridTemplateColumn Title=""Action"" Align=""BitQuickGridAlign.Center"">
-                <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Edit"" Title=""Edit"" />
-                <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Delete"" Title=""Delete"" />
+                <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Edit"" Title=""Edit"" AriaLabel=""Edit"" />
+                <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Delete"" Title=""Delete"" AriaLabel=""Delete"" />
             </BitQuickGridTemplateColumn>
         </BitQuickGrid>
     </div>
@@ -383,6 +385,7 @@ public class MedalsModel
 </div>
 <div class=""search-panel"">
     <BitSearchBox @bind-Value=""VirtualSampleNameFilter"" 
+                  AriaLabel=""Search by company name""
                   Immediate DebounceTime=""300""
                   Placeholder=""Search...""/>
 </div>";
@@ -630,6 +633,7 @@ public class Openfda
 </div>
 <div class=""search-panel"">
     <BitSearchBox @bind-Value=""ODataSampleNameFilter"" 
+                  AriaLabel=""Search by name""
                   Immediate DebounceTime=""300""
                   Placeholder=""Search on Name"" />
 </div>";

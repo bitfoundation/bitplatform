@@ -93,7 +93,12 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
 
     internal BitDataGridPropertyAccessor<TItem>? Accessor { get; private set; }
 
-    internal string Id => ColumnId ?? Field ?? $"col-{GetHashCode():x}";
+    // Treat empty/whitespace ColumnId and Field as "unset" (matching HasField's emptiness check) so an
+    // accidental blank value can't become a column id. Blank ids would collide across columns instead of
+    // each falling back to a unique generated id, so only use the generated fallback when both are unset.
+    internal string Id => !string.IsNullOrWhiteSpace(ColumnId) ? ColumnId
+                        : !string.IsNullOrWhiteSpace(Field) ? Field
+                        : $"col-{GetHashCode():x}";
 
     // The id this column is currently registered under in the grid. Tracked separately from Id so a
     // later change to ColumnId/Field can re-register the column under its new id (and the old entry
