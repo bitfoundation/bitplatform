@@ -104,6 +104,16 @@ public partial class BitRichTextEditor
     [JSInvokable("ResolveImageUrl")]
     public async Task<string?> _ResolveImageUrl(string fileName, string contentType, string base64)
     {
+        // Reject oversized payloads from the base64 length before either path runs so neither the
+        // inline data-URL fallback nor the upload path can embed/allocate an image past the limit.
+        // Every 4 base64 chars decode to at most 3 bytes.
+        var estimatedBytes = (long)base64.Length / 4 * 3;
+        if (estimatedBytes > MaxImageBytes)
+        {
+            await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
+            return null;
+        }
+
         if (OnImageUpload is null)
         {
             // Inline data URL fallback: validate the client-reported MIME and the policy before
@@ -118,16 +128,6 @@ public partial class BitRichTextEditor
 
         try
         {
-            // Reject oversized payloads from the base64 length before decoding so a malicious or
-            // oversized direct invocation cannot allocate a huge byte[] / exhaust memory. Every 4
-            // base64 chars decode to at most 3 bytes.
-            var estimatedBytes = (long)base64.Length / 4 * 3;
-            if (estimatedBytes > MaxImageBytes)
-            {
-                await RaiseErrorAsync(new BitRichTextEditorError("file-too-large", $"\"{fileName}\" exceeds the 10 MB limit."));
-                return null;
-            }
-
             var bytes = Convert.FromBase64String(base64);
             if (bytes.Length > MaxImageBytes)
             {

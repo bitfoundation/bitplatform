@@ -28,12 +28,12 @@ public partial class BitRichTextEditor
         var url = _linkUrl.Trim();
         if (string.IsNullOrWhiteSpace(url))
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", "Enter a URL for the link."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("link-url-required", "Enter a URL for the link.")));
             return;
         }
         if (url.Length > 2048 || IsAcceptableLinkUrl(url) is false)
         {
-            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", "That link URL is not valid."));
+            await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("link-url-invalid", "That link URL is not valid.")));
             return;
         }
 

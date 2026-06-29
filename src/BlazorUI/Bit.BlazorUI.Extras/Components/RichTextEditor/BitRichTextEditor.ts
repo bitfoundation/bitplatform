@@ -210,36 +210,64 @@ namespace BitBlazorUI {
 
             const voidTags = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
             const optionalClose = new Set(['p', 'li', 'td', 'th', 'tr', 'thead', 'tbody', 'tfoot', 'option', 'optgroup', 'dt', 'dd', 'colgroup', 'col']);
-            const tagRx = /<\/?([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)(\/?)>/g;
+            const nameChar = /[a-zA-Z0-9-]/;
 
             const stack: string[] = [];
-            let lastIndex = 0;
-            let m: RegExpExecArray | null;
-            while ((m = tagRx.exec(html)) !== null) {
-                // Any stray '<' in the text between tags means malformed markup.
-                if (html.slice(lastIndex, m.index).indexOf('<') !== -1) return false;
-                lastIndex = tagRx.lastIndex;
+            const len = html.length;
+            let i = 0;
+            while (i < len) {
+                const lt = html.indexOf('<', i);
+                // Text up to the next '<' is fine; a stray '>' in text is tolerated as before.
+                if (lt === -1) break;
 
-                const tag = m[1].toLowerCase();
-                const isClose = m[0][1] === '/';
-                const selfClose = m[3] === '/';
+                let j = lt + 1;
+                const isClose = html[j] === '/';
+                if (isClose) j++;
+
+                // Tag name must start with a letter; a '<' not opening a real tag is malformed.
+                const nameStart = j;
+                if (j >= len || !/[a-zA-Z]/.test(html[j])) return false;
+                while (j < len && nameChar.test(html[j])) j++;
+                const tag = html.slice(nameStart, j).toLowerCase();
+
+                // Scan attributes until the closing '>', tracking quoted state so a '>' inside a
+                // single/double-quoted attribute value does not terminate the tag. An unterminated
+                // quote (or tag) runs off the end and is rejected as malformed.
+                let quote = '';
+                let closed = false;
+                let selfClose = false;
+                while (j < len) {
+                    const ch = html[j];
+                    if (quote) {
+                        if (ch === quote) quote = '';
+                    } else if (ch === '"' || ch === "'") {
+                        quote = ch;
+                    } else if (ch === '>') {
+                        selfClose = html[j - 1] === '/';
+                        closed = true;
+                        j++;
+                        break;
+                    }
+                    j++;
+                }
+                if (!closed) return false;
 
                 if (isClose) {
                     let matchIndex = -1;
-                    for (let j = stack.length - 1; j >= 0; j--) {
-                        if (stack[j] === tag) { matchIndex = j; break; }
+                    for (let k = stack.length - 1; k >= 0; k--) {
+                        if (stack[k] === tag) { matchIndex = k; break; }
                     }
                     if (matchIndex === -1) return false;
                     // Anything still open above the match must be an optional-close element.
-                    for (let j = matchIndex + 1; j < stack.length; j++) {
-                        if (!optionalClose.has(stack[j])) return false;
+                    for (let k = matchIndex + 1; k < stack.length; k++) {
+                        if (!optionalClose.has(stack[k])) return false;
                     }
                     stack.length = matchIndex;
                 } else if (!selfClose && !voidTags.has(tag)) {
                     stack.push(tag);
                 }
+                i = j;
             }
-            if (html.slice(lastIndex).indexOf('<') !== -1) return false;
 
             // Leftover open tags are only acceptable if they have optional end tags.
             return stack.every(t => optionalClose.has(t));
@@ -457,11 +485,22 @@ namespace BitBlazorUI {
 
             switch (op) {
                 case 'addRow': {
-                    // Use the logical width (accounting for colspans) so the inserted row spans
+                    // Use the logical grid (accounting for col/rowspans) so the inserted row spans
                     // the full table even when the current row contains merged cells.
-                    const { colCount } = RichTextEditor.buildTableGrid(table);
+                    const { rows, grid, colCount } = RichTextEditor.buildTableGrid(table);
+                    const ri = rows.indexOf(row);
                     const nr = document.createElement('tr');
-                    for (let i = 0; i < colCount; i++) {
+                    const extended = new Set<HTMLTableCellElement>();
+                    for (let c = 0; c < colCount; c++) {
+                        const here = grid[ri] ? (grid[ri][c] || null) : null;
+                        const below = (ri + 1 < rows.length && grid[ri + 1]) ? (grid[ri + 1][c] || null) : null;
+                        // A cell whose rowspan straddles the insertion boundary is stretched once
+                        // instead of getting a fresh neighbor, so the merged region keeps covering
+                        // the new row rather than being split by it.
+                        if (here && here === below) {
+                            if (!extended.has(here)) { extended.add(here); here.rowSpan = (here.rowSpan || 1) + 1; }
+                            continue;
+                        }
                         const td = document.createElement('td'); td.innerHTML = '<br>'; nr.appendChild(td);
                     }
                     row.after(nr);
@@ -490,8 +529,38 @@ namespace BitBlazorUI {
                     break;
                 }
                 case 'delRow': {
-                    const rows = Array.from(table.querySelectorAll('tr'));
-                    if (rows.length <= 1) { table.remove(); } else { row.remove(); }
+                    const { rows, grid, colCount } = RichTextEditor.buildTableGrid(table);
+                    if (rows.length <= 1) { table.remove(); break; }
+                    const ri = rows.indexOf(row);
+                    const nextRow = rows[ri + 1] || null;
+                    const handled = new Set<HTMLTableCellElement>();
+                    // Walk the logical columns of the row being deleted so spanning cells stay
+                    // consistent instead of leaving a row short or dropping a merged region.
+                    for (let c = 0; c < colCount; c++) {
+                        const cell = grid[ri] ? (grid[ri][c] || null) : null;
+                        if (!cell || handled.has(cell)) continue;
+                        handled.add(cell);
+                        const rowSpan = cell.rowSpan || 1;
+                        if (cell.parentElement === row) {
+                            // Cell originates in the deleted row. If it spans further down, relocate
+                            // it (shrunk by one) into the next row so the region below survives.
+                            if (rowSpan > 1 && nextRow) {
+                                cell.rowSpan = rowSpan - 1;
+                                let ref: HTMLTableCellElement | null = null;
+                                for (let k = c + 1; k < colCount; k++) {
+                                    const cand = grid[ri + 1] ? (grid[ri + 1][k] || null) : null;
+                                    if (cand && cand.parentElement === nextRow) { ref = cand; break; }
+                                }
+                                if (ref) nextRow.insertBefore(cell, ref);
+                                else nextRow.appendChild(cell);
+                            }
+                            // Otherwise the cell is confined to this row and is removed with it.
+                        } else if (rowSpan > 1) {
+                            // Cell starts above and spans into the deleted row: shrink its rowspan.
+                            cell.rowSpan = rowSpan - 1;
+                        }
+                    }
+                    row.remove();
                     break;
                 }
                 case 'delCol': {

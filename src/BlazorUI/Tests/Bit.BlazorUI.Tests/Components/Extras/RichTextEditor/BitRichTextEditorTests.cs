@@ -179,4 +179,25 @@ public class BitRichTextEditorTests : BunitTestContext
         var after = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
         Assert.IsTrue(after > before, "The Value update should route through the sanitize bridge.");
     }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldInvokeSanitizeBridgeWhenPolicyIsNull()
+    {
+        SetupJsInterop();
+        Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", _ => true).SetResult("<p>clean</p>");
+
+        // No SanitizationPolicy is set, so the component relies on the bridge's secure default
+        // allowlist; non-empty Value updates must still route through the sanitize bridge.
+        var component = RenderComponent<BitRichTextEditor>();
+
+        var before = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Value, "<p><script>alert(1)</script>dirty</p>");
+        });
+
+        var after = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
+        Assert.IsTrue(after > before, "The Value update should route through the sanitize bridge even without an explicit policy.");
+    }
 }
